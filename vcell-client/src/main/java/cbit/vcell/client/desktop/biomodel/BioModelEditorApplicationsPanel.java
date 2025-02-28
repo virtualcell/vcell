@@ -42,7 +42,6 @@ import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.resource.PropertyLoader;
@@ -357,7 +356,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				appsPopupMenu.add(appNewStochApp);
 				appsPopupMenu.add(appNewRulebasedApp);
 				boolean enableSpringSaLaD = PropertyLoader.getBooleanProperty(PropertyLoader.enableSpringSaLaD,
-						PropertyLoader.enableSpringSalad_default_value);
+						PropertyLoader.enableSpringSaLaD_default_value);
 				if (enableSpringSaLaD) {
 					appsPopupMenu.add(appNewSpringSaLaDApp);
 				}

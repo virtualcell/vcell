@@ -722,7 +722,7 @@ private void construcutPopupMenu() {
 			addNewAppMenu.add(addNewAppStochasticMenuItem);
 			addNewAppMenu.add(addNewAppRulebasedMenuItem);
 			boolean enableSpringSaLaD = PropertyLoader.getBooleanProperty(PropertyLoader.enableSpringSaLaD,
-					PropertyLoader.enableSpringSalad_default_value);
+					PropertyLoader.enableSpringSaLaD_default_value);
 			if (enableSpringSaLaD) {
 				addNewAppMenu.add(addNewAppSpringSaLaDMenuItem);
 			}
