@@ -5,7 +5,11 @@
 ```bash
 pushd ../../../..
 mvn clean install
-java -Dheadless=true -agentlib:native-image-agent=config-output-dir=target/recording -jar target/vcell-nativelib-0.0.1-SNAPSHOT.jar
+java -Dheadless=true -agentlib:native-image-agent=config-output-dir=target/recording \
+-jar target/vcell-nativelib-0.0.1-SNAPSHOT.jar \
+"/Users/evalencia/Documents/VCell_Repositories/vcell/vcell-rest/src/test/resources/TinySpacialProject_Application0.xml" \
+"/Users/evalencia/Documents/VCell_Repositories/vcell/vcell-nativelib/target/sbml-input"
+
 mvn package -P native -DskipTests=true
 popd
 ```
@@ -17,6 +21,8 @@ Sources:
 2. Run native executable
 ```bash
 pushd ../../../..
-./target/sbml_to* -Dheadless=true
+./target/sbml_to* -Dheadless=true \
+"/Users/evalencia/Documents/VCell_Repositories/vcell/vcell-rest/src/test/resources/TinySpacialProject_Application0.xml" \
+"/Users/evalencia/Documents/VCell_Repositories/vcell/vcell-nativelib/target/sbml-input" 
 popd
 ```
