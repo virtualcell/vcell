@@ -94,29 +94,6 @@ public class OmexHandler {
         }
     }
 
-    public static void rename(String zipFileName, String entryOldName, String entryNewName) throws Exception {
-
-        /* Define ZIP File System Properties in HashMap */
-        Map<String, String> zip_properties = new HashMap<>();
-        /* We want to read an existing ZIP File, so we set this to False */
-        zip_properties.put("create", "false");
-
-        /* Specify the path to the ZIP File that you want to read as a File System */
-        URI zip_disk = URI.create("jar:file:/" + zipFileName);
-
-        /* Create ZIP file System */
-        try (FileSystem zipfs = FileSystems.newFileSystem(zip_disk, zip_properties)) {
-            /* Access file that needs to be renamed */
-            Path pathInZipfile = zipfs.getPath(entryOldName);
-            /* Specify new file name */
-            Path renamedZipEntry = zipfs.getPath(entryNewName);
-            logger.trace("About to rename an entry from ZIP File" + pathInZipfile.toUri());
-            /* Execute rename */
-            Files.move(pathInZipfile, renamedZipEntry, StandardCopyOption.ATOMIC_MOVE);
-            logger.trace("File successfully renamed");
-        }
-    }
-
     public List<String> getSedmlLocationsRelative(){
         Collection<ArchiveEntry> entries = this.archive.getEntries();
 
@@ -142,8 +119,8 @@ public class OmexHandler {
 
         if (masterCount > 0) logger.warn("No SED-MLs are marked as master, so will run them all");
 
-            return sedmlMap.get(REGULAR).stream().map(ArchiveEntry::getFilePath).toList();
-        }
+        return sedmlMap.get(REGULAR).stream().map(ArchiveEntry::getFilePath).toList();
+    }
 
     public ArrayList<String> getSedmlLocationsAbsolute(){
         ArrayList<String> sedmlListAbsolute = new ArrayList<>();
