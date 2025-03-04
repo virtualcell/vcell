@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class RationalExp implements java.io.Serializable {
 
-	Logger logger = LogManager.getLogger(RationalExp.class);
+	private static final Logger logger = LogManager.getLogger(RationalExp.class);
 
 	private Vector<Term> numTermList = new Vector<Term>();
 	private Vector<Term> denTermList = new Vector<Term>();
