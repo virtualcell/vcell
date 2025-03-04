@@ -135,25 +135,15 @@ public class OmexHandler {
             sedmlMap.get(isMaster ? MASTER : REGULAR).add(entry);
         }
 
+        if (!sedmlMap.get(MASTER).isEmpty()) return sedmlMap.get(MASTER).stream().map(ArchiveEntry::getFilePath).toList();
+
         // Test corner cases
-        if (sedmlMap.get(MASTER).isEmpty()){
-            if (sedmlMap.get(REGULAR).isEmpty()) {
-                throw new RuntimeException("There are no SED-MLs in the archive to execute");
-            }
-            if (masterCount > 0) {
-                logger.warn("No SED-MLs are marked as master, so will run them all");
-            }
+        if (sedmlMap.get(REGULAR).isEmpty()) throw new RuntimeException("There are no SED-MLs in the archive to execute");
+
+        if (masterCount > 0) logger.warn("No SED-MLs are marked as master, so will run them all");
+
             return sedmlMap.get(REGULAR).stream().map(ArchiveEntry::getFilePath).toList();
         }
-
-        return sedmlMap.get(MASTER).stream().map(ArchiveEntry::getFilePath).toList();
-    }
-
-    private boolean isSedmlFormat(ArchiveEntry entry) {
-        URI format = entry.getFormat();
-        return format.getPath().contains("sedml") || format.getPath().contains("sed-ml");
-    }
-
 
     public ArrayList<String> getSedmlLocationsAbsolute(){
         ArrayList<String> sedmlListAbsolute = new ArrayList<>();
@@ -165,9 +155,13 @@ public class OmexHandler {
         return sedmlListAbsolute;
     }
 
+    private boolean isSedmlFormat(ArchiveEntry entry) {
+        URI format = entry.getFormat();
+        return format.getPath().contains("sedml") || format.getPath().contains("sed-ml");
+    }
+
     public String getOutputPathFromSedml(String absoluteSedmlPath) {
         String outputPath = "";
-        //String sedmlName = absoluteSedmlPath.substring(absoluteSedmlPath.lastIndexOf(File.separator) + 1);
         List<String> sedmlListRelative = this.getSedmlLocationsRelative();
         for (String sedmlFileRelative : sedmlListRelative) {
             boolean check = absoluteSedmlPath.contains(Paths.get(sedmlFileRelative).normalize().toString());
