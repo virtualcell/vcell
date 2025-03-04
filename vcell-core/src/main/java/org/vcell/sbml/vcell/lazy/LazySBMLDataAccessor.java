@@ -3,7 +3,6 @@ package org.vcell.sbml.vcell.lazy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.sbml.vcell.SBMLDataRecord;
-import org.vcell.util.Pair;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -16,7 +15,9 @@ public abstract class LazySBMLDataAccessor {
     private SBMLDataRecord cachedData;
     // We want to lazy get the data, to avoid as much in memory usage as possible
     private final Callable<SBMLDataRecord> lazyMethod;
-    private int flatSize;
+    private final int flatSize;
+    private final List<Integer> spatialDimensions;
+    private final List<Double> desiredTimes;
 
     /**
      * Creates a lazy accessor from runs of SBML-originated models
@@ -24,8 +25,8 @@ public abstract class LazySBMLDataAccessor {
      *                   the data being accessed is not stored in RAM: that would defeat the purpose of lazy access.
      * @param flatSize the size of the (expected) data.
      */
-    protected LazySBMLDataAccessor(Callable<SBMLDataRecord> lazyMethod, int flatSize) {
-        this(lazyMethod, flatSize, true);
+    protected LazySBMLDataAccessor(Callable<SBMLDataRecord> lazyMethod, int flatSize, List<Integer> spatialDimensions, List<Double> desiredTimes) {
+        this(lazyMethod, flatSize, spatialDimensions, desiredTimes, true);
     }
 
     /**
@@ -35,12 +36,14 @@ public abstract class LazySBMLDataAccessor {
      * @param flatSize the size of the (expected) data.
      * @param shouldUseCaching whether to cache the data collected by the lazyMethod or not.
      */
-    protected LazySBMLDataAccessor(Callable<SBMLDataRecord> lazyMethod, int flatSize, boolean shouldUseCaching) {
+    protected LazySBMLDataAccessor(Callable<SBMLDataRecord> lazyMethod, int flatSize, List<Integer> spatialDimensions, List<Double> desiredTimes, boolean shouldUseCaching) {
         if (lazyMethod == null) throw new IllegalArgumentException("lazyMethod cannot be null");
         this.shouldUseCaching = shouldUseCaching;
         this.lazyMethod = lazyMethod;
         this.cachedData = null;
         this.flatSize = flatSize;
+        this.spatialDimensions = spatialDimensions;
+        this.desiredTimes = desiredTimes;
     }
 
     /**
@@ -53,7 +56,7 @@ public abstract class LazySBMLDataAccessor {
         if (this.cachedData != null) return this.cachedData; // We only set `cachedData` to a not-null value if we `shouldUseCaching`
         SBMLDataRecord result = this.lazyMethod.call();
         int product = 1; for (int i : result.dimensions()) product *= i;
-        if (this.flatSize != product) lg.warn("Flat size mismatch: final calculated flat-size ({}) != set value ({})", product, this.flatSize);
+        //if (this.flatSize != product) lg.warn("Flat size mismatch: final calculated flat-size ({}) != set value ({})", product, this.flatSize);
         if (this.shouldUseCaching) this.cachedData = result;
         return result;
     }
@@ -64,21 +67,7 @@ public abstract class LazySBMLDataAccessor {
      */
     public int getFlatSize() { return this.flatSize; }
 
-    /**
-     * Sets the flat size of the data to be lazily accessed.
-     * @param flatSize the value to set the size to
-     */
-    public void setFlatSize(int flatSize) { this.flatSize = flatSize; }
+    public List<Integer> getSpatialDimensions() { return this.spatialDimensions; }
 
-    /**
-     * Determines whether data provided by the method is flat, but has caveats:
-     * 1) The use of type `Boolean` is intentional; if the data is not cached, we return `null`
-     * 2) If we have cached the data, we return `true` if the data is considered "flat", otherwise `false`
-     * @return `true`, `false`, or `null` depending on both the initialization and current state of the object.
-     */
-    public Boolean dataIsFlat(){
-        if (this.cachedData == null) return null;
-        List<Integer> dimensions = this.cachedData.dimensions();
-        return dimensions == null || dimensions.isEmpty() || (dimensions.size() == 2 && dimensions.get(1) == 1);
-    }
+    public List<Double> getDesiredTimes() { return this.desiredTimes; }
 }

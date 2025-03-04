@@ -165,7 +165,8 @@ public class JhdfUtils {
             String[] paddedValues = values.stream().map(s -> s == null ? "" : s).toArray(String[]::new);
             node.putAttribute(name, paddedValues);
         } else {
-            node.putAttribute(name, values.toArray(new String[0]));
+            String[] paddedValues = values.toArray(String[]::new);
+            node.putAttribute(name, paddedValues);
         }
     }
 

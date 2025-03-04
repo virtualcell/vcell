@@ -41,38 +41,7 @@ public class ComsolSolver extends AbstractSolver {
 
 	@Override
 	public void startSolver() {
-		try {
-			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_STARTING, SimulationMessage.MESSAGE_SOLVER_STARTING_INIT));
-			initialize();
-			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
-			fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING);
-			String filePrefix = simTask.getSimulationJob().getSimulationJobID();
-			try {
-				comsolService.connectComsol();
-				File reportFile = new File(getSaveDirectory(), filePrefix+".comsoldat");
-				File javaFile = new File(getSaveDirectory(), filePrefix+".java");
-				File mphFile = new File(getSaveDirectory(), filePrefix+".mph");
-				comsolService.solve(this.vccModel, reportFile, javaFile, mphFile);
-			}finally{
-				comsolService.disconnectComsol();
-			}
-			File logFile = new File(getSaveDirectory(),filePrefix+".log");
-			FileUtils.writeStringToFile(logFile, createLogFileContents(simTask.getSimulation().getSolverTaskDescription()));
-			VisMesh visMesh = new VisMesh();
-			File reportFile = new File(getSaveDirectory(),filePrefix+".comsoldat");
-			ComsolMeshReader.read(visMesh, reportFile);
-
-			time = simTask.getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
-			progress = 1.0;
-			fireSolverPrinted(time);
-			fireSolverProgress(progress);
-			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_FINISHED, SimulationMessage.MESSAGE_SOLVER_FINISHED));
-			fireSolverFinished();
-		}catch (Exception e){
-			lg.error(e.getMessage(), e);
-			setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(e.getMessage())));
-			fireSolverAborted(SimulationMessage.solverAborted(e.getMessage()));
-		}
+		this.runSolver();
 	}
 	
 	public static String createLogFileContents(SolverTaskDescription solverTaskDescription){
@@ -113,7 +82,43 @@ public class ComsolSolver extends AbstractSolver {
 	public void stopSolver() {
 		comsolService.disconnectComsol();
 	}
-	
+
+	@Override
+	public void runSolver() {
+		try {
+			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_STARTING, SimulationMessage.MESSAGE_SOLVER_STARTING_INIT));
+			initialize();
+			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_RUNNING, SimulationMessage.MESSAGE_SOLVER_RUNNING_START));
+			fireSolverStarting(SimulationMessage.MESSAGE_SOLVEREVENT_STARTING);
+			String filePrefix = simTask.getSimulationJob().getSimulationJobID();
+			try {
+				comsolService.connectComsol();
+				File reportFile = new File(getSaveDirectory(), filePrefix+".comsoldat");
+				File javaFile = new File(getSaveDirectory(), filePrefix+".java");
+				File mphFile = new File(getSaveDirectory(), filePrefix+".mph");
+				comsolService.solve(this.vccModel, reportFile, javaFile, mphFile);
+			}finally{
+				comsolService.disconnectComsol();
+			}
+			File logFile = new File(getSaveDirectory(),filePrefix+".log");
+			FileUtils.writeStringToFile(logFile, createLogFileContents(simTask.getSimulation().getSolverTaskDescription()));
+			VisMesh visMesh = new VisMesh();
+			File reportFile = new File(getSaveDirectory(),filePrefix+".comsoldat");
+			ComsolMeshReader.read(visMesh, reportFile);
+
+			time = simTask.getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
+			progress = 1.0;
+			fireSolverPrinted(time);
+			fireSolverProgress(progress);
+			setSolverStatus(new SolverStatus(SolverStatus.SOLVER_FINISHED, SimulationMessage.MESSAGE_SOLVER_FINISHED));
+			fireSolverFinished();
+		}catch (Exception e){
+			lg.error(e.getMessage(), e);
+			setSolverStatus(new SolverStatus (SolverStatus.SOLVER_ABORTED, SimulationMessage.solverAborted(e.getMessage())));
+			fireSolverAborted(SimulationMessage.solverAborted(e.getMessage()));
+		}
+	}
+
 	@Override
 	public double getCurrentTime() {
 		return time;
