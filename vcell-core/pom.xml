@@ -452,7 +452,7 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.sbml.jsbml</groupId>
+			<groupId>com.github.virtualcell.vcell-jsbml</groupId>
 			<artifactId>jsbml-core</artifactId>
 			<version>${jsbml.version}</version>
 			<exclusions>
@@ -472,10 +472,14 @@
 					<groupId>com.thoughtworks.xstream</groupId>
 					<artifactId>xstream</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>com.fasterxml.woodstox</groupId>
+					<artifactId>woodstox-core</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>org.sbml.jsbml.ext</groupId>
+			<groupId>com.github.virtualcell.vcell-jsbml</groupId>
 			<artifactId>jsbml-spatial</artifactId>
 			<version>${jsbml.version}</version>
 		</dependency>
