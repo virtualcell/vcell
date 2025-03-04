@@ -117,7 +117,7 @@ public class QuantOmexExecTest {
             System.out.println("writeDetailedResultList(): " + message);
 			Tracer.log("writeDetailedResultList(): "+message);
         }
-        @Override
+
         public void writeSpatialList(String message) {
             System.out.println("writeSpatialList(): " + message);
 			Tracer.log("writeSpatialList(): "+message);
