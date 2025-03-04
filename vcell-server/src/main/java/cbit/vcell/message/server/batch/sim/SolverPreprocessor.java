@@ -125,6 +125,10 @@ public class SolverPreprocessor  {
 				}
 				public void stopSolver() {
 				}
+
+				@Override
+				public void runSolver() {}
+
 				public double getCurrentTime() {
 					return 0;
 				}

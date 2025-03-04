@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
+import cbit.vcell.solver.ode.ODESolverResultsSetReturnable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -53,7 +54,7 @@ import ucar.ma2.ArrayDouble;
  * Created in June 2007.
  * @version 1.0
  */
-public class HybridSolver extends SimpleCompiledSolver {
+public class HybridSolver extends SimpleCompiledSolver implements ODESolverResultsSetReturnable {
 	private static Logger lg = LogManager.getLogger(HybridSolver.class);
 	public static final int EMIntegrator = 1;
 	public static final int MilsteinIntegrator = 2;
@@ -124,6 +125,9 @@ public int getSaveToFileInterval() {
 	return saveToFileInterval;
 }
 
+public ODESolverResultSet getODESolverResultSet() {
+	return this.getHybridSolverResultSet();
+}
 
 /**
  * Get data columns and function columns to be ready for plot.
