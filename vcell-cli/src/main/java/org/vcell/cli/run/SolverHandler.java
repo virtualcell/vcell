@@ -554,9 +554,6 @@ public class SolverHandler {
 			}
         }
         logger.info("Ran " + simulationJobCount + " simulation jobs for " + bioModelCount + " biomodels.");
-        if(hasSomeSpatial) {
-            cliLogger.writeSpatialList(bioModelBaseName);
-        }
 		RunUtils.drawBreakLine("-", 100);
 		return biosimStatusMap;
     }
