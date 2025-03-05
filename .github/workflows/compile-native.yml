@@ -56,7 +56,7 @@ jobs:
         with:
           name: vcell-${{ matrix.os }}
           path: |
-            vcell-${{ matrix.os }}.zip
+            ~/work/vcell/vcell/vcell-nativelib/vcell-${{ matrix.os }}.zip
           if-no-files-found: error
           include-hidden-files: true
 
