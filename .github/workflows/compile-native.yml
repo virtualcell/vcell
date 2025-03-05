@@ -32,14 +32,17 @@ jobs:
           mvn clean install dependency:copy-dependencies -DskipTests=true
           popd
 
-      - name: test the nativelib code
-        run: mvn test
-
-      - name: build DLLs
-        run: mvn -P shared-dll -DskipTests=true package
-
-      - name: build native
-        run: mvn -P native -DskipTests=true package
+      - name: test, record, and build native exectuable
+        run: |
+          mvn test
+          
+          java -Dheadless=true -agentlib:native-image-agent=config-output-dir=target/recording \
+          -jar target/vcell-nativelib-0.0.1-SNAPSHOT.jar \
+          "src/test/resources/TinySpacialProject_Application0.xml" \
+          "target/sbml-input"
+          
+          mvn -P shared-dll -DskipTests=true package
+          mvn -P native -DskipTests=true package
 
       - name: zip up DLLs
         run: |
