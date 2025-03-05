@@ -1,0 +1,6 @@
+name: Compile VCell into Native Libraries/Executables
+on:
+  workflow_dispatch:
+
+
+jobs:
