@@ -26,7 +26,13 @@ jobs:
 #          native-image-musl: 'true' # Now semi-static by not including libc
           native-image-job-reports: 'true'
 
-      - name: test the code
+      - name: build entire project
+        run: |
+          pushd ..
+          mvn clean install dependency:copy-dependencies -DskipTests=true
+          popd
+
+      - name: test the nativelib code
         run: mvn test
 
       - name: build DLLs
