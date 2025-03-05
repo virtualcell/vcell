@@ -1,6 +1,59 @@
-name: Compile VCell into Native Libraries/Executables
+name: Compile VCell to Native Code
 on:
   workflow_dispatch:
 
 
 jobs:
+  CompileAndUpload:
+    name: VCell Core on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-13, windows-latest, ubuntu-latest, macos-14]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup graalvm for static native build
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: '23.0.3'
+          distribution: 'graalvm-community'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          components: 'native-image'
+          native-image-musl: 'true'
+          native-image-job-reports: 'true'
+
+      - name: test the code
+        run: mvn test
+
+      - name: build DLLs
+        run: mvn -P shared-dll -DskipTests=true package
+
+      - name: build native
+        run: mvn -P native -DskipTests=true package
+
+      - name: zip up DLLs
+        run: |
+          mkdir vcell-${{ matrix.os }}
+          mv target/graal_isolate* vcell-${{ matrix.os }}
+          mv target/sbml_to* vcell-${{ matrix.os }}
+          zip -r vcell-${{ matrix.os }}.zip vcell-${{ matrix.os }}
+
+      - name: rename executable
+        run: |
+          mv target/sbml_to_fvsolver sbml_to_solver-${{ matrix.os }}
+
+      - name: upload DLLs and executables
+        uses: actions/upload-artifact@v4
+        with:
+          name: vcell-${{ matrix.os }}
+          path: |
+            vcell-${{ matrix.os }}.zip
+            sbml_to_solver-${{ matrix.os }}
+
+      - name: Output artifact URL
+        run:  echo 'Artifact URL is ${{ steps.artifact-upload-step.outputs.artifact-url }}'
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}

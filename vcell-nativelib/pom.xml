@@ -225,5 +225,35 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>shared-dll</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <version>${native.maven.plugin.version}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <buildArgs>
+                                <arg>-Djava.security.properties=src/main/resources/custom.security</arg>
+                                <arg>-g</arg>
+                                <arg>--shared</arg>
+                                <arg>-H:ConfigurationFileDirectories=target/recording</arg>
+                            </buildArgs>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>build-native</id>
+                                <goals>
+                                    <goal>compile-no-fork</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 </project>
