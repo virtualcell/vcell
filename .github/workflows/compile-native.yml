@@ -56,7 +56,9 @@ jobs:
         with:
           name: vcell-${{ matrix.os }}
           path: |
-            vcell-nativlib/vcell-${{ matrix.os }}.zip
+            vcell-${{ matrix.os }}.zip
+          if-no-files-found: error
+          include-hidden-files: true
 
       - name: Output artifact URL
         run:  echo 'Artifact URL is ${{ steps.artifact-upload-step.outputs.artifact-url }}'
