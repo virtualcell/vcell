@@ -44,16 +44,12 @@ jobs:
           mvn -P shared-dll -DskipTests=true package
           mvn -P native -DskipTests=true package
 
-      - name: zip up DLLs
+      - name: zip up DLLs and native executable
         run: |
           mkdir vcell-${{ matrix.os }}
           mv target/graal_isolate* vcell-${{ matrix.os }}
           mv target/sbml_to* vcell-${{ matrix.os }}
           zip -r vcell-${{ matrix.os }}.zip vcell-${{ matrix.os }}
-
-      - name: rename executable
-        run: |
-          mv target/sbml_to_fvsolver sbml_to_solver-${{ matrix.os }}
 
       - name: upload DLLs and executables
         uses: actions/upload-artifact@v4
@@ -61,7 +57,6 @@ jobs:
           name: vcell-${{ matrix.os }}
           path: |
             vcell-${{ matrix.os }}.zip
-            sbml_to_solver-${{ matrix.os }}
 
       - name: Output artifact URL
         run:  echo 'Artifact URL is ${{ steps.artifact-upload-step.outputs.artifact-url }}'
