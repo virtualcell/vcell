@@ -65,7 +65,8 @@ public class VCellThreadChecker {
 	}
 
 	public static void checkCpuIntensiveInvocation() {
-		if (!System.getProperty("headless").equals("true")){
+		String isHeadless = System.getProperty("headless");
+		if (isHeadless != null && !isHeadless.equals("true")){
 			if (guiThreadChecker == null){
 				System.out.println("!!!!!!!!!!!!!! --VCellThreadChecker.setGUIThreadChecker() not set");
 				Thread.dumpStack();
