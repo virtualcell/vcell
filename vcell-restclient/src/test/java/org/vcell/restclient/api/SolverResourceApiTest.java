@@ -46,7 +46,7 @@ public class SolverResourceApiTest {
     public void getFVSolverInputTest() throws ApiException {
         File sbmlFile = null;
         File response = 
-        api.getFVSolverInput(sbmlFile);
+        api.getFVSolverInputFromSBML(sbmlFile, 5.0, 0.1);
         
         // TODO: test validations
     }

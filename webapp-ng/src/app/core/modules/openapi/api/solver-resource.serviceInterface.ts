@@ -27,7 +27,17 @@ export interface SolverResourceServiceInterface {
      * Retrieve finite volume input from SBML spatial model.
      * 
      * @param sbmlFile 
+     * @param duration 
+     * @param outputTimeStep 
      */
-    getFVSolverInput(sbmlFile?: Blob, extraHttpRequestParams?: any): Observable<Blob>;
+    getFVSolverInputFromSBML(sbmlFile?: Blob, duration?: number, outputTimeStep?: number, extraHttpRequestParams?: any): Observable<Blob>;
+
+    /**
+     * Retrieve finite volume input from SBML spatial model.
+     * 
+     * @param vcmlFile 
+     * @param simulationName 
+     */
+    getFVSolverInputFromVCML(vcmlFile?: Blob, simulationName?: string, extraHttpRequestParams?: any): Observable<Blob>;
 
 }
