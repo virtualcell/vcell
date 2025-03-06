@@ -93,11 +93,13 @@ public class SolverResourceApi {
    * Retrieve finite volume input from SBML spatial model.
    * 
    * @param sbmlFile  (optional)
+   * @param duration  (optional, default to 5.0)
+   * @param outputTimeStep  (optional, default to 0.1)
    * @return File
    * @throws ApiException if fails to make API call
    */
-  public File getFVSolverInput(File sbmlFile) throws ApiException {
-    ApiResponse<File> localVarResponse = getFVSolverInputWithHttpInfo(sbmlFile);
+  public File getFVSolverInputFromSBML(File sbmlFile, Double duration, Double outputTimeStep) throws ApiException {
+    ApiResponse<File> localVarResponse = getFVSolverInputFromSBMLWithHttpInfo(sbmlFile, duration, outputTimeStep);
     return localVarResponse.getData();
   }
 
@@ -105,11 +107,13 @@ public class SolverResourceApi {
    * Retrieve finite volume input from SBML spatial model.
    * 
    * @param sbmlFile  (optional)
+   * @param duration  (optional, default to 5.0)
+   * @param outputTimeStep  (optional, default to 0.1)
    * @return ApiResponse&lt;File&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<File> getFVSolverInputWithHttpInfo(File sbmlFile) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getFVSolverInputRequestBuilder(sbmlFile);
+  public ApiResponse<File> getFVSolverInputFromSBMLWithHttpInfo(File sbmlFile, Double duration, Double outputTimeStep) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getFVSolverInputFromSBMLRequestBuilder(sbmlFile, duration, outputTimeStep);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -119,16 +123,16 @@ public class SolverResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("getFVSolverInput", localVarResponse);
+          throw getApiException("getFVSolverInputFromSBML", localVarResponse);
         }
-          InputStream inputStream = localVarResponse.body();
-          File file = File.createTempFile("finite-volume-input-" + RandomStringUtils.randomAlphabetic(10), ".tmp");
-          FileUtils.copyInputStreamToFile(inputStream, file);
-          return new ApiResponse<File>(
-                  localVarResponse.statusCode(),
-                  localVarResponse.headers().map(),
-                  localVarResponse.body() == null ? null : file // closes the InputStream
-          );
+        InputStream inputStream = localVarResponse.body();
+        File file = File.createTempFile("finite-volume-input-" + RandomStringUtils.randomAlphabetic(10), ".tmp");
+        FileUtils.copyInputStreamToFile(inputStream, file);
+        return new ApiResponse<File>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : file // closes the InputStream
+        );
       } finally {
       }
     } catch (IOException e) {
@@ -140,7 +144,7 @@ public class SolverResourceApi {
     }
   }
 
-  private HttpRequest.Builder getFVSolverInputRequestBuilder(File sbmlFile) throws ApiException {
+  private HttpRequest.Builder getFVSolverInputFromSBMLRequestBuilder(File sbmlFile, Double duration, Double outputTimeStep) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -154,6 +158,114 @@ public class SolverResourceApi {
     boolean hasFiles = false;
     multiPartBuilder.addBinaryBody("sbmlFile", sbmlFile);
     hasFiles = true;
+    multiPartBuilder.addTextBody("duration", duration.toString());
+    multiPartBuilder.addTextBody("output_time_step", outputTimeStep.toString());
+    HttpEntity entity = multiPartBuilder.build();
+    HttpRequest.BodyPublisher formDataPublisher;
+    if (hasFiles) {
+        Pipe pipe;
+        try {
+            pipe = Pipe.open();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        new Thread(() -> {
+            try (OutputStream outputStream = Channels.newOutputStream(pipe.sink())) {
+                entity.writeTo(outputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+        formDataPublisher = HttpRequest.BodyPublishers.ofInputStream(() -> Channels.newInputStream(pipe.source()));
+    } else {
+        ByteArrayOutputStream formOutputStream = new ByteArrayOutputStream();
+        try {
+            entity.writeTo(formOutputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        formDataPublisher = HttpRequest.BodyPublishers
+            .ofInputStream(() -> new ByteArrayInputStream(formOutputStream.toByteArray()));
+    }
+    localVarRequestBuilder
+        .header("Content-Type", entity.getContentType().getValue())
+        .method("POST", formDataPublisher);
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * Retrieve finite volume input from SBML spatial model.
+   * 
+   * @param vcmlFile  (optional)
+   * @param simulationName  (optional)
+   * @return File
+   * @throws ApiException if fails to make API call
+   */
+  public File getFVSolverInputFromVCML(File vcmlFile, String simulationName) throws ApiException {
+    ApiResponse<File> localVarResponse = getFVSolverInputFromVCMLWithHttpInfo(vcmlFile, simulationName);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Retrieve finite volume input from SBML spatial model.
+   * 
+   * @param vcmlFile  (optional)
+   * @param simulationName  (optional)
+   * @return ApiResponse&lt;File&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<File> getFVSolverInputFromVCMLWithHttpInfo(File vcmlFile, String simulationName) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getFVSolverInputFromVCMLRequestBuilder(vcmlFile, simulationName);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("getFVSolverInputFromVCML", localVarResponse);
+        }
+        InputStream inputStream = localVarResponse.body();
+        File file = File.createTempFile("finite-volume-input-" + RandomStringUtils.randomAlphabetic(10), ".tmp");
+        FileUtils.copyInputStreamToFile(inputStream, file);
+        return new ApiResponse<File>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : file // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder getFVSolverInputFromVCMLRequestBuilder(File vcmlFile, String simulationName) throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/solver/getFVSolverInputFromVCML";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/octet-stream");
+
+    MultipartEntityBuilder multiPartBuilder = MultipartEntityBuilder.create();
+    boolean hasFiles = false;
+    multiPartBuilder.addBinaryBody("vcmlFile", vcmlFile);
+    hasFiles = true;
+    multiPartBuilder.addTextBody("simulation_name", simulationName.toString());
     HttpEntity entity = multiPartBuilder.build();
     HttpRequest.BodyPublisher formDataPublisher;
     if (hasFiles) {
