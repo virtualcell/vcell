@@ -147,7 +147,8 @@
         <dependency>
             <groupId>org.graalvm.sdk</groupId>
             <artifactId>graal-sdk</artifactId>
-            <version>23.1.6</version>
+            <scope>provided</scope>
+            <version>23.0.2</version>
         </dependency>
     </dependencies>
 
