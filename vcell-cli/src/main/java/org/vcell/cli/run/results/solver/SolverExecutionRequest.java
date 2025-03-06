@@ -53,8 +53,8 @@ public abstract class SolverExecutionRequest {
     }
 
     public void bioSimLogSetOutputMessage(String message, Exception e){
-        String exceptionName = e == null ? "<No Exception>": e.getClass().getSimpleName();
-        BiosimulationLog.instance().setExceptionMessage(this.sedmlLocation, this.taskId, "task", exceptionName, message);
+        if (e == null) this.bioSimLogSetOutputMessage(message);
+        else BiosimulationLog.instance().setExceptionMessage(this.sedmlLocation, this.taskId, "task", e.getClass().getSimpleName(), message);
     }
 
     public String toDisplayString(){
