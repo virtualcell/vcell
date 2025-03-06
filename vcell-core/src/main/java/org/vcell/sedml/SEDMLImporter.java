@@ -1003,15 +1003,16 @@ public class SEDMLImporter {
 		TimeBounds timeBounds;
 		TimeStep timeStep = new TimeStep();
 		double outputTimeStep; // = 0.1;
-		int outputNumberOfPoints; // = 1;
+		int outputNumberOfSteps; // = 1;
 		// we translate initial time to zero, we provide output for the duration of the simulation
 		// because we can't select just an interval the way the SEDML simulation can
 		double initialTime = ((UniformTimeCourse) sedmlSimulation).getInitialTime();
 		double outputStartTime = ((UniformTimeCourse) sedmlSimulation).getOutputStartTime();
 		double outputEndTime = ((UniformTimeCourse) sedmlSimulation).getOutputEndTime();
-		outputNumberOfPoints = ((UniformTimeCourse) sedmlSimulation).getNumberOfSteps();
-		outputTimeStep = (outputEndTime - outputStartTime) / outputNumberOfPoints;
+		outputNumberOfSteps = ((UniformTimeCourse) sedmlSimulation).getNumberOfSteps();
+		outputTimeStep = (outputEndTime - outputStartTime) / outputNumberOfSteps;
 		timeBounds = new TimeBounds(0, outputEndTime - initialTime);
+		timeBounds = new TimeBounds(outputStartTime - initialTime, outputEndTime - initialTime);
 
 		OutputTimeSpec outputTimeSpec = new UniformOutputTimeSpec(outputTimeStep);
 		simTaskDesc.setTimeBounds(timeBounds);
@@ -1019,9 +1020,8 @@ public class SEDMLImporter {
 		if (simTaskDesc.getSolverDescription().supports(outputTimeSpec)) {
 			simTaskDesc.setOutputTimeSpec(outputTimeSpec);
 		} else {
-			simTaskDesc.setOutputTimeSpec(new DefaultOutputTimeSpec(1,Integer.max(DefaultOutputTimeSpec.DEFAULT_KEEP_AT_MOST, outputNumberOfPoints)));
+			simTaskDesc.setOutputTimeSpec(new DefaultOutputTimeSpec(1,Integer.max(DefaultOutputTimeSpec.DEFAULT_KEEP_AT_MOST, outputNumberOfSteps)));
 		}
-
 	}
 	
 	private void translateAlgorithmParams(SolverTaskDescription simTaskDesc, org.jlibsedml.Simulation sedmlSimulation) throws PropertyVetoException {

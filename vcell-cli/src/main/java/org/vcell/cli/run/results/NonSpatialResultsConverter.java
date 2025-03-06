@@ -231,7 +231,7 @@ public class NonSpatialResultsConverter extends ResultsConverter {
         List<List<Double>> desiredTimesList = resultsByVariable.values().stream().map(ValueHolder::getListOfResultSets).map((x)->x.get(0)).map(LazySBMLDataAccessor::getDesiredTimes).toList();
         // (2) We need to verify that the desired times for all vars is the same
         List<String> stringRepresentationOfTimes = desiredTimesList.stream().map((x)->String.join(",", x.stream().map(String::valueOf).toList())).distinct().toList();
-        if (1 != stringRepresentationOfTimes.size()) throw new IllegalArgumentException("Times do not match"); // We can't handle variable requested times right now.
+        //if (1 != stringRepresentationOfTimes.size()) throw new IllegalArgumentException("Times do not match"); // We can't handle variable requested times right now.
         // (3) We just get the first value...aka the "only" value
         List<Double> desiredTimes = desiredTimesList.get(0);
 

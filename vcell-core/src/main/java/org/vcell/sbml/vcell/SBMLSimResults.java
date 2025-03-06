@@ -149,8 +149,15 @@ public abstract class SBMLSimResults {
         double[] finalTimes = new double[utcSim.getNumberOfSteps() + 1];
         double[] preTimes = this.getOriginalTimes();
         int startIndex = -1;
-        for (int i = 0; i < preTimes.length; i++) {
+
+        for (int i = 0; i < preTimes.length; i++) { // Attempt 1
             if (preTimes[i] != adjustedStartTime) continue;
+            startIndex = i;
+            break;
+        }
+        if (startIndex < 0 && adjustedStartTime != 0.0) for (int i = 0; i < preTimes.length; i++) { // Attempt 2
+            double amountOff = Math.abs((preTimes[i] - adjustedStartTime) / adjustedStartTime);
+            if (amountOff > 1e-9) continue;
             startIndex = i;
             break;
         }
