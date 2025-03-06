@@ -10,26 +10,120 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.solver.UniformOutputTimeSpec;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
+import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.graalvm.nativeimage.c.function.CEntryPoint;
+import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.vcell.sbml.FiniteVolumeRunUtil;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
 
 import java.beans.PropertyVetoException;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 public class Main {
-
     private static final Logger logger = LogManager.getLogger(Main.class);
 
-    public static void sbmlToFiniteVolumeInput(File sbmlFile, File outputDir) throws FileNotFoundException, MappingException, PropertyVetoException, SolverException, ExpressionException, VCLoggerException {
+    // catches uncaught exceptions to prevent the calling program from crashing
+    public static class UncaughtExceptionHandler implements CEntryPoint.ExceptionHandler {
+        public void accept(Throwable throwable) {
+            logger.error("Uncaught exception while processing spatial model", throwable);
+        }
+    }
+
+    // serialized in JSON and returned as a String (CCharPointer)
+    public record ReturnValue(boolean success, String message) {
+    }
+
+
+    @CEntryPoint(
+            name = "vcmlToFiniteVolumeInput",
+            documentation = """
+                    Converts VCML file into Finite Volume Input files.
+                      vcml_content: text of VCML XML document
+                      output_dir_path: path to the output directory
+                      Returns a JSON string with success status and message""",
+            exceptionHandler = UncaughtExceptionHandler.class
+    )
+    public static CCharPointer entrypoint_vcmlToFiniteVolumeInput(
+            CCharPointer vcml_content,
+            CCharPointer simulation_name,
+            CCharPointer output_dir_path) {
+        ReturnValue returnValue;
+        try {
+            String vcmlContentStr = CTypeConversion.toJavaString(vcml_content);
+            String simulationName = CTypeConversion.toJavaString(simulation_name);
+            String outputDirPathStr = CTypeConversion.toJavaString(output_dir_path);
+
+            vcmlToFiniteVolumeInput(vcmlContentStr, simulationName, new File(outputDirPathStr));
+            returnValue = new ReturnValue(true, "Success");
+        }catch (Throwable t) {
+            logger.error("Error processing spatial model", t);
+            returnValue = new ReturnValue(false, t.getMessage());
+        }
+        // return result as a json string
+        Gson gson = new Gson();
+        String json = gson.toJson(returnValue);
+        try (CTypeConversion.CCharPointerHolder string_pointer = CTypeConversion.toCString(json)) {
+            logger.info("Returning: " + json);
+            return string_pointer.get();
+        }
+    }
+
+
+    @CEntryPoint(
+            name = "sbmlToFiniteVolumeInput",
+            documentation = """
+                    Converts SBML file into Finite Volume Input files
+                      sbml_content: text content of SBML XML document
+                      output_dir_path: path to the output directory
+                      Returns a JSON string with success status and message""",
+            exceptionHandler = UncaughtExceptionHandler.class
+    )
+    public static CCharPointer entrypoint_sbmlToFiniteVolumeInput(
+            CCharPointer sbml_content,
+            CCharPointer output_dir_path) {
+        ReturnValue returnValue;
+        try {
+            String sbmlContent = CTypeConversion.toJavaString(sbml_content);
+            String outputDirPathStr = CTypeConversion.toJavaString(output_dir_path);
+            sbmlToFiniteVolumeInput(sbmlContent, new File(outputDirPathStr));
+            returnValue = new ReturnValue(true, "Success");
+        }catch (Throwable t) {
+            logger.error("Error processing spatial model", t);
+            returnValue = new ReturnValue(false, t.getMessage());
+        }
+        // return result as a json string
+        Gson gson = new Gson();
+        String json = gson.toJson(returnValue);
+        try (CTypeConversion.CCharPointerHolder string_pointer = CTypeConversion.toCString(json)) {
+            logger.info("Returning: " + json);
+            return string_pointer.get();
+        }
+    }
+
+
+    public static void vcmlToFiniteVolumeInput(String vcml_content, String simulation_name, File outputDir) throws XmlParseException, MappingException, SolverException, ExpressionException {
+        BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcml_content));
+        bioModel.updateAll(false);
+        Simulation sim = bioModel.getSimulation(simulation_name);
+        FiniteVolumeRunUtil.writeInputFilesOnly(outputDir, sim);
+    }
+
+
+    public static void sbmlToFiniteVolumeInput(String sbml_content, File outputDir) throws MappingException, PropertyVetoException, SolverException, ExpressionException, VCLoggerException {
         SBMLExporter.MemoryVCLogger vcl = new SBMLExporter.MemoryVCLogger();
         boolean bValidateSBML = true;
-        InputStream is = new FileInputStream(sbmlFile);
+        // input stream from sbml_content String
+        InputStream is = new ByteArrayInputStream(sbml_content.getBytes());
         SBMLImporter importer = new SBMLImporter(is, vcl, bValidateSBML);
         BioModel bioModel = importer.getBioModel();
         bioModel.updateAll(false);
@@ -56,8 +150,13 @@ public class Main {
             PropertyLoader.setProperty(PropertyLoader.vcellServerIDProperty, "none");
             PropertyLoader.setProperty(PropertyLoader.mongodbDatabase, "none");
             File sbml_file = new File(args[0]);
-            sbmlToFiniteVolumeInput(sbml_file, new File(args[1]));
-            System.out.println("Hello, World!");
+            // read sbml_file and create a string object
+            try (FileInputStream fis = new FileInputStream(sbml_file)) {
+                byte[] data = fis.readAllBytes();
+                logger.info("Read " + data.length + " bytes from " + sbml_file);
+                String sbml_str = new String(data);
+                sbmlToFiniteVolumeInput(sbml_str, new File(args[1]));
+            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
             logger.error("Error processing spatial model", e);
