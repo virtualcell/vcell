@@ -24,10 +24,9 @@ public abstract class SolverExecutionRequest {
     public final StringBuilder progressGeneralLog, progressErrLog;
     public final Solver solver;
     protected final SolverDescription solverDescription;
-    protected final org.jlibsedml.Simulation simulation;
     protected final org.jlibsedml.UniformTimeCourse utcSim;
     private final String sedmlLocation;
-    private final String entityId;
+    private final String taskId;
 
     public static SolverExecutionRequest createNewExecutionRequest(SimulationJob simulationJob, SolverDescription solverDescription, SimulationTask simTask, UniformTimeCourse utcSimRequested, File outputDirForSedml, String sedmlLocation) throws SolverException {
         Solver solver = SolverFactory.createSolver(outputDirForSedml, simTask, false);
@@ -42,20 +41,23 @@ public abstract class SolverExecutionRequest {
         if (!(solverRequested instanceof AbstractJavaSolver || solverRequested instanceof AbstractCompiledSolver)) throw new IllegalArgumentException("Solver provided not accepted");
         this.solver = solverRequested;
         this.solverDescription = solverDescription;
-        this.simulation = utcSimRequested;
         this.utcSim = utcSimRequested;
         this.sedmlLocation = sedmlLocation;
-        this.entityId = simulationJob.getSimulation().getImportedTaskID();
+        this.taskId = simulationJob.getSimulation().getImportedTaskID();
     }
 
     public abstract SBMLSimResults getResults(MathSymbolMapping mathMapping, SBMLSymbolMapping sbmlMapping) throws ExpressionException, MathException, IOException, DataAccessException;
 
     public void bioSimLogSetOutputMessage(String message){
-        BiosimulationLog.instance().setOutputMessage(this.sedmlLocation, this.entityId, "task", message);
+        BiosimulationLog.instance().setOutputMessage(this.sedmlLocation, this.taskId, "task", message);
     }
 
     public void bioSimLogSetOutputMessage(String message, Exception e){
         String exceptionName = e == null ? "<No Exception>": e.getClass().getSimpleName();
-        BiosimulationLog.instance().setExceptionMessage(this.sedmlLocation, this.entityId, "task", exceptionName, message);
+        BiosimulationLog.instance().setExceptionMessage(this.sedmlLocation, this.taskId, "task", exceptionName, message);
+    }
+
+    public String toDisplayString(){
+        return String.format("%s { %s executing task %s @ %s }", this.getClass().getSimpleName(), this.solver.getClass().getSimpleName(), this.taskId, this.sedmlLocation);
     }
 }

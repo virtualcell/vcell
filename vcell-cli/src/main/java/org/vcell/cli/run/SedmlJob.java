@@ -26,6 +26,7 @@ import org.vcell.trace.Tracer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.Pair;
+import org.vcell.util.Triplet;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -217,15 +218,18 @@ public class SedmlJob {
         this.logDocumentMessage += str;
         try {
             span = Tracer.startSpan(Span.ContextType.SIMULATIONS_RUN, "runSimulations", null);
-            Map<AbstractTask, BiosimulationLog.Status> taskResults =  solverHandler.simulateAllTasks(externalDocInfo, this.sedml, this.CLI_RECORDER,
+            Map<AbstractTask, Triplet<BiosimulationLog.Status, Double, Exception >> taskResults =  solverHandler.simulateAllTasks(externalDocInfo, this.sedml, this.CLI_RECORDER,
                     this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML, this.RESULTS_DIRECTORY_PATH,
                     this.SEDML_LOCATION, this.ACCEPT_EXACT_MATCH_ONLY, this.SHOULD_OVERRIDE_FOR_SMALL_MESH);
             int numSimulationsUnsuccessful = 0;
+            logger.info("Finished all solver executions for {}", this.SEDML_NAME);
             StringBuilder executionSummary = new StringBuilder("Summary of Task Results\n");
             for (AbstractTask sedmlTask : taskResults.keySet()){
                 String sedmlTaskName = (sedmlTask.getName() == null || sedmlTask.getName().isBlank()) ? sedmlTask.getId() : sedmlTask.getName() + " (" + sedmlTask.getId() + ")" ;
-                executionSummary.append("\t> ").append(sedmlTaskName).append("::").append(taskResults.get(sedmlTask).name()).append("\n");
-                if (!taskResults.get(sedmlTask).equals(BiosimulationLog.Status.SUCCEEDED)) numSimulationsUnsuccessful++;
+                executionSummary.append("\t> ").append(sedmlTaskName).append("::").append(taskResults.get(sedmlTask).one.name()).append("\n");
+                if (!taskResults.get(sedmlTask).one.equals(BiosimulationLog.Status.SUCCEEDED)){
+                    logger.error("Unsuccessful run #{} detected: Status :: {}\n", ++numSimulationsUnsuccessful, taskResults.get(sedmlTask).one, taskResults.get(sedmlTask).three);
+                }
             }
             logger.info(executionSummary.toString());
             if (numSimulationsUnsuccessful > 0) throw new ExecutionException(numSimulationsUnsuccessful + " simulation" + (numSimulationsUnsuccessful == 1 ? "s" : "") + " were unsuccessful.");

@@ -17,6 +17,7 @@ import cbit.vcell.solver.ode.AbstractJavaSolver;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.ODESolverResultsSetReturnable;
 import cbit.vcell.solver.server.Solver;
+import cbit.vcell.solver.server.SolverEvent;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.xml.ExternalDocInfo;
@@ -41,6 +42,7 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.Pair;
+import org.vcell.util.Triplet;
 
 import java.beans.PropertyVetoException;
 import java.io.*;
@@ -55,15 +57,14 @@ public class SolverHandler {
 
     Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResults = new LinkedHashMap<>();
     Map<TaskJob, SpatialSBMLSimResults> spatialResults = new LinkedHashMap<>();
-	Map<BioModel, Boolean> bioModelHasSpatialResults = new LinkedHashMap<>();
 
     Map<TempSimulation, AbstractTask> tempSimulationToTaskMap = new LinkedHashMap<> ();    // key = vcell simulation, value = sedml topmost task (the imported task id)
 	Map<AbstractTask, TempSimulation> taskToTempSimulationMap = new LinkedHashMap<> ();    // the opposite
 	Map<Simulation, TempSimulation> origSimulationToTempSimulationMap = new LinkedHashMap<> ();    // the opposite
     Map<AbstractTask, List<AbstractTask>> taskToListOfSubTasksMap = new LinkedHashMap<AbstractTask, List<AbstractTask>> ();    // key = topmost AbstractTask, value = recursive list of subtasks
-    Map<AbstractTask, List<Variable>> taskToVariableMap = new LinkedHashMap<AbstractTask, List<Variable>> ();    // key = AbstractTask, value = list of variables calculated by this task
-    Map<RepeatedTask, Set<String>> taskToChangeTargetMap = new LinkedHashMap<RepeatedTask, Set<String>> ();    // key = RepeatedTask, value = list of the parameters that are being changed
-    Map<Task, Set<RepeatedTask>> taskToChildRepeatedTasks = new LinkedHashMap<Task, Set<RepeatedTask>> ();    // key = Task, value = list of RepeatedTasks ending with this task
+    Map<AbstractTask, List<Variable>> taskToVariableMap = new LinkedHashMap<> ();    // key = AbstractTask, value = list of variables calculated by this task
+    Map<RepeatedTask, Set<String>> taskToChangeTargetMap = new LinkedHashMap<> ();    // key = RepeatedTask, value = list of the parameters that are being changed
+    Map<Task, Set<RepeatedTask>> taskToChildRepeatedTasks = new LinkedHashMap<> ();    // key = Task, value = list of RepeatedTasks ending with this task
     Map<String, Task> topTaskToBaseTask = new LinkedHashMap<> ();                // key = TopmostTaskId, value = Tasks at the bottom of the SubTasks chain OR the topmost task itself if instanceof Task
 
     private static void sanityCheck(BioModel bioModel) throws SEDMLImportException {
@@ -297,11 +298,11 @@ public class SolverHandler {
 		}
 	}
 
-    public Map<AbstractTask, BiosimulationLog.Status> simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedmlRequested, CLIRecordable cliLogger,
+    public Map<AbstractTask, Triplet<BiosimulationLog.Status, Double, Exception>> simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedmlRequested, CLIRecordable cliLogger,
                                  File outputDirForSedml, String outDir, String sedmlLocation, boolean exactMatchOnly, boolean bSmallMeshOverride)
 			throws XMLException, IOException, SEDMLImportException, ExpressionException, PropertyVetoException {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
-		Map<AbstractTask, BiosimulationLog.Status> biosimStatusMap = new LinkedHashMap<>();
+		Map<AbstractTask, Triplet<BiosimulationLog.Status, Double, Exception>> biosimStatusMap = new LinkedHashMap<>();
         cbit.util.xml.VCLogger sedmlImportLogger = new LocalLogger();
         String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(externalDocInfo.getFile().getAbsolutePath());
 
@@ -328,7 +329,7 @@ public class SolverHandler {
                 for (TempSimulationJob tempSimulationJob : simJobsList) {
 
                     AbstractTask task = this.tempSimulationToTaskMap.get(tempSimulationJob.getTempSimulation());
-                    biosimStatusMap.put(task, BiosimulationLog.Status.QUEUED);
+                    biosimStatusMap.put(task, new Triplet<>(BiosimulationLog.Status.QUEUED, 0.0, null));
 					Task baseTask = this.topTaskToBaseTask.get(task.getId());
 					if (!(sedmlRequested.getSimulation(baseTask.getSimulationReference()) instanceof UniformTimeCourse utcSim)) throw new IllegalArgumentException("Sim found was not UTC.");
                     String paramScanIndex = task instanceof RepeatedTask ? ":" + tempSimulationJob.getJobIndex() : "";
@@ -357,35 +358,37 @@ public class SolverHandler {
 						try {
 							executionRequest = SolverExecutionRequest.createNewExecutionRequest(tempSimulationJob, sd, simTask, utcSim, outputDirForSedml, sedmlLocation);
 						} catch (IllegalArgumentException iae) {
-							biosimStatusMap.put(task, BiosimulationLog.Status.SKIPPED);
+							biosimStatusMap.put(task, new Triplet<>(BiosimulationLog.Status.SKIPPED, Double.NaN, iae));
 							logger.warn("VCell does not support requested simulation:", iae);
 							continue;
 						} catch (Exception e) {
-							biosimStatusMap.put(task, BiosimulationLog.Status.FAILED);
+							biosimStatusMap.put(task, new Triplet<>(BiosimulationLog.Status.FAILED, Double.NaN, e));
 							Tracer.failure(e, "\"Unable to build solvers\"");
 							throw new RuntimeException("Unable to build solvers", e);
 						}
+						String solverLabel = SolverHandler.getSolverDescriptionLabel(sd, kisao);
 
 						// Run Solver
-						biosimStatusMap.put(task, BiosimulationLog.Status.RUNNING);
+						biosimStatusMap.put(task, new Triplet<>(BiosimulationLog.Status.RUNNING, 0.0, null));
 						BiosimulationLog.instance().updateTaskStatusYml(sedmlLocation, task.getId(), BiosimulationLog.Status.RUNNING, 0, kisao);
 						for (AbstractTask subTask : this.taskToListOfSubTasksMap.get(task)) {
 							BiosimulationLog.instance().updateTaskStatusYml(sedmlLocation, subTask.getId(), BiosimulationLog.Status.RUNNING, 0, kisao);
 						}
-						Exception exceptionEncountered = this.performSolverExecution(executionRequest);
+						Triplet<Double, Integer, Exception> solverResults = this.performSolverExecution(executionRequest, solverLabel);
 
 						// Parse How Execution Went
-						Pair<BiosimulationLog.Status, Double> exec_result = this.determineSimulationOutcome(executionRequest, cliLogger, startTimeTask_ms, exceptionEncountered);
+						Triplet<BiosimulationLog.Status, Double, Exception> exec_result = this.determineSimulationOutcome(executionRequest, solverResults, startTimeTask_ms);
 						logger.info("Results of `{}`(Model '{}' Task '{}'): {}({}s): .", tempSimulationJobSim.getDescription(), bioModel.getName(), simTask.getSimulation().getName() , exec_result.one.name(), exec_result.two);
-						String solverLabel = SolverHandler.getSolverDescriptionLabel(sd, kisao);
+
 						if (exec_result.one == BiosimulationLog.Status.SUCCEEDED) cliLogger.writeDetailedResultList(bioModelBaseName + ",  solver: " + solverLabel);
-						else cliLogger.writeDetailedErrorList(exceptionEncountered, bioModelBaseName + ",  solver: " + solverLabel + ": " + (exceptionEncountered == null ? "<No Exception>" : exceptionEncountered.getClass().getSimpleName()) + ": " + logTaskError);
-						biosimStatusMap.put(task, exec_result.one);
+						else cliLogger.writeDetailedErrorList(solverResults.three, bioModelBaseName + ",  solver: " + solverLabel + ": " + (solverResults.three == null ? "<No Exception>" : solverResults.three.getClass().getSimpleName()) + ": " + logTaskError);
+						biosimStatusMap.put(task, exec_result);
 						BiosimulationLog.instance().updateTaskStatusYml(sedmlLocation, task.getId(), exec_result.one, exec_result.two, kisao);
 						for (AbstractTask subTask : this.taskToListOfSubTasksMap.get(task)) {
 							BiosimulationLog.instance().updateTaskStatusYml(sedmlLocation, subTask.getId(), exec_result.one, exec_result.two, kisao);
 						}
 
+						if (exec_result.one != BiosimulationLog.Status.SUCCEEDED) continue;
 						// Get Solver Results
 						MathSymbolMapping mathMapping = (MathSymbolMapping) simTask.getSimulation().getMathDescription().getSourceSymbolMapping();
 						SBMLSymbolMapping sbmlMapping = sedmlImporter.getSBMLSymbolMapping(bioModel);
@@ -415,9 +418,10 @@ public class SolverHandler {
 		return biosimStatusMap;
     }
 
-	private Exception performSolverExecution(SolverExecutionRequest ser) {
-		Exception error = null;
-		ser.progressGeneralLog.append("Beginning simulation...");
+	private Triplet<Double, Integer, Exception> performSolverExecution(SolverExecutionRequest ser, String solverDescriptionLabel) {
+		try (Span sim_span = Tracer.startSpan(Span.ContextType.SIMULATION_RUN, ser.toDisplayString(), Map.of("solverName", solverDescriptionLabel))){
+			Triplet<Double, Integer, Exception> solverResult;
+			ser.progressGeneralLog.append("Beginning simulation...");
 			CLISolverListener solverListener = new CLISolverListener(solverDescriptionLabel);
 			ser.solver.addSolverListener(solverListener);
 			new Thread(ser.solver::runSolver).start(); // We want to retain control on this thread.
@@ -426,18 +430,20 @@ public class SolverHandler {
 			} catch (Exception e){
 				ser.progressGeneralLog.append("Failed!");
 				Tracer.failure(e, "Solver \"" + solverDescriptionLabel + "\" failed!");
+				return new Triplet<>(Double.NaN, SolverEvent.SOLVER_ABORTED, e);
+			}
+			if (!(ser.solver instanceof ODESolverResultsSetReturnable)) logger.info("Solver results will not be compatible with CSV format.");
+			ser.progressGeneralLog.append(solverResult.two == SolverEvent.SOLVER_FINISHED ? "Done!" : "Failed!").append("\n");
+			return solverResult;
 		}
-		if (!(ser.solver instanceof ODESolverResultsSetReturnable)) logger.info("Solver results will not be compatible with CSV format.");
-		ser.progressGeneralLog.append("Done!\n");
-		return error;
 	}
 
 	// Returns the duration in seconds, and the BioSim-style status of the solver
-	private Pair<BiosimulationLog.Status, Double> determineSimulationOutcome(SolverExecutionRequest ser, CLIRecordable cliLogger, long startTimeTask_ms, Exception exceptionEncountered){
+	private Triplet<BiosimulationLog.Status, Double, Exception> determineSimulationOutcome(SolverExecutionRequest ser, Triplet<Double, Integer, Exception> solverResult, long startTimeTask_ms){
 		BiosimulationLog.Status solverStatusType;
 
 		String displayMessage = ser.solver.getSolverStatus().getSimulationMessage().getDisplayMessage();
-		String message = String.format("Solver (%s) status: `%s`(%s)", ser.solver.getClass().getSimpleName(), ser.solver.getSolverStatus().getStatusAsString(), displayMessage);
+		String message = String.format("Solver (%s) status: `%s`(%s)", ser.solver.getClass().getSimpleName(), SolverStatus.SOLVER_STATUS[solverResult.two], displayMessage);
 
 		int solverStatus = ser.solver.getSolverStatus().getStatus();
 		long elapsedTime_ms = System.currentTimeMillis() - startTimeTask_ms;
@@ -453,8 +459,8 @@ public class SolverHandler {
 		}
 		ser.progressGeneralLog.append("(").append(message).append(")\n");
 		ser.bioSimLogSetOutputMessage(ser.progressGeneralLog.toString());
-		ser.bioSimLogSetOutputMessage(ser.progressErrLog.toString(), exceptionEncountered);
-		return new Pair<>(solverStatusType, ((double) elapsedTime_ms) / 1000.0);
+		ser.bioSimLogSetOutputMessage(ser.progressErrLog.toString(), solverResult.three);
+		return new Triplet<>(solverStatusType, ((double) elapsedTime_ms) / 1000.0, solverResult.three);
 	}
 
 	private List<TempSimulationJob> preProcessTempSimulations(String sedmlLocation, boolean bSmallMeshOverride, BioModel bioModel, Map<TempSimulation, BiosimulationLog.Status> vCellTempSimStatusMap) throws PropertyVetoException {
