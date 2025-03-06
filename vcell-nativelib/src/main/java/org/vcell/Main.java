@@ -16,6 +16,7 @@ import cbit.vcell.xml.XmlParseException;
 import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
@@ -54,6 +55,7 @@ public class Main {
             exceptionHandler = UncaughtExceptionHandler.class
     )
     public static CCharPointer entrypoint_vcmlToFiniteVolumeInput(
+            IsolateThread thread,
             CCharPointer vcml_content,
             CCharPointer simulation_name,
             CCharPointer output_dir_path) {
@@ -89,6 +91,7 @@ public class Main {
             exceptionHandler = UncaughtExceptionHandler.class
     )
     public static CCharPointer entrypoint_sbmlToFiniteVolumeInput(
+            IsolateThread thread,
             CCharPointer sbml_content,
             CCharPointer output_dir_path) {
         ReturnValue returnValue;
