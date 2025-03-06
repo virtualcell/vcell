@@ -29,30 +29,30 @@ jobs:
       - name: build entire project
         run: |
           pushd ..
-          mvn clean install dependency:copy-dependencies -DskipTests=true
+          mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
           popd
 
       - name: test, record, and build native exectuable
         run: |
-          mvn test
+          mvn --batch-mode test
           
           java -Dheadless=true -agentlib:native-image-agent=config-output-dir=target/recording \
           -jar target/vcell-nativelib-0.0.1-SNAPSHOT.jar \
           "src/test/resources/TinySpacialProject_Application0.xml" \
           "target/sbml-input"
           
-          mvn -P shared-dll -DskipTests=true package
-          mvn -P native -DskipTests=true package
+          mvn --batch-mode -P shared-dll -DskipTests=true package
+          mvn --batch-mode -P native -DskipTests=true package
         if: matrix.os != 'windows-latest'
 
       - name: test, record, and build native exectuable
         run: |
-          mvn test
+          mvn --batch-mode test
 
           java -Dheadless=true -agentlib:native-image-agent=config-output-dir=target\recording -jar target\vcell-nativelib-0.0.1-SNAPSHOT.jar "src\test\resources\TinySpacialProject_Application0.xml" "target\sbml-input"
 
-          mvn -P shared-dll -DskipTests=true package
-          mvn -P native -DskipTests=true package
+          mvn --batch-mode -P shared-dll -DskipTests=true package
+          mvn --batch-mode -P native -DskipTests=true package
         if: matrix.os == 'windows-latest'
 
       - name: zip up DLLs and native executable
