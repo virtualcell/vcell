@@ -418,11 +418,14 @@ public class SolverHandler {
 	private Exception performSolverExecution(SolverExecutionRequest ser) {
 		Exception error = null;
 		ser.progressGeneralLog.append("Beginning simulation...");
-		logger.info("Simulating...");
-		try {
-			ser.solver.runSolver();
-		} catch (Exception e) {
-			error = e;
+			CLISolverListener solverListener = new CLISolverListener(solverDescriptionLabel);
+			ser.solver.addSolverListener(solverListener);
+			new Thread(ser.solver::runSolver).start(); // We want to retain control on this thread.
+			try {
+				solverResult = solverListener.solverResult.get();
+			} catch (Exception e){
+				ser.progressGeneralLog.append("Failed!");
+				Tracer.failure(e, "Solver \"" + solverDescriptionLabel + "\" failed!");
 		}
 		if (!(ser.solver instanceof ODESolverResultsSetReturnable)) logger.info("Solver results will not be compatible with CSV format.");
 		ser.progressGeneralLog.append("Done!\n");
