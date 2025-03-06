@@ -9,6 +9,7 @@ import org.jlibsedml.AbstractTask;
 import org.vcell.cli.run.results.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.sbml.vcell.lazy.LazySBMLDataAccessor;
 import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
 import org.vcell.sbml.vcell.lazy.LazySBMLSpatialDataAccessor;
 
@@ -45,7 +46,7 @@ public class Hdf5DataExtractor {
      * @see NonSpatialResultsConverter ::convertNonspatialResultsToSedmlFormat
      * @see SpatialResultsConverter ::collectSpatialDatasets
      */
-    public Hdf5DataContainer extractHdf5RelevantData(Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults, Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> organizedSpatialResults, boolean isBioSimMode) {
+    public Hdf5DataContainer extractHdf5RelevantData(Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> organizedNonSpatialResults, Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> organizedSpatialResults, boolean isBioSimMode) {
         Map<Report, List<Hdf5SedmlResults>> wrappers = new LinkedHashMap<>();
         Hdf5DataContainer hdf5FileWrapper = new Hdf5DataContainer(isBioSimMode);
         Exception nonSpatialException = null, spatialException = null;

@@ -25,7 +25,7 @@ public class SolverStatus implements java.io.Serializable {
 	public static final int SOLVER_ABORTED = 3;
 	public static final int SOLVER_STOPPED = 4;
 	public static final int SOLVER_STARTING = 5;
-	private static final String[] SOLVER_STATUS = {"Ready", "Running", "Finished", "Aborted", "Stopped", "Starting"};
+	public static final String[] SOLVER_STATUS = {"Ready", "Running", "Finished", "Aborted", "Stopped", "Starting"};
 	public int fieldStatus = 0;
 	private SimulationMessage fieldSimulationMessage = null;
 
