@@ -49,6 +49,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -543,7 +544,12 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 								} else {
 									setText(value + "");		// if it's too busy, just show the numbers
 								}
-								setToolTipText(value + " [nm]");	// we always show the units in the tooltip
+								double minRadius = Math.max(0.5+dvalue,  1.5*dvalue);
+								Double R = Math.min(minRadius, dvalue+2);
+								double truncatedR = Math.floor(R * 100) / 100.0;
+								DecimalFormat decimalFormat = new DecimalFormat("#.##");
+								String formattedR = decimalFormat.format(truncatedR);
+								setToolTipText(value + " [nm], (Reaction Radius: " + formattedR + " [nm])");	// we always show the units in the tooltip
 								break;
 							case COLUMN_DIFFUSION:
 								if(cellWidth > 70) {

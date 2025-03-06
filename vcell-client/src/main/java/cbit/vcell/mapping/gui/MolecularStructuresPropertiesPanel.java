@@ -232,9 +232,23 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
             gbc.anchor = GridBagConstraints.WEST;
             optionsPanel.add(getZoomSmallerButton(), gbc);
 
+//            gbc = new GridBagConstraints();
+//            gbc.gridx = 0;
+//            gbc.gridy = 2;
+//            gbc.anchor = GridBagConstraints.WEST;
+//            gbc.insets = new Insets(4, 4, 4, 10);
+//            optionsPanel.add(new JLabel("Reaction Radius"), gbc);
+//
+//            gbc = new GridBagConstraints();
+//            gbc.gridx = 1;
+//            gbc.gridy = 2;
+//            gbc.anchor = GridBagConstraints.WEST;
+//            gbc.insets = new Insets(4, 4, 4, 10);
+//            optionsPanel.add(new JLabel("2 nm"), gbc);
+
             gbc = new GridBagConstraints();
             gbc.gridx = 0;
-            gbc.gridy = 2;
+            gbc.gridy = 2;          // make this 3 if we show reaction radius here
             gbc.weightx = 1;
             gbc.weighty = 1;		// fake cell used for filling all the vertical empty space
             gbc.anchor = GridBagConstraints.WEST;

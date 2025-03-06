@@ -5,6 +5,7 @@ import java.util.*;
 
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.math.*;
 import cbit.vcell.model.Structure;
 import cbit.vcell.solver.*;
 import org.vcell.util.Pair;
@@ -18,28 +19,8 @@ import cbit.vcell.mapping.ReactionRuleSpec.TransitionCondition;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.mapping.SimulationContext.Application;
-import cbit.vcell.math.Action;
-import cbit.vcell.math.JumpProcessRateDefinition;
-import cbit.vcell.math.LangevinParticleJumpProcess;
-import cbit.vcell.math.LangevinParticleMolecularComponent;
-import cbit.vcell.math.LangevinParticleMolecularType;
-import cbit.vcell.math.MacroscopicRateConstant;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathUtilities;
-import cbit.vcell.math.ParticleComponentStateDefinition;
-import cbit.vcell.math.ParticleComponentStatePattern;
-import cbit.vcell.math.ParticleJumpProcess;
-import cbit.vcell.math.ParticleMolecularComponent;
-import cbit.vcell.math.ParticleMolecularComponentPattern;
-import cbit.vcell.math.ParticleMolecularType;
-import cbit.vcell.math.ParticleMolecularTypePattern;
-import cbit.vcell.math.ParticleProperties;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
-import cbit.vcell.math.ParticleSpeciesPattern;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.Variable;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.DivideByZeroException;
@@ -910,7 +891,21 @@ public class LangevinLngvWriter {
 				throw new RuntimeException("Initial concentration must be a number");
 			}
 
-			sb.append("MOLECULE: \"" + lpmt.getName() + "\" " + subDomain.getName() +
+			String locationName;
+			if(subDomain instanceof MembraneSubDomain) {
+				// we can't use the "Extracellular_Intracellular_membrane" math name of the subdomain,
+				// the Langevin solver has no clue about what that might be
+				// luckily we enforce that a membrane molecule must be anchored to exactly one membrane (named "Membrane")
+				// alternatively we can check the Anchor site and get the membrane name "Membrane" from there
+				if(lpmt.getAnchorList().size() != 1) {
+					throw new RuntimeException("MembraneSubDomain particle must be anchored to one and only one Membrane");
+				}
+				// we make sure elsewhere that it's a membrane
+				locationName = lpmt.getAnchorList().get(0);
+			} else {
+				locationName = subDomain.getName();
+			}
+			sb.append("MOLECULE: \"" + lpmt.getName() + "\" " + locationName +
 					" Number " + scount + 
 					// number of site types and number of sites is the same for the vcell implementation of springsalad
 					" Site_Types " + lpmt.getComponentList().size() + " Total"  + "_Sites " + lpmt.getComponentList().size() + 

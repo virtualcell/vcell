@@ -1201,12 +1201,14 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 				if(scCandidate == null || scCandidate.getSpeciesPattern() == null) {
 					continue;
 				}
+				// we may have just one spCandidate wif the reaction is A + A -> A.A
 				SpeciesPattern spCandidate = scCandidate.getSpeciesPattern();
 				MolecularTypePattern mtpCandidate = spCandidate.getMolecularTypePatterns().get(0);
 				MolecularType mtCandidate = mtpCandidate.getMolecularType();
 				if(mtOursOne == mtCandidate) {
 					siteAttributesMapOne = scs.getSiteAttributesMap();
-				} else if(mtOursTwo == mtCandidate) {
+				}
+				if(mtOursTwo == mtCandidate) {
 					siteAttributesMapTwo = scs.getSiteAttributesMap();
 				}
 			}
@@ -1225,13 +1227,14 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 				}
 			}
 			//
-			// TODO: check logic here, sometimes siteAttributesMapTwo is null (issue #977)
-			// temp fix, we check for non-null siteAttributesMapTwo
-			// hard to catch, it may be that the reactant or the product end up in an inconsistent state
-			// after using the reaction visual editor in the physiology (the state of a bonding site is possibly inconsistent)
-			//
-			if(sasOne != null && sasTwo != null && siteAttributesMapTwo != null) {
-				
+			// with previous logic, siteAttributesMapTwo could have been null (issue #977)
+			// happened when the reaction was between 2 molecules of the same type  A + A -> A.A
+			// the temp fixwas:  we check for non-null siteAttributesMapTwo
+			// as from feb 24, 2025 this was fixed and siteAttributesMapTwo should never be null
+			if(siteAttributesMapTwo == null) {
+				throw new RuntimeException("Unexpected null value for siteAttributesMapTwo");
+			}
+			if(sasOne != null && sasTwo != null) {
 				for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMapTwo.entrySet()) {
 					MolecularComponentPattern mcpCandidate = entry.getKey();
 					if(MolecularComponentPattern.BondType.None != mcpCandidate.getBondType()) {
@@ -1250,12 +1253,12 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 					return;
 				}
-//				if(checkOnRate(sasOne, sasTwo) == false) {	// rate doesn't check as acceptable
-//					String msg = "The simulation Kon is too large (I.e. exceeds the diffusion limited rate) for this reaction.";
-//					String tip = "Please consider reducing Kon or increasing the Radius or D of the participating Site Types.";
-//					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-//					return;
-//				}
+				if(checkOnRate(sasOne, sasTwo) == false) {	// rate doesn't check as acceptable
+					String msg = "The forward rate Kf is too large (i.e. exceeds the diffusion limited rate) for this reaction rule.";
+					String tip = "Please consider reducing Kon or increasing the Radius or D of the participating Site Types.";
+					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					return;
+				}
 			}
 			// binding reactions must be reversible
 			if(!reactionRule.isReversible()) {
@@ -1320,6 +1323,11 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 	 * better have kon < 4*pi*R*D . If that isn't satisfied then nothing else will work.
 	 */
 	public boolean checkOnRate(SiteAttributesSpec sasOne, SiteAttributesSpec sasTwo) {
+
+		// set of acceptable numbers (marginally) for A + A -> A.A are:
+		// Kon = 40 s-1uM-1
+		// site radius 1nm
+		// site diffusion rate 1 um2s-1
 
 		double R = sasOne.computeReactionRadius() + sasTwo.computeReactionRadius();	// nm
 		double D = sasOne.getDiffusionRate() + sasTwo.getDiffusionRate();
