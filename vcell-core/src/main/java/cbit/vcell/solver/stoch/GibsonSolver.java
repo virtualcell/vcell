@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
+import cbit.vcell.solver.ode.ODESolverResultsSetReturnable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -43,7 +44,7 @@ import cbit.vcell.solvers.SimpleCompiledSolver;
  * Creation date: (7/13/2006 9:00:41 AM)
  * @author: Tracy LI
  */
-public class GibsonSolver extends SimpleCompiledSolver {
+public class GibsonSolver extends SimpleCompiledSolver implements ODESolverResultsSetReturnable {
 	private static Logger lg = LogManager.getLogger(GibsonSolver.class);
 	private int saveToFileInterval = 6;	// seconds
 	private long lastSavedMS = 0; // milliseconds since last save
@@ -105,6 +106,11 @@ public int getSaveToFileInterval() {
 	return saveToFileInterval;
 }
 
+
+@Override
+public ODESolverResultSet getODESolverResultSet(){
+	return this.getStochSolverResultSet();
+}
 
 /**
  * Get data columns and function columns to be ready for plot.

@@ -13,7 +13,7 @@ package cbit.vcell.solver.server;
 import cbit.vcell.solver.SimulationJob;
 
 /**
- * Any kind of a solver.  Its implementors implement specific
+ * Any type of solver.  Its implementors implement specific
  * solver types (ODE or PDE solvers, for example), as well as
  * specific algorithms (Runge-Kutta method).
  * Creation date: (8/16/2000 11:10:33 PM)
@@ -23,7 +23,7 @@ public interface Solver {
 	/**
 	 *
 	 */
-	public void addSolverListener(SolverListener newListener);
+    void addSolverListener(SolverListener newListener);
 	/**
 	 * Insert the method's description here.
 	 * Creation date: (6/28/01 2:54:56 PM)
@@ -36,19 +36,19 @@ public interface Solver {
 	 * @return double
 	 */
 	double getProgress();
-	public SimulationJob getSimulationJob();
-	public SolverStatus getSolverStatus();
-	public String translateSimulationMessage(String simulationMessage);
+	SimulationJob getSimulationJob();
+	SolverStatus getSolverStatus();
+	String translateSimulationMessage(String simulationMessage);
 	/**
 	 *
 	 */
-	public void removeSolverListener(SolverListener newListener);
-	public void startSolver();
-	public void stopSolver();
+    void removeSolverListener(SolverListener newListener);
+	void startSolver();
+	void stopSolver();
+	void runSolver();
 	
 	/**
 	 * notify solver it will be executed in a unix/linux environment, if it current JRE
-	 * is not (e.g. Windows). see {@link CommandServiceSsh}
 	 */
-	public void setUnixMode( );
+    void setUnixMode();
 }

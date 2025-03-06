@@ -37,7 +37,8 @@ public class BiosimulationsHdf5Writer {
         boolean didFail = false;
 
         // Create and open the Hdf5 file
-        logger.info("Creating HDF5 file `reports.h5` in {}", outDirForCurrentSedml.getAbsolutePath());
+        logger.info("Saving all simulation results to Hdf5 file...");
+        if (logger.isDebugEnabled()) logger.info("Creating HDF5 file `reports.h5` in {}", outDirForCurrentSedml.getAbsolutePath());
         File tempFile = new File(outDirForCurrentSedml, "reports.h5");
         try {
             try (WritableHdfFile hdf5File = HdfFile.write(tempFile.toPath())){
@@ -107,7 +108,7 @@ public class BiosimulationsHdf5Writer {
                 throw new BiosimulationsHdfWriterException(message, e);
             }
         } finally {
-            if (!didFail) logger.info("HDF5 file successfully written to.");
+            if (!didFail) logger.info("HDF5 writing completed successfully.");
         }
     }
 

@@ -79,7 +79,7 @@ public class BSTSBasedOmexExecTest {
 			System.out.println("writeDetailedResultList(): " + message);
 			Tracer.success("writeDetailedResultList(): " + message);
 		}
-		@Override
+
 		public void writeSpatialList(String message) {
 			System.out.println("writeSpatialList(): " + message);
 			Tracer.success("writeSpatialList(): " + message);

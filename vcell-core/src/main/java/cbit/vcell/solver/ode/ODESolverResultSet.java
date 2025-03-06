@@ -37,19 +37,14 @@ public class ODESolverResultSet extends RowColumnResultSet implements cbit.vcell
 		super();
 	}
 	public ODESolverResultSet(ODESolverResultSet copyThisODESolverResultSet) {
-		super((RowColumnResultSet)copyThisODESolverResultSet);
+		super(copyThisODESolverResultSet);
 	}
-	public boolean isMultiTrialData()
-	{
-		if(getColumnDescriptionsCount() > 0)
-		{
-			int totalcol = getColumnDescriptionsCount();
-			for(int i=0; i<totalcol; i++)
-			{
-				ColumnDescription cd = getColumnDescriptions(i);
-				if (cd.getName().equals("TrialNo"))
-					return true;
-			}
+	public boolean isMultiTrialData() {
+		int colDescCount = this.getColumnDescriptionsCount();
+		if (this.getColumnDescriptionsCount() <= 0) return false;
+		for(int i = 0; i < colDescCount; i++){
+			ColumnDescription cd = this.getColumnDescriptions(i);
+			if (cd.getName().equals("TrialNo")) return true;
 		}
 		return false;
 	}

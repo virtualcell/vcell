@@ -20,7 +20,7 @@ public class CliTracer implements CLIRecordable {
     public void writeDetailedResultList(String message) {
         Tracer.log("writeDetailedResultList(): "+message);
     }
-    @Override
+    //@Override
     public void writeSpatialList(String message) {
         Tracer.log("writeSpatialList(): "+message);
     }

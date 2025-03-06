@@ -320,11 +320,7 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
     public synchronized final void startSolver() {
         if (!(fieldThread != null && fieldThread.isAlive())) {
             setMathExecutable(null);
-            fieldThread = new Thread() {
-                public void run() {
-                    runSolver();
-                }
-            };
+            fieldThread = new Thread(this::runSolver);
             fieldThread.setName("Compiled Solver (" + getClass().getName() + ")");
             fieldThread.start();
         }

@@ -36,7 +36,6 @@ public class ExecutionJob {
     
     private OmexHandler omexHandler = null;
     private List<String> sedmlLocations;
-    private Path sedmlPath2d3d;
     private File inputFile;
 
     private CLIRecordable cliRecorder;
@@ -60,7 +59,7 @@ public class ExecutionJob {
 
         this.bioModelBaseName = FileUtils.getBaseName(inputFile.getName()); // input file without the path
         String outputBaseDir = rootOutputDir.getAbsolutePath();
-        this.outputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, bioModelBaseName).toString() : outputBaseDir;
+        this.outputDir = bEncapsulateOutput ? Paths.get(outputBaseDir, this.bioModelBaseName).toString() : outputBaseDir;
         this.bKeepTempFiles = bKeepTempFiles;
         this.bExactMatchOnly = bExactMatchOnly;
         this.bSmallMeshOverride = bSmallMeshOverride;
@@ -87,7 +86,6 @@ public class ExecutionJob {
 
         // Unpack the Omex Archive
         try { // It's unlikely, but if we get errors here they're fatal.
-            this.sedmlPath2d3d = Paths.get(this.outputDir, "temp");
             this.omexHandler = new OmexHandler(this.inputFile.getAbsolutePath(), this.outputDir);
             this.omexHandler.extractOmex();
             this.sedmlLocations = this.omexHandler.getSedmlLocationsAbsolute();
@@ -139,17 +137,21 @@ public class ExecutionJob {
         } catch (IOException e){
             logger.error("System IO encountered a fatal error");
             throw new ExecutionException(e);
+        } finally {
+            RunUtils.drawBreakLine("-", 100);
         }
+
     }
 
     private void executeSedmlDocument(String sedmlLocation, HDF5ExecutionResults cumulativeHdf5Results) throws IOException, PreProcessingException, ExecutionException {
         BiosimulationLog.instance().updateSedmlDocStatusYml(sedmlLocation, BiosimulationLog.Status.QUEUED);
-        SedmlJob job = new SedmlJob(sedmlLocation, this.omexHandler, this.inputFile, this.outputDir, this.sedmlPath2d3d.toString(), this.cliRecorder, this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride, this.logOmexMessage);
+        SedmlJob job = new SedmlJob(sedmlLocation, this.omexHandler.getOutputPathFromSedml(sedmlLocation), this.inputFile, this.outputDir, this.cliRecorder, this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride, this.logOmexMessage);
         SedmlStatistics stats = job.preProcessDoc();
         boolean hasSucceeded = job.simulateSedml(cumulativeHdf5Results);
         this.anySedmlDocumentHasSucceeded |= hasSucceeded;
         this.anySedmlDocumentHasFailed &= hasSucceeded;
         logger.log(hasSucceeded ? Level.INFO : Level.ERROR, "Processing of SedML ({}) {}", stats.getSedmlName(), hasSucceeded ? "succeeded." : "failed!");
+        RunUtils.drawBreakLine("-", 100);
     }
 
     /**
@@ -165,23 +167,23 @@ public class ExecutionJob {
         this.endTime_ms = System.currentTimeMillis();
         long elapsedTime_ms = this.endTime_ms - this.startTime_ms;
         double duration_s = elapsedTime_ms / 1000.0;
-        logger.info("Omex `" + inputFile.getName() + "` processing completed (" + duration_s + "s)");
+        logger.info("Omex `" + this.inputFile.getName() + "` processing completed (" + duration_s + "s)");
         //
         // failure if at least one of the documents in the omex archive fails
         //
-        if (anySedmlDocumentHasFailed) {
+        if (this.anySedmlDocumentHasFailed) {
             String error = " All sedml documents in this archive failed to execute";
-            if (anySedmlDocumentHasSucceeded) {        // some succeeded, some failed
+            if (this.anySedmlDocumentHasSucceeded) {        // some succeeded, some failed
                 error = " At least one document in this archive failed to execute";
             }
             BiosimulationLog.instance().updateOmexStatusYml(BiosimulationLog.Status.FAILED, duration_s);
             logger.error(error);
-            logOmexMessage.append(error);
-            cliRecorder.writeErrorList(new Exception("exception not recorded"), bioModelBaseName);
+            this.logOmexMessage.append(error);
+            this.cliRecorder.writeErrorList(new Exception("exception not recorded"), this.bioModelBaseName);
         } else {
             BiosimulationLog.instance().updateOmexStatusYml(BiosimulationLog.Status.SUCCEEDED, duration_s);
-            cliRecorder.writeFullSuccessList(bioModelBaseName);
-            logOmexMessage.append(" Done");
+            this.cliRecorder.writeFullSuccessList(this.bioModelBaseName);
+            this.logOmexMessage.append(" Done");
             
         }
         BiosimulationLog.instance().setOutputMessage("null", "null", "omex", logOmexMessage.toString());

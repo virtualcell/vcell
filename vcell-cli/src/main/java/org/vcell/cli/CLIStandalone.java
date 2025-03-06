@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import cbit.vcell.mongodb.VCMongoMessage;
+import org.vcell.cli.run.RunUtils;
 import org.vcell.util.VCellUtilityHub;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -36,6 +37,7 @@ public class CLIStandalone {
     private final static Logger logger = LogManager.getLogger(CLIStandalone.class);
     public static void main(String[] args) {
         int exitCode = -1;
+        RunUtils.drawBreakLine("-", 100);
         try{
             logger.info("Starting Vcell...");
             if (logger.isDebugEnabled()) logger.debug("!!!DEBUG Mode Active!!!");

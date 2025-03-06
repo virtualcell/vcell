@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ValueHolder <T extends LazySBMLDataAccessor> {
+    /**
+     * The list of results, with each entry being a different run (only 1 for a single task, multiple for repeated tasks)
+     */
     public final List<T> listOfResultSets;
     final Simulation vcSimulation;
 
@@ -30,6 +33,11 @@ public class ValueHolder <T extends LazySBMLDataAccessor> {
 
     public ValueHolder<T> createEmptySetWithSameVCsim(){
         return new ValueHolder<>(this.vcSimulation);
+    }
+
+    // even though listOfResultsSets is public, the issue is providing a function reference to "string"
+    public List<T> getListOfResultSets() {
+        return this.listOfResultSets;
     }
 
     /*public int[] getJobCoordinate(int index){
