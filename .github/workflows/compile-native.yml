@@ -43,6 +43,17 @@ jobs:
           
           mvn -P shared-dll -DskipTests=true package
           mvn -P native -DskipTests=true package
+        if: matrix.os != 'windows-latest'
+
+      - name: test, record, and build native exectuable
+        run: |
+          mvn test
+
+          java -Dheadless=true -agentlib:native-image-agent=config-output-dir=target\recording -jar target\vcell-nativelib-0.0.1-SNAPSHOT.jar "src\test\resources\TinySpacialProject_Application0.xml" "target\sbml-input"
+
+          mvn -P shared-dll -DskipTests=true package
+          mvn -P native -DskipTests=true package
+        if: matrix.os == 'windows-latest'
 
       - name: zip up DLLs and native executable
         run: |
@@ -50,6 +61,15 @@ jobs:
           mv target/graal_isolate* vcell-${{ matrix.os }}
           mv target/sbml_to* vcell-${{ matrix.os }}
           zip -r vcell-${{ matrix.os }}.zip vcell-${{ matrix.os }}
+        if: matrix.os != 'windows-latest'
+
+      - name: zip up DLLs and native executable
+        run: |
+          mkdir vcell-${{ matrix.os }}
+          mv target\graal_isolate* vcell-${{ matrix.os }}
+          mv target\sbml_to* vcell-${{ matrix.os }}
+          tar -acf vcell-${{ matrix.os }}.zip vcell-${{ matrix.os }}
+        if: matrix.os == 'windows-latest'
 
       - name: upload DLLs and executables
         uses: actions/upload-artifact@v4
@@ -59,9 +79,17 @@ jobs:
             ~/work/vcell/vcell/vcell-nativelib/vcell-${{ matrix.os }}.zip
           if-no-files-found: error
           include-hidden-files: true
+        if: matrix.os != 'windows-latest'
 
-      - name: Output artifact URL
-        run:  echo 'Artifact URL is ${{ steps.artifact-upload-step.outputs.artifact-url }}'
+      - name: upload DLLs and executables
+        uses: actions/upload-artifact@v4
+        with:
+          name: vcell-${{ matrix.os }}
+          path: |
+            /d/a/vcell/vcell/vcell-nativelib/vcell-${{ matrix.os }}.zip
+          if-no-files-found: error
+          include-hidden-files: true
+        if: matrix.os == 'windows-latest'
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
