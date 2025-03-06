@@ -25,6 +25,7 @@ jobs:
           components: 'native-image'
 #          native-image-musl: 'true' # Now semi-static by not including libc
           native-image-job-reports: 'true'
+          cache: 'maven'
 
       - name: build entire project
         run: |
