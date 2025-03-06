@@ -33,13 +33,6 @@ import java.io.InputStream;
 public class Main {
     private static final Logger logger = LogManager.getLogger(Main.class);
 
-    // catches uncaught exceptions to prevent the calling program from crashing
-    public static class UncaughtExceptionHandler implements CEntryPoint.ExceptionHandler {
-        public void accept(Throwable throwable) {
-            logger.error("Uncaught exception while processing spatial model", throwable);
-        }
-    }
-
     // serialized in JSON and returned as a String (CCharPointer)
     public record ReturnValue(boolean success, String message) {
     }
@@ -51,8 +44,7 @@ public class Main {
                     Converts VCML file into Finite Volume Input files.
                       vcml_content: text of VCML XML document
                       output_dir_path: path to the output directory
-                      Returns a JSON string with success status and message""",
-            exceptionHandler = UncaughtExceptionHandler.class
+                      Returns a JSON string with success status and message"""
     )
     public static CCharPointer entrypoint_vcmlToFiniteVolumeInput(
             IsolateThread thread,
@@ -87,8 +79,7 @@ public class Main {
                     Converts SBML file into Finite Volume Input files
                       sbml_content: text content of SBML XML document
                       output_dir_path: path to the output directory
-                      Returns a JSON string with success status and message""",
-            exceptionHandler = UncaughtExceptionHandler.class
+                      Returns a JSON string with success status and message"""
     )
     public static CCharPointer entrypoint_sbmlToFiniteVolumeInput(
             IsolateThread thread,
