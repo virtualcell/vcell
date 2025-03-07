@@ -80,8 +80,9 @@ public class GeometrySpec implements Matchable, PropertyChangeListener, Vetoable
 	protected transient java.beans.VetoableChangeSupport vetoPropertyChange;
 	private SubVolume[] subVolumes = new SubVolume[0];
 	private FilamentGroup filamentGroup = new FilamentGroup();
-	
-public GeometrySpec(Version aVersion, int aDimension) {
+	public static boolean avoidAWTImageCreation = false;
+
+	public GeometrySpec(Version aVersion, int aDimension) {
 	addVetoableChangeListener(this);
 	addPropertyChangeListener(this);
 	this.dimension = aDimension;
@@ -862,7 +863,7 @@ void updateSampledImage(GeometryThumbnailImageFactory geometryThumbnailImageFact
 	if (getSampledImage().isDirty()){
 		ISize sampleSize = getDefaultSampledImageSize();
 		getSampledImage().setValue(createSampledImage(sampleSize));
-		if (PropertyLoader.getProperty("headless", "").equals("true")){
+		if (!this.avoidAWTImageCreation){
 			getThumbnailImage().setValue(createThumbnailImage(geometryThumbnailImageFactory));
 		}
 	}
