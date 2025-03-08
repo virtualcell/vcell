@@ -32,8 +32,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 
+
+
 public class Main {
     private static final Logger logger = LogManager.getLogger(Main.class);
+    private static CTypeConversion.CCharPointerHolder string_pointer = null;
 
     // serialized in JSON and returned as a String (CCharPointer)
     public record ReturnValue(boolean success, String message) {
@@ -68,10 +71,13 @@ public class Main {
         // return result as a json string
         Gson gson = new Gson();
         String json = gson.toJson(returnValue);
-        try (CTypeConversion.CCharPointerHolder string_pointer = CTypeConversion.toCString(json)) {
-            logger.info("Returning: " + json);
-            return string_pointer.get();
+        if (string_pointer != null) {
+            string_pointer.close();
         }
+        string_pointer = CTypeConversion.toCString(json);
+        System.out.println("Returning: " + json);
+        logger.info("Returning: " + json);
+        return string_pointer.get();
     }
 
 
@@ -100,10 +106,13 @@ public class Main {
         // return result as a json string
         Gson gson = new Gson();
         String json = gson.toJson(returnValue);
-        try (CTypeConversion.CCharPointerHolder string_pointer = CTypeConversion.toCString(json)) {
-            logger.info("Returning: " + json);
-            return string_pointer.get();
+        if (string_pointer != null) {
+            string_pointer.close();
         }
+        string_pointer = CTypeConversion.toCString(json);
+        System.out.println("Returning: " + json);
+        logger.info("Returning: " + json);
+        return string_pointer.get();
     }
 
 
