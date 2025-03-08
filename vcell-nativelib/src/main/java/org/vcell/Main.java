@@ -15,7 +15,6 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-import com.google.gson.Gson;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.graalvm.nativeimage.IsolateThread;
@@ -59,6 +58,9 @@ public class Main {
 
     // serialized in JSON and returned as a String (CCharPointer)
     public record ReturnValue(boolean success, String message) {
+        public String toJson() {
+            return "{\"success\":" + success + ",\"message\":\"" + message + "\"}";
+        }
     }
 
 
@@ -88,8 +90,7 @@ public class Main {
             returnValue = new ReturnValue(false, t.getMessage());
         }
         // return result as a json string
-        Gson gson = new Gson();
-        String json = gson.toJson(returnValue);
+        String json = returnValue.toJson();
         System.out.println("Returning: " + json);
         logger.info("Returning: " + json);
         return createString(json);
@@ -118,7 +119,7 @@ public class Main {
             returnValue = new ReturnValue(false, t.getMessage());
         }
         // return result as a json string
-        String json = new Gson().toJson(returnValue);
+        String json = returnValue.toJson();
         System.out.println("Returning: " + json);
         logger.info("Returning: " + json);
         return createString(json);
