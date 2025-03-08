@@ -10,8 +10,6 @@
 
 package org.vcell.util;
 
-import javax.swing.SwingUtilities;
-
 public class VCellThreadChecker {
 
 	private static final ThreadLocal<Integer> cpuSuppressed = new ThreadLocal<Integer>() {
@@ -33,12 +31,7 @@ public class VCellThreadChecker {
 		public boolean isEventDispatchThread();
 	}
 
-	private static GUIThreadChecker guiThreadChecker = new GUIThreadChecker() {
-
-		public boolean isEventDispatchThread() {
-			return SwingUtilities.isEventDispatchThread();
-		}
-	};
+	private static GUIThreadChecker guiThreadChecker = null;
 
 	public static void setGUIThreadChecker(GUIThreadChecker argGuiThreadChecker){
 		guiThreadChecker = argGuiThreadChecker;
