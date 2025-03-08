@@ -5,6 +5,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mongodb.VCMongoMessage;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
@@ -108,6 +109,7 @@ public class Main {
 
     public static void vcmlToFiniteVolumeInput(String vcml_content, String simulation_name, File outputDir) throws XmlParseException, MappingException, SolverException, ExpressionException {
         GeometrySpec.avoidAWTImageCreation = true;
+        VCMongoMessage.enabled = false;
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcml_content));
         bioModel.updateAll(false);
         Simulation sim = bioModel.getSimulation(simulation_name);
@@ -117,6 +119,7 @@ public class Main {
 
     public static void sbmlToFiniteVolumeInput(String sbml_content, File outputDir) throws MappingException, PropertyVetoException, SolverException, ExpressionException, VCLoggerException {
         GeometrySpec.avoidAWTImageCreation = true;
+        VCMongoMessage.enabled = false;
         SBMLExporter.MemoryVCLogger vcl = new SBMLExporter.MemoryVCLogger();
         boolean bValidateSBML = true;
         // input stream from sbml_content String
