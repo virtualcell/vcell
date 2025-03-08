@@ -48,10 +48,11 @@ public class Main {
     }
 
 
-    @CEntryPoint
-    public static void freeString(CCharPointer ptr) {
+    @CEntryPoint(name = "freeString", documentation = "Release memory allocated for a string")
+    public static void freeString(
+            IsolateThread thread,
+            CCharPointer ptr) {
         if (ptr.isNonNull()) {
-            // Remove from the map and release memory
             allocatedMemory.remove(ptr.rawValue());
         }
     }
