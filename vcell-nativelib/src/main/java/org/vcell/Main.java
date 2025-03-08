@@ -91,8 +91,10 @@ public class Main {
         }
         // return result as a json string
         String json = returnValue.toJson();
-        System.out.println("Returning: " + json);
-        logger.info("Returning: " + json);
+        System.out.println("original ReturmValue.toJson() from vcml: " + json);
+        json = "{\"success\":true,\"message\":\"forced-fake-message\"}";
+        System.out.println("new Returning from vcml: " + json);
+        logger.info("new Returning from vcml: " + json);
         return createString(json);
     }
 
@@ -120,8 +122,8 @@ public class Main {
         }
         // return result as a json string
         String json = returnValue.toJson();
-        System.out.println("Returning: " + json);
-        logger.info("Returning: " + json);
+        System.out.println("Returning from sbml: " + json);
+        logger.info("Returning from sbml: " + json);
         return createString(json);
     }
 
