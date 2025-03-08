@@ -31,12 +31,30 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class Main {
     private static final Logger logger = LogManager.getLogger(Main.class);
-    private static CTypeConversion.CCharPointerHolder string_pointer = null;
+    // Store allocated memory to prevent premature deallocation
+    private static final ConcurrentHashMap<Long, CTypeConversion.CCharPointerHolder> allocatedMemory = new ConcurrentHashMap<>();
+
+
+    private static CCharPointer createString(String str) {
+        CTypeConversion.CCharPointerHolder holder = CTypeConversion.toCString(str);
+        CCharPointer ptr = holder.get();
+        allocatedMemory.put(ptr.rawValue(), holder);
+        return ptr;
+    }
+
+
+    @CEntryPoint
+    public static void freeString(CCharPointer ptr) {
+        if (ptr.isNonNull()) {
+            // Remove from the map and release memory
+            allocatedMemory.remove(ptr.rawValue());
+        }
+    }
 
     // serialized in JSON and returned as a String (CCharPointer)
     public record ReturnValue(boolean success, String message) {
@@ -71,15 +89,10 @@ public class Main {
         // return result as a json string
         Gson gson = new Gson();
         String json = gson.toJson(returnValue);
-        if (string_pointer != null) {
-            string_pointer.close();
-        }
-        string_pointer = CTypeConversion.toCString(json);
         System.out.println("Returning: " + json);
         logger.info("Returning: " + json);
-        return string_pointer.get();
+        return createString(json);
     }
-
 
     @CEntryPoint(
             name = "sbmlToFiniteVolumeInput",
@@ -104,15 +117,10 @@ public class Main {
             returnValue = new ReturnValue(false, t.getMessage());
         }
         // return result as a json string
-        Gson gson = new Gson();
-        String json = gson.toJson(returnValue);
-        if (string_pointer != null) {
-            string_pointer.close();
-        }
-        string_pointer = CTypeConversion.toCString(json);
+        String json = new Gson().toJson(returnValue);
         System.out.println("Returning: " + json);
         logger.info("Returning: " + json);
-        return string_pointer.get();
+        return createString(json);
     }
 
 
