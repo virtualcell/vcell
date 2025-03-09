@@ -1,6 +1,8 @@
 name: Compile VCell to Native Code
 on:
   workflow_dispatch:
+  release:
+    types: [published, edited]
 
 
 jobs:
@@ -33,7 +35,7 @@ jobs:
           mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
           popd
 
-      - name: test, record, and build native exectuable
+      - name: test, record, and build native shared object library
         run: |
           mvn --batch-mode test
           
@@ -43,24 +45,22 @@ jobs:
           "target/sbml-input"
           
           mvn --batch-mode -P shared-dll -DskipTests=true package
-          mvn --batch-mode -P native -DskipTests=true package
         if: matrix.os != 'windows-latest'
 
-      - name: test, record, and build native exectuable
+      - name: test, record, and build native shared object library
         run: |
           mvn --batch-mode test
 
           java -Dheadless=true -agentlib:native-image-agent=config-output-dir=target\recording -jar target\vcell-nativelib-0.0.1-SNAPSHOT.jar "src\test\resources\TinySpacialProject_Application0.xml" "target\sbml-input"
 
           mvn --batch-mode -P shared-dll -DskipTests=true package
-          mvn --batch-mode -P native -DskipTests=true package
         if: matrix.os == 'windows-latest'
 
-      - name: zip up DLLs and native executable
+      - name: zip up shared object library
         run: |
           mkdir vcell-${{ matrix.os }}
           mv target/graal_isolate* vcell-${{ matrix.os }}
-          mv target/sbml_to* vcell-${{ matrix.os }}
+          mv target/libvcell* vcell-${{ matrix.os }}
           zip -r vcell-${{ matrix.os }}.zip vcell-${{ matrix.os }}
         if: matrix.os != 'windows-latest'
 
@@ -68,11 +68,11 @@ jobs:
         run: |
           mkdir vcell-${{ matrix.os }}
           mv target\graal_isolate* vcell-${{ matrix.os }}
-          mv target\sbml_to* vcell-${{ matrix.os }}
+          mv target\libvcell* vcell-${{ matrix.os }}
           tar -acf vcell-${{ matrix.os }}.zip vcell-${{ matrix.os }}
         if: matrix.os == 'windows-latest'
 
-      - name: upload DLLs and executables
+      - name: upload shared object library
         uses: actions/upload-artifact@v4
         with:
           name: vcell-${{ matrix.os }}
@@ -82,7 +82,7 @@ jobs:
           include-hidden-files: true
         if: matrix.os != 'windows-latest'
 
-      - name: upload DLLs and executables
+      - name: upload shared object library
         uses: actions/upload-artifact@v4
         with:
           name: vcell-${{ matrix.os }}
@@ -91,6 +91,17 @@ jobs:
           if-no-files-found: error
           include-hidden-files: true
         if: matrix.os == 'windows-latest'
+
+      - name: Upload release asset
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: vcell-${{ matrix.os }}.zip
+          asset_name: vcell-${{ matrix.os }}.zip
+          asset_content_type: application/zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: github.event_name == 'release'
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3

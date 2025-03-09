@@ -18,7 +18,7 @@
         <native.maven.plugin.version>0.10.4</native.maven.plugin.version>
         <maven.compiler.source>${java.specification.version}</maven.compiler.source>
         <maven.compiler.target>${java.specification.version}</maven.compiler.target>
-        <imageName>sbml_to_fvsolver</imageName>
+        <imageName>libvcell</imageName>
         <mainClass>org.vcell.Main</mainClass>
     </properties>
 
