@@ -25,6 +25,7 @@ public class VCellThreadCheckerTest {
 	
 	@BeforeEach
 	public void setup( ) {
+		VCellThreadChecker.setGUIThreadChecker(SwingUtilities::isEventDispatchThread);
 		oldOut = System.out;
 		oldErr = System.err;
 		PrintStream ps = new PrintStream(baos);

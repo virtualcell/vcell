@@ -10,65 +10,39 @@
 
 package org.vcell.util;
 
-import javax.swing.SwingUtilities;
-
 public class VCellThreadChecker {
 
-	private static final ThreadLocal<Integer> cpuSuppressed = new ThreadLocal<Integer>() {
-		@Override
-		protected Integer initialValue() {
-			return 0;
-		}
-	};
+	private static final ThreadLocal<Integer> cpuSuppressed = ThreadLocal.withInitial(() -> 0);
 
-	private static final ThreadLocal<Integer> remoteSuppressed = new ThreadLocal<Integer>() {
-		@Override
-		protected Integer initialValue() {
-			return 0;
-		}
-	};
+	private static final ThreadLocal<Integer> remoteSuppressed = ThreadLocal.withInitial(() -> 0);
 
 
 	public interface GUIThreadChecker {
-		public boolean isEventDispatchThread();
+		boolean isEventDispatchThread();
 	}
 
-	private static GUIThreadChecker guiThreadChecker = new GUIThreadChecker() {
-
-		public boolean isEventDispatchThread() {
-			return SwingUtilities.isEventDispatchThread();
-		}
-	};
+	private static GUIThreadChecker guiThreadChecker = null;
 
 	public static void setGUIThreadChecker(GUIThreadChecker argGuiThreadChecker){
 		guiThreadChecker = argGuiThreadChecker;
 	}
 
 	public static void checkRemoteInvocation() {
-		if (guiThreadChecker == null){
-			System.out.println("!!!!!!!!!!!!!! --VCellThreadChecker.setGUIThreadChecker() not set");
-			Thread.dumpStack();
-		}else if (guiThreadChecker.isEventDispatchThread() && remoteSuppressed.get( ) == 0) {
+		if (guiThreadChecker != null && guiThreadChecker.isEventDispatchThread() && remoteSuppressed.get( ) == 0) {
 			System.out.println("!!!!!!!!!!!!!! --calling remote method from swing thread-----");
 			Thread.dumpStack();
 		}
 	}
 
 	public static void checkSwingInvocation() {
-		if (guiThreadChecker == null){
-			System.out.println("!!!!!!!!!!!!!! --VCellThreadChecker.setGUIThreadChecker() not set");
-			Thread.dumpStack();
-		}else if (!guiThreadChecker.isEventDispatchThread()) {
+		if (guiThreadChecker != null && !guiThreadChecker.isEventDispatchThread()) {
 			System.out.println("!!!!!!!!!!!!!! --calling swing from non-swing thread-----");
 			Thread.dumpStack();
 		}
 	}
 
 	public static void checkCpuIntensiveInvocation() {
-		if (guiThreadChecker == null){
-			System.out.println("!!!!!!!!!!!!!! --VCellThreadChecker.setGUIThreadChecker() not set");
-			Thread.dumpStack();
-		}else if (guiThreadChecker.isEventDispatchThread() && cpuSuppressed.get() == 0) {
+		if (guiThreadChecker != null && guiThreadChecker.isEventDispatchThread() && cpuSuppressed.get() == 0) {
 			System.out.println("!!!!!!!!!!!!!! --calling cpu intensive method from swing thread-----");
 			Thread.dumpStack();
 		}

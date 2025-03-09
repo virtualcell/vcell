@@ -13,9 +13,6 @@ package cbit.vcell.client;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.DocumentWindowAboutBox;
 import cbit.vcell.client.server.ClientServerInfo;
-import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
-import org.vcell.api.server.ClientServerManager;
-import org.vcell.api.server.ClientServerManager.InteractiveContextDefaultProvider;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.ClientLogin;
@@ -24,7 +21,11 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.server.VCellConnectionFactory;
 import com.google.inject.Inject;
 import com.install4j.api.launcher.ApplicationLauncher;
+import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
+import org.vcell.api.server.ClientServerManager;
+import org.vcell.api.server.ClientServerManager.InteractiveContextDefaultProvider;
 import org.vcell.api.utils.Auth0ConnectionUtils;
+import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 
@@ -100,6 +101,7 @@ public VCellClient(VCellConnectionFactory vcellConnectionFactory, Auth0Connectio
 	} else{
 		this.auth0ConnectionUtils = auth0ConnectionUtils;
 	}
+	VCellThreadChecker.setGUIThreadChecker(SwingUtilities::isEventDispatchThread);
 }
 
 

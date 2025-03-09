@@ -288,6 +288,8 @@ public class PropertyLoader {
 	public static final String enableSpringSaLaD = record("vcell.enableSpringSaLaD", ValueType.BOOL);
 	public static final boolean enableSpringSaLaD_default_value = true;
 
+	private static final String headlessGUI = record("headless", ValueType.GEN);
+
 	/**
 	 * native library directory, server side
 	 */
