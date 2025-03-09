@@ -82,7 +82,6 @@ public class Main {
             String vcmlContentStr = CTypeConversion.toJavaString(vcml_content);
             String simulationName = CTypeConversion.toJavaString(simulation_name);
             String outputDirPathStr = CTypeConversion.toJavaString(output_dir_path);
-
             vcmlToFiniteVolumeInput(vcmlContentStr, simulationName, new File(outputDirPathStr));
             returnValue = new ReturnValue(true, "Success");
         }catch (Throwable t) {
@@ -91,10 +90,7 @@ public class Main {
         }
         // return result as a json string
         String json = returnValue.toJson();
-        System.out.println("original ReturmValue.toJson() from vcml: " + json);
-        json = "{\"success\":true,\"message\":\"forced-fake-message\"}";
-        System.out.println("new Returning from vcml: " + json);
-        logger.info("new Returning from vcml: " + json);
+        logger.info("Returning from vcmlToFiniteVolumeInput: " + json);
         return createString(json);
     }
 
@@ -122,8 +118,7 @@ public class Main {
         }
         // return result as a json string
         String json = returnValue.toJson();
-        System.out.println("Returning from sbml: " + json);
-        logger.info("Returning from sbml: " + json);
+        logger.info("Returning from sbmlToFiniteVolumeInput: " + json);
         return createString(json);
     }
 
