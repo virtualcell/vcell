@@ -67,7 +67,6 @@
 		<module>vcell-cli</module>
 		<module>vcell-rest</module>
         <module>vcell-restclient</module>
-        <module>vcell-nativelib</module>
     </modules>
 
 	<scm>
