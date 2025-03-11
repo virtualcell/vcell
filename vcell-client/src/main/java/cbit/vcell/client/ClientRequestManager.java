@@ -84,8 +84,8 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.Element;
-import org.jdom.Namespace;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.SEDMLDocument;
@@ -3441,7 +3441,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 					} else { // is XML
 						try (TranslationLogger transLogger = new TranslationLogger(requester)) {
 							XMLSource xmlSource = externalDocInfo.createXMLSource();
-							org.jdom.Element rootElement = xmlSource.getXmlDoc().getRootElement();
+							org.jdom2.Element rootElement = xmlSource.getXmlDoc().getRootElement();
 							String xmlType = rootElement.getName();
 							String modelXmlType = null;
 							if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {

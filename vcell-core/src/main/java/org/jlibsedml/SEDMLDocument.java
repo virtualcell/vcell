@@ -12,14 +12,11 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import org.jdom.Comment;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.Namespace;
-import org.jdom.contrib.input.LineNumberSAXBuilder;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Comment;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+import org.jdom2.output.XMLOutputter;
 import org.jlibsedml.extensions.XMLUtils;
 import org.jlibsedml.validation.ValidatorController;
 import org.slf4j.Logger;
@@ -304,7 +301,7 @@ public class SEDMLDocument {
             XPath xpath = xpf.newXPath();
 
             for (Change change : changes) {
-                org.jdom.Document docj = createDocument(originalModel);
+                org.jdom2.Document docj = createDocument(originalModel);
                 NamespaceContextHelper nc = new NamespaceContextHelper(docj);
                 nc.process(change.getTargetXPath());
                 xpath.setNamespaceContext(nc);
@@ -339,7 +336,7 @@ public class SEDMLDocument {
         return xmlString;
     }
 
-    private org.jdom.Document createDocument(String sedml) throws XMLException {
+    private org.jdom2.Document createDocument(String sedml) throws XMLException {
         return new XMLUtils().readDoc(sedml);
     }
 
@@ -354,7 +351,7 @@ public class SEDMLDocument {
      */
     public boolean canResolveXPathExpressions(String modelID,
             final String originalModel) throws XMLException {
-        org.jdom.Document doc = createDocument(originalModel);
+        org.jdom2.Document doc = createDocument(originalModel);
         Model model = sedml.getModelWithId(modelID);
         List<Change> changes = model.getListOfChanges();
         for (Change change : changes) {

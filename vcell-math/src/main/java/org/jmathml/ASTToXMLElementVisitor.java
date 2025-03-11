@@ -1,7 +1,7 @@
 package org.jmathml;
 
-import org.jdom.Element;
-import org.jdom.Namespace;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.jmathml.ASTFunction.ASTFunctionType;
 import org.jmathml.ASTFunction.ASTLog;
 import org.jmathml.ASTFunction.ASTRoot;

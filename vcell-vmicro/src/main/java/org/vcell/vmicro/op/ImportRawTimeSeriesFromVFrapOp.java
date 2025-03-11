@@ -2,7 +2,7 @@ package org.vcell.vmicro.op;
 
 import java.io.File;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.vcell.vmicro.workflow.data.ImageTimeSeries;
 
 import cbit.util.xml.XmlUtil;

@@ -4,8 +4,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.jdom.Element;
-import org.jdom.Namespace;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.jmathml.ASTToXMLElementVisitor;
 
 class SEDMLWriter {
@@ -133,7 +133,7 @@ class SEDMLWriter {
         return node;
     }
 
-    org.jdom.Element getXML(List<Change> sedModelChanges) {
+    org.jdom2.Element getXML(List<Change> sedModelChanges) {
         Element list = new Element(SEDMLTags.CHANGES);
         for (int i = 0; i < sedModelChanges.size(); i++) {
             list.addContent(getXML((Change) sedModelChanges.get(i)));
@@ -141,7 +141,7 @@ class SEDMLWriter {
         return list;
     }
 
-    org.jdom.Element getXML(Change sedmlChange) {
+    org.jdom2.Element getXML(Change sedmlChange) {
         Element node = null;
         String s = null;
         // Add Changes to list of changes
@@ -243,7 +243,7 @@ class SEDMLWriter {
     // ============= SetValue
 
     // =============== Simulations
-    org.jdom.Element getXML(Simulation sedmlSim) {
+    org.jdom2.Element getXML(Simulation sedmlSim) {
         Element node = null;
         String s = null;
         // Add simulations to list of simulations
@@ -312,7 +312,7 @@ class SEDMLWriter {
         return node;
     }
 
-    org.jdom.Element getXML(Algorithm algorithm) {
+    org.jdom2.Element getXML(Algorithm algorithm) {
         String s = null;
         Element node = new Element(SEDMLTags.ALGORITHM_TAG);
         addNotesAndAnnotation(algorithm, node);
@@ -333,7 +333,7 @@ class SEDMLWriter {
         return node;
     }
 
-    org.jdom.Element getXML(AlgorithmParameter ap) {
+    org.jdom2.Element getXML(AlgorithmParameter ap) {
         String s = null;
         Element node = new Element(SEDMLTags.ALGORITHM_PARAMETER_TAG);
         s = ap.getKisaoID();
@@ -466,7 +466,7 @@ class SEDMLWriter {
     }
 
     // ============== Tasks
-    org.jdom.Element getXML(AbstractTask sedmlTask) {
+    org.jdom2.Element getXML(AbstractTask sedmlTask) {
 
         if (sedmlTask instanceof RepeatedTask) {
             Element node = new Element(SEDMLTags.REPEATED_TASK_TAG);
@@ -573,7 +573,7 @@ class SEDMLWriter {
     }
 
     // =============== DataGenerators
-    org.jdom.Element getXML(DataGenerator sedmlDataGen) {
+    org.jdom2.Element getXML(DataGenerator sedmlDataGen) {
         Element node = new Element(SEDMLTags.DATAGENERATOR_TAG);
         String s = null;
         addNotesAndAnnotation(sedmlDataGen, node);
@@ -625,7 +625,7 @@ class SEDMLWriter {
 
     // TODO: need to add another getXML(Variable...) for the "change math"
     // variables
-    org.jdom.Element getXML(Variable variable, VariableType varType) {
+    org.jdom2.Element getXML(Variable variable, VariableType varType) {
         Element node = new Element(SEDMLTags.DATAGEN_ATTR_VARIABLE);
         addNotesAndAnnotation(variable, node);// Add Variables to list of
                                               // variables
@@ -665,7 +665,7 @@ class SEDMLWriter {
         return node;
     }
 
-    org.jdom.Element getXML(Parameter parameter) {
+    org.jdom2.Element getXML(Parameter parameter) {
         Element node = new Element(SEDMLTags.DATAGEN_ATTR_PARAMETER);
         String s = null;
 
@@ -684,7 +684,7 @@ class SEDMLWriter {
     }
 
     // ============ Outputs
-    org.jdom.Element getXML(Output sedmlOutput) {
+    org.jdom2.Element getXML(Output sedmlOutput) {
         Element node = null; // Add outputs to list of outputs
         String s = null;
         if (sedmlOutput.getKind().equals(SEDMLTags.PLOT2D_KIND)) { // various
@@ -748,7 +748,7 @@ class SEDMLWriter {
         return node;
     }
 
-    org.jdom.Element getXML(Curve sedCurve) {
+    org.jdom2.Element getXML(Curve sedCurve) {
         String val = null;// Curves
         Element node = new Element(SEDMLTags.OUTPUT_CURVE);
         val = sedCurve.getId();
@@ -775,7 +775,7 @@ class SEDMLWriter {
         return node;
     }
 
-    org.jdom.Element getXML(Surface sedSurface) {
+    org.jdom2.Element getXML(Surface sedSurface) {
         // Surfaces
         Element node = new Element(SEDMLTags.OUTPUT_SURFACE);
         String val = null;// Curves
@@ -809,7 +809,7 @@ class SEDMLWriter {
         return node;
     }
 
-    org.jdom.Element getXML(DataSet sedDataSet) { // DataSets
+    org.jdom2.Element getXML(DataSet sedDataSet) { // DataSets
         String val = null;
         Element node = new Element(SEDMLTags.OUTPUT_DATASET);
         val = sedDataSet.getDataReference();
@@ -829,15 +829,15 @@ class SEDMLWriter {
         return node;
     }
 
-    private org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode,
-            org.jdom.Namespace namespace) {
+    private org.jdom2.Element setDefaultNamespace(org.jdom2.Element rootNode,
+            org.jdom2.Namespace namespace) {
         // only if there is a node and it has no default namespace!
         if (rootNode != null && rootNode.getNamespaceURI().length() == 0) {
             // set namespace for this node
             rootNode.setNamespace(namespace);
             Iterator<Element> childIterator = rootNode.getChildren().iterator();
             while (childIterator.hasNext()) {
-                org.jdom.Element child = childIterator.next();
+                org.jdom2.Element child = childIterator.next();
                 // check children
                 setDefaultNamespace(child, namespace);
             }

@@ -12,7 +12,7 @@ package cbit.vcell.microscopy.batchrun;
 
 import java.util.List;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 
 import cbit.vcell.microscopy.FRAPModel;
 import cbit.vcell.microscopy.FRAPStudy;
@@ -25,7 +25,7 @@ public class BatchRunXmlReader {
 	/**
 	 * This method returns a Biomodel object from a XML Element.
 	 * Creation date: (3/13/2001 12:35:00 PM)
-	 * @param param org.jdom.Element
+	 * @param param org.jdom2.Element
 	 * @return cbit.vcell.biomodel.BioModel
 	 * @throws XmlParseException
 	 */

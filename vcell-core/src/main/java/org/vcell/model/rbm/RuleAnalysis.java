@@ -10,7 +10,7 @@ import java.util.TreeSet;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.vcell.model.rbm.RuleAnalysisReport.AddBondOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.AddMolecularTypeOperation;
 import org.vcell.model.rbm.RuleAnalysisReport.ChangeStateOperation;

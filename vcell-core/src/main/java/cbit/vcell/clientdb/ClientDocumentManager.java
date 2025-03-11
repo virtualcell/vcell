@@ -26,7 +26,7 @@ import java.util.Vector;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.BigString;
 import org.vcell.util.Compare;

@@ -16,7 +16,7 @@ import java.io.FileReader;
 import java.io.Reader;
 import java.io.StringReader;
 
-import org.jdom.Document;
+import org.jdom2.Document;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.document.VCellSoftwareVersion;

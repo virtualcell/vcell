@@ -15,9 +15,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.filter.Filter;
+import org.jdom2.Content;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+import org.jdom2.filter.Filter;
 
 /**
 This is a freely available utility class contributed from the JDOM mailing list. 
@@ -85,12 +87,11 @@ public class JDOMTreeWalker implements Iterator<Element> {
 			while (true) {
 				while (iter.hasNext()) {
 					Element node = iter.next();
-					if (node instanceof Element) {
-						@SuppressWarnings("unchecked")
-						List<Element> list = ((Element) node).getContent();
-						if (list.size() > 0) {
-							push(list);
-						}
+					List<Element> list = node.getContent().stream()
+							.filter(e -> e instanceof Element)
+							.map(e -> (Element)e).toList();
+					if (!list.isEmpty()) {
+						push(list);
 					}
 					if (_filter == null || _filter.matches(node)) {
 						return node;
@@ -120,7 +121,9 @@ public class JDOMTreeWalker implements Iterator<Element> {
 	public JDOMTreeWalker(Document document, Filter filter) {
 		this._filter = filter;
 		@SuppressWarnings("unchecked")
-		List<Element> list = document.getContent();
+		List<Element> list = document.getContent().stream()
+				.filter(e -> e instanceof Element)
+				.map(e -> (Element)e).toList();
 		_stack.push(list);
 		_next = _stack.getNext();
 	}
@@ -144,7 +147,9 @@ public class JDOMTreeWalker implements Iterator<Element> {
 			//filterTree(element, filter);
 		this._filter = filter;
 		@SuppressWarnings("unchecked")
-		List<Element> list = element.getContent();
+		List<Element> list = element.getContent().stream()
+				.filter(e -> e instanceof Element)
+				.map(e -> (Element)e).toList();
 		_stack.push(list);
 		_next = _stack.getNext();
 		
@@ -176,7 +181,7 @@ public class JDOMTreeWalker implements Iterator<Element> {
 	}
 
 
-	public ArrayList<Element> getAllMatchingElements(String attName, org.jdom.Namespace ns, String attValue) {
+	public ArrayList<Element> getAllMatchingElements(String attName, Namespace ns, String attValue) {
 
 		ArrayList<Element> list = new ArrayList<Element>();
 		Element temp;
@@ -204,7 +209,7 @@ public class JDOMTreeWalker implements Iterator<Element> {
 	}
 
 
-	public Element getMatchingElement(String attName, org.jdom.Namespace ns, String attValue) {
+	public Element getMatchingElement(String attName, Namespace ns, String attValue) {
 
 		Element temp;
 		String value = null;

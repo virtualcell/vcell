@@ -50,9 +50,9 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import cbit.vcell.client.server.DynamicClientProperties;
-import org.jdom.Attribute;
-import org.jdom.DataConversionException;
-import org.jdom.Element;
+import org.jdom2.Attribute;
+import org.jdom2.DataConversionException;
+import org.jdom2.Element;
 import org.vcell.util.UnzipUtility;
 import org.vcell.util.document.VCDocumentInfo;
 import org.vcell.util.gui.CollapsiblePanel;
@@ -524,11 +524,11 @@ TODO:
 			throw new FileNotFoundException(BIOMODELSNET_INFO_FILENAME_ALT + " not found");
 		}
 		//Process the Info files
-		org.jdom.input.SAXBuilder saxparser = new org.jdom.input.SAXBuilder(false);
-		org.jdom.Document doctable = null;
+		org.jdom2.input.SAXBuilder saxparser = new org.jdom2.input.SAXBuilder(false);
+		org.jdom2.Document doctable = null;
 		try {
 			doctable = saxparser.build(tableInputStream);
-		} catch (org.jdom.JDOMException e) {
+		} catch (org.jdom2.JDOMException e) {
 			e.printStackTrace();
 			throw new java.io.IOException("An error occurred when trying to parse the rules file ");
 		}

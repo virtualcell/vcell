@@ -109,7 +109,7 @@ public class SimulationContextDbDriver extends DbDriver {
             ResultSet rset = stmt.executeQuery(sql);
             while (rset.next()) {
                 String analysisXML = (String) getLOB(rset, analysisTaskTable.analysisTaskXML, dbSyntax);
-                org.jdom.Element rootElement = XmlUtil.stringToXML(analysisXML, null).getRootElement();
+                org.jdom2.Element rootElement = XmlUtil.stringToXML(analysisXML, null).getRootElement();
                 cbit.vcell.modelopt.ParameterEstimationTask parameterEstimationTask = cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence.getParameterEstimationTask(rootElement, simContext);
                 simContext.addAnalysisTask(parameterEstimationTask);
             }
@@ -863,7 +863,7 @@ public class SimulationContextDbDriver extends DbDriver {
                 cbit.vcell.modelopt.AnalysisTask analysisTask = analysisTasks[i];
                 String analysisTaskXML = null;
                 if(analysisTask instanceof cbit.vcell.modelopt.ParameterEstimationTask){
-                    org.jdom.Element xmlRootElement = cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence.getXML((cbit.vcell.modelopt.ParameterEstimationTask) analysisTask);
+                    org.jdom2.Element xmlRootElement = cbit.vcell.modelopt.ParameterEstimationTaskXMLPersistence.getXML((cbit.vcell.modelopt.ParameterEstimationTask) analysisTask);
                     analysisTaskXML = cbit.util.xml.XmlUtil.xmlToString(xmlRootElement);
                 } else {
                     throw new DataAccessException("can't generate xml for analysisTask type '" + analysisTask.getClass().getName() + "'");

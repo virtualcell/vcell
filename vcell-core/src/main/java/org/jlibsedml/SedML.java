@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jdom.Namespace;
+import org.jdom2.Namespace;
 import org.jlibsedml.execution.IModelResolver;
 import org.jlibsedml.execution.ModelResolver;
 import org.jlibsedml.extensions.ElementSearchVisitor;

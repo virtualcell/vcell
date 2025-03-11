@@ -35,10 +35,10 @@ import java.util.Set;
 
 import javax.xml.namespace.NamespaceContext;
 
-import org.jdom.Attribute;
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.jdom.filter.ElementFilter;
+import org.jdom2.Attribute;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+import org.jdom2.filter.ElementFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
  * context with that binding.</li>
  * <li>A constructor that takes a hash of namespace/uri pairs
  * and produces a namespace context with those initial bindings.</li>
- * <li>A constructor taking an org.jdom.Document and an XPathTarget. This constructor tries
+ * <li>A constructor taking an org.jdom2.Document and an XPathTarget. This constructor tries
  *  to match XPath prefixes to namespaces  and add them to the Namespace lookup.  </li>
  * </ol>
  * 
@@ -212,7 +212,7 @@ import org.slf4j.LoggerFactory;
 	 * </ul>
 	 * @param doc A JDOM document
 	 */
-	public NamespaceContextHelper(org.jdom.Document doc) {
+	public NamespaceContextHelper(org.jdom2.Document doc) {
 		Iterator it = doc.getDescendants(new ElementFilter());
 		nss = new HashSet<Namespace>();
 		while (it.hasNext()) {
