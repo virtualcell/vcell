@@ -33,6 +33,7 @@ import cbit.vcell.simdata.SimulationData;
 import cbit.vcell.solver.SimulationInfo;
 import org.vcell.util.*;
 import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Version;
 import org.vcell.util.gui.DialogUtils;
@@ -611,6 +612,9 @@ public class FieldDataGUIPanel extends JPanel {
                 PopupGenerator.showErrorDialog(this, "Please open a Bio or Math model containing the spatial (non-compartmental) simulation you wish to use to create a new Field Data");
                 return;
             }
+
+            String newFieldDataName = PopupGenerator.showInputDialog(this, "Field Data Name:", "");
+
             //Check that the sim is in a state that can be copied
             final SimulationInfo simInfo = simInfoHolder.getSimInfo();
             if (simInfo == null) {
@@ -625,36 +629,13 @@ public class FieldDataGUIPanel extends JPanel {
                     (simInfo.getParentSimulationReference() != null ? simInfo.getParentSimulationReference() : simInfo.getSimulationVersion().getVersionKey()),
                     simInfo.getOwner(), simInfoHolder.getJobIndex(), clientRequestManager.getDocumentManager().getUser());
 
-            AsynchClientTask[] addTasks = addNewExternalData(this, this, true);
-            AsynchClientTask[] taskArray = new AsynchClientTask[1 + addTasks.length];
-            System.arraycopy(addTasks, 0, taskArray, 1, addTasks.length); // add to the end
+            AsynchClientTask[] taskArray = new AsynchClientTask[1];
 
-            taskArray[0] = new AsynchClientTask("Create Field Data from Simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+            taskArray[0] = new AsynchClientTask("Saving Field Data From Simulation", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
                 public void run(Hashtable<String, Object> hashTable) throws Exception {
-                    FieldDataFileOperationResults fdor =
-                            clientRequestManager.getDocumentManager().fieldDataFileOperation(
-                                    FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(
-                                            (simInfo.getParentSimulationReference() != null ?
-                                                    simInfo.getParentSimulationReference() :
-                                                    simInfo.getSimulationVersion().getVersionKey()
-                                            ),
-                                            simInfo.getOwner(),
-                                            simInfoHolder.getJobIndex()));
-                    //Create (non-editable) info for display
-                    fdos.origin = fdor.origin;
-                    fdos.extent = fdor.extent;
-                    fdos.isize = fdor.iSize;
-                    fdos.times = fdor.times;
-                    fdos.varNames = new String[fdor.dataIdentifierArr.length];
-                    for (int i = 0; i < fdor.dataIdentifierArr.length; i += 1) {
-                        fdos.varNames[i] =
-                                (fdor.dataIdentifierArr[i].getVariableType().equals(VariableType.VOLUME) ? "(vol) " : "") +
-                                        (fdor.dataIdentifierArr[i].getVariableType().equals(VariableType.MEMBRANE) ? "(mbr) " : "") +
-                                        fdor.dataIdentifierArr[i].getName();
-                    }
-                    hashTable.put("fdos", fdos);
-                    hashTable.put("initFDName", simInfo.getName());
-                    //addNewExternalData(clientRequestManager, fdos, simInfoHolder.simInfo.getName(), true);
+                    KeyValue simReference = simInfo.getParentSimulationReference() != null ? simInfo.getParentSimulationReference() : simInfo.getSimulationVersion().getVersionKey();
+                    clientRequestManager.getDocumentManager().fieldDataFromSimulation(simReference, simInfoHolder.getJobIndex(), newFieldDataName);
+                    updateJTree(clientRequestManager);
                 }
             };
 
@@ -1050,7 +1031,7 @@ public class FieldDataGUIPanel extends JPanel {
             }
         }
     }
-
+    
     // creation and saving of file is separate act from saving file info into DB
 
     public static AsynchClientTask[] addNewExternalData(final Component requester, final FieldDataGUIPanel fieldDataGUIPanel, final boolean isFromSimulation) {

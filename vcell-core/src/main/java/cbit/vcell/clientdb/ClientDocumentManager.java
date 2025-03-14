@@ -512,7 +512,11 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 }
 
 
-public TestSuiteOPResults doTestSuiteOP(TestSuiteOP tsop) throws DataAccessException {
+public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) throws DataAccessException {
+	sessionManager.getUserMetaDbServer().fieldDataFromSimulation(sourceSim, jobIndex, newFieldDataName);
+}
+
+	public TestSuiteOPResults doTestSuiteOP(TestSuiteOP tsop) throws DataAccessException {
 	if(!getUser().isTestAccount()){
 		throw new PermissionException("User="+getUser().getName()+" not allowed TestSuiteInfo");
 	}
