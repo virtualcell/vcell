@@ -165,6 +165,8 @@ ExternalDataIdentifier saveFieldData(FieldDataFileOperationSpec fdos, String fie
 
 FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException;
 
+void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) throws DataAccessException;
+
 /**
  * Insert the method's description here.
  * Creation date: (10/28/00 12:07:09 AM)

@@ -266,6 +266,35 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/fieldData/createFieldDataFromSimulation:
+    post:
+      tags:
+      - Field Data Resource
+      summary: Create new field data from a simulation.
+      operationId: createNewFieldDataFromSimulation
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                simKeyReference:
+                  type: string
+                jobIndex:
+                  format: int32
+                  type: integer
+                newFieldDataName:
+                  type: string
+      responses:
+        "201":
+          description: Created
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
   /api/v1/fieldData/delete/{fieldDataID}:
     delete:
       tags:

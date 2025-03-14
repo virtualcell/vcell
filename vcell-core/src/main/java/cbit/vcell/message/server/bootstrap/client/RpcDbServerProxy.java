@@ -14,11 +14,7 @@ import java.util.TreeMap;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.document.CurateSpec;
-import org.vcell.util.document.User;
-import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.document.VCInfoContainer;
-import org.vcell.util.document.VersionableFamily;
+import org.vcell.util.document.*;
 
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.clientdb.ServerRejectedSaveException;
@@ -59,7 +55,12 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 	return (FieldDataDBOperationResults)rpc("fieldDataDBOperation",new Object[]{userLoginInfo.getUser(), fieldDataDBOperationSpec});
 }
 
-public void deleteGeometry(org.vcell.util.document.KeyValue geometryKey) throws DataAccessException, ObjectNotFoundException {
+	@Override
+	public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {
+		throw new UnsupportedOperationException("Not supported on RPC");
+	}
+
+	public void deleteGeometry(org.vcell.util.document.KeyValue geometryKey) throws DataAccessException, ObjectNotFoundException {
 	rpc("deleteGeometry",new Object[]{userLoginInfo.getUser(), geometryKey});
 }
 

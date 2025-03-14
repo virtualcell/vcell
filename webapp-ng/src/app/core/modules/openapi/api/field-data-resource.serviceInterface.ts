@@ -43,6 +43,15 @@ export interface FieldDataResourceServiceInterface {
     createFieldDataFromAnalyzedFile(analyzedResultsFromFieldData?: AnalyzedResultsFromFieldData, extraHttpRequestParams?: any): Observable<FieldDataSaveResults>;
 
     /**
+     * Create new field data from a simulation.
+     * 
+     * @param simKeyReference 
+     * @param jobIndex 
+     * @param newFieldDataName 
+     */
+    createNewFieldDataFromSimulation(simKeyReference?: string, jobIndex?: number, newFieldDataName?: string, extraHttpRequestParams?: any): Observable<{}>;
+
+    /**
      * Delete the selected field data.
      * 
      * @param fieldDataID 

@@ -80,20 +80,19 @@ public class FieldDataResource {
         }
     }
 
-//    @POST
-//    @Path("/createFieldDataFromSimulation")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Operation(operationId = "createNewFieldDataFromSimulation", summary = "Create new field data from a simulation.")
-//    public ExternalDataIdentifier submitNewFieldDataToDB(FieldDataDBOperationSpec fieldDataDBOperationSpec){
-//        FieldDataDBOperationResults results = null;
-//        try {
-//            results = fieldDataDB.saveNewFieldDataIntoDB(userRestDB.getUserFromIdentity(securityIdentity), fieldDataDBOperationSpec);
-//        } catch (DataAccessException e) {
-//            throw new WebApplicationException(e.getMessage(), 500);
-//        }
-//        return results.extDataID;
-//    }
+    @POST
+    @RolesAllowed("user")
+    @Path("/createFieldDataFromSimulation")
+    @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
+    @Operation(operationId = "createNewFieldDataFromSimulation", summary = "Create new field data from a simulation.")
+    public void createNewFieldDataFromSimulation(@RestForm String simKeyReference, @RestForm int jobIndex, @RestForm String newFieldDataName){
+        try {
+            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
+            fieldDataDB.saveFieldDataFromSimulation(user, new KeyValue(simKeyReference), jobIndex, newFieldDataName);
+        } catch (DataAccessException e) {
+            throw new WebApplicationException(e.getMessage(), 500);
+        }
+    }
 
     @POST
     @Path("/analyzeFieldDataFile")

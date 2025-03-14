@@ -27,6 +27,8 @@ import cbit.vcell.server.UserRegistrationResults;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.VCellApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.model.CreateFieldDataFromSimulation;
 import org.vcell.restclient.model.FieldDataReference;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.util.BigString;
@@ -140,6 +142,15 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 		throw new DataAccessException(e.getMessage());
 	}
 }
+
+public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {
+    try {
+        vCellApiClient.getFieldDataApi().createNewFieldDataFromSimulation(sourceSim.toString(), jobIndex, newFieldDataName);
+    } catch (ApiException e) {
+        throw new RuntimeException(e);
+    }
+}
+
 
 
 /**

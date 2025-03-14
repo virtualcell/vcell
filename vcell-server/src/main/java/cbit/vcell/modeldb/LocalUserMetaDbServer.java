@@ -100,8 +100,13 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 	return dbServerImpl.fieldDataDBOperation(user,fieldDataDBOperationSpec);
 }
 
+	@Override
+	public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {
+		throw new UnsupportedOperationException();
+	}
 
-/**
+
+	/**
  * delete method comment.
  */
 public void deleteGeometry(KeyValue key) throws DataAccessException, ObjectNotFoundException {

@@ -1180,6 +1180,12 @@ private SimDataBlock evaluateFunction(
 	return new SimDataBlock(pdeDataInfo, data, variableType);
 }
 
+
+public FieldDataFileOperationResults fieldDataCopySim(KeyValue sourceSimDataKey, User sourceSimOwner,
+													  ExternalDataIdentifier edi, int sourceSimParamScanJobIndex, User ownerOfCopy){
+	return fieldDataCopySim(FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(edi, sourceSimDataKey, sourceSimOwner, sourceSimParamScanJobIndex, ownerOfCopy));
+}
+
 private FieldDataFileOperationResults fieldDataCopySim(FieldDataFileOperationSpec fieldDataFileOperationSpec){
 	Vector<File> removeFilesIfErrorV = new Vector<File>();
 	try{

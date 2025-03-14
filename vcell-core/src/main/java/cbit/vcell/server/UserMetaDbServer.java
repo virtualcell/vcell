@@ -80,6 +80,8 @@ void deleteBioModel(KeyValue bioModelKey) throws DataAccessException, ObjectNotF
 public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, ObjectNotFoundException, RemoteProxyException;
 
 
+public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName);
+
 /**
  * Insert the method's description here.
  * Creation date: (4/29/2004 1:03:11 PM)
