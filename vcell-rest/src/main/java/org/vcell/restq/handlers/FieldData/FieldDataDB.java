@@ -12,10 +12,10 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataSetControllerImpl;
+import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solvers.CartesianMesh;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.apache.commons.io.IOUtils;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -26,8 +26,6 @@ import org.vcell.util.document.User;
 import java.io.*;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Vector;
 import java.util.zip.DataFormatException;
 
@@ -119,8 +117,14 @@ public class FieldDataDB {
         }
     }
 
-    public FieldDataDBOperationResults saveNewFieldDataIntoDB(User user, FieldDataDBOperationSpec spec) throws DataAccessException {
-        return databaseServer.fieldDataDBOperation(user, spec);
+    public void saveFieldDataFromSimulation(User user, KeyValue simKeyValue, int jobIndex, String newFieldDataName) throws DataAccessException {
+        // Create DB entry
+        SimulationInfo simInfo = databaseServer.getSimulationInfo(user, simKeyValue);
+        FieldDataDBOperationSpec fieldDataDBOperationSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(user, newFieldDataName, "");
+        FieldDataDBOperationResults results = databaseServer.fieldDataDBOperation(user, fieldDataDBOperationSpec);
+
+        // Save new file with reference to DB entry
+        dataSetController.fieldDataCopySim(simKeyValue, simInfo.getOwner(), results.extDataID, jobIndex, user);
     }
 
     public void deleteFieldData(User user, String fieldDataID) throws DataAccessException {
