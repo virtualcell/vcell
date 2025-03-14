@@ -8,6 +8,8 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 | [**analyzeFieldDataFileWithHttpInfo**](FieldDataResourceApi.md#analyzeFieldDataFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFieldDataFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores. |
 | [**createFieldDataFromAnalyzedFile**](FieldDataResourceApi.md#createFieldDataFromAnalyzedFile) | **POST** /api/v1/fieldData/createFieldDataFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server. |
 | [**createFieldDataFromAnalyzedFileWithHttpInfo**](FieldDataResourceApi.md#createFieldDataFromAnalyzedFileWithHttpInfo) | **POST** /api/v1/fieldData/createFieldDataFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server. |
+| [**createNewFieldDataFromSimulation**](FieldDataResourceApi.md#createNewFieldDataFromSimulation) | **POST** /api/v1/fieldData/createFieldDataFromSimulation | Create new field data from a simulation. |
+| [**createNewFieldDataFromSimulationWithHttpInfo**](FieldDataResourceApi.md#createNewFieldDataFromSimulationWithHttpInfo) | **POST** /api/v1/fieldData/createFieldDataFromSimulation | Create new field data from a simulation. |
 | [**deleteFieldData**](FieldDataResourceApi.md#deleteFieldData) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data. |
 | [**deleteFieldDataWithHttpInfo**](FieldDataResourceApi.md#deleteFieldDataWithHttpInfo) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data. |
 | [**getAllFieldDataIDs**](FieldDataResourceApi.md#getAllFieldDataIDs) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data. |
@@ -293,6 +295,150 @@ ApiResponse<[**FieldDataSaveResults**](FieldDataSaveResults.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+
+
+## createNewFieldDataFromSimulation
+
+> void createNewFieldDataFromSimulation(simKeyReference, jobIndex, newFieldDataName)
+
+Create new field data from a simulation.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.FieldDataResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
+
+        FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
+        String simKeyReference = "simKeyReference_example"; // String | 
+        Integer jobIndex = 56; // Integer | 
+        String newFieldDataName = "newFieldDataName_example"; // String | 
+        try {
+            apiInstance.createNewFieldDataFromSimulation(simKeyReference, jobIndex, newFieldDataName);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling FieldDataResourceApi#createNewFieldDataFromSimulation");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **simKeyReference** | **String**|  | [optional] |
+| **jobIndex** | **Integer**|  | [optional] |
+| **newFieldDataName** | **String**|  | [optional] |
+
+### Return type
+
+
+null (empty response body)
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: application/x-www-form-urlencoded
+- **Accept**: Not defined
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **201** | Created |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+
+## createNewFieldDataFromSimulationWithHttpInfo
+
+> ApiResponse<Void> createNewFieldDataFromSimulation createNewFieldDataFromSimulationWithHttpInfo(simKeyReference, jobIndex, newFieldDataName)
+
+Create new field data from a simulation.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.FieldDataResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
+
+        FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
+        String simKeyReference = "simKeyReference_example"; // String | 
+        Integer jobIndex = 56; // Integer | 
+        String newFieldDataName = "newFieldDataName_example"; // String | 
+        try {
+            ApiResponse<Void> response = apiInstance.createNewFieldDataFromSimulationWithHttpInfo(simKeyReference, jobIndex, newFieldDataName);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling FieldDataResourceApi#createNewFieldDataFromSimulation");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **simKeyReference** | **String**|  | [optional] |
+| **jobIndex** | **Integer**|  | [optional] |
+| **newFieldDataName** | **String**|  | [optional] |
+
+### Return type
+
+
+ApiResponse<Void>
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: application/x-www-form-urlencoded
+- **Accept**: Not defined
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **201** | Created |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
 

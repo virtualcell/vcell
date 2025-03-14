@@ -268,6 +268,100 @@ public class FieldDataResourceApi {
     return localVarRequestBuilder;
   }
   /**
+   * Create new field data from a simulation.
+   * 
+   * @param simKeyReference  (optional)
+   * @param jobIndex  (optional)
+   * @param newFieldDataName  (optional)
+   * @throws ApiException if fails to make API call
+   */
+  public void createNewFieldDataFromSimulation(String simKeyReference, Integer jobIndex, String newFieldDataName) throws ApiException {
+    createNewFieldDataFromSimulationWithHttpInfo(simKeyReference, jobIndex, newFieldDataName);
+  }
+
+  /**
+   * Create new field data from a simulation.
+   * 
+   * @param simKeyReference  (optional)
+   * @param jobIndex  (optional)
+   * @param newFieldDataName  (optional)
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> createNewFieldDataFromSimulationWithHttpInfo(String simKeyReference, Integer jobIndex, String newFieldDataName) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = createNewFieldDataFromSimulationRequestBuilder(simKeyReference, jobIndex, newFieldDataName);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("createNewFieldDataFromSimulation", localVarResponse);
+        }
+        return new ApiResponse<Void>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          null
+        );
+      } finally {
+        // Drain the InputStream
+        while (localVarResponse.body().read() != -1) {
+            // Ignore
+        }
+        localVarResponse.body().close();
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder createNewFieldDataFromSimulationRequestBuilder(String simKeyReference, Integer jobIndex, String newFieldDataName) throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/fieldData/createFieldDataFromSimulation";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    List<NameValuePair> formValues = new ArrayList<>();
+    if (simKeyReference != null) {
+        formValues.add(new BasicNameValuePair("simKeyReference", simKeyReference.toString()));
+    }
+    if (jobIndex != null) {
+        formValues.add(new BasicNameValuePair("jobIndex", jobIndex.toString()));
+    }
+    if (newFieldDataName != null) {
+        formValues.add(new BasicNameValuePair("newFieldDataName", newFieldDataName.toString()));
+    }
+    HttpEntity entity = new UrlEncodedFormEntity(formValues, java.nio.charset.StandardCharsets.UTF_8);
+    ByteArrayOutputStream formOutputStream = new ByteArrayOutputStream();
+    try {
+        entity.writeTo(formOutputStream);
+    } catch (IOException e) {
+        throw new RuntimeException(e);
+    }
+    localVarRequestBuilder
+        .header("Content-Type", entity.getContentType().getValue())
+        .method("POST", HttpRequest.BodyPublishers
+            .ofInputStream(() -> new ByteArrayInputStream(formOutputStream.toByteArray())));
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
    * Delete the selected field data.
    * 
    * @param fieldDataID  (required)
