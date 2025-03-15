@@ -5,6 +5,11 @@
 * [configure database host](#configure-database-host)
 * [import database dump](#import-database-dump)
 
+### database user and roles creation
+* [Create vcell_role to access VCELL schema](#create-vcell_role-to-access-vcell-schema)
+* [Create service users with role vcell_role](#create-service-users-with-role-vcell_role)
+* [add triggers to set default schema upon login](#add-triggers-to-set-default-schema-upon-login)
+
 ### database user management
 * [Unlock user vcell](#unlock-user-vcell)
 * [Reset password for user vcell](#reset-password-for-user-vcell)
@@ -98,7 +103,94 @@ impdp system/<<password>>@ORCLPDB1 schemas=vcell \
 ```
 ===========================================================
 
-# Database user management
+# Database user and roles creation
+
+## Create vcell_role to access VCELL schema
+from within the container
+```bash
+sqlplus / as sysdba
+```
+then
+```sql
+ALTER SESSION SET CONTAINER = ORCLPDB1;
+
+CREATE ROLE vcell_role;
+
+BEGIN
+
+FOR r IN (SELECT table_name FROM all_tables WHERE owner = 'VCELL') LOOP
+    EXECUTE IMMEDIATE 'GRANT SELECT, INSERT, UPDATE, DELETE ON VCELL.' || r.table_name || ' TO vcell_role';
+END LOOP;
+
+FOR r IN (SELECT object_name FROM all_procedures WHERE owner = 'VCELL' AND object_type IN ('PROCEDURE', 'FUNCTION', 'PACKAGE', 'PACKAGE BODY')) LOOP
+BEGIN
+EXECUTE IMMEDIATE 'GRANT EXECUTE ON VCELL.' || r.object_name || ' TO vcell_role';
+EXCEPTION
+      WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error granting EXECUTE on ' || r.object_name || ': ' || SQLERRM);
+END;
+END LOOP;
+
+FOR r IN (SELECT sequence_name FROM all_sequences WHERE sequence_owner = 'VCELL') LOOP
+BEGIN
+EXECUTE IMMEDIATE 'GRANT SELECT ON VCELL.' || r.sequence_name || ' TO VCELL_ROLE';
+EXECUTE IMMEDIATE 'GRANT USAGE ON VCELL.' || r.sequence_name || ' TO VCELL_ROLE';
+EXCEPTION WHEN OTHERS THEN
+            DBMS_OUTPUT.PUT_LINE('Error granting access to sequence ' || r.sequence_name || ': ' || SQLERRM);
+END;
+END LOOP;
+
+END;
+/
+
+GRANT CREATE SESSION TO vcell_role;
+
+```
+
+## Create service and dev users with role vcell_role
+from within the container
+```bash
+sqlplus / as sysdba
+```
+then
+```sql
+ALTER SESSION SET CONTAINER = ORCLPDB1;
+
+CREATE USER vcell_service IDENTIFIED BY strong_password_1;
+ALTER USER vcell_service QUOTA UNLIMITED ON USERS;
+GRANT vcell_role TO vcell_service;
+
+CREATE USER vcell_dev IDENTIFIED BY strong_password_2;
+ALTER USER vcell_dev QUOTA UNLIMITED ON USERS;
+GRANT vcell_role TO vcell_dev;
+
+-- not sure if need to commit
+commit;  
+```
+
+## add triggers to set default schema upon login
+from within the container
+```bash
+sqlplus / as sysdba
+```
+then
+```sql
+CREATE OR REPLACE TRIGGER set_vcell_service_schema
+AFTER LOGON ON vcell_service.SCHEMA
+BEGIN
+EXECUTE IMMEDIATE 'ALTER SESSION SET CURRENT_SCHEMA = VCELL';
+END;
+/
+
+CREATE OR REPLACE TRIGGER set_vcell_dev_schema
+AFTER LOGON ON vcell_dev.SCHEMA
+BEGIN
+EXECUTE IMMEDIATE 'ALTER SESSION SET CURRENT_SCHEMA = VCELL';
+END;
+/
+```
+
+# Database user maintenance
 
 ## Unlock user vcell
 from within the container
