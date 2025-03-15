@@ -12,11 +12,10 @@ package cbit.vcell.parser;
 import java.io.StringReader;
 import java.util.Iterator;
 import java.util.Vector;
-import java.util.concurrent.atomic.AtomicStampedReference;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.input.SAXBuilder;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import org.jmathml.ASTNode;
@@ -84,7 +83,7 @@ public Expression fromMathML(org.w3c.dom.NodeList mathMLArg, String overrideTime
         throw new ExpressionException("No element could be found in the NodeList!");
     }
 
-    org.jdom.Element mathElement = node2Element(mathMLArg.item(firstelem));
+    org.jdom2.Element mathElement = node2Element(mathMLArg.item(firstelem));
 	Expression exp = fromMathML(mathElement, overrideTimeSymbol);
 
 	//return flat version
@@ -106,7 +105,7 @@ public cbit.vcell.parser.LambdaFunction[] getFunctions() {
  * Insert the method's description here.
  * Creation date: (2/11/2002 2:33:36 PM)
  * @return cbit.vcell.parser.SimpleNode
- * @param nodeMathML org.jdom.Element
+ * @param nodeMathML org.jdom2.Element
  */
 private SimpleNode getRootNode(Element nodeMathML, String timeSymbol) throws ExpressionException {
 	if (nodeMathML.getName().equals(MathMLTags.APPLY)){
@@ -294,7 +293,7 @@ private SimpleNode getRootNode(Element nodeMathML, String timeSymbol) throws Exp
 
 			// get the lambda function name from the Identifier node
 			java.util.List lFnList = operation.getContent();
-			String lFnName = ((org.jdom.Text)lFnList.get(0)).getTextTrim();
+			String lFnName = ((org.jdom2.Text)lFnList.get(0)).getTextTrim();
 
 			// get the list of lambda functions filled out in SBVCTranslator, find the fn matching 'lFn'
 			LambdaFunction theLambdaFn = null;
@@ -312,7 +311,7 @@ private SimpleNode getRootNode(Element nodeMathML, String timeSymbol) throws Exp
 			while (applyNodeChildrenIterator.hasNext()) {
 				Element child = (Element)applyNodeChildrenIterator.next();
 				// ignore the first child of the 'apply' node (which is the labmda function identifier/name)
-				if ( ((org.jdom.Text)(child.getContent()).get(0)).getTextTrim().equals(theLambdaFn.getName())) {
+				if ( ((org.jdom2.Text)(child.getContent()).get(0)).getTextTrim().equals(theLambdaFn.getName())) {
 					continue;
 				}
 				SimpleNode childNode = getRootNode(child, timeSymbol);
@@ -439,25 +438,25 @@ private SimpleNode getRootNode(Element nodeMathML, String timeSymbol) throws Exp
 		}
 		return addNode;
 	} else if (nodeMathML.getName().equals(MathMLTags.CONSTANT)){
-		org.jdom.Attribute typeAttribute = nodeMathML.getAttribute("type");
+		org.jdom2.Attribute typeAttribute = nodeMathML.getAttribute("type");
 		if (typeAttribute == null || typeAttribute.getValue().equals("integer") || typeAttribute.getValue().equals("real")) {
 			String floatString = nodeMathML.getTextTrim();
 			return new ASTFloatNode(Double.parseDouble(floatString));
 		} else if (typeAttribute.getValue().equals("rational")) {
 			java.util.List children = nodeMathML.getContent();
-			org.jdom.Text numeratorTxt = (org.jdom.Text)children.get(0);
+			org.jdom2.Text numeratorTxt = (org.jdom2.Text)children.get(0);
 			long numerator = Long.parseLong(numeratorTxt.getTextTrim());
-			org.jdom.Text denominatorTxt = (org.jdom.Text)children.get(2);
+			org.jdom2.Text denominatorTxt = (org.jdom2.Text)children.get(2);
 			long denominator = Long.parseLong(denominatorTxt.getTextTrim());
-			double value = new Double(((double)numerator)/denominator).doubleValue();
+			double value = ((double)numerator)/denominator;
 			return new ASTFloatNode(value);
 		} else if (typeAttribute.getValue().equals("e-notation")) {
 			java.util.List children = nodeMathML.getContent();
-			org.jdom.Text mantissaTxt = (org.jdom.Text)children.get(0);
+			org.jdom2.Text mantissaTxt = (org.jdom2.Text)children.get(0);
 			double mantissa = Double.parseDouble(mantissaTxt.getTextTrim());
-			org.jdom.Text exponentTxt = (org.jdom.Text)children.get(2);
+			org.jdom2.Text exponentTxt = (org.jdom2.Text)children.get(2);
 			long exponent = Long.parseLong(exponentTxt.getTextTrim());
-			double value = new Double(mantissa+"E"+exponent).doubleValue();
+			double value = Double.parseDouble(mantissa+"E"+exponent);
 			return new ASTFloatNode(value);
 		} else {
 			throw new RuntimeException("MathML Parsing error : constant type "+typeAttribute.getValue() + " not supported.");
@@ -514,16 +513,16 @@ private SimpleNode getRootNode(Element nodeMathML, String timeSymbol) throws Exp
 	}		
 }
 
-public org.jdom.Element node2Element(org.w3c.dom.Node nodeArg) throws ExpressionException{
+public org.jdom2.Element node2Element(org.w3c.dom.Node nodeArg) throws ExpressionException{
 	if (nodeArg== null) {
 		throw new IllegalArgumentException("Invalid null Node");
 	}
 	
 	//process node
-	org.jdom.Element element = null;
+	org.jdom2.Element element = null;
 	
 	if (nodeArg.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE){
-		element = new org.jdom.Element(nodeArg.getNodeName());
+		element = new org.jdom2.Element(nodeArg.getNodeName());
 
 		//process attributes
 		org.w3c.dom.NamedNodeMap attrMap = nodeArg.getAttributes();
@@ -532,7 +531,7 @@ public org.jdom.Element node2Element(org.w3c.dom.Node nodeArg) throws Expression
 				org.w3c.dom.Node temp = attrMap.item(i);
 
 				if (temp.getNodeType()== org.w3c.dom.Node.ATTRIBUTE_NODE) {
-					org.jdom.Attribute attribute = new org.jdom.Attribute(temp.getLocalName(), temp.getNodeValue());
+					org.jdom2.Attribute attribute = new org.jdom2.Attribute(temp.getLocalName(), temp.getNodeValue());
 					element.setAttribute(attribute);
 				} else {
 					throw new ExpressionException("Unknown node "+temp.getNodeName()+" type "+ temp.getNodeType() + " when processing attributes!");

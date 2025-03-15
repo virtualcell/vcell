@@ -12,12 +12,13 @@ package cbit.util.xml;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.input.SAXBuilder;
-import org.jdom.output.Format;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.output.Format;
+import org.jdom2.output.XMLOutputter;
 
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
@@ -220,12 +221,12 @@ private XmlUtil() {
 /**
  * This method is used to set the Default Namespace to the XML document represented by 'rootNode'.
  * Creation date: (5/8/2003 12:51:03 PM)
- * @return org.jdom.Element
- * @param rootNode org.jdom.Element
- * @param namespace org.jdom.Namespace
+ * @return Element
+ * @param rootNode Element
+ * @param namespace Namespace
  * @exception cbit.vcell.xml.XmlParseException The exception description.
  */
-public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, org.jdom.Namespace namespace) {
+public static Element setDefaultNamespace(Element rootNode, Namespace namespace) {
 	//only if there is a node and it has no default namespace!
 	if (rootNode!=null && rootNode.getNamespaceURI().length()==0) {
 		//set namespace for this node
@@ -234,7 +235,7 @@ public static org.jdom.Element setDefaultNamespace(org.jdom.Element rootNode, or
     	java.util.Iterator<?> childIterator = rootNode.getChildren().iterator();
     	
     	while (childIterator.hasNext()) {
-    		org.jdom.Element child = (org.jdom.Element)childIterator.next();
+    		Element child = (Element)childIterator.next();
     		//check children
     		setDefaultNamespace(child, namespace);
     	}

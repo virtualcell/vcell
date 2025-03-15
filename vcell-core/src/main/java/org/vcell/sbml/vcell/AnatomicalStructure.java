@@ -13,8 +13,8 @@ package org.vcell.sbml.vcell;
 import java.util.HashMap;
 import java.util.List;
 
-import org.jdom.Element;
-import org.jdom.Namespace;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 
 import cbit.util.graph.Edge;
 import cbit.util.graph.Graph;

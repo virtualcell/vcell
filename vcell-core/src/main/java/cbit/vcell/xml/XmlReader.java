@@ -18,10 +18,10 @@ import java.util.function.Consumer;
 
 import cbit.vcell.model.*;
 import cbit.vcell.solver.*;
-import org.jdom.Attribute;
-import org.jdom.DataConversionException;
-import org.jdom.Element;
-import org.jdom.Namespace;
+import org.jdom2.Attribute;
+import org.jdom2.DataConversionException;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.RefinementRoi;
 import org.vcell.chombo.RefinementRoi.RoiType;
@@ -309,7 +309,7 @@ public class XmlReader extends XmlBase {
      * This method returns a Action object from a XML element.
      * Creation date: (7/24/2006 5:56:36 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.Action
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -356,7 +356,7 @@ public class XmlReader extends XmlBase {
      * This method returns an AnalyticSubVolume object from a XML representation.
      * Creation date: (5/1/2001 5:26:17 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.geometry.AnalyticSubVolume
      */
     private AnalyticSubVolume getAnalyticSubVolume(Element param) throws XmlParseException{
@@ -396,7 +396,7 @@ public class XmlReader extends XmlBase {
      * This method returns a Biomodel object from a XML Element.
      * Creation date: (3/13/2001 12:35:00 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.biomodel.BioModel
      */
     public BioModel getBioModel(Element param, VCellSoftwareVersion docVcellSoftwareVersion) throws XmlParseException{
@@ -516,7 +516,7 @@ public class XmlReader extends XmlBase {
      * This method returns a Catalyst object from a XML representation.
      * Creation date: (5/4/2001 2:22:56 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.model.Product
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -544,7 +544,7 @@ public class XmlReader extends XmlBase {
      * This method returns a CompartmentSubDomain objecy from a XML element.
      * Creation date: (5/17/2001 11:59:45 AM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.CompartmentSubDomain
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -764,7 +764,7 @@ public class XmlReader extends XmlBase {
      * This method returns a CompartmentSubVolume object from a XML representation.
      * Creation date: (5/1/2001 5:26:17 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.geometry.CompartmentSubVolume
      */
     private CompartmentSubVolume getCompartmentSubVolume(Element param) throws XmlParseException{
@@ -810,7 +810,7 @@ public class XmlReader extends XmlBase {
      * This method returns a Constant object from a XML element.
      * Creation date: (5/16/2001 1:50:07 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.Constant
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -831,7 +831,7 @@ public class XmlReader extends XmlBase {
      * This method returns a ControlPointcurve object from a XML element.
      * Creation date: (5/22/2001 5:20:39 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.geometry.ControlPointCurve
      */
     private ControlPointCurve getControlPointCurve(Element param){
@@ -877,7 +877,7 @@ public class XmlReader extends XmlBase {
      * This method returns a Coordinate object from a XML Element.
      * Creation date: (5/22/2001 5:53:05 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.geometry.Coordinate
      */
     public Coordinate getCoordinate(Element param){
@@ -897,7 +897,7 @@ public class XmlReader extends XmlBase {
      * This method returns a DBFormalSpecies from a XML representation.
      * Creation date: (6/3/2003 8:46:44 PM)
      *
-     * @param formalSpeciesElement org.jdom.Element
+     * @param formalSpeciesElement Element
      * @return cbit.vcell.dictionary.DBFormalSpecies
      */
     private DBFormalSpecies getDBFormalSpecies(Element formalSpeciesElement) throws XmlParseException{
@@ -930,7 +930,7 @@ public class XmlReader extends XmlBase {
      * This method reads a DBSpecies from a XML representation.
      * Creation date: (6/3/2003 8:20:54 PM)
      *
-     * @param dbSpeciesElement org.jdom.Element
+     * @param dbSpeciesElement Element
      * @return cbit.vcell.dictionary.DBSpecies
      */
     private DBSpecies getDBSpecies(Element dbSpeciesElement) throws XmlParseException{
@@ -942,7 +942,7 @@ public class XmlReader extends XmlBase {
         //read the type
         String type = dbSpeciesElement.getAttributeValue(XMLTags.TypeAttrTag);
         //Read the DBFormalSpecies
-        org.jdom.Element formalSpeciesElement = dbSpeciesElement.getChild(XMLTags.DBFormalSpeciesTag, vcNamespace);
+        Element formalSpeciesElement = dbSpeciesElement.getChild(XMLTags.DBFormalSpeciesTag, vcNamespace);
 
         if(type.equalsIgnoreCase(XMLTags.CompoundTypeTag)){
             //Create a BoundCompound
@@ -965,7 +965,7 @@ public class XmlReader extends XmlBase {
      * This method returns a Diagram object from a XML element.
      * Creation date: (4/4/2001 4:20:52 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.model.Diagram
      */
     private Diagram getDiagram(Element param, Model model) throws XmlParseException{
@@ -996,7 +996,7 @@ public class XmlReader extends XmlBase {
      * This method process Electrical Stimulus, also called Clamps.
      * Creation date: (6/6/2002 4:46:18 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.mapping.ElectricalStimulus
      */
     private ElectricalStimulus getElectricalStimulus(Element param, SimulationContext currentSimulationContext) throws XmlParseException{
@@ -1313,7 +1313,7 @@ public class XmlReader extends XmlBase {
      *
      * @return cbit.vcell.mapping.Electrode
      */
-    private Electrode getElectrode(org.jdom.Element elem, SimulationContext currentSimulationContext){
+    private Electrode getElectrode(Element elem, SimulationContext currentSimulationContext){
         //retrieve feature
         String featureName = unMangle(elem.getAttributeValue(XMLTags.FeatureAttrTag));
         Feature feature = (Feature) currentSimulationContext.getModel().getStructure(featureName);
@@ -1330,7 +1330,7 @@ public class XmlReader extends XmlBase {
      * This method returns a ErrorTolerance object from a XML Element.
      * Creation date: (5/22/2001 11:50:07 AM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.solver.ErrorTolerance
      */
     private ErrorTolerance getErrorTolerance(Element param){
@@ -1359,7 +1359,7 @@ public class XmlReader extends XmlBase {
      * This method returns a FastSystemImplicit from a XML Element.
      * Creation date: (5/18/2001 2:38:56 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.FastSystemImplicit
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -1412,7 +1412,7 @@ public class XmlReader extends XmlBase {
      * This method returns a Feature object (Structure) from a XML representation.
      * Creation date: (3/15/2001 6:12:36 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.model.Structure
      */
     private Structure getFeature(Element param) throws XmlParseException{
@@ -1444,7 +1444,7 @@ public class XmlReader extends XmlBase {
      * This method retuns a FeatureMapping object from a XML representation.
      * Creation date: (5/7/2001 4:12:03 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.mapping.FeatureMapping
      */
     private FeatureMapping getFeatureMapping(Element param, SimulationContext simulationContext) throws XmlParseException{
@@ -1553,7 +1553,7 @@ public class XmlReader extends XmlBase {
      * This method returns a FilamentRegionVariable object from a XML Element.
      * Creation date: (5/16/2001 2:56:34 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.FilamentRegionVariable
      */
     private FilamentRegionVariable getFilamentRegionVariable(Element param){
@@ -1576,7 +1576,7 @@ public class XmlReader extends XmlBase {
      * This method returns a FilamentSubDomain object from a XMl element.
      * Creation date: (5/18/2001 4:27:22 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.FilamentSubDomain
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -1651,7 +1651,7 @@ public class XmlReader extends XmlBase {
      * This method returns a FilamentVariable object from a XML Element.
      * Creation date: (5/16/2001 2:56:34 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.FilamentVariable
      */
     private FilamentVariable getFilamentVariable(Element param){
@@ -1673,7 +1673,7 @@ public class XmlReader extends XmlBase {
      * This method returns a FluxReaction object from a XML element.
      * Creation date: (3/16/2001 11:52:02 AM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.model.FluxReaction
      * @throws XmlParseException
      * @throws PropertyVetoException
@@ -1825,7 +1825,7 @@ public class XmlReader extends XmlBase {
      * This method creates a FormalSpeciesInfo from a XML representation.
      * Creation date: (6/3/2003 9:11:26 PM)
      *
-     * @param speciesInfoElement org.jdom.Element
+     * @param speciesInfoElement Element
      * @return cbit.vcell.dictionary.FormalSpeciesInfo
      */
     private FormalSpeciesInfo getFormalSpeciesInfo(Element speciesInfoElement) throws XmlParseException{
@@ -1939,7 +1939,7 @@ public class XmlReader extends XmlBase {
      * This method returns a Function variable object from a XML Element.
      * Creation date: (5/16/2001 3:45:21 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.Function
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -2004,7 +2004,7 @@ public class XmlReader extends XmlBase {
      * This method returns a Geometry object from a XML representation.
      * Creation date: (4/26/2001 12:12:18 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.geometry.Geometry
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -2215,7 +2215,7 @@ public class XmlReader extends XmlBase {
      * This method returns a GroupAccess object from an XML format.
      * Creation date: (5/23/2003 7:27:10 PM)
      *
-     * @param xmlGroup org.jdom.Element
+     * @param xmlGroup Element
      * @return cbit.vcell.server.GroupAccess
      */
     private GroupAccess getGroupAccess(Element xmlGroup){
@@ -2261,7 +2261,7 @@ public class XmlReader extends XmlBase {
      * This method returns an ImageSubVolume object from a XML representation.
      * Creation date: (5/1/2001 5:26:17 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.geometry.ImageSubVolume
      */
     private ImageSubVolume getImageSubVolume(Element param) throws XmlParseException{
@@ -2313,7 +2313,7 @@ public class XmlReader extends XmlBase {
      * This method returns an InsideVariable object from a XML Element
      * Creation date: (5/18/2001 6:14:42 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.InsideVariable
      */
     private InsideVariable getInsideVariable(Element param){
@@ -2334,7 +2334,7 @@ public class XmlReader extends XmlBase {
      * This method returns a JumpCondition object from a XML Element.
      * Creation date: (5/18/2001 5:10:10 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.JumpCondition
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -2375,7 +2375,7 @@ public class XmlReader extends XmlBase {
      * The method returns a JumpProcess object from a XML element.
      * Creation date: (7/24/2006 6:28:42 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @param md    cbit.vcell.math.MathDescription
      * @return cbit.vcell.math.JumpProcess
      * @throws cbit.vcell.xml.XmlParseException The exception description.
@@ -2581,7 +2581,7 @@ public class XmlReader extends XmlBase {
      * This method returns a Kinetics object from a XML Element based on the value of the kinetics type attribute.
      * Creation date: (3/19/2001 4:42:04 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.model.Kinetics
      */
     private Kinetics getKinetics(Element param, ReactionStep reaction, Model model) throws XmlParseException{
@@ -2783,7 +2783,7 @@ public class XmlReader extends XmlBase {
      * This method returns a MathDescription from a XML element.
      * Creation date: (4/26/2001 12:11:14 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.MathDescription
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -3708,7 +3708,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a MathModel object from a XML Element.
      * Creation date: (3/13/2001 12:35:00 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.mathmodel.MathModel
      */
     public MathModel getMathModel(Element param) throws XmlParseException{
@@ -3787,7 +3787,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a MathOverrides object from a XML Element.
      * Creation date: (5/21/2001 3:05:17 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.solver.MathOverrides
      */
     private MathOverrides getMathOverrides(Element param, Simulation simulation) throws XmlParseException{
@@ -3826,7 +3826,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a Membrane object from a XML element.
      * Creation date: (4/4/2001 4:17:32 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.model.Membrane
      */
     private Membrane getMembrane(Model model, Element param, List<Structure> featureList) throws XmlParseException{
@@ -3909,7 +3909,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method retuns a MembraneMapping object from a XML representation.
      * Creation date: (5/7/2001 4:12:03 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.mapping.MembraneMapping
      */
     private MembraneMapping getMembraneMapping(Element param, SimulationContext simulationContext) throws XmlParseException{
@@ -4056,7 +4056,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a MembraneRegionEquation from a XML Element.
      * Creation date: (5/17/2001 3:52:40 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.MembraneRegionEquation
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -4197,7 +4197,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a MembraneRegionVariable object from a XML Element.
      * Creation date: (5/16/2001 2:56:34 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.MembraneRegionVariable
      */
     private MembraneRegionVariable getMembraneRegionVariable(Element param){
@@ -4220,7 +4220,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a MembraneSubDomain object from a XML Element.
      * Creation date: (5/18/2001 4:23:30 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.MembraneSubDomain
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -4419,7 +4419,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a MemVariable object from a XML element.
      * Creation date: (5/16/2001 3:17:18 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.MemVariable
      */
     private MemVariable getMemVariable(Element param){
@@ -4458,7 +4458,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a MeshSpecification object from a XML Element.
      * Creation date: (5/22/2001 12:05:21 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.mesh.MeshSpecification
      */
     private MeshSpecification getMeshSpecification(Element param, Geometry geometry) throws XmlParseException{
@@ -4488,7 +4488,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method creates a Model object from a XML element.
      * Creation date: (3/14/2001 6:14:37 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.model.Model
      */
     public Model getModel(Element param) throws XmlParseException{
@@ -4534,7 +4534,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
             Iterator<Element> iterator = param.getChildren(XMLTags.SpeciesTag, vcNamespace).iterator();
             ArrayList<Species> speciesList = new ArrayList<Species>();
             while (iterator.hasNext()) {
-                org.jdom.Element temp = (Element) iterator.next();
+                Element temp = (Element) iterator.next();
                 speciesList.add(getSpecies(temp));
             }
             newmodel.setSpecies(speciesList.toArray(new Species[speciesList.size()]));
@@ -4590,13 +4590,13 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
             iterator = param.getChildren(XMLTags.SimpleReactionTag, vcNamespace).iterator();
             ArrayList<ReactionStep> reactionStepList = new ArrayList<ReactionStep>();
             while (iterator.hasNext()) {
-                org.jdom.Element temp = iterator.next();
+                Element temp = iterator.next();
                 reactionStepList.add(getSimpleReaction(temp, newmodel));
             }
             //(fluxStep)
             iterator = param.getChildren(XMLTags.FluxStepTag, vcNamespace).iterator();
             while (iterator.hasNext()) {
-                org.jdom.Element temp = iterator.next();
+                Element temp = iterator.next();
                 reactionStepList.add(getFluxReaction(temp, newmodel));
             }
             newmodel.setReactionSteps(reactionStepList.toArray(new ReactionStep[reactionStepList.size()]));
@@ -5253,7 +5253,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a nodeReference onject from a XML representation.
      * Creation date: (4/24/2001 5:35:56 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.model.NodeReference
      */
     private NodeReference getNodeReference(Element param) throws XmlParseException{
@@ -5299,7 +5299,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns an OdeEquation from a XML Element.
      * Creation date: (5/17/2001 3:52:40 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.OdeEquation
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -5363,7 +5363,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a TimeStep object from a XML Element.
      * Creation date: (5/22/2001 11:45:33 AM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.solver.TimeStep
      */
     private OutputTimeSpec getOutputTimeSpec(Element param){
@@ -5389,7 +5389,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns an OutsideVariable object from a XML Element
      * Creation date: (5/18/2001 6:14:42 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.InsideVariable
      */
     private OutsideVariable getOutsideVariable(Element param){
@@ -5410,7 +5410,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a PdeEquation from a XML element.
      * Creation date: (4/26/2001 12:11:14 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.PdeEquation
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -5587,7 +5587,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a VCImageRegion from a XML Representation.
      * Creation date: (5/2/2001 12:17:05 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.image.VCImageRegion
      */
     private VCPixelClass getPixelClass(Element param){
@@ -5611,7 +5611,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a Product object from a XML representation.
      * Creation date: (5/4/2001 2:22:56 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.model.Product
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -5634,7 +5634,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         }
         //Retrieve Stoichiometry
         int stoch = 1;
-        org.jdom.Attribute tempAttrib = param.getAttribute(XMLTags.StoichiometryAttrTag);
+        Attribute tempAttrib = param.getAttribute(XMLTags.StoichiometryAttrTag);
         if(tempAttrib != null){
             String temp = tempAttrib.getValue();
             if(temp.length() > 0){
@@ -5651,7 +5651,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a Reactant object from a XML representation.
      * Creation date: (5/4/2001 2:22:56 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.model.Reactant
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -5674,7 +5674,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         }
         //Retrieve Stoichiometry
         int stoch = 1;
-        org.jdom.Attribute tempArg = param.getAttribute(XMLTags.StoichiometryAttrTag);
+        Attribute tempArg = param.getAttribute(XMLTags.StoichiometryAttrTag);
         if(tempArg != null){
             String tempValue = tempArg.getValue();
             if(tempValue.length() > 0)
@@ -5691,7 +5691,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * Insert the method's description here.
      * Creation date: (4/26/2001 4:13:26 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.mapping.ReactionSpec
      */
     private ReactionSpec getReactionSpec(Element param, SimulationContext simulationContext) throws XmlParseException{
@@ -5723,7 +5723,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a SimpleReaction object from a XML element.
      * Creation date: (3/16/2001 11:52:02 AM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.model.SimpleReaction
      */
     private SimpleReaction getSimpleReaction(Element param, Model model) throws XmlParseException{
@@ -5976,7 +5976,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a SimulationContext from a XML representation.
      * Creation date: (4/2/2001 3:19:01 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.mapping.SimulationContext
      */
     private SimulationContext getSimulationContext(Element param, BioModel biomodel) throws XmlParseException{
@@ -6270,7 +6270,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
 
 
         //Retrieve Electrical context
-        org.jdom.Element electElem = param.getChild(XMLTags.ElectricalContextTag, vcNamespace);
+        Element electElem = param.getChild(XMLTags.ElectricalContextTag, vcNamespace);
         //this information is optional!
         if(electElem != null){
             if(electElem.getChild(XMLTags.ClampTag, vcNamespace) != null){
@@ -6339,7 +6339,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
             }
         }
 
-        org.jdom.Element analysisTaskListElement = param.getChild(XMLTags.AnalysisTaskListTag, vcNamespace);
+        Element analysisTaskListElement = param.getChild(XMLTags.AnalysisTaskListTag, vcNamespace);
         if(analysisTaskListElement != null){
             children = analysisTaskListElement.getChildren(XMLTags.ParameterEstimationTaskTag, vcNamespace);
             if(children.size() != 0){
@@ -6361,7 +6361,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         }
 
         // Microscope Measurement
-        org.jdom.Element element = param.getChild(XMLTags.MicroscopeMeasurement, vcNamespace);
+        Element element = param.getChild(XMLTags.MicroscopeMeasurement, vcNamespace);
         if(element != null){
             getMicroscopeMeasurement(element, newsimcontext);
         }
@@ -6518,7 +6518,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a SolverTaskDescription Object from a XML Element.
      * Creation date: (5/22/2001 10:51:23 AM)
      *
-     * @param param      org.jdom.Element
+     * @param param      Element
      * @param simulation cbit.vcell.solver.Simulation
      * @return cbit.vcell.solver.SolverTaskDescription
      */
@@ -6848,7 +6848,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         Iterator<Element> appParamIterator = appParams.getChildren(XMLTags.ParameterTag, vcNamespace).iterator();
         ArrayList<SimulationContextParameter> appParamsList = new ArrayList<SimulationContextParameter>();
         while (appParamIterator.hasNext()) {
-            org.jdom.Element paramElement = (Element) appParamIterator.next();
+            Element paramElement = (Element) appParamIterator.next();
             appParamsList.add(getSimulationContextParameter(paramElement, simContext));
         }
         return appParamsList.toArray(new SimulationContextParameter[0]);
@@ -6891,7 +6891,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         Iterator<Element> outputFnsIterator = outputFunctionsElement.getChildren(XMLTags.AnnotatedFunctionTag, vcNamespace).iterator();
         ArrayList<AnnotatedFunction> outputFunctions = new ArrayList<AnnotatedFunction>();
         while (outputFnsIterator.hasNext()) {
-            org.jdom.Element observableElement = (Element) outputFnsIterator.next();
+            Element observableElement = (Element) outputFnsIterator.next();
             AnnotatedFunction func = getOutputFunction(observableElement);
             outputFunctions.add(func);
         }
@@ -6902,7 +6902,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method creates a Specie (Compound) object from an XML Element.
      * Creation date: (3/15/2001 12:57:43 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.model.Species
      */
     private Species getSpecies(Element param) throws XmlParseException{
@@ -6941,7 +6941,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a Speciecontext object from a XML Element.
      * Creation date: (4/16/2001 6:32:23 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.model.SpeciesContext
      */
     private SpeciesContext getSpeciesContext(Element param, Model model) throws XmlParseException{
@@ -7217,7 +7217,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a TimeStep object from a XML Element.
      * Creation date: (5/22/2001 11:45:33 AM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.solver.TimeStep
      */
     private NonspatialStochSimOptions getStochSimOptions(Element param){
@@ -7244,7 +7244,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a TimeStep object from a XML Element.
      * Creation date: (5/22/2001 11:45:33 AM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.solver.TimeStep
      */
     private NonspatialStochHybridOptions getStochHybridOptions(Element param){
@@ -7275,7 +7275,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a Stochasitc volumn variable from a XML element.
      * Creation date: (7/24/2006 5:05:51 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.StochVolVariable
      */
     private StochVolVariable getStochVolVariable(Element param){
@@ -7291,7 +7291,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a SubVolume element type from a XML representation.
      * Creation date: (4/26/2001 4:14:01 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return SubVolume
      */
     private SubVolume getSubVolume(Element param) throws XmlParseException{
@@ -7530,7 +7530,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a TimeBounds object from a XML Element.
      * Creation date: (5/22/2001 11:41:04 AM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.solver.TimeBounds
      */
     private TimeBounds getTimeBounds(Element param){
@@ -7549,7 +7549,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a TimeStep object from a XML Element.
      * Creation date: (5/22/2001 11:45:33 AM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.solver.TimeStep
      */
     private TimeStep getTimeStep(Element param){
@@ -7569,7 +7569,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This methos returns a User object from a XML Element.
      * Creation date: (3/16/2001 3:52:30 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.server.User
      */
     private User getUser(Element param){
@@ -7607,7 +7607,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method return a VarIniCondition object from a XML element.
      * Creation date: (7/24/2006 5:26:05 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.VarIniCondition
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -7686,7 +7686,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a VCIMage object from a XML representation.
      * Creation date: (3/16/2001 3:41:24 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return VCImage
      */
     VCImage getVCImage(Element param, Extent extent) throws XmlParseException{
@@ -7828,7 +7828,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a VolumeRegionEquation from a XML Element.
      * Creation date: (5/17/2001 3:52:40 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.VolumeRegionEquation
      * @throws cbit.vcell.xml.XmlParseException The exception description.
      */
@@ -7889,7 +7889,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a VolumeRegionVariable object from a XML Element.
      * Creation date: (5/16/2001 2:56:34 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.VolumeRegionVariable
      */
     private VolumeRegionVariable getVolumeRegionVariable(Element param){
@@ -7911,7 +7911,7 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
      * This method returns a VolVariable object from a XML Element.
      * Creation date: (5/16/2001 2:56:34 PM)
      *
-     * @param param org.jdom.Element
+     * @param param Element
      * @return cbit.vcell.math.VolVariable
      */
     private VolVariable getVolVariable(Element param){

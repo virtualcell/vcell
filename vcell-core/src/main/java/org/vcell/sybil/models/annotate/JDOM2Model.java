@@ -14,9 +14,9 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.output.XMLOutputter;
 import org.openrdf.model.Graph;
 import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;

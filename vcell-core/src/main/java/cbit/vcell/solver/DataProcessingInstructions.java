@@ -13,7 +13,7 @@ package cbit.vcell.solver;
 import java.io.Serializable;
 import java.util.StringTokenizer;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 import org.vcell.util.document.ExternalDataIdentifier;

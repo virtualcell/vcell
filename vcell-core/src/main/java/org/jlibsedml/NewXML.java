@@ -3,7 +3,7 @@ package org.jlibsedml;
 import java.util.Collections;
 import java.util.List;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 
 /**
  * Encapsulates a NewXML element in the SED-ML specification. This object can contain one or more XML elements.

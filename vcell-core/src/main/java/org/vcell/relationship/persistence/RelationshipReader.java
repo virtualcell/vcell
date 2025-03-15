@@ -14,8 +14,8 @@ import static org.vcell.pathway.PathwayXMLHelper.showUnexpected;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.Attribute;
-import org.jdom.Element;
+import org.jdom2.Attribute;
+import org.jdom2.Element;
 import org.vcell.relationship.RelationshipModel;
 import org.vcell.relationship.RelationshipObject;
 

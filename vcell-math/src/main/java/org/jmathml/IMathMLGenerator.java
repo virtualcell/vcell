@@ -1,6 +1,6 @@
 package org.jmathml;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 
 public interface IMathMLGenerator {
 

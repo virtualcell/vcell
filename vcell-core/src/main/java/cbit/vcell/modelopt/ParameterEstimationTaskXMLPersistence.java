@@ -23,8 +23,8 @@ import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.xml.XMLTags;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.Element;
-import org.jdom.Namespace;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.vcell.util.CommentStringTokenizer;
 
 import java.util.ArrayList;
@@ -335,7 +335,7 @@ public static Element getXML(ParameterEstimationTask parameterEstimationTask) {
 	// annotation content (optional)
 	String annotation = parameterEstimationTask.getAnnotation();
 	if (annotation!=null && annotation.length()>0) {
-		org.jdom.Element annotationElement = new org.jdom.Element(AnnotationTag);
+		Element annotationElement = new Element(AnnotationTag);
 		annotationElement.setText(mangle(annotation));
 		parameterEstimationTaskElement.addContent(annotationElement);
 	}

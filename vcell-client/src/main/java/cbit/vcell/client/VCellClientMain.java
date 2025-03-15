@@ -21,7 +21,7 @@ import cbit.vcell.resource.*;
 import cbit.vcell.xml.XmlHelper;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import org.jdom.Document;
+import org.jdom2.Document;
 import org.vcell.dependency.client.VCellClientModule;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCellSoftwareVersion;

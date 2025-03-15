@@ -14,8 +14,8 @@ import java.io.PrintWriter;
 import java.util.Map;
 import java.util.Objects;
 
-import org.jdom.Document;
-import org.jdom.Element;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.vcell.movingboundary.MovingBoundarySolverSpec;
 import org.vcell.util.CastingUtils;
 import org.vcell.util.ISize;

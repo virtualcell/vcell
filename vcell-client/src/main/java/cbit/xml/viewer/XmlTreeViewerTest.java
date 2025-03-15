@@ -35,13 +35,13 @@ public static void main(java.lang.String[] args) {
 		//  Automatically open two files and do:
 		java.io.InputStreamReader inputStreamReader = new java.io.InputStreamReader(new java.io.FileInputStream("C:\\daniel\\VCML\\math_Ode.xml"));
 		//
-		org.jdom.input.SAXBuilder saxBuilder = new org.jdom.input.SAXBuilder();
-		org.jdom.Document document = null;
-		org.jdom.Element root = null;
+		org.jdom2.input.SAXBuilder saxBuilder = new org.jdom2.input.SAXBuilder();
+		org.jdom2.Document document = null;
+		org.jdom2.Element root = null;
 		//
 		try {
 			document = saxBuilder.build(inputStreamReader);
-		} catch (org.jdom.JDOMException jdomexception) {
+		} catch (org.jdom2.JDOMException jdomexception) {
 			String tempstring = null;
 			if (jdomexception.getCause() != null) {
 				tempstring = "The following error ocurred while reading the base document:\n" + jdomexception.getCause();

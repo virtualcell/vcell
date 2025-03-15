@@ -10,7 +10,7 @@
 
 package cbit.vcell.biomodel.meta.xml.rdf;
 
-import org.jdom.Namespace;
+import org.jdom2.Namespace;
 import org.vcell.sybil.models.annotate.Model2JDOM;
 
 /**

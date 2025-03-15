@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jdom.Document;
+import org.jdom2.Document;
 import org.jlibsedml.Model;
 import org.jlibsedml.SEDMLTags;
 import org.jlibsedml.SedML;

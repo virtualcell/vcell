@@ -5,11 +5,11 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.List;
 
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.Text;
-import org.jdom.input.SAXBuilder;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.Text;
+import org.jdom2.input.SAXBuilder;
 import org.jmathml.ASTFunction.ASTFunctionType;
 import org.jmathml.ASTLogical.ASTLogicalType;
 import org.slf4j.Logger;
@@ -68,7 +68,7 @@ public class MathMLReader {
 	 * Creates a JDOM document from the given XML string (via a Reader)
 	 * 
 	 * @param reader a {@link Reader}
-	 * @return an org.jdom.Element
+	 * @return an org.jdom2.Element
 	 * @throws IOException
 	 *             if the JDOM document could not be read.
 	 */

@@ -35,8 +35,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import cbit.vcell.client.server.DynamicClientProperties;
-import org.jdom.Document;
-import org.jdom.Element;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.vcell.pathway.BioPAXUtil;
 import org.vcell.pathway.Control;
 import org.vcell.pathway.PathwayModel;

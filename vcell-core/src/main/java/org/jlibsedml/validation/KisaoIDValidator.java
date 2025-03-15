@@ -3,7 +3,7 @@ package org.jlibsedml.validation;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jdom.Document;
+import org.jdom2.Document;
 import org.jlibsedml.SEDMLTags;
 import org.jlibsedml.SedMLError;
 import org.jlibsedml.Simulation;

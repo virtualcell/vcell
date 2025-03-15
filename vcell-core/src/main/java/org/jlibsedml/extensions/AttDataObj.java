@@ -1,11 +1,11 @@
 package org.jlibsedml.extensions;
 
-import org.jdom.Attribute;
-import org.jdom.Element;
-import org.jdom.Namespace;
+import org.jdom2.Attribute;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 
 /*
- * Similar to the org.jdom.Attribute but with equals/hashcode reimplemented
+ * Similar to the org.jdom2.Attribute but with equals/hashcode reimplemented
  * to use the data as a test for equlaity, not reference based equality. 
  */
 class AttDataObj implements Comparable<AttDataObj> {

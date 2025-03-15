@@ -14,7 +14,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.microscopy.FRAPModel;

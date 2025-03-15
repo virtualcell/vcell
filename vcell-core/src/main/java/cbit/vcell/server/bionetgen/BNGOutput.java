@@ -11,7 +11,7 @@
 package cbit.vcell.server.bionetgen;
 import java.util.HashSet;
 
-import org.jdom.Document;
+import org.jdom2.Document;
 import org.vcell.util.BigString;
 
 import cbit.util.xml.XmlUtil;

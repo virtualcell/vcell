@@ -2,8 +2,8 @@ package org.vcell.documentation;
 
 import cbit.util.xml.XmlUtil;
 import com.sun.java.help.search.Indexer;
-import org.jdom.Document;
-import org.jdom.Element;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.vcell.util.FileUtils;
 
 import java.io.File;

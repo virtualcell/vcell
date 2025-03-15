@@ -225,6 +225,10 @@
 					<groupId>joda-time</groupId>
 					<artifactId>joda-time</artifactId>
 				</exclusion>
+				<exclusion>
+					<groupId>org.jdom</groupId>
+					<artifactId>jdom2</artifactId>
+				</exclusion>
 			</exclusions>
 		</dependency>
 		<!-- see https://github.com/SemsProject/CombineArchive for more information -->
@@ -630,11 +634,11 @@
 			<artifactId>commons-lang</artifactId>
 			<version>${commons-lang.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>org.jdom</groupId>
-			<artifactId>jdom-contrib</artifactId>
-			<version>${jdom-contrib.version}</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>org.jdom</groupId>-->
+<!--			<artifactId>jdom2-contrib</artifactId>-->
+<!--			<version>${jdom-contrib.version}</version>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>

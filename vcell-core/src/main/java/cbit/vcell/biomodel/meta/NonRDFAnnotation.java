@@ -12,7 +12,7 @@ package cbit.vcell.biomodel.meta;
 
 import java.util.TreeSet;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 

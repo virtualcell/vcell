@@ -13,7 +13,7 @@ package cbit.vcell.xml;
 import java.io.File;
 import java.io.StringReader;
 
-import org.jdom.Document;
+import org.jdom2.Document;
 
 import cbit.util.xml.XmlUtil;
 

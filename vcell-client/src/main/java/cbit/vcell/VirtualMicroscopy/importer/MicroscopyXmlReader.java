@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 import java.util.zip.InflaterInputStream;
 
-import org.jdom.Element;
-import org.jdom.Namespace;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
@@ -62,7 +62,7 @@ public MicroscopyXmlReader(boolean readKeys) {
 /**
  * This method returns a VCIMage object from a XML representation.
  * Creation date: (3/16/2001 3:41:24 PM)
- * @param param org.jdom.Element
+ * @param param org.jdom2.Element
  * @return VCImage
  * @throws XmlParseException
  */
@@ -131,7 +131,7 @@ private UShortImage getUShortImage(Element param) throws XmlParseException{
 /**
  * This method returns a Biomodel object from a XML Element.
  * Creation date: (3/13/2001 12:35:00 PM)
- * @param param org.jdom.Element
+ * @param param org.jdom2.Element
  * @return cbit.vcell.biomodel.BioModel
  * @throws XmlParseException
  */
@@ -172,7 +172,7 @@ private ImageDataset getImageDataset(Element param, ClientTaskStatusSupport prog
 /**
  * This method returns a Biomodel object from a XML Element.
  * Creation date: (3/13/2001 12:35:00 PM)
- * @param param org.jdom.Element
+ * @param param org.jdom2.Element
  * @return cbit.vcell.biomodel.BioModel
  * @throws XmlParseException
  */

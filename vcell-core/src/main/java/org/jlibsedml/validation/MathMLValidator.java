@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.jdom.Document;
+import org.jdom2.Document;
 import org.jlibsedml.IIdentifiable;
 import org.jlibsedml.IMathContainer;
 import org.jlibsedml.Parameter;

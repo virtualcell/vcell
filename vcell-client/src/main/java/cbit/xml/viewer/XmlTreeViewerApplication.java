@@ -181,13 +181,13 @@ public void fileOpen(java.awt.event.ActionEvent actionEvent) {
 			getStatusMsg1().setText("Warning");
 			getStatusMsg2().setText("No baseline file selected!");
 		} else {
-			org.jdom.input.SAXBuilder saxBuilder = new org.jdom.input.SAXBuilder();
-			org.jdom.Document document = null;
-			org.jdom.Element root = null;
+			org.jdom2.input.SAXBuilder saxBuilder = new org.jdom2.input.SAXBuilder();
+			org.jdom2.Document document = null;
+			org.jdom2.Element root = null;
 			//
 			try {
 				getXmlTreeViewer().setDocument(saxBuilder.build(file));
-			} catch (org.jdom.JDOMException jdomexception) {
+			} catch (org.jdom2.JDOMException jdomexception) {
 				getStatusMsg1().setText("Error");
 				if (jdomexception.getCause() != null) {
 					getStatusMsg2().setText(jdomexception.getCause().getMessage());

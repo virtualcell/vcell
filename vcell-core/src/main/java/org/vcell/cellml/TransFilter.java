@@ -14,10 +14,10 @@ import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Iterator;
 
-import org.jdom.Attribute;
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.jdom.filter.ElementFilter;
+import org.jdom2.Attribute;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+import org.jdom2.filter.ElementFilter;
 
 import cbit.util.xml.JDOMTreeWalker;
 import cbit.vcell.parser.MathMLTags;
@@ -229,7 +229,7 @@ private void filterTree(Element e) {
 	}
 
 
-	private boolean matchesAttribute(org.jdom.Attribute a) {
+	private boolean matchesAttribute(Attribute a) {
 
 		if (atts == null)
 			return true;

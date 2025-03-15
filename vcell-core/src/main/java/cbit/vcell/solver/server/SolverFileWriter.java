@@ -11,7 +11,7 @@
 package cbit.vcell.solver.server;
 import java.io.PrintWriter;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.VCellTopic;

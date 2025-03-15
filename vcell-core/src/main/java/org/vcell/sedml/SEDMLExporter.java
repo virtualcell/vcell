@@ -28,8 +28,8 @@ import de.unirostock.sems.cbarchive.meta.omex.OmexDescription;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.Element;
-import org.jdom.Namespace;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.jlibsedml.Model;
 import org.jlibsedml.*;
 import org.jlibsedml.UniformRange.UniformType;
@@ -1040,7 +1040,7 @@ public class SEDMLExporter {
 
 	private Notes createNotesElement(String notesStr) {
 		// create some xhtml. E.g.,
-		org.jdom.Element para = new org.jdom.Element("p");
+		org.jdom2.Element para = new org.jdom2.Element("p");
 		para.setText(notesStr);
 		// create a notes element
 		Notes note = new Notes(para);

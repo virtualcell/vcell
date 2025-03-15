@@ -35,8 +35,8 @@ import java.util.TimeZone;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.Document;
-import org.jdom.Element;
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.vcell.util.AuthenticationException;
 import org.vcell.util.Hex;
 import org.vcell.util.document.KeyValue;

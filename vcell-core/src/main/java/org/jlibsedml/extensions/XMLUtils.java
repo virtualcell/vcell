@@ -11,32 +11,32 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jdom.Attribute;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.Namespace;
-import org.jdom.contrib.input.LineNumberSAXBuilder;
-import org.jdom.filter.ElementFilter;
-import org.jdom.input.SAXBuilder;
+import org.jdom2.Attribute;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
+import org.jdom2.filter.ElementFilter;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.located.LocatedJDOMFactory;
 import org.jlibsedml.XMLException;
 
 public class XMLUtils {
 
     public Document readDoc(InputStream is) throws JDOMException, IOException {
-        SAXBuilder builder = new LineNumberSAXBuilder();
+        SAXBuilder builder = new SAXBuilder();
+        builder.setJDOMFactory(new LocatedJDOMFactory());
         Document doc = builder.build(is);
         return doc;
     }
     
     public Document readDoc(String sedml) throws XMLException {
-        SAXBuilder builder = new LineNumberSAXBuilder();
-        org.jdom.Document doc;
+        SAXBuilder builder = new SAXBuilder();
+        builder.setJDOMFactory(new LocatedJDOMFactory());
+        org.jdom2.Document doc;
         try {
             doc = builder.build(new StringReader(sedml));
-        } catch (JDOMException e) {
-            throw new XMLException("Error reading file", e);
-        } catch (IOException e) {
+        } catch (JDOMException | IOException e) {
             throw new XMLException("Error reading file", e);
         }
         return doc;
