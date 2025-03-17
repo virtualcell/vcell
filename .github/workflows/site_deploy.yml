@@ -137,7 +137,8 @@ jobs:
         if [[ $? == 0 ]]; then
           xcrun stapler staple $MAC_INSTALLER
         else
-          echo "notarization did not succeed in 5 minutes, giving up"
+          echo "notarization did not succeed in 5 minutes, giving up - asking for notary log"
+          xcrun notarytool log --verbose --output-format normal --no-progress --team-id "${{ secrets.MACTEAMID }}" --apple-id "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" `cat UUID`
           exit 1
         fi
     - name: update generated installers
