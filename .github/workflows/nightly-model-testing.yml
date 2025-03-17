@@ -118,7 +118,7 @@ jobs:
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
   export:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: build
     steps:
       - name: Create Docker Image Dir
@@ -203,7 +203,7 @@ jobs:
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
   import:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: export
     steps:
       - name: Create working directory
@@ -272,7 +272,7 @@ jobs:
         if: ${{ failure() }}
         
   summarize:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: import
     steps: 
       - name: Make Results Directory
