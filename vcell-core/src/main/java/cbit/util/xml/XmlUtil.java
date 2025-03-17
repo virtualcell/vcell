@@ -10,6 +10,10 @@
 
 package cbit.util.xml;
 
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.xml.XmlParseException;
+import cbit.vcell.xml.XmlReader;
+import cbit.vcell.xml.Xmlproducer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Document;
@@ -370,5 +374,11 @@ public static Element setDefaultNamespace(Element rootNode, Namespace namespace)
 		assert(name != null);
 		assert(clzz != null);
 		return filterList(e.getChildren(name),clzz);
+	}
+
+	public static Geometry cloneGeometry(Geometry geometry) throws XmlParseException {
+		Xmlproducer xmlproducer = new Xmlproducer(true);
+		XmlReader xmlReader = new XmlReader(true);
+		return xmlReader.getGeometry(xmlproducer.getXML(geometry));
 	}
 }
