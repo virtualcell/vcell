@@ -33,6 +33,9 @@ public UniformOutputTimeSpec(double arg_outputTimeStep) {
 	fieldOutputTimeStep = arg_outputTimeStep;
 }
 
+public UniformOutputTimeSpec copy() {
+	return new UniformOutputTimeSpec(fieldOutputTimeStep);
+}
 
 @Override
 public UniformOutputTimeSpec clone() throws CloneNotSupportedException {

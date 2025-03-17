@@ -29,6 +29,7 @@ public OutputTimeSpec() {
 	super();
 }
 
+public abstract OutputTimeSpec copy();
 
 /**
  * Insert the method's description here.

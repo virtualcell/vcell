@@ -177,11 +177,7 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
         fieldTimeBounds = new TimeBounds(solverTaskDescription.getTimeBounds());
         fieldTimeStep = new TimeStep(solverTaskDescription.getTimeStep());
         fieldErrorTolerance = new ErrorTolerance(solverTaskDescription.getErrorTolerance());
-        try {
-            fieldOutputTimeSpec = (OutputTimeSpec) BeanUtils.cloneSerializable(solverTaskDescription.getOutputTimeSpec());
-        } catch(Exception e){
-            throw new RuntimeException(e.getMessage(), e);
-        }
+        fieldOutputTimeSpec = solverTaskDescription.getOutputTimeSpec().copy();
         fieldSensitivityParameter = solverTaskDescription.getSensitivityParameter();
         fieldSolverDescription = solverTaskDescription.getSolverDescription();
         fieldUseSymbolicJacobian = solverTaskDescription.getUseSymbolicJacobian();
