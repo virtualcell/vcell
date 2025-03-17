@@ -24,8 +24,8 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.jdom.Namespace;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Namespace;
+import org.jdom2.output.XMLOutputter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -81,7 +81,7 @@ class ModelTransformationUtils {
 			for (int i = 0; i < nodes.getLength(); i++) {
 				Node parent = nodes.item(i).getParentNode();
 				removeChild(nodes);
-				for (org.jdom.Element el : newXML.getXml()) {
+				for (org.jdom2.Element el : newXML.getXml()) {
 				    el.setNamespace(Namespace.NO_NAMESPACE);
 					String elAsString = new XMLOutputter().outputString(el);
 					Node imported = doc.importNode(

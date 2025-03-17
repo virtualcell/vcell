@@ -19,7 +19,7 @@ public class PathwayImporter extends DataImporter {
 	public PathwayModel extractPathwayModelFromPreviouslyRead(ClientTaskStatusSupport statusSupport) {
 		String data = getPreviouslyReadData();
 		if(data != null) {
-			org.jdom.Document jdomDocument = XmlUtil.stringToXML(data, null);
+			org.jdom2.Document jdomDocument = XmlUtil.stringToXML(data, null);
 			pathwayModel = PathwayIOUtil.extractPathwayFromJDOM(jdomDocument, new RDFXMLContext(), statusSupport);
 			return pathwayModel;			
 		}

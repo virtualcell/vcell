@@ -10,7 +10,7 @@
 
 package cbit.vcell.biomodel.meta.xml;
 
-import org.jdom.Namespace;
+import org.jdom2.Namespace;
 
 import cbit.vcell.xml.XMLTags;
 

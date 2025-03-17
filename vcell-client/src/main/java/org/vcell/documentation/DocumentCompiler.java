@@ -11,9 +11,10 @@
 package org.vcell.documentation;
 
 import cbit.util.xml.XmlUtil;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.Text;
+import org.jdom2.Content;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.Text;
 import org.vcell.util.FileUtils;
 
 import javax.imageio.ImageIO;
@@ -243,8 +244,7 @@ public class DocumentCompiler {
 			throw new RuntimeException("expecting ...");
 		}
 		//get all definition elements
-		@SuppressWarnings("unchecked")
-		List<Object> pageElements = root.getContent();
+		List<Content> pageElements = root.getContent();
 		
 		if (pageElements!=null){
 			for(Object pageElement : pageElements)

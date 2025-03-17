@@ -1,6 +1,6 @@
 package org.jlibsedml.validation;
 
-import org.jdom.Document;
+import org.jdom2.Document;
 import org.jlibsedml.IIdentifiable;
 
 /**

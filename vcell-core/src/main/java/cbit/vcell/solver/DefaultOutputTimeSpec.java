@@ -30,8 +30,16 @@ public DefaultOutputTimeSpec() {
 	this(1,DEFAULT_KEEP_AT_MOST);
 }
 
+	@Override
+	public DefaultOutputTimeSpec copy() {
+		DefaultOutputTimeSpec copy = new DefaultOutputTimeSpec();
+		copy.fieldKeepAtMost = fieldKeepAtMost;
+		copy.fieldKeepEvery = fieldKeepEvery;
+		return copy;
+	}
 
-/**
+
+	/**
  * DefaultOutputTimeSpec constructor comment.
  */
 public DefaultOutputTimeSpec(int arg_keepEvery) {

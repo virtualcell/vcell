@@ -10,28 +10,20 @@
 
 package cbit.xml.merge;
 
-/**
- * Insert the type's description here.
- * Creation date: (8/7/2000 3:24:10 PM)
- * @author: 
- */
+import org.jdom2.Attribute;
+import org.jdom2.Element;
+
 public class ChangedNodeInfo extends NodeInfo {
 	private java.lang.String fieldModified = null;
-/**
- * ChangedNodeInfo constructor comment.
- * @param newattr org.jdom.Attribute
- * @param newstatus short
- */
-public ChangedNodeInfo(org.jdom.Attribute base,org.jdom.Attribute newmodified) {
+
+
+public ChangedNodeInfo(Attribute base, Attribute newmodified) {
 	super(base, NodeInfo.STATUS_CHANGED);
 	this.setModified(newmodified.getValue());
 }
-/**
- * ChangedNodeInfo constructor comment.
- * @param newelement org.jdom.Element
- * @param newstatus short
- */
-public ChangedNodeInfo(org.jdom.Element base, org.jdom.Element modified) {
+
+
+public ChangedNodeInfo(Element base, Element modified) {
 	super(base, NodeInfo.STATUS_CHANGED);
 	this.setModified( modified.getTextTrim() );
 }

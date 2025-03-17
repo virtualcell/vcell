@@ -15,8 +15,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jdom.Attribute;
-import org.jdom.Element;
+import org.jdom2.Attribute;
+import org.jdom2.Document;
+import org.jdom2.Element;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.xml.VCMLComparator;
@@ -73,10 +74,10 @@ public XmlTreeDiff() throws java.io.IOException {
  * Insert the method's description here.
  * Creation date: (8/29/2001 2:41:50 PM)
  * @return cbit.xml.merge.NodeInfo
- * @param parsed org.jdom.Element
+ * @param parsed Element
  * @param status int
  */
-private NodeInfo createNodes(org.jdom.Element parsed, int status, String nodeSource) {
+private NodeInfo createNodes(Element parsed, int status, String nodeSource) {
 	NodeInfo parent = null;
 	NodeInfo temp;
 
@@ -130,7 +131,7 @@ private NodeInfo createNodes(org.jdom.Element parsed, int status, String nodeSou
  * This method can return a mangled name for the given Element as: Tagname + _ + Value of a specific attribute if it belongs to a user specific list.
  * Creation date: (8/29/2001 3:15:42 PM)
  * @return java.lang.String
- * @param param org.jdom.Element
+ * @param param Element
  * @exception java.lang.IllegalArgumentException The exception description.
  */
 public String getMangledName(Element param) throws java.lang.IllegalArgumentException {
@@ -168,10 +169,10 @@ public String getMangledName(Element param) throws java.lang.IllegalArgumentExce
  * This method merges two XML Documents and returns a NodeInfo with the differences included.
  * Creation date: (8/29/2001 3:02:38 PM)
  * @return cbit.xml.merge.NodeInfo
- * @param docA org.jdom.Document
- * @param docB org.jdom.Document
+ * @param docA Document
+ * @param docB Document
  */
-public NodeInfo merge(org.jdom.Document docA, org.jdom.Document docB, DiffConfiguration comparisonSetting) throws java.io.IOException {
+public NodeInfo merge(Document docA, Document docB, DiffConfiguration comparisonSetting) throws java.io.IOException {
 
 	if (DiffConfiguration.COMPARE_DOCS_SAVED == comparisonSetting || DiffConfiguration.COMPARE_DOCS_OTHER == comparisonSetting) { // always use docA as baseline
 		fieldRootNode = this.merge(docA.getRootElement(), docB.getRootElement(), comparisonSetting);
@@ -187,12 +188,12 @@ public NodeInfo merge(org.jdom.Document docA, org.jdom.Document docB, DiffConfig
  * This method merges two XML elements and returns a new one with the differences included.
  * Creation date: (8/29/2001 2:28:42 PM)
  * @return cbit.xml.merge.NodeInfo
- * @param parsedA org.jdom.Element
- * @param parsedB org.jdom.Element
+ * @param parsedA Element
+ * @param parsedB Element
  */
 private cbit.xml.merge.NodeInfo merge(  
-    org.jdom.Element parsedA,
-    org.jdom.Element parsedB, DiffConfiguration comparisonSetting) throws java.io.IOException {
+    Element parsedA,
+    Element parsedB, DiffConfiguration comparisonSetting) throws java.io.IOException {
     NodeInfo parent = null; 
 
     if (parsedA == null || parsedB == null) {
@@ -312,8 +313,8 @@ private List mergeAttrList(List listA, List listB, DiffConfiguration comparisonS
  * This method merges to lists of elements.
  * Creation date: (8/29/2001 2:52:51 PM)
  * @return java.util.List
- * @param listA java.util.List
- * @param listB java.util.List
+ * @param list1 java.util.List
+ * @param list2 java.util.List
  */
 private List mergeElementList(List list1, List list2, DiffConfiguration comparisonSetting) throws java.io.IOException {
 

@@ -115,7 +115,7 @@ private BioModelNode createLoadTestTree(){
 }
 
 public static final String TEST_SUITE_SUBTREE_NAME = "TestSuites";
-private synchronized BioModelNode createTestSuiteTree(TestSuiteGroup tsg) throws DataAccessException, java.io.IOException, org.jdom.JDOMException{
+private synchronized BioModelNode createTestSuiteTree(TestSuiteGroup tsg) throws DataAccessException, java.io.IOException, org.jdom2.JDOMException{
 	boolean isTFUser = getDocumentManager().getUser().isTestAccount();
 	if (isTFUser && tsg != null && !tsg.hadUpdateTSError){
 		BioModelNode rootRootNode = new BioModelNode(TEST_SUITE_SUBTREE_NAME,true);
@@ -310,7 +310,7 @@ private BioModelNode createTestCaseSubTree(TestCaseNew testCase) throws DataAcce
  * @return cbit.vcell.desktop.BioModelNode
  * @param docManager cbit.vcell.clientdb.DocumentManager
  */
-private BioModelNode createTestSuiteSubTree(TestSuiteNew testSuite) throws DataAccessException, java.io.IOException, org.jdom.JDOMException{
+private BioModelNode createTestSuiteSubTree(TestSuiteNew testSuite) throws DataAccessException, java.io.IOException, org.jdom2.JDOMException{
 
 	TestCaseNew[] testCases = testSuite.getTestCases();
 

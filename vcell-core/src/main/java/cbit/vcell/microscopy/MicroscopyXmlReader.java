@@ -22,7 +22,7 @@ import java.util.zip.InflaterInputStream;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
 import org.vcell.util.ClientTaskStatusSupport;
@@ -116,7 +116,7 @@ public class MicroscopyXmlReader {
 	/**
 	 * This method returns a VCIMage object from a XML representation.
 	 * Creation date: (3/16/2001 3:41:24 PM)
-	 * @param param org.jdom.Element
+	 * @param param org.jdom2.Element
 	 * @return VCImage
 	 * @throws XmlParseException
 	 */
@@ -183,7 +183,7 @@ public class MicroscopyXmlReader {
 	/**
 	 * This method returns a Biomodel object from a XML Element.
 	 * Creation date: (3/13/2001 12:35:00 PM)
-	 * @param param org.jdom.Element
+	 * @param param org.jdom2.Element
 	 * @return cbit.vcell.biomodel.BioModel
 	 * @throws XmlParseException
 	 */
@@ -224,7 +224,7 @@ public class MicroscopyXmlReader {
 	/**
 	 * This method returns a Biomodel object from a XML Element.
 	 * Creation date: (3/13/2001 12:35:00 PM)
-	 * @param param org.jdom.Element
+	 * @param param org.jdom2.Element
 	 * @return cbit.vcell.biomodel.BioModel
 	 * @throws XmlParseException
 	 */
@@ -248,7 +248,7 @@ public class MicroscopyXmlReader {
 	/**
 	 * This method returns a Biomodel object from a XML Element.
 	 * Creation date: (3/13/2001 12:35:00 PM)
-	 * @param param org.jdom.Element
+	 * @param param org.jdom2.Element
 	 * @return cbit.vcell.biomodel.BioModel
 	 * @throws XmlParseException
 	 */
@@ -310,7 +310,7 @@ public class MicroscopyXmlReader {
 	/**
 	 * This method returns a Biomodel object from a XML Element.
 	 * Creation date: (3/13/2001 12:35:00 PM)
-	 * @param param org.jdom.Element
+	 * @param param org.jdom2.Element
 	 * @return cbit.vcell.biomodel.BioModel
 	 * @throws XmlParseException
 	 */

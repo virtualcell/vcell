@@ -34,6 +34,11 @@ public ExplicitOutputTimeSpec(double[] arg_outputTimes) {
 	fieldOutputTimes = arg_outputTimes;
 }
 
+public ExplicitOutputTimeSpec copy() {
+	double[] outputTimes = new double[fieldOutputTimes.length];
+	System.arraycopy(fieldOutputTimes, 0, outputTimes, 0, fieldOutputTimes.length);
+	return new ExplicitOutputTimeSpec(outputTimes);
+}
 
 /**
  * Checks for internal representation of objects, not keys from database

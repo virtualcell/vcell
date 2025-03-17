@@ -9,6 +9,10 @@
  */
 
 package cbit.xml.merge;
+
+import org.jdom2.Attribute;
+import org.jdom2.Element;
+
 public class NodeInfo extends javax.swing.tree.DefaultMutableTreeNode {
 	public final static int STATUS_REMOVED = 102;
 	public final static int STATUS_NEW = 101;
@@ -36,10 +40,10 @@ public NodeInfo(String name, String value, int status, boolean isAttribute) {
 /**
  * Insert the method's description here.
  * Creation date: (8/1/2000 3:11:02 PM)
- * @param newattr org.jdom.Attribute
+ * @param newattr Attribute
  * @param newcolor java.awt.Color
  */
-public NodeInfo(org.jdom.Attribute newattr, int status) {
+public NodeInfo(Attribute newattr, int status) {
 	super(newattr.getName());
 	if (newattr == null) {
 		throw new IllegalArgumentException("This constructor needs a non null arguments");
@@ -52,10 +56,10 @@ public NodeInfo(org.jdom.Attribute newattr, int status) {
 /**
  * This constructor creates a new NodeInfo from a JDOM Element.
  * Creation date: (8/1/2000 1:12:37 PM)
- * @param newelement org.jdom.Element
+ * @param newelement Element
  * @param newcolor java.awt.Color
  */
-public NodeInfo(org.jdom.Element newelement, int status) {
+public NodeInfo(Element newelement, int status) {
 	super(newelement.getName());
 	if (newelement == null) {
 		throw new IllegalArgumentException("This constructor needs a non null argument");

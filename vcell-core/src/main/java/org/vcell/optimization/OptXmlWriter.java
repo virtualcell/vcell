@@ -18,8 +18,8 @@ import java.io.StringWriter;
 import javax.xml.stream.XMLStreamException;
 
 import cbit.vcell.solver.*;
-import org.jdom.CDATA;
-import org.jdom.Element;
+import org.jdom2.CDATA;
+import org.jdom2.Element;
 import org.sbml.jsbml.SBMLException;
 import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.util.BeanUtils;

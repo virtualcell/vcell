@@ -15,7 +15,7 @@ import java.io.PrintWriter;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.Element;
+import org.jdom2.Element;
 
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.messaging.server.SimulationTask;

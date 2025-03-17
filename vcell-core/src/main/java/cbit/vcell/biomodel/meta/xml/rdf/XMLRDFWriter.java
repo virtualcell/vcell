@@ -10,7 +10,7 @@
 
 package cbit.vcell.biomodel.meta.xml.rdf;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.openrdf.model.Graph;
 import org.vcell.sybil.models.annotate.Model2JDOM;
 

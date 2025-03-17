@@ -39,7 +39,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileFilter;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.*;
 import org.vcell.util.document.ExternalDataIdentifier;

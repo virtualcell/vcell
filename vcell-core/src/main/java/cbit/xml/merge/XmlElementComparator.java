@@ -13,8 +13,8 @@ package cbit.xml.merge;
 import java.util.Iterator;
 import java.util.List;
 
-import org.jdom.Attribute;
-import org.jdom.Element;
+import org.jdom2.Attribute;
+import org.jdom2.Element;
 /**
  * Insert the type's description here.
  * Creation date: (8/2/2000 4:05:52 PM)
@@ -163,7 +163,7 @@ public int compare(Element o1, Element o2) {
  * Insert the method's description here.
  * Creation date: (8/3/2000 10:13:23 AM)
  * @return boolean
- * @param newelement org.jdom.Element
+ * @param newelement org.jdom2.Element
  * @param newlist java.util.List
  */
 public boolean contains(Element newelement, List newlist) {
@@ -181,7 +181,7 @@ public XmlTreeDiff getDiffTree() {
  * Insert the method's description here.
  * Creation date: (8/3/2000 6:04:14 PM)
  * @return int
- * @param newelement org.jdom.Element
+ * @param newelement org.jdom2.Element
  * @param newlist java.util.List
  */
 public int getguess(Element baseelement, List newlist) {
@@ -222,7 +222,7 @@ public int getguess(Element baseelement, List newlist) {
  * Insert the method's description here.
  * Creation date: (8/3/2000 10:13:23 AM)
  * @return boolean
- * @param newelement org.jdom.Element
+ * @param newelement org.jdom2.Element
  * @param newlist java.util.List
  */
 public int getindexof(Attribute newattribute, List newlist) {
@@ -244,7 +244,7 @@ public int getindexof(Attribute newattribute, List newlist) {
  * This method searches for an exact match of "newelement" inside "newlist".
  * Creation date: (8/3/2000 10:13:23 AM)
  * @return boolean
- * @param newelement org.jdom.Element
+ * @param newelement org.jdom2.Element
  * @param newlist java.util.List
  */
 public int getindexof(Element newelement, List newlist) {
@@ -274,7 +274,7 @@ protected java.beans.PropertyChangeSupport getPropertyChange() {
  * Insert the method's description here.
  * Creation date: (8/3/2000 6:04:14 PM)
  * @return int
- * @param newelement org.jdom.Element
+ * @param newelement org.jdom2.Element
  * @param newlist java.util.List
  */
 public int getsimilarAttr(Attribute newattr, List newlist) {
@@ -299,7 +299,7 @@ public int getsimilarAttr(Attribute newattr, List newlist) {
  * This method looks for a similar object in "newlist" of the "baselement".
  * Creation date: (8/3/2000 6:04:14 PM)
  * @return int
- * @param newelement org.jdom.Element
+ * @param newelement org.jdom2.Element
  * @param newlist java.util.List
  */
 public int getsimilarElement(Element baseelement, List newlist) {

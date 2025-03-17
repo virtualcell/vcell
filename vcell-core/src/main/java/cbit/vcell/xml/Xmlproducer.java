@@ -75,9 +75,9 @@ import org.apache.commons.lang3.mutable.Mutable;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.Namespace;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.sbpax.schemas.util.DefaultNameSpaces;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.RefinementRoi;
@@ -1915,15 +1915,15 @@ private Element getXML(CompartmentSubDomain param) throws XmlParseException{
 	return compartment;
 }
 
-private org.jdom.Element getXML(ParticleProperties param) throws XmlParseException {
-	org.jdom.Element particleProperties = new org.jdom.Element(XMLTags.ParticlePropertiesTag);
+private Element getXML(ParticleProperties param) throws XmlParseException {
+	Element particleProperties = new Element(XMLTags.ParticlePropertiesTag);
 
 	particleProperties.setAttribute(XMLTags.NameAttrTag, mangle(param.getVariable().getName()));
 	
 	for (ParticleInitialCondition pic : param.getParticleInitialConditions()) {
-		org.jdom.Element particleInitial = null;
+		Element particleInitial = null;
 		if (pic instanceof ParticleInitialConditionCount) {
-			particleInitial = new org.jdom.Element(XMLTags.ParticleInitialCountTag);
+			particleInitial = new Element(XMLTags.ParticleInitialCountTag);
 			ParticleInitialConditionCount ppic = (ParticleInitialConditionCount)pic;
 			Element e = new Element(XMLTags.ParticleCountTag);
 			e.setText(mangleExpression(ppic.getCount()));
@@ -1947,7 +1947,7 @@ private org.jdom.Element getXML(ParticleProperties param) throws XmlParseExcepti
 				particleInitial.addContent(e);				
 			}			
 		} else if (pic instanceof ParticleInitialConditionConcentration) {
-			particleInitial = new org.jdom.Element(XMLTags.ParticleInitialConcentrationTag);
+			particleInitial = new Element(XMLTags.ParticleInitialConcentrationTag);
 			ParticleInitialConditionConcentration ppic = (ParticleInitialConditionConcentration)pic;
 			Element e = new Element(XMLTags.ParticleDistributionTag);
 			e.setText(mangleExpression(ppic.getDistribution()));
@@ -1978,7 +1978,7 @@ private org.jdom.Element getXML(ParticleProperties param) throws XmlParseExcepti
 	return particleProperties;
 }
 
-private org.jdom.Element getXML(ParticleJumpProcess param) {
+private Element getXML(ParticleJumpProcess param) {
 	Element particleJumpProcessElement = null;
 	if(param instanceof LangevinParticleJumpProcess) {
 		particleJumpProcessElement = new Element(XMLTags.LangevinParticleJumpProcessTag);
@@ -3133,9 +3133,9 @@ private Element getXML(ParticleMolecularComponentPattern param) {
 private Element getXML(ParticleObservable param) {
 	Element e = null;
 	if(param instanceof VolumeParticleObservable) {
-		e = new org.jdom.Element(XMLTags.VolumeParticleObservableTag);
+		e = new Element(XMLTags.VolumeParticleObservableTag);
 	} else {
-		e = new org.jdom.Element(XMLTags.ParticleObservableTag);	
+		e = new Element(XMLTags.ParticleObservableTag);	
 	}
 	e.setAttribute(XMLTags.NameAttrTag, mangle(param.getName()));
 	if (param.getDomain()!=null){
@@ -3150,21 +3150,21 @@ private Element getXML(ParticleObservable param) {
 	return e;
 }
 private Element getVolumeParticleSpeciesPatternList(ParticleObservable param) {
-	org.jdom.Element e = null;
-	e = new org.jdom.Element(XMLTags.VolumeParticleSpeciesPatternsTag);
+	Element e = null;
+	e = new Element(XMLTags.VolumeParticleSpeciesPatternsTag);
 	for (ParticleSpeciesPattern pp : param.getParticleSpeciesPatterns()){
-		org.jdom.Element e1 = new org.jdom.Element(XMLTags.VolumeParticleSpeciesPatternTag);
+		Element e1 = new Element(XMLTags.VolumeParticleSpeciesPatternTag);
 		e1.setAttribute(XMLTags.NameAttrTag, mangle(pp.getName()));
 		e.addContent(e1);
 	}
 	return e;
 }
 private Element getXML(ParticleVariable param) {
-	org.jdom.Element e = null;
+	Element e = null;
 	if(param instanceof VolumeParticleVariable) {
-		e = new org.jdom.Element(XMLTags.VolumeParticleVariableTag);
+		e = new Element(XMLTags.VolumeParticleVariableTag);
 	} else if(param instanceof VolumeParticleSpeciesPattern) {
-		e = new org.jdom.Element(XMLTags.VolumeParticleSpeciesPatternTag);
+		e = new Element(XMLTags.VolumeParticleSpeciesPatternTag);
 		String locationName = ((VolumeParticleSpeciesPattern) param).getLocationName();
 		if (locationName != null){
 			e.setAttribute(XMLTags.LocationAttrTag, mangle(locationName));
@@ -3173,7 +3173,7 @@ private Element getXML(ParticleVariable param) {
 			e.addContent(getXML(pp));
 		}
 	} else if(param instanceof MembraneParticleVariable){
-		e = new org.jdom.Element(XMLTags.MembraneParticleVariableTag);
+		e = new Element(XMLTags.MembraneParticleVariableTag);
 	} else {
 		throw new RuntimeException("Unexpected element" + param);
 	}

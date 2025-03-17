@@ -2,7 +2,7 @@ package org.vcell.vis.io;
 
 import java.io.IOException;
 
-import org.jdom.Element;
+import org.jdom2.Element;
 import org.vcell.util.ISize;
 import org.vcell.vis.chombo.ChomboBox;
 import org.vcell.vis.chombo.ChomboLevel;

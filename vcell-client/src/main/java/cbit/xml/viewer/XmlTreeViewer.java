@@ -17,7 +17,7 @@ package cbit.xml.viewer;
  */
 public class XmlTreeViewer extends javax.swing.JPanel {
 	private javax.swing.JTree ivjJTree1 = null;
-	private org.jdom.Document fieldDocument = new org.jdom.Document();
+	private org.jdom2.Document fieldDocument = new org.jdom2.Document();
 /**
  * XmlTreeViewer constructor comment.
  */
@@ -27,7 +27,7 @@ public XmlTreeViewer() {
 }
 /**
  */
-private javax.swing.tree.MutableTreeNode buildTree(org.jdom.Element root) {
+private javax.swing.tree.MutableTreeNode buildTree(org.jdom2.Element root) {
 	if (root == null) return (null);
 	//
 	//  Create an anonymous class subclassing the DefaultMutableTreeNode...
@@ -35,7 +35,7 @@ private javax.swing.tree.MutableTreeNode buildTree(org.jdom.Element root) {
 	//
 	java.util.Iterator elements = root.getChildren().iterator();
 	while (elements.hasNext()) {
-		node.add(buildTree((org.jdom.Element) elements.next()));
+		node.add(buildTree((org.jdom2.Element) elements.next()));
 	}
 	//
 	java.util.Iterator attributes = root.getAttributes().iterator();
@@ -45,11 +45,11 @@ private javax.swing.tree.MutableTreeNode buildTree(org.jdom.Element root) {
 	return (node);
 }
 /**
- * Gets the document property (org.jdom.Document) value.
+ * Gets the document property (org.jdom2.Document) value.
  * @return The document property value.
  * @see #setDocument
  */
-public org.jdom.Document getDocument() {
+public org.jdom2.Document getDocument() {
 	return fieldDocument;
 }
 /**
@@ -126,13 +126,13 @@ public static void main(java.lang.String[] args) {
 	}
 }
 /**
- * Sets the document property (org.jdom.Document) value.
+ * Sets the document property (org.jdom2.Document) value.
  * @param document The new value for the property.
  * @exception java.beans.PropertyVetoException The exception description.
  * @see #getDocument
  */
-public void setDocument(org.jdom.Document document) /*throws java.beans.PropertyVetoException*/ {
-	org.jdom.Document oldValue = fieldDocument;
+public void setDocument(org.jdom2.Document document) /*throws java.beans.PropertyVetoException*/ {
+	org.jdom2.Document oldValue = fieldDocument;
 	//fireVetoableChange("document", oldValue, document);
 	fieldDocument = document;
 	firePropertyChange("document", oldValue, document);

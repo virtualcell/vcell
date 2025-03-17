@@ -9,10 +9,10 @@ import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.JDOMException;
-import org.jdom.filter.AbstractFilter;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.filter.ElementFilter;
 import org.jlibsedml.execution.IModelResolver;
 import org.jlibsedml.extensions.XMLUtils;
 
@@ -81,33 +81,20 @@ import org.jlibsedml.extensions.XMLUtils;
        IdName id;
     }
      private Element findElement(Document doc, String id) {
-         Iterator it = doc.getDescendants(new AttributeFilter("id", id));
+         Iterator it = doc.getDescendants(new ElementFilter() {
+             @Override
+             public Element filter(Object obj) {
+                 Element el = super.filter(obj);
+                 if (el != null && el.getAttribute("id") != null && el.getAttribute("id").getValue().equals(id)) {
+                     return el;
+                 }
+                 return null;
+             }
+         });
          if(it.hasNext()){
             return (Element)it.next();
          } else {
              return null;
          }
-    
-         
-         
-      }
-      
-      class AttributeFilter extends AbstractFilter {
-          private final String name, val;
-          AttributeFilter (String name, String val) {
-              this.name=name;
-              this.val=val;
-          }
-          public boolean matches(Object o) {
-              if (o instanceof Element) {
-                  Element toExamine = (Element)o;
-                  if (toExamine.getAttribute(name) != null && 
-                          toExamine.getAttribute(name).getValue().equals(val)){
-                      return true;
-                  }
-              }
-              return false;
-          }
-          
       }
 }

@@ -18,7 +18,7 @@ public class AdminService {
 	private final DatabaseServerImpl dbServerImpl;
 	Logger lg = LogManager.getLogger(AdminService.class);
 
-	public AdminService(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl dbServerImpl) throws java.io.IOException, java.io.FileNotFoundException, org.jdom.JDOMException, javax.jms.JMSException {
+	public AdminService(AdminDBTopLevel adminDbTopLevel, DatabaseServerImpl dbServerImpl) throws java.io.IOException, java.io.FileNotFoundException, org.jdom2.JDOMException, javax.jms.JMSException {
 		super();
 		this.adminDbTop = adminDbTopLevel;
 		this.dbServerImpl = dbServerImpl;

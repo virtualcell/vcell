@@ -45,7 +45,7 @@ import cbit.xml.merge.XmlTreeDiff;
 import cbit.xml.merge.XmlTreeDiff.DiffConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdom.*;
+import org.jdom2.*;
 import org.jlibsedml.*;
 import org.sbml.jsbml.SBMLException;
 import org.vcell.cellml.CellQuanVCTranslator;
@@ -588,7 +588,7 @@ public class XmlHelper {
 	public static VCDocument XMLToDocument(VCLogger vcLogger, String xmlString) throws Exception {
 		VCDocument doc = null;
 		XMLSource xmlSource = new XMLSource(xmlString);
-		org.jdom.Element rootElement = xmlSource.getXmlDoc().getRootElement();         //some overhead.
+		Element rootElement = xmlSource.getXmlDoc().getRootElement();         //some overhead.
 		String xmlType = rootElement.getName();
 		if (xmlType.equals(XMLTags.VcmlRootNodeTag)) {
 			// For now, assuming that <vcml> element has only one child (biomodel, mathmodel or geometry).

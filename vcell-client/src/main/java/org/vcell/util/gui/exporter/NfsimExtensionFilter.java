@@ -3,9 +3,9 @@ package org.vcell.util.gui.exporter;
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
-import org.jdom.Document;
-import org.jdom.Element;
-import org.jdom.output.XMLOutputter;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.output.XMLOutputter;
 import org.vcell.solver.nfsim.NFsimXMLWriter;
 
 import cbit.vcell.biomodel.BioModel;

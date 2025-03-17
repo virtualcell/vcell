@@ -342,8 +342,8 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				String ERROR_CODE_TAG = "error_code";
 //				String ERROR_MSG_TAG = "error_msg";
 				final String contentString = ClientDownloader.downloadBytes(url, Duration.ofSeconds(10));
-				org.jdom.Document jdomDocument = XmlUtil.stringToXML(contentString, null);
-				org.jdom.Element rootElement = jdomDocument.getRootElement();
+				org.jdom2.Document jdomDocument = XmlUtil.stringToXML(contentString, null);
+				org.jdom2.Element rootElement = jdomDocument.getRootElement();
 				String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
 				if (errorCode != null){
 					throw new RuntimeException("Failed to access " + url + " \n\nPlease try again.");
@@ -351,11 +351,11 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				
 //						String xmlText = StringUtil.textFromInputStream(connection.getInputStream());
 //						PathwayReader pathwayReader = new PathwayReader();
-//						org.jdom.Document jdomDocument = XmlUtil.stringToXML(xmlText, null);
+//						org.jdom2.Document jdomDocument = XmlUtil.stringToXML(xmlText, null);
 				
 //						String xmlText = StringUtil.textFromInputStream(connection.getInputStream(), "UTF-8");
 //						PathwayReader pathwayReader = new PathwayReader();
-//						org.jdom.Document jdomDocument = XmlUtil.stringToXML(xmlText, "UTF-8");
+//						org.jdom2.Document jdomDocument = XmlUtil.stringToXML(xmlText, "UTF-8");
 				
 				PathwayModel pathwayModel = PathwayIOUtil.extractPathwayFromJDOM(jdomDocument, new RDFXMLContext(), 
 						getClientTaskStatusSupport());
