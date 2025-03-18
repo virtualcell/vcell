@@ -32,9 +32,9 @@ jobs:
         sudo mkdir /usr/local/deploy
         sudo chmod 777 /usr/local/deploy
         cd /usr/local/deploy
-        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir_2023_07_30.tar .
+        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir_2025_03_18.tar .
         cd ..
-        sudo tar -xvf deploy/deploy_dir_2023_07_30.tar
+        sudo tar -xvf deploy/deploy_dir_2025_03_18.tar
         sudo chmod 777 -R deploy
     - name: Set up Python
       uses: actions/setup-python@v5
