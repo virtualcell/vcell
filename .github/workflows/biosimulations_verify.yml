@@ -9,7 +9,7 @@ on:
 
 jobs:
   submit:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       # Submit to BioSimulators registry
       - name: Submit to BioSimulators registry

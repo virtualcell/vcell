@@ -90,8 +90,8 @@ echo "    -e compiler_bioformatsJarDownloadURL=$VCELL_BIOFORMATS_JAR_URL \\"
 echo "    -e compiler_applicationId=$VCELL_CLIENT_APPID \\"
 echo "    -e winCodeSignKeystore_pfx=/buildsecrets/VCELL_UCONN_MS_2017.pfx \\"
 echo "    -e winCodeSignKeystore_pswdfile=/buildsecrets/VCELL_UCONN_MS_2017_pswd.txt \\"
-echo "    -e macCodeSignKeystore_p12=/buildsecrets/VCELL_APPLE_2015.p12 \\"
-echo "    -e macCodeSignKeystore_pswdfile=/buildsecrets/VCELL_APPLE_2015_pswd.txt \\"
+echo "    -e macCodeSignKeystore_p12=/buildsecrets/Apple_Dev_Id_Certificate_exp_20270924.p12 \\"
+echo "    -e macCodeSignKeystore_pswdfile=/buildsecrets/Apple_Dev_Id_Certificate_exp_20270924_pswd.txt \\"
 echo "    -e Install4J_product_key_file=/buildsecrets/Install4J_product_key_10.txt \\"
 echo "    -v $PWD/generated_installers:/outputdir \\"
 echo "    -v ${VCELL_DEPLOY_SECRETS_DIR}:/buildsecrets \\"
@@ -113,8 +113,8 @@ if ! sudo docker run --rm --cpus="1.0" \
     -e compiler_applicationId="$VCELL_CLIENT_APPID" \
     -e winCodeSignKeystore_pfx=/buildsecrets/VCELL_UCONN_MS_2017.pfx \
     -e winCodeSignKeystore_pswdfile=/buildsecrets/VCELL_UCONN_MS_2017_pswd.txt \
-    -e macCodeSignKeystore_p12=/buildsecrets/VCELL_APPLE_2015.p12 \
-    -e macCodeSignKeystore_pswdfile=/buildsecrets/VCELL_APPLE_2015_pswd.txt \
+    -e macCodeSignKeystore_p12=/buildsecrets/Apple_Dev_Id_Certificate_exp_20270924.p12 \
+    -e macCodeSignKeystore_pswdfile=/buildsecrets/Apple_Dev_Id_Certificate_exp_20270924_pswd.txt \
     -e Install4J_product_key_file=/buildsecrets/Install4J_product_key_10.txt \
     -v "$PWD"/generated_installers:/outputdir \
     -v "${VCELL_DEPLOY_SECRETS_DIR}":/buildsecrets \

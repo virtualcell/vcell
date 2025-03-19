@@ -25,7 +25,7 @@ on:
 jobs:
   build:
     name: Build client installers
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
     - name: checkout tag
       uses: actions/checkout@v4
@@ -59,9 +59,9 @@ jobs:
         sudo mkdir /usr/local/deploy
         sudo chmod 777 /usr/local/deploy
         cd /usr/local/deploy
-        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir_2023_07_30.tar .
+        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir_2025_03_18.tar .
         cd ..
-        sudo tar -xvf deploy/deploy_dir_2023_07_30.tar
+        sudo tar -xvf deploy/deploy_dir_2025_03_18.tar
         sudo chmod 777 -R deploy
     - name: setup config
       run: |
@@ -137,7 +137,8 @@ jobs:
         if [[ $? == 0 ]]; then
           xcrun stapler staple $MAC_INSTALLER
         else
-          echo "notarization did not succeed in 5 minutes, giving up"
+          echo "notarization did not succeed in 5 minutes, giving up - asking for notary log"
+          xcrun notarytool log --verbose --output-format normal --no-progress --team-id "${{ secrets.MACTEAMID }}" --apple-id "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" `cat UUID`
           exit 1
         fi
     - name: update generated installers
@@ -153,7 +154,7 @@ jobs:
         
   deploy:
     name: Deploy to site
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: notarize
     steps:
     - name: checkout tag

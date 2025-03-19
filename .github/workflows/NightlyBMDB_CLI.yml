@@ -118,7 +118,7 @@ jobs:
         if: ${{ failure() }}
 
   bmdb:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: build
     strategy:
       matrix:
@@ -305,7 +305,7 @@ jobs:
         if: ${{ failure() }}
 
   bmdb_results:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: bmdb
 
     steps:
