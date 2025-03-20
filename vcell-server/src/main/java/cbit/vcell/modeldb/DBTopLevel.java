@@ -207,6 +207,37 @@ FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperation
 	}
 }
 
+FieldDataDBOperationResults fieldDataCopy(User user,
+										  User sourceOwner, String[] sourceFuncNames,
+										  String versionTypeName, String versionName, boolean bEnableRetry) throws SQLException, DataAccessException {
+
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		FieldDataDBOperationResults fieldDataDBOperationResults =
+				DbDriver.fieldDataCopy(con, conFactory.getKeyFactory(), user, sourceOwner, sourceFuncNames,
+						versionTypeName, versionName);
+		con.commit();
+		return fieldDataDBOperationResults;
+	} catch (Throwable e) {
+		lg.error(e.getMessage(),e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return fieldDataCopy(user, sourceOwner, sourceFuncNames, versionTypeName, versionName,false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
 
 /**
  * This method was created in VisualAge.

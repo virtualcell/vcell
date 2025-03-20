@@ -631,6 +631,14 @@ public abstract class DbDriver {
         return FieldDataDBOperationDriver.fieldDataDBOperation(con, keyFactory, user, fieldDataDBOperationSpec);
     }
 
+    public static FieldDataDBOperationResults fieldDataCopy(Connection con, KeyFactory keyFactory, User user,
+                                                            User sourceOwner, String[] sourceFuncNames,
+                                                            String versionTypeName, String versionName) throws SQLException, DataAccessException{
+
+        return FieldDataDBOperationDriver.copyNoConflict(con, keyFactory, user, sourceOwner,
+                sourceFuncNames, versionTypeName, versionName);
+    }
+
 
     /**
      * This method was created in VisualAge.

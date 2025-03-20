@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.server;
+import java.util.Hashtable;
 import java.util.TreeMap;
 
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
@@ -16,17 +17,7 @@ import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Preference;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.CurateSpec;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.ReferenceQuerySpec;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.VCInfoContainer;
-import org.vcell.util.document.VersionInfo;
-import org.vcell.util.document.VersionableFamily;
-import org.vcell.util.document.VersionableType;
+import org.vcell.util.document.*;
 
 import cbit.image.VCImageInfo;
 import cbit.vcell.biomodel.BioModelMetaData;
@@ -81,6 +72,8 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 
 
 public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName);
+
+public Hashtable<String, ExternalDataIdentifier> copyFieldData(String[] funcNames, Version ogOwner, VersionableType type);
 
 /**
  * Insert the method's description here.
