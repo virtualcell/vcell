@@ -63,11 +63,11 @@ public class BiosimulationsHdf5WriterTest {
         Callable<SBMLDataRecord> row_S0_2_callable = () -> new SBMLDataRecord(row_S0_2, List.of(row_S0_2.length), null);
         Callable<SBMLDataRecord> row_S1_callable = () -> new SBMLDataRecord(row_S1, List.of(row_S1.length), null);
         Callable<SBMLDataRecord> row_t_callable = () -> new SBMLDataRecord(row_t, List.of(row_t.length), null);
-        LazySBMLNonSpatialDataAccessor lazy_S0_0 = new LazySBMLNonSpatialDataAccessor(row_S0_0_callable, row_S0_0.length);
-        LazySBMLNonSpatialDataAccessor lazy_S0_1 = new LazySBMLNonSpatialDataAccessor(row_S0_1_callable, row_S0_1.length);
-        LazySBMLNonSpatialDataAccessor lazy_S0_2 = new LazySBMLNonSpatialDataAccessor(row_S0_2_callable, row_S0_2.length);
-        LazySBMLNonSpatialDataAccessor lazy_S1 = new LazySBMLNonSpatialDataAccessor(row_S1_callable, row_S1.length);
-        LazySBMLNonSpatialDataAccessor lazy_t = new LazySBMLNonSpatialDataAccessor(row_t_callable, row_t.length);
+        LazySBMLNonSpatialDataAccessor lazy_S0_0 = new LazySBMLNonSpatialDataAccessor(row_S0_0_callable, row_S0_0.length, Arrays.stream(row_t).boxed().toList());
+        LazySBMLNonSpatialDataAccessor lazy_S0_1 = new LazySBMLNonSpatialDataAccessor(row_S0_1_callable, row_S0_1.length, Arrays.stream(row_t).boxed().toList());
+        LazySBMLNonSpatialDataAccessor lazy_S0_2 = new LazySBMLNonSpatialDataAccessor(row_S0_2_callable, row_S0_2.length, Arrays.stream(row_t).boxed().toList());
+        LazySBMLNonSpatialDataAccessor lazy_S1 = new LazySBMLNonSpatialDataAccessor(row_S1_callable, row_S1.length, Arrays.stream(row_t).boxed().toList());
+        LazySBMLNonSpatialDataAccessor lazy_t = new LazySBMLNonSpatialDataAccessor(row_t_callable, row_t.length, Arrays.stream(row_t).boxed().toList());
 
         Hdf5SedmlResults plotDatasetWrapper = new Hdf5SedmlResults();
         plotDatasetWrapper.datasetMetadata = plotMetadata;

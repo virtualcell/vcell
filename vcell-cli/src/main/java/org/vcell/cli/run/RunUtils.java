@@ -17,7 +17,9 @@ import org.apache.logging.log4j.Logger;
 import org.jlibsedml.DataSet;
 import org.jlibsedml.*;
 import org.vcell.cli.run.results.ValueHolder;
+import org.vcell.sbml.vcell.lazy.LazySBMLDataAccessor;
 import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
+import org.vcell.sbml.vcell.lazy.LazySBMLSpatialDataAccessor;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.GenericExtensionFilter;
 import org.vcell.util.document.User;
@@ -38,113 +40,7 @@ public class RunUtils {
 
     private RunUtils(){} // Static class, no instances allowed
 
-    public static ODESolverResultSet interpolate(ODESolverResultSet odeSolverResultSet, UniformTimeCourse sedmlSim) throws ExpressionException {
-        double outputStart = sedmlSim.getOutputStartTime();
-        double outputEnd = sedmlSim.getOutputEndTime();
-
-        int numPoints = sedmlSim.getNumberOfSteps() + 1;
-
-
-        ColumnDescription[] columnDescriptions = odeSolverResultSet.getColumnDescriptions();
-        String[] columnNames = new String[columnDescriptions.length];
-
-        for (int i = 0; i < columnDescriptions.length; i++) {
-            columnNames[i] = columnDescriptions[i].getDisplayName();
-        }
-
-        // need to construct a new RowColumnResultSet instance
-        ODESolverResultSet finalResultSet = new ODESolverResultSet();
-
-
-        // use same column descriptions
-        for (ColumnDescription cd : columnDescriptions) {
-            finalResultSet.addDataColumn(cd);
-        }
-
-
-        double deltaTime = ((outputEnd - outputStart) / (numPoints - 1));
-        double[] timepoints = new double[numPoints];
-
-        timepoints[0] = outputStart;
-        for (int i = 1; i < numPoints; i++) {
-            timepoints[i] = timepoints[i - 1] + deltaTime;
-        }
-
-        double[] originalTimepoints = odeSolverResultSet.extractColumn(0);
-
-
-        double[][] columnValues = new double[columnDescriptions.length][];
-        columnValues[0] = timepoints;
-        for (int i = 1; i < columnDescriptions.length; i++) {
-            // each row uses the time index based on the params above and for each column descriptions interpolate the value from the original result set
-            columnValues[i] = interpLinear(originalTimepoints, odeSolverResultSet.extractColumn(i), timepoints);
-        }
-
-
-        double[][] rowValues = new double[numPoints][columnDescriptions.length];
-
-        for (int rowCount = 0; rowCount < numPoints; rowCount++) {
-            for (int colCount = 0; colCount < columnDescriptions.length; colCount++) {
-                rowValues[rowCount][colCount] = columnValues[colCount][rowCount];
-            }
-        }
-
-
-        // add a numPoints number of rows one by one as double[]
-        for (int rowCount = 0; rowCount < numPoints; rowCount++) {
-            finalResultSet.addRow(rowValues[rowCount]);
-        }
-
-        return finalResultSet;
-    }
-
-    public static double[] interpLinear(double[] x, double[] y, double[] xi) throws IllegalArgumentException {
-
-        if (x.length != y.length) {
-            throw new IllegalArgumentException("X and Y must be the same length");
-        }
-        if (x.length == 1) {
-            throw new IllegalArgumentException("X must contain more than one value");
-        }
-        double[] dx = new double[x.length - 1];
-        double[] dy = new double[x.length - 1];
-        double[] slope = new double[x.length - 1];
-        double[] intercept = new double[x.length - 1];
-
-        // Calculate the line equation (i.e. slope and intercept) between each point
-        for (int i = 0; i < x.length - 1; i++) {
-            dx[i] = x[i + 1] - x[i];
-            if (dx[i] == 0) {
-                throw new IllegalArgumentException("X must be montotonic. A duplicate " + "x-value was found");
-            }
-            if (dx[i] < 0) {
-                throw new IllegalArgumentException("X must be sorted");
-            }
-            dy[i] = y[i + 1] - y[i];
-            slope[i] = dy[i] / dx[i];
-            intercept[i] = y[i] - x[i] * slope[i];
-        }
-
-        // Perform the interpolation here
-        double[] yi = new double[xi.length];
-        for (int i = 0; i < xi.length; i++) {
-            if ((xi[i] > x[x.length - 1]) || (xi[i] < x[0])) {
-                yi[i] = Double.NaN;
-            } else {
-                int loc = Arrays.binarySearch(x, xi[i]);
-                if (loc < -1) {
-                    loc = -loc - 2;
-                    yi[i] = slope[loc] * xi[i] + intercept[loc];
-                } else {
-                    yi[i] = y[loc];
-                }
-            }
-        }
-
-        return yi;
-    }
-
-    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults, File outDirForCurrentSedml) {
+    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> organizedNonSpatialResults, File outDirForCurrentSedml) {
         // finally, the real work
         HashMap<String, File> reportsHash = new HashMap<>();
         for (Output sedmlOutput : sedml.getOutputs()) {
@@ -183,7 +79,7 @@ public class RunUtils {
                 for (DataSet validDataSet: dataGeneratorMapping.keySet()) {
                     DataGenerator referencedGenerator = dataGeneratorMapping.get(validDataSet);
                     boolean isReservedVCellPrefix = validDataSet.getId().startsWith("__vcell_reserved_data_set_prefix__");
-                    ValueHolder<LazySBMLNonSpatialDataAccessor> dataHolder = organizedNonSpatialResults.get(referencedGenerator);
+                    ValueHolder<LazySBMLDataAccessor> dataHolder = organizedNonSpatialResults.get(referencedGenerator);
 
 
                     boolean timeAlreadyIncluded = false;
@@ -191,7 +87,9 @@ public class RunUtils {
                     for(int i = 0; i < numTrials; i++) {
                         if (timeAlreadyIncluded) break;
                         if (validDataSet.getId().contains("time_")) timeAlreadyIncluded = true;
-                        LazySBMLNonSpatialDataAccessor data = dataHolder.listOfResultSets.get(i);
+                        LazySBMLDataAccessor genericDataAccessor = dataHolder.listOfResultSets.get(i);
+                        if (!(genericDataAccessor instanceof LazySBMLNonSpatialDataAccessor data))
+                            throw new RuntimeException("Spatial data detected in non-spatial handling code!");
 
                         String formattedId = isReservedVCellPrefix ? "VCell::" + validDataSet.getId().substring(34) : validDataSet.getId();
                         sb.append(RunUtils.generateCsvItem(formattedId, ',', false, i, numTrials));
