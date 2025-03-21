@@ -104,16 +104,17 @@ public class FieldDataDBOperationDriver{
 
 	}
 
-	private static FieldDataDBOperationResults copyNoConflict(Connection con, KeyFactory keyFactory, User user,
-															  FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException {
+	public static FieldDataDBOperationResults copyNoConflict(Connection con, KeyFactory keyFactory, User user,
+															  User sourceOwner, String[] sourceFunctionNames,
+															  String versionTypeName, String versionName) throws SQLException, DataAccessException {
 			//get all current ExtDataIDs
 			ExternalDataIdentifier[] existingExtDataIDArr =
 				FieldDataDBOperationDriver.fieldDataDBOperation(
 					con, keyFactory, user,FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
 			//Rename FieldFunc names if necessary
 			Hashtable<String,String> newNameOrigNameHash = new Hashtable<String, String>();
-			for(int i=0;i<fieldDataDBOperationSpec.sourceNames.length;i+= 1){
-				String newFieldFuncName = fieldDataDBOperationSpec.sourceNames[i];
+			for(int i=0;i<sourceFunctionNames.length;i+= 1){
+				String newFieldFuncName = sourceFunctionNames[i];
 				while(true){
 					boolean bNameConflictExists = false;
 					for(int j=0;j<existingExtDataIDArr.length;j+= 1){
@@ -125,7 +126,7 @@ public class FieldDataDBOperationDriver{
 					bNameConflictExists =
 						bNameConflictExists || newNameOrigNameHash.containsKey(newFieldFuncName);
 					if(!bNameConflictExists){
-						newNameOrigNameHash.put(newFieldFuncName,fieldDataDBOperationSpec.sourceNames[i]);
+						newNameOrigNameHash.put(newFieldFuncName,sourceFunctionNames[i]);
 						break;
 					}
 					newFieldFuncName = TokenMangler.getNextEnumeratedToken(newFieldFuncName);
@@ -135,8 +136,7 @@ public class FieldDataDBOperationDriver{
 			//Copy source annotation
 			FieldDataDBOperationResults sourceUserExtDataInfo =
 				fieldDataDBOperation(con,keyFactory, user,
-						FieldDataDBOperationSpec.createGetExtDataIDsSpec(
-								fieldDataDBOperationSpec.sourceOwner.getVersion().getOwner()));
+						FieldDataDBOperationSpec.createGetExtDataIDsSpec(sourceOwner));
 			ExternalDataIdentifier[] sourceUserExtDataIDArr = sourceUserExtDataInfo.extDataIDArr;
 			Hashtable<String, ExternalDataIdentifier> oldNameNewIDHash =
 				new Hashtable<String, ExternalDataIdentifier>();
@@ -147,9 +147,9 @@ public class FieldDataDBOperationDriver{
 				//find orig annotation
 				String origAnnotation =
 					"Copy Field Data name used Field Data function\r\n"+
-					"Source type: "+fieldDataDBOperationSpec.sourceOwner.getVType().getTypeName()+"\r\n"+
-					"Source owner: "+fieldDataDBOperationSpec.sourceOwner.getVersion().getOwner().getName()+"\r\n"+
-					"Source name: "+fieldDataDBOperationSpec.sourceOwner.getVersion().getName()+"\r\n"+
+					"Source type: "+versionTypeName+"\r\n"+
+					"Source owner: "+sourceOwner.getName()+"\r\n"+
+					"Source name: "+versionName+"\r\n"+
 					"Original Field Data name: "+newNameOrigNameHash.get(newFieldFuncNamesArr[i])+"\r\n"+
 					"New Field Data name: "+newFieldFuncNamesArr[i]+"\r\n"+
 					"Source Annotation: "+newFieldFuncNamesArr[i]+"\r\n";
@@ -321,7 +321,9 @@ public class FieldDataDBOperationDriver{
 			FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException {
 		
 		if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_COPY_NO_CONFLICT){
-			return copyNoConflict(con, keyFactory, user, fieldDataDBOperationSpec);
+			return copyNoConflict(con, keyFactory, user, fieldDataDBOperationSpec.sourceOwner.getVersion().getOwner(),
+					fieldDataDBOperationSpec.sourceNames, fieldDataDBOperationSpec.sourceOwner.getVType().getTypeName(),
+					fieldDataDBOperationSpec.sourceOwner.getVersion().getName());
 		}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS){
 			return getExtraDataIDs(con, keyFactory, user, fieldDataDBOperationSpec);
 		}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_SAVEEXTDATAID){

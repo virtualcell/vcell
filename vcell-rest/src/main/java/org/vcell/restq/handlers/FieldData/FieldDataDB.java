@@ -2,35 +2,44 @@ package org.vcell.restq.handlers.FieldData;
 
 import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.field.FieldDataFileConversion;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.field.*;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.ServerDocumentManager;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.restq.db.AgroalConnectionFactory;
+import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
+import org.vcell.util.document.*;
 
 import java.io.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Vector;
+import java.util.*;
 import java.util.zip.DataFormatException;
 
 @ApplicationScoped
 public class FieldDataDB {
+    private static final Logger logger = LogManager.getLogger(FieldDataDB.class);
 
     private final DatabaseServerImpl databaseServer;
     private final DataSetControllerImpl dataSetController;
@@ -45,8 +54,60 @@ public class FieldDataDB {
                 new File(secondarySimDataDir));
     }
 
-    public FieldDataDBOperationResults copyNoConflict(User user, FieldDataDBOperationSpec spec) throws DataAccessException {
-        return databaseServer.fieldDataDBOperation(user, spec);
+    public Hashtable<String, ExternalDataIdentifier> copyNoConflict(User requester, KeyValue documentKey, String documentType) throws DataAccessException, XmlParseException, MathException, ExpressionException {
+        VCDocument vcDocument;
+
+        //Get Objects from Document that might need to have FieldFuncs replaced
+        Vector<Object> modelsListOfContext = new Vector<Object>();
+        if(documentType.equalsIgnoreCase(VersionableType.MathModelMetaData.getTypeName())){
+            BigString mathModelXML = databaseServer.getMathModelXML(requester, documentKey);
+            vcDocument = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML.toString()));
+            modelsListOfContext.add(((MathModel)vcDocument).getMathDescription());
+        }else if(documentType.equalsIgnoreCase(VersionableType.BioModelMetaData.getTypeName())){
+            BigString bioModelXML = databaseServer.getBioModelXML(requester, documentKey);
+            vcDocument = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
+            modelsListOfContext.add(((BioModel)vcDocument).getSimulationContexts());
+        } else {
+            UnsupportedOperationException notSupported = new UnsupportedOperationException("Document type (" + documentType + ") is not supported.");
+            logger.error(notSupported);
+            throw notSupported;
+        }
+        User ogOwner = vcDocument.getVersion().getOwner();
+
+		//Get Field names
+        Vector<String> fieldNames = new Vector<>();
+        for(Object fieldFunctionContainer : modelsListOfContext){
+            FieldFunctionArguments[] fieldFuncArgsArr = {};
+            if (fieldFunctionContainer instanceof MathDescription){
+                fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments((MathDescription)fieldFunctionContainer);
+            }else if (fieldFunctionContainer instanceof SimulationContext){
+                fieldFuncArgsArr = ((SimulationContext)fieldFunctionContainer).getFieldFunctionArguments();
+            }
+            for (FieldFunctionArguments fieldFunctionArguments : fieldFuncArgsArr) {
+                if (!fieldNames.contains(fieldFunctionArguments.getFieldName())) {
+                    fieldNames.add(fieldFunctionArguments.getFieldName());
+                }
+            }
+        }
+        if (fieldNames.isEmpty()){
+            return new Hashtable<>();
+        }
+
+        ///////////////////////////////////////////////////////////////////////
+        // Copy the Field Data (First create entries in DB, then copy files) //
+        ///////////////////////////////////////////////////////////////////////
+
+        // Create DB entries where new field data names are created
+        FieldDataDBOperationResults dbResults = databaseServer.copyFieldData(requester, ogOwner,
+                fieldNames.toArray(new String[0]), documentType, vcDocument.getVersion().getName());
+
+        // Tie those DB entries to newly created copies of the original field data that the requester owns
+        for (String oldName: fieldNames){
+            FieldDataFileOperationSpec fileOperationSpec = FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(dbResults.extDataID,
+                    dbResults.oldNameOldExtDataIDKeyHash.get(oldName), ogOwner, FieldDataFileOperationSpec.JOBINDEX_DEFAULT, requester);
+            dataSetController.fieldDataFileOperation(fileOperationSpec);
+        }
+        return dbResults.oldNameNewIDHash;
     }
 
     public ArrayList<FieldDataResource.FieldDataReference> getAllFieldDataIDs(User user) throws SQLException, DataAccessException {
