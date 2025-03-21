@@ -2,7 +2,10 @@ package org.vcell.restq.handlers.FieldData;
 
 import cbit.image.ImageException;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.math.MathException;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataIdentifier;
+import cbit.vcell.xml.XmlParseException;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
@@ -19,14 +22,13 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
+import org.vcell.util.document.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import java.util.zip.DataFormatException;
@@ -130,20 +132,19 @@ public class FieldDataResource {
         return fieldDataSaveResults;
     }
 
-//    @POST
-//    @Path("/copy")
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Operation(operationId = "copyFieldData", summary = "Copy an existing field data entry.")
-//    public FieldDataNoCopyConflict copyFieldData(FieldDataDBOperationSpec fieldDataDBOperationSpec){
-//        FieldDataDBOperationResults results = null;
-//        try {
-//            results = fieldDataDB.copyNoConflict(userRestDB.getUserFromIdentity(securityIdentity), fieldDataDBOperationSpec);
-//        } catch (DataAccessException e) {
-//            throw new WebApplicationException(e.getMessage(), 500);
-//        }
-//        return new FieldDataNoCopyConflict(results.oldNameNewIDHash, results.oldNameOldExtDataIDKeyHash);
-//    }
+    @POST
+    @Path("/copyModelsFieldData")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "copyModelsFieldData", summary = "Copy all existing field data from a BioModel/MathModel if not already owned.")
+    public Hashtable<String, ExternalDataIdentifier> copyFieldData(CopyFieldData copyFieldData){
+        try {
+            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
+            return fieldDataDB.copyNoConflict(user, new KeyValue(copyFieldData.modelID()), copyFieldData.modelType.getName());
+        } catch (DataAccessException | MathException | XmlParseException | ExpressionException e) {
+            throw new WebApplicationException(e.getMessage(), 500);
+        }
+    }
 
     @DELETE
     @Path("/delete/{fieldDataID}")
@@ -177,6 +178,22 @@ public class FieldDataResource {
 //            Hashtable<String, ExternalDataIdentifier> oldNameNewIDHash,
 //            Hashtable<String, KeyValue> oldNameOldExtDataIDKeyHash
 //    ) { }
+
+    public record CopyFieldData(
+            String modelID,
+            ModelType modelType
+    ) { }
+
+    public enum ModelType{
+        BIOMODEL(VersionableType.BioModelMetaData.getTypeName()),
+        MATHMODEL(VersionableType.MathModelMetaData.getTypeName());
+
+        private final String name;
+        public String getName(){return name;}
+        ModelType(String name){
+            this.name = name;
+        }
+    }
 
     public record FieldDataReference(
             ExternalDataIdentifier externalDataIdentifier,
