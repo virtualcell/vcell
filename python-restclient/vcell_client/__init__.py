@@ -44,6 +44,7 @@ from vcell_client.models.analyzed_results_from_field_data import AnalyzedResults
 from vcell_client.models.batch_system_type import BatchSystemType
 from vcell_client.models.bio_model import BioModel
 from vcell_client.models.biomodel_ref import BiomodelRef
+from vcell_client.models.copy_field_data import CopyFieldData
 from vcell_client.models.data_identifier import DataIdentifier
 from vcell_client.models.detailed_state import DetailedState
 from vcell_client.models.domain import Domain
@@ -58,6 +59,7 @@ from vcell_client.models.i_size import ISize
 from vcell_client.models.identity import Identity
 from vcell_client.models.key_value import KeyValue
 from vcell_client.models.mathmodel_ref import MathmodelRef
+from vcell_client.models.model_type import ModelType
 from vcell_client.models.origin import Origin
 from vcell_client.models.publication import Publication
 from vcell_client.models.scheduler_status import SchedulerStatus

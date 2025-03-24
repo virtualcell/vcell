@@ -240,6 +240,27 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/fieldData/copyModelsFieldData:
+    post:
+      tags:
+      - Field Data Resource
+      summary: Copy all existing field data from a BioModel/MathModel if not already
+        owned.
+      operationId: copyModelsFieldData
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CopyFieldData'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/ExternalDataIdentifier'
   /api/v1/fieldData/createFieldDataFromAnalyzedFile:
     post:
       tags:
@@ -832,6 +853,13 @@ components:
         versionFlag:
           format: int32
           type: integer
+    CopyFieldData:
+      type: object
+      properties:
+        modelID:
+          type: string
+        modelType:
+          $ref: '#/components/schemas/ModelType'
     DataIdentifier:
       type: object
       properties:
@@ -1052,6 +1080,11 @@ components:
         versionFlag:
           format: int32
           type: integer
+    ModelType:
+      enum:
+      - BIOMODEL
+      - MATHMODEL
+      type: string
     Origin:
       type: object
       properties:

@@ -6,6 +6,8 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 |------------- | ------------- | -------------|
 | [**analyzeFieldDataFile**](FieldDataResourceApi.md#analyzeFieldDataFile) | **POST** /api/v1/fieldData/analyzeFieldDataFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores. |
 | [**analyzeFieldDataFileWithHttpInfo**](FieldDataResourceApi.md#analyzeFieldDataFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFieldDataFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores. |
+| [**copyModelsFieldData**](FieldDataResourceApi.md#copyModelsFieldData) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel if not already owned. |
+| [**copyModelsFieldDataWithHttpInfo**](FieldDataResourceApi.md#copyModelsFieldDataWithHttpInfo) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel if not already owned. |
 | [**createFieldDataFromAnalyzedFile**](FieldDataResourceApi.md#createFieldDataFromAnalyzedFile) | **POST** /api/v1/fieldData/createFieldDataFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server. |
 | [**createFieldDataFromAnalyzedFileWithHttpInfo**](FieldDataResourceApi.md#createFieldDataFromAnalyzedFileWithHttpInfo) | **POST** /api/v1/fieldData/createFieldDataFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server. |
 | [**createNewFieldDataFromSimulation**](FieldDataResourceApi.md#createNewFieldDataFromSimulation) | **POST** /api/v1/fieldData/createFieldDataFromSimulation | Create new field data from a simulation. |
@@ -159,6 +161,136 @@ ApiResponse<[**AnalyzedResultsFromFieldData**](AnalyzedResultsFromFieldData.md)>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+
+
+## copyModelsFieldData
+
+> Map<String, ExternalDataIdentifier> copyModelsFieldData(copyFieldData)
+
+Copy all existing field data from a BioModel/MathModel if not already owned.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.FieldDataResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+
+        FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
+        CopyFieldData copyFieldData = new CopyFieldData(); // CopyFieldData | 
+        try {
+            Map<String, ExternalDataIdentifier> result = apiInstance.copyModelsFieldData(copyFieldData);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling FieldDataResourceApi#copyModelsFieldData");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **copyFieldData** | [**CopyFieldData**](CopyFieldData.md)|  | [optional] |
+
+### Return type
+
+[**Map&lt;String, ExternalDataIdentifier&gt;**](ExternalDataIdentifier.md)
+
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+
+## copyModelsFieldDataWithHttpInfo
+
+> ApiResponse<Map<String, ExternalDataIdentifier>> copyModelsFieldData copyModelsFieldDataWithHttpInfo(copyFieldData)
+
+Copy all existing field data from a BioModel/MathModel if not already owned.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.FieldDataResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+
+        FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
+        CopyFieldData copyFieldData = new CopyFieldData(); // CopyFieldData | 
+        try {
+            ApiResponse<Map<String, ExternalDataIdentifier>> response = apiInstance.copyModelsFieldDataWithHttpInfo(copyFieldData);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling FieldDataResourceApi#copyModelsFieldData");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **copyFieldData** | [**CopyFieldData**](CopyFieldData.md)|  | [optional] |
+
+### Return type
+
+ApiResponse<[**Map&lt;String, ExternalDataIdentifier&gt;**](ExternalDataIdentifier.md)>
+
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
 
 
 ## createFieldDataFromAnalyzedFile
