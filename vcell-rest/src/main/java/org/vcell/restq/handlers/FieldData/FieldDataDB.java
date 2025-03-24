@@ -30,6 +30,7 @@ import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.TokenMangler;
 import org.vcell.util.document.*;
 
 import java.io.*;
@@ -148,13 +149,21 @@ public class FieldDataDB {
 
 
     public FieldDataFileOperationResults saveNewFieldDataFromFile(FieldDataResource.AnalyzedResultsFromFieldData saveFieldData, User user) throws DataAccessException, ImageException, DataFormatException {
+        // Ensure name is unique for user
+        String fieldDataName = saveFieldData.name();
+        FieldDataDBOperationResults usersFieldData = databaseServer.fieldDataDBOperation(user, FieldDataDBOperationSpec.createGetExtDataIDsSpecWithSimRefs(user));
+        for (ExternalDataIdentifier edi : usersFieldData.extDataIDArr){
+            if (edi.getName().equals(fieldDataName)){
+                fieldDataName = TokenMangler.getNextEnumeratedToken(fieldDataName);
+            }
+        }
 
 
         VariableType[] varTypes = new VariableType[saveFieldData.varNames().length];
         for (int j = 0; j < saveFieldData.varNames().length; j++){
             varTypes[j] = VariableType.VOLUME;
         }
-        FieldDataDBOperationSpec fieldDataDBOperationSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(user, saveFieldData.name(), saveFieldData.annotation());
+        FieldDataDBOperationSpec fieldDataDBOperationSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(user, fieldDataName, saveFieldData.annotation());
         FieldDataDBOperationResults results = databaseServer.fieldDataDBOperation(user, fieldDataDBOperationSpec);
         FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec(saveFieldData.shortSpecData(), null, null,
                 results.extDataID, saveFieldData.varNames(), varTypes, saveFieldData.times(), user,
