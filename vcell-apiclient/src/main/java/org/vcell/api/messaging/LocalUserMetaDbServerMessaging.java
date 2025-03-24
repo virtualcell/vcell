@@ -134,6 +134,7 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 			List<FieldDataReference> fieldDataReferences = vCellApiClient.getFieldDataApi().getAllFieldDataIDs();
 			return DtoModelTransforms.fieldDataReferencesToDBResults(fieldDataReferences, fieldDataDBOperationSpec.owner);
 		} else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_SAVEEXTDATAID) {
+			// Still needs to be implemented
 			return null;
 		} else{
 			UnsupportedOperationException exception = new UnsupportedOperationException("Attempting to call field data method that is unavailable.");
