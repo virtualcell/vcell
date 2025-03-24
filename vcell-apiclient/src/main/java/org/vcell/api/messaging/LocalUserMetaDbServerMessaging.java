@@ -129,13 +129,14 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.fieldDataDBOperation(...)");
 		if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_DELETE){
-			throw new RuntimeException("Can not call deletion on field data DB entry. Have to do both file, and DB deletion.");
+			throw new UnsupportedOperationException("Can not call deletion on field data DB entry. Have to do both file, and DB deletion.");
 		} else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS) {
 			List<FieldDataReference> fieldDataReferences = vCellApiClient.getFieldDataApi().getAllFieldDataIDs();
 			return DtoModelTransforms.fieldDataReferencesToDBResults(fieldDataReferences, fieldDataDBOperationSpec.owner);
 		} else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_SAVEEXTDATAID) {
-			// Still needs to be implemented
-			return null;
+			UnsupportedOperationException unsupported = new UnsupportedOperationException("Call from UserLocalDataSetController, no longer allowing manual entries to DB.");
+			lg.error(unsupported);
+			throw unsupported;
 		} else{
 			UnsupportedOperationException exception = new UnsupportedOperationException("Attempting to call field data method that is unavailable.");
 			lg.error(exception.getMessage(), fieldDataDBOperationSpec);
