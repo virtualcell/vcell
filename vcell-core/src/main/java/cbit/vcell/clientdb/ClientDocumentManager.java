@@ -13,17 +13,10 @@ package cbit.vcell.clientdb;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EventListener;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Vector;
+import java.util.*;
 
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
+import cbit.vcell.solver.SimulationOwner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Element;
@@ -2626,39 +2619,36 @@ private <T extends VersionInfo> T setGroupPublic0(VersionInfo versionInfo, Versi
 public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersion originalOwner)
 		throws DataAccessException,MathException,ExpressionException{
 
-	Vector<ExternalDataIdentifier> errorCleanupExtDataIDV = new Vector<ExternalDataIdentifier>();
+	ArrayList<ExternalDataIdentifier> errorCleanupExtDataIDV = new ArrayList<>();
 	try{
 		if(originalOwner == null || originalOwner.getVersion().getOwner().compareEqual(getUser())){
 			//Substitution for FieldFunc not needed for new doc or if we own doc
 			return;
 		}
 		//Get Objects from Document that might need to have FieldFuncs replaced
-		Vector<Object> fieldFunctionContainer_mathDesc_or_simContextV = new Vector<Object>();
-		if(vcDocument instanceof MathModel){
-			fieldFunctionContainer_mathDesc_or_simContextV.add(((MathModel)vcDocument).getMathDescription());
-		}else if(vcDocument instanceof BioModel){
-			SimulationContext[] simContextArr = ((BioModel)vcDocument).getSimulationContexts();
-			for(int i=0;i<simContextArr.length;i+= 1){
-				fieldFunctionContainer_mathDesc_or_simContextV.add(simContextArr[i]);
-			}
+		ArrayList<SimulationOwner> fieldFunctionContainer_mathDesc_or_simContextV = new ArrayList<>();
+		if(vcDocument instanceof MathModel mathModel){
+			fieldFunctionContainer_mathDesc_or_simContextV.add(mathModel);
+		}else if(vcDocument instanceof BioModel bioModel){
+			SimulationContext[] simContextArr = bioModel.getSimulationContexts();
+            fieldFunctionContainer_mathDesc_or_simContextV.addAll(Arrays.asList(simContextArr));
 		}
 		//Get original Field names
-		Vector<String> origFieldFuncNamesV = new Vector<String>();
-		for(int i=0;i<fieldFunctionContainer_mathDesc_or_simContextV.size();i+= 1){
-			Object fieldFunctionContainer = fieldFunctionContainer_mathDesc_or_simContextV.elementAt(i);
-			FieldFunctionArguments[] fieldFuncArgsArr = null;
-			if (fieldFunctionContainer instanceof MathDescription){
-				fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments((MathDescription)fieldFunctionContainer);
-			}else if (fieldFunctionContainer instanceof SimulationContext){
-				fieldFuncArgsArr = ((SimulationContext)fieldFunctionContainer).getFieldFunctionArguments();
-			}
-			for(int j=0;j<fieldFuncArgsArr.length;j+= 1){
-				if(!origFieldFuncNamesV.contains(fieldFuncArgsArr[j].getFieldName())){
-					origFieldFuncNamesV.add(fieldFuncArgsArr[j].getFieldName());
-				}
-			}
-		}
-		if(origFieldFuncNamesV.size() == 0){//No FieldFunctions to substitute
+		ArrayList<String> origFieldFuncNamesV = new ArrayList<>();
+        for (SimulationOwner fieldFunctionContainer : fieldFunctionContainer_mathDesc_or_simContextV) {
+            FieldFunctionArguments[] fieldFuncArgsArr = {};
+            if (fieldFunctionContainer instanceof MathModel mathModel) {
+                fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments(mathModel.getMathDescription());
+            } else if (fieldFunctionContainer instanceof SimulationContext simContext) {
+                fieldFuncArgsArr = simContext.getFieldFunctionArguments();
+            }
+            for (FieldFunctionArguments fieldFunctionArguments : fieldFuncArgsArr) {
+                if (!origFieldFuncNamesV.contains(fieldFunctionArguments.getFieldName())) {
+                    origFieldFuncNamesV.add(fieldFunctionArguments.getFieldName());
+                }
+            }
+        }
+		if(origFieldFuncNamesV.isEmpty()){//No FieldFunctions to substitute
 			return;
 		}
 
@@ -2668,16 +2658,13 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
 
 
 		//Finally substitute new Field names
-		for(int i=0;i<fieldFunctionContainer_mathDesc_or_simContextV.size();i+= 1){
-			Object fieldFunctionContainer = fieldFunctionContainer_mathDesc_or_simContextV.elementAt(i);
-			if (fieldFunctionContainer instanceof MathDescription){
-				MathDescription mathDesc = (MathDescription)fieldFunctionContainer;
-				FieldUtilities.substituteFieldFuncNames(mathDesc, oldNameNewID);
-			}else if (fieldFunctionContainer instanceof SimulationContext){
-				SimulationContext simContext = (SimulationContext)fieldFunctionContainer;
-				simContext.substituteFieldFuncNames(oldNameNewID);
-			}
-		}
+        for (Object fieldFunctionContainer : fieldFunctionContainer_mathDesc_or_simContextV) {
+            if (fieldFunctionContainer instanceof MathDescription mathDesc) {
+                FieldUtilities.substituteFieldFuncNames(mathDesc, oldNameNewID);
+            } else if (fieldFunctionContainer instanceof SimulationContext simContext) {
+                simContext.substituteFieldFuncNames(oldNameNewID);
+            }
+        }
 		fireFieldDataDB(new FieldDataDBEvent(this));
 	}catch(Exception e){
 		lg.error(e.getMessage(), e);

@@ -18,6 +18,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -59,15 +60,16 @@ public class FieldDataDB {
         VCDocument vcDocument;
 
         //Get Objects from Document that might need to have FieldFuncs replaced
-        Vector<Object> modelsListOfContext = new Vector<Object>();
+        ArrayList<SimulationOwner> modelsListOfContext = new ArrayList<>();
         if(documentType.equalsIgnoreCase(VersionableType.MathModelMetaData.getTypeName())){
             BigString mathModelXML = databaseServer.getMathModelXML(requester, documentKey);
             vcDocument = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML.toString()));
-            modelsListOfContext.add(((MathModel)vcDocument).getMathDescription());
+            modelsListOfContext.add(((MathModel)vcDocument));
         }else if(documentType.equalsIgnoreCase(VersionableType.BioModelMetaData.getTypeName())){
             BigString bioModelXML = databaseServer.getBioModelXML(requester, documentKey);
             vcDocument = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
-            modelsListOfContext.add(((BioModel)vcDocument).getSimulationContexts());
+            SimulationContext[] contexts = ((BioModel)vcDocument).getSimulationContexts();
+            modelsListOfContext.addAll(Arrays.asList(contexts));
         } else {
             UnsupportedOperationException notSupported = new UnsupportedOperationException("Document type (" + documentType + ") is not supported.");
             logger.error(notSupported);
@@ -76,13 +78,13 @@ public class FieldDataDB {
         User ogOwner = vcDocument.getVersion().getOwner();
 
 		//Get Field names
-        Vector<String> fieldNames = new Vector<>();
-        for(Object fieldFunctionContainer : modelsListOfContext){
+        ArrayList<String> fieldNames = new ArrayList<>();
+        for(SimulationOwner fieldFunctionContainer : modelsListOfContext){
             FieldFunctionArguments[] fieldFuncArgsArr = {};
-            if (fieldFunctionContainer instanceof MathDescription){
-                fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments((MathDescription)fieldFunctionContainer);
-            }else if (fieldFunctionContainer instanceof SimulationContext){
-                fieldFuncArgsArr = ((SimulationContext)fieldFunctionContainer).getFieldFunctionArguments();
+            if (fieldFunctionContainer instanceof MathDescription mathDescription){
+                fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments(mathDescription);
+            }else if (fieldFunctionContainer instanceof SimulationContext simulationContext){
+                fieldFuncArgsArr = simulationContext.getFieldFunctionArguments();
             }
             for (FieldFunctionArguments fieldFunctionArguments : fieldFuncArgsArr) {
                 if (!fieldNames.contains(fieldFunctionArguments.getFieldName())) {
