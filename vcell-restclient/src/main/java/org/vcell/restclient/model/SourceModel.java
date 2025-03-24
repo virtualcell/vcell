@@ -30,24 +30,24 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**
- * CopyFieldData
+ * SourceModel
  */
 @JsonPropertyOrder({
-  CopyFieldData.JSON_PROPERTY_MODEL_I_D,
-  CopyFieldData.JSON_PROPERTY_MODEL_TYPE
+  SourceModel.JSON_PROPERTY_MODEL_I_D,
+  SourceModel.JSON_PROPERTY_MODEL_TYPE
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
-public class CopyFieldData {
+public class SourceModel {
   public static final String JSON_PROPERTY_MODEL_I_D = "modelID";
   private String modelID;
 
   public static final String JSON_PROPERTY_MODEL_TYPE = "modelType";
   private ModelType modelType;
 
-  public CopyFieldData() { 
+  public SourceModel() { 
   }
 
-  public CopyFieldData modelID(String modelID) {
+  public SourceModel modelID(String modelID) {
     this.modelID = modelID;
     return this;
   }
@@ -72,7 +72,7 @@ public class CopyFieldData {
   }
 
 
-  public CopyFieldData modelType(ModelType modelType) {
+  public SourceModel modelType(ModelType modelType) {
     this.modelType = modelType;
     return this;
   }
@@ -98,7 +98,7 @@ public class CopyFieldData {
 
 
   /**
-   * Return true if this CopyFieldData object is equal to o.
+   * Return true if this SourceModel object is equal to o.
    */
   @Override
   public boolean equals(Object o) {
@@ -108,9 +108,9 @@ public class CopyFieldData {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    CopyFieldData copyFieldData = (CopyFieldData) o;
-    return Objects.equals(this.modelID, copyFieldData.modelID) &&
-        Objects.equals(this.modelType, copyFieldData.modelType);
+    SourceModel sourceModel = (SourceModel) o;
+    return Objects.equals(this.modelID, sourceModel.modelID) &&
+        Objects.equals(this.modelType, sourceModel.modelType);
   }
 
   @Override
@@ -121,7 +121,7 @@ public class CopyFieldData {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class CopyFieldData {\n");
+    sb.append("class SourceModel {\n");
     sb.append("    modelID: ").append(toIndentedString(modelID)).append("\n");
     sb.append("    modelType: ").append(toIndentedString(modelType)).append("\n");
     sb.append("}");

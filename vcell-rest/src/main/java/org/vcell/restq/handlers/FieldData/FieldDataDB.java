@@ -13,7 +13,6 @@ import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.ServerDocumentManager;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataSetControllerImpl;
@@ -56,7 +55,12 @@ public class FieldDataDB {
                 new File(secondarySimDataDir));
     }
 
-    public Hashtable<String, ExternalDataIdentifier> copyNoConflict(User requester, KeyValue documentKey, String documentType) throws DataAccessException, XmlParseException, MathException, ExpressionException {
+    /**
+     * Copy all the field data for a specific model that is not already owned by the user.
+     * It the client is copying a Model, and call this to get all of its field data, then it
+     * is the clients responsibility to update the Models references to the newly copied field data.
+     */
+    public Hashtable<String, ExternalDataIdentifier> copyModelsFieldData(User requester, KeyValue documentKey, String documentType) throws DataAccessException, XmlParseException, MathException, ExpressionException {
         VCDocument vcDocument;
 
         //Get Objects from Document that might need to have FieldFuncs replaced
@@ -131,14 +135,14 @@ public class FieldDataDB {
         return dataSetController.fieldDataFileOperation(FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(new KeyValue(id), user, jobParameter));
     }
 
-    public FieldDataResource.AnalyzedResultsFromFieldData generateFieldDataFromFile(File imageFile, String fileName) throws DataAccessException, ImageException, DataFormatException {
+    public FieldDataResource.AnalyzedFile analyzeFieldDataFromFile(File imageFile, String fileName) throws DataAccessException, ImageException, DataFormatException {
         if (imageFile == null) {
             throw new DataAccessException("No file present");
         }
         if (!fileName.contains(".vfrap")) {
             try {
                 FieldDataFileOperationSpec spec = FieldDataFileConversion.createFDOSFromImageFile(imageFile, false, null);
-                return new FieldDataResource.AnalyzedResultsFromFieldData(
+                return new FieldDataResource.AnalyzedFile(
                         spec.shortSpecData, spec.varNames, spec.times, spec.origin, spec.extent, spec.isize, spec.annotation, fileName
                 );
             } catch (DataFormatException  ex) {
@@ -150,7 +154,7 @@ public class FieldDataDB {
     }
 
 
-    public FieldDataFileOperationResults saveNewFieldDataFromFile(FieldDataResource.AnalyzedResultsFromFieldData saveFieldData, User user) throws DataAccessException, ImageException, DataFormatException {
+    public FieldDataFileOperationResults saveNewFieldDataFromFile(FieldDataResource.AnalyzedFile saveFieldData, User user) throws DataAccessException, ImageException, DataFormatException {
         // Ensure name is unique for user
         String fieldDataName = saveFieldData.name();
         FieldDataDBOperationResults usersFieldData = databaseServer.fieldDataDBOperation(user, FieldDataDBOperationSpec.createGetExtDataIDsSpecWithSimRefs(user));

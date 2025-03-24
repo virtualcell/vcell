@@ -1,14 +1,14 @@
 
 
-# FieldDataSaveResults
+# SourceModel
 
 
 ## Properties
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**fieldDataName** | **String** |  |  [optional] |
-|**fieldDataID** | **String** |  |  [optional] |
+|**modelID** | **String** |  |  [optional] |
+|**modelType** | **ModelType** |  |  [optional] |
 
 
 

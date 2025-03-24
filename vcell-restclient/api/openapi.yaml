@@ -211,7 +211,7 @@ paths:
       x-accepts: application/json
   /api/v1/fieldData/IDs:
     get:
-      operationId: getAllFieldDataIDs
+      operationId: getAllIDs
       responses:
         "200":
           content:
@@ -232,20 +232,20 @@ paths:
       tags:
       - Field Data Resource
       x-accepts: application/json
-  /api/v1/fieldData/analyzeFieldDataFile:
+  /api/v1/fieldData/analyzeFile:
     post:
-      operationId: analyzeFieldDataFile
+      operationId: analyzeFile
       requestBody:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/analyzeFieldDataFile_request'
+              $ref: '#/components/schemas/analyzeFile_request'
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AnalyzedResultsFromFieldData'
+                $ref: '#/components/schemas/AnalyzedFile'
           description: OK
         "401":
           description: Not Authorized
@@ -267,7 +267,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CopyFieldData'
+              $ref: '#/components/schemas/SourceModel'
       responses:
         "200":
           content:
@@ -277,26 +277,33 @@ paths:
                   $ref: '#/components/schemas/ExternalDataIdentifier'
                 type: object
           description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
       summary: Copy all existing field data from a BioModel/MathModel if not already
         owned.
       tags:
       - Field Data Resource
       x-content-type: application/json
       x-accepts: application/json
-  /api/v1/fieldData/createFieldDataFromAnalyzedFile:
+  /api/v1/fieldData/createFromAnalyzedFile:
     post:
-      operationId: createFieldDataFromAnalyzedFile
+      operationId: createFromAnalyzedFile
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AnalyzedResultsFromFieldData'
+              $ref: '#/components/schemas/AnalyzedFile'
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldDataSaveResults'
+                $ref: '#/components/schemas/SavedResults'
           description: OK
         "401":
           description: Not Authorized
@@ -311,14 +318,14 @@ paths:
       - Field Data Resource
       x-content-type: application/json
       x-accepts: application/json
-  /api/v1/fieldData/createFieldDataFromSimulation:
+  /api/v1/fieldData/createFromSimulation:
     post:
-      operationId: createNewFieldDataFromSimulation
+      operationId: createFromSimulation
       requestBody:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/createNewFieldDataFromSimulation_request'
+              $ref: '#/components/schemas/createFromSimulation_request'
       responses:
         "201":
           description: Created
@@ -336,7 +343,7 @@ paths:
       x-accepts: application/json
   /api/v1/fieldData/delete/{fieldDataID}:
     delete:
-      operationId: deleteFieldData
+      operationId: delete
       parameters:
       - explode: false
         in: path
@@ -359,9 +366,9 @@ paths:
       tags:
       - Field Data Resource
       x-accepts: application/json
-  /api/v1/fieldData/fieldDataShape/{fieldDataID}:
+  /api/v1/fieldData/shape/{fieldDataID}:
     get:
-      operationId: getFieldDataShapeFromID
+      operationId: getShapeFromID
       parameters:
       - explode: false
         in: path
@@ -375,7 +382,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldDataShape'
+                $ref: '#/components/schemas/Shape'
           description: OK
         "401":
           description: Not Authorized
@@ -818,7 +825,7 @@ components:
         userKey:
           type: string
       type: object
-    AnalyzedResultsFromFieldData:
+    AnalyzedFile:
       example:
         extent:
           x: 2.3021358869347655
@@ -961,16 +968,6 @@ components:
         versionFlag:
           format: int32
           type: integer
-      type: object
-    CopyFieldData:
-      example:
-        modelID: modelID
-        modelType: null
-      properties:
-        modelID:
-          type: string
-        modelType:
-          $ref: '#/components/schemas/ModelType'
       type: object
     DataIdentifier:
       example:
@@ -1129,8 +1126,8 @@ components:
       type: object
     FieldDataReference:
       example:
-        externalDataAnnotation: externalDataAnnotation
-        externalDataIdentifier:
+        annotation: annotation
+        fieldDataID:
           owner:
             testAccount: true
             name: name
@@ -1146,96 +1143,17 @@ components:
           key:
             value: 0.8008281904610115
           parameterScanType: true
-        externalDataIDSimRefs:
+        simulationsReferencingThisID:
         - value: 0.8008281904610115
         - value: 0.8008281904610115
       properties:
-        externalDataIdentifier:
+        fieldDataID:
           $ref: '#/components/schemas/ExternalDataIdentifier'
-        externalDataAnnotation:
+        annotation:
           type: string
-        externalDataIDSimRefs:
+        simulationsReferencingThisID:
           items:
             $ref: '#/components/schemas/KeyValue'
-          type: array
-      type: object
-    FieldDataSaveResults:
-      example:
-        fieldDataName: fieldDataName
-        fieldDataID: fieldDataID
-      properties:
-        fieldDataName:
-          type: string
-        fieldDataID:
-          type: string
-      type: object
-    FieldDataShape:
-      example:
-        extent:
-          x: 2.3021358869347655
-          "y": 7.061401241503109
-          z: 9.301444243932576
-        times:
-        - 6.027456183070403
-        - 6.027456183070403
-        origin:
-          x: 1.4658129805029452
-          "y": 5.962133916683182
-          z: 5.637376656633329
-        isize:
-          x: 3
-          "y": 2
-          z: 4
-        dataIdentifier:
-        - variableType:
-            defaultUnits: defaultUnits
-            name: name
-            typeName: typeName
-            defaultLabel: defaultLabel
-            units: units
-            label: label
-            type: 0
-            variableDomain: null
-            legacyWarn: true
-          visible: true
-          displayName: displayName
-          bFunction: true
-          domain:
-            name: name
-          function: true
-          name: name
-        - variableType:
-            defaultUnits: defaultUnits
-            name: name
-            typeName: typeName
-            defaultLabel: defaultLabel
-            units: units
-            label: label
-            type: 0
-            variableDomain: null
-            legacyWarn: true
-          visible: true
-          displayName: displayName
-          bFunction: true
-          domain:
-            name: name
-          function: true
-          name: name
-      properties:
-        extent:
-          $ref: '#/components/schemas/Extent'
-        origin:
-          $ref: '#/components/schemas/Origin'
-        isize:
-          $ref: '#/components/schemas/ISize'
-        dataIdentifier:
-          items:
-            $ref: '#/components/schemas/DataIdentifier'
-          type: array
-        times:
-          items:
-            format: double
-            type: number
           type: array
       type: object
     HelloWorldMessage:
@@ -1440,6 +1358,16 @@ components:
           format: date
           type: string
       type: object
+    SavedResults:
+      example:
+        fieldDataName: fieldDataName
+        fieldDataKey: fieldDataKey
+      properties:
+        fieldDataName:
+          type: string
+        fieldDataKey:
+          type: string
+      type: object
     SchedulerStatus:
       enum:
       - WAITING
@@ -1450,6 +1378,75 @@ components:
       - STOPPED
       - FAILED
       type: string
+    Shape:
+      example:
+        extent:
+          x: 2.3021358869347655
+          "y": 7.061401241503109
+          z: 9.301444243932576
+        times:
+        - 6.027456183070403
+        - 6.027456183070403
+        origin:
+          x: 1.4658129805029452
+          "y": 5.962133916683182
+          z: 5.637376656633329
+        isize:
+          x: 3
+          "y": 2
+          z: 4
+        dataIdentifier:
+        - variableType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          visible: true
+          displayName: displayName
+          bFunction: true
+          domain:
+            name: name
+          function: true
+          name: name
+        - variableType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          visible: true
+          displayName: displayName
+          bFunction: true
+          domain:
+            name: name
+          function: true
+          name: name
+      properties:
+        extent:
+          $ref: '#/components/schemas/Extent'
+        origin:
+          $ref: '#/components/schemas/Origin'
+        isize:
+          $ref: '#/components/schemas/ISize'
+        dataIdentifier:
+          items:
+            $ref: '#/components/schemas/DataIdentifier'
+          type: array
+        times:
+          items:
+            format: double
+            type: number
+          type: array
+      type: object
     SimulationExecutionStatusRecord:
       example:
         fieldLatestUpdateDate: 2022-03-10T16:15:50Z
@@ -1602,6 +1599,16 @@ components:
           type: string
         hasData:
           type: boolean
+      type: object
+    SourceModel:
+      example:
+        modelID: modelID
+        modelType: null
+      properties:
+        modelID:
+          type: string
+        modelType:
+          $ref: '#/components/schemas/ModelType'
       type: object
     Status:
       enum:
@@ -1800,7 +1807,7 @@ components:
         typeName:
           type: string
       type: object
-    analyzeFieldDataFile_request:
+    analyzeFile_request:
       properties:
         file:
           format: binary
@@ -1808,7 +1815,7 @@ components:
         fileName:
           type: string
       type: object
-    createNewFieldDataFromSimulation_request:
+    createFromSimulation_request:
       properties:
         simKeyReference:
           type: string

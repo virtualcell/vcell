@@ -28,9 +28,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.restclient.ApiException;
-import org.vcell.restclient.model.CopyFieldData;
 import org.vcell.restclient.model.FieldDataReference;
 import org.vcell.restclient.model.ModelType;
+import org.vcell.restclient.model.SourceModel;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
@@ -131,7 +131,7 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 		if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_DELETE){
 			throw new UnsupportedOperationException("Can not call deletion on field data DB entry. Have to do both file, and DB deletion.");
 		} else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS) {
-			List<FieldDataReference> fieldDataReferences = vCellApiClient.getFieldDataApi().getAllFieldDataIDs();
+			List<FieldDataReference> fieldDataReferences = vCellApiClient.getFieldDataApi().getAllIDs();
 			return DtoModelTransforms.fieldDataReferencesToDBResults(fieldDataReferences, fieldDataDBOperationSpec.owner);
 		} else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_SAVEEXTDATAID) {
 			UnsupportedOperationException unsupported = new UnsupportedOperationException("Call from UserLocalDataSetController, no longer allowing manual entries to DB.");
@@ -150,7 +150,7 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 
 public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {
     try {
-        vCellApiClient.getFieldDataApi().createNewFieldDataFromSimulation(sourceSim.toString(), jobIndex, newFieldDataName);
+        vCellApiClient.getFieldDataApi().createFromSimulation(sourceSim.toString(), jobIndex, newFieldDataName);
     } catch (ApiException e) {
         throw new RuntimeException(e);
     }
@@ -159,7 +159,7 @@ public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String new
 	@Override
 	public Hashtable<String, ExternalDataIdentifier> copyModelsFieldData(String modelKey, VersionableType modelType) {
 		try {
-			CopyFieldData copyFieldData = new CopyFieldData().modelID(modelKey.toString());
+			SourceModel copyFieldData = new SourceModel().modelID(modelKey.toString());
 
 			ModelType modelType1 = VersionableType.MathModelMetaData == modelType ? ModelType.MATHMODEL : ModelType.BIOMODEL;
 			copyFieldData.modelType(modelType1);

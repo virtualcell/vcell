@@ -13,12 +13,12 @@ import { HttpHeaders }                                       from '@angular/comm
 
 import { Observable }                                        from 'rxjs';
 
-import { AnalyzedResultsFromFieldData } from '../model/models';
-import { CopyFieldData } from '../model/models';
+import { AnalyzedFile } from '../model/models';
 import { ExternalDataIdentifier } from '../model/models';
 import { FieldDataReference } from '../model/models';
-import { FieldDataSaveResults } from '../model/models';
-import { FieldDataShape } from '../model/models';
+import { SavedResults } from '../model/models';
+import { Shape } from '../model/models';
+import { SourceModel } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';
@@ -30,26 +30,33 @@ export interface FieldDataResourceServiceInterface {
     configuration: Configuration;
 
     /**
+     * Delete the selected field data.
+     * 
+     * @param fieldDataID 
+     */
+    _delete(fieldDataID: string, extraHttpRequestParams?: any): Observable<{}>;
+
+    /**
      * Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
      * 
      * @param file 
      * @param fileName 
      */
-    analyzeFieldDataFile(file?: Blob, fileName?: string, extraHttpRequestParams?: any): Observable<AnalyzedResultsFromFieldData>;
+    analyzeFile(file?: Blob, fileName?: string, extraHttpRequestParams?: any): Observable<AnalyzedFile>;
 
     /**
      * Copy all existing field data from a BioModel/MathModel if not already owned.
      * 
-     * @param copyFieldData 
+     * @param sourceModel 
      */
-    copyModelsFieldData(copyFieldData?: CopyFieldData, extraHttpRequestParams?: any): Observable<{ [key: string]: ExternalDataIdentifier; }>;
+    copyModelsFieldData(sourceModel?: SourceModel, extraHttpRequestParams?: any): Observable<{ [key: string]: ExternalDataIdentifier; }>;
 
     /**
      * Take the analyzed results of the field data, modify it to your liking, then save it on the server.
      * 
-     * @param analyzedResultsFromFieldData 
+     * @param analyzedFile 
      */
-    createFieldDataFromAnalyzedFile(analyzedResultsFromFieldData?: AnalyzedResultsFromFieldData, extraHttpRequestParams?: any): Observable<FieldDataSaveResults>;
+    createFromAnalyzedFile(analyzedFile?: AnalyzedFile, extraHttpRequestParams?: any): Observable<SavedResults>;
 
     /**
      * Create new field data from a simulation.
@@ -58,26 +65,19 @@ export interface FieldDataResourceServiceInterface {
      * @param jobIndex 
      * @param newFieldDataName 
      */
-    createNewFieldDataFromSimulation(simKeyReference?: string, jobIndex?: number, newFieldDataName?: string, extraHttpRequestParams?: any): Observable<{}>;
-
-    /**
-     * Delete the selected field data.
-     * 
-     * @param fieldDataID 
-     */
-    deleteFieldData(fieldDataID: string, extraHttpRequestParams?: any): Observable<{}>;
+    createFromSimulation(simKeyReference?: string, jobIndex?: number, newFieldDataName?: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
      * Get all of the ids used to identify, and retrieve field data.
      * 
      */
-    getAllFieldDataIDs(extraHttpRequestParams?: any): Observable<Array<FieldDataReference>>;
+    getAllIDs(extraHttpRequestParams?: any): Observable<Array<FieldDataReference>>;
 
     /**
      * Get the shape of the field data. That is it\&#39;s size, origin, extent, and data identifiers.
      * 
      * @param fieldDataID 
      */
-    getFieldDataShapeFromID(fieldDataID: string, extraHttpRequestParams?: any): Observable<FieldDataShape>;
+    getShapeFromID(fieldDataID: string, extraHttpRequestParams?: any): Observable<Shape>;
 
 }

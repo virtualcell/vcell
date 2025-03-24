@@ -35,17 +35,17 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**
- * FieldDataShape
+ * Shape
  */
 @JsonPropertyOrder({
-  FieldDataShape.JSON_PROPERTY_EXTENT,
-  FieldDataShape.JSON_PROPERTY_ORIGIN,
-  FieldDataShape.JSON_PROPERTY_ISIZE,
-  FieldDataShape.JSON_PROPERTY_DATA_IDENTIFIER,
-  FieldDataShape.JSON_PROPERTY_TIMES
+  Shape.JSON_PROPERTY_EXTENT,
+  Shape.JSON_PROPERTY_ORIGIN,
+  Shape.JSON_PROPERTY_ISIZE,
+  Shape.JSON_PROPERTY_DATA_IDENTIFIER,
+  Shape.JSON_PROPERTY_TIMES
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
-public class FieldDataShape {
+public class Shape {
   public static final String JSON_PROPERTY_EXTENT = "extent";
   private Extent extent;
 
@@ -61,10 +61,10 @@ public class FieldDataShape {
   public static final String JSON_PROPERTY_TIMES = "times";
   private List<Double> times;
 
-  public FieldDataShape() { 
+  public Shape() { 
   }
 
-  public FieldDataShape extent(Extent extent) {
+  public Shape extent(Extent extent) {
     this.extent = extent;
     return this;
   }
@@ -89,7 +89,7 @@ public class FieldDataShape {
   }
 
 
-  public FieldDataShape origin(Origin origin) {
+  public Shape origin(Origin origin) {
     this.origin = origin;
     return this;
   }
@@ -114,7 +114,7 @@ public class FieldDataShape {
   }
 
 
-  public FieldDataShape isize(ISize isize) {
+  public Shape isize(ISize isize) {
     this.isize = isize;
     return this;
   }
@@ -139,12 +139,12 @@ public class FieldDataShape {
   }
 
 
-  public FieldDataShape dataIdentifier(List<DataIdentifier> dataIdentifier) {
+  public Shape dataIdentifier(List<DataIdentifier> dataIdentifier) {
     this.dataIdentifier = dataIdentifier;
     return this;
   }
 
-  public FieldDataShape addDataIdentifierItem(DataIdentifier dataIdentifierItem) {
+  public Shape addDataIdentifierItem(DataIdentifier dataIdentifierItem) {
     if (this.dataIdentifier == null) {
       this.dataIdentifier = new ArrayList<>();
     }
@@ -172,12 +172,12 @@ public class FieldDataShape {
   }
 
 
-  public FieldDataShape times(List<Double> times) {
+  public Shape times(List<Double> times) {
     this.times = times;
     return this;
   }
 
-  public FieldDataShape addTimesItem(Double timesItem) {
+  public Shape addTimesItem(Double timesItem) {
     if (this.times == null) {
       this.times = new ArrayList<>();
     }
@@ -206,7 +206,7 @@ public class FieldDataShape {
 
 
   /**
-   * Return true if this FieldDataShape object is equal to o.
+   * Return true if this Shape object is equal to o.
    */
   @Override
   public boolean equals(Object o) {
@@ -216,12 +216,12 @@ public class FieldDataShape {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    FieldDataShape fieldDataShape = (FieldDataShape) o;
-    return Objects.equals(this.extent, fieldDataShape.extent) &&
-        Objects.equals(this.origin, fieldDataShape.origin) &&
-        Objects.equals(this.isize, fieldDataShape.isize) &&
-        Objects.equals(this.dataIdentifier, fieldDataShape.dataIdentifier) &&
-        Objects.equals(this.times, fieldDataShape.times);
+    Shape shape = (Shape) o;
+    return Objects.equals(this.extent, shape.extent) &&
+        Objects.equals(this.origin, shape.origin) &&
+        Objects.equals(this.isize, shape.isize) &&
+        Objects.equals(this.dataIdentifier, shape.dataIdentifier) &&
+        Objects.equals(this.times, shape.times);
   }
 
   @Override
@@ -232,7 +232,7 @@ public class FieldDataShape {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class FieldDataShape {\n");
+    sb.append("class Shape {\n");
     sb.append("    extent: ").append(toIndentedString(extent)).append("\n");
     sb.append("    origin: ").append(toIndentedString(origin)).append("\n");
     sb.append("    isize: ").append(toIndentedString(isize)).append("\n");

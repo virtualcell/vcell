@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.vcell.restclient.model.DataIdentifier;
 import org.vcell.restclient.model.Extent;
 import org.vcell.restclient.model.ISize;
 import org.vcell.restclient.model.Origin;
@@ -30,25 +29,41 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Model tests for FieldDataShape
+ * Model tests for AnalyzedFile
  */
-public class FieldDataShapeTest {
-    private final FieldDataShape model = new FieldDataShape();
+public class AnalyzedFileTest {
+    private final AnalyzedFile model = new AnalyzedFile();
 
     /**
-     * Model tests for FieldDataShape
+     * Model tests for AnalyzedFile
      */
     @Test
-    public void testFieldDataShape() {
-        // TODO: test FieldDataShape
+    public void testAnalyzedFile() {
+        // TODO: test AnalyzedFile
     }
 
     /**
-     * Test the property 'extent'
+     * Test the property 'shortSpecData'
      */
     @Test
-    public void extentTest() {
-        // TODO: test extent
+    public void shortSpecDataTest() {
+        // TODO: test shortSpecData
+    }
+
+    /**
+     * Test the property 'varNames'
+     */
+    @Test
+    public void varNamesTest() {
+        // TODO: test varNames
+    }
+
+    /**
+     * Test the property 'times'
+     */
+    @Test
+    public void timesTest() {
+        // TODO: test times
     }
 
     /**
@@ -60,6 +75,14 @@ public class FieldDataShapeTest {
     }
 
     /**
+     * Test the property 'extent'
+     */
+    @Test
+    public void extentTest() {
+        // TODO: test extent
+    }
+
+    /**
      * Test the property 'isize'
      */
     @Test
@@ -68,19 +91,19 @@ public class FieldDataShapeTest {
     }
 
     /**
-     * Test the property 'dataIdentifier'
+     * Test the property 'annotation'
      */
     @Test
-    public void dataIdentifierTest() {
-        // TODO: test dataIdentifier
+    public void annotationTest() {
+        // TODO: test annotation
     }
 
     /**
-     * Test the property 'times'
+     * Test the property 'name'
      */
     @Test
-    public void timesTest() {
-        // TODO: test times
+    public void nameTest() {
+        // TODO: test name
     }
 
 }
