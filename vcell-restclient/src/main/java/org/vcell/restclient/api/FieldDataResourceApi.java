@@ -18,6 +18,8 @@ import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.AnalyzedResultsFromFieldData;
+import org.vcell.restclient.model.CopyFieldData;
+import org.vcell.restclient.model.ExternalDataIdentifier;
 import org.vcell.restclient.model.FieldDataReference;
 import org.vcell.restclient.model.FieldDataSaveResults;
 import org.vcell.restclient.model.FieldDataShape;
@@ -186,6 +188,79 @@ public class FieldDataResourceApi {
     localVarRequestBuilder
         .header("Content-Type", entity.getContentType().getValue())
         .method("POST", formDataPublisher);
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * Copy all existing field data from a BioModel/MathModel if not already owned.
+   * 
+   * @param copyFieldData  (optional)
+   * @return Map&lt;String, ExternalDataIdentifier&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public Map<String, ExternalDataIdentifier> copyModelsFieldData(CopyFieldData copyFieldData) throws ApiException {
+    ApiResponse<Map<String, ExternalDataIdentifier>> localVarResponse = copyModelsFieldDataWithHttpInfo(copyFieldData);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Copy all existing field data from a BioModel/MathModel if not already owned.
+   * 
+   * @param copyFieldData  (optional)
+   * @return ApiResponse&lt;Map&lt;String, ExternalDataIdentifier&gt;&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Map<String, ExternalDataIdentifier>> copyModelsFieldDataWithHttpInfo(CopyFieldData copyFieldData) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = copyModelsFieldDataRequestBuilder(copyFieldData);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("copyModelsFieldData", localVarResponse);
+        }
+        return new ApiResponse<Map<String, ExternalDataIdentifier>>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Map<String, ExternalDataIdentifier>>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder copyModelsFieldDataRequestBuilder(CopyFieldData copyFieldData) throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/fieldData/copyModelsFieldData";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(copyFieldData);
+      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }

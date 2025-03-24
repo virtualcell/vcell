@@ -5,6 +5,7 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**analyze_field_data_file**](FieldDataResourceApi.md#analyze_field_data_file) | **POST** /api/v1/fieldData/analyzeFieldDataFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+[**copy_models_field_data**](FieldDataResourceApi.md#copy_models_field_data) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel if not already owned.
 [**create_field_data_from_analyzed_file**](FieldDataResourceApi.md#create_field_data_from_analyzed_file) | **POST** /api/v1/fieldData/createFieldDataFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server.
 [**create_new_field_data_from_simulation**](FieldDataResourceApi.md#create_new_field_data_from_simulation) | **POST** /api/v1/fieldData/createFieldDataFromSimulation | Create new field data from a simulation.
 [**delete_field_data**](FieldDataResourceApi.md#delete_field_data) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data.
@@ -82,6 +83,72 @@ Name | Type | Description  | Notes
 **200** | OK |  -  |
 **401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **copy_models_field_data**
+> Dict[str, ExternalDataIdentifier] copy_models_field_data(copy_field_data=copy_field_data)
+
+Copy all existing field data from a BioModel/MathModel if not already owned.
+
+### Example
+
+```python
+import time
+import os
+import vcell_client
+from vcell_client.models.copy_field_data import CopyFieldData
+from vcell_client.models.external_data_identifier import ExternalDataIdentifier
+from vcell_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://vcell-dev.cam.uchc.edu
+# See configuration.py for a list of all supported configuration parameters.
+configuration = vcell_client.Configuration(
+    host = "https://vcell-dev.cam.uchc.edu"
+)
+
+
+# Enter a context with an instance of the API client
+with vcell_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = vcell_client.FieldDataResourceApi(api_client)
+    copy_field_data = vcell_client.CopyFieldData() # CopyFieldData |  (optional)
+
+    try:
+        # Copy all existing field data from a BioModel/MathModel if not already owned.
+        api_response = api_instance.copy_models_field_data(copy_field_data=copy_field_data)
+        print("The response of FieldDataResourceApi->copy_models_field_data:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling FieldDataResourceApi->copy_models_field_data: %s\n" % e)
+```
+
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **copy_field_data** | [**CopyFieldData**](CopyFieldData.md)|  | [optional] 
+
+### Return type
+
+[**Dict[str, ExternalDataIdentifier]**](ExternalDataIdentifier.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

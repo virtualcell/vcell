@@ -115,6 +115,8 @@ Class | Method | HTTP request | Description
 *BioModelResourceApi* | [**uploadBioModelWithHttpInfo**](docs/BioModelResourceApi.md#uploadBioModelWithHttpInfo) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
 *FieldDataResourceApi* | [**analyzeFieldDataFile**](docs/FieldDataResourceApi.md#analyzeFieldDataFile) | **POST** /api/v1/fieldData/analyzeFieldDataFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
 *FieldDataResourceApi* | [**analyzeFieldDataFileWithHttpInfo**](docs/FieldDataResourceApi.md#analyzeFieldDataFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFieldDataFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+*FieldDataResourceApi* | [**copyModelsFieldData**](docs/FieldDataResourceApi.md#copyModelsFieldData) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel if not already owned.
+*FieldDataResourceApi* | [**copyModelsFieldDataWithHttpInfo**](docs/FieldDataResourceApi.md#copyModelsFieldDataWithHttpInfo) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel if not already owned.
 *FieldDataResourceApi* | [**createFieldDataFromAnalyzedFile**](docs/FieldDataResourceApi.md#createFieldDataFromAnalyzedFile) | **POST** /api/v1/fieldData/createFieldDataFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server.
 *FieldDataResourceApi* | [**createFieldDataFromAnalyzedFileWithHttpInfo**](docs/FieldDataResourceApi.md#createFieldDataFromAnalyzedFileWithHttpInfo) | **POST** /api/v1/fieldData/createFieldDataFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server.
 *FieldDataResourceApi* | [**createNewFieldDataFromSimulation**](docs/FieldDataResourceApi.md#createNewFieldDataFromSimulation) | **POST** /api/v1/fieldData/createFieldDataFromSimulation | Create new field data from a simulation.
@@ -176,6 +178,7 @@ Class | Method | HTTP request | Description
  - [BatchSystemType](docs/BatchSystemType.md)
  - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
+ - [CopyFieldData](docs/CopyFieldData.md)
  - [DataIdentifier](docs/DataIdentifier.md)
  - [DetailedState](docs/DetailedState.md)
  - [Domain](docs/Domain.md)
@@ -190,6 +193,7 @@ Class | Method | HTTP request | Description
  - [Identity](docs/Identity.md)
  - [KeyValue](docs/KeyValue.md)
  - [MathmodelRef](docs/MathmodelRef.md)
+ - [ModelType](docs/ModelType.md)
  - [Origin](docs/Origin.md)
  - [Publication](docs/Publication.md)
  - [SchedulerStatus](docs/SchedulerStatus.md)

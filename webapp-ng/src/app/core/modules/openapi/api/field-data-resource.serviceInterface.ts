@@ -14,6 +14,8 @@ import { HttpHeaders }                                       from '@angular/comm
 import { Observable }                                        from 'rxjs';
 
 import { AnalyzedResultsFromFieldData } from '../model/models';
+import { CopyFieldData } from '../model/models';
+import { ExternalDataIdentifier } from '../model/models';
 import { FieldDataReference } from '../model/models';
 import { FieldDataSaveResults } from '../model/models';
 import { FieldDataShape } from '../model/models';
@@ -34,6 +36,13 @@ export interface FieldDataResourceServiceInterface {
      * @param fileName 
      */
     analyzeFieldDataFile(file?: Blob, fileName?: string, extraHttpRequestParams?: any): Observable<AnalyzedResultsFromFieldData>;
+
+    /**
+     * Copy all existing field data from a BioModel/MathModel if not already owned.
+     * 
+     * @param copyFieldData 
+     */
+    copyModelsFieldData(copyFieldData?: CopyFieldData, extraHttpRequestParams?: any): Observable<{ [key: string]: ExternalDataIdentifier; }>;
 
     /**
      * Take the analyzed results of the field data, modify it to your liking, then save it on the server.

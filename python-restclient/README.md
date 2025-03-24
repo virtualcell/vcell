@@ -94,6 +94,7 @@ Class | Method | HTTP request | Description
 *BioModelResourceApi* | [**get_biomodel_by_id**](docs/BioModelResourceApi.md#get_biomodel_by_id) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
 *BioModelResourceApi* | [**upload_bio_model**](docs/BioModelResourceApi.md#upload_bio_model) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
 *FieldDataResourceApi* | [**analyze_field_data_file**](docs/FieldDataResourceApi.md#analyze_field_data_file) | **POST** /api/v1/fieldData/analyzeFieldDataFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+*FieldDataResourceApi* | [**copy_models_field_data**](docs/FieldDataResourceApi.md#copy_models_field_data) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel if not already owned.
 *FieldDataResourceApi* | [**create_field_data_from_analyzed_file**](docs/FieldDataResourceApi.md#create_field_data_from_analyzed_file) | **POST** /api/v1/fieldData/createFieldDataFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server.
 *FieldDataResourceApi* | [**create_new_field_data_from_simulation**](docs/FieldDataResourceApi.md#create_new_field_data_from_simulation) | **POST** /api/v1/fieldData/createFieldDataFromSimulation | Create new field data from a simulation.
 *FieldDataResourceApi* | [**delete_field_data**](docs/FieldDataResourceApi.md#delete_field_data) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data.
@@ -129,6 +130,7 @@ Class | Method | HTTP request | Description
  - [BatchSystemType](docs/BatchSystemType.md)
  - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
+ - [CopyFieldData](docs/CopyFieldData.md)
  - [DataIdentifier](docs/DataIdentifier.md)
  - [DetailedState](docs/DetailedState.md)
  - [Domain](docs/Domain.md)
@@ -143,6 +145,7 @@ Class | Method | HTTP request | Description
  - [Identity](docs/Identity.md)
  - [KeyValue](docs/KeyValue.md)
  - [MathmodelRef](docs/MathmodelRef.md)
+ - [ModelType](docs/ModelType.md)
  - [Origin](docs/Origin.md)
  - [Publication](docs/Publication.md)
  - [SchedulerStatus](docs/SchedulerStatus.md)

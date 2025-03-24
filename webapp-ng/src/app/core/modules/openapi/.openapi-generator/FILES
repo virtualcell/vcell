@@ -27,6 +27,7 @@ model/analyzed-results-from-field-data.ts
 model/batch-system-type.ts
 model/bio-model.ts
 model/biomodel-ref.ts
+model/copy-field-data.ts
 model/data-identifier.ts
 model/detailed-state.ts
 model/domain.ts
@@ -41,6 +42,7 @@ model/i-size.ts
 model/identity.ts
 model/key-value.ts
 model/mathmodel-ref.ts
+model/model-type.ts
 model/models.ts
 model/origin.ts
 model/publication.ts

@@ -8,6 +8,7 @@ docs/BatchSystemType.md
 docs/BioModel.md
 docs/BioModelResourceApi.md
 docs/BiomodelRef.md
+docs/CopyFieldData.md
 docs/DataIdentifier.md
 docs/DetailedState.md
 docs/Domain.md
@@ -24,6 +25,7 @@ docs/ISize.md
 docs/Identity.md
 docs/KeyValue.md
 docs/MathmodelRef.md
+docs/ModelType.md
 docs/Origin.md
 docs/Publication.md
 docs/PublicationResourceApi.md
@@ -47,6 +49,8 @@ docs/VCSimulationIdentifier.md
 docs/VariableDomain.md
 docs/VariableType.md
 test/__init__.py
+test/test_copy_field_data.py
+test/test_model_type.py
 tox.ini
 vcell_client/__init__.py
 vcell_client/api/__init__.py
@@ -68,6 +72,7 @@ vcell_client/models/analyzed_results_from_field_data.py
 vcell_client/models/batch_system_type.py
 vcell_client/models/bio_model.py
 vcell_client/models/biomodel_ref.py
+vcell_client/models/copy_field_data.py
 vcell_client/models/data_identifier.py
 vcell_client/models/detailed_state.py
 vcell_client/models/domain.py
@@ -82,6 +87,7 @@ vcell_client/models/i_size.py
 vcell_client/models/identity.py
 vcell_client/models/key_value.py
 vcell_client/models/mathmodel_ref.py
+vcell_client/models/model_type.py
 vcell_client/models/origin.py
 vcell_client/models/publication.py
 vcell_client/models/scheduler_status.py
