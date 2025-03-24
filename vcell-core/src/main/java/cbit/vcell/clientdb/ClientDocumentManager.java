@@ -2685,66 +2685,26 @@ public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersio
 		if(origFieldFuncNamesV.size() == 0){//No FieldFunctions to substitute
 			return;
 		}
-		
-		FieldDataDBOperationResults copyNamesFieldDataOpResults = fieldDataDBOperation(
-				FieldDataDBOperationSpec.createCopyNoConflictExtDataIDsSpec(
-				getUser(),
-				origFieldFuncNamesV.toArray(new String[0]),
-				originalOwner)
-		);
-		
-		errorCleanupExtDataIDV.addAll(copyNamesFieldDataOpResults.oldNameNewIDHash.values());
-		
-		//Copy Field Data on Data Server FileSystem
-		for(String fieldname : origFieldFuncNamesV){
-			KeyValue sourceSimDataKey = copyNamesFieldDataOpResults.oldNameOldExtDataIDKeyHash.get(fieldname);
-			if(sourceSimDataKey == null){
-				throw new DataAccessException("Couldn't find original data key for FieldFunc "+fieldname);
-			}
-			ExternalDataIdentifier newExtDataID = copyNamesFieldDataOpResults.oldNameNewIDHash.get(fieldname);
-			getSessionManager().fieldDataFileOperation(
-					FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(
-					newExtDataID, 
-					sourceSimDataKey, 
-					originalOwner.getVersion().getOwner(), 
-					FieldDataFileOperationSpec.JOBINDEX_DEFAULT,
-					getUser())
-			);
-		}
+
+		VersionableType modelType = vcDocument instanceof MathModel ? VersionableType.MathModelMetaData : VersionableType.BioModelMetaData;
+		Hashtable<String, ExternalDataIdentifier> oldNameNewID = getSessionManager().getUserMetaDbServer().copyModelsFieldData(
+				vcDocument.getVersion().getVersionKey().toString(), modelType);
+
+
 		//Finally substitute new Field names
 		for(int i=0;i<fieldFunctionContainer_mathDesc_or_simContextV.size();i+= 1){
 			Object fieldFunctionContainer = fieldFunctionContainer_mathDesc_or_simContextV.elementAt(i);
 			if (fieldFunctionContainer instanceof MathDescription){
 				MathDescription mathDesc = (MathDescription)fieldFunctionContainer;
-				FieldUtilities.substituteFieldFuncNames(mathDesc, copyNamesFieldDataOpResults.oldNameNewIDHash);
+				FieldUtilities.substituteFieldFuncNames(mathDesc, oldNameNewID);
 			}else if (fieldFunctionContainer instanceof SimulationContext){
 				SimulationContext simContext = (SimulationContext)fieldFunctionContainer;
-				simContext.substituteFieldFuncNames(copyNamesFieldDataOpResults.oldNameNewIDHash);
+				simContext.substituteFieldFuncNames(oldNameNewID);
 			}
 		}
 		fireFieldDataDB(new FieldDataDBEvent(this));
 	}catch(Exception e){
 		lg.error(e.getMessage(), e);
-		//Cleanup
-		for(int i=0;i<errorCleanupExtDataIDV.size();i+= 1){
-			try{
-				fieldDataDBOperation(
-						FieldDataDBOperationSpec.createDeleteExtDataIDSpec(
-								errorCleanupExtDataIDV.elementAt(i))
-						);
-			}catch(Exception e2){
-				//ignore, we tried to cleanup
-			}
-			try {
-				fieldDataFileOperation(
-						FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(
-								errorCleanupExtDataIDV.elementAt(i))
-						);
-			} catch (Exception e1) {
-				//ignore, we tried to cleanup
-			}
-				
-		}
 		throw new RuntimeException("Error copying Field Data \n"+e.getMessage());
 	}
 }
