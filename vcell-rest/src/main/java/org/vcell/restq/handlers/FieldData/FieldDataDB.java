@@ -87,8 +87,8 @@ public class FieldDataDB {
         Set<String> fieldNames = new HashSet<>();
         for(SimulationOwner fieldFunctionContainer : modelsListOfContext){
             FieldFunctionArguments[] fieldFuncArgsArr = {};
-            if (fieldFunctionContainer instanceof MathModel mathModel){
-                fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments(mathModel.getMathDescription());
+            if (fieldFunctionContainer instanceof MathDescription mathDescription){
+                fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments(mathDescription);
             }else if (fieldFunctionContainer instanceof SimulationContext simulationContext){
                 fieldFuncArgsArr = simulationContext.getFieldFunctionArguments();
             }
