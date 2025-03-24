@@ -467,33 +467,9 @@ public void delete(MathModelInfo mathModelInfo) throws DataAccessException {
 }
 
 public ExternalDataIdentifier saveFieldData(FieldDataFileOperationSpec fdos, String fieldDataBaseName) throws DataAccessException {
-	FieldDataDBOperationResults fieldDataResults = fieldDataDBOperation(FieldDataDBOperationSpec.createGetExtDataIDsSpec(getUser()));
-	ExternalDataIdentifier[] existingExternalIDs = fieldDataResults.extDataIDArr;
-	// find available field data name (starting from init).
-	for (ExternalDataIdentifier externalID : existingExternalIDs){
-		if (externalID.getName().equals(fieldDataBaseName)){
-			fieldDataBaseName = TokenMangler.getNextEnumeratedToken(fieldDataBaseName);
-		}
-	}
-   	FieldDataDBOperationSpec newExtDataIDSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(getUser(),fieldDataBaseName, "");
-	ExternalDataIdentifier eid = fieldDataDBOperation(newExtDataIDSpec).extDataID; 
-	fdos.specEDI = eid;
 	fdos.annotation = "";
-	try {
-		// Add to Server Disk
-		FieldDataFileOperationResults fdor = fieldDataFileOperation(fdos);
-		lg.debug(fdor);
-	} catch (DataAccessException e) {
-		try{
-			// try to cleanup new ExtDataID
-			fieldDataDBOperation(FieldDataDBOperationSpec.createDeleteExtDataIDSpec(fdos.specEDI));
-		}catch(Exception e2){
-			// ignore
-		}
-		fdos.specEDI = null;
-		throw e;
-	}
-	return eid;
+	FieldDataFileOperationResults results = fieldDataFileOperation(fdos);
+	return results.externalDataIdentifier;
 }
 
 public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException {
