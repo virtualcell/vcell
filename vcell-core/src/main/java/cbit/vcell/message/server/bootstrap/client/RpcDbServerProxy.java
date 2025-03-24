@@ -62,7 +62,7 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 	}
 
 	@Override
-	public Hashtable<String, ExternalDataIdentifier> copyFieldData(String[] funcNames, Version ogOwner, VersionableType type) {
+	public Hashtable<String, ExternalDataIdentifier> copyModelsFieldData(String modelKey, VersionableType modelType) {
 		throw new UnsupportedOperationException("Not supported on RPC");
 	}
 

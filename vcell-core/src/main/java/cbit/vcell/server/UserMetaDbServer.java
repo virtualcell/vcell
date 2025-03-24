@@ -73,7 +73,7 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 
 public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName);
 
-public Hashtable<String, ExternalDataIdentifier> copyFieldData(String[] funcNames, Version ogOwner, VersionableType type);
+public Hashtable<String, ExternalDataIdentifier> copyModelsFieldData(String modelKey, VersionableType modelType);
 
 /**
  * Insert the method's description here.
