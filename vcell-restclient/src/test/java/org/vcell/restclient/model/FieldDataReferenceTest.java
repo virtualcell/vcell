@@ -42,27 +42,27 @@ public class FieldDataReferenceTest {
     }
 
     /**
-     * Test the property 'externalDataIdentifier'
+     * Test the property 'fieldDataID'
      */
     @Test
-    public void externalDataIdentifierTest() {
-        // TODO: test externalDataIdentifier
+    public void fieldDataIDTest() {
+        // TODO: test fieldDataID
     }
 
     /**
-     * Test the property 'externalDataAnnotation'
+     * Test the property 'annotation'
      */
     @Test
-    public void externalDataAnnotationTest() {
-        // TODO: test externalDataAnnotation
+    public void annotationTest() {
+        // TODO: test annotation
     }
 
     /**
-     * Test the property 'externalDataIDSimRef'
+     * Test the property 'externalDataIDSimRefs'
      */
     @Test
-    public void externalDataIDSimRefTest() {
-        // TODO: test externalDataIDSimRef
+    public void externalDataIDSimRefsTest() {
+        // TODO: test externalDataIDSimRefs
     }
 
 }

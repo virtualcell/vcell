@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.vcell.restclient.model.DataIdentifier;
 import org.vcell.restclient.model.Extent;
 import org.vcell.restclient.model.ISize;
 import org.vcell.restclient.model.Origin;
@@ -29,49 +30,17 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Model tests for AnalyzedResultsFromFieldData
+ * Model tests for Shape
  */
-public class AnalyzedResultsFromFieldDataTest {
-    private final AnalyzedResultsFromFieldData model = new AnalyzedResultsFromFieldData();
+public class ShapeTest {
+    private final Shape model = new Shape();
 
     /**
-     * Model tests for AnalyzedResultsFromFieldData
+     * Model tests for Shape
      */
     @Test
-    public void testAnalyzedResultsFromFieldData() {
-        // TODO: test AnalyzedResultsFromFieldData
-    }
-
-    /**
-     * Test the property 'shortSpecData'
-     */
-    @Test
-    public void shortSpecDataTest() {
-        // TODO: test shortSpecData
-    }
-
-    /**
-     * Test the property 'varNames'
-     */
-    @Test
-    public void varNamesTest() {
-        // TODO: test varNames
-    }
-
-    /**
-     * Test the property 'times'
-     */
-    @Test
-    public void timesTest() {
-        // TODO: test times
-    }
-
-    /**
-     * Test the property 'origin'
-     */
-    @Test
-    public void originTest() {
-        // TODO: test origin
+    public void testShape() {
+        // TODO: test Shape
     }
 
     /**
@@ -83,6 +52,14 @@ public class AnalyzedResultsFromFieldDataTest {
     }
 
     /**
+     * Test the property 'origin'
+     */
+    @Test
+    public void originTest() {
+        // TODO: test origin
+    }
+
+    /**
      * Test the property 'isize'
      */
     @Test
@@ -91,19 +68,19 @@ public class AnalyzedResultsFromFieldDataTest {
     }
 
     /**
-     * Test the property 'annotation'
+     * Test the property 'dataIdentifier'
      */
     @Test
-    public void annotationTest() {
-        // TODO: test annotation
+    public void dataIdentifierTest() {
+        // TODO: test dataIdentifier
     }
 
     /**
-     * Test the property 'name'
+     * Test the property 'times'
      */
     @Test
-    public void nameTest() {
-        // TODO: test name
+    public void timesTest() {
+        // TODO: test times
     }
 
 }

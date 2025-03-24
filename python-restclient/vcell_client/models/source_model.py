@@ -22,21 +22,19 @@ import json
 from typing import Any, ClassVar, Dict, List, Optional
 from pydantic import BaseModel, StrictStr
 from pydantic import Field
-from vcell_client.models.external_data_identifier import ExternalDataIdentifier
-from vcell_client.models.key_value import KeyValue
+from vcell_client.models.model_type import ModelType
 try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
 
-class FieldDataReference(BaseModel):
+class SourceModel(BaseModel):
     """
-    FieldDataReference
+    SourceModel
     """ # noqa: E501
-    field_data_id: Optional[ExternalDataIdentifier] = Field(default=None, alias="fieldDataID")
-    annotation: Optional[StrictStr] = None
-    simulations_referencing_this_id: Optional[List[KeyValue]] = Field(default=None, alias="simulationsReferencingThisID")
-    __properties: ClassVar[List[str]] = ["fieldDataID", "annotation", "simulationsReferencingThisID"]
+    model_id: Optional[StrictStr] = Field(default=None, alias="modelID")
+    model_type: Optional[ModelType] = Field(default=None, alias="modelType")
+    __properties: ClassVar[List[str]] = ["modelID", "modelType"]
 
     model_config = {
         "populate_by_name": True,
@@ -55,7 +53,7 @@ class FieldDataReference(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Self:
-        """Create an instance of FieldDataReference from a JSON string"""
+        """Create an instance of SourceModel from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -74,21 +72,11 @@ class FieldDataReference(BaseModel):
             },
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of field_data_id
-        if self.field_data_id:
-            _dict['fieldDataID'] = self.field_data_id.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of each item in simulations_referencing_this_id (list)
-        _items = []
-        if self.simulations_referencing_this_id:
-            for _item in self.simulations_referencing_this_id:
-                if _item:
-                    _items.append(_item.to_dict())
-            _dict['simulationsReferencingThisID'] = _items
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Dict) -> Self:
-        """Create an instance of FieldDataReference from a dict"""
+        """Create an instance of SourceModel from a dict"""
         if obj is None:
             return None
 
@@ -98,12 +86,11 @@ class FieldDataReference(BaseModel):
         # raise errors for additional fields in the input
         for _key in obj.keys():
             if _key not in cls.__properties:
-                raise ValueError("Error due to additional fields (not defined in FieldDataReference) in the input: " + _key)
+                raise ValueError("Error due to additional fields (not defined in SourceModel) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "fieldDataID": ExternalDataIdentifier.from_dict(obj.get("fieldDataID")) if obj.get("fieldDataID") is not None else None,
-            "annotation": obj.get("annotation"),
-            "simulationsReferencingThisID": [KeyValue.from_dict(_item) for _item in obj.get("simulationsReferencingThisID")] if obj.get("simulationsReferencingThisID") is not None else None
+            "modelID": obj.get("modelID"),
+            "modelType": obj.get("modelType")
         })
         return _obj
 

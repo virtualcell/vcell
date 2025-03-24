@@ -43,10 +43,30 @@ public class SolverResourceApiTest {
      *          if the Api call fails
      */
     @Test
-    public void getFVSolverInputTest() throws ApiException {
+    public void getFVSolverInputFromSBMLTest() throws ApiException {
         File sbmlFile = null;
+        Double duration = null;
+        Double outputTimeStep = null;
         File response = 
-        api.getFVSolverInputFromSBML(sbmlFile, 5.0, 0.1);
+        api.getFVSolverInputFromSBML(sbmlFile, duration, outputTimeStep);
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * Retrieve finite volume input from SBML spatial model.
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void getFVSolverInputFromVCMLTest() throws ApiException {
+        File vcmlFile = null;
+        String simulationName = null;
+        File response = 
+        api.getFVSolverInputFromVCML(vcmlFile, simulationName);
         
         // TODO: test validations
     }

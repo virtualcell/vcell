@@ -25,9 +25,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.restclient.ApiException;
-import org.vcell.restclient.model.AnalyzedResultsFromFieldData;
-import org.vcell.restclient.model.FieldDataSaveResults;
-import org.vcell.restclient.model.FieldDataShape;
+import org.vcell.restclient.model.AnalyzedFile;
+import org.vcell.restclient.model.SavedResults;
+import org.vcell.restclient.model.Shape;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
@@ -59,14 +59,14 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.fieldDataFileOperationSpec(...)");
 	try {
 		if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_ADD){
-			AnalyzedResultsFromFieldData analyzedResultsFromFieldData = DtoModelTransforms.fieldDataSpecToAnalyzedResultsDTO(fieldDataFileOperationSpec);
-			FieldDataSaveResults results = vCellApiClient.getFieldDataApi().createFieldDataFromAnalyzedFile(analyzedResultsFromFieldData);
+			AnalyzedFile analyzedResultsFromFieldData = DtoModelTransforms.fieldDataSpecToAnalyzedResultsDTO(fieldDataFileOperationSpec);
+			SavedResults results = vCellApiClient.getFieldDataApi().createFromAnalyzedFile(analyzedResultsFromFieldData);
 			return DtoModelTransforms.fieldDataSaveResultsDTOToFileOperationResults(results, fieldDataFileOperationSpec.owner);
 		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DELETE) {
-			vCellApiClient.getFieldDataApi().deleteFieldData(fieldDataFileOperationSpec.specEDI.getKey().toString());
+			vCellApiClient.getFieldDataApi().delete(fieldDataFileOperationSpec.specEDI.getKey().toString());
 			return null;
 		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_INFO) {
-			FieldDataShape fieldDataInfo = vCellApiClient.getFieldDataApi().getFieldDataShapeFromID(fieldDataFileOperationSpec.sourceSimDataKey.toString());
+			Shape fieldDataInfo = vCellApiClient.getFieldDataApi().getShapeFromID(fieldDataFileOperationSpec.sourceSimDataKey.toString());
 			return DtoModelTransforms.fieldDataInfoDTOToFileOperationResults(fieldDataInfo);
 		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_COPYSIM) {
 			UnsupportedOperationException unsupported = new UnsupportedOperationException("Call field data from simulation instead from user meta DB server.");

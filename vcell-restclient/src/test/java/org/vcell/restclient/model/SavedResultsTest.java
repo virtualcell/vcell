@@ -19,39 +19,38 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import org.vcell.restclient.model.ModelType;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Model tests for CopyFieldData
+ * Model tests for SavedResults
  */
-public class CopyFieldDataTest {
-    private final CopyFieldData model = new CopyFieldData();
+public class SavedResultsTest {
+    private final SavedResults model = new SavedResults();
 
     /**
-     * Model tests for CopyFieldData
+     * Model tests for SavedResults
      */
     @Test
-    public void testCopyFieldData() {
-        // TODO: test CopyFieldData
+    public void testSavedResults() {
+        // TODO: test SavedResults
     }
 
     /**
-     * Test the property 'modelID'
+     * Test the property 'fieldDataName'
      */
     @Test
-    public void modelIDTest() {
-        // TODO: test modelID
+    public void fieldDataNameTest() {
+        // TODO: test fieldDataName
     }
 
     /**
-     * Test the property 'modelType'
+     * Test the property 'fieldDataID'
      */
     @Test
-    public void modelTypeTest() {
-        // TODO: test modelType
+    public void fieldDataIDTest() {
+        // TODO: test fieldDataID
     }
 
 }

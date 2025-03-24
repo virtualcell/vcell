@@ -191,7 +191,7 @@ paths:
       tags:
       - Field Data Resource
       summary: "Get all of the ids used to identify, and retrieve field data."
-      operationId: getAllFieldDataIDs
+      operationId: getAllIDs
       responses:
         "200":
           description: OK
@@ -208,13 +208,13 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/fieldData/analyzeFieldDataFile:
+  /api/v1/fieldData/analyzeFile:
     post:
       tags:
       - Field Data Resource
       summary: "Analyze the field data from the uploaded file. Filenames must be lowercase\
         \ alphanumeric, and can contain underscores."
-      operationId: analyzeFieldDataFile
+      operationId: analyzeFile
       requestBody:
         content:
           multipart/form-data:
@@ -232,7 +232,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AnalyzedResultsFromFieldData'
+                $ref: '#/components/schemas/AnalyzedFile'
         "401":
           description: Not Authorized
         "403":
@@ -251,7 +251,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CopyFieldData'
+              $ref: '#/components/schemas/SourceModel'
       responses:
         "200":
           description: OK
@@ -261,25 +261,6 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/ExternalDataIdentifier'
-  /api/v1/fieldData/createFieldDataFromAnalyzedFile:
-    post:
-      tags:
-      - Field Data Resource
-      summary: "Take the analyzed results of the field data, modify it to your liking,\
-        \ then save it on the server."
-      operationId: createFieldDataFromAnalyzedFile
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AnalyzedResultsFromFieldData'
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldDataSaveResults'
         "401":
           description: Not Authorized
         "403":
@@ -287,12 +268,38 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/fieldData/createFieldDataFromSimulation:
+  /api/v1/fieldData/createFromAnalyzedFile:
+    post:
+      tags:
+      - Field Data Resource
+      summary: "Take the analyzed results of the field data, modify it to your liking,\
+        \ then save it on the server."
+      operationId: createFromAnalyzedFile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzedFile'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SavedResults'
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+  /api/v1/fieldData/createFromSimulation:
     post:
       tags:
       - Field Data Resource
       summary: Create new field data from a simulation.
-      operationId: createNewFieldDataFromSimulation
+      operationId: createFromSimulation
       requestBody:
         content:
           application/x-www-form-urlencoded:
@@ -321,7 +328,7 @@ paths:
       tags:
       - Field Data Resource
       summary: Delete the selected field data.
-      operationId: deleteFieldData
+      operationId: delete
       parameters:
       - name: fieldDataID
         in: path
@@ -338,13 +345,13 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/fieldData/fieldDataShape/{fieldDataID}:
+  /api/v1/fieldData/shape/{fieldDataID}:
     get:
       tags:
       - Field Data Resource
       summary: "Get the shape of the field data. That is it's size, origin, extent,\
         \ and data identifiers."
-      operationId: getFieldDataShapeFromID
+      operationId: getShapeFromID
       parameters:
       - name: fieldDataID
         in: path
@@ -357,7 +364,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldDataShape'
+                $ref: '#/components/schemas/Shape'
         "401":
           description: Not Authorized
         "403":
@@ -764,7 +771,7 @@ components:
           type: string
         userKey:
           type: string
-    AnalyzedResultsFromFieldData:
+    AnalyzedFile:
       type: object
       properties:
         shortSpecData:
@@ -853,13 +860,6 @@ components:
         versionFlag:
           format: int32
           type: integer
-    CopyFieldData:
-      type: object
-      properties:
-        modelID:
-          type: string
-        modelType:
-          $ref: '#/components/schemas/ModelType'
     DataIdentifier:
       type: object
       properties:
@@ -978,39 +978,14 @@ components:
     FieldDataReference:
       type: object
       properties:
-        externalDataIdentifier:
+        fieldDataID:
           $ref: '#/components/schemas/ExternalDataIdentifier'
-        externalDataAnnotation:
+        annotation:
           type: string
-        externalDataIDSimRefs:
+        simulationsReferencingThisID:
           type: array
           items:
             $ref: '#/components/schemas/KeyValue'
-    FieldDataSaveResults:
-      type: object
-      properties:
-        fieldDataName:
-          type: string
-        fieldDataID:
-          type: string
-    FieldDataShape:
-      type: object
-      properties:
-        extent:
-          $ref: '#/components/schemas/Extent'
-        origin:
-          $ref: '#/components/schemas/Origin'
-        isize:
-          $ref: '#/components/schemas/ISize'
-        dataIdentifier:
-          type: array
-          items:
-            $ref: '#/components/schemas/DataIdentifier'
-        times:
-          type: array
-          items:
-            format: double
-            type: number
     HelloWorldMessage:
       type: object
       properties:
@@ -1142,6 +1117,13 @@ components:
             $ref: '#/components/schemas/MathmodelRef'
         date:
           $ref: '#/components/schemas/Date'
+    SavedResults:
+      type: object
+      properties:
+        fieldDataName:
+          type: string
+        fieldDataKey:
+          type: string
     SchedulerStatus:
       enum:
       - WAITING
@@ -1152,6 +1134,24 @@ components:
       - STOPPED
       - FAILED
       type: string
+    Shape:
+      type: object
+      properties:
+        extent:
+          $ref: '#/components/schemas/Extent'
+        origin:
+          $ref: '#/components/schemas/Origin'
+        isize:
+          $ref: '#/components/schemas/ISize'
+        dataIdentifier:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataIdentifier'
+        times:
+          type: array
+          items:
+            format: double
+            type: number
     SimulationExecutionStatusRecord:
       type: object
       properties:
@@ -1228,6 +1228,13 @@ components:
           type: string
         hasData:
           type: boolean
+    SourceModel:
+      type: object
+      properties:
+        modelID:
+          type: string
+        modelType:
+          $ref: '#/components/schemas/ModelType'
     Status:
       enum:
       - UNKNOWN

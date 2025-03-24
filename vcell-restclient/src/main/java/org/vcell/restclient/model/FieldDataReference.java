@@ -36,104 +36,104 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * FieldDataReference
  */
 @JsonPropertyOrder({
-  FieldDataReference.JSON_PROPERTY_EXTERNAL_DATA_IDENTIFIER,
-  FieldDataReference.JSON_PROPERTY_EXTERNAL_DATA_ANNOTATION,
-  FieldDataReference.JSON_PROPERTY_EXTERNAL_DATA_I_D_SIM_REFS
+  FieldDataReference.JSON_PROPERTY_FIELD_DATA_I_D,
+  FieldDataReference.JSON_PROPERTY_ANNOTATION,
+  FieldDataReference.JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class FieldDataReference {
-  public static final String JSON_PROPERTY_EXTERNAL_DATA_IDENTIFIER = "externalDataIdentifier";
-  private ExternalDataIdentifier externalDataIdentifier;
+  public static final String JSON_PROPERTY_FIELD_DATA_I_D = "fieldDataID";
+  private ExternalDataIdentifier fieldDataID;
 
-  public static final String JSON_PROPERTY_EXTERNAL_DATA_ANNOTATION = "externalDataAnnotation";
-  private String externalDataAnnotation;
+  public static final String JSON_PROPERTY_ANNOTATION = "annotation";
+  private String annotation;
 
-  public static final String JSON_PROPERTY_EXTERNAL_DATA_I_D_SIM_REFS = "externalDataIDSimRefs";
-  private List<KeyValue> externalDataIDSimRefs;
+  public static final String JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D = "simulationsReferencingThisID";
+  private List<KeyValue> simulationsReferencingThisID;
 
   public FieldDataReference() { 
   }
 
-  public FieldDataReference externalDataIdentifier(ExternalDataIdentifier externalDataIdentifier) {
-    this.externalDataIdentifier = externalDataIdentifier;
+  public FieldDataReference fieldDataID(ExternalDataIdentifier fieldDataID) {
+    this.fieldDataID = fieldDataID;
     return this;
   }
 
    /**
-   * Get externalDataIdentifier
-   * @return externalDataIdentifier
+   * Get fieldDataID
+   * @return fieldDataID
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_EXTERNAL_DATA_IDENTIFIER)
+  @JsonProperty(JSON_PROPERTY_FIELD_DATA_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public ExternalDataIdentifier getExternalDataIdentifier() {
-    return externalDataIdentifier;
+  public ExternalDataIdentifier getFieldDataID() {
+    return fieldDataID;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_EXTERNAL_DATA_IDENTIFIER)
+  @JsonProperty(JSON_PROPERTY_FIELD_DATA_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setExternalDataIdentifier(ExternalDataIdentifier externalDataIdentifier) {
-    this.externalDataIdentifier = externalDataIdentifier;
+  public void setFieldDataID(ExternalDataIdentifier fieldDataID) {
+    this.fieldDataID = fieldDataID;
   }
 
 
-  public FieldDataReference externalDataAnnotation(String externalDataAnnotation) {
-    this.externalDataAnnotation = externalDataAnnotation;
+  public FieldDataReference annotation(String annotation) {
+    this.annotation = annotation;
     return this;
   }
 
    /**
-   * Get externalDataAnnotation
-   * @return externalDataAnnotation
+   * Get annotation
+   * @return annotation
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_EXTERNAL_DATA_ANNOTATION)
+  @JsonProperty(JSON_PROPERTY_ANNOTATION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public String getExternalDataAnnotation() {
-    return externalDataAnnotation;
+  public String getAnnotation() {
+    return annotation;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_EXTERNAL_DATA_ANNOTATION)
+  @JsonProperty(JSON_PROPERTY_ANNOTATION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setExternalDataAnnotation(String externalDataAnnotation) {
-    this.externalDataAnnotation = externalDataAnnotation;
+  public void setAnnotation(String annotation) {
+    this.annotation = annotation;
   }
 
 
-  public FieldDataReference externalDataIDSimRefs(List<KeyValue> externalDataIDSimRefs) {
-    this.externalDataIDSimRefs = externalDataIDSimRefs;
+  public FieldDataReference simulationsReferencingThisID(List<KeyValue> simulationsReferencingThisID) {
+    this.simulationsReferencingThisID = simulationsReferencingThisID;
     return this;
   }
 
-  public FieldDataReference addExternalDataIDSimRefsItem(KeyValue externalDataIDSimRefsItem) {
-    if (this.externalDataIDSimRefs == null) {
-      this.externalDataIDSimRefs = new ArrayList<>();
+  public FieldDataReference addSimulationsReferencingThisIDItem(KeyValue simulationsReferencingThisIDItem) {
+    if (this.simulationsReferencingThisID == null) {
+      this.simulationsReferencingThisID = new ArrayList<>();
     }
-    this.externalDataIDSimRefs.add(externalDataIDSimRefsItem);
+    this.simulationsReferencingThisID.add(simulationsReferencingThisIDItem);
     return this;
   }
 
    /**
-   * Get externalDataIDSimRefs
-   * @return externalDataIDSimRefs
+   * Get simulationsReferencingThisID
+   * @return simulationsReferencingThisID
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_EXTERNAL_DATA_I_D_SIM_REFS)
+  @JsonProperty(JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<KeyValue> getExternalDataIDSimRefs() {
-    return externalDataIDSimRefs;
+  public List<KeyValue> getSimulationsReferencingThisID() {
+    return simulationsReferencingThisID;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_EXTERNAL_DATA_I_D_SIM_REFS)
+  @JsonProperty(JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setExternalDataIDSimRefs(List<KeyValue> externalDataIDSimRefs) {
-    this.externalDataIDSimRefs = externalDataIDSimRefs;
+  public void setSimulationsReferencingThisID(List<KeyValue> simulationsReferencingThisID) {
+    this.simulationsReferencingThisID = simulationsReferencingThisID;
   }
 
 
@@ -149,23 +149,23 @@ public class FieldDataReference {
       return false;
     }
     FieldDataReference fieldDataReference = (FieldDataReference) o;
-    return Objects.equals(this.externalDataIdentifier, fieldDataReference.externalDataIdentifier) &&
-        Objects.equals(this.externalDataAnnotation, fieldDataReference.externalDataAnnotation) &&
-        Objects.equals(this.externalDataIDSimRefs, fieldDataReference.externalDataIDSimRefs);
+    return Objects.equals(this.fieldDataID, fieldDataReference.fieldDataID) &&
+        Objects.equals(this.annotation, fieldDataReference.annotation) &&
+        Objects.equals(this.simulationsReferencingThisID, fieldDataReference.simulationsReferencingThisID);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(externalDataIdentifier, externalDataAnnotation, externalDataIDSimRefs);
+    return Objects.hash(fieldDataID, annotation, simulationsReferencingThisID);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class FieldDataReference {\n");
-    sb.append("    externalDataIdentifier: ").append(toIndentedString(externalDataIdentifier)).append("\n");
-    sb.append("    externalDataAnnotation: ").append(toIndentedString(externalDataAnnotation)).append("\n");
-    sb.append("    externalDataIDSimRefs: ").append(toIndentedString(externalDataIDSimRefs)).append("\n");
+    sb.append("    fieldDataID: ").append(toIndentedString(fieldDataID)).append("\n");
+    sb.append("    annotation: ").append(toIndentedString(annotation)).append("\n");
+    sb.append("    simulationsReferencingThisID: ").append(toIndentedString(simulationsReferencingThisID)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -213,21 +213,21 @@ public class FieldDataReference {
 
     StringJoiner joiner = new StringJoiner("&");
 
-    // add `externalDataIdentifier` to the URL query string
-    if (getExternalDataIdentifier() != null) {
-      joiner.add(getExternalDataIdentifier().toUrlQueryString(prefix + "externalDataIdentifier" + suffix));
+    // add `fieldDataID` to the URL query string
+    if (getFieldDataID() != null) {
+      joiner.add(getFieldDataID().toUrlQueryString(prefix + "fieldDataID" + suffix));
     }
 
-    // add `externalDataAnnotation` to the URL query string
-    if (getExternalDataAnnotation() != null) {
-      joiner.add(String.format("%sexternalDataAnnotation%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getExternalDataAnnotation()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    // add `annotation` to the URL query string
+    if (getAnnotation() != null) {
+      joiner.add(String.format("%sannotation%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getAnnotation()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
-    // add `externalDataIDSimRefs` to the URL query string
-    if (getExternalDataIDSimRefs() != null) {
-      for (int i = 0; i < getExternalDataIDSimRefs().size(); i++) {
-        if (getExternalDataIDSimRefs().get(i) != null) {
-          joiner.add(getExternalDataIDSimRefs().get(i).toUrlQueryString(String.format("%sexternalDataIDSimRefs%s%s", prefix, suffix,
+    // add `simulationsReferencingThisID` to the URL query string
+    if (getSimulationsReferencingThisID() != null) {
+      for (int i = 0; i < getSimulationsReferencingThisID().size(); i++) {
+        if (getSimulationsReferencingThisID().get(i) != null) {
+          joiner.add(getSimulationsReferencingThisID().get(i).toUrlQueryString(String.format("%ssimulationsReferencingThisID%s%s", prefix, suffix,
           "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
         }
       }

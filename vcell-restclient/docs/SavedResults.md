@@ -1,14 +1,14 @@
 
 
-# CopyFieldData
+# SavedResults
 
 
 ## Properties
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**modelID** | **String** |  |  [optional] |
-|**modelType** | **ModelType** |  |  [optional] |
+|**fieldDataName** | **String** |  |  [optional] |
+|**fieldDataKey** | **String** |  |  [optional] |
 
 
 

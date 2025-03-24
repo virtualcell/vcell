@@ -19,24 +19,30 @@ import re  # noqa: F401
 import json
 
 
-from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictStr
+from typing import Any, ClassVar, Dict, List, Optional, Union
+from pydantic import BaseModel, StrictFloat, StrictInt, StrictStr
 from pydantic import Field
-from vcell_client.models.external_data_identifier import ExternalDataIdentifier
-from vcell_client.models.key_value import KeyValue
+from vcell_client.models.extent import Extent
+from vcell_client.models.i_size import ISize
+from vcell_client.models.origin import Origin
 try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
 
-class FieldDataReference(BaseModel):
+class AnalyzedFile(BaseModel):
     """
-    FieldDataReference
+    AnalyzedFile
     """ # noqa: E501
-    field_data_id: Optional[ExternalDataIdentifier] = Field(default=None, alias="fieldDataID")
+    short_spec_data: Optional[List[List[List[StrictInt]]]] = Field(default=None, alias="shortSpecData")
+    var_names: Optional[List[StrictStr]] = Field(default=None, alias="varNames")
+    times: Optional[List[Union[StrictFloat, StrictInt]]] = None
+    origin: Optional[Origin] = None
+    extent: Optional[Extent] = None
+    isize: Optional[ISize] = None
     annotation: Optional[StrictStr] = None
-    simulations_referencing_this_id: Optional[List[KeyValue]] = Field(default=None, alias="simulationsReferencingThisID")
-    __properties: ClassVar[List[str]] = ["fieldDataID", "annotation", "simulationsReferencingThisID"]
+    name: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["shortSpecData", "varNames", "times", "origin", "extent", "isize", "annotation", "name"]
 
     model_config = {
         "populate_by_name": True,
@@ -55,7 +61,7 @@ class FieldDataReference(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Self:
-        """Create an instance of FieldDataReference from a JSON string"""
+        """Create an instance of AnalyzedFile from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -74,21 +80,20 @@ class FieldDataReference(BaseModel):
             },
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of field_data_id
-        if self.field_data_id:
-            _dict['fieldDataID'] = self.field_data_id.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of each item in simulations_referencing_this_id (list)
-        _items = []
-        if self.simulations_referencing_this_id:
-            for _item in self.simulations_referencing_this_id:
-                if _item:
-                    _items.append(_item.to_dict())
-            _dict['simulationsReferencingThisID'] = _items
+        # override the default output from pydantic by calling `to_dict()` of origin
+        if self.origin:
+            _dict['origin'] = self.origin.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of extent
+        if self.extent:
+            _dict['extent'] = self.extent.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of isize
+        if self.isize:
+            _dict['isize'] = self.isize.to_dict()
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Dict) -> Self:
-        """Create an instance of FieldDataReference from a dict"""
+        """Create an instance of AnalyzedFile from a dict"""
         if obj is None:
             return None
 
@@ -98,12 +103,17 @@ class FieldDataReference(BaseModel):
         # raise errors for additional fields in the input
         for _key in obj.keys():
             if _key not in cls.__properties:
-                raise ValueError("Error due to additional fields (not defined in FieldDataReference) in the input: " + _key)
+                raise ValueError("Error due to additional fields (not defined in AnalyzedFile) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "fieldDataID": ExternalDataIdentifier.from_dict(obj.get("fieldDataID")) if obj.get("fieldDataID") is not None else None,
+            "shortSpecData": obj.get("shortSpecData"),
+            "varNames": obj.get("varNames"),
+            "times": obj.get("times"),
+            "origin": Origin.from_dict(obj.get("origin")) if obj.get("origin") is not None else None,
+            "extent": Extent.from_dict(obj.get("extent")) if obj.get("extent") is not None else None,
+            "isize": ISize.from_dict(obj.get("isize")) if obj.get("isize") is not None else None,
             "annotation": obj.get("annotation"),
-            "simulationsReferencingThisID": [KeyValue.from_dict(_item) for _item in obj.get("simulationsReferencingThisID")] if obj.get("simulationsReferencingThisID") is not None else None
+            "name": obj.get("name")
         })
         return _obj
 
