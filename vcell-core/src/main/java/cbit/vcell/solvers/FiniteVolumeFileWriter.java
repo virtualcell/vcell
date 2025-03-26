@@ -134,20 +134,20 @@ public class FiniteVolumeFileWriter extends SolverFileWriter {
 
     private static final String RANDOM_VARIABLE_FILE_EXTENSION = ".rv";
     private static final String DISTANCE_MAP_FILE_EXTENSION = ".dmf";
-    private File workingDirectory = null;
+    protected File workingDirectory = null;
     private File destinationDirectory = null;
     private boolean bInlineVCG = false;
     private Geometry resampledGeometry = null;
-    private int psfFieldIndex = -1;
+    protected int psfFieldIndex = -1;
     private boolean bChomboSolver = false;
 
-    Set<FieldDataNumerics> uniqueFieldDataNSet = null;
+    protected Set<FieldDataNumerics> uniqueFieldDataNSet = null;
 
-    class FieldDataNumerics {
+    protected class FieldDataNumerics {
         String fieldFunction;
         String numericsSubsitute;
 
-        FieldDataNumerics(String fieldFString, String numString){
+        public FieldDataNumerics(String fieldFString, String numString){
             fieldFunction = fieldFString;
             numericsSubsitute = numString;
         }
@@ -1697,7 +1697,7 @@ lg.error(e);
      * @throws DataAccessException
      */
 
-    private void writeFieldData() throws FileNotFoundException, ExpressionException, DataAccessException{
+    protected void writeFieldData() throws FileNotFoundException, ExpressionException, DataAccessException{
         FieldDataIdentifierSpec[] fieldDataIDSpecs = simTask.getSimulationJob().getFieldDataIdentifierSpecs();
         if(fieldDataIDSpecs == null || fieldDataIDSpecs.length == 0){
             return;
