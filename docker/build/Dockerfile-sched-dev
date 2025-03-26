@@ -124,7 +124,7 @@ ENTRYPOINT java \
 	-Dvcell.server.maxPdeJobsPerUser=${maxPdeJobsPerUser} \
 	-Dvcell.ssh.cmd.cmdtimeout=${vcell_ssh_cmd_cmdtimeout} \
 	-Dvcell.ssh.cmd.restoretimeout=${vcell_ssh_cmd_restoretimeout} \
-	-Dvcell.ssh.cmd.options.csv=${vcell_ssh_cmd_options_csv}
+	-Dvcell.ssh.cmd.options.csv=${vcell_ssh_cmd_options_csv} \
 	-Dvcell.htc.memory.min.mb=${htcMinMemoryMB} \
 	-Dvcell.htc.memory.max.mb=${htcMaxMemoryMB} \
 	-Dvcell.htc.memory.pu.floor.mb=${htcPowerUserMemoryFloorMB} \
