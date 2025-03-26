@@ -165,7 +165,8 @@ public class MathSymbolMapping implements SourceSymbolMapping {
                     }
                 }
             }
-            entry.setValue(origStes.toArray(new SymbolTableEntry[0]));
+            // ConcurrentSkipListMap.Entry does not implement setValue(), must use put() instead
+            mathToBiologicalHash.put(key, origStes.toArray(new SymbolTableEntry[0]));
         }
     }
 
