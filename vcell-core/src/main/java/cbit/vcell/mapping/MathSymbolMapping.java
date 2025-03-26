@@ -11,6 +11,7 @@
 package cbit.vcell.mapping;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import cbit.vcell.math.*;
 import org.vcell.util.ArrayUtils;
@@ -28,9 +29,9 @@ import cbit.vcell.parser.SymbolTableEntry;
  * @author: Jim Schaff
  */
 public class MathSymbolMapping implements SourceSymbolMapping {
-    private TreeMap<SymbolTableEntry, String> biologicalToMathSymbolNameHash = new TreeMap<SymbolTableEntry, String>();
-    private TreeMap<SymbolTableEntry, Variable> biologicalToMathHash = new TreeMap<SymbolTableEntry, Variable>();
-    private TreeMap<Variable, SymbolTableEntry[]> mathToBiologicalHash = new TreeMap<Variable, SymbolTableEntry[]>();
+    private Map<SymbolTableEntry, String> biologicalToMathSymbolNameHash = new ConcurrentSkipListMap<>();
+    private Map<SymbolTableEntry, Variable> biologicalToMathHash = new ConcurrentSkipListMap<>();
+    private Map<Variable, SymbolTableEntry[]> mathToBiologicalHash = new ConcurrentSkipListMap<>();
 
     /**
      * MathSymbolMapping constructor comment.
