@@ -102,7 +102,7 @@ public class PublicationResourceApiTest {
     }
     
     /**
-     * Create publication
+     * Update publication
      *
      * 
      *

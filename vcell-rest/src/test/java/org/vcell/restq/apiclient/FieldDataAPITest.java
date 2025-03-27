@@ -13,10 +13,10 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.FieldDataResourceApi;
 import org.vcell.restclient.api.UsersResourceApi;
-import org.vcell.restclient.model.AnalyzedResultsFromFieldData;
+import org.vcell.restclient.model.AnalyzedFile;
 import org.vcell.restclient.model.FieldDataReference;
-import org.vcell.restclient.model.FieldDataSaveResults;
-import org.vcell.restclient.model.FieldDataShape;
+import org.vcell.restclient.model.SavedResults;
+import org.vcell.restclient.model.Shape;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
@@ -114,14 +114,14 @@ public class FieldDataAPITest {
         /////////////////////
         // Add Field Data //
         ///////////////////
-        AnalyzedResultsFromFieldData saveFieldDataFromFile = new AnalyzedResultsFromFieldData();
+        AnalyzedFile saveFieldDataFromFile = new AnalyzedFile();
         saveFieldDataFromFile.setShortSpecData(matrix); saveFieldDataFromFile.varNames(varNames);
         saveFieldDataFromFile.times(times); saveFieldDataFromFile.origin(DtoModelTransforms.originToDTO(origin)); saveFieldDataFromFile.extent(DtoModelTransforms.extentToDTO(extent));
         saveFieldDataFromFile.isize(DtoModelTransforms.iSizeToDTO(iSize)); saveFieldDataFromFile.annotation("test annotation"); saveFieldDataFromFile.name("TestFile");
-        FieldDataSaveResults results = fieldDataResourceApi.createFieldDataFromAnalyzedFile(saveFieldDataFromFile);
+        SavedResults results = fieldDataResourceApi.createFromAnalyzedFile(saveFieldDataFromFile);
 
         // File is Saved on File System
-        FieldDataShape fieldDataInfo = fieldDataResourceApi.getFieldDataShapeFromID(results.getFieldDataID());
+        Shape fieldDataInfo = fieldDataResourceApi.getShapeFromID(results.getFieldDataKey());
         Assertions.assertEquals(saveFieldDataFromFile.getName(), results.getFieldDataName());
         Assertions.assertTrue(origin.compareEqual(DtoModelTransforms.dtoToOrigin(fieldDataInfo.getOrigin())));
         Assertions.assertTrue(extent.compareEqual(DtoModelTransforms.dtoToExtent(fieldDataInfo.getExtent())));
@@ -129,25 +129,25 @@ public class FieldDataAPITest {
         Assertions.assertEquals(times, fieldDataInfo.getTimes());
 
         // It's in the DB
-        List<FieldDataReference> references = fieldDataResourceApi.getAllFieldDataIDs();
-        Assertions.assertEquals(saveFieldDataFromFile.getAnnotation(), references.get(0).getExternalDataAnnotation());
-        Assertions.assertEquals(results.getFieldDataID(), references.get(0).getExternalDataIdentifier().getKey().getValue().toString());
-        Assertions.assertEquals(0, references.get(0).getExternalDataIDSimRefs().size());
+        List<FieldDataReference> references = fieldDataResourceApi.getAllIDs();
+        Assertions.assertEquals(saveFieldDataFromFile.getAnnotation(), references.get(0).getAnnotation());
+        Assertions.assertEquals(results.getFieldDataKey(), references.get(0).getFieldDataID().getKey().getValue().toString());
+        Assertions.assertEquals(0, references.get(0).getSimulationsReferencingThisID().size());
 
         ///////////////////////
         // Delete Field Data //
         //////////////////////
-        fieldDataResourceApi.deleteFieldData(results.getFieldDataID());
+        fieldDataResourceApi.delete(results.getFieldDataKey());
 
         // No Longer on File System
         try{
-            fieldDataResourceApi.getFieldDataShapeFromID(results.getFieldDataID());
+            fieldDataResourceApi.getShapeFromID(results.getFieldDataKey());
         } catch (ApiException e){
             Assertions.assertEquals(404, e.getCode());
         }
 
         // No Longer in DB
-        references = fieldDataResourceApi.getAllFieldDataIDs();
+        references = fieldDataResourceApi.getAllIDs();
         Assertions.assertEquals(0, references.size());
     }
 
@@ -157,36 +157,36 @@ public class FieldDataAPITest {
         FieldDataResourceApi fieldDataResourceApi = new FieldDataResourceApi(aliceAPIClient);
         File testFile = TestEndpointUtils.getResourceFile("/flybrain-035.tif");
         try{
-            fieldDataResourceApi.analyzeFieldDataFile(testFile, "invalid N@me #Ezequiel");
+            fieldDataResourceApi.analyzeFile(testFile, "invalid N@me #Ezequiel");
         } catch (ApiException e){
             Assertions.assertEquals(HttpStatus.BAD_REQUEST_400, e.getCode());
         }
 
-        AnalyzedResultsFromFieldData results = fieldDataResourceApi.analyzeFieldDataFile(testFile, "bob");
+        AnalyzedFile results = fieldDataResourceApi.analyzeFile(testFile, "bob");
 
         Assertions.assertNotNull(results);
         Assertions.assertNotNull(results.getShortSpecData());
 
-        FieldDataSaveResults saveResults = fieldDataResourceApi.createFieldDataFromAnalyzedFile(results);
+        SavedResults saveResults = fieldDataResourceApi.createFromAnalyzedFile(results);
         Assertions.assertNotNull(saveResults);
 
-        FieldDataShape fieldDataInfo = fieldDataResourceApi.getFieldDataShapeFromID(saveResults.getFieldDataID());
+        Shape fieldDataInfo = fieldDataResourceApi.getShapeFromID(saveResults.getFieldDataKey());
         Assertions.assertNotNull(fieldDataInfo);
         Assertions.assertTrue(DtoModelTransforms.dtoToOrigin(fieldDataInfo.getOrigin()).compareEqual(new Origin(0.0, 0.0, 0.0)));
         Assertions.assertTrue(DtoModelTransforms.dtoToExtent(fieldDataInfo.getExtent()).compareEqual(new Extent(684.9333393978472, 684.9333393978472, 1)));
         Assertions.assertTrue(DtoModelTransforms.dtoToISize(fieldDataInfo.getIsize()).compareEqual(new ISize(256, 256, 1)));
         Assertions.assertEquals(1, fieldDataInfo.getTimes().size());
 
-        fieldDataResourceApi.deleteFieldData(saveResults.getFieldDataID());
+        fieldDataResourceApi.delete(saveResults.getFieldDataKey());
 
         try{
-            fieldDataResourceApi.getFieldDataShapeFromID(saveResults.getFieldDataID());
+            fieldDataResourceApi.getShapeFromID(saveResults.getFieldDataKey());
         } catch (ApiException e){
             Assertions.assertEquals(404, e.getCode());
         }
 
         // No Longer in DB
-        List<FieldDataReference> references = fieldDataResourceApi.getAllFieldDataIDs();
+        List<FieldDataReference> references = fieldDataResourceApi.getAllIDs();
         Assertions.assertEquals(0, references.size());
     }
 

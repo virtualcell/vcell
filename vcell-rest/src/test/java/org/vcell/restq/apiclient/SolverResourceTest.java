@@ -20,7 +20,6 @@ import org.testcontainers.shaded.com.google.common.io.Files;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.SolverResourceApi;
-import org.vcell.restclient.api.SpatialResourceApi;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;

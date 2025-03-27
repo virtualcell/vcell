@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.modeldb;
+import java.util.Hashtable;
 import java.util.TreeMap;
 
 import org.vcell.db.ConnectionFactory;
@@ -17,18 +18,7 @@ import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Preference;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.CurateSpec;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.ReferenceQueryResult;
-import org.vcell.util.document.ReferenceQuerySpec;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.VCInfoContainer;
-import org.vcell.util.document.VersionInfo;
-import org.vcell.util.document.VersionableFamily;
-import org.vcell.util.document.VersionableType;
+import org.vcell.util.document.*;
 
 import cbit.image.VCImageInfo;
 import cbit.vcell.biomodel.BioModelMetaData;
@@ -102,6 +92,11 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 
 	@Override
 	public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public Hashtable<String, ExternalDataIdentifier> copyModelsFieldData(String modelKey, VersionableType modelType) {
 		throw new UnsupportedOperationException();
 	}
 

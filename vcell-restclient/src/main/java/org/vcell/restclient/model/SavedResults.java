@@ -29,24 +29,24 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**
- * FieldDataSaveResults
+ * SavedResults
  */
 @JsonPropertyOrder({
-  FieldDataSaveResults.JSON_PROPERTY_FIELD_DATA_NAME,
-  FieldDataSaveResults.JSON_PROPERTY_FIELD_DATA_I_D
+  SavedResults.JSON_PROPERTY_FIELD_DATA_NAME,
+  SavedResults.JSON_PROPERTY_FIELD_DATA_KEY
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
-public class FieldDataSaveResults {
+public class SavedResults {
   public static final String JSON_PROPERTY_FIELD_DATA_NAME = "fieldDataName";
   private String fieldDataName;
 
-  public static final String JSON_PROPERTY_FIELD_DATA_I_D = "fieldDataID";
-  private String fieldDataID;
+  public static final String JSON_PROPERTY_FIELD_DATA_KEY = "fieldDataKey";
+  private String fieldDataKey;
 
-  public FieldDataSaveResults() { 
+  public SavedResults() { 
   }
 
-  public FieldDataSaveResults fieldDataName(String fieldDataName) {
+  public SavedResults fieldDataName(String fieldDataName) {
     this.fieldDataName = fieldDataName;
     return this;
   }
@@ -71,33 +71,33 @@ public class FieldDataSaveResults {
   }
 
 
-  public FieldDataSaveResults fieldDataID(String fieldDataID) {
-    this.fieldDataID = fieldDataID;
+  public SavedResults fieldDataKey(String fieldDataKey) {
+    this.fieldDataKey = fieldDataKey;
     return this;
   }
 
    /**
-   * Get fieldDataID
-   * @return fieldDataID
+   * Get fieldDataKey
+   * @return fieldDataKey
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_DATA_I_D)
+  @JsonProperty(JSON_PROPERTY_FIELD_DATA_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public String getFieldDataID() {
-    return fieldDataID;
+  public String getFieldDataKey() {
+    return fieldDataKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_DATA_I_D)
+  @JsonProperty(JSON_PROPERTY_FIELD_DATA_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldDataID(String fieldDataID) {
-    this.fieldDataID = fieldDataID;
+  public void setFieldDataKey(String fieldDataKey) {
+    this.fieldDataKey = fieldDataKey;
   }
 
 
   /**
-   * Return true if this FieldDataSaveResults object is equal to o.
+   * Return true if this SavedResults object is equal to o.
    */
   @Override
   public boolean equals(Object o) {
@@ -107,22 +107,22 @@ public class FieldDataSaveResults {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    FieldDataSaveResults fieldDataSaveResults = (FieldDataSaveResults) o;
-    return Objects.equals(this.fieldDataName, fieldDataSaveResults.fieldDataName) &&
-        Objects.equals(this.fieldDataID, fieldDataSaveResults.fieldDataID);
+    SavedResults savedResults = (SavedResults) o;
+    return Objects.equals(this.fieldDataName, savedResults.fieldDataName) &&
+        Objects.equals(this.fieldDataKey, savedResults.fieldDataKey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(fieldDataName, fieldDataID);
+    return Objects.hash(fieldDataName, fieldDataKey);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class FieldDataSaveResults {\n");
+    sb.append("class SavedResults {\n");
     sb.append("    fieldDataName: ").append(toIndentedString(fieldDataName)).append("\n");
-    sb.append("    fieldDataID: ").append(toIndentedString(fieldDataID)).append("\n");
+    sb.append("    fieldDataKey: ").append(toIndentedString(fieldDataKey)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -175,9 +175,9 @@ public class FieldDataSaveResults {
       joiner.add(String.format("%sfieldDataName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldDataName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
-    // add `fieldDataID` to the URL query string
-    if (getFieldDataID() != null) {
-      joiner.add(String.format("%sfieldDataID%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldDataID()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    // add `fieldDataKey` to the URL query string
+    if (getFieldDataKey() != null) {
+      joiner.add(String.format("%sfieldDataKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldDataKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();

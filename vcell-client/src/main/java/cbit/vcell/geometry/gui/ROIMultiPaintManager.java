@@ -1809,20 +1809,18 @@ private ArrayList<AsynchClientTask> getImportSTLtasks(File[] selectedFiles,Vect3
 	private void createFD(boolean isFromSimulation,String fieldName,String annotation,Extent extent,Origin origin, String[] varNames,double[] times,ISize isize) throws Exception{
 		FieldDataFileOperationSpec fdos = null;
 		try{
-			//temp-------
+			//Get temp, and remove it-------
 			FieldDataDBOperationSpec listExtDataIDSpec = FieldDataDBOperationSpec.createGetExtDataIDsSpec(documentManager.getUser());
 			FieldDataDBOperationResults fdDBOperation = documentManager.fieldDataDBOperation(listExtDataIDSpec);
 			for(int i=0;i<fdDBOperation.extDataIDArr.length;i++) {
 				if(fdDBOperation.extDataIDArr[i].getName().equals("fd")){
-					FieldDataDBOperationSpec createDeleteExtDataIDSpec = FieldDataDBOperationSpec.createDeleteExtDataIDSpec(fdDBOperation.extDataIDArr[i]);
-					documentManager.fieldDataDBOperation(createDeleteExtDataIDSpec);
+					FieldDataFileOperationSpec deleteFieldData = FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(fdDBOperation.extDataIDArr[i]);
+					documentManager.fieldDataFileOperation(deleteFieldData);
 					break;
 				}
 			}
 			//
 			//-----------
-			FieldDataDBOperationSpec newExtDataIDSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(documentManager.getUser(),fieldName,annotation);
-			FieldDataDBOperationResults fieldDataDBOperation = documentManager.fieldDataDBOperation(newExtDataIDSpec);
 			fdos = new FieldDataFileOperationSpec();
 			fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
 			fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
@@ -1834,7 +1832,6 @@ private ArrayList<AsynchClientTask> getImportSTLtasks(File[] selectedFiles,Vect3
 				allImages[i].getPixels();
 				System.arraycopy(allImages[i].getPixels(), 0, fdos.shortSpecData[0][0], i*allImages[i].getPixels().length, allImages[i].getPixels().length);
 			}
-			fdos.specEDI = fieldDataDBOperation.extDataID;
 			fdos.annotation = annotation;
 
 			if(!isFromSimulation){
@@ -1842,13 +1839,6 @@ private ArrayList<AsynchClientTask> getImportSTLtasks(File[] selectedFiles,Vect3
 				fdos.origin = origin;
 				fdos.varNames = varNames;
 				fdos.times = times;
-				//
-				//Subvolumes and Regions NOT implemented now
-				//
-				fdos.cartesianMesh = CartesianMesh.createSimpleCartesianMesh(fdos.origin, fdos.extent, fdos.isize,
-						new RegionImage(new VCImageUncompressed(null, new byte[fdos.isize.getXYZ()],//empty regions
-								fdos.extent, fdos.isize.getX(),fdos.isize.getY(),fdos.isize.getZ()),
-								0,null,null,RegionImage.NO_SMOOTHING));
 			}
 
 			//Add to Server Disk
@@ -1863,14 +1853,6 @@ private ArrayList<AsynchClientTask> getImportSTLtasks(File[] selectedFiles,Vect3
 //				}
 //			}
 		} catch (Exception e) {
-			try{
-				//try to cleanup new ExtDataID
-				if(fdos != null && fdos.specEDI != null) {
-					documentManager.fieldDataDBOperation(FieldDataDBOperationSpec.createDeleteExtDataIDSpec(fdos.specEDI));
-				}
-			}catch(Exception e2){
-				e2.printStackTrace();
-			}
 			throw e;
 		}
 

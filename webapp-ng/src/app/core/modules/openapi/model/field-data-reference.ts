@@ -14,8 +14,8 @@ import { ExternalDataIdentifier } from './external-data-identifier';
 
 
 export interface FieldDataReference { 
-    externalDataIdentifier?: ExternalDataIdentifier;
-    externalDataAnnotation?: string;
-    externalDataIDSimRefs?: Array<KeyValue>;
+    fieldDataID?: ExternalDataIdentifier;
+    annotation?: string;
+    simulationsReferencingThisID?: Array<KeyValue>;
 }
 
