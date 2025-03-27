@@ -68,6 +68,7 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	maxOdeJobsPerUser="max-ode-jobs-per-user-not-set" \
 	vcell_ssh_cmd_cmdtimeout="cmdSrvcSshCmdTimeoutMS-not-set" \
     vcell_ssh_cmd_restoretimeout="cmdSrvcSshCmdRestoreTimeoutFactor-not-set" \
+    vcell_ssh_cmd_options_csv="cmdSrvcSshCmdRestoreOptionsCsv-not-set" \
 	maxPdeJobsPerUser="max-pde-jobs-per-user-not-set" \
 	htcMinMemoryMB="htc-min-memory-not-set" \
 	htcMaxMemoryMB="htc-max-memory-not-set" \
@@ -123,6 +124,7 @@ ENTRYPOINT java \
 	-Dvcell.server.maxPdeJobsPerUser=${maxPdeJobsPerUser} \
 	-Dvcell.ssh.cmd.cmdtimeout=${vcell_ssh_cmd_cmdtimeout} \
 	-Dvcell.ssh.cmd.restoretimeout=${vcell_ssh_cmd_restoretimeout} \
+	-Dvcell.ssh.cmd.options.csv=${vcell_ssh_cmd_options_csv} \
 	-Dvcell.htc.memory.min.mb=${htcMinMemoryMB} \
 	-Dvcell.htc.memory.max.mb=${htcMaxMemoryMB} \
 	-Dvcell.htc.memory.pu.floor.mb=${htcPowerUserMemoryFloorMB} \

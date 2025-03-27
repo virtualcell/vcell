@@ -280,6 +280,9 @@ public class PropertyLoader {
 	public static final String imageJVcellPluginURL = record("vcell.imagej.plugin.url", ValueType.GEN);
 	public static final String cmdSrvcSshCmdTimeoutMS = record("vcell.ssh.cmd.cmdtimeout", ValueType.GEN);
 	public static final String cmdSrvcSshCmdRestoreTimeoutFactor = record("vcell.ssh.cmd.restoretimeout", ValueType.GEN);
+	public static final String cmdSrvcSshCmdOptionsCSV = record("vcell.ssh.cmd.options.csv", ValueType.GEN);
+	public static final String cmdSrvcSshCmdOptionsCSV_default =
+			"StrictHostKeyChecking=No,ControlMaster=auto,ControlPath=~/.ssh/%r@%h:%p,ControlPersist=1m";
 	
 	public static final String cliWorkingDir = record("cli.workingDir", ValueType.DIR);
 	public static final String vtkPythonDir = record("vcell.vtk.pythonDir", ValueType.DIR);

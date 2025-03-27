@@ -1,21 +1,13 @@
 package cbit.vcell.message.server.cmd;
 
+import cbit.vcell.resource.PropertyLoader;
+import org.vcell.util.exe.ExecutableException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Random;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import org.vcell.util.TimeWrapper;
-import org.vcell.util.exe.ExecutableException;
-
-import cbit.vcell.resource.PropertyLoader;
+import java.util.*;
 
 
 public class CommandServiceSshNative extends CommandService {
@@ -58,7 +50,7 @@ public class CommandServiceSshNative extends CommandService {
 			}
 		}
 	}
-		
+
 	public CommandServiceSshNative(String[] remoteHostNames, String username, File installedKeyFile) throws IOException{
 		super();
 		this.remoteHostNames = remoteHostNames;
@@ -104,9 +96,25 @@ public class CommandServiceSshNative extends CommandService {
 				commandOutputHolder.put(tryThisHost, null);
 			}
 			//Setup ssh with persistent connection reuse using the currently selected commandHost
-			String[] sshCmdPrefix = new String[] { "ssh", "-i", installedKeyFile.getAbsolutePath(), "-o", "StrictHostKeyChecking=No", "-o", "ControlMaster=auto", "-o", "ControlPath=~/.ssh/%r@%h:%p", "-o", "ControlPersist=1m", username+"@"+tryThisHost };
-			ArrayList<String> cmdList = new ArrayList<String>();
-			cmdList.addAll(Arrays.asList(sshCmdPrefix));
+
+			// CSV defaults to "StrictHostKeyChecking=No,ControlMaster=auto,ControlPath=~/.ssh/%r@%h:%p,ControlPersist=1m"
+			// CSV options are passed to ssh as -o options
+			// "-o", "StrictHostKeyChecking=No", "-o", "ControlMaster=auto", "-o", "ControlPath=~/.ssh/%r@%h:%p", "-o", "ControlPersist=1m"
+			String sshOptionsCSV = PropertyLoader.getProperty(PropertyLoader.cmdSrvcSshCmdOptionsCSV,PropertyLoader.cmdSrvcSshCmdOptionsCSV_default);
+			ArrayList<String> optionArgs = new ArrayList<>();
+			String[] options = sshOptionsCSV.split(",");
+			for (String option: options) {
+				optionArgs.add("-o");
+				optionArgs.add(option);
+			}
+
+			ArrayList<String> sshCmdPrefix = new ArrayList<>();
+			sshCmdPrefix.addAll(Arrays.asList("ssh", "-i", installedKeyFile.getAbsolutePath()));
+			sshCmdPrefix.addAll(optionArgs);
+			sshCmdPrefix.add(username+"@"+tryThisHost);
+
+			ArrayList<String> cmdList = new ArrayList<>(sshCmdPrefix);
+			cmdList.addAll(sshCmdPrefix);
 			cmdList.add(String.join(" ", Arrays.asList(commandStrings)));
 			String[] cmd = cmdList.toArray(new String[0]);
 			try {
