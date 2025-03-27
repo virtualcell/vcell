@@ -222,6 +222,23 @@ public FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOp
 	}
 }
 
+public FieldDataDBOperationResults copyFieldData(User user, User sourceOwner, String[] sourceFuncNames,
+												 String versionTypeName, String versionName) throws DataAccessException, ObjectNotFoundException {
+	try {
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.fieldDataDBOperation opType=COPY");
+		return dbTop.fieldDataCopy(user, sourceOwner, sourceFuncNames, versionTypeName, versionName, true);
+	} catch (SQLException e) {
+		lg.error(e.getMessage(),e);
+		throw new DataAccessException(e.getMessage());
+	} catch (ObjectNotFoundException e) {
+		lg.error(e.getMessage(),e);
+		throw new ObjectNotFoundException(e.getMessage());
+	} catch (Throwable e) {
+		lg.error(e.getMessage(),e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
 
 /**
  * delete method comment.

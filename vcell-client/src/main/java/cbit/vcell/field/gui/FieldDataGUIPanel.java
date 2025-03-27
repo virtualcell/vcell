@@ -625,9 +625,6 @@ public class FieldDataGUIPanel extends JPanel {
                 throw new Exception("Can't copy 'running' simulation data from sim '" + simInfo.getName() + "'");
             }
 
-            final FieldDataFileOperationSpec fdos = FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(null,
-                    (simInfo.getParentSimulationReference() != null ? simInfo.getParentSimulationReference() : simInfo.getSimulationVersion().getVersionKey()),
-                    simInfo.getOwner(), simInfoHolder.getJobIndex(), clientRequestManager.getDocumentManager().getUser());
 
             AsynchClientTask[] taskArray = new AsynchClientTask[1];
 

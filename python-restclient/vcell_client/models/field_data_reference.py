@@ -33,10 +33,10 @@ class FieldDataReference(BaseModel):
     """
     FieldDataReference
     """ # noqa: E501
-    external_data_identifier: Optional[ExternalDataIdentifier] = Field(default=None, alias="externalDataIdentifier")
-    external_data_annotation: Optional[StrictStr] = Field(default=None, alias="externalDataAnnotation")
-    external_data_id_sim_refs: Optional[List[KeyValue]] = Field(default=None, alias="externalDataIDSimRefs")
-    __properties: ClassVar[List[str]] = ["externalDataIdentifier", "externalDataAnnotation", "externalDataIDSimRefs"]
+    field_data_id: Optional[ExternalDataIdentifier] = Field(default=None, alias="fieldDataID")
+    annotation: Optional[StrictStr] = None
+    simulations_referencing_this_id: Optional[List[KeyValue]] = Field(default=None, alias="simulationsReferencingThisID")
+    __properties: ClassVar[List[str]] = ["fieldDataID", "annotation", "simulationsReferencingThisID"]
 
     model_config = {
         "populate_by_name": True,
@@ -74,16 +74,16 @@ class FieldDataReference(BaseModel):
             },
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of external_data_identifier
-        if self.external_data_identifier:
-            _dict['externalDataIdentifier'] = self.external_data_identifier.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of each item in external_data_id_sim_refs (list)
+        # override the default output from pydantic by calling `to_dict()` of field_data_id
+        if self.field_data_id:
+            _dict['fieldDataID'] = self.field_data_id.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of each item in simulations_referencing_this_id (list)
         _items = []
-        if self.external_data_id_sim_refs:
-            for _item in self.external_data_id_sim_refs:
+        if self.simulations_referencing_this_id:
+            for _item in self.simulations_referencing_this_id:
                 if _item:
                     _items.append(_item.to_dict())
-            _dict['externalDataIDSimRefs'] = _items
+            _dict['simulationsReferencingThisID'] = _items
         return _dict
 
     @classmethod
@@ -101,9 +101,9 @@ class FieldDataReference(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in FieldDataReference) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "externalDataIdentifier": ExternalDataIdentifier.from_dict(obj.get("externalDataIdentifier")) if obj.get("externalDataIdentifier") is not None else None,
-            "externalDataAnnotation": obj.get("externalDataAnnotation"),
-            "externalDataIDSimRefs": [KeyValue.from_dict(_item) for _item in obj.get("externalDataIDSimRefs")] if obj.get("externalDataIDSimRefs") is not None else None
+            "fieldDataID": ExternalDataIdentifier.from_dict(obj.get("fieldDataID")) if obj.get("fieldDataID") is not None else None,
+            "annotation": obj.get("annotation"),
+            "simulationsReferencingThisID": [KeyValue.from_dict(_item) for _item in obj.get("simulationsReferencingThisID")] if obj.get("simulationsReferencingThisID") is not None else None
         })
         return _obj
 

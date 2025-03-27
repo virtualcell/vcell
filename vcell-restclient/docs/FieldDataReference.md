@@ -7,9 +7,9 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**externalDataIdentifier** | [**ExternalDataIdentifier**](ExternalDataIdentifier.md) |  |  [optional] |
-|**externalDataAnnotation** | **String** |  |  [optional] |
-|**externalDataIDSimRefs** | [**List&lt;KeyValue&gt;**](KeyValue.md) |  |  [optional] |
+|**fieldDataID** | [**ExternalDataIdentifier**](ExternalDataIdentifier.md) |  |  [optional] |
+|**annotation** | **String** |  |  [optional] |
+|**simulationsReferencingThisID** | [**List&lt;KeyValue&gt;**](KeyValue.md) |  |  [optional] |
 
 
 

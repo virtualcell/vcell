@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.message.server.bootstrap.client;
+import java.util.Hashtable;
 import java.util.TreeMap;
 
 import org.vcell.util.BigString;
@@ -57,6 +58,11 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 
 	@Override
 	public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {
+		throw new UnsupportedOperationException("Not supported on RPC");
+	}
+
+	@Override
+	public Hashtable<String, ExternalDataIdentifier> copyModelsFieldData(String modelKey, VersionableType modelType) {
 		throw new UnsupportedOperationException("Not supported on RPC");
 	}
 
