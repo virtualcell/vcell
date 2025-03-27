@@ -137,6 +137,53 @@ public class SlurmProxyTest {
 		return slurmProxy.createJobScriptText(JOB_NAME, commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
 	}
 
+	public String createScriptForNativeSolversBatch(String simTaskResourcePath, String[] command, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
+
+		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource(simTaskResourcePath));
+		KeyValue simKey = simTask.getSimKey();
+
+		SlurmProxy slurmProxy = new SlurmProxy(null, "vcell");
+		File subFileExternal = new File("/share/apps/vcell3/htclogs/V_REL_"+simKey+"_0_0.slurm.sub");
+
+		User simOwner = simTask.getSimulation().getVersion().getOwner();
+		final int jobId = simTask.getSimulationJob().getJobIndex();
+
+		// preprocessor
+		String simTaskFilePathExternal = "/share/apps/vcell3/users/schaff/SimID_"+simKey+"_0__0.simtask.xml";
+		File primaryUserDirExternal = new File("/share/apps/vcell3/users/schaff");
+		List<String> args = new ArrayList<>( 4 );
+		args.add( PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor) );
+		args.add( simTaskFilePathExternal );
+		args.add( primaryUserDirExternal.getAbsolutePath() );
+		ExecutableCommand preprocessorCmd = new ExecutableCommand(null, false, false,args);
+
+		ExecutableCommand.LibraryPath libraryPath = new ExecutableCommand.LibraryPath("/usr/local/app/localsolvers/linux64");
+		final ExecutableCommand solverCmd = new ExecutableCommand(libraryPath, command);
+
+		// postprocessor
+		final String SOLVER_EXIT_CODE_REPLACE_STRING = "SOLVER_EXIT_CODE_REPLACE_STRING";
+		ExecutableCommand postprocessorCmd = new ExecutableCommand(null,false, false,
+				PropertyLoader.getRequiredProperty(PropertyLoader.simulationPostprocessor),
+				simKey.toString(),
+				simOwner.getName(),
+				simOwner.getID().toString(),
+				Integer.toString(jobId),
+				Integer.toString(simTask.getTaskID()),
+				SOLVER_EXIT_CODE_REPLACE_STRING,
+				subFileExternal.getAbsolutePath());
+		postprocessorCmd.setExitCodeToken(SOLVER_EXIT_CODE_REPLACE_STRING);
+
+		ExecutableCommand.Container commandSet = new ExecutableCommand.Container();
+		commandSet.add(preprocessorCmd);
+		commandSet.add(solverCmd);
+		commandSet.add(postprocessorCmd);
+
+		int NUM_CPUs = 1;
+		int MEM_SIZE_MB = 1000;
+		ArrayList<PortableCommand> postProcessingCommands = new ArrayList<>();
+		return slurmProxy.createJobScriptTextBatch(JOB_NAME, commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
+	}
+
 	public String createScriptForJavaSolvers(String simTaskResourcePath, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
 
 		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource(simTaskResourcePath));
@@ -253,6 +300,24 @@ public class SlurmProxyTest {
 		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/V_REL_274672135_0_0.slurm.sub");
 		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
 	}
+
+	@Test
+	public void testSimJobScriptLangevinBatch() throws IOException, XmlParseException, ExpressionException {
+		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_274672135_0__0.simtask.xml";
+		String JOB_NAME = "V_REL_274672135_0_0";
+
+		String executable = "/usr/local/app/localsolvers/linux64/langevin_x64";
+		String outputLog = "/share/apps/vcell3/users/schaff/SimID_274672135_0_.log";
+		String messagingConfig = "/share/apps/vcell3/users/schaff/SimID_274672135_0_.langevinMessagingConfig";
+		String inputFilePath = "/share/apps/vcell3/users/schaff/SimID_274672135_0_.langevinInput";
+		String[] command = new String[] { executable, "simulate", "--output-log="+outputLog,
+				"--vc-send-status-config="+messagingConfig, inputFilePath, "0", "-tid", "0" };
+
+		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, command, JOB_NAME);
+		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/V_REL_274672135_0_0.slurm.sub");
+		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
+	}
+
 
 	@Test
 	public void testSimJobScriptNFsim() throws IOException, XmlParseException, ExpressionException {
