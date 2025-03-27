@@ -45,20 +45,23 @@ public class FieldDataFileConversion {
         int numXYZ = imagedataSets[0].getSizeZ() * numXY;
         fdos.variableTypes = new VariableType[imagedataSets.length];
         fdos.varNames = new String[imagedataSets.length];
-        short[][][] shortData = new short[(saveOnlyThisTimePointIndex != null ? 1
-                : imagedataSets[0].getSizeT())][imagedataSets.length][numXYZ];
+        int timeSize = saveOnlyThisTimePointIndex != null ? 1 : imagedataSets[0].getSizeT();
+        short[][][] shortData = new short[timeSize][imagedataSets.length][numXYZ];
+        // For Channel
         for (int c = 0; c < imagedataSets.length; c += 1) {
             fdos.variableTypes[c] = VariableType.VOLUME;
             fdos.varNames[c] = "Channel" + c;
+            // For Time
             for (int t = 0; t < imagedataSets[c].getSizeT(); t += 1) {
                 if (saveOnlyThisTimePointIndex != null && saveOnlyThisTimePointIndex.intValue() != t) {
                     continue;
                 }
                 int zOffset = 0;
+                // For z-slice
                 for (int z = 0; z < imagedataSets[c].getSizeZ(); z += 1) {
                     UShortImage ushortImage = imagedataSets[c].getImage(z, 0, t);
-                    System.arraycopy(ushortImage.getPixels(), 0,
-                            shortData[(saveOnlyThisTimePointIndex != null ? 0 : t)][c], zOffset, numXY);
+                    short[] dest = shortData[(saveOnlyThisTimePointIndex != null ? 0 : t)][c];
+                    System.arraycopy(ushortImage.getPixels(), 0, dest, zOffset, numXY);
 //				shortData[t][c] = ushortImage.getPixels();
                     zOffset += numXY;
                 }

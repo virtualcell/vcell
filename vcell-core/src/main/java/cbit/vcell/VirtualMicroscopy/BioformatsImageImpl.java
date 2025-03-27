@@ -20,10 +20,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 import java.awt.image.IndexColorModel;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -82,10 +79,6 @@ public class BioformatsImageImpl implements ImageDatasetReader {
         return imageReader;
     }
 
-    public ImageDataset readImageDataset(String imageID) throws Exception {
-        return readImageDatasetChannels(imageID,true,null,null)[0];
-    }
-
     private ImageDataset[] readZipFile(String imageID,boolean bAll,boolean bMergeChannels,ISize resize) throws Exception{
         ZipFile zipFile = new ZipFile(new File(imageID),ZipFile.OPEN_READ);
         Vector<Vector<ImageDataset>> imageDataForEachChannelV = new Vector<Vector<ImageDataset>>();
@@ -111,19 +104,12 @@ public class BioformatsImageImpl implements ImageDatasetReader {
             File tempImageFile = File.createTempFile("ImgDataSetReader", imageFileSuffix);
             tempImageFile.deleteOnExit();
             FileOutputStream fos = new FileOutputStream(tempImageFile,false);
-            byte[] buffer = new byte[50000];
-            while (true){
-                int bytesRead = zipInputStream.read(buffer);
-                if (bytesRead==-1){
-                    break;
-                }
-                fos.write(buffer, 0, bytesRead);
-            }
+            fos.write(zipInputStream.readAllBytes());
             fos.close();
             zipInputStream.close();
             ImageDataset[] imageDatasetChannels = null;
             try {
-                imageDatasetChannels = readImageDatasetChannels(tempImageFile.getAbsolutePath(),bMergeChannels,null,resize);
+                imageDatasetChannels = readImageDatasetChannelsAlgo(tempImageFile.getAbsolutePath(),bMergeChannels,null,resize);
             } catch (UnknownFormatException ufe) {
                 //we check the exception, rather than testing a priori, because this is a rare use case
                 if (HiddenNonImageFile.isHidden(entryName)) {
@@ -174,7 +160,7 @@ public class BioformatsImageImpl implements ImageDatasetReader {
 
     @Override
     public ImageDataset readImageDataset(String imageID, ClientTaskStatusSupport status) throws Exception {
-        var imageDataset = readImageDataset(imageID);
+        var imageDataset = readImageDatasetChannelsAlgo(imageID,true,null,null)[0];
         if (status != null){
             status.setProgress(100);
         }else{
@@ -185,7 +171,13 @@ public class BioformatsImageImpl implements ImageDatasetReader {
 
     @Override
     public ImageDataset[] readImageDatasetChannels(String imageID, ClientTaskStatusSupport status, boolean bMergeChannels, Integer timeIndex, ISize resize) throws Exception {
-        var imageDatasets = readImageDatasetChannels(imageID, bMergeChannels, timeIndex, resize);
+        ImageDataset[] imageDatasets;
+        if (imageID.toUpperCase().endsWith(".ZIP")){
+            imageDatasets = readZipFile(imageID, true, bMergeChannels,resize);
+        } else{
+            imageDatasets = readImageDatasetChannelsAlgo(imageID, bMergeChannels, timeIndex, resize);
+        }
+        System.gc();
         if (status != null){
             status.setProgress(100);
         }else{
@@ -194,6 +186,7 @@ public class BioformatsImageImpl implements ImageDatasetReader {
         return imageDatasets;
     }
 
+    // Direct call to this function
     @Override
     public ImageDataset readImageDatasetFromMultiFiles(File[] files, ClientTaskStatusSupport status, boolean isTimeSeries, double timeInterval) throws Exception {
         var imageDataset = readImageDatasetFromMultiFiles(files, isTimeSeries, timeInterval);
@@ -259,126 +252,33 @@ public class BioformatsImageImpl implements ImageDatasetReader {
         return new DomainInfo(iSize, extent,origin);
     }
 
-    public ImageDataset[] readImageDatasetChannels(String imageID, boolean bMergeChannels,Integer timeIndex,ISize resize) throws Exception {
-        if (imageID.toUpperCase().endsWith(".ZIP")){
-            return readZipFile(imageID, true, bMergeChannels,resize);
-        }
-
+    // Get an image, read its different channels, and return each channel as an Image Data set that has been read
+    public ImageDataset[] readImageDatasetChannelsAlgo(String imageID, boolean bMergeChannels, Integer timeIndex, ISize resize) throws Exception {
         ImageReader imageReader = getImageReader(imageID);
-        if(BIO_FORMATS_DEBUG){
-            printInfo(imageReader);
-        }
         DomainInfo domainInfo = getDomainInfo(imageReader);
         IFormatReader formatReader = imageReader.getReader(imageID);
-
-        boolean bUnsigned = formatReader.getPixelType()==1 || formatReader.getPixelType()==3 || formatReader.getPixelType()==5;
         if(BIO_FORMATS_DEBUG){
-            //BIOFormats Image API documentation
-            //42 - image width (getSizeX())
-            //43 - image height (getSizeY())
-            //44 - number of series per file (getSeriesCount())
-            //45 - total number of images per series (getImageCount())
-            //46 - number of slices in the current series (getSizeZ())
-            //47 - number of timepoints in the current series (getSizeT())
-            //48 - number of actual channels in the current series (getSizeC())
-            //49 - number of channels per image (getRGBChannelCount())
-            //50 - the ordering of the images within the current series (getDimensionOrder())
-            //51 - whether each image is RGB (isRGB())
-            //52 - whether the pixel bytes are in little-endian order (isLittleEndian())
-            //53 - whether the channels in an image are interleaved (isInterleaved())
-            //54 - the type of pixel data in this file (getPixelType())
-            System.out.println("image Info from imageReader("+
-                    "file="+imageID+","+
-                    "x="+formatReader.getSizeX()+","+
-                    "y="+formatReader.getSizeY()+","+
-                    "z="+formatReader.getSizeZ()+","+
-                    "c="+formatReader.getSizeC()+","+
-                    "effective c="+formatReader.getEffectiveSizeC()+","+//how to interpret rgbChannelCount
-//				  /**
-//				   * Gets the effective size of the C dimension, guaranteeing that
-//				   * getEffectiveSizeC() * getSizeZ() * getSizeT() == getImageCount()
-//				   * regardless of the result of isRGB().
-//				   */
-//				  int getEffectiveSizeC();
-                    "t="+formatReader.getSizeT()+","+
-                    "seriesCnt="+formatReader.getSeriesCount()+","+
-                    "imageCnt="+formatReader.getImageCount()+","+
-                    "isRGB="+formatReader.isRGB()+","+
-                    "RGBChannelCnt="+formatReader.getRGBChannelCount()+","+
-                    "dimOrder="+formatReader.getDimensionOrder()+","+
-                    "littleEndian="+formatReader.isLittleEndian()+","+
-                    "isInterleave="+formatReader.isInterleaved()+","+
-                    "pixelType="+formatReader.getPixelType()+" ("+FormatTools.getPixelTypeString(formatReader.getPixelType())+")"+
-                    "unsigedPixelType="+bUnsigned+")"+
-                    ")");
+            printInfo(imageReader, imageID, formatReader);
         }
         try{
-            UShortImage[][] ushortImageCTZArr = new UShortImage[(bMergeChannels?1:formatReader.getRGBChannelCount()*formatReader.getEffectiveSizeC())][(timeIndex==null?formatReader.getSizeT()*formatReader.getSizeZ():formatReader.getSizeZ())];
+            int channelRGBSize = bMergeChannels ? 1 : formatReader.getRGBChannelCount()*formatReader.getEffectiveSizeC();
+            int tzSize = timeIndex == null? formatReader.getSizeT()*formatReader.getSizeZ() : formatReader.getSizeZ();
+            UShortImage[][] ushortImageCTZArr = new UShortImage[channelRGBSize][tzSize];
             int tzIndex = 0;
-            int tzcCounter = 0;
-            for (int tndx = (timeIndex==null?0:timeIndex); tndx <= (timeIndex==null?formatReader.getSizeT()-1:timeIndex); tndx++) {
-                for (int zndx = 0; zndx < formatReader.getSizeZ(); zndx++) {
-                    BufferedImage[] bufImgChannels = new BufferedImage[formatReader.getRGBChannelCount()];
-                    short[] mergePixels = (bMergeChannels?new short[(resize==null?domainInfo.getiSize().getX():resize.getX())*(resize==null?domainInfo.getiSize().getY():resize.getY())]:null);
-                    int chanIndex = 0;
-                    for (int cndx = 0; cndx < formatReader.getEffectiveSizeC(); cndx++) {
-                        if(tzcCounter > 0) {
-                            logger.info("T="+tndx+" Z="+zndx+" C="+cndx);
-                        }
-                        tzcCounter++;
-                        int index = formatReader.getIndex(zndx, cndx, tndx);
-                        byte[] imgPlaneBytes = formatReader.openBytes(index);
-                        ByteBuffer bb = ByteBuffer.wrap(imgPlaneBytes);
-                        short[][] shorts = new short[formatReader.getRGBChannelCount()][formatReader.getSizeX()*formatReader.getSizeY()];
-                        bb.order((formatReader.isLittleEndian()?ByteOrder.LITTLE_ENDIAN:ByteOrder.BIG_ENDIAN));
-                        boolean bInterleave = formatReader.isInterleaved();
-                        int indexer = 0;
-                        for (int channels = 0; channels < formatReader.getRGBChannelCount(); channels++) {
-                            short processed = 0;
-                            for (int i = 0; i < shorts[channels].length; i++) {
-                                if(formatReader.getBitsPerPixel() == 8) {
-                                    processed = (short)(0x00FF&bb.get());
-                                }else if(formatReader.getBitsPerPixel() == 16) {
-                                    processed = bb.getShort();
-                                }else if(formatReader.getPixelType() == FormatTools.UINT32) {
-                                    processed = (short)(bb.getInt());
-                                }else if(formatReader.getPixelType() == FormatTools.FLOAT) {
-                                    processed = (short)(bb.getFloat()*65535);
-                                }else if(formatReader.getPixelType() == FormatTools.DOUBLE) {
-                                    processed = (short)(bb.getDouble()*65535);
-                                }else {
-                                    throw new Exception("Expecting bitsPerPixel to be 8 or 16 but got "+formatReader.getBitsPerPixel());
-                                }
-                                shorts[(bInterleave?indexer%formatReader.getRGBChannelCount():channels)][(bInterleave?(int)(indexer/formatReader.getRGBChannelCount()):i)] = processed;
-//								System.out.println((indexer%formatReader.getRGBChannelCount())+" "+((int)(indexer/formatReader.getRGBChannelCount()))+" "+processed);
-                                indexer++;
-                            }
-                        }
-                        for (int channels = 0; channels < formatReader.getRGBChannelCount(); channels++) {
-                            bufImgChannels[channels] = AWTImageTools.makeImage(shorts[channels], formatReader.getSizeX(), formatReader.getSizeY(), false);
-                            if(resize != null){
-                                double scaleFactor = (double)resize.getX()/(double)formatReader.getSizeX();
-                                AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance(scaleFactor,scaleFactor);
-                                AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform, (bufImgChannels[0].getColorModel() instanceof IndexColorModel?AffineTransformOp.TYPE_NEAREST_NEIGHBOR:AffineTransformOp.TYPE_BILINEAR));
-                                BufferedImage scaledImage = new BufferedImage(resize.getX(),resize.getY(),bufImgChannels[channels].getType());
-                                bufImgChannels[channels] = scaleAffineTransformOp.filter( bufImgChannels[channels], scaledImage);
-                            }
-                            if(!bMergeChannels) {
-                                ushortImageCTZArr[chanIndex][tzIndex] =
-                                        new UShortImage(AWTImageTools.getShorts(bufImgChannels[channels])[0],domainInfo.getOrigin(),domainInfo.getExtent(),
-                                                (resize==null?domainInfo.getiSize().getX():resize.getX()),
-                                                (resize==null?domainInfo.getiSize().getY():resize.getY()),
-                                                1);
-                            }else {
-                                short[] chanshorts = AWTImageTools.getShorts(bufImgChannels[channels])[0];
-                                for (int i = 0; i < mergePixels.length; i++) {
-                                    mergePixels[i] = (short)Math.max(mergePixels[i], chanshorts[i]);
+            int startTime = timeIndex==null ? 0 : timeIndex;
+            int endTime = timeIndex==null ? formatReader.getSizeT() -1 : timeIndex;
+            short[][] shorts = new short[formatReader.getRGBChannelCount()][formatReader.getSizeX()*formatReader.getSizeY()];
 
-                                }
-                            }
-                            chanIndex++;
-                        }
+
+            for (int tndx = startTime; tndx <= endTime; tndx++) {
+                for (int zndx = 0; zndx < formatReader.getSizeZ(); zndx++) {
+                    int resized = resize == null ? (domainInfo.getiSize().getX() * domainInfo.getiSize().getY()) : (resize.getX() * resize.getY());
+                    short[] mergePixels = (bMergeChannels ? new short[resized] : null);
+                    for (int cndx = 0; cndx < formatReader.getEffectiveSizeC(); cndx++) {
+                        channelAnalysis(new BufferedImageReader(imageReader), tndx, zndx, cndx, bMergeChannels, resize, domainInfo,
+                                ushortImageCTZArr, mergePixels, tzIndex, shorts);
                     }
+
                     if(bMergeChannels) {
                         ushortImageCTZArr[0][tzIndex] =
                                 new UShortImage(mergePixels,domainInfo.getOrigin(),domainInfo.getExtent(),
@@ -409,69 +309,11 @@ public class BioformatsImageImpl implements ImageDatasetReader {
             }
             return imageDataset;
         }finally{
+            // after each image, release the buffers created
             if(formatReader != null){
                 formatReader.close();
             }
         }
-    }
-
-    private void printInfo(ImageReader imageReader){
-        MetadataRetrieve meta = (MetadataRetrieve)imageReader.getMetadataStore();
-        System.out.println("from Metadata Store("+
-                meta.getPixelsSizeX(0).getValue()+","+
-                meta.getPixelsSizeY(0).getValue()+","+
-                meta.getPixelsSizeZ(0).getValue()+","+
-                meta.getPixelsSizeC(0).getValue()+","+
-                meta.getPixelsSizeT(0).getValue()+")");
-
-        int ii = 0;
-        System.out.println("creationDate: "+meta.getImageAcquisitionDate(ii));
-        System.out.println("description: "+meta.getImageDescription(ii));
-        System.out.println("dimension order: "+meta.getPixelsDimensionOrder(ii));
-        System.out.println("image name: "+meta.getImageName(ii));
-        System.out.println("pixel type: "+meta.getPixelsType(ii));
-        try{
-            System.out.println("stage name: "+meta.getStageLabelName(ii));
-            System.out.println("stage X: "+meta.getStageLabelX(ii));
-            System.out.println("stage Y: "+meta.getStageLabelY(ii));
-            System.out.println("stage Z: "+meta.getStageLabelZ(ii));
-        }catch(Exception e) {
-            logger.error(e.getMessage(), e);
-        }
-        System.out.println("big endian: "+meta.getPixelsBinDataBigEndian(ii, ii));
-        System.out.println("pixel size X: "+meta.getPixelsPhysicalSizeX(ii));
-        System.out.println("pixel size Y: "+meta.getPixelsPhysicalSizeY(ii));
-        System.out.println("pixel size Z: "+meta.getPixelsPhysicalSizeZ(ii));
-        if (meta.getPixelsPhysicalSizeX(0)!=null){
-            System.out.println("   image Size X: "+(meta.getPixelsSizeX(ii).getValue()*um(meta.getPixelsPhysicalSizeX(0)).doubleValue())+" microns");
-        }
-        if (meta.getPixelsPhysicalSizeY(0)!=null){
-            System.out.println("   image Size Y: "+(meta.getPixelsSizeY(ii).getValue()*um(meta.getPixelsPhysicalSizeY(0)).doubleValue())+" microns");
-        }
-        System.out.println("size X: "+meta.getPixelsSizeX(ii).getValue());
-        System.out.println("size Y: "+meta.getPixelsSizeY(ii).getValue());
-        System.out.println("size Z: "+meta.getPixelsSizeZ(ii).getValue());
-        System.out.println("size C: "+meta.getPixelsSizeC(ii).getValue());
-        System.out.println("size T: "+meta.getPixelsSizeT(ii).getValue());
-
-        for (int i=0; i<imageReader.getSeriesCount(); i++) {
-            imageReader.setSeries(i);
-
-            System.out.println("image size from imageReader("+
-                    imageReader.getSizeX()+","+
-                    imageReader.getSizeY()+","+
-                    imageReader.getSizeZ()+","+
-                    imageReader.getSizeC()+","+
-                    imageReader.getSizeT()+")");
-            System.out.println("image size from Metadata Store("+
-                    meta.getPixelsSizeX(i).getValue()+","+
-                    meta.getPixelsSizeY(i).getValue()+","+
-                    meta.getPixelsSizeZ(i).getValue()+","+
-                    meta.getPixelsSizeC(i).getValue()+","+
-                    meta.getPixelsSizeT(i).getValue()+")");
-
-        }
-
     }
 
 
@@ -493,6 +335,77 @@ public class BioformatsImageImpl implements ImageDatasetReader {
 //	      }
 //	    }
 //	  }
+
+    private void channelAnalysis(IFormatReader formatReader, int tndx, int zndx, int cndx,
+                                 boolean bMergeChannels, ISize resize, DomainInfo domainInfo,
+                                 UShortImage[][] ushortImageCTZArr, short[] mergePixels, int tzIndex,
+                                 short[][] shorts) throws Exception {
+        // Channel variables
+
+            logger.info("T={} Z={} C={}", tndx, zndx, cndx);
+
+            int index = formatReader.getIndex(zndx, cndx, tndx);
+
+            byte[] bytes = formatReader.openBytes(index);
+            ByteBuffer bb = ByteBuffer.wrap(formatReader.openBytes(index));
+            bb.order((formatReader.isLittleEndian()?ByteOrder.LITTLE_ENDIAN:ByteOrder.BIG_ENDIAN));
+
+            boolean bInterleave = formatReader.isInterleaved();
+            int indexer = 0;
+            // Channel RGB
+            for (int channels = 0; channels < formatReader.getRGBChannelCount(); channels++) {
+                short processed = 0;
+                for (int i = 0; i < shorts[channels].length; i++) {
+
+                    if(formatReader.getBitsPerPixel() == 8) {
+                        processed = (short)(0x00FF&bb.get());
+                    }else if(formatReader.getBitsPerPixel() == 16) {
+                        processed = bb.getShort();
+                    }else if(formatReader.getPixelType() == FormatTools.UINT32) {
+                        processed = (short)(bb.getInt());
+                    }else if(formatReader.getPixelType() == FormatTools.FLOAT) {
+                        processed = (short)(bb.getFloat()*65535);
+                    }else if(formatReader.getPixelType() == FormatTools.DOUBLE) {
+                        processed = (short)(bb.getDouble()*65535);
+                    }else {
+                        throw new Exception("Expecting bitsPerPixel to be 8 or 16 but got "+formatReader.getBitsPerPixel());
+                    }
+                    int rgbChannelIndex = (bInterleave?indexer%formatReader.getRGBChannelCount():channels);
+                    int xyIndex = (bInterleave?(int)(indexer/formatReader.getRGBChannelCount()):i);
+                    shorts[rgbChannelIndex][xyIndex] = processed;
+//								System.out.println((indexer%formatReader.getRGBChannelCount())+" "+((int)(indexer/formatReader.getRGBChannelCount()))+" "+processed);
+                    indexer++;
+                }
+            }
+
+            // Channel RGB
+        int chanIndex = 0;
+        for (int channels = 0; channels < formatReader.getRGBChannelCount(); channels++) {
+                BufferedImage[] bufImgChannels = new BufferedImage[formatReader.getRGBChannelCount()];
+                bufImgChannels[channels] = AWTImageTools.makeImage(shorts[channels], formatReader.getSizeX(), formatReader.getSizeY(), false);
+                if(resize != null){
+                    double scaleFactor = (double)resize.getX()/(double)formatReader.getSizeX();
+                    AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance(scaleFactor,scaleFactor);
+                    AffineTransformOp scaleAffineTransformOp = new AffineTransformOp( scaleAffineTransform, (bufImgChannels[0].getColorModel() instanceof IndexColorModel?AffineTransformOp.TYPE_NEAREST_NEIGHBOR:AffineTransformOp.TYPE_BILINEAR));
+                    BufferedImage scaledImage = new BufferedImage(resize.getX(),resize.getY(),bufImgChannels[channels].getType());
+                    bufImgChannels[channels] = scaleAffineTransformOp.filter( bufImgChannels[channels], scaledImage);
+                }
+                if(!bMergeChannels) {
+                    ushortImageCTZArr[chanIndex][tzIndex] =
+                            new UShortImage(AWTImageTools.getShorts(bufImgChannels[channels])[0],domainInfo.getOrigin(),domainInfo.getExtent(),
+                                    (resize==null?domainInfo.getiSize().getX():resize.getX()),
+                                    (resize==null?domainInfo.getiSize().getY():resize.getY()),
+                                    1);
+                }else {
+                    short[] chanshorts = AWTImageTools.getShorts(bufImgChannels[channels])[0];
+                    for (int i = 0; i < mergePixels.length; i++) {
+                        mergePixels[i] = (short)Math.max(mergePixels[i], chanshorts[i]);
+
+                    }
+                }
+                chanIndex++;
+            }
+    }
 
     private Time[] getTimes(ImageReader imageReader){
         MetadataRetrieve meta = (MetadataRetrieve)imageReader.getMetadataStore();
@@ -681,6 +594,104 @@ public class BioformatsImageImpl implements ImageDatasetReader {
         }
         return new ImageDataset(ushortImages,argImageDatasets[0].getImageTimeStamps(),ushortImages.length);
     }
+
+    private void printInfo(ImageReader imageReader, String imageID, IFormatReader formatReader){
+        MetadataRetrieve meta = (MetadataRetrieve)imageReader.getMetadataStore();
+        System.out.println("from Metadata Store("+
+                meta.getPixelsSizeX(0).getValue()+","+
+                meta.getPixelsSizeY(0).getValue()+","+
+                meta.getPixelsSizeZ(0).getValue()+","+
+                meta.getPixelsSizeC(0).getValue()+","+
+                meta.getPixelsSizeT(0).getValue()+")");
+
+        int ii = 0;
+        System.out.println("creationDate: "+meta.getImageAcquisitionDate(ii));
+        System.out.println("description: "+meta.getImageDescription(ii));
+        System.out.println("dimension order: "+meta.getPixelsDimensionOrder(ii));
+        System.out.println("image name: "+meta.getImageName(ii));
+        System.out.println("pixel type: "+meta.getPixelsType(ii));
+        try{
+            System.out.println("stage name: "+meta.getStageLabelName(ii));
+            System.out.println("stage X: "+meta.getStageLabelX(ii));
+            System.out.println("stage Y: "+meta.getStageLabelY(ii));
+            System.out.println("stage Z: "+meta.getStageLabelZ(ii));
+        }catch(Exception e) {
+            logger.error(e.getMessage(), e);
+        }
+        System.out.println("big endian: "+meta.getPixelsBinDataBigEndian(ii, ii));
+        System.out.println("pixel size X: "+meta.getPixelsPhysicalSizeX(ii));
+        System.out.println("pixel size Y: "+meta.getPixelsPhysicalSizeY(ii));
+        System.out.println("pixel size Z: "+meta.getPixelsPhysicalSizeZ(ii));
+        if (meta.getPixelsPhysicalSizeX(0)!=null){
+            System.out.println("   image Size X: "+(meta.getPixelsSizeX(ii).getValue()*um(meta.getPixelsPhysicalSizeX(0)).doubleValue())+" microns");
+        }
+        if (meta.getPixelsPhysicalSizeY(0)!=null){
+            System.out.println("   image Size Y: "+(meta.getPixelsSizeY(ii).getValue()*um(meta.getPixelsPhysicalSizeY(0)).doubleValue())+" microns");
+        }
+        System.out.println("size X: "+meta.getPixelsSizeX(ii).getValue());
+        System.out.println("size Y: "+meta.getPixelsSizeY(ii).getValue());
+        System.out.println("size Z: "+meta.getPixelsSizeZ(ii).getValue());
+        System.out.println("size C: "+meta.getPixelsSizeC(ii).getValue());
+        System.out.println("size T: "+meta.getPixelsSizeT(ii).getValue());
+
+        for (int i=0; i<imageReader.getSeriesCount(); i++) {
+            imageReader.setSeries(i);
+
+            System.out.println("image size from imageReader("+
+                    imageReader.getSizeX()+","+
+                    imageReader.getSizeY()+","+
+                    imageReader.getSizeZ()+","+
+                    imageReader.getSizeC()+","+
+                    imageReader.getSizeT()+")");
+            System.out.println("image size from Metadata Store("+
+                    meta.getPixelsSizeX(i).getValue()+","+
+                    meta.getPixelsSizeY(i).getValue()+","+
+                    meta.getPixelsSizeZ(i).getValue()+","+
+                    meta.getPixelsSizeC(i).getValue()+","+
+                    meta.getPixelsSizeT(i).getValue()+")");
+
+        }
+        boolean bUnsigned = formatReader.getPixelType()==1 || formatReader.getPixelType()==3 || formatReader.getPixelType()==5;
+        //BIOFormats Image API documentation
+        //42 - image width (getSizeX())
+        //43 - image height (getSizeY())
+        //44 - number of series per file (getSeriesCount())
+        //45 - total number of images per series (getImageCount())
+        //46 - number of slices in the current series (getSizeZ())
+        //47 - number of timepoints in the current series (getSizeT())
+        //48 - number of actual channels in the current series (getSizeC())
+        //49 - number of channels per image (getRGBChannelCount())
+        //50 - the ordering of the images within the current series (getDimensionOrder())
+        //51 - whether each image is RGB (isRGB())
+        //52 - whether the pixel bytes are in little-endian order (isLittleEndian())
+        //53 - whether the channels in an image are interleaved (isInterleaved())
+        //54 - the type of pixel data in this file (getPixelType())
+        System.out.println("image Info from imageReader("+
+                "file="+imageID+","+
+                "x="+formatReader.getSizeX()+","+
+                "y="+formatReader.getSizeY()+","+
+                "z="+formatReader.getSizeZ()+","+
+                "c="+formatReader.getSizeC()+","+
+                "effective c="+formatReader.getEffectiveSizeC()+","+//how to interpret rgbChannelCount
+//				  /**
+//				   * Gets the effective size of the C dimension, guaranteeing that
+//				   * getEffectiveSizeC() * getSizeZ() * getSizeT() == getImageCount()
+//				   * regardless of the result of isRGB().
+//				   */
+//				  int getEffectiveSizeC();
+                "t="+formatReader.getSizeT()+","+
+                "seriesCnt="+formatReader.getSeriesCount()+","+
+                "imageCnt="+formatReader.getImageCount()+","+
+                "isRGB="+formatReader.isRGB()+","+
+                "RGBChannelCnt="+formatReader.getRGBChannelCount()+","+
+                "dimOrder="+formatReader.getDimensionOrder()+","+
+                "littleEndian="+formatReader.isLittleEndian()+","+
+                "isInterleave="+formatReader.isInterleaved()+","+
+                "pixelType="+formatReader.getPixelType()+" ("+FormatTools.getPixelTypeString(formatReader.getPixelType())+")"+
+                "unsigedPixelType="+bUnsigned+")"+
+                ")");
+    }
+
 
 
 }
