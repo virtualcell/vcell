@@ -28,6 +28,7 @@ import java.util.Enumeration;
 import java.util.TreeMap;
 import java.util.Vector;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 
@@ -36,7 +37,7 @@ public class BioformatsImageImpl implements ImageDatasetReader {
 
     public static final boolean BIO_FORMATS_DEBUG = false;
 
-    public ImageSizeInfo getImageSizeInfo(String fileName, Integer forceZSize) throws Exception{
+    public ImageSizeInfo getImageSizeInfo(String fileName, Integer forceZSize) throws Exception {
         ImageSizeInfo imageSizeInfo = null;
         if(fileName.toUpperCase().endsWith(".ZIP")){
             if(forceZSize != null){
@@ -56,19 +57,25 @@ public class BioformatsImageImpl implements ImageDatasetReader {
             }
         }else{
             ImageReader imageReader = getImageReader(fileName);
-            DomainInfo domainInfo = getDomainInfo(imageReader);
-            ISize iSize = (forceZSize == null?domainInfo.getiSize():new ISize(domainInfo.getiSize().getX(), domainInfo.getiSize().getY(), forceZSize));
-            Time[] times = getTimes(imageReader);
-            double[] times_double = new double[times.length];
-            for (int i=0;i<times.length;i++){
-                times_double[i] = times[i].value().doubleValue();
-            }
-            imageSizeInfo = new ImageSizeInfo(fileName, iSize,imageReader.getSizeC(),times_double,0);
+            return getImageSizeInfo(imageReader, fileName, forceZSize);
         }
         return imageSizeInfo;
     }
 
-    private ImageReader getImageReader(String imageID) throws FormatException,IOException{
+    public ImageSizeInfo getImageSizeInfo(ImageReader imageReader, String fileName, Integer forceZSize) throws Exception{
+        ImageSizeInfo imageSizeInfo = null;
+        DomainInfo domainInfo = getDomainInfo(imageReader);
+        ISize iSize = (forceZSize == null?domainInfo.getiSize():new ISize(domainInfo.getiSize().getX(), domainInfo.getiSize().getY(), forceZSize));
+        Time[] times = getTimes(imageReader);
+        double[] times_double = new double[times.length];
+        for (int i=0;i<times.length;i++){
+            times_double[i] = times[i].value().doubleValue();
+        }
+        imageSizeInfo = new ImageSizeInfo(fileName, iSize,imageReader.getSizeC(),times_double,0);
+        return imageSizeInfo;
+    }
+
+    public ImageReader getImageReader(String imageID) throws FormatException,IOException{
         ImageReader imageReader = new ImageReader();
         imageReader.setNormalized(true);//normalize floats
 
@@ -198,7 +205,7 @@ public class BioformatsImageImpl implements ImageDatasetReader {
         return imageDataset;
     }
 
-    private static class DomainInfo{
+    public static class DomainInfo{
         private ISize iSize;
         private Extent extent;
         private Origin origin;
@@ -219,7 +226,7 @@ public class BioformatsImageImpl implements ImageDatasetReader {
         }
     }
 
-    private static DomainInfo getDomainInfo(ImageReader imageReader){
+    public static DomainInfo getDomainInfo(ImageReader imageReader){
         MetadataRetrieve metadataRetrieve = (MetadataRetrieve)imageReader.getMetadataStore();
         int sizeX = metadataRetrieve.getPixelsSizeX(0).getValue();
         int sizeY = metadataRetrieve.getPixelsSizeY(0).getValue();
