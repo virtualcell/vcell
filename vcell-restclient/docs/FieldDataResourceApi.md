@@ -4,14 +4,16 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**analyzeFile**](FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
-| [**analyzeFileWithHttpInfo**](FieldDataResourceApi.md#analyzeFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
-| [**copyModelsFieldData**](FieldDataResourceApi.md#copyModelsFieldData) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own. |
-| [**copyModelsFieldDataWithHttpInfo**](FieldDataResourceApi.md#copyModelsFieldDataWithHttpInfo) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own. |
-| [**createFromAnalyzedFile**](FieldDataResourceApi.md#createFromAnalyzedFile) | **POST** /api/v1/fieldData/createFromSpecification | Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults. |
-| [**createFromAnalyzedFileWithHttpInfo**](FieldDataResourceApi.md#createFromAnalyzedFileWithHttpInfo) | **POST** /api/v1/fieldData/createFromSpecification | Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults. |
-| [**createFromSimulation**](FieldDataResourceApi.md#createFromSimulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results. |
-| [**createFromSimulationWithHttpInfo**](FieldDataResourceApi.md#createFromSimulationWithHttpInfo) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results. |
+| [**analyzeFile**](FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores. |
+| [**analyzeFileWithHttpInfo**](FieldDataResourceApi.md#analyzeFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores. |
+| [**analyzeFileAndCreate**](FieldDataResourceApi.md#analyzeFileAndCreate) | **POST** /api/v1/fieldData/analyzeAndCreateFromFile | For advanced users who already understand the constraints of your field data and want to create it in one request. |
+| [**analyzeFileAndCreateWithHttpInfo**](FieldDataResourceApi.md#analyzeFileAndCreateWithHttpInfo) | **POST** /api/v1/fieldData/analyzeAndCreateFromFile | For advanced users who already understand the constraints of your field data and want to create it in one request. |
+| [**copyModelsFieldData**](FieldDataResourceApi.md#copyModelsFieldData) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel if not already owned. |
+| [**copyModelsFieldDataWithHttpInfo**](FieldDataResourceApi.md#copyModelsFieldDataWithHttpInfo) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel if not already owned. |
+| [**createFromAnalyzedFile**](FieldDataResourceApi.md#createFromAnalyzedFile) | **POST** /api/v1/fieldData/createFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server. |
+| [**createFromAnalyzedFileWithHttpInfo**](FieldDataResourceApi.md#createFromAnalyzedFileWithHttpInfo) | **POST** /api/v1/fieldData/createFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server. |
+| [**createFromSimulation**](FieldDataResourceApi.md#createFromSimulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from a simulation. |
+| [**createFromSimulationWithHttpInfo**](FieldDataResourceApi.md#createFromSimulationWithHttpInfo) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from a simulation. |
 | [**delete**](FieldDataResourceApi.md#delete) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data. |
 | [**deleteWithHttpInfo**](FieldDataResourceApi.md#deleteWithHttpInfo) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data. |
 | [**getAllIDs**](FieldDataResourceApi.md#getAllIDs) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data. |
@@ -144,6 +146,172 @@ public class Example {
 ### Return type
 
 ApiResponse<[**AnalyzedFile**](AnalyzedFile.md)>
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: multipart/form-data
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+
+
+## analyzeFileAndCreate
+
+> SavedResults analyzeFileAndCreate(_file, fileName, extent, iSize, channelNames, times, annotation, origin)
+
+For advanced users who already understand the constraints of your field data and want to create it in one request.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.FieldDataResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
+
+        FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
+        File _file = new File("/path/to/file"); // File | 
+        String fileName = "fileName_example"; // String | 
+        Extent extent = new Extent(); // Extent | 
+        ISize iSize = new ISize(); // ISize | 
+        List<String> channelNames = Arrays.asList(); // List<String> | 
+        List<Double> times = Arrays.asList(); // List<Double> | 
+        String annotation = "annotation_example"; // String | 
+        Origin origin = new Origin(); // Origin | 
+        try {
+            SavedResults result = apiInstance.analyzeFileAndCreate(_file, fileName, extent, iSize, channelNames, times, annotation, origin);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling FieldDataResourceApi#analyzeFileAndCreate");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **_file** | **File**|  | [optional] |
+| **fileName** | **String**|  | [optional] |
+| **extent** | [**Extent**](Extent.md)|  | [optional] |
+| **iSize** | [**ISize**](ISize.md)|  | [optional] |
+| **channelNames** | [**List&lt;String&gt;**](String.md)|  | [optional] |
+| **times** | [**List&lt;Double&gt;**](Double.md)|  | [optional] |
+| **annotation** | **String**|  | [optional] |
+| **origin** | [**Origin**](Origin.md)|  | [optional] |
+
+### Return type
+
+[**SavedResults**](SavedResults.md)
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: multipart/form-data
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+
+## analyzeFileAndCreateWithHttpInfo
+
+> ApiResponse<SavedResults> analyzeFileAndCreate analyzeFileAndCreateWithHttpInfo(_file, fileName, extent, iSize, channelNames, times, annotation, origin)
+
+For advanced users who already understand the constraints of your field data and want to create it in one request.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.FieldDataResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
+
+        FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
+        File _file = new File("/path/to/file"); // File | 
+        String fileName = "fileName_example"; // String | 
+        Extent extent = new Extent(); // Extent | 
+        ISize iSize = new ISize(); // ISize | 
+        List<String> channelNames = Arrays.asList(); // List<String> | 
+        List<Double> times = Arrays.asList(); // List<Double> | 
+        String annotation = "annotation_example"; // String | 
+        Origin origin = new Origin(); // Origin | 
+        try {
+            ApiResponse<SavedResults> response = apiInstance.analyzeFileAndCreateWithHttpInfo(_file, fileName, extent, iSize, channelNames, times, annotation, origin);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling FieldDataResourceApi#analyzeFileAndCreate");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **_file** | **File**|  | [optional] |
+| **fileName** | **String**|  | [optional] |
+| **extent** | [**Extent**](Extent.md)|  | [optional] |
+| **iSize** | [**ISize**](ISize.md)|  | [optional] |
+| **channelNames** | [**List&lt;String&gt;**](String.md)|  | [optional] |
+| **times** | [**List&lt;Double&gt;**](Double.md)|  | [optional] |
+| **annotation** | **String**|  | [optional] |
+| **origin** | [**Origin**](Origin.md)|  | [optional] |
+
+### Return type
+
+ApiResponse<[**SavedResults**](SavedResults.md)>
 
 
 ### Authorization

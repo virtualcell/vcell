@@ -4,10 +4,11 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**analyze_file**](FieldDataResourceApi.md#analyze_file) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
-[**copy_models_field_data**](FieldDataResourceApi.md#copy_models_field_data) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
-[**create_from_analyzed_file**](FieldDataResourceApi.md#create_from_analyzed_file) | **POST** /api/v1/fieldData/createFromSpecification | Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
-[**create_from_simulation**](FieldDataResourceApi.md#create_from_simulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results.
+[**analyze_file**](FieldDataResourceApi.md#analyze_file) | **POST** /api/v1/fieldData/analyzeFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+[**analyze_file_and_create**](FieldDataResourceApi.md#analyze_file_and_create) | **POST** /api/v1/fieldData/analyzeAndCreateFromFile | For advanced users who already understand the constraints of your field data and want to create it in one request.
+[**copy_models_field_data**](FieldDataResourceApi.md#copy_models_field_data) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel if not already owned.
+[**create_from_analyzed_file**](FieldDataResourceApi.md#create_from_analyzed_file) | **POST** /api/v1/fieldData/createFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+[**create_from_simulation**](FieldDataResourceApi.md#create_from_simulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from a simulation.
 [**delete**](FieldDataResourceApi.md#delete) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data.
 [**get_all_ids**](FieldDataResourceApi.md#get_all_ids) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data.
 [**get_shape_from_id**](FieldDataResourceApi.md#get_shape_from_id) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
@@ -67,6 +68,94 @@ Name | Type | Description  | Notes
 ### Return type
 
 [**AnalyzedFile**](AnalyzedFile.md)
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+ - **Content-Type**: multipart/form-data
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+**401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **analyze_file_and_create**
+> SavedResults analyze_file_and_create(file=file, file_name=file_name, extent=extent, i_size=i_size, channel_names=channel_names, times=times, annotation=annotation, origin=origin)
+
+For advanced users who already understand the constraints of your field data and want to create it in one request.
+
+### Example
+
+```python
+import time
+import os
+import vcell_client
+from vcell_client.models.extent import Extent
+from vcell_client.models.i_size import ISize
+from vcell_client.models.origin import Origin
+from vcell_client.models.saved_results import SavedResults
+from vcell_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://vcell-dev.cam.uchc.edu
+# See configuration.py for a list of all supported configuration parameters.
+configuration = vcell_client.Configuration(
+    host = "https://vcell-dev.cam.uchc.edu"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Enter a context with an instance of the API client
+with vcell_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = vcell_client.FieldDataResourceApi(api_client)
+    file = None # bytearray |  (optional)
+    file_name = 'file_name_example' # str |  (optional)
+    extent = vcell_client.Extent() # Extent |  (optional)
+    i_size = vcell_client.ISize() # ISize |  (optional)
+    channel_names = ['channel_names_example'] # List[str] |  (optional)
+    times = [3.4] # List[float] |  (optional)
+    annotation = 'annotation_example' # str |  (optional)
+    origin = vcell_client.Origin() # Origin |  (optional)
+
+    try:
+        # For advanced users who already understand the constraints of your field data and want to create it in one request.
+        api_response = api_instance.analyze_file_and_create(file=file, file_name=file_name, extent=extent, i_size=i_size, channel_names=channel_names, times=times, annotation=annotation, origin=origin)
+        print("The response of FieldDataResourceApi->analyze_file_and_create:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling FieldDataResourceApi->analyze_file_and_create: %s\n" % e)
+```
+
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **file** | **bytearray**|  | [optional] 
+ **file_name** | **str**|  | [optional] 
+ **extent** | [**Extent**](Extent.md)|  | [optional] 
+ **i_size** | [**ISize**](ISize.md)|  | [optional] 
+ **channel_names** | [**List[str]**](str.md)|  | [optional] 
+ **times** | [**List[float]**](float.md)|  | [optional] 
+ **annotation** | **str**|  | [optional] 
+ **origin** | [**Origin**](Origin.md)|  | [optional] 
+
+### Return type
+
+[**SavedResults**](SavedResults.md)
 
 ### Authorization
 
