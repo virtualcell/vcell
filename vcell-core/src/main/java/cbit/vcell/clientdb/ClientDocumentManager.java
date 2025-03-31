@@ -10,6 +10,7 @@
 
 package cbit.vcell.clientdb;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -20,15 +21,7 @@ import cbit.vcell.solver.SimulationOwner;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Element;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.BigString;
-import org.vcell.util.Compare;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.ISize;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.PermissionException;
-import org.vcell.util.Preference;
-import org.vcell.util.TokenMangler;
+import org.vcell.util.*;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -473,6 +466,14 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 		handleRemoteProxyException(e);
 		throw new DataAccessException(e.getMessage());
 	}
+}
+
+public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent,
+																 ISize iSize, String[] channelNames, double[] times,
+																 String annotation, Origin origin) throws DataAccessException {
+
+	return sessionManager.getUserMetaDbServer().analyzeAndSaveFieldFromFile(file, fileName, extent,
+			iSize, channelNames, times, annotation, origin);
 }
 
 public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {

@@ -688,12 +688,13 @@ public class FieldDataGUIPanel extends JPanel {
                 if (imageFile == null || imageFile.getName().contains(".vfrap")){
                     return;
                 } else {
-                    generatedFieldData = FieldDataFileConversion.createFDOSFromImageFile(imageFile, false, null);
+                    generatedFieldData = FieldDataFileConversion.analyzeMetaData(imageFile);
                 }
 
                 generatedFieldData.owner = clientRequestManager.getDocumentManager().getUser();
                 generatedFieldData.opType = FieldDataFileOperationSpec.FDOS_ADD;
                 hashTable.put("fdos", generatedFieldData);
+                hashTable.put("file", imageFile);
                 hashTable.put("initFDName", imageFile.getName());
             }
         };
@@ -1031,7 +1032,7 @@ public class FieldDataGUIPanel extends JPanel {
     
     // creation and saving of file is separate act from saving file info into DB
 
-    public static AsynchClientTask[] addNewExternalData(final Component requester, final FieldDataGUIPanel fieldDataGUIPanel, final boolean isFromSimulation) {
+    private static AsynchClientTask[] addNewExternalData(final Component requester, final FieldDataGUIPanel fieldDataGUIPanel, final boolean isFromSimulation) {
 
         final RequestManager clientRequestManager = fieldDataGUIPanel.fieldDataWindowManager.getLocalRequestManager();
 
@@ -1111,9 +1112,13 @@ public class FieldDataGUIPanel extends JPanel {
                 FieldDataFileOperationSpec generatedFieldDataOpSpec
                         = (FieldDataFileOperationSpec) hashTable.get("fdos");
                 DocumentManager documentManager = clientRequestManager.getDocumentManager();
+                File file = (File) hashTable.get("file");
                 generatedFieldDataOpSpec.fieldDataName = fieldName;
                 try {
                     //Add to Server Disk
+                    documentManager.analyzeAndSaveFieldFromFile(file, generatedFieldDataOpSpec.fieldDataName, generatedFieldDataOpSpec.extent,
+                            generatedFieldDataOpSpec.isize, generatedFieldDataOpSpec.varNames,
+                            generatedFieldDataOpSpec.times, generatedFieldDataOpSpec.annotation, generatedFieldDataOpSpec.origin);
                     FieldDataFileOperationResults results = documentManager.fieldDataFileOperation(generatedFieldDataOpSpec);
                     generatedFieldDataOpSpec.specEDI = results.externalDataIdentifier;
                 } catch (Exception e) {
