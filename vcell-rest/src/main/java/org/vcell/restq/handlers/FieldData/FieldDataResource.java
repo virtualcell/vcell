@@ -15,6 +15,7 @@ import jakarta.ws.rs.core.MediaType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.jboss.resteasy.reactive.PartType;
 import org.jboss.resteasy.reactive.RestForm;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.util.DataAccessException;
@@ -97,6 +98,35 @@ public class FieldDataResource {
     }
 
     @POST
+    @Path("/analyzeAndCreateFromFile")
+    @RolesAllowed("user")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Operation(operationId = "analyzeFileAndCreate", summary = "For advanced users who already understand the constraints of your field data and want to create it in one request.")
+    public SavedResults analyzeAndCreateFieldData(@RestForm @PartType(MediaType.APPLICATION_OCTET_STREAM) File file,
+                                                  @RestForm @PartType(MediaType.TEXT_PLAIN) String fileName,
+                                                  @RestForm("extent") @PartType(MediaType.APPLICATION_JSON) Extent extent,
+                                                  @RestForm("iSize") @PartType(MediaType.APPLICATION_JSON) ISize iSize,
+                                                  @RestForm @PartType(MediaType.TEXT_PLAIN) String[] channelNames,
+                                                  @RestForm("times") @PartType(MediaType.TEXT_PLAIN) double[] times,
+                                                  @RestForm("annotation") @PartType(MediaType.TEXT_PLAIN) String annotation,
+                                                  @RestForm("origin") @PartType(MediaType.APPLICATION_JSON) Origin origin){
+        try{
+            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
+            if (!Pattern.matches("^[a-z0-9_]*$", fileName) || fileName.length() > 100 || fileName.isEmpty()){
+                throw new WebApplicationException("Invalid file name.", HTTP.BAD_REQUEST);
+            }
+            AnalyzedFile analyzedFile = fieldDataDB.analyzeFieldDataFromFile(file, fileName);
+            FieldDataFileOperationResults fileResults = fieldDataDB.saveNewFieldDataFromFile(fileName,
+                    channelNames, analyzedFile.shortSpecData, annotation,
+                    user, times, origin, extent, iSize);
+            return new SavedResults(fileResults.externalDataIdentifier.getName(), fileResults.externalDataIdentifier.getKey().toString());
+        } catch (ImageException | DataFormatException | DataAccessException e) {
+            throw new WebApplicationException("Can't create new field data file", HTTP.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @POST
     @Path("/analyzeFile")
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
@@ -126,8 +156,10 @@ public class FieldDataResource {
         FieldDataSavedResults fieldDataSavedResults;
         try{
             User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
-            FieldDataFileOperationResults fileResults = fieldDataDB.saveNewFieldDataFromFile(saveFieldData, user);
-            fieldDataSavedResults = new FieldDataSavedResults(fileResults.externalDataIdentifier.getName(), fileResults.externalDataIdentifier.getKey().toString());
+            FieldDataFileOperationResults fileResults = fieldDataDB.saveNewFieldDataFromFile(saveFieldData.name,
+                   saveFieldData.varNames, saveFieldData.shortSpecData, saveFieldData.annotation,
+                    user, saveFieldData.times, saveFieldData.origin, saveFieldData.extent, saveFieldData.isize);
+            savedResults = new SavedResults(fileResults.externalDataIdentifier.getName(), fileResults.externalDataIdentifier.getKey().toString());
         } catch (ImageException | DataFormatException | DataAccessException e) {
             throw new WebApplicationException(e.getMessage(), HTTP.INTERNAL_SERVER_ERROR);
         }
