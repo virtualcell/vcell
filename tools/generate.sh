@@ -32,6 +32,10 @@ if ! git apply "${scriptDir}/SolverResourceApi.patch"; then
   echo "Failed to apply SolverResourceApi.patch"
   exit 1
 fi
+if ! git apply "${scriptDir}/FieldDataResourceApi.patch"; then
+  echo "Failed to apply FieldDataResourceApi.patch"
+  exit 1
+fi
 popd || { echo "Failed to return to the previous directory"; exit 1; }
 
 
