@@ -1116,10 +1116,9 @@ public class FieldDataGUIPanel extends JPanel {
                 generatedFieldDataOpSpec.fieldDataName = fieldName;
                 try {
                     //Add to Server Disk
-                    documentManager.analyzeAndSaveFieldFromFile(file, generatedFieldDataOpSpec.fieldDataName, generatedFieldDataOpSpec.extent,
+                    FieldDataFileOperationResults results = documentManager.analyzeAndSaveFieldFromFile(file, generatedFieldDataOpSpec.fieldDataName, generatedFieldDataOpSpec.extent,
                             generatedFieldDataOpSpec.isize, generatedFieldDataOpSpec.varNames,
                             generatedFieldDataOpSpec.times, generatedFieldDataOpSpec.annotation, generatedFieldDataOpSpec.origin);
-                    FieldDataFileOperationResults results = documentManager.fieldDataFileOperation(generatedFieldDataOpSpec);
                     generatedFieldDataOpSpec.specEDI = results.externalDataIdentifier;
                 } catch (Exception e) {
                     generatedFieldDataOpSpec.specEDI = null;
