@@ -20,14 +20,13 @@ import cbit.vcell.message.server.bootstrap.client.RpcDataServerProxy;
 import cbit.vcell.message.server.bootstrap.client.RpcSender;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.simdata.*;
+import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.restclient.ApiException;
-import org.vcell.restclient.model.AnalyzedFile;
-import org.vcell.restclient.model.SavedResults;
-import org.vcell.restclient.model.Shape;
+import org.vcell.restclient.model.*;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
@@ -60,13 +59,13 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 	try {
 		if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_ADD){
 			AnalyzedFile analyzedResultsFromFieldData = DtoModelTransforms.fieldDataSpecToAnalyzedResultsDTO(fieldDataFileOperationSpec);
-			SavedResults results = vCellApiClient.getFieldDataApi().createFromAnalyzedFile(analyzedResultsFromFieldData);
+			FieldDataSavedResults results = vCellApiClient.getFieldDataApi().createFromAnalyzedFile(analyzedResultsFromFieldData);
 			return DtoModelTransforms.fieldDataSaveResultsDTOToFileOperationResults(results, fieldDataFileOperationSpec.owner);
 		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DELETE) {
 			vCellApiClient.getFieldDataApi().delete(fieldDataFileOperationSpec.specEDI.getKey().toString());
 			return null;
 		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_INFO) {
-			Shape fieldDataInfo = vCellApiClient.getFieldDataApi().getShapeFromID(fieldDataFileOperationSpec.sourceSimDataKey.toString());
+			FieldDataShape fieldDataInfo = vCellApiClient.getFieldDataApi().getShapeFromID(fieldDataFileOperationSpec.sourceSimDataKey.toString());
 			return DtoModelTransforms.fieldDataInfoDTOToFileOperationResults(fieldDataInfo);
 		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_COPYSIM) {
 			UnsupportedOperationException unsupported = new UnsupportedOperationException("Call field data from simulation instead from user meta DB server.");

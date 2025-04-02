@@ -212,8 +212,10 @@ paths:
     post:
       tags:
       - Field Data Resource
-      summary: "Analyze the field data from the uploaded file. Filenames must be lowercase\
-        \ alphanumeric, and can contain underscores."
+      summary: "Analyze the field data from supported files (Tiff, Zip, and Non-GPL\
+        \ BioFormats). Please don't use color mapped images for the files (the colors\
+        \ in those images will be interpreted as separate channels). Filenames must\
+        \ be lowercase alphanumeric, and can contain underscores."
       operationId: analyzeFile
       requestBody:
         content:
@@ -244,8 +246,8 @@ paths:
     post:
       tags:
       - Field Data Resource
-      summary: Copy all existing field data from a BioModel/MathModel if not already
-        owned.
+      summary: "Copy all existing field data from a BioModel/MathModel that you have\
+        \ access to, but don't own."
       operationId: copyModelsFieldData
       requestBody:
         content:
@@ -272,8 +274,8 @@ paths:
     post:
       tags:
       - Field Data Resource
-      summary: "Take the analyzed results of the field data, modify it to your liking,\
-        \ then save it on the server."
+      summary: "Take the Analyzed results of the field data, and save them to the\
+        \ server. User may adjust the analyzed file before uploading to edit defaults."
       operationId: createFromAnalyzedFile
       requestBody:
         content:
@@ -286,7 +288,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SavedResults'
+                $ref: '#/components/schemas/FieldDataSavedResults'
         "401":
           description: Not Authorized
         "403":
@@ -298,7 +300,7 @@ paths:
     post:
       tags:
       - Field Data Resource
-      summary: Create new field data from a simulation.
+      summary: Create new field data from existing simulation results.
       operationId: createFromSimulation
       requestBody:
         content:
@@ -350,7 +352,7 @@ paths:
       tags:
       - Field Data Resource
       summary: "Get the shape of the field data. That is it's size, origin, extent,\
-        \ and data identifiers."
+        \ times, and data identifiers."
       operationId: getShapeFromID
       parameters:
       - name: fieldDataID
@@ -364,7 +366,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Shape'
+                $ref: '#/components/schemas/FieldDataShape'
         "401":
           description: Not Authorized
         "403":
@@ -986,6 +988,31 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/KeyValue'
+    FieldDataSavedResults:
+      type: object
+      properties:
+        fieldDataName:
+          type: string
+        fieldDataKey:
+          type: string
+    FieldDataShape:
+      type: object
+      properties:
+        extent:
+          $ref: '#/components/schemas/Extent'
+        origin:
+          $ref: '#/components/schemas/Origin'
+        isize:
+          $ref: '#/components/schemas/ISize'
+        dataIdentifier:
+          type: array
+          items:
+            $ref: '#/components/schemas/DataIdentifier'
+        times:
+          type: array
+          items:
+            format: double
+            type: number
     HelloWorldMessage:
       type: object
       properties:
@@ -1117,13 +1144,6 @@ components:
             $ref: '#/components/schemas/MathmodelRef'
         date:
           $ref: '#/components/schemas/Date'
-    SavedResults:
-      type: object
-      properties:
-        fieldDataName:
-          type: string
-        fieldDataKey:
-          type: string
     SchedulerStatus:
       enum:
       - WAITING
@@ -1134,24 +1154,6 @@ components:
       - STOPPED
       - FAILED
       type: string
-    Shape:
-      type: object
-      properties:
-        extent:
-          $ref: '#/components/schemas/Extent'
-        origin:
-          $ref: '#/components/schemas/Origin'
-        isize:
-          $ref: '#/components/schemas/ISize'
-        dataIdentifier:
-          type: array
-          items:
-            $ref: '#/components/schemas/DataIdentifier'
-        times:
-          type: array
-          items:
-            format: double
-            type: number
     SimulationExecutionStatusRecord:
       type: object
       properties:

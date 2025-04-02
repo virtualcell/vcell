@@ -7,10 +7,7 @@ import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataIdentifier;
-import org.vcell.restclient.model.AnalyzedFile;
-import org.vcell.restclient.model.FieldDataReference;
-import org.vcell.restclient.model.SavedResults;
-import org.vcell.restclient.model.Shape;
+import org.vcell.restclient.model.*;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -117,7 +114,7 @@ public class DtoModelTransforms {
         return new User(dto.getUserName(), dtoToKeyValue(dto.getKey()));
     }
 
-    public static FieldDataFileOperationResults fieldDataInfoDTOToFileOperationResults(Shape dto){
+    public static FieldDataFileOperationResults fieldDataInfoDTOToFileOperationResults(FieldDataShape dto){
         FieldDataFileOperationResults results = new FieldDataFileOperationResults();
         results.extent = dtoToExtent(dto.getExtent());
         results.origin = dtoToOrigin(dto.getOrigin());
@@ -127,7 +124,7 @@ public class DtoModelTransforms {
         return results;
     }
 
-    public static FieldDataFileOperationResults fieldDataSaveResultsDTOToFileOperationResults(SavedResults dto, User owner){
+    public static FieldDataFileOperationResults fieldDataSaveResultsDTOToFileOperationResults(FieldDataSavedResults dto, User owner){
         FieldDataFileOperationResults fieldDataFileOperationResults = new FieldDataFileOperationResults();
         fieldDataFileOperationResults.externalDataIdentifier = new ExternalDataIdentifier(new KeyValue(dto.getFieldDataKey()), owner, dto.getFieldDataName());
         return fieldDataFileOperationResults;

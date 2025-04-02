@@ -254,8 +254,10 @@ paths:
       security:
       - openId:
         - user
-      summary: "Analyze the field data from the uploaded file. Filenames must be lowercase\
-        \ alphanumeric, and can contain underscores."
+      summary: "Analyze the field data from supported files (Tiff, Zip, and Non-GPL\
+        \ BioFormats). Please don't use color mapped images for the files (the colors\
+        \ in those images will be interpreted as separate channels). Filenames must\
+        \ be lowercase alphanumeric, and can contain underscores."
       tags:
       - Field Data Resource
       x-content-type: multipart/form-data
@@ -284,8 +286,8 @@ paths:
       security:
       - openId:
         - user
-      summary: Copy all existing field data from a BioModel/MathModel if not already
-        owned.
+      summary: "Copy all existing field data from a BioModel/MathModel that you have\
+        \ access to, but don't own."
       tags:
       - Field Data Resource
       x-content-type: application/json
@@ -303,7 +305,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SavedResults'
+                $ref: '#/components/schemas/FieldDataSavedResults'
           description: OK
         "401":
           description: Not Authorized
@@ -312,8 +314,8 @@ paths:
       security:
       - openId:
         - user
-      summary: "Take the analyzed results of the field data, modify it to your liking,\
-        \ then save it on the server."
+      summary: "Take the Analyzed results of the field data, and save them to the\
+        \ server. User may adjust the analyzed file before uploading to edit defaults."
       tags:
       - Field Data Resource
       x-content-type: application/json
@@ -336,7 +338,7 @@ paths:
       security:
       - openId:
         - user
-      summary: Create new field data from a simulation.
+      summary: Create new field data from existing simulation results.
       tags:
       - Field Data Resource
       x-content-type: application/x-www-form-urlencoded
@@ -382,7 +384,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Shape'
+                $ref: '#/components/schemas/FieldDataShape'
           description: OK
         "401":
           description: Not Authorized
@@ -392,7 +394,7 @@ paths:
       - openId:
         - user
       summary: "Get the shape of the field data. That is it's size, origin, extent,\
-        \ and data identifiers."
+        \ times, and data identifiers."
       tags:
       - Field Data Resource
       x-accepts: application/json
@@ -1156,6 +1158,85 @@ components:
             $ref: '#/components/schemas/KeyValue'
           type: array
       type: object
+    FieldDataSavedResults:
+      example:
+        fieldDataName: fieldDataName
+        fieldDataKey: fieldDataKey
+      properties:
+        fieldDataName:
+          type: string
+        fieldDataKey:
+          type: string
+      type: object
+    FieldDataShape:
+      example:
+        extent:
+          x: 2.3021358869347655
+          "y": 7.061401241503109
+          z: 9.301444243932576
+        times:
+        - 6.027456183070403
+        - 6.027456183070403
+        origin:
+          x: 1.4658129805029452
+          "y": 5.962133916683182
+          z: 5.637376656633329
+        isize:
+          x: 3
+          "y": 2
+          z: 4
+        dataIdentifier:
+        - variableType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          visible: true
+          displayName: displayName
+          bFunction: true
+          domain:
+            name: name
+          function: true
+          name: name
+        - variableType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          visible: true
+          displayName: displayName
+          bFunction: true
+          domain:
+            name: name
+          function: true
+          name: name
+      properties:
+        extent:
+          $ref: '#/components/schemas/Extent'
+        origin:
+          $ref: '#/components/schemas/Origin'
+        isize:
+          $ref: '#/components/schemas/ISize'
+        dataIdentifier:
+          items:
+            $ref: '#/components/schemas/DataIdentifier'
+          type: array
+        times:
+          items:
+            format: double
+            type: number
+          type: array
+      type: object
     HelloWorldMessage:
       example:
         message: message
@@ -1358,16 +1439,6 @@ components:
           format: date
           type: string
       type: object
-    SavedResults:
-      example:
-        fieldDataName: fieldDataName
-        fieldDataKey: fieldDataKey
-      properties:
-        fieldDataName:
-          type: string
-        fieldDataKey:
-          type: string
-      type: object
     SchedulerStatus:
       enum:
       - WAITING
@@ -1378,75 +1449,6 @@ components:
       - STOPPED
       - FAILED
       type: string
-    Shape:
-      example:
-        extent:
-          x: 2.3021358869347655
-          "y": 7.061401241503109
-          z: 9.301444243932576
-        times:
-        - 6.027456183070403
-        - 6.027456183070403
-        origin:
-          x: 1.4658129805029452
-          "y": 5.962133916683182
-          z: 5.637376656633329
-        isize:
-          x: 3
-          "y": 2
-          z: 4
-        dataIdentifier:
-        - variableType:
-            defaultUnits: defaultUnits
-            name: name
-            typeName: typeName
-            defaultLabel: defaultLabel
-            units: units
-            label: label
-            type: 0
-            variableDomain: null
-            legacyWarn: true
-          visible: true
-          displayName: displayName
-          bFunction: true
-          domain:
-            name: name
-          function: true
-          name: name
-        - variableType:
-            defaultUnits: defaultUnits
-            name: name
-            typeName: typeName
-            defaultLabel: defaultLabel
-            units: units
-            label: label
-            type: 0
-            variableDomain: null
-            legacyWarn: true
-          visible: true
-          displayName: displayName
-          bFunction: true
-          domain:
-            name: name
-          function: true
-          name: name
-      properties:
-        extent:
-          $ref: '#/components/schemas/Extent'
-        origin:
-          $ref: '#/components/schemas/Origin'
-        isize:
-          $ref: '#/components/schemas/ISize'
-        dataIdentifier:
-          items:
-            $ref: '#/components/schemas/DataIdentifier'
-          type: array
-        times:
-          items:
-            format: double
-            type: number
-          type: array
-      type: object
     SimulationExecutionStatusRecord:
       example:
         fieldLatestUpdateDate: 2022-03-10T16:15:50Z

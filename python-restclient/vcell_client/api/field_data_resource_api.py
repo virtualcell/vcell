@@ -31,8 +31,8 @@ from typing import Dict, List, Optional, Union
 from vcell_client.models.analyzed_file import AnalyzedFile
 from vcell_client.models.external_data_identifier import ExternalDataIdentifier
 from vcell_client.models.field_data_reference import FieldDataReference
-from vcell_client.models.saved_results import SavedResults
-from vcell_client.models.shape import Shape
+from vcell_client.models.field_data_saved_results import FieldDataSavedResults
+from vcell_client.models.field_data_shape import FieldDataShape
 from vcell_client.models.source_model import SourceModel
 
 from vcell_client.api_client import ApiClient
@@ -71,7 +71,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> AnalyzedFile:
-        """Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+        """Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don't use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 
 
         :param file:
@@ -144,7 +144,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[AnalyzedFile]:
-        """Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+        """Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don't use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 
 
         :param file:
@@ -217,7 +217,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+        """Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don't use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 
 
         :param file:
@@ -363,7 +363,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> Dict[str, ExternalDataIdentifier]:
-        """Copy all existing field data from a BioModel/MathModel if not already owned.
+        """Copy all existing field data from a BioModel/MathModel that you have access to, but don't own.
 
 
         :param source_model:
@@ -432,7 +432,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[Dict[str, ExternalDataIdentifier]]:
-        """Copy all existing field data from a BioModel/MathModel if not already owned.
+        """Copy all existing field data from a BioModel/MathModel that you have access to, but don't own.
 
 
         :param source_model:
@@ -501,7 +501,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Copy all existing field data from a BioModel/MathModel if not already owned.
+        """Copy all existing field data from a BioModel/MathModel that you have access to, but don't own.
 
 
         :param source_model:
@@ -640,8 +640,8 @@ class FieldDataResourceApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> SavedResults:
-        """Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+    ) -> FieldDataSavedResults:
+        """Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
 
 
         :param analyzed_file:
@@ -677,7 +677,7 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "SavedResults",
+            '200': "FieldDataSavedResults",
             '401': None,
             '403': None
             
@@ -709,8 +709,8 @@ class FieldDataResourceApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[SavedResults]:
-        """Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+    ) -> ApiResponse[FieldDataSavedResults]:
+        """Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
 
 
         :param analyzed_file:
@@ -746,7 +746,7 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "SavedResults",
+            '200': "FieldDataSavedResults",
             '401': None,
             '403': None
             
@@ -779,7 +779,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+        """Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
 
 
         :param analyzed_file:
@@ -815,7 +815,7 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "SavedResults",
+            '200': "FieldDataSavedResults",
             '401': None,
             '403': None
             
@@ -921,7 +921,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> None:
-        """Create new field data from a simulation.
+        """Create new field data from existing simulation results.
 
 
         :param sim_key_reference:
@@ -995,7 +995,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[None]:
-        """Create new field data from a simulation.
+        """Create new field data from existing simulation results.
 
 
         :param sim_key_reference:
@@ -1069,7 +1069,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Create new field data from a simulation.
+        """Create new field data from existing simulation results.
 
 
         :param sim_key_reference:
@@ -1711,8 +1711,8 @@ class FieldDataResourceApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> Shape:
-        """Get the shape of the field data. That is it's size, origin, extent, and data identifiers.
+    ) -> FieldDataShape:
+        """Get the shape of the field data. That is it's size, origin, extent, times, and data identifiers.
 
 
         :param field_data_id: (required)
@@ -1748,7 +1748,7 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "Shape",
+            '200': "FieldDataShape",
             '401': None,
             '403': None
             
@@ -1780,8 +1780,8 @@ class FieldDataResourceApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[Shape]:
-        """Get the shape of the field data. That is it's size, origin, extent, and data identifiers.
+    ) -> ApiResponse[FieldDataShape]:
+        """Get the shape of the field data. That is it's size, origin, extent, times, and data identifiers.
 
 
         :param field_data_id: (required)
@@ -1817,7 +1817,7 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "Shape",
+            '200': "FieldDataShape",
             '401': None,
             '403': None
             
@@ -1850,7 +1850,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Get the shape of the field data. That is it's size, origin, extent, and data identifiers.
+        """Get the shape of the field data. That is it's size, origin, extent, times, and data identifiers.
 
 
         :param field_data_id: (required)
@@ -1886,7 +1886,7 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "Shape",
+            '200': "FieldDataShape",
             '401': None,
             '403': None
             

@@ -20,9 +20,9 @@ import org.vcell.restclient.Pair;
 import org.vcell.restclient.model.AnalyzedFile;
 import org.vcell.restclient.model.ExternalDataIdentifier;
 import org.vcell.restclient.model.FieldDataReference;
+import org.vcell.restclient.model.FieldDataSavedResults;
+import org.vcell.restclient.model.FieldDataShape;
 import java.io.File;
-import org.vcell.restclient.model.SavedResults;
-import org.vcell.restclient.model.Shape;
 import org.vcell.restclient.model.SourceModel;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -94,7 +94,7 @@ public class FieldDataResourceApi {
   }
 
   /**
-   * Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+   * Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don&#39;t use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
    * 
    * @param _file  (optional)
    * @param fileName  (optional)
@@ -107,7 +107,7 @@ public class FieldDataResourceApi {
   }
 
   /**
-   * Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+   * Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don&#39;t use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
    * 
    * @param _file  (optional)
    * @param fileName  (optional)
@@ -197,7 +197,7 @@ public class FieldDataResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * Copy all existing field data from a BioModel/MathModel if not already owned.
+   * Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
    * 
    * @param sourceModel  (optional)
    * @return Map&lt;String, ExternalDataIdentifier&gt;
@@ -209,7 +209,7 @@ public class FieldDataResourceApi {
   }
 
   /**
-   * Copy all existing field data from a BioModel/MathModel if not already owned.
+   * Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
    * 
    * @param sourceModel  (optional)
    * @return ApiResponse&lt;Map&lt;String, ExternalDataIdentifier&gt;&gt;
@@ -270,25 +270,25 @@ public class FieldDataResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+   * Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
    * 
    * @param analyzedFile  (optional)
-   * @return SavedResults
+   * @return FieldDataSavedResults
    * @throws ApiException if fails to make API call
    */
-  public SavedResults createFromAnalyzedFile(AnalyzedFile analyzedFile) throws ApiException {
-    ApiResponse<SavedResults> localVarResponse = createFromAnalyzedFileWithHttpInfo(analyzedFile);
+  public FieldDataSavedResults createFromAnalyzedFile(AnalyzedFile analyzedFile) throws ApiException {
+    ApiResponse<FieldDataSavedResults> localVarResponse = createFromAnalyzedFileWithHttpInfo(analyzedFile);
     return localVarResponse.getData();
   }
 
   /**
-   * Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+   * Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
    * 
    * @param analyzedFile  (optional)
-   * @return ApiResponse&lt;SavedResults&gt;
+   * @return ApiResponse&lt;FieldDataSavedResults&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<SavedResults> createFromAnalyzedFileWithHttpInfo(AnalyzedFile analyzedFile) throws ApiException {
+  public ApiResponse<FieldDataSavedResults> createFromAnalyzedFileWithHttpInfo(AnalyzedFile analyzedFile) throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = createFromAnalyzedFileRequestBuilder(analyzedFile);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -301,10 +301,10 @@ public class FieldDataResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("createFromAnalyzedFile", localVarResponse);
         }
-        return new ApiResponse<SavedResults>(
+        return new ApiResponse<FieldDataSavedResults>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<SavedResults>() {}) // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataSavedResults>() {}) // closes the InputStream
         );
       } finally {
       }
@@ -343,7 +343,7 @@ public class FieldDataResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * Create new field data from a simulation.
+   * Create new field data from existing simulation results.
    * 
    * @param simKeyReference  (optional)
    * @param jobIndex  (optional)
@@ -355,7 +355,7 @@ public class FieldDataResourceApi {
   }
 
   /**
-   * Create new field data from a simulation.
+   * Create new field data from existing simulation results.
    * 
    * @param simKeyReference  (optional)
    * @param jobIndex  (optional)
@@ -577,25 +577,25 @@ public class FieldDataResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers.
+   * Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
    * 
    * @param fieldDataID  (required)
-   * @return Shape
+   * @return FieldDataShape
    * @throws ApiException if fails to make API call
    */
-  public Shape getShapeFromID(String fieldDataID) throws ApiException {
-    ApiResponse<Shape> localVarResponse = getShapeFromIDWithHttpInfo(fieldDataID);
+  public FieldDataShape getShapeFromID(String fieldDataID) throws ApiException {
+    ApiResponse<FieldDataShape> localVarResponse = getShapeFromIDWithHttpInfo(fieldDataID);
     return localVarResponse.getData();
   }
 
   /**
-   * Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers.
+   * Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
    * 
    * @param fieldDataID  (required)
-   * @return ApiResponse&lt;Shape&gt;
+   * @return ApiResponse&lt;FieldDataShape&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Shape> getShapeFromIDWithHttpInfo(String fieldDataID) throws ApiException {
+  public ApiResponse<FieldDataShape> getShapeFromIDWithHttpInfo(String fieldDataID) throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = getShapeFromIDRequestBuilder(fieldDataID);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -608,10 +608,10 @@ public class FieldDataResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getShapeFromID", localVarResponse);
         }
-        return new ApiResponse<Shape>(
+        return new ApiResponse<FieldDataShape>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Shape>() {}) // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataShape>() {}) // closes the InputStream
         );
       } finally {
       }

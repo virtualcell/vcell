@@ -24,16 +24,17 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Model tests for SavedResults
+ * Model tests for FieldDataSavedResults
  */
-public class SavedResultsTest {
+public class FieldDataSavedResultsTest {
+    private final FieldDataSavedResults model = new FieldDataSavedResults();
 
     /**
-     * Model tests for SavedResults
+     * Model tests for FieldDataSavedResults
      */
     @Test
-    public void testSavedResults() {
-        // TODO: test SavedResults
+    public void testFieldDataSavedResults() {
+        // TODO: test FieldDataSavedResults
     }
 
     /**
@@ -45,11 +46,11 @@ public class SavedResultsTest {
     }
 
     /**
-     * Test the property 'fieldDataID'
+     * Test the property 'fieldDataKey'
      */
     @Test
-    public void fieldDataIDTest() {
-        // TODO: test fieldDataID
+    public void fieldDataKeyTest() {
+        // TODO: test fieldDataKey
     }
 
 }

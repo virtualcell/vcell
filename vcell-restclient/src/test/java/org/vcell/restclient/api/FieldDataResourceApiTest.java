@@ -13,22 +13,17 @@
 
 package org.vcell.restclient.api;
 
+import org.junit.Ignore;
+import org.junit.Test;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.AnalyzedFile;
 import org.vcell.restclient.model.ExternalDataIdentifier;
 import org.vcell.restclient.model.FieldDataReference;
-import java.io.File;
-import org.vcell.restclient.model.SavedResults;
-import org.vcell.restclient.model.Shape;
 import org.vcell.restclient.model.SourceModel;
-import org.junit.Test;
-import org.junit.Ignore;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -83,15 +78,7 @@ public class FieldDataResourceApiTest {
      * @throws ApiException
      *          if the Api call fails
      */
-    @Test
-    public void createFromAnalyzedFileTest() throws ApiException {
-        AnalyzedFile analyzedFile = null;
-        SavedResults response = 
-        api.createFromAnalyzedFile(analyzedFile);
-        
-        // TODO: test validations
-    }
-    
+
     /**
      * Create new field data from a simulation.
      *
@@ -152,13 +139,5 @@ public class FieldDataResourceApiTest {
      * @throws ApiException
      *          if the Api call fails
      */
-    @Test
-    public void getShapeFromIDTest() throws ApiException {
-        String fieldDataID = null;
-        Shape response = 
-        api.getShapeFromID(fieldDataID);
-        
-        // TODO: test validations
-    }
     
 }

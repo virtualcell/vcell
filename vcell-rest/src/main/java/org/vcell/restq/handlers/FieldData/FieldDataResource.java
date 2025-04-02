@@ -69,11 +69,11 @@ public class FieldDataResource {
     @GET
     @Path("/shape/{fieldDataID}")
     @RolesAllowed("user")
-    @Operation(operationId = "getShapeFromID", summary = "Get the shape of the field data. That is it's size, origin, extent, and data identifiers.")
-    public Shape getFieldDataShapeFromID(@PathParam("fieldDataID") String fieldDataID){
+    @Operation(operationId = "getShapeFromID", summary = "Get the shape of the field data. That is it's size, origin, extent, times, and data identifiers.")
+    public FieldDataShape getFieldDataShapeFromID(@PathParam("fieldDataID") String fieldDataID){
         try {
             FieldDataFileOperationResults results = fieldDataDB.getFieldDataFromID(userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER), fieldDataID, 0);
-            return new Shape(results.extent, results.origin, results.iSize, results.dataIdentifierArr,results.times);
+            return new FieldDataShape(results.extent, results.origin, results.iSize, results.dataIdentifierArr,results.times);
         } catch (DataAccessException e) {
             if (e.getCause() instanceof FileNotFoundException){
                 throw new WebApplicationException("Field data not found.", HTTP.NOT_FOUND);
@@ -86,7 +86,7 @@ public class FieldDataResource {
     @RolesAllowed("user")
     @Path("/createFromSimulation")
     @Consumes({MediaType.APPLICATION_FORM_URLENCODED})
-    @Operation(operationId = "createFromSimulation", summary = "Create new field data from a simulation.")
+    @Operation(operationId = "createFromSimulation", summary = "Create new field data from existing simulation results.")
     public void createNewFieldDataFromSimulation(@RestForm String simKeyReference, @RestForm int jobIndex, @RestForm String newFieldDataName){
         try {
             User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
@@ -101,7 +101,8 @@ public class FieldDataResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Operation(operationId = "analyzeFile", summary = "Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.")
+    @Operation(operationId = "analyzeFile", summary = "Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don't use color mapped images for the files (the colors in those images will be interpreted as separate channels). " +
+            "Filenames must be lowercase alphanumeric, and can contain underscores.")
     public AnalyzedFile analyzeFieldData(@RestForm File file, @RestForm String fileName){
         try{
             userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
@@ -119,17 +120,18 @@ public class FieldDataResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(operationId = "createFromAnalyzedFile", summary = "Take the analyzed results of the field data, modify it to your liking, then save it on the server.")
-    public SavedResults createNewFieldDataFromFile(AnalyzedFile saveFieldData){
-        SavedResults savedResults;
+    @Operation(operationId = "createFromAnalyzedFile", summary = "Take the Analyzed results of the field data, and save them to the server. " +
+            "User may adjust the analyzed file before uploading to edit defaults.")
+    public FieldDataSavedResults createNewFieldDataFromFile(AnalyzedFile saveFieldData){
+        FieldDataSavedResults fieldDataSavedResults;
         try{
             User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
             FieldDataFileOperationResults fileResults = fieldDataDB.saveNewFieldDataFromFile(saveFieldData, user);
-            savedResults = new SavedResults(fileResults.externalDataIdentifier.getName(), fileResults.externalDataIdentifier.getKey().toString());
+            fieldDataSavedResults = new FieldDataSavedResults(fileResults.externalDataIdentifier.getName(), fileResults.externalDataIdentifier.getKey().toString());
         } catch (ImageException | DataFormatException | DataAccessException e) {
             throw new WebApplicationException(e.getMessage(), HTTP.INTERNAL_SERVER_ERROR);
         }
-        return savedResults;
+        return fieldDataSavedResults;
     }
 
     @POST
@@ -137,7 +139,7 @@ public class FieldDataResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    @Operation(operationId = "copyModelsFieldData", summary = "Copy all existing field data from a BioModel/MathModel if not already owned.")
+    @Operation(operationId = "copyModelsFieldData", summary = "Copy all existing field data from a BioModel/MathModel that you have access to, but don't own.")
     public Hashtable<String, ExternalDataIdentifier> copyFieldData(SourceModel sourceModel){
         try {
             User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
@@ -159,7 +161,7 @@ public class FieldDataResource {
         }
     }
 
-    public record Shape(
+    public record FieldDataShape(
             Extent extent,
             Origin origin,
             ISize isize,
@@ -200,7 +202,7 @@ public class FieldDataResource {
             String name
     ){ }
 
-    public record SavedResults(
+    public record FieldDataSavedResults(
             String fieldDataName,
             String fieldDataKey
     ){ }

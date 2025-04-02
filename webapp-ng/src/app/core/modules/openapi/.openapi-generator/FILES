@@ -33,6 +33,8 @@ model/domain.ts
 model/extent.ts
 model/external-data-identifier.ts
 model/field-data-reference.ts
+model/field-data-saved-results.ts
+model/field-data-shape.ts
 model/hello-world-message.ts
 model/htc-job-id.ts
 model/i-size.ts
@@ -43,9 +45,7 @@ model/model-type.ts
 model/models.ts
 model/origin.ts
 model/publication.ts
-model/saved-results.ts
 model/scheduler-status.ts
-model/shape.ts
 model/simulation-execution-status-record.ts
 model/simulation-job-status-record.ts
 model/simulation-message.ts

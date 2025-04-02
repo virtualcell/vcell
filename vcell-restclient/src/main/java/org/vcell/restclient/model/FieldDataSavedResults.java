@@ -29,24 +29,24 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**
- * SavedResults
+ * FieldDataSavedResults
  */
 @JsonPropertyOrder({
-  SavedResults.JSON_PROPERTY_FIELD_DATA_NAME,
-  SavedResults.JSON_PROPERTY_FIELD_DATA_KEY
+  FieldDataSavedResults.JSON_PROPERTY_FIELD_DATA_NAME,
+  FieldDataSavedResults.JSON_PROPERTY_FIELD_DATA_KEY
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
-public class SavedResults {
+public class FieldDataSavedResults {
   public static final String JSON_PROPERTY_FIELD_DATA_NAME = "fieldDataName";
   private String fieldDataName;
 
   public static final String JSON_PROPERTY_FIELD_DATA_KEY = "fieldDataKey";
   private String fieldDataKey;
 
-  public SavedResults() { 
+  public FieldDataSavedResults() { 
   }
 
-  public SavedResults fieldDataName(String fieldDataName) {
+  public FieldDataSavedResults fieldDataName(String fieldDataName) {
     this.fieldDataName = fieldDataName;
     return this;
   }
@@ -71,7 +71,7 @@ public class SavedResults {
   }
 
 
-  public SavedResults fieldDataKey(String fieldDataKey) {
+  public FieldDataSavedResults fieldDataKey(String fieldDataKey) {
     this.fieldDataKey = fieldDataKey;
     return this;
   }
@@ -97,7 +97,7 @@ public class SavedResults {
 
 
   /**
-   * Return true if this SavedResults object is equal to o.
+   * Return true if this FieldDataSavedResults object is equal to o.
    */
   @Override
   public boolean equals(Object o) {
@@ -107,9 +107,9 @@ public class SavedResults {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    SavedResults savedResults = (SavedResults) o;
-    return Objects.equals(this.fieldDataName, savedResults.fieldDataName) &&
-        Objects.equals(this.fieldDataKey, savedResults.fieldDataKey);
+    FieldDataSavedResults fieldDataSavedResults = (FieldDataSavedResults) o;
+    return Objects.equals(this.fieldDataName, fieldDataSavedResults.fieldDataName) &&
+        Objects.equals(this.fieldDataKey, fieldDataSavedResults.fieldDataKey);
   }
 
   @Override
@@ -120,7 +120,7 @@ public class SavedResults {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class SavedResults {\n");
+    sb.append("class FieldDataSavedResults {\n");
     sb.append("    fieldDataName: ").append(toIndentedString(fieldDataName)).append("\n");
     sb.append("    fieldDataKey: ").append(toIndentedString(fieldDataKey)).append("\n");
     sb.append("}");

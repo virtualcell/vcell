@@ -4,20 +4,20 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**analyzeFile**](FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores. |
-| [**analyzeFileWithHttpInfo**](FieldDataResourceApi.md#analyzeFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores. |
-| [**copyModelsFieldData**](FieldDataResourceApi.md#copyModelsFieldData) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel if not already owned. |
-| [**copyModelsFieldDataWithHttpInfo**](FieldDataResourceApi.md#copyModelsFieldDataWithHttpInfo) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel if not already owned. |
-| [**createFromAnalyzedFile**](FieldDataResourceApi.md#createFromAnalyzedFile) | **POST** /api/v1/fieldData/createFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server. |
-| [**createFromAnalyzedFileWithHttpInfo**](FieldDataResourceApi.md#createFromAnalyzedFileWithHttpInfo) | **POST** /api/v1/fieldData/createFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server. |
-| [**createFromSimulation**](FieldDataResourceApi.md#createFromSimulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from a simulation. |
-| [**createFromSimulationWithHttpInfo**](FieldDataResourceApi.md#createFromSimulationWithHttpInfo) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from a simulation. |
+| [**analyzeFile**](FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don&#39;t use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
+| [**analyzeFileWithHttpInfo**](FieldDataResourceApi.md#analyzeFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFile | Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don&#39;t use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
+| [**copyModelsFieldData**](FieldDataResourceApi.md#copyModelsFieldData) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own. |
+| [**copyModelsFieldDataWithHttpInfo**](FieldDataResourceApi.md#copyModelsFieldDataWithHttpInfo) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own. |
+| [**createFromAnalyzedFile**](FieldDataResourceApi.md#createFromAnalyzedFile) | **POST** /api/v1/fieldData/createFromAnalyzedFile | Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults. |
+| [**createFromAnalyzedFileWithHttpInfo**](FieldDataResourceApi.md#createFromAnalyzedFileWithHttpInfo) | **POST** /api/v1/fieldData/createFromAnalyzedFile | Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults. |
+| [**createFromSimulation**](FieldDataResourceApi.md#createFromSimulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results. |
+| [**createFromSimulationWithHttpInfo**](FieldDataResourceApi.md#createFromSimulationWithHttpInfo) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results. |
 | [**delete**](FieldDataResourceApi.md#delete) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data. |
 | [**deleteWithHttpInfo**](FieldDataResourceApi.md#deleteWithHttpInfo) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data. |
 | [**getAllIDs**](FieldDataResourceApi.md#getAllIDs) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data. |
 | [**getAllIDsWithHttpInfo**](FieldDataResourceApi.md#getAllIDsWithHttpInfo) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data. |
-| [**getShapeFromID**](FieldDataResourceApi.md#getShapeFromID) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers. |
-| [**getShapeFromIDWithHttpInfo**](FieldDataResourceApi.md#getShapeFromIDWithHttpInfo) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers. |
+| [**getShapeFromID**](FieldDataResourceApi.md#getShapeFromID) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers. |
+| [**getShapeFromIDWithHttpInfo**](FieldDataResourceApi.md#getShapeFromIDWithHttpInfo) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers. |
 
 
 
@@ -25,7 +25,7 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 > AnalyzedFile analyzeFile(_file, fileName)
 
-Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don&#39;t use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 
 ### Example
 
@@ -94,7 +94,7 @@ public class Example {
 
 > ApiResponse<AnalyzedFile> analyzeFile analyzeFileWithHttpInfo(_file, fileName)
 
-Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don&#39;t use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 
 ### Example
 
@@ -167,7 +167,7 @@ ApiResponse<[**AnalyzedFile**](AnalyzedFile.md)>
 
 > Map<String, ExternalDataIdentifier> copyModelsFieldData(sourceModel)
 
-Copy all existing field data from a BioModel/MathModel if not already owned.
+Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
 
 ### Example
 
@@ -234,7 +234,7 @@ public class Example {
 
 > ApiResponse<Map<String, ExternalDataIdentifier>> copyModelsFieldData copyModelsFieldDataWithHttpInfo(sourceModel)
 
-Copy all existing field data from a BioModel/MathModel if not already owned.
+Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
 
 ### Example
 
@@ -303,9 +303,9 @@ ApiResponse<[**Map&lt;String, ExternalDataIdentifier&gt;**](ExternalDataIdentifi
 
 ## createFromAnalyzedFile
 
-> SavedResults createFromAnalyzedFile(analyzedFile)
+> FieldDataSavedResults createFromAnalyzedFile(analyzedFile)
 
-Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
 
 ### Example
 
@@ -327,7 +327,7 @@ public class Example {
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         AnalyzedFile analyzedFile = new AnalyzedFile(); // AnalyzedFile | 
         try {
-            SavedResults result = apiInstance.createFromAnalyzedFile(analyzedFile);
+            FieldDataSavedResults result = apiInstance.createFromAnalyzedFile(analyzedFile);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling FieldDataResourceApi#createFromAnalyzedFile");
@@ -349,7 +349,7 @@ public class Example {
 
 ### Return type
 
-[**SavedResults**](SavedResults.md)
+[**FieldDataSavedResults**](FieldDataSavedResults.md)
 
 
 ### Authorization
@@ -370,9 +370,9 @@ public class Example {
 
 ## createFromAnalyzedFileWithHttpInfo
 
-> ApiResponse<SavedResults> createFromAnalyzedFile createFromAnalyzedFileWithHttpInfo(analyzedFile)
+> ApiResponse<FieldDataSavedResults> createFromAnalyzedFile createFromAnalyzedFileWithHttpInfo(analyzedFile)
 
-Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
 
 ### Example
 
@@ -395,7 +395,7 @@ public class Example {
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         AnalyzedFile analyzedFile = new AnalyzedFile(); // AnalyzedFile | 
         try {
-            ApiResponse<SavedResults> response = apiInstance.createFromAnalyzedFileWithHttpInfo(analyzedFile);
+            ApiResponse<FieldDataSavedResults> response = apiInstance.createFromAnalyzedFileWithHttpInfo(analyzedFile);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
@@ -419,7 +419,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**SavedResults**](SavedResults.md)>
+ApiResponse<[**FieldDataSavedResults**](FieldDataSavedResults.md)>
 
 
 ### Authorization
@@ -443,7 +443,7 @@ ApiResponse<[**SavedResults**](SavedResults.md)>
 
 > void createFromSimulation(simKeyReference, jobIndex, newFieldDataName)
 
-Create new field data from a simulation.
+Create new field data from existing simulation results.
 
 ### Example
 
@@ -513,7 +513,7 @@ null (empty response body)
 
 > ApiResponse<Void> createFromSimulation createFromSimulationWithHttpInfo(simKeyReference, jobIndex, newFieldDataName)
 
-Create new field data from a simulation.
+Create new field data from existing simulation results.
 
 ### Example
 
@@ -851,9 +851,9 @@ ApiResponse<[**List&lt;FieldDataReference&gt;**](FieldDataReference.md)>
 
 ## getShapeFromID
 
-> Shape getShapeFromID(fieldDataID)
+> FieldDataShape getShapeFromID(fieldDataID)
 
-Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers.
+Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
 
 ### Example
 
@@ -875,7 +875,7 @@ public class Example {
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         String fieldDataID = "fieldDataID_example"; // String | 
         try {
-            Shape result = apiInstance.getShapeFromID(fieldDataID);
+            FieldDataShape result = apiInstance.getShapeFromID(fieldDataID);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling FieldDataResourceApi#getShapeFromID");
@@ -897,7 +897,7 @@ public class Example {
 
 ### Return type
 
-[**Shape**](Shape.md)
+[**FieldDataShape**](FieldDataShape.md)
 
 
 ### Authorization
@@ -918,9 +918,9 @@ public class Example {
 
 ## getShapeFromIDWithHttpInfo
 
-> ApiResponse<Shape> getShapeFromID getShapeFromIDWithHttpInfo(fieldDataID)
+> ApiResponse<FieldDataShape> getShapeFromID getShapeFromIDWithHttpInfo(fieldDataID)
 
-Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers.
+Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
 
 ### Example
 
@@ -943,7 +943,7 @@ public class Example {
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
         String fieldDataID = "fieldDataID_example"; // String | 
         try {
-            ApiResponse<Shape> response = apiInstance.getShapeFromIDWithHttpInfo(fieldDataID);
+            ApiResponse<FieldDataShape> response = apiInstance.getShapeFromIDWithHttpInfo(fieldDataID);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
@@ -967,7 +967,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**Shape**](Shape.md)>
+ApiResponse<[**FieldDataShape**](FieldDataShape.md)>
 
 
 ### Authorization

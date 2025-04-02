@@ -15,6 +15,8 @@ docs/Extent.md
 docs/ExternalDataIdentifier.md
 docs/FieldDataReference.md
 docs/FieldDataResourceApi.md
+docs/FieldDataSavedResults.md
+docs/FieldDataShape.md
 docs/HelloWorldApi.md
 docs/HelloWorldMessage.md
 docs/HtcJobID.md
@@ -26,9 +28,7 @@ docs/ModelType.md
 docs/Origin.md
 docs/Publication.md
 docs/PublicationResourceApi.md
-docs/SavedResults.md
 docs/SchedulerStatus.md
-docs/Shape.md
 docs/SimulationExecutionStatusRecord.md
 docs/SimulationJobStatusRecord.md
 docs/SimulationMessage.md
@@ -78,6 +78,8 @@ src/main/java/org/vcell/restclient/model/Domain.java
 src/main/java/org/vcell/restclient/model/Extent.java
 src/main/java/org/vcell/restclient/model/ExternalDataIdentifier.java
 src/main/java/org/vcell/restclient/model/FieldDataReference.java
+src/main/java/org/vcell/restclient/model/FieldDataSavedResults.java
+src/main/java/org/vcell/restclient/model/FieldDataShape.java
 src/main/java/org/vcell/restclient/model/HelloWorldMessage.java
 src/main/java/org/vcell/restclient/model/HtcJobID.java
 src/main/java/org/vcell/restclient/model/ISize.java
@@ -87,9 +89,7 @@ src/main/java/org/vcell/restclient/model/MathmodelRef.java
 src/main/java/org/vcell/restclient/model/ModelType.java
 src/main/java/org/vcell/restclient/model/Origin.java
 src/main/java/org/vcell/restclient/model/Publication.java
-src/main/java/org/vcell/restclient/model/SavedResults.java
 src/main/java/org/vcell/restclient/model/SchedulerStatus.java
-src/main/java/org/vcell/restclient/model/Shape.java
 src/main/java/org/vcell/restclient/model/SimulationExecutionStatusRecord.java
 src/main/java/org/vcell/restclient/model/SimulationJobStatusRecord.java
 src/main/java/org/vcell/restclient/model/SimulationMessage.java

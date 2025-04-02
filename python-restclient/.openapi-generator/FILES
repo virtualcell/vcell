@@ -15,6 +15,8 @@ docs/Extent.md
 docs/ExternalDataIdentifier.md
 docs/FieldDataReference.md
 docs/FieldDataResourceApi.md
+docs/FieldDataSavedResults.md
+docs/FieldDataShape.md
 docs/HelloWorldApi.md
 docs/HelloWorldMessage.md
 docs/HtcJobID.md
@@ -26,9 +28,7 @@ docs/ModelType.md
 docs/Origin.md
 docs/Publication.md
 docs/PublicationResourceApi.md
-docs/SavedResults.md
 docs/SchedulerStatus.md
-docs/Shape.md
 docs/SimulationExecutionStatusRecord.md
 docs/SimulationJobStatusRecord.md
 docs/SimulationMessage.md
@@ -76,6 +76,8 @@ vcell_client/models/domain.py
 vcell_client/models/extent.py
 vcell_client/models/external_data_identifier.py
 vcell_client/models/field_data_reference.py
+vcell_client/models/field_data_saved_results.py
+vcell_client/models/field_data_shape.py
 vcell_client/models/hello_world_message.py
 vcell_client/models/htc_job_id.py
 vcell_client/models/i_size.py
@@ -85,9 +87,7 @@ vcell_client/models/mathmodel_ref.py
 vcell_client/models/model_type.py
 vcell_client/models/origin.py
 vcell_client/models/publication.py
-vcell_client/models/saved_results.py
 vcell_client/models/scheduler_status.py
-vcell_client/models/shape.py
 vcell_client/models/simulation_execution_status_record.py
 vcell_client/models/simulation_job_status_record.py
 vcell_client/models/simulation_message.py

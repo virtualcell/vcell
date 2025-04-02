@@ -50,6 +50,8 @@ from vcell_client.models.domain import Domain
 from vcell_client.models.extent import Extent
 from vcell_client.models.external_data_identifier import ExternalDataIdentifier
 from vcell_client.models.field_data_reference import FieldDataReference
+from vcell_client.models.field_data_saved_results import FieldDataSavedResults
+from vcell_client.models.field_data_shape import FieldDataShape
 from vcell_client.models.hello_world_message import HelloWorldMessage
 from vcell_client.models.htc_job_id import HtcJobID
 from vcell_client.models.i_size import ISize
@@ -59,9 +61,7 @@ from vcell_client.models.mathmodel_ref import MathmodelRef
 from vcell_client.models.model_type import ModelType
 from vcell_client.models.origin import Origin
 from vcell_client.models.publication import Publication
-from vcell_client.models.saved_results import SavedResults
 from vcell_client.models.scheduler_status import SchedulerStatus
-from vcell_client.models.shape import Shape
 from vcell_client.models.simulation_execution_status_record import SimulationExecutionStatusRecord
 from vcell_client.models.simulation_job_status_record import SimulationJobStatusRecord
 from vcell_client.models.simulation_message import SimulationMessage

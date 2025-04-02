@@ -4,19 +4,19 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**analyze_file**](FieldDataResourceApi.md#analyze_file) | **POST** /api/v1/fieldData/analyzeFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
-[**copy_models_field_data**](FieldDataResourceApi.md#copy_models_field_data) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel if not already owned.
-[**create_from_analyzed_file**](FieldDataResourceApi.md#create_from_analyzed_file) | **POST** /api/v1/fieldData/createFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server.
-[**create_from_simulation**](FieldDataResourceApi.md#create_from_simulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from a simulation.
+[**analyze_file**](FieldDataResourceApi.md#analyze_file) | **POST** /api/v1/fieldData/analyzeFile | Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don&#39;t use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+[**copy_models_field_data**](FieldDataResourceApi.md#copy_models_field_data) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
+[**create_from_analyzed_file**](FieldDataResourceApi.md#create_from_analyzed_file) | **POST** /api/v1/fieldData/createFromAnalyzedFile | Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
+[**create_from_simulation**](FieldDataResourceApi.md#create_from_simulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results.
 [**delete**](FieldDataResourceApi.md#delete) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data.
 [**get_all_ids**](FieldDataResourceApi.md#get_all_ids) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data.
-[**get_shape_from_id**](FieldDataResourceApi.md#get_shape_from_id) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers.
+[**get_shape_from_id**](FieldDataResourceApi.md#get_shape_from_id) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
 
 
 # **analyze_file**
 > AnalyzedFile analyze_file(file=file, file_name=file_name)
 
-Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don't use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 
 ### Example
 
@@ -47,7 +47,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     file_name = 'file_name_example' # str |  (optional)
 
     try:
-        # Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+        # Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don't use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
         api_response = api_instance.analyze_file(file=file, file_name=file_name)
         print("The response of FieldDataResourceApi->analyze_file:\n")
         pprint(api_response)
@@ -89,7 +89,7 @@ Name | Type | Description  | Notes
 # **copy_models_field_data**
 > Dict[str, ExternalDataIdentifier] copy_models_field_data(source_model=source_model)
 
-Copy all existing field data from a BioModel/MathModel if not already owned.
+Copy all existing field data from a BioModel/MathModel that you have access to, but don't own.
 
 ### Example
 
@@ -120,7 +120,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     source_model = vcell_client.SourceModel() # SourceModel |  (optional)
 
     try:
-        # Copy all existing field data from a BioModel/MathModel if not already owned.
+        # Copy all existing field data from a BioModel/MathModel that you have access to, but don't own.
         api_response = api_instance.copy_models_field_data(source_model=source_model)
         print("The response of FieldDataResourceApi->copy_models_field_data:\n")
         pprint(api_response)
@@ -159,9 +159,9 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **create_from_analyzed_file**
-> SavedResults create_from_analyzed_file(analyzed_file=analyzed_file)
+> FieldDataSavedResults create_from_analyzed_file(analyzed_file=analyzed_file)
 
-Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
 
 ### Example
 
@@ -170,7 +170,7 @@ import time
 import os
 import vcell_client
 from vcell_client.models.analyzed_file import AnalyzedFile
-from vcell_client.models.saved_results import SavedResults
+from vcell_client.models.field_data_saved_results import FieldDataSavedResults
 from vcell_client.rest import ApiException
 from pprint import pprint
 
@@ -192,7 +192,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     analyzed_file = vcell_client.AnalyzedFile() # AnalyzedFile |  (optional)
 
     try:
-        # Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+        # Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
         api_response = api_instance.create_from_analyzed_file(analyzed_file=analyzed_file)
         print("The response of FieldDataResourceApi->create_from_analyzed_file:\n")
         pprint(api_response)
@@ -210,7 +210,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**SavedResults**](SavedResults.md)
+[**FieldDataSavedResults**](FieldDataSavedResults.md)
 
 ### Authorization
 
@@ -233,7 +233,7 @@ Name | Type | Description  | Notes
 # **create_from_simulation**
 > create_from_simulation(sim_key_reference=sim_key_reference, job_index=job_index, new_field_data_name=new_field_data_name)
 
-Create new field data from a simulation.
+Create new field data from existing simulation results.
 
 ### Example
 
@@ -264,7 +264,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     new_field_data_name = 'new_field_data_name_example' # str |  (optional)
 
     try:
-        # Create new field data from a simulation.
+        # Create new field data from existing simulation results.
         api_instance.create_from_simulation(sim_key_reference=sim_key_reference, job_index=job_index, new_field_data_name=new_field_data_name)
     except Exception as e:
         print("Exception when calling FieldDataResourceApi->create_from_simulation: %s\n" % e)
@@ -438,9 +438,9 @@ This endpoint does not need any parameter.
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **get_shape_from_id**
-> Shape get_shape_from_id(field_data_id)
+> FieldDataShape get_shape_from_id(field_data_id)
 
-Get the shape of the field data. That is it's size, origin, extent, and data identifiers.
+Get the shape of the field data. That is it's size, origin, extent, times, and data identifiers.
 
 ### Example
 
@@ -448,7 +448,7 @@ Get the shape of the field data. That is it's size, origin, extent, and data ide
 import time
 import os
 import vcell_client
-from vcell_client.models.shape import Shape
+from vcell_client.models.field_data_shape import FieldDataShape
 from vcell_client.rest import ApiException
 from pprint import pprint
 
@@ -470,7 +470,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     field_data_id = 'field_data_id_example' # str | 
 
     try:
-        # Get the shape of the field data. That is it's size, origin, extent, and data identifiers.
+        # Get the shape of the field data. That is it's size, origin, extent, times, and data identifiers.
         api_response = api_instance.get_shape_from_id(field_data_id)
         print("The response of FieldDataResourceApi->get_shape_from_id:\n")
         pprint(api_response)
@@ -488,7 +488,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**Shape**](Shape.md)
+[**FieldDataShape**](FieldDataShape.md)
 
 ### Authorization
 

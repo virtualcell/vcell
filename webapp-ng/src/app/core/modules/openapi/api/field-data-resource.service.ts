@@ -25,9 +25,9 @@ import { ExternalDataIdentifier } from '../model/external-data-identifier';
 // @ts-ignore
 import { FieldDataReference } from '../model/field-data-reference';
 // @ts-ignore
-import { SavedResults } from '../model/saved-results';
+import { FieldDataSavedResults } from '../model/field-data-saved-results';
 // @ts-ignore
-import { Shape } from '../model/shape';
+import { FieldDataShape } from '../model/field-data-shape';
 // @ts-ignore
 import { SourceModel } from '../model/source-model';
 
@@ -181,7 +181,7 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
     }
 
     /**
-     * Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+     * Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don\&#39;t use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
      * @param file 
      * @param fileName 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -269,7 +269,7 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
     }
 
     /**
-     * Copy all existing field data from a BioModel/MathModel if not already owned.
+     * Copy all existing field data from a BioModel/MathModel that you have access to, but don\&#39;t own.
      * @param sourceModel 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -340,14 +340,14 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
     }
 
     /**
-     * Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+     * Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
      * @param analyzedFile 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createFromAnalyzedFile(analyzedFile?: AnalyzedFile, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<SavedResults>;
-    public createFromAnalyzedFile(analyzedFile?: AnalyzedFile, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<SavedResults>>;
-    public createFromAnalyzedFile(analyzedFile?: AnalyzedFile, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<SavedResults>>;
+    public createFromAnalyzedFile(analyzedFile?: AnalyzedFile, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<FieldDataSavedResults>;
+    public createFromAnalyzedFile(analyzedFile?: AnalyzedFile, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<FieldDataSavedResults>>;
+    public createFromAnalyzedFile(analyzedFile?: AnalyzedFile, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<FieldDataSavedResults>>;
     public createFromAnalyzedFile(analyzedFile?: AnalyzedFile, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
@@ -397,7 +397,7 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
         }
 
         let localVarPath = `/api/v1/fieldData/createFromAnalyzedFile`;
-        return this.httpClient.request<SavedResults>('post', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request<FieldDataSavedResults>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: analyzedFile,
@@ -411,7 +411,7 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
     }
 
     /**
-     * Create new field data from a simulation.
+     * Create new field data from existing simulation results.
      * @param simKeyReference 
      * @param jobIndex 
      * @param newFieldDataName 
@@ -559,14 +559,14 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
     }
 
     /**
-     * Get the shape of the field data. That is it\&#39;s size, origin, extent, and data identifiers.
+     * Get the shape of the field data. That is it\&#39;s size, origin, extent, times, and data identifiers.
      * @param fieldDataID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getShapeFromID(fieldDataID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<Shape>;
-    public getShapeFromID(fieldDataID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<Shape>>;
-    public getShapeFromID(fieldDataID: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<Shape>>;
+    public getShapeFromID(fieldDataID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<FieldDataShape>;
+    public getShapeFromID(fieldDataID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<FieldDataShape>>;
+    public getShapeFromID(fieldDataID: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<FieldDataShape>>;
     public getShapeFromID(fieldDataID: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
         if (fieldDataID === null || fieldDataID === undefined) {
             throw new Error('Required parameter fieldDataID was null or undefined when calling getShapeFromID.');
@@ -610,7 +610,7 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
         }
 
         let localVarPath = `/api/v1/fieldData/shape/${this.configuration.encodeParam({name: "fieldDataID", value: fieldDataID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
-        return this.httpClient.request<Shape>('get', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request<FieldDataShape>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

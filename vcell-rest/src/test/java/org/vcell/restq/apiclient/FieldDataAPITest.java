@@ -13,10 +13,7 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.FieldDataResourceApi;
 import org.vcell.restclient.api.UsersResourceApi;
-import org.vcell.restclient.model.AnalyzedFile;
-import org.vcell.restclient.model.FieldDataReference;
-import org.vcell.restclient.model.SavedResults;
-import org.vcell.restclient.model.Shape;
+import org.vcell.restclient.model.*;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
@@ -118,10 +115,10 @@ public class FieldDataAPITest {
         saveFieldDataFromFile.setShortSpecData(matrix); saveFieldDataFromFile.varNames(varNames);
         saveFieldDataFromFile.times(times); saveFieldDataFromFile.origin(DtoModelTransforms.originToDTO(origin)); saveFieldDataFromFile.extent(DtoModelTransforms.extentToDTO(extent));
         saveFieldDataFromFile.isize(DtoModelTransforms.iSizeToDTO(iSize)); saveFieldDataFromFile.annotation("test annotation"); saveFieldDataFromFile.name("TestFile");
-        SavedResults results = fieldDataResourceApi.createFromAnalyzedFile(saveFieldDataFromFile);
+        FieldDataSavedResults results = fieldDataResourceApi.createFromAnalyzedFile(saveFieldDataFromFile);
 
         // File is Saved on File System
-        Shape fieldDataInfo = fieldDataResourceApi.getShapeFromID(results.getFieldDataKey());
+        FieldDataShape fieldDataInfo = fieldDataResourceApi.getShapeFromID(results.getFieldDataKey());
         Assertions.assertEquals(saveFieldDataFromFile.getName(), results.getFieldDataName());
         Assertions.assertTrue(origin.compareEqual(DtoModelTransforms.dtoToOrigin(fieldDataInfo.getOrigin())));
         Assertions.assertTrue(extent.compareEqual(DtoModelTransforms.dtoToExtent(fieldDataInfo.getExtent())));
@@ -167,10 +164,10 @@ public class FieldDataAPITest {
         Assertions.assertNotNull(results);
         Assertions.assertNotNull(results.getShortSpecData());
 
-        SavedResults saveResults = fieldDataResourceApi.createFromAnalyzedFile(results);
+        FieldDataSavedResults saveResults = fieldDataResourceApi.createFromAnalyzedFile(results);
         Assertions.assertNotNull(saveResults);
 
-        Shape fieldDataInfo = fieldDataResourceApi.getShapeFromID(saveResults.getFieldDataKey());
+        FieldDataShape fieldDataInfo = fieldDataResourceApi.getShapeFromID(saveResults.getFieldDataKey());
         Assertions.assertNotNull(fieldDataInfo);
         Assertions.assertTrue(DtoModelTransforms.dtoToOrigin(fieldDataInfo.getOrigin()).compareEqual(new Origin(0.0, 0.0, 0.0)));
         Assertions.assertTrue(DtoModelTransforms.dtoToExtent(fieldDataInfo.getExtent()).compareEqual(new Extent(684.9333393978472, 684.9333393978472, 1)));

@@ -30,16 +30,17 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Model tests for Shape
+ * Model tests for FieldDataShape
  */
-public class ShapeTest {
+public class FieldDataShapeTest {
+    private final FieldDataShape model = new FieldDataShape();
 
     /**
-     * Model tests for Shape
+     * Model tests for FieldDataShape
      */
     @Test
-    public void testShape() {
-        // TODO: test Shape
+    public void testFieldDataShape() {
+        // TODO: test FieldDataShape
     }
 
     /**

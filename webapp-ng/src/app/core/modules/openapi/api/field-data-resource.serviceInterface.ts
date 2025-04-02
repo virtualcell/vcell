@@ -16,8 +16,8 @@ import { Observable }                                        from 'rxjs';
 import { AnalyzedFile } from '../model/models';
 import { ExternalDataIdentifier } from '../model/models';
 import { FieldDataReference } from '../model/models';
-import { SavedResults } from '../model/models';
-import { Shape } from '../model/models';
+import { FieldDataSavedResults } from '../model/models';
+import { FieldDataShape } from '../model/models';
 import { SourceModel } from '../model/models';
 
 
@@ -37,7 +37,7 @@ export interface FieldDataResourceServiceInterface {
     _delete(fieldDataID: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
-     * Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+     * Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don\&#39;t use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
      * 
      * @param file 
      * @param fileName 
@@ -45,21 +45,21 @@ export interface FieldDataResourceServiceInterface {
     analyzeFile(file?: Blob, fileName?: string, extraHttpRequestParams?: any): Observable<AnalyzedFile>;
 
     /**
-     * Copy all existing field data from a BioModel/MathModel if not already owned.
+     * Copy all existing field data from a BioModel/MathModel that you have access to, but don\&#39;t own.
      * 
      * @param sourceModel 
      */
     copyModelsFieldData(sourceModel?: SourceModel, extraHttpRequestParams?: any): Observable<{ [key: string]: ExternalDataIdentifier; }>;
 
     /**
-     * Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+     * Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
      * 
      * @param analyzedFile 
      */
-    createFromAnalyzedFile(analyzedFile?: AnalyzedFile, extraHttpRequestParams?: any): Observable<SavedResults>;
+    createFromAnalyzedFile(analyzedFile?: AnalyzedFile, extraHttpRequestParams?: any): Observable<FieldDataSavedResults>;
 
     /**
-     * Create new field data from a simulation.
+     * Create new field data from existing simulation results.
      * 
      * @param simKeyReference 
      * @param jobIndex 
@@ -74,10 +74,10 @@ export interface FieldDataResourceServiceInterface {
     getAllIDs(extraHttpRequestParams?: any): Observable<Array<FieldDataReference>>;
 
     /**
-     * Get the shape of the field data. That is it\&#39;s size, origin, extent, and data identifiers.
+     * Get the shape of the field data. That is it\&#39;s size, origin, extent, times, and data identifiers.
      * 
      * @param fieldDataID 
      */
-    getShapeFromID(fieldDataID: string, extraHttpRequestParams?: any): Observable<Shape>;
+    getShapeFromID(fieldDataID: string, extraHttpRequestParams?: any): Observable<FieldDataShape>;
 
 }
