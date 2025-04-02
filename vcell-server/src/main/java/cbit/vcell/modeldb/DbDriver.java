@@ -31,6 +31,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import cbit.vcell.field.io.CopyFieldDataResult;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -38,7 +39,6 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.pub.Publication;
-import org.vcell.util.BeanUtils;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
@@ -631,12 +631,12 @@ public abstract class DbDriver {
         return FieldDataDBOperationDriver.fieldDataDBOperation(con, keyFactory, user, fieldDataDBOperationSpec);
     }
 
-    public static FieldDataDBOperationResults fieldDataCopy(Connection con, KeyFactory keyFactory, User user,
-                                                            User sourceOwner, String[] sourceFuncNames,
-                                                            String versionTypeName, String versionName) throws SQLException, DataAccessException{
+    public static CopyFieldDataResult fieldDataCopy(Connection con, KeyFactory keyFactory, User user,
+                                                    User sourceOwner, String sourceFuncName,
+                                                    String versionTypeName, String versionName) throws SQLException, DataAccessException{
 
-        return FieldDataDBOperationDriver.copyNoConflict(con, keyFactory, user, sourceOwner,
-                sourceFuncNames, versionTypeName, versionName);
+        return FieldDataDBOperationDriver.copyFieldData(con, keyFactory, user, sourceOwner,
+                sourceFuncName, versionTypeName, versionName);
     }
 
 

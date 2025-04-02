@@ -10,19 +10,14 @@
 
 package cbit.vcell.field.db;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Vector;
-
-import javax.swing.Timer;
-
+import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.io.CopyFieldDataResult;
+import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.messaging.db.SimulationJobTable;
+import cbit.vcell.modeldb.*;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.simdata.SimulationData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.KeyFactory;
@@ -33,24 +28,18 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VersionableType;
 
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.messaging.db.SimulationJobTable;
-import cbit.vcell.modeldb.BioModelSimContextLinkTable;
-import cbit.vcell.modeldb.BioModelSimulationLinkTable;
-import cbit.vcell.modeldb.BioModelTable;
-import cbit.vcell.modeldb.DbDriver;
-import cbit.vcell.modeldb.ExternalDataTable;
-import cbit.vcell.modeldb.MathDescExternalDataLinkTable;
-import cbit.vcell.modeldb.MathDescTable;
-import cbit.vcell.modeldb.MathModelSimulationLinkTable;
-import cbit.vcell.modeldb.MathModelTable;
-import cbit.vcell.modeldb.SimContextTable;
-import cbit.vcell.modeldb.SimulationTable;
-import cbit.vcell.modeldb.UserTable;
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.simdata.SimulationData;
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.math.BigDecimal;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Vector;
 
 public class FieldDataDBOperationDriver{
 	private final static Logger lg = LogManager.getLogger(FieldDataDBOperationDriver.class);
@@ -104,82 +93,63 @@ public class FieldDataDBOperationDriver{
 
 	}
 
-	public static FieldDataDBOperationResults copyNoConflict(Connection con, KeyFactory keyFactory, User user,
-															  User sourceOwner, String[] sourceFunctionNames,
-															  String versionTypeName, String versionName) throws SQLException, DataAccessException {
+	public static CopyFieldDataResult copyFieldData(Connection con, KeyFactory keyFactory, User user,
+													User sourceOwner, String sourceFunctionName,
+													String versionTypeName, String versionName) throws SQLException, DataAccessException {
 			//get all current ExtDataIDs
-			ExternalDataIdentifier[] existingExtDataIDArr =
+			FieldDataDBOperationResults allIDs =
 				FieldDataDBOperationDriver.fieldDataDBOperation(
-					con, keyFactory, user,FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
-			//Rename FieldFunc names if necessary
-			Hashtable<String,String> newNameOrigNameHash = new Hashtable<String, String>();
-			for(int i=0;i<sourceFunctionNames.length;i+= 1){
-				String newFieldFuncName = sourceFunctionNames[i];
-				while(true){
-					boolean bNameConflictExists = false;
-					for(int j=0;j<existingExtDataIDArr.length;j+= 1){
-						if(existingExtDataIDArr[j].getName().equals(newFieldFuncName)){
-							bNameConflictExists = true;
-							break;
-						}
-					}
-					bNameConflictExists =
-						bNameConflictExists || newNameOrigNameHash.containsKey(newFieldFuncName);
-					if(!bNameConflictExists){
-						newNameOrigNameHash.put(newFieldFuncName,sourceFunctionNames[i]);
-						break;
-					}
-					newFieldFuncName = TokenMangler.getNextEnumeratedToken(newFieldFuncName);
+					con, keyFactory, user,FieldDataDBOperationSpec.createGetExtDataIDsSpec(user));
+
+			ExternalDataIdentifier[] existingExtDataIDArr = allIDs.extDataIDArr;
+			String sourceAnnotation = "";
+
+			Set<String> usedNames = new HashSet<>();
+			String newCopiedName = sourceFunctionName;
+			ExternalDataIdentifier originalEDI = null;
+			for (int i = 0; i < existingExtDataIDArr.length; i++){
+				ExternalDataIdentifier edi = existingExtDataIDArr[i];
+				usedNames.add(edi.getName());
+				if (edi.getName().equals(sourceFunctionName)){
+					originalEDI = edi;
+					sourceAnnotation = allIDs.extDataAnnotArr[i];
 				}
-			}
-			//Add new ExternalDataIdentifier (FieldData ID) to DB
-			//Copy source annotation
-			FieldDataDBOperationResults sourceUserExtDataInfo =
-				fieldDataDBOperation(con,keyFactory, user,
-						FieldDataDBOperationSpec.createGetExtDataIDsSpec(sourceOwner));
-			ExternalDataIdentifier[] sourceUserExtDataIDArr = sourceUserExtDataInfo.extDataIDArr;
-			Hashtable<String, ExternalDataIdentifier> oldNameNewIDHash =
-				new Hashtable<String, ExternalDataIdentifier>();
-			Hashtable<String, KeyValue> oldNameOldExtDataIDKey =
-				new Hashtable<String, KeyValue>();
-			String[] newFieldFuncNamesArr = newNameOrigNameHash.keySet().toArray(new String[0]);
-			for(int i=0;i<newFieldFuncNamesArr.length;i+= 1){
-				//find orig annotation
-				String origAnnotation =
-					"Copy Field Data name used Field Data function\r\n"+
-					"Source type: "+versionTypeName+"\r\n"+
-					"Source owner: "+sourceOwner.getName()+"\r\n"+
-					"Source name: "+versionName+"\r\n"+
-					"Original Field Data name: "+newNameOrigNameHash.get(newFieldFuncNamesArr[i])+"\r\n"+
-					"New Field Data name: "+newFieldFuncNamesArr[i]+"\r\n"+
-					"Source Annotation: "+newFieldFuncNamesArr[i]+"\r\n";
-				for(int j=0;j<sourceUserExtDataInfo.extDataAnnotArr.length;j+= 1){
-					String originalName = newNameOrigNameHash.get(newFieldFuncNamesArr[i]);
-					if(sourceUserExtDataIDArr[j].getName().equals(originalName)){
-						oldNameOldExtDataIDKey.put(originalName, sourceUserExtDataInfo.extDataIDArr[j].getKey());
-						origAnnotation+= sourceUserExtDataInfo.extDataAnnotArr[j];
-						break;
-					}
-				}
-				//
-				FieldDataDBOperationResults fieldDataDBOperationResults =
-					fieldDataDBOperation(con,keyFactory, user,
-							FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(
-									user, newFieldFuncNamesArr[i],origAnnotation));
-//				errorCleanupExtDataIDV.add(fieldDataDBOperationResults.extDataID);
-				String origFieldFuncName =
-					newNameOrigNameHash.get(fieldDataDBOperationResults.extDataID.getName());
-				if(origFieldFuncName == null){
-					throw new DataAccessException("couldn't find original FieldFuncName using new ExternalDataId");
-				}
-				oldNameNewIDHash.put(origFieldFuncName,fieldDataDBOperationResults.extDataID);
 			}
 
+			if (originalEDI == null){
+				throw new DataAccessException("Can't find original External Data Identifier for: " + sourceFunctionName);
+			}
+
+			// Unique name
+			while (usedNames.contains(sourceFunctionName)){
+				newCopiedName = TokenMangler.getNextEnumeratedToken(sourceFunctionName);
+			}
+
+			//Add new ExternalDataIdentifier (FieldData ID) to DB
+			//Copy source annotation
+
+			//find orig annotation
+			String copiedAnnotation =
+				"Copy Field Data name used Field Data function\r\n"+
+				"Source type: "+versionTypeName+"\r\n"+
+				"Source owner: "+sourceOwner.getName()+"\r\n"+
+				"Source name: "+versionName+"\r\n"+
+				"Original Field Data name: "+sourceFunctionName+"\r\n"+
+				"New Field Data name: "+newCopiedName+"\r\n"+
+				"Source Annotation: "+newCopiedName+"\r\n";
+			copiedAnnotation += sourceAnnotation;
+			//
 			FieldDataDBOperationResults fieldDataDBOperationResults =
-				new FieldDataDBOperationResults();
-			fieldDataDBOperationResults.oldNameNewIDHash = oldNameNewIDHash;
-			fieldDataDBOperationResults.oldNameOldExtDataIDKeyHash = oldNameOldExtDataIDKey;
-			return fieldDataDBOperationResults;
+				fieldDataDBOperation(con,keyFactory, user,
+						FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(
+								user, newCopiedName,copiedAnnotation));
+//				errorCleanupExtDataIDV.add(fieldDataDBOperationResults.extDataID);
+			ExternalDataIdentifier externalDataIdentifier = fieldDataDBOperationResults.extDataID;
+			CopyFieldDataResult copyNoConflictResult = new CopyFieldDataResult();
+			copyNoConflictResult.newID = externalDataIdentifier;
+			copyNoConflictResult.oldID = originalEDI;
+
+			return copyNoConflictResult;
 	}
 
 	private static FieldDataDBOperationResults getExtraDataIDs(Connection con, KeyFactory keyFactory, User user,
@@ -319,12 +289,8 @@ public class FieldDataDBOperationDriver{
 
 	public static FieldDataDBOperationResults fieldDataDBOperation(Connection con, KeyFactory keyFactory, User user,
 			FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException {
-		
-		if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_COPY_NO_CONFLICT){
-			return copyNoConflict(con, keyFactory, user, fieldDataDBOperationSpec.sourceOwner.getVersion().getOwner(),
-					fieldDataDBOperationSpec.sourceNames, fieldDataDBOperationSpec.sourceOwner.getVType().getTypeName(),
-					fieldDataDBOperationSpec.sourceOwner.getVersion().getName());
-		}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS){
+
+		if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS){
 			return getExtraDataIDs(con, keyFactory, user, fieldDataDBOperationSpec);
 		}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_SAVEEXTDATAID){
 			return saveExtraDataID(con, keyFactory, user, fieldDataDBOperationSpec);

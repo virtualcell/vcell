@@ -4,11 +4,11 @@ import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.*;
+import cbit.vcell.field.io.CopyFieldDataResult;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
@@ -33,7 +33,8 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.TokenMangler;
 import org.vcell.util.document.*;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.zip.DataFormatException;
@@ -85,8 +86,8 @@ public class FieldDataDB {
         ArrayList<String> fieldNames = new ArrayList<>();
         for(SimulationOwner fieldFunctionContainer : modelsListOfContext){
             FieldFunctionArguments[] fieldFuncArgsArr = {};
-            if (fieldFunctionContainer instanceof MathDescription mathDescription){
-                fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments(mathDescription);
+            if (fieldFunctionContainer instanceof MathModel mathModel){
+                fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments(mathModel.getMathDescription());
             }else if (fieldFunctionContainer instanceof SimulationContext simulationContext){
                 fieldFuncArgsArr = simulationContext.getFieldFunctionArguments();
             }
@@ -104,17 +105,34 @@ public class FieldDataDB {
         // Copy the Field Data (First create entries in DB, then copy files) //
         ///////////////////////////////////////////////////////////////////////
 
-        // Create DB entries where new field data names are created
-        FieldDataDBOperationResults dbResults = databaseServer.copyFieldData(requester, ogOwner,
-                fieldNames.toArray(new String[0]), documentType, vcDocument.getVersion().getName());
+        Hashtable<String, ExternalDataIdentifier> oldNameNewID = new Hashtable<>();
 
-        // Tie those DB entries to newly created copies of the original field data that the requester owns
-        for (String oldName: fieldNames){
-            FieldDataFileOperationSpec fileOperationSpec = FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(dbResults.extDataID,
-                    dbResults.oldNameOldExtDataIDKeyHash.get(oldName), ogOwner, FieldDataFileOperationSpec.JOBINDEX_DEFAULT, requester);
-            dataSetController.fieldDataFileOperation(fileOperationSpec);
+        try{
+            // Tie those DB entries to newly created copies of the original field data that the requester owns
+            for (String oldName: fieldNames){
+                // Create DB entries where new field data names are created
+                CopyFieldDataResult dbResults = databaseServer.copyFieldData(requester, ogOwner,
+                        oldName, documentType, vcDocument.getVersion().getName());
+
+                FieldDataFileOperationSpec fileOperationSpec = FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(dbResults.newID,
+                        dbResults.oldID.getDataKey(), ogOwner, FieldDataFileOperationSpec.JOBINDEX_DEFAULT, requester);
+                dataSetController.fieldDataFileOperation(fileOperationSpec);
+
+                oldNameNewID.put(oldName, dbResults.newID);
+            }
+        } catch (Exception e){
+            for (String newID : oldNameNewID.keySet()){
+                try{
+                    deleteFieldData(requester, newID);
+                } catch (Exception t){
+                    logger.error("Problem removing field data with id {} that couldn't be added.", newID, t);
+                    continue;
+                }
+            }
+            throw new RuntimeException(e);
         }
-        return dbResults.oldNameNewIDHash;
+
+        return oldNameNewID;
     }
 
     public ArrayList<FieldDataResource.FieldDataReference> getAllFieldDataIDs(User user) throws SQLException, DataAccessException {
@@ -158,10 +176,12 @@ public class FieldDataDB {
         // Ensure name is unique for user
         String fieldDataName = saveFieldData.name();
         FieldDataDBOperationResults usersFieldData = databaseServer.fieldDataDBOperation(user, FieldDataDBOperationSpec.createGetExtDataIDsSpecWithSimRefs(user));
+        Set<String> namesUsed = new HashSet<>();
         for (ExternalDataIdentifier edi : usersFieldData.extDataIDArr){
-            if (edi.getName().equals(fieldDataName)){
-                fieldDataName = TokenMangler.getNextEnumeratedToken(fieldDataName);
-            }
+            namesUsed.add(edi.getName());
+        }
+        while (namesUsed.contains(fieldDataName)){
+            fieldDataName = TokenMangler.getNextEnumeratedToken(fieldDataName);
         }
 
 

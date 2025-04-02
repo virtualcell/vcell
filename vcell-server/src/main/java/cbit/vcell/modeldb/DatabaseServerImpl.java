@@ -12,9 +12,9 @@ package cbit.vcell.modeldb;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.Vector;
 
+import cbit.vcell.field.io.CopyFieldDataResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Element;
@@ -48,7 +48,6 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.FormalSpeciesType;
@@ -222,11 +221,11 @@ public FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOp
 	}
 }
 
-public FieldDataDBOperationResults copyFieldData(User user, User sourceOwner, String[] sourceFuncNames,
-												 String versionTypeName, String versionName) throws DataAccessException, ObjectNotFoundException {
+public CopyFieldDataResult copyFieldData(User user, User sourceOwner, String sourceFuncName,
+										 String versionTypeName, String versionName) throws DataAccessException, ObjectNotFoundException {
 	try {
 		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.fieldDataDBOperation opType=COPY");
-		return dbTop.fieldDataCopy(user, sourceOwner, sourceFuncNames, versionTypeName, versionName, true);
+		return dbTop.fieldDataCopy(user, sourceOwner, sourceFuncName, versionTypeName, versionName, true);
 	} catch (SQLException e) {
 		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());

@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import cbit.vcell.field.io.CopyFieldDataResult;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
@@ -207,15 +208,15 @@ FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperation
 	}
 }
 
-FieldDataDBOperationResults fieldDataCopy(User user,
-										  User sourceOwner, String[] sourceFuncNames,
-										  String versionTypeName, String versionName, boolean bEnableRetry) throws SQLException, DataAccessException {
+CopyFieldDataResult fieldDataCopy(User user,
+								  User sourceOwner, String sourceFuncName,
+								  String versionTypeName, String versionName, boolean bEnableRetry) throws SQLException, DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		FieldDataDBOperationResults fieldDataDBOperationResults =
-				DbDriver.fieldDataCopy(con, conFactory.getKeyFactory(), user, sourceOwner, sourceFuncNames,
+		CopyFieldDataResult fieldDataDBOperationResults =
+				DbDriver.fieldDataCopy(con, conFactory.getKeyFactory(), user, sourceOwner, sourceFuncName,
 						versionTypeName, versionName);
 		con.commit();
 		return fieldDataDBOperationResults;
@@ -228,7 +229,7 @@ FieldDataDBOperationResults fieldDataCopy(User user,
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return fieldDataCopy(user, sourceOwner, sourceFuncNames, versionTypeName, versionName,false);
+			return fieldDataCopy(user, sourceOwner, sourceFuncName, versionTypeName, versionName,false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null;
