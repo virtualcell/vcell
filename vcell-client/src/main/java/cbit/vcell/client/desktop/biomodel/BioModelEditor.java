@@ -31,6 +31,7 @@ import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.pathway.BioPaxObject;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.MathModelInfo;
+import org.vcell.util.document.User;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.gui.DialogUtils;
@@ -380,6 +381,10 @@ private void createNewBiomodelFromApp(){
 	try {
 		String newBMXML = XmlHelper.bioModelToXML(bioModel);
 		BioModel newBioModel = XmlHelper.XMLToBioModel(new XMLSource(newBMXML));
+		User user = getBioModelWindowManager().getUser();
+		if (newBioModel.getVersion() != null && user != null && !newBioModel.getVersion().getOwner().compareEqual(user)){
+			throw new UnsupportedOperationException("Operation not implemented for BioModels owned by others. Please save BioModel first.");
+		}
 		newBioModel.clearVersion();
 		SimulationContext[] newBMSimcontexts = newBioModel.getSimulationContexts();
 		for (int i = 0; i < newBMSimcontexts.length; i++) {
