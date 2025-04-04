@@ -28,7 +28,7 @@ public class DataSet implements java.io.Serializable
    private FileHeader fileHeader;
    private String fileName;
 
-DataSet() {
+public DataSet() {
 	dataBlockList = new Vector<DataBlock>();
 	fileHeader = new FileHeader();
 }
@@ -196,7 +196,7 @@ int getSizeZ() {
  * @return double[]
  * @param varName java.lang.String
  */
-int getVariableTypeInteger(String varName) throws IOException {
+public int getVariableTypeInteger(String varName) throws IOException {
 	for (int i=0;i<dataBlockList.size();i++){
 		DataBlock dataBlock = (DataBlock)dataBlockList.elementAt(i);
 		if (varName.trim().equals(dataBlock.getVarName().trim())){
