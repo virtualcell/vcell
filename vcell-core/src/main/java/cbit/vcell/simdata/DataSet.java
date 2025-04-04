@@ -249,7 +249,7 @@ public static ZipFile openZipFile(File zipFile) throws IOException {
  * This method was created by a SmartGuide.
  * 
  */
-void read(File file, File zipFile) throws IOException, OutOfMemoryError {
+public void read(File file, File zipFile) throws IOException, OutOfMemoryError {
 	read(file, zipFile, null);
 }
 	
