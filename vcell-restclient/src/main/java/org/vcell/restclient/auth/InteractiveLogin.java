@@ -3,6 +3,7 @@ package org.vcell.restclient.auth;
 import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.http.HTTPRequest;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
+import com.nimbusds.oauth2.sdk.id.Audience;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.id.State;
 import com.nimbusds.oauth2.sdk.pkce.CodeChallengeMethod;
@@ -27,6 +28,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class InteractiveLogin {
+    public final static String authClientID = "cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf";
+
 
     private InteractiveLogin() {
     }
@@ -50,7 +53,6 @@ public class InteractiveLogin {
      *  <br>
      *  P.S: This HTTP client created has an automated refresh capability for the access token, allowing users to stay logged in
      *  for an extended period of time.
-     * @param clientID
      * @param authServerUri
      * @param apiBaseUri
      * @param ignoreSSLCertProblems
@@ -60,7 +62,7 @@ public class InteractiveLogin {
      * @throws ParseException
      */
 
-    public static AuthApiClient login(String clientID, URI authServerUri, URI apiBaseUri, boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException {
+    public static AuthApiClient login(URI authServerUri, URI apiBaseUri, boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException {
         URI successRedirectURI = new URI(apiBaseUri+( apiBaseUri.getHost().equals("localhost")?  "" : "/login_success"));
 
         // Retrieve OpenID Provider Metadata
@@ -93,9 +95,10 @@ public class InteractiveLogin {
         String callback_endpoint_path = "/oidc_test_callback";
 
         URI redirectURI = new URI("http://" + "localhost" + ":" + localHttpServerPort + callback_endpoint_path);
-        Scope scope = new Scope("openid", "email", "profile"); //, "email"); //, "profile", "offline_access");
+        Scope scope = new Scope("openid", "email", "profile", "offline_access"); //, "email"); //, "profile", "offline_access");
+
         CodeVerifier codeVerifier = new CodeVerifier();
-        URI authRequestURI = getAuthRequestURI(oidcProviderMetadata, redirectURI, new ClientID(clientID), scope, state, codeVerifier);
+        URI authRequestURI = getAuthRequestURI(oidcProviderMetadata, redirectURI, new ClientID(authClientID), scope, state, codeVerifier, apiBaseUri);
 
         final AuthorizationResponse authorizationResponse;
         if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
@@ -120,13 +123,9 @@ public class InteractiveLogin {
             authorizationResponse = getAuthorizationResponseManual(authRequestURI);
         }
 
-        OIDCTokens oidcTokens = exchangeCodeForTokens(authorizationResponse, oidcProviderMetadata.getTokenEndpointURI(), new ClientID(clientID), scope, redirectURI, codeVerifier);
-        String accessToken = oidcTokens.getAccessToken().getValue();
-        String idToken = oidcTokens.getIDTokenString();
+        OIDCTokens oidcTokens = exchangeCodeForTokens(authorizationResponse, oidcProviderMetadata.getTokenEndpointURI(), new ClientID(authClientID), scope, redirectURI, codeVerifier);
 
-        AuthApiClient authApiClient = new AuthApiClient(apiBaseUri, oidcProviderMetadata.getTokenEndpointURI(), oidcTokens.getAccessToken(), oidcTokens.getRefreshToken(), ignoreSSLCertProblems);
-        authApiClient.setRequestInterceptor(request -> request.header("Authorization", "Bearer " + idToken));
-        return authApiClient;
+        return new AuthApiClient(apiBaseUri, oidcProviderMetadata.getTokenEndpointURI(), oidcTokens.getAccessToken(), oidcTokens.getRefreshToken(), ignoreSSLCertProblems);
     }
 
     static int findAvailablePort(List<Integer> potentialPorts) {
@@ -275,13 +274,15 @@ public class InteractiveLogin {
      * @throws IOException
      * @throws ParseException
      */
-    private static URI getAuthRequestURI(OIDCProviderMetadata oidcProviderMetadata, URI redirectURI, ClientID clientID, Scope scope, State state, CodeVerifier codeVerifier) throws URISyntaxException, IOException, ParseException {
+    private static URI getAuthRequestURI(OIDCProviderMetadata oidcProviderMetadata, URI redirectURI, ClientID clientID,
+                                         Scope scope, State state, CodeVerifier codeVerifier, URI audience) throws URISyntaxException, IOException, ParseException {
         // Create the authorization request
         URI authorizationEndpoint = oidcProviderMetadata.getAuthorizationEndpointURI();
 
         var authorizationRequest = new AuthorizationRequest.Builder(new ResponseType("code"), clientID)
                 .endpointURI(authorizationEndpoint)
                 .redirectionURI(redirectURI)
+                .customParameter("audience", audience.getScheme() + "://" + audience.getHost())
                 .state(state)
                 .scope(scope) // Add any other required scopes
                 .codeChallenge(codeVerifier, CodeChallengeMethod.S256)

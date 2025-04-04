@@ -75,7 +75,6 @@ public class VCellApiClient implements AutoCloseable {
 	private final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
 	private final URL quarkusURL;
 	private ApiClient apiClient = null;
-	private final static String authClientID = "cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf";
 	private final static String authDomain = "https://dev-dzhx7i2db3x3kkvq.us.auth0.com";
 
 	// Create a custom response handler
@@ -482,7 +481,7 @@ public class VCellApiClient implements AutoCloseable {
 	}
 
 	public void authenticate(boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException, ApiException {
-		apiClient = InteractiveLogin.login(authClientID, new URI(authDomain + "/authorize"),
+		apiClient = InteractiveLogin.login(new URI(authDomain + "/authorize"),
 				this.quarkusURL.toURI(), ignoreSSLCertProblems);
 		apiClient.setScheme(this.quarkusURL.getProtocol());
 	}
