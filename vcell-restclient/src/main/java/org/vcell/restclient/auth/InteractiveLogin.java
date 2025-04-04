@@ -29,9 +29,15 @@ import java.util.concurrent.TimeUnit;
 
 public class InteractiveLogin {
     public final static String authClientID = "cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf";
+    public final static String authDomain = "https://dev-dzhx7i2db3x3kkvq.us.auth0.com";
+
 
 
     private InteractiveLogin() {
+    }
+
+    public static AuthApiClient login() throws URISyntaxException, IOException, ParseException {
+        return login(new URI(authDomain), new URI("https://vcellapi.cam.uchc.edu"), false);
     }
 
     /**
