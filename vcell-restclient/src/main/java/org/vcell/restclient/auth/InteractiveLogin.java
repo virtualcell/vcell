@@ -285,10 +285,11 @@ public class InteractiveLogin {
         // Create the authorization request
         URI authorizationEndpoint = oidcProviderMetadata.getAuthorizationEndpointURI();
 
+        String audiencePort = audience.getHost().equals("localhost") ? ":" + audience.getPort() : "";
         var authorizationRequest = new AuthorizationRequest.Builder(new ResponseType("code"), clientID)
                 .endpointURI(authorizationEndpoint)
                 .redirectionURI(redirectURI)
-                .customParameter("audience", audience.getScheme() + "://" + audience.getHost())
+                .customParameter("audience", audience.getScheme() + "://" + audience.getHost() + audiencePort)
                 .state(state)
                 .scope(scope) // Add any other required scopes
                 .codeChallenge(codeVerifier, CodeChallengeMethod.S256)
