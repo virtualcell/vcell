@@ -181,7 +181,7 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
     }
 
     /**
-     * Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don\&#39;t use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+     * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
      * @param file 
      * @param fileName 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -340,7 +340,7 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
     }
 
     /**
-     * Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
+     * Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
      * @param analyzedFile 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -396,7 +396,7 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
             }
         }
 
-        let localVarPath = `/api/v1/fieldData/createFromAnalyzedFile`;
+        let localVarPath = `/api/v1/fieldData/createFromSpecification`;
         return this.httpClient.request<FieldDataSavedResults>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,

@@ -254,10 +254,10 @@ paths:
       security:
       - openId:
         - user
-      summary: "Analyze the field data from supported files (Tiff, Zip, and Non-GPL\
-        \ BioFormats). Please don't use color mapped images for the files (the colors\
-        \ in those images will be interpreted as separate channels). Filenames must\
-        \ be lowercase alphanumeric, and can contain underscores."
+      summary: "Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and\
+        \ create default field data specification. Color mapped images not supported\
+        \ (the colors in those images will be interpreted as separate channels). Filenames\
+        \ must be lowercase alphanumeric, and can contain underscores."
       tags:
       - Field Data Resource
       x-content-type: multipart/form-data
@@ -292,34 +292,6 @@ paths:
       - Field Data Resource
       x-content-type: application/json
       x-accepts: application/json
-  /api/v1/fieldData/createFromAnalyzedFile:
-    post:
-      operationId: createFromAnalyzedFile
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AnalyzedFile'
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldDataSavedResults'
-          description: OK
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - user
-      summary: "Take the Analyzed results of the field data, and save them to the\
-        \ server. User may adjust the analyzed file before uploading to edit defaults."
-      tags:
-      - Field Data Resource
-      x-content-type: application/json
-      x-accepts: application/json
   /api/v1/fieldData/createFromSimulation:
     post:
       operationId: createFromSimulation
@@ -342,6 +314,34 @@ paths:
       tags:
       - Field Data Resource
       x-content-type: application/x-www-form-urlencoded
+      x-accepts: application/json
+  /api/v1/fieldData/createFromSpecification:
+    post:
+      operationId: createFromAnalyzedFile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzedFile'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataSavedResults'
+          description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+      summary: "Take the field data specification, and save it to the server. User\
+        \ may adjust the analyzed file before uploading to edit defaults."
+      tags:
+      - Field Data Resource
+      x-content-type: application/json
       x-accepts: application/json
   /api/v1/fieldData/delete/{fieldDataID}:
     delete:

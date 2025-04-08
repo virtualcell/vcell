@@ -37,7 +37,7 @@ export interface FieldDataResourceServiceInterface {
     _delete(fieldDataID: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
-     * Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don\&#39;t use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+     * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
      * 
      * @param file 
      * @param fileName 
@@ -52,7 +52,7 @@ export interface FieldDataResourceServiceInterface {
     copyModelsFieldData(sourceModel?: SourceModel, extraHttpRequestParams?: any): Observable<{ [key: string]: ExternalDataIdentifier; }>;
 
     /**
-     * Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
+     * Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
      * 
      * @param analyzedFile 
      */

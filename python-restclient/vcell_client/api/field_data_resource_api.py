@@ -71,7 +71,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> AnalyzedFile:
-        """Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don't use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+        """Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 
 
         :param file:
@@ -144,7 +144,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[AnalyzedFile]:
-        """Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don't use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+        """Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 
 
         :param file:
@@ -217,7 +217,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don't use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+        """Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 
 
         :param file:
@@ -641,7 +641,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> FieldDataSavedResults:
-        """Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
+        """Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 
 
         :param analyzed_file:
@@ -710,7 +710,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[FieldDataSavedResults]:
-        """Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
+        """Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 
 
         :param analyzed_file:
@@ -779,7 +779,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
+        """Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 
 
         :param analyzed_file:
@@ -886,7 +886,7 @@ class FieldDataResourceApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/fieldData/createFromAnalyzedFile',
+            resource_path='/api/v1/fieldData/createFromSpecification',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

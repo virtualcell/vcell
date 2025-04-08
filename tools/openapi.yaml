@@ -212,10 +212,10 @@ paths:
     post:
       tags:
       - Field Data Resource
-      summary: "Analyze the field data from supported files (Tiff, Zip, and Non-GPL\
-        \ BioFormats). Please don't use color mapped images for the files (the colors\
-        \ in those images will be interpreted as separate channels). Filenames must\
-        \ be lowercase alphanumeric, and can contain underscores."
+      summary: "Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and\
+        \ create default field data specification. Color mapped images not supported\
+        \ (the colors in those images will be interpreted as separate channels). Filenames\
+        \ must be lowercase alphanumeric, and can contain underscores."
       operationId: analyzeFile
       requestBody:
         content:
@@ -270,32 +270,6 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/fieldData/createFromAnalyzedFile:
-    post:
-      tags:
-      - Field Data Resource
-      summary: "Take the Analyzed results of the field data, and save them to the\
-        \ server. User may adjust the analyzed file before uploading to edit defaults."
-      operationId: createFromAnalyzedFile
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AnalyzedFile'
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldDataSavedResults'
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - user
   /api/v1/fieldData/createFromSimulation:
     post:
       tags:
@@ -318,6 +292,32 @@ paths:
       responses:
         "201":
           description: Created
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+  /api/v1/fieldData/createFromSpecification:
+    post:
+      tags:
+      - Field Data Resource
+      summary: "Take the field data specification, and save it to the server. User\
+        \ may adjust the analyzed file before uploading to edit defaults."
+      operationId: createFromAnalyzedFile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzedFile'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataSavedResults'
         "401":
           description: Not Authorized
         "403":

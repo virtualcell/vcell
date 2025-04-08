@@ -101,7 +101,7 @@ public class FieldDataResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Operation(operationId = "analyzeFile", summary = "Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don't use color mapped images for the files (the colors in those images will be interpreted as separate channels). " +
+    @Operation(operationId = "analyzeFile", summary = "Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). " +
             "Filenames must be lowercase alphanumeric, and can contain underscores.")
     public AnalyzedFile analyzeFieldData(@RestForm File file, @RestForm String fileName){
         try{
@@ -116,13 +116,13 @@ public class FieldDataResource {
     }
 
     @POST
-    @Path("/createFromAnalyzedFile")
+    @Path("/createFromSpecification")
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(operationId = "createFromAnalyzedFile", summary = "Take the Analyzed results of the field data, and save them to the server. " +
+    @Operation(operationId = "createFromAnalyzedFile", summary = "Take the field data specification, and save it to the server. " +
             "User may adjust the analyzed file before uploading to edit defaults.")
-    public FieldDataSavedResults createNewFieldDataFromFile(AnalyzedFile saveFieldData){
+    public FieldDataSavedResults createNewFieldDataFromSpecification(AnalyzedFile saveFieldData){
         FieldDataSavedResults fieldDataSavedResults;
         try{
             User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
@@ -155,7 +155,9 @@ public class FieldDataResource {
     @Operation(operationId = "delete", summary = "Delete the selected field data.")
     public void deleteFieldData(@PathParam("fieldDataID") String fieldDataID){
         try{
-            fieldDataDB.deleteFieldData(userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER), fieldDataID);
+            ExternalDataIdentifier edi = new ExternalDataIdentifier(new KeyValue(fieldDataID), userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER),
+                    null);
+            fieldDataDB.deleteFieldData(edi);
         } catch (DataAccessException e) {
             throw new WebApplicationException(e.getMessage(), HTTP.INTERNAL_SERVER_ERROR);
         }

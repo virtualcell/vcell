@@ -4,12 +4,12 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**analyzeFile**](FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don&#39;t use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
-| [**analyzeFileWithHttpInfo**](FieldDataResourceApi.md#analyzeFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFile | Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don&#39;t use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
+| [**analyzeFile**](FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
+| [**analyzeFileWithHttpInfo**](FieldDataResourceApi.md#analyzeFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
 | [**copyModelsFieldData**](FieldDataResourceApi.md#copyModelsFieldData) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own. |
 | [**copyModelsFieldDataWithHttpInfo**](FieldDataResourceApi.md#copyModelsFieldDataWithHttpInfo) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own. |
-| [**createFromAnalyzedFile**](FieldDataResourceApi.md#createFromAnalyzedFile) | **POST** /api/v1/fieldData/createFromAnalyzedFile | Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults. |
-| [**createFromAnalyzedFileWithHttpInfo**](FieldDataResourceApi.md#createFromAnalyzedFileWithHttpInfo) | **POST** /api/v1/fieldData/createFromAnalyzedFile | Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults. |
+| [**createFromAnalyzedFile**](FieldDataResourceApi.md#createFromAnalyzedFile) | **POST** /api/v1/fieldData/createFromSpecification | Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults. |
+| [**createFromAnalyzedFileWithHttpInfo**](FieldDataResourceApi.md#createFromAnalyzedFileWithHttpInfo) | **POST** /api/v1/fieldData/createFromSpecification | Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults. |
 | [**createFromSimulation**](FieldDataResourceApi.md#createFromSimulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results. |
 | [**createFromSimulationWithHttpInfo**](FieldDataResourceApi.md#createFromSimulationWithHttpInfo) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results. |
 | [**delete**](FieldDataResourceApi.md#delete) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data. |
@@ -25,7 +25,7 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 > AnalyzedFile analyzeFile(_file, fileName)
 
-Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don&#39;t use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 
 ### Example
 
@@ -94,7 +94,7 @@ public class Example {
 
 > ApiResponse<AnalyzedFile> analyzeFile analyzeFileWithHttpInfo(_file, fileName)
 
-Analyze the field data from supported files (Tiff, Zip, and Non-GPL BioFormats). Please don&#39;t use color mapped images for the files (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 
 ### Example
 
@@ -305,7 +305,7 @@ ApiResponse<[**Map&lt;String, ExternalDataIdentifier&gt;**](ExternalDataIdentifi
 
 > FieldDataSavedResults createFromAnalyzedFile(analyzedFile)
 
-Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
+Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 
 ### Example
 
@@ -372,7 +372,7 @@ public class Example {
 
 > ApiResponse<FieldDataSavedResults> createFromAnalyzedFile createFromAnalyzedFileWithHttpInfo(analyzedFile)
 
-Take the Analyzed results of the field data, and save them to the server. User may adjust the analyzed file before uploading to edit defaults.
+Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 
 ### Example
 
