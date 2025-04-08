@@ -1504,11 +1504,6 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                     return;
                 }
 
-                // TODO: diameter of each site must be smaller than partition size on x, y, z
-
-                // TODO: diffusion speed * dt must be smaller than the partition size on x, y, z so that the particle
-                //  won't be able to jump outside the current partition or its neighboring partitions
-
                 // rate rules and assignment rules are not permitted
                 // normally it is not possible to create RateRule or AssignmentRule using the vcell UI, the Protocols subpanels are disabled
                 // we check this just in case the user is very crafty and finds a way
