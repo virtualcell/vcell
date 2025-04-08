@@ -13,11 +13,10 @@ import org.vcell.util.document.GroupAccessNone;
 import org.vcell.util.document.GroupAccessSome;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.Map;
 
 @OpenApiFilter(OpenApiFilter.RunStage.BUILD)
-public class ManuallyAddClasses implements OASFilter {
+public class ManuallyAddClasses_NOT_USED implements OASFilter {
 
     @Override
     public void filterOpenAPI(OpenAPI openAPI) {

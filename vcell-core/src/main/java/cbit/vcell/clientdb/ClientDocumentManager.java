@@ -2616,12 +2616,12 @@ private <T extends VersionInfo> T setGroupPublic0(VersionInfo versionInfo, Versi
 }
 
 
-public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersion originalOwner)
+public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersion originalOwnerDoc)
 		throws DataAccessException,MathException,ExpressionException{
 
 	ArrayList<ExternalDataIdentifier> errorCleanupExtDataIDV = new ArrayList<>();
 	try{
-		if(originalOwner == null || originalOwner.getVersion().getOwner().compareEqual(getUser())){
+		if(originalOwnerDoc == null || originalOwnerDoc.getVersion().getOwner().compareEqual(getUser())){
 			//Substitution for FieldFunc not needed for new doc or if we own doc
 			return;
 		}
