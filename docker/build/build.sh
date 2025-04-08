@@ -112,9 +112,10 @@ build_rest() {
 
 build_webapp_common() {
   config=$1
+  export BUILD_COMMAND="build_$1"
   echo "building $repo/vcell-webapp-${config}:$tag"
-  echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../webapp-ng/Dockerfile-webapp-${config} --tag $repo/vcell-webapp-${config}:$tag ../../webapp-ng"
-  $SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../webapp-ng/Dockerfile-webapp-${config} --tag $repo/vcell-webapp-${config}:$tag ../../webapp-ng
+  echo "$SUDO_CMD docker buildx build --build-arg BUILD_COMMAND=build_$1 --platform=linux/amd64 -f ../../webapp-ng/Dockerfile-webapp --tag $repo/vcell-webapp-${config}:$tag ../../webapp-ng"
+  $SUDO_CMD docker buildx build --build-arg BUILD_COMMAND=build_$1 --platform=linux/amd64 -f ../../webapp-ng/Dockerfile-webapp --tag $repo/vcell-webapp-${config}:$tag ../../webapp-ng
   if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
   if [ "$skip_push" == "false" ]; then
     $SUDO_CMD docker push $repo/vcell-webapp-${config}:$tag
