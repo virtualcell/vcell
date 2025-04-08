@@ -65,6 +65,7 @@ public class FieldDataDB {
         VCDocument vcDocument;
 
         //Get Objects from Document that might need to have FieldFuncs replaced
+        // If the requester does not have access to the Model an exception should be thrown to stop this function
         ArrayList<SimulationOwner> modelsListOfContext = new ArrayList<>();
         if(documentType.equalsIgnoreCase(VersionableType.MathModelMetaData.getTypeName())){
             BigString mathModelXML = databaseServer.getMathModelXML(requester, documentKey);
@@ -83,7 +84,7 @@ public class FieldDataDB {
         User ogOwner = vcDocument.getVersion().getOwner();
 
 		//Get Field names
-        ArrayList<String> fieldNames = new ArrayList<>();
+        Set<String> fieldNames = new HashSet<>();
         for(SimulationOwner fieldFunctionContainer : modelsListOfContext){
             FieldFunctionArguments[] fieldFuncArgsArr = {};
             if (fieldFunctionContainer instanceof MathModel mathModel){
@@ -92,14 +93,29 @@ public class FieldDataDB {
                 fieldFuncArgsArr = simulationContext.getFieldFunctionArguments();
             }
             for (FieldFunctionArguments fieldFunctionArguments : fieldFuncArgsArr) {
-                if (!fieldNames.contains(fieldFunctionArguments.getFieldName())) {
-                    fieldNames.add(fieldFunctionArguments.getFieldName());
-                }
+                fieldNames.add(fieldFunctionArguments.getFieldName());
             }
         }
         if (fieldNames.isEmpty()){
             return new Hashtable<>();
         }
+
+        // Find which ID's are appropriate
+        FieldDataDBOperationResults allIDs = databaseServer.fieldDataDBOperation(ogOwner, FieldDataDBOperationSpec.createGetExtDataIDsSpec(ogOwner));
+        ArrayList<ExternalDataIdentifier> edis = new ArrayList<>();
+        ArrayList<String> annotations = new ArrayList<>();
+        for (int i = 0; i < allIDs.extDataIDArr.length; i++){
+            ExternalDataIdentifier edi = allIDs.extDataIDArr[i];
+            if (fieldNames.contains(edi.getName())){
+                edis.add(edi);
+                annotations.add(allIDs.extDataAnnotArr[i]);
+            }
+        }
+
+        if (edis.isEmpty()){
+            throw new DataAccessException("Can't find required source External Data Identifiers for copying.");
+        }
+
 
         ///////////////////////////////////////////////////////////////////////
         // Copy the Field Data (First create entries in DB, then copy files) //
@@ -109,21 +125,21 @@ public class FieldDataDB {
 
         try{
             // Tie those DB entries to newly created copies of the original field data that the requester owns
-            for (String oldName: fieldNames){
+            for (int i = 0; i < edis.size(); i++){
                 // Create DB entries where new field data names are created
-                CopyFieldDataResult dbResults = databaseServer.copyFieldData(requester, ogOwner,
-                        oldName, documentType, vcDocument.getVersion().getName());
+                CopyFieldDataResult dbResults = databaseServer.copyFieldData(requester,
+                        edis.get(i), annotations.get(i), documentType, vcDocument.getVersion().getName());
 
                 FieldDataFileOperationSpec fileOperationSpec = FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(dbResults.newID,
                         dbResults.oldID.getDataKey(), ogOwner, FieldDataFileOperationSpec.JOBINDEX_DEFAULT, requester);
                 dataSetController.fieldDataFileOperation(fileOperationSpec);
 
-                oldNameNewID.put(oldName, dbResults.newID);
+                oldNameNewID.put(edis.get(i).getName(), dbResults.newID);
             }
         } catch (Exception e){
-            for (String newID : oldNameNewID.keySet()){
+            for (ExternalDataIdentifier newID : oldNameNewID.values()){
                 try{
-                    deleteFieldData(requester, newID);
+                    deleteFieldData(newID);
                 } catch (Exception t){
                     logger.error("Problem removing field data with id {} that couldn't be added.", newID, t);
                     continue;
@@ -223,9 +239,8 @@ public class FieldDataDB {
         dataSetController.fieldDataCopySim(simKeyValue, simInfo.getOwner(), results.extDataID, jobIndex, user);
     }
 
-    public void deleteFieldData(User user, String fieldDataID) throws DataAccessException {
-        ExternalDataIdentifier edi = new ExternalDataIdentifier(new KeyValue(fieldDataID), user, null);
-        databaseServer.fieldDataDBOperation(user, FieldDataDBOperationSpec.createDeleteExtDataIDSpec(edi)); // remove from DB
+    public void deleteFieldData(ExternalDataIdentifier edi) throws DataAccessException {
+        databaseServer.fieldDataDBOperation(edi.getOwner(), FieldDataDBOperationSpec.createDeleteExtDataIDSpec(edi)); // remove from DB
         dataSetController.fieldDataFileOperation(FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(edi)); // remove from File System
     }
 
