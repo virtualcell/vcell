@@ -10,6 +10,7 @@
     "build_stage": "ng build -c configuration_stage",
     "build_island": "ng build -c configuration_island",
     "build_remote": "ng build -c configuration_remote",
+    "start_ide": "ng serve -c configuration_ide",
     "test": "ng test",
     "test:ci": "ng test --no-watch --no-progress --browsers=ChromeHeadlessCI",
     "lint": "ng lint",

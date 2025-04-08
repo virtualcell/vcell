@@ -165,9 +165,34 @@
                   "maximumWarning": "6kb"
                 }
               ]
+            },
+            "configuration_ide": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.ide.ts"
+                }
+              ],
+              "optimization": false,
+              "outputHashing": "all",
+              "sourceMap": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb"
+                }
+              ]
             }
-
-          },
+        },
           "defaultConfiguration": ""
         },
         "serve": {
@@ -190,6 +215,9 @@
             },
             "configuration_remote": {
               "buildTarget": "login-demo:build:configuration_remote"
+            },
+            "configuration_ide": {
+              "buildTarget": "login-demo:build:configuration_ide"
             }
           }
         },
