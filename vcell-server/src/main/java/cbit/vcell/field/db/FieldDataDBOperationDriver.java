@@ -93,36 +93,25 @@ public class FieldDataDBOperationDriver{
 
 	}
 
-	public static CopyFieldDataResult copyFieldData(Connection con, KeyFactory keyFactory, User user,
-													User sourceOwner, String sourceFunctionName,
+	public static CopyFieldDataResult copyFieldData(Connection con, KeyFactory keyFactory, User requester,
+													ExternalDataIdentifier sourceID, String sourceAnnotation,
 													String versionTypeName, String versionName) throws SQLException, DataAccessException {
-			//get all current ExtDataIDs
-			FieldDataDBOperationResults allIDs =
-				FieldDataDBOperationDriver.fieldDataDBOperation(
-					con, keyFactory, user,FieldDataDBOperationSpec.createGetExtDataIDsSpec(user));
+			//get source ID an
 
-			ExternalDataIdentifier[] existingExtDataIDArr = allIDs.extDataIDArr;
-			String sourceAnnotation = "";
+			String newCopiedName = sourceID.getName();
 
+			FieldDataDBOperationResults allRequesterIDs =
+					FieldDataDBOperationDriver.fieldDataDBOperation(
+							con, keyFactory, requester,FieldDataDBOperationSpec.createGetExtDataIDsSpec(requester));
 			Set<String> usedNames = new HashSet<>();
-			String newCopiedName = sourceFunctionName;
-			ExternalDataIdentifier originalEDI = null;
-			for (int i = 0; i < existingExtDataIDArr.length; i++){
-				ExternalDataIdentifier edi = existingExtDataIDArr[i];
-				usedNames.add(edi.getName());
-				if (edi.getName().equals(sourceFunctionName)){
-					originalEDI = edi;
-					sourceAnnotation = allIDs.extDataAnnotArr[i];
-				}
-			}
 
-			if (originalEDI == null){
-				throw new DataAccessException("Can't find original External Data Identifier for: " + sourceFunctionName);
+			for (ExternalDataIdentifier edi : allRequesterIDs.extDataIDArr){
+				usedNames.add(edi.getName());
 			}
 
 			// Unique name
-			while (usedNames.contains(sourceFunctionName)){
-				newCopiedName = TokenMangler.getNextEnumeratedToken(sourceFunctionName);
+			while (usedNames.contains(sourceID.getName())){
+				newCopiedName = TokenMangler.getNextEnumeratedToken(newCopiedName);
 			}
 
 			//Add new ExternalDataIdentifier (FieldData ID) to DB
@@ -132,22 +121,22 @@ public class FieldDataDBOperationDriver{
 			String copiedAnnotation =
 				"Copy Field Data name used Field Data function\r\n"+
 				"Source type: "+versionTypeName+"\r\n"+
-				"Source owner: "+sourceOwner.getName()+"\r\n"+
+				"Source owner: "+sourceID.getOwner().getName()+"\r\n"+
 				"Source name: "+versionName+"\r\n"+
-				"Original Field Data name: "+sourceFunctionName+"\r\n"+
+				"Original Field Data name: "+sourceID.getName()+"\r\n"+
 				"New Field Data name: "+newCopiedName+"\r\n"+
 				"Source Annotation: "+newCopiedName+"\r\n";
 			copiedAnnotation += sourceAnnotation;
 			//
 			FieldDataDBOperationResults fieldDataDBOperationResults =
-				fieldDataDBOperation(con,keyFactory, user,
+				fieldDataDBOperation(con,keyFactory, requester,
 						FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(
-								user, newCopiedName,copiedAnnotation));
+								requester, newCopiedName,copiedAnnotation));
 //				errorCleanupExtDataIDV.add(fieldDataDBOperationResults.extDataID);
 			ExternalDataIdentifier externalDataIdentifier = fieldDataDBOperationResults.extDataID;
 			CopyFieldDataResult copyNoConflictResult = new CopyFieldDataResult();
 			copyNoConflictResult.newID = externalDataIdentifier;
-			copyNoConflictResult.oldID = originalEDI;
+			copyNoConflictResult.oldID = sourceID;
 
 			return copyNoConflictResult;
 	}

@@ -632,11 +632,10 @@ public abstract class DbDriver {
     }
 
     public static CopyFieldDataResult fieldDataCopy(Connection con, KeyFactory keyFactory, User user,
-                                                    User sourceOwner, String sourceFuncName,
+                                                    ExternalDataIdentifier sourceID, String sourceAnnotation,
                                                     String versionTypeName, String versionName) throws SQLException, DataAccessException{
 
-        return FieldDataDBOperationDriver.copyFieldData(con, keyFactory, user, sourceOwner,
-                sourceFuncName, versionTypeName, versionName);
+        return FieldDataDBOperationDriver.copyFieldData(con, keyFactory, user, sourceID, sourceAnnotation, versionTypeName, versionName);
     }
 
 

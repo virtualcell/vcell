@@ -23,21 +23,7 @@ import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.Preference;
-import org.vcell.util.document.BioModelChildSummary;
-import org.vcell.util.document.CurateSpec;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelChildSummary;
-import org.vcell.util.document.ReferenceQueryResult;
-import org.vcell.util.document.ReferenceQuerySpec;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.VCInfoContainer;
-import org.vcell.util.document.VersionInfo;
-import org.vcell.util.document.Versionable;
-import org.vcell.util.document.VersionableFamily;
-import org.vcell.util.document.VersionableRelationship;
-import org.vcell.util.document.VersionableType;
-import org.vcell.util.document.VersionableTypeVersion;
+import org.vcell.util.document.*;
 
 import cbit.image.VCImage;
 import cbit.sql.InsertHashtable;
@@ -209,14 +195,14 @@ FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperation
 }
 
 CopyFieldDataResult fieldDataCopy(User user,
-								  User sourceOwner, String sourceFuncName,
+								  ExternalDataIdentifier sourceID, String sourceAnnotation,
 								  String versionTypeName, String versionName, boolean bEnableRetry) throws SQLException, DataAccessException {
 
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
 		CopyFieldDataResult fieldDataDBOperationResults =
-				DbDriver.fieldDataCopy(con, conFactory.getKeyFactory(), user, sourceOwner, sourceFuncName,
+				DbDriver.fieldDataCopy(con, conFactory.getKeyFactory(), user, sourceID, sourceAnnotation,
 						versionTypeName, versionName);
 		con.commit();
 		return fieldDataDBOperationResults;
@@ -229,7 +215,7 @@ CopyFieldDataResult fieldDataCopy(User user,
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return fieldDataCopy(user, sourceOwner, sourceFuncName, versionTypeName, versionName,false);
+			return fieldDataCopy(user, sourceID, sourceAnnotation, versionTypeName, versionName,false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null;
