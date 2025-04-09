@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import cbit.vcell.geometry.GeometryClass;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 import org.vcell.sbml.vcell.StructureSizeSolver;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.ProgrammingException;
@@ -18,8 +20,8 @@ public class LegacySimContextTransformer implements SimContextTransformer {
 	public SimContextTransformation transform(SimulationContext originalSimContext, MathMappingCallback mathMappingCallback,	NetworkGenerationRequirements networkGenerationRequirements) {
 		SimulationContext transformedSimContext;
 		try {
-			transformedSimContext = (SimulationContext)BeanUtils.cloneSerializable(originalSimContext);
-		} catch (ClassNotFoundException | IOException e) {
+			transformedSimContext = XmlHelper.cloneSimulationContext(originalSimContext);
+		} catch (XmlParseException e) {
 			throw new RuntimeException("unexpected exception: "+e.getMessage(), e);
 		}
 		try {

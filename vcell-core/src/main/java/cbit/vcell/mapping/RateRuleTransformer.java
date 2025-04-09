@@ -1,71 +1,20 @@
 package cbit.vcell.mapping;
 
-import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.model.bngl.ParseException;
-import org.vcell.model.rbm.FakeReactionRuleRateParameter;
-import org.vcell.model.rbm.FakeSeedSpeciesInitialConditionsParameter;
-import org.vcell.model.rbm.NetworkConstraints;
-import org.vcell.model.rbm.RbmNetworkGenerator;
-import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
-import org.vcell.model.rbm.RbmUtils;
-import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Pair;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.UserCancelException;
-
-import cbit.vcell.bionetgen.BNGOutputFileParser;
-import cbit.vcell.bionetgen.BNGOutputSpec;
-import cbit.vcell.bionetgen.BNGParameter;
-import cbit.vcell.bionetgen.BNGReaction;
-import cbit.vcell.bionetgen.BNGSpecies;
-import cbit.vcell.bionetgen.ObservableGroup;
-import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
-import cbit.vcell.model.DistributedKinetics;
-import cbit.vcell.model.HMM_IRRKinetics;
-import cbit.vcell.model.Kinetics;
-import cbit.vcell.model.KineticsDescription;
-import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.MassActionKinetics;
 import cbit.vcell.model.Model;
-import cbit.vcell.model.Model.RbmModelContainer;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.Parameter;
-import cbit.vcell.model.Product;
-import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.Species;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.NameScope;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.server.bionetgen.BNGException;
-import cbit.vcell.server.bionetgen.BNGExecutorService;
-import cbit.vcell.server.bionetgen.BNGInput;
-import cbit.vcell.server.bionetgen.BNGOutput;
-import cbit.vcell.units.VCUnitDefinition;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.beans.PropertyVetoException;
 
 /*
  * Flattening a Rule-based Model
@@ -78,8 +27,8 @@ public class RateRuleTransformer implements SimContextTransformer {
 		SimulationContext transformedSimContext;
 		try {
 			mathMappingCallback.setMessage("transforming the Rate Rules...");
-			transformedSimContext = (SimulationContext)BeanUtils.cloneSerializable(originalSimContext);
-		} catch (ClassNotFoundException | IOException e) {
+			transformedSimContext = XmlHelper.cloneSimulationContext(originalSimContext);
+		} catch (XmlParseException e) {
 			throw new RuntimeException("unexpected exception: "+e.getMessage(), e);
 		}
 		transformedSimContext.getModel().refreshDependencies();

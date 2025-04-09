@@ -1,39 +1,5 @@
 package cbit.vcell.mapping;
 
-import java.beans.PropertyVetoException;
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.Namespace;
-import org.jdom2.output.XMLOutputter;
-import org.vcell.model.rbm.FakeReactionRuleRateParameter;
-import org.vcell.model.rbm.FakeSeedSpeciesInitialConditionsParameter;
-import org.vcell.model.rbm.MolecularComponentPattern;
-import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.RbmNetworkGenerator;
-import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
-import org.vcell.model.rbm.RbmObject;
-import org.vcell.model.rbm.RuleAnalysis;
-import org.vcell.model.rbm.RuleAnalysisReport;
-import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.Pair;
-import org.vcell.util.TokenMangler;
-
 import cbit.vcell.bionetgen.BNGOutputSpec;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.LocalProxyParameter;
@@ -41,31 +7,32 @@ import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.mapping.TaskCallbackMessage.TaskCallbackStatus;
 import cbit.vcell.math.MathRuleFactory.MathRuleEntry;
-import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.*;
 import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.MassActionKinetics;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.Product;
-import cbit.vcell.model.ProductPattern;
-import cbit.vcell.model.ProxyParameter;
-import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.RbmKineticLaw.RateLawType;
 import cbit.vcell.model.RbmKineticLaw.RbmKineticLawParameterType;
-import cbit.vcell.model.RbmObservable;
-import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactantPattern;
-import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionRuleParticipant;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.bionetgen.BNGExecutorService;
 import cbit.vcell.server.bionetgen.BNGInput;
 import cbit.vcell.server.bionetgen.BNGOutput;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.Namespace;
+import org.jdom2.output.XMLOutputter;
+import org.vcell.model.rbm.*;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
+import org.vcell.util.Pair;
+import org.vcell.util.TokenMangler;
+
+import java.beans.PropertyVetoException;
+import java.io.*;
+import java.util.*;
 
 public class RulebasedTransformer implements SimContextTransformer {
 	private final static Logger lg = LogManager.getLogger(RulebasedTransformer.class);
@@ -293,11 +260,11 @@ public class RulebasedTransformer implements SimContextTransformer {
 		keyMap.clear();
 
 		try {
-			transformedSimContext = (SimulationContext)BeanUtils.cloneSerializable(originalSimContext);
+			transformedSimContext = XmlHelper.cloneSimulationContext(originalSimContext);
 			transformedSimContext.getModel().refreshDependencies();
 			transformedSimContext.refreshDependencies();
 			transformedSimContext.compareEqual(originalSimContext);
-		} catch (ClassNotFoundException | IOException e) {
+		} catch (XmlParseException e) {
 			throw new RuntimeException("Unexpected transform exception: "+e.getMessage(), e);
 		}
 		final Model transformedModel = transformedSimContext.getModel();
