@@ -10,58 +10,11 @@
 
 package cbit.vcell.clientdb;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EventListener;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Vector;
-
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jdom2.Element;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.BigString;
-import org.vcell.util.Compare;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.ISize;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.PermissionException;
-import org.vcell.util.Preference;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.CurateSpec;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.ReferenceQueryResult;
-import org.vcell.util.document.ReferenceQuerySpec;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.VCInfoContainer;
-import org.vcell.util.document.VCellSoftwareVersion;
-import org.vcell.util.document.Version;
-import org.vcell.util.document.VersionInfo;
-import org.vcell.util.document.VersionableType;
-import org.vcell.util.document.VersionableTypeVersion;
-
 import cbit.image.BrowseImage;
 import cbit.image.GIFImage;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
-import cbit.rmi.event.MessageEvent;
-import cbit.rmi.event.PerformanceData;
-import cbit.rmi.event.PerformanceDataEntry;
-import cbit.rmi.event.PerformanceMonitorEvent;
-import cbit.rmi.event.SimulationJobStatusEvent;
+import cbit.rmi.event.*;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldDataDBOperationResults;
@@ -76,13 +29,8 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.model.DBFormalSpecies;
-import cbit.vcell.model.DBSpecies;
-import cbit.vcell.model.FormalSpeciesType;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.ReactionDescription;
-import cbit.vcell.model.ReactionQuerySpec;
-import cbit.vcell.model.ReactionStepInfo;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
+import cbit.vcell.model.*;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
@@ -96,11 +44,17 @@ import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.xml.VCMLComparator;
-import cbit.vcell.xml.XMLSource;
-import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
-import cbit.vcell.xml.XmlReader;
+import cbit.vcell.xml.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jdom2.Element;
+import org.vcell.util.*;
+import org.vcell.util.document.*;
+
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class ClientDocumentManager implements DocumentManager{
 	private static final Logger lg = LogManager.getLogger(ClientDocumentManager.class);
@@ -1197,7 +1151,7 @@ public Model getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessE
 		Model reactionModel = new XmlReader(true).getModel(element);
 		if(reactionModel != null){
 			try{
-				reactionModel = (Model)BeanUtils.cloneSerializable(reactionModel);
+				reactionModel = XmlHelper.cloneModel(reactionModel);
 				reactionModel.refreshDependencies();
 			}catch(Exception e){
 				throw new DataAccessException(e.getMessage(), e);

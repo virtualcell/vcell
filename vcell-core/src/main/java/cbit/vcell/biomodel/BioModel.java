@@ -10,19 +10,24 @@
 
 package cbit.vcell.biomodel;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.beans.PropertyVetoException;
-import java.beans.VetoableChangeListener;
-import java.beans.VetoableChangeSupport;
-import java.util.*;
-import java.util.function.Consumer;
-import java.util.stream.Collectors;
-
+import cbit.image.ImageException;
 import cbit.image.VCImage;
+import cbit.vcell.biomodel.meta.IdentifiableProvider;
+import cbit.vcell.biomodel.meta.VCID;
+import cbit.vcell.biomodel.meta.VCMetaData;
+import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.mapping.*;
 import cbit.vcell.mapping.SimulationContext.Application;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.*;
+import cbit.vcell.model.Model.RbmModelContainer;
+import cbit.vcell.model.Structure.SpringStructureEnum;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.NameScope;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.xml.XmlHelper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.model.rbm.MolecularType;
@@ -38,24 +43,10 @@ import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.document.*;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 
-import cbit.image.ImageException;
-import cbit.vcell.biomodel.meta.IdentifiableProvider;
-import cbit.vcell.biomodel.meta.VCID;
-import cbit.vcell.biomodel.meta.VCMetaData;
-import cbit.vcell.geometry.AnalyticSubVolume;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.model.Model.RbmModelContainer;
-import cbit.vcell.model.Structure.SpringStructureEnum;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.NameScope;
-import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.Simulation;
+import java.beans.*;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * Insert the type's description here.
@@ -114,7 +105,7 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
                     Kinetics origKinetics = reactionStep.getKinetics();
                     // clone it for backup purposes
                     origKinetics.setReactionStep(null);
-                    Kinetics clonedKinetics = (Kinetics) BeanUtils.cloneSerializable(origKinetics);
+                    Kinetics clonedKinetics = XmlHelper.cloneReactionStep(reactionStep).getKinetics();
                     origKinetics.setReactionStep(reactionStep);
                     try {
                         DistributedKinetics.toDistributedKinetics((LumpedKinetics) origKinetics, false);
