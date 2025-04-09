@@ -88,4 +88,15 @@ public String extractComponentPatternSignature() {
 	}
 	return prefix;
 }
+
+    public BNGSpeciesComponent deepClone() {
+		String[] newStateNames = null;
+		if (stateNames != null) {
+			newStateNames = new String[stateNames.length];
+			for (int i = 0; i < stateNames.length; i++) {
+				newStateNames[i] = stateNames[i];
+			}
+		}
+		return new BNGSpeciesComponent(componentName, currentState, newStateNames);
+    }
 }

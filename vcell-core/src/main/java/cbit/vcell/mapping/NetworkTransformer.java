@@ -207,7 +207,7 @@ public class NetworkTransformer implements SimContextTransformer {
 				simContext.appendToConsole(tcm);
 			}
 			outputSpec = simContext.getMostRecentlyCreatedOutputSpec();
-			return (BNGOutputSpec)BeanUtils.cloneSerializable(outputSpec);
+			return outputSpec.deepClone();
 		}
 		
 		BNGInput bngInput = new BNGInput(input);
@@ -282,7 +282,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		} else {
 			lg.debug("something is wrong with the hash and/or output spec");
 		}
-		return (BNGOutputSpec)BeanUtils.cloneSerializable(outputSpec);
+		return outputSpec.deepClone();
 	}
 
 	static final float progressFractionQuota = 2.0f/5.0f;
