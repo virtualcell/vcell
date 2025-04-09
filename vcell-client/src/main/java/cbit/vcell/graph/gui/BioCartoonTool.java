@@ -9,78 +9,38 @@
  */
 
 package cbit.vcell.graph.gui;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Window;
-import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.Vector;
-
-import javax.swing.JComboBox;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-
-import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
-import org.vcell.model.rbm.RbmUtils;
-import org.vcell.model.rbm.SpeciesPattern;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.Compare;
-import org.vcell.util.Issue;
-import org.vcell.util.Issue.IssueCategory;
-import org.vcell.util.IssueContext;
-import org.vcell.util.IssueContext.ContextType;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.graph.gui.GraphPane;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.model.BioModelEntityObject;
-import cbit.vcell.model.Catalyst;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.FluxReaction;
-import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.*;
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Kinetics.KineticsProxyParameter;
-import cbit.vcell.model.KineticsDescription;
-import cbit.vcell.model.Membrane;
 import cbit.vcell.model.Membrane.MembraneVoltage;
-import cbit.vcell.model.Model;
 import cbit.vcell.model.Model.ModelParameter;
 import cbit.vcell.model.Model.RbmModelContainer;
 import cbit.vcell.model.Model.StructureTopology;
-import cbit.vcell.model.ModelException;
-import cbit.vcell.model.Product;
-import cbit.vcell.model.Reactant;
-import cbit.vcell.model.ReactionDescription;
-import cbit.vcell.model.ReactionParticipant;
-import cbit.vcell.model.ReactionRule;
-import cbit.vcell.model.ReactionSpeciesCopy;
-import cbit.vcell.model.ReactionStep;
-import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.model.Structure;
 import cbit.vcell.model.Structure.StructureSize;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.xml.XmlHelper;
+import org.vcell.model.rbm.MolecularType;
+import org.vcell.model.rbm.RbmNetworkGenerator.CompartmentMode;
+import org.vcell.model.rbm.RbmUtils;
+import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.*;
+import org.vcell.util.Issue.IssueCategory;
+import org.vcell.util.IssueContext.ContextType;
+import org.vcell.util.gui.DialogUtils;
+
+import javax.swing.*;
+import java.awt.*;
+import java.beans.PropertyVetoException;
+import java.util.*;
+import java.util.List;
+import java.util.Map.Entry;
 
 public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 	private DocumentManager documentManager = null;
@@ -338,7 +298,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 		AsynchClientTask issueTask = new AsynchClientTask("Checking Issues...",AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				Model clonedModel = (Model)org.vcell.util.BeanUtils.cloneSerializable(pasteModel);
+				Model clonedModel = XmlHelper.cloneModel(pasteModel);
 				clonedModel.refreshDependencies();
 //				Model clonedModel = pasteModel;
 				IssueContext issueContext = new IssueContext(ContextType.Model, clonedModel, null);
@@ -549,7 +509,7 @@ public abstract class BioCartoonTool extends cbit.gui.graph.gui.CartoonTool {
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				ReactionStep[] reactionStepsArrOrig = new ReactionStep[] {(ReactionStep)hashTable.get("fromRXStep")};
 				UserResolvedRxElements userResolvedRxElements = (UserResolvedRxElements)hashTable.get("userResolvedRxElements");
-				Model clonedModel = (Model)org.vcell.util.BeanUtils.cloneSerializable(pasteToModel);
+				Model clonedModel = XmlHelper.cloneModel(pasteToModel);
 				clonedModel.refreshDependencies();
 				IssueContext issueContext = new IssueContext(ContextType.Model, clonedModel, null);
 				HashMap<String,HashMap<ReactionParticipant,Structure>> userResolved_rxPartMapStruct = null;
