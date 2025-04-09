@@ -354,4 +354,22 @@ public String toStringShort() {
 	}
 	return reactionStr;
 }
+
+
+    public BNGReaction deepClone() {
+		BNGSpecies[] bngReactantsClone = new BNGSpecies[reactants.length];
+		for (int i = 0; i < reactants.length; i++) {
+			bngReactantsClone[i] = reactants[i].deepClone();
+		}
+		BNGSpecies[] bngProductsClone = new BNGSpecies[products.length];
+		for (int i = 0; i < products.length; i++) {
+			bngProductsClone[i] = products[i].deepClone();
+		}
+		Expression newParamExpression = paramExpression;
+		if (newParamExpression != null) {
+			newParamExpression = new Expression(paramExpression);
+		}
+		BNGReaction bngReactionClone = new BNGReaction(matchingKey, matchingKey, bngReactantsClone, bngProductsClone, newParamExpression, ruleName, bRuleReversed);
+		return bngReactionClone;
+    }
 }
