@@ -118,12 +118,18 @@ public List<Integer> getIndexesAsIntegersList() {
 }
 
     public ObservableGroup deepClone() {
-		BNGSpecies[] listofSpeciesClone = new BNGSpecies[listofSpecies.length];
-		for (int i = 0; i < listofSpecies.length; i++) {
-			listofSpeciesClone[i] = listofSpecies[i].deepClone();
+		BNGSpecies[] listofSpeciesClone = null;
+		if (listofSpecies != null){
+			listofSpeciesClone = new BNGSpecies[listofSpecies.length];
+			for (int i = 0; i < listofSpecies.length; i++) {
+				listofSpeciesClone[i] = listofSpecies[i].deepClone();
+			}
 		}
-		int[] speciesMultiplicityClone = new int[speciesMultiplicity.length];
-		System.arraycopy(speciesMultiplicity, 0, speciesMultiplicityClone, 0, speciesMultiplicity.length);
+		int[] speciesMultiplicityClone = null;
+		if (speciesMultiplicity != null){
+			speciesMultiplicityClone = new int[speciesMultiplicity.length];
+			System.arraycopy(speciesMultiplicity, 0, speciesMultiplicityClone, 0, speciesMultiplicity.length);
+		}
 		return new ObservableGroup(observableGroupName, listofSpeciesClone, speciesMultiplicityClone);
     }
 }
