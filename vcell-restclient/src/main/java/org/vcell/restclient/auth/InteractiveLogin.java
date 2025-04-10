@@ -37,7 +37,7 @@ public class InteractiveLogin {
     }
 
     public static AuthApiClient login() throws URISyntaxException, IOException, ParseException {
-        return login(new URI(authDomain), new URI("https://vcellapi.cam.uchc.edu"), false);
+        return login(new URI(authDomain), new URI("https://vcell.cam.uchc.edu"), false);
     }
 
     /**
