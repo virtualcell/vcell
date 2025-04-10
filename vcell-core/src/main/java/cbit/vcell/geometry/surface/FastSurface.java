@@ -99,6 +99,9 @@ public class FastSurface implements Surface, java.io.Serializable {
 			double crossz = vect1x*vect2y - vect1y*vect2x;
 			return Math.sqrt(crossx*crossx + crossy*crossy + crossz*crossz)/2.0;
 		}
+		public FastTriangle deepClone() {
+			return new FastTriangle(nodes.clone());
+		}
 	public void getUnitNormal(cbit.vcell.render.Vect3d unitNormal) {
 		Node node_0 = nodes[0];
 		Node node_1 = nodes[1];
@@ -211,6 +214,9 @@ public class FastSurface implements Surface, java.io.Serializable {
 		}
 		FastQuad(Node[] argNodes) {
 			super(argNodes);
+		}
+		public FastQuad deepClone() {
+			return new FastQuad(nodes.clone());
 		}
 		public double getArea() {
 			// assume convex
