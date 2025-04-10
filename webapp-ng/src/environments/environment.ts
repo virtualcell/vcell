@@ -1,48 +1,13 @@
-// This file can be replaced during build by using the `fileReplacements` array.
-// `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
-// The list of file replacements can be found in `angular.json`.
-import config from '../../auth_config.json';
-
-const { domain, clientId, authorizationParams: { audience }, apiUri, errorPath } = config as {
-  domain: string;
-  clientId: string;
-  authorizationParams: {
-    audience?: string;
-  },
-  apiUri: string;
-  errorPath: string;
-};
 
 export const environment = {
   production: false,
   auth: {
-    domain,
-    clientId,
     authorizationParams: {
-      audience: `${audience}`,
-      redirect_uri: window.location.origin,
+      audience: `https://vcell.cam.uchc.edu`,
     },
-    errorPath,
   },
-  apiUri: `${apiUri}`,
   httpInterceptor: {
-    allowedList: [
-      {
-        // uri: `${config.apiUri}/api/*`,
-        // uri: `${apiUri}/api/*`,
-        // uri: '/api/*',
-        uri: 'https://vcell-stage.cam.uchc.edu/api/*',
-
-        // allowAnonymous: true,
-        tokenOptions: {
-          authorizationParams: {
-            audience: `${audience}`,
-            scope: 'openid profile email'
-          }
-        }
-      },
-      ],
-
+    allowedList: [ 'https://vcell-stage.cam.uchc.edu/api/*' ],
   },
 };
 

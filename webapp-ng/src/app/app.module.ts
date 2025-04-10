@@ -25,7 +25,7 @@ import {HeroComponent} from './components/hero/hero.component';
 import {HomeContentComponent} from './components/home-content/home-content.component';
 import {LoadingComponent} from './components/loading/loading.component';
 import {AuthHttpInterceptor, AuthModule} from '@auth0/auth0-angular';
-import {environment as env} from '../environments/environment';
+import { environment as env} from '../environments/environment';
 import {PublicationListComponent} from './components/publication-list/publication-list.component';
 import {PublicationEditComponent} from './components/publication-edit/publication-edit.component';
 import {ApiModule, Configuration as ApiConfiguration} from "./core/modules/openapi";
@@ -35,13 +35,18 @@ import {BaseuriConfig} from "./config/baseuri-config";
 import {MatCardModule} from "@angular/material/card";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {LoginSuccessComponent} from "./pages/login-success/login-success.component";
+import auth_config from '../../auth_config.json';
 
-export function ConfigLoader(baseuriConfigService: BaseuriConfigService): () => Promise<BaseuriConfig> {
-  return () => baseuriConfigService.loadConfiguration();
-}
+const { domain, clientId, errorPath } = auth_config as {
+  domain: string;
+  clientId: string;
+  errorPath: string;
+};
 
-export function apiConfigFactory(baseuriConfigService: BaseuriConfigService) {
-  return new ApiConfiguration({ basePath: baseuriConfigService.config?.baseUri });
+export function apiConfigFactory() {
+  return new ApiConfiguration({
+    basePath: env.auth.authorizationParams.audience,
+  });
 }
 
 @NgModule({
@@ -67,10 +72,17 @@ export function apiConfigFactory(baseuriConfigService: BaseuriConfigService) {
     HighlightModule,
     FontAwesomeModule,
     AuthModule.forRoot({
-      ...env.auth,
-      httpInterceptor: {
-        ...env.httpInterceptor,
+      domain: auth_config.domain,
+      clientId: auth_config.clientId,
+      authorizationParams: {
+        scope: 'openid profile email offline_access',
+        audience: env.auth.authorizationParams.audience,
+        redirect_uri: window.location.origin
       },
+      errorPath: auth_config.errorPath,
+      httpInterceptor: {
+        allowedList: env.httpInterceptor.allowedList
+      }
     }),
     BrowserAnimationsModule,
     FormsModule,
@@ -104,13 +116,6 @@ export function apiConfigFactory(baseuriConfigService: BaseuriConfigService) {
           json: () => import('highlight.js/lib/languages/json'),
         },
       },
-    },
-    BaseuriConfigService,
-    {
-      provide: APP_INITIALIZER,
-      useFactory: ConfigLoader,
-      deps: [BaseuriConfigService],
-      multi: true
     },
     {
       provide: ApiConfiguration,

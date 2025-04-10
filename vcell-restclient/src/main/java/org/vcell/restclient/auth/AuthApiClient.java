@@ -60,7 +60,7 @@ public class AuthApiClient extends ApiClient {
         // Create the token request
         TokenRequest request = new TokenRequest(
                 oidcProviderTokenEndpoint,
-                new ClientID("your-client-id"),
+                new ClientID(InteractiveLogin.authClientID),
                 new RefreshTokenGrant(refreshToken)
         );
 

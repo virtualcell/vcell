@@ -1,44 +1,12 @@
-import config from '../../auth_config.json';
-
-const { domain, clientId, authorizationParams: { audience }, apiUri, errorPath } = config as {
-  domain: string;
-  clientId: string;
-  authorizationParams: {
-    audience?: string;
-  },
-  apiUri: string;
-  errorPath: string;
-};
 
 export const environment = {
   production: true,
   auth: {
-    domain,
-    clientId,
     authorizationParams: {
-      audience: `${audience}`,
-      redirect_uri: window.location.origin,
+      audience: `https://vcell-stage.cam.uchc.edu`,
     },
-    errorPath,
   },
-  apiUri: `${apiUri}`,
   httpInterceptor: {
-    allowedList: [
-      {
-        // uri: `${config.apiUri}/api/*`,
-        // uri: `${apiUri}/api/*`,
-        // uri: '/api/*',
-        uri: 'https://vcell-stage.cam.uchc.edu/api/*',
-
-        // allowAnonymous: true,
-        tokenOptions: {
-          authorizationParams: {
-            audience: `${audience}`,
-            scope: 'openid profile email'
-          }
-        }
-      },
-      ],
-
+    allowedList: [ 'https://vcell-stage.cam.uchc.edu/api/*' ],
   },
 };

@@ -75,8 +75,6 @@ public class VCellApiClient implements AutoCloseable {
 	private final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
 	private final URL quarkusURL;
 	private ApiClient apiClient = null;
-	private final static String authClientID = "cjoWhd7W8A8znf7Z7vizyvKJCiqTgRtf";
-	private final static String authDomain = "https://dev-dzhx7i2db3x3kkvq.us.auth0.com";
 
 	// Create a custom response handler
 	public static class VCellStringResponseHandler implements ResponseHandler<String> {
@@ -482,7 +480,7 @@ public class VCellApiClient implements AutoCloseable {
 	}
 
 	public void authenticate(boolean ignoreSSLCertProblems) throws URISyntaxException, IOException, ParseException, ApiException {
-		apiClient = InteractiveLogin.login(authClientID, new URI(authDomain + "/authorize"),
+		apiClient = InteractiveLogin.login(new URI(InteractiveLogin.authDomain + "/authorize"),
 				this.quarkusURL.toURI(), ignoreSSLCertProblems);
 		apiClient.setScheme(this.quarkusURL.getProtocol());
 	}
@@ -494,7 +492,7 @@ public class VCellApiClient implements AutoCloseable {
 		java.net.http.HttpRequest.Builder httpRequestBuilder = java.net.http.HttpRequest.newBuilder();
 		String postLogoutRedirect = "";
 		String idToken = "";
-		httpRequestBuilder.uri(URI.create(authDomain + "/oidc/logout"));
+		httpRequestBuilder.uri(URI.create(InteractiveLogin.authDomain + "/oidc/logout"));
 		httpRequestBuilder.header("Content-Type", "application/x-www-form-urlencoded");
 //		httpRequestBuilder.method("GET");
 		String logoutPath = "";

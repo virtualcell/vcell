@@ -1,6 +1,8 @@
 # Build stage
 FROM node:20.11-alpine3.19 AS build
 
+ARG BUILD_COMMAND=build_prod
+
 RUN apk update && apk add git
 
 RUN mkdir -p /app
@@ -14,7 +16,7 @@ RUN npm install --legacy-peer-deps
 
 COPY . .
 
-RUN npm run build_dev
+RUN npm run ${BUILD_COMMAND}
 
 # -----------------
 
