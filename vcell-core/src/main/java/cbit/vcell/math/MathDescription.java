@@ -39,6 +39,7 @@ import org.vcell.util.document.Versionable;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
@@ -3953,12 +3954,12 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                         continue;
                     }
                     try {
-                        Variable clonedVar = oldVar.deepClone();
+                        Variable clonedVar = (Variable) BeanUtils.cloneSerializable(oldVar);
                         clonedVar.rename(newName);
                         SubDomain sd = mathDescription1.getSubDomain(mathDescription2.getVariable(newName).getDomain().getName());
                         clonedVar.setDomain(new Domain(sd));
                         mathDescription1.addVariable0(clonedVar);
-                    } catch(ExpressionBindingException | MathException e){
+                    } catch(ExpressionBindingException | MathException | ClassNotFoundException | IOException e){
                         lg.error("could not add new variable " + newName);
                         return false;
                     }
