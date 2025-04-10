@@ -145,7 +145,13 @@ public static Expression assign(Expression lvalueExp, Expression rvalueExp) thro
 	   if (exp == null){
 		   return null;
 	   }else{
-		   return new Expression(exp);
+		   Expression new_exp = new Expression(exp);
+		   try {
+			   new_exp.bindExpression(null);
+			   return new_exp;
+		   }catch (Exception e){
+			   throw new RuntimeException("unexpected error in Expression.clone() "+e.getMessage(), e);
+		   }
 	   }
     }
 
