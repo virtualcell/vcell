@@ -367,7 +367,7 @@ public String toStringShort() {
 		}
 		Expression newParamExpression = paramExpression;
 		if (newParamExpression != null) {
-			newParamExpression = new Expression(paramExpression);
+			newParamExpression = Expression.clone(paramExpression);
 		}
 		BNGReaction bngReactionClone = new BNGReaction(matchingKey, matchingKey, bngReactantsClone, bngProductsClone, newParamExpression, ruleName, bRuleReversed);
 		return bngReactionClone;

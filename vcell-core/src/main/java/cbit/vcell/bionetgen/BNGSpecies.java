@@ -125,7 +125,7 @@ public String toStringShort() {
     public BNGSpecies deepClone() {
 		Expression newConc = getConcentration();
 		if (newConc != null) {
-			newConc = new Expression(newConc);
+			newConc = Expression.clone(newConc);
 		}
 		return new BNGComplexSpecies(getName(), newConc, getNetworkFileIndex());
     }
