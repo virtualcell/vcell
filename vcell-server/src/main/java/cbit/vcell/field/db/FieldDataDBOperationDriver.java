@@ -110,7 +110,7 @@ public class FieldDataDBOperationDriver{
 			}
 
 			// Unique name
-			while (usedNames.contains(sourceID.getName())){
+			while (usedNames.contains(newCopiedName)){
 				newCopiedName = TokenMangler.getNextEnumeratedToken(newCopiedName);
 			}
 
