@@ -191,7 +191,7 @@ paths:
       tags:
       - Field Data Resource
       summary: "Get all of the ids used to identify, and retrieve field data."
-      operationId: getAllFieldDataIDs
+      operationId: getAllIDs
       responses:
         "200":
           description: OK
@@ -208,13 +208,15 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/fieldData/analyzeFieldDataFile:
+  /api/v1/fieldData/analyzeFile:
     post:
       tags:
       - Field Data Resource
-      summary: "Analyze the field data from the uploaded file. Filenames must be lowercase\
-        \ alphanumeric, and can contain underscores."
-      operationId: analyzeFieldDataFile
+      summary: "Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and\
+        \ create default field data specification. Color mapped images not supported\
+        \ (the colors in those images will be interpreted as separate channels). Filenames\
+        \ must be lowercase alphanumeric, and can contain underscores."
+      operationId: analyzeFile
       requestBody:
         content:
           multipart/form-data:
@@ -232,7 +234,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AnalyzedResultsFromFieldData'
+                $ref: '#/components/schemas/AnalyzedFile'
         "401":
           description: Not Authorized
         "403":
@@ -240,25 +242,27 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/fieldData/createFieldDataFromAnalyzedFile:
+  /api/v1/fieldData/copyModelsFieldData:
     post:
       tags:
       - Field Data Resource
-      summary: "Take the analyzed results of the field data, modify it to your liking,\
-        \ then save it on the server."
-      operationId: createFieldDataFromAnalyzedFile
+      summary: "Copy all existing field data from a BioModel/MathModel that you have\
+        \ access to, but don't own."
+      operationId: copyModelsFieldData
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AnalyzedResultsFromFieldData'
+              $ref: '#/components/schemas/SourceModel'
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldDataSaveResults'
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/ExternalDataIdentifier'
         "401":
           description: Not Authorized
         "403":
@@ -266,12 +270,12 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/fieldData/createFieldDataFromSimulation:
+  /api/v1/fieldData/createFromSimulation:
     post:
       tags:
       - Field Data Resource
-      summary: Create new field data from a simulation.
-      operationId: createNewFieldDataFromSimulation
+      summary: Create new field data from existing simulation results.
+      operationId: createFromSimulation
       requestBody:
         content:
           application/x-www-form-urlencoded:
@@ -295,12 +299,38 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/fieldData/createFromSpecification:
+    post:
+      tags:
+      - Field Data Resource
+      summary: "Take the field data specification, and save it to the server. User\
+        \ may adjust the analyzed file before uploading to edit defaults."
+      operationId: createFromAnalyzedFile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzedFile'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataSavedResults'
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
   /api/v1/fieldData/delete/{fieldDataID}:
     delete:
       tags:
       - Field Data Resource
       summary: Delete the selected field data.
-      operationId: deleteFieldData
+      operationId: delete
       parameters:
       - name: fieldDataID
         in: path
@@ -317,13 +347,13 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/fieldData/fieldDataShape/{fieldDataID}:
+  /api/v1/fieldData/shape/{fieldDataID}:
     get:
       tags:
       - Field Data Resource
       summary: "Get the shape of the field data. That is it's size, origin, extent,\
-        \ and data identifiers."
-      operationId: getFieldDataShapeFromID
+        \ times, and data identifiers."
+      operationId: getShapeFromID
       parameters:
       - name: fieldDataID
         in: path
@@ -743,7 +773,7 @@ components:
           type: string
         userKey:
           type: string
-    AnalyzedResultsFromFieldData:
+    AnalyzedFile:
       type: object
       properties:
         shortSpecData:
@@ -950,20 +980,20 @@ components:
     FieldDataReference:
       type: object
       properties:
-        externalDataIdentifier:
+        fieldDataID:
           $ref: '#/components/schemas/ExternalDataIdentifier'
-        externalDataAnnotation:
+        annotation:
           type: string
-        externalDataIDSimRefs:
+        simulationsReferencingThisID:
           type: array
           items:
             $ref: '#/components/schemas/KeyValue'
-    FieldDataSaveResults:
+    FieldDataSavedResults:
       type: object
       properties:
         fieldDataName:
           type: string
-        fieldDataID:
+        fieldDataKey:
           type: string
     FieldDataShape:
       type: object
@@ -1052,6 +1082,11 @@ components:
         versionFlag:
           format: int32
           type: integer
+    ModelType:
+      enum:
+      - BIOMODEL
+      - MATHMODEL
+      type: string
     Origin:
       type: object
       properties:
@@ -1195,6 +1230,13 @@ components:
           type: string
         hasData:
           type: boolean
+    SourceModel:
+      type: object
+      properties:
+        modelID:
+          type: string
+        modelType:
+          $ref: '#/components/schemas/ModelType'
     Status:
       enum:
       - UNKNOWN

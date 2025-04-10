@@ -12,9 +12,9 @@ package cbit.vcell.modeldb;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.Vector;
 
+import cbit.vcell.field.io.CopyFieldDataResult;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Element;
@@ -24,18 +24,7 @@ import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Preference;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.CurateSpec;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.ReferenceQueryResult;
-import org.vcell.util.document.ReferenceQuerySpec;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.VCInfoContainer;
-import org.vcell.util.document.VersionInfo;
-import org.vcell.util.document.VersionableFamily;
-import org.vcell.util.document.VersionableType;
+import org.vcell.util.document.*;
 
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
@@ -48,7 +37,6 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.model.DBFormalSpecies;
 import cbit.vcell.model.DBSpecies;
 import cbit.vcell.model.FormalSpeciesType;
@@ -210,6 +198,23 @@ public FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOp
 	try {
 		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.fieldDataDBOperation opType="+fieldDataDBOperationSpec.opType);
 		return dbTop.fieldDataDBOperation(user, fieldDataDBOperationSpec, true);
+	} catch (SQLException e) {
+		lg.error(e.getMessage(),e);
+		throw new DataAccessException(e.getMessage());
+	} catch (ObjectNotFoundException e) {
+		lg.error(e.getMessage(),e);
+		throw new ObjectNotFoundException(e.getMessage());
+	} catch (Throwable e) {
+		lg.error(e.getMessage(),e);
+		throw new DataAccessException(e.getMessage());
+	}
+}
+
+public CopyFieldDataResult copyFieldData(User user, ExternalDataIdentifier sourceID, String sourceAnnotation,
+										 String versionTypeName, String versionName) throws DataAccessException, ObjectNotFoundException {
+	try {
+		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.fieldDataDBOperation opType=COPY");
+		return dbTop.fieldDataCopy(user, sourceID, sourceAnnotation, versionTypeName, versionName, true);
 	} catch (SQLException e) {
 		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());

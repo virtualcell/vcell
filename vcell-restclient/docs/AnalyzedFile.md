@@ -1,6 +1,6 @@
 
 
-# AnalyzedResultsFromFieldData
+# AnalyzedFile
 
 
 ## Properties

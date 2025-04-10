@@ -16,7 +16,7 @@
 
 # import models into model package
 from vcell_client.models.acces_token_representation_record import AccesTokenRepresentationRecord
-from vcell_client.models.analyzed_results_from_field_data import AnalyzedResultsFromFieldData
+from vcell_client.models.analyzed_file import AnalyzedFile
 from vcell_client.models.batch_system_type import BatchSystemType
 from vcell_client.models.bio_model import BioModel
 from vcell_client.models.biomodel_ref import BiomodelRef
@@ -26,7 +26,7 @@ from vcell_client.models.domain import Domain
 from vcell_client.models.extent import Extent
 from vcell_client.models.external_data_identifier import ExternalDataIdentifier
 from vcell_client.models.field_data_reference import FieldDataReference
-from vcell_client.models.field_data_save_results import FieldDataSaveResults
+from vcell_client.models.field_data_saved_results import FieldDataSavedResults
 from vcell_client.models.field_data_shape import FieldDataShape
 from vcell_client.models.hello_world_message import HelloWorldMessage
 from vcell_client.models.htc_job_id import HtcJobID
@@ -34,6 +34,7 @@ from vcell_client.models.i_size import ISize
 from vcell_client.models.identity import Identity
 from vcell_client.models.key_value import KeyValue
 from vcell_client.models.mathmodel_ref import MathmodelRef
+from vcell_client.models.model_type import ModelType
 from vcell_client.models.origin import Origin
 from vcell_client.models.publication import Publication
 from vcell_client.models.scheduler_status import SchedulerStatus
@@ -43,6 +44,7 @@ from vcell_client.models.simulation_message import SimulationMessage
 from vcell_client.models.simulation_queue_entry_status_record import SimulationQueueEntryStatusRecord
 from vcell_client.models.simulation_queue_id import SimulationQueueID
 from vcell_client.models.simulation_status_persistent_record import SimulationStatusPersistentRecord
+from vcell_client.models.source_model import SourceModel
 from vcell_client.models.status import Status
 from vcell_client.models.status_message import StatusMessage
 from vcell_client.models.user import User

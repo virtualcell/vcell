@@ -11,30 +11,22 @@
  */
 
 
-package org.vcell.restclient.api;
+package org.vcell.restclient.model;
 
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.vcell.restclient.ApiException;
-
-import java.io.File;
-
 
 /**
- * API tests for SpatialResourceApi
+ * Model tests for ModelType
  */
-@Ignore
-public class SpatialResourceApiTest {
-
-
-    
+public class ModelTypeTest {
     /**
-     * Retrieve finite volume input from spatial model
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
+     * Model tests for ModelType
      */
-    
+    @Test
+    public void testModelType() {
+        // TODO: test ModelType
+    }
+
 }

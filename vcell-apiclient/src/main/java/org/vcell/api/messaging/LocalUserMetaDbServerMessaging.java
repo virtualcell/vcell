@@ -28,8 +28,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.restclient.ApiException;
-import org.vcell.restclient.model.CreateFieldDataFromSimulation;
 import org.vcell.restclient.model.FieldDataReference;
+import org.vcell.restclient.model.ModelType;
+import org.vcell.restclient.model.SourceModel;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
@@ -37,7 +38,9 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.*;
 
 import java.rmi.RemoteException;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 
@@ -120,24 +123,26 @@ public void deleteBioModel(org.vcell.util.document.KeyValue key) throws DataAcce
 /**
  * Insert the method's description here.
  * Creation date: (10/22/2003 10:23:06 AM)
- * @throws RemoteException 
  */
 public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException {
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.fieldDataDBOperation(...)");
 		if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_DELETE){
-			throw new RuntimeException("Can not call deletion on field data DB entry. Have to do both file, and DB deletion.");
+			throw new UnsupportedOperationException("Can not call deletion on field data DB entry. Have to do both file, and DB deletion.");
 		} else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS) {
-			List<FieldDataReference> fieldDataReferences = vCellApiClient.getFieldDataApi().getAllFieldDataIDs();
+			List<FieldDataReference> fieldDataReferences = vCellApiClient.getFieldDataApi().getAllIDs();
 			return DtoModelTransforms.fieldDataReferencesToDBResults(fieldDataReferences, fieldDataDBOperationSpec.owner);
+		} else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_SAVEEXTDATAID) {
+			UnsupportedOperationException unsupported = new UnsupportedOperationException("Call from UserLocalDataSetController, no longer allowing manual entries to DB.");
+			lg.error(unsupported);
+			throw unsupported;
 		} else{
-			return dbServerProxy.fieldDataDBOperation(fieldDataDBOperationSpec);
+			UnsupportedOperationException exception = new UnsupportedOperationException("Attempting to call field data method that is unavailable.");
+			lg.error(exception.getMessage(), fieldDataDBOperationSpec);
+			throw exception;
 		}
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
+	} catch (ApiException e) {
 		lg.error(e.getMessage(),e);
 		throw new DataAccessException(e.getMessage());
 	}
@@ -145,15 +150,31 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 
 public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {
     try {
-        vCellApiClient.getFieldDataApi().createNewFieldDataFromSimulation(sourceSim.toString(), jobIndex, newFieldDataName);
+        vCellApiClient.getFieldDataApi().createFromSimulation(sourceSim.toString(), jobIndex, newFieldDataName);
     } catch (ApiException e) {
         throw new RuntimeException(e);
     }
 }
 
+	@Override
+	public Hashtable<String, ExternalDataIdentifier> copyModelsFieldData(String modelKey, VersionableType modelType) {
+		try {
+			SourceModel copyFieldData = new SourceModel().modelID(modelKey.toString());
 
+			ModelType modelType1 = VersionableType.MathModelMetaData == modelType ? ModelType.MATHMODEL : ModelType.BIOMODEL;
+			copyFieldData.modelType(modelType1);
+			Map<String, org.vcell.restclient.model.ExternalDataIdentifier> result = vCellApiClient.getFieldDataApi().copyModelsFieldData(copyFieldData);
+			Hashtable<String, ExternalDataIdentifier> toBeReturned = new Hashtable<>();
+			for (String key : result.keySet()){
+				toBeReturned.put(key, DtoModelTransforms.dtoToExternalDataIdentifier(result.get(key)));
+			}
+			return toBeReturned;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-/**
+	/**
  * Insert the method's description here.
  * Creation date: (10/22/2003 10:23:06 AM)
  * @throws RemoteException 

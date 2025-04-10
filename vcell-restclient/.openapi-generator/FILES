@@ -3,7 +3,7 @@ README.md
 api/openapi.yaml
 docs/AccesTokenRepresentationRecord.md
 docs/AdminResourceApi.md
-docs/AnalyzedResultsFromFieldData.md
+docs/AnalyzedFile.md
 docs/BatchSystemType.md
 docs/BioModel.md
 docs/BioModelResourceApi.md
@@ -15,7 +15,7 @@ docs/Extent.md
 docs/ExternalDataIdentifier.md
 docs/FieldDataReference.md
 docs/FieldDataResourceApi.md
-docs/FieldDataSaveResults.md
+docs/FieldDataSavedResults.md
 docs/FieldDataShape.md
 docs/HelloWorldApi.md
 docs/HelloWorldMessage.md
@@ -24,6 +24,7 @@ docs/ISize.md
 docs/Identity.md
 docs/KeyValue.md
 docs/MathmodelRef.md
+docs/ModelType.md
 docs/Origin.md
 docs/Publication.md
 docs/PublicationResourceApi.md
@@ -36,6 +37,7 @@ docs/SimulationQueueID.md
 docs/SimulationResourceApi.md
 docs/SimulationStatusPersistentRecord.md
 docs/SolverResourceApi.md
+docs/SourceModel.md
 docs/Status.md
 docs/StatusMessage.md
 docs/User.md
@@ -66,7 +68,7 @@ src/main/java/org/vcell/restclient/api/SolverResourceApi.java
 src/main/java/org/vcell/restclient/api/UsersResourceApi.java
 src/main/java/org/vcell/restclient/model/AbstractOpenApiSchema.java
 src/main/java/org/vcell/restclient/model/AccesTokenRepresentationRecord.java
-src/main/java/org/vcell/restclient/model/AnalyzedResultsFromFieldData.java
+src/main/java/org/vcell/restclient/model/AnalyzedFile.java
 src/main/java/org/vcell/restclient/model/BatchSystemType.java
 src/main/java/org/vcell/restclient/model/BioModel.java
 src/main/java/org/vcell/restclient/model/BiomodelRef.java
@@ -76,7 +78,7 @@ src/main/java/org/vcell/restclient/model/Domain.java
 src/main/java/org/vcell/restclient/model/Extent.java
 src/main/java/org/vcell/restclient/model/ExternalDataIdentifier.java
 src/main/java/org/vcell/restclient/model/FieldDataReference.java
-src/main/java/org/vcell/restclient/model/FieldDataSaveResults.java
+src/main/java/org/vcell/restclient/model/FieldDataSavedResults.java
 src/main/java/org/vcell/restclient/model/FieldDataShape.java
 src/main/java/org/vcell/restclient/model/HelloWorldMessage.java
 src/main/java/org/vcell/restclient/model/HtcJobID.java
@@ -84,6 +86,7 @@ src/main/java/org/vcell/restclient/model/ISize.java
 src/main/java/org/vcell/restclient/model/Identity.java
 src/main/java/org/vcell/restclient/model/KeyValue.java
 src/main/java/org/vcell/restclient/model/MathmodelRef.java
+src/main/java/org/vcell/restclient/model/ModelType.java
 src/main/java/org/vcell/restclient/model/Origin.java
 src/main/java/org/vcell/restclient/model/Publication.java
 src/main/java/org/vcell/restclient/model/SchedulerStatus.java
@@ -93,6 +96,7 @@ src/main/java/org/vcell/restclient/model/SimulationMessage.java
 src/main/java/org/vcell/restclient/model/SimulationQueueEntryStatusRecord.java
 src/main/java/org/vcell/restclient/model/SimulationQueueID.java
 src/main/java/org/vcell/restclient/model/SimulationStatusPersistentRecord.java
+src/main/java/org/vcell/restclient/model/SourceModel.java
 src/main/java/org/vcell/restclient/model/Status.java
 src/main/java/org/vcell/restclient/model/StatusMessage.java
 src/main/java/org/vcell/restclient/model/User.java

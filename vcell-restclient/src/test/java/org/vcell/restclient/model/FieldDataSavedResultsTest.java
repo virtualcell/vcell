@@ -19,47 +19,38 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import org.vcell.restclient.model.KeyValue;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Model tests for CreateFieldDataFromSimulation
+ * Model tests for FieldDataSavedResults
  */
-public class CreateFieldDataFromSimulationTest {
-    private final CreateFieldDataFromSimulation model = new CreateFieldDataFromSimulation();
+public class FieldDataSavedResultsTest {
+    private final FieldDataSavedResults model = new FieldDataSavedResults();
 
     /**
-     * Model tests for CreateFieldDataFromSimulation
+     * Model tests for FieldDataSavedResults
      */
     @Test
-    public void testCreateFieldDataFromSimulation() {
-        // TODO: test CreateFieldDataFromSimulation
+    public void testFieldDataSavedResults() {
+        // TODO: test FieldDataSavedResults
     }
 
     /**
-     * Test the property 'simReference'
+     * Test the property 'fieldDataName'
      */
     @Test
-    public void simReferenceTest() {
-        // TODO: test simReference
+    public void fieldDataNameTest() {
+        // TODO: test fieldDataName
     }
 
     /**
-     * Test the property 'jobIndex'
+     * Test the property 'fieldDataKey'
      */
     @Test
-    public void jobIndexTest() {
-        // TODO: test jobIndex
-    }
-
-    /**
-     * Test the property 'newFieldDataName'
-     */
-    @Test
-    public void newFieldDataNameTest() {
-        // TODO: test newFieldDataName
+    public void fieldDataKeyTest() {
+        // TODO: test fieldDataKey
     }
 
 }

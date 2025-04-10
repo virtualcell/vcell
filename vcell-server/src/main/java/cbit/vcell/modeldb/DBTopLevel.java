@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.util.TreeMap;
 import java.util.Vector;
 
+import cbit.vcell.field.io.CopyFieldDataResult;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
@@ -22,21 +23,7 @@ import org.vcell.util.DependencyException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.Preference;
-import org.vcell.util.document.BioModelChildSummary;
-import org.vcell.util.document.CurateSpec;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelChildSummary;
-import org.vcell.util.document.ReferenceQueryResult;
-import org.vcell.util.document.ReferenceQuerySpec;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.VCInfoContainer;
-import org.vcell.util.document.VersionInfo;
-import org.vcell.util.document.Versionable;
-import org.vcell.util.document.VersionableFamily;
-import org.vcell.util.document.VersionableRelationship;
-import org.vcell.util.document.VersionableType;
-import org.vcell.util.document.VersionableTypeVersion;
+import org.vcell.util.document.*;
 
 import cbit.image.VCImage;
 import cbit.sql.InsertHashtable;
@@ -198,6 +185,37 @@ FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperation
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
 			return fieldDataDBOperation(user,fieldDataDBOperationSpec,false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
+CopyFieldDataResult fieldDataCopy(User user,
+								  ExternalDataIdentifier sourceID, String sourceAnnotation,
+								  String versionTypeName, String versionName, boolean bEnableRetry) throws SQLException, DataAccessException {
+
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		CopyFieldDataResult fieldDataDBOperationResults =
+				DbDriver.fieldDataCopy(con, conFactory.getKeyFactory(), user, sourceID, sourceAnnotation,
+						versionTypeName, versionName);
+		con.commit();
+		return fieldDataDBOperationResults;
+	} catch (Throwable e) {
+		lg.error(e.getMessage(),e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return fieldDataCopy(user, sourceID, sourceAnnotation, versionTypeName, versionName,false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null;

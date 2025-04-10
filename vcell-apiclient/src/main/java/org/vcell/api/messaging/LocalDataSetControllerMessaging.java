@@ -20,13 +20,13 @@ import cbit.vcell.message.server.bootstrap.client.RpcDataServerProxy;
 import cbit.vcell.message.server.bootstrap.client.RpcSender;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.simdata.*;
+import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.VCellApiClient;
-import org.vcell.restclient.model.AnalyzedResultsFromFieldData;
-import org.vcell.restclient.model.FieldDataSaveResults;
-import org.vcell.restclient.model.FieldDataShape;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.model.*;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
@@ -58,22 +58,29 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.fieldDataFileOperationSpec(...)");
 	try {
 		if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_ADD){
-			AnalyzedResultsFromFieldData analyzedResultsFromFieldData = DtoModelTransforms.fieldDataSpecToAnalyzedResultsDTO(fieldDataFileOperationSpec);
-			FieldDataSaveResults results = vCellApiClient.getFieldDataApi().createFieldDataFromAnalyzedFile(analyzedResultsFromFieldData);
+			AnalyzedFile analyzedResultsFromFieldData = DtoModelTransforms.fieldDataSpecToAnalyzedResultsDTO(fieldDataFileOperationSpec);
+			FieldDataSavedResults results = vCellApiClient.getFieldDataApi().createFromAnalyzedFile(analyzedResultsFromFieldData);
 			return DtoModelTransforms.fieldDataSaveResultsDTOToFileOperationResults(results, fieldDataFileOperationSpec.owner);
 		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DELETE) {
-			vCellApiClient.getFieldDataApi().deleteFieldData(fieldDataFileOperationSpec.specEDI.getKey().toString());
+			vCellApiClient.getFieldDataApi().delete(fieldDataFileOperationSpec.specEDI.getKey().toString());
 			return null;
 		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_INFO) {
-			FieldDataShape fieldDataInfo = vCellApiClient.getFieldDataApi().getFieldDataShapeFromID(fieldDataFileOperationSpec.sourceSimDataKey.toString());
+			FieldDataShape fieldDataInfo = vCellApiClient.getFieldDataApi().getShapeFromID(fieldDataFileOperationSpec.sourceSimDataKey.toString());
 			return DtoModelTransforms.fieldDataInfoDTOToFileOperationResults(fieldDataInfo);
+		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_COPYSIM) {
+			UnsupportedOperationException unsupported = new UnsupportedOperationException("Call field data from simulation instead from user meta DB server.");
+			lg.error(unsupported);
+			throw unsupported;
+		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DEPENDANTFUNCS) {
+			UnsupportedOperationException unsupported =  new UnsupportedOperationException("Field Data 'FDOS_DEPENDANTFUNCS' Operation is Not Supported.");
+			lg.error(unsupported);
+			throw unsupported;
 		} else {
-			return dataServerProxy.fieldDataFileOperation(fieldDataFileOperationSpec);
+			UnsupportedOperationException unsupported = new UnsupportedOperationException("Unknown operation called.");
+			lg.error(unsupported);
+			throw unsupported;
 		}
-	} catch (DataAccessException e){
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e){
+	} catch (ApiException e){
 		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}

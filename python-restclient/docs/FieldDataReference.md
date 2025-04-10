@@ -4,9 +4,9 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**external_data_identifier** | [**ExternalDataIdentifier**](ExternalDataIdentifier.md) |  | [optional] 
-**external_data_annotation** | **str** |  | [optional] 
-**external_data_id_sim_refs** | [**List[KeyValue]**](KeyValue.md) |  | [optional] 
+**field_data_id** | [**ExternalDataIdentifier**](ExternalDataIdentifier.md) |  | [optional] 
+**annotation** | **str** |  | [optional] 
+**simulations_referencing_this_id** | [**List[KeyValue]**](KeyValue.md) |  | [optional] 
 
 ## Example
 

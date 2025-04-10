@@ -23,7 +23,7 @@ encoder.ts
 git_push.sh
 index.ts
 model/acces-token-representation-record.ts
-model/analyzed-results-from-field-data.ts
+model/analyzed-file.ts
 model/batch-system-type.ts
 model/bio-model.ts
 model/biomodel-ref.ts
@@ -33,7 +33,7 @@ model/domain.ts
 model/extent.ts
 model/external-data-identifier.ts
 model/field-data-reference.ts
-model/field-data-save-results.ts
+model/field-data-saved-results.ts
 model/field-data-shape.ts
 model/hello-world-message.ts
 model/htc-job-id.ts
@@ -41,6 +41,7 @@ model/i-size.ts
 model/identity.ts
 model/key-value.ts
 model/mathmodel-ref.ts
+model/model-type.ts
 model/models.ts
 model/origin.ts
 model/publication.ts
@@ -51,6 +52,7 @@ model/simulation-message.ts
 model/simulation-queue-entry-status-record.ts
 model/simulation-queue-id.ts
 model/simulation-status-persistent-record.ts
+model/source-model.ts
 model/status-message.ts
 model/status.ts
 model/user-identity-json-safe.ts

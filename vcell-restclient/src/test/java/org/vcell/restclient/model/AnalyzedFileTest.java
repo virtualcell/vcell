@@ -29,17 +29,17 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Model tests for AnalyzedResultsFromFieldData
+ * Model tests for AnalyzedFile
  */
-public class AnalyzedResultsFromFieldDataTest {
-    private final AnalyzedResultsFromFieldData model = new AnalyzedResultsFromFieldData();
+public class AnalyzedFileTest {
+    private final AnalyzedFile model = new AnalyzedFile();
 
     /**
-     * Model tests for AnalyzedResultsFromFieldData
+     * Model tests for AnalyzedFile
      */
     @Test
-    public void testAnalyzedResultsFromFieldData() {
-        // TODO: test AnalyzedResultsFromFieldData
+    public void testAnalyzedFile() {
+        // TODO: test AnalyzedFile
     }
 
     /**

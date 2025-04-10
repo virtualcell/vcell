@@ -2,35 +2,46 @@ package org.vcell.restq.handlers.FieldData;
 
 import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.field.FieldDataFileConversion;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.field.*;
+import cbit.vcell.field.io.CopyFieldDataResult;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solvers.CartesianMesh;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.restq.db.AgroalConnectionFactory;
+import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
+import org.vcell.util.TokenMangler;
+import org.vcell.util.document.*;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Vector;
+import java.util.*;
 import java.util.zip.DataFormatException;
 
 @ApplicationScoped
 public class FieldDataDB {
+    private static final Logger logger = LogManager.getLogger(FieldDataDB.class);
 
     private final DatabaseServerImpl databaseServer;
     private final DataSetControllerImpl dataSetController;
@@ -45,8 +56,99 @@ public class FieldDataDB {
                 new File(secondarySimDataDir));
     }
 
-    public FieldDataDBOperationResults copyNoConflict(User user, FieldDataDBOperationSpec spec) throws DataAccessException {
-        return databaseServer.fieldDataDBOperation(user, spec);
+    /**
+     * Copy all the field data for a specific model that is not already owned by the user.
+     * It the client is copying a Model, and call this to get all of its field data, then it
+     * is the clients responsibility to update the Models references to the newly copied field data.
+     */
+    public Hashtable<String, ExternalDataIdentifier> copyModelsFieldData(User requester, KeyValue documentKey, String documentType) throws DataAccessException, XmlParseException, MathException, ExpressionException {
+        VCDocument vcDocument;
+
+        //Get Objects from Document that might need to have FieldFuncs replaced
+        // If the requester does not have access to the Model an exception should be thrown to stop this function
+        ArrayList<SimulationOwner> modelsListOfContext = new ArrayList<>();
+        if(documentType.equalsIgnoreCase(VersionableType.MathModelMetaData.getTypeName())){
+            BigString mathModelXML = databaseServer.getMathModelXML(requester, documentKey);
+            vcDocument = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML.toString()));
+            modelsListOfContext.add(((MathModel)vcDocument));
+        }else if(documentType.equalsIgnoreCase(VersionableType.BioModelMetaData.getTypeName())){
+            BigString bioModelXML = databaseServer.getBioModelXML(requester, documentKey);
+            vcDocument = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
+            SimulationContext[] contexts = ((BioModel)vcDocument).getSimulationContexts();
+            modelsListOfContext.addAll(Arrays.asList(contexts));
+        } else {
+            UnsupportedOperationException notSupported = new UnsupportedOperationException("Document type (" + documentType + ") is not supported.");
+            logger.error(notSupported);
+            throw notSupported;
+        }
+        User ogOwner = vcDocument.getVersion().getOwner();
+
+		//Get Field names
+        Set<String> fieldNames = new HashSet<>();
+        for(SimulationOwner fieldFunctionContainer : modelsListOfContext){
+            FieldFunctionArguments[] fieldFuncArgsArr = {};
+            if (fieldFunctionContainer instanceof MathModel mathModel){
+                fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments(mathModel.getMathDescription());
+            }else if (fieldFunctionContainer instanceof SimulationContext simulationContext){
+                fieldFuncArgsArr = simulationContext.getFieldFunctionArguments();
+            }
+            for (FieldFunctionArguments fieldFunctionArguments : fieldFuncArgsArr) {
+                fieldNames.add(fieldFunctionArguments.getFieldName());
+            }
+        }
+        if (fieldNames.isEmpty()){
+            return new Hashtable<>();
+        }
+
+        // Find which ID's are appropriate
+        FieldDataDBOperationResults allIDs = databaseServer.fieldDataDBOperation(ogOwner, FieldDataDBOperationSpec.createGetExtDataIDsSpec(ogOwner));
+        ArrayList<ExternalDataIdentifier> edis = new ArrayList<>();
+        ArrayList<String> annotations = new ArrayList<>();
+        for (int i = 0; i < allIDs.extDataIDArr.length; i++){
+            ExternalDataIdentifier edi = allIDs.extDataIDArr[i];
+            if (fieldNames.contains(edi.getName())){
+                edis.add(edi);
+                annotations.add(allIDs.extDataAnnotArr[i]);
+            }
+        }
+
+        if (edis.isEmpty()){
+            throw new DataAccessException("Can't find required source External Data Identifiers for copying.");
+        }
+
+
+        ///////////////////////////////////////////////////////////////////////
+        // Copy the Field Data (First create entries in DB, then copy files) //
+        ///////////////////////////////////////////////////////////////////////
+
+        Hashtable<String, ExternalDataIdentifier> oldNameNewID = new Hashtable<>();
+
+        try{
+            // Tie those DB entries to newly created copies of the original field data that the requester owns
+            for (int i = 0; i < edis.size(); i++){
+                // Create DB entries where new field data names are created
+                CopyFieldDataResult dbResults = databaseServer.copyFieldData(requester,
+                        edis.get(i), annotations.get(i), documentType, vcDocument.getVersion().getName());
+
+                FieldDataFileOperationSpec fileOperationSpec = FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(dbResults.newID,
+                        dbResults.oldID.getDataKey(), ogOwner, FieldDataFileOperationSpec.JOBINDEX_DEFAULT, requester);
+                dataSetController.fieldDataFileOperation(fileOperationSpec);
+
+                oldNameNewID.put(edis.get(i).getName(), dbResults.newID);
+            }
+        } catch (Exception e){
+            for (ExternalDataIdentifier newID : oldNameNewID.values()){
+                try{
+                    deleteFieldData(newID);
+                } catch (Exception t){
+                    logger.error("Problem removing field data with id {} that couldn't be added.", newID, t);
+                    continue;
+                }
+            }
+            throw new RuntimeException(e);
+        }
+
+        return oldNameNewID;
     }
 
     public ArrayList<FieldDataResource.FieldDataReference> getAllFieldDataIDs(User user) throws SQLException, DataAccessException {
@@ -67,14 +169,14 @@ public class FieldDataDB {
         return dataSetController.fieldDataFileOperation(FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(new KeyValue(id), user, jobParameter));
     }
 
-    public FieldDataResource.AnalyzedResultsFromFieldData generateFieldDataFromFile(File imageFile, String fileName) throws DataAccessException, ImageException, DataFormatException {
+    public FieldDataResource.AnalyzedFile analyzeFieldDataFromFile(File imageFile, String fileName) throws DataAccessException, ImageException, DataFormatException {
         if (imageFile == null) {
             throw new DataAccessException("No file present");
         }
         if (!fileName.contains(".vfrap")) {
             try {
                 FieldDataFileOperationSpec spec = FieldDataFileConversion.createFDOSFromImageFile(imageFile, false, null);
-                return new FieldDataResource.AnalyzedResultsFromFieldData(
+                return new FieldDataResource.AnalyzedFile(
                         spec.shortSpecData, spec.varNames, spec.times, spec.origin, spec.extent, spec.isize, spec.annotation, fileName
                 );
             } catch (DataFormatException  ex) {
@@ -86,14 +188,24 @@ public class FieldDataDB {
     }
 
 
-    public FieldDataFileOperationResults saveNewFieldDataFromFile(FieldDataResource.AnalyzedResultsFromFieldData saveFieldData, User user) throws DataAccessException, ImageException, DataFormatException {
+    public FieldDataFileOperationResults saveNewFieldDataFromFile(FieldDataResource.AnalyzedFile saveFieldData, User user) throws DataAccessException, ImageException, DataFormatException {
+        // Ensure name is unique for user
+        String fieldDataName = saveFieldData.name();
+        FieldDataDBOperationResults usersFieldData = databaseServer.fieldDataDBOperation(user, FieldDataDBOperationSpec.createGetExtDataIDsSpecWithSimRefs(user));
+        Set<String> namesUsed = new HashSet<>();
+        for (ExternalDataIdentifier edi : usersFieldData.extDataIDArr){
+            namesUsed.add(edi.getName());
+        }
+        while (namesUsed.contains(fieldDataName)){
+            fieldDataName = TokenMangler.getNextEnumeratedToken(fieldDataName);
+        }
 
 
         VariableType[] varTypes = new VariableType[saveFieldData.varNames().length];
         for (int j = 0; j < saveFieldData.varNames().length; j++){
             varTypes[j] = VariableType.VOLUME;
         }
-        FieldDataDBOperationSpec fieldDataDBOperationSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(user, saveFieldData.name(), saveFieldData.annotation());
+        FieldDataDBOperationSpec fieldDataDBOperationSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(user, fieldDataName, saveFieldData.annotation());
         FieldDataDBOperationResults results = databaseServer.fieldDataDBOperation(user, fieldDataDBOperationSpec);
         FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec(saveFieldData.shortSpecData(), null, null,
                 results.extDataID, saveFieldData.varNames(), varTypes, saveFieldData.times(), user,
@@ -127,9 +239,8 @@ public class FieldDataDB {
         dataSetController.fieldDataCopySim(simKeyValue, simInfo.getOwner(), results.extDataID, jobIndex, user);
     }
 
-    public void deleteFieldData(User user, String fieldDataID) throws DataAccessException {
-        ExternalDataIdentifier edi = new ExternalDataIdentifier(new KeyValue(fieldDataID), user, null);
-        databaseServer.fieldDataDBOperation(user, FieldDataDBOperationSpec.createDeleteExtDataIDSpec(edi)); // remove from DB
+    public void deleteFieldData(ExternalDataIdentifier edi) throws DataAccessException {
+        databaseServer.fieldDataDBOperation(edi.getOwner(), FieldDataDBOperationSpec.createDeleteExtDataIDSpec(edi)); // remove from DB
         dataSetController.fieldDataFileOperation(FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(edi)); // remove from File System
     }
 

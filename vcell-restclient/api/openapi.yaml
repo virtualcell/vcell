@@ -211,7 +211,7 @@ paths:
       x-accepts: application/json
   /api/v1/fieldData/IDs:
     get:
-      operationId: getAllFieldDataIDs
+      operationId: getAllIDs
       responses:
         "200":
           content:
@@ -232,20 +232,20 @@ paths:
       tags:
       - Field Data Resource
       x-accepts: application/json
-  /api/v1/fieldData/analyzeFieldDataFile:
+  /api/v1/fieldData/analyzeFile:
     post:
-      operationId: analyzeFieldDataFile
+      operationId: analyzeFile
       requestBody:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/analyzeFieldDataFile_request'
+              $ref: '#/components/schemas/analyzeFile_request'
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AnalyzedResultsFromFieldData'
+                $ref: '#/components/schemas/AnalyzedFile'
           description: OK
         "401":
           description: Not Authorized
@@ -254,26 +254,30 @@ paths:
       security:
       - openId:
         - user
-      summary: "Analyze the field data from the uploaded file. Filenames must be lowercase\
-        \ alphanumeric, and can contain underscores."
+      summary: "Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and\
+        \ create default field data specification. Color mapped images not supported\
+        \ (the colors in those images will be interpreted as separate channels). Filenames\
+        \ must be lowercase alphanumeric, and can contain underscores."
       tags:
       - Field Data Resource
       x-content-type: multipart/form-data
       x-accepts: application/json
-  /api/v1/fieldData/createFieldDataFromAnalyzedFile:
+  /api/v1/fieldData/copyModelsFieldData:
     post:
-      operationId: createFieldDataFromAnalyzedFile
+      operationId: copyModelsFieldData
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AnalyzedResultsFromFieldData'
+              $ref: '#/components/schemas/SourceModel'
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldDataSaveResults'
+                additionalProperties:
+                  $ref: '#/components/schemas/ExternalDataIdentifier'
+                type: object
           description: OK
         "401":
           description: Not Authorized
@@ -282,20 +286,20 @@ paths:
       security:
       - openId:
         - user
-      summary: "Take the analyzed results of the field data, modify it to your liking,\
-        \ then save it on the server."
+      summary: "Copy all existing field data from a BioModel/MathModel that you have\
+        \ access to, but don't own."
       tags:
       - Field Data Resource
       x-content-type: application/json
       x-accepts: application/json
-  /api/v1/fieldData/createFieldDataFromSimulation:
+  /api/v1/fieldData/createFromSimulation:
     post:
-      operationId: createNewFieldDataFromSimulation
+      operationId: createFromSimulation
       requestBody:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/createNewFieldDataFromSimulation_request'
+              $ref: '#/components/schemas/createFromSimulation_request'
       responses:
         "201":
           description: Created
@@ -306,14 +310,42 @@ paths:
       security:
       - openId:
         - user
-      summary: Create new field data from a simulation.
+      summary: Create new field data from existing simulation results.
       tags:
       - Field Data Resource
       x-content-type: application/x-www-form-urlencoded
       x-accepts: application/json
+  /api/v1/fieldData/createFromSpecification:
+    post:
+      operationId: createFromAnalyzedFile
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzedFile'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataSavedResults'
+          description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+      summary: "Take the field data specification, and save it to the server. User\
+        \ may adjust the analyzed file before uploading to edit defaults."
+      tags:
+      - Field Data Resource
+      x-content-type: application/json
+      x-accepts: application/json
   /api/v1/fieldData/delete/{fieldDataID}:
     delete:
-      operationId: deleteFieldData
+      operationId: delete
       parameters:
       - explode: false
         in: path
@@ -336,9 +368,9 @@ paths:
       tags:
       - Field Data Resource
       x-accepts: application/json
-  /api/v1/fieldData/fieldDataShape/{fieldDataID}:
+  /api/v1/fieldData/shape/{fieldDataID}:
     get:
-      operationId: getFieldDataShapeFromID
+      operationId: getShapeFromID
       parameters:
       - explode: false
         in: path
@@ -362,7 +394,7 @@ paths:
       - openId:
         - user
       summary: "Get the shape of the field data. That is it's size, origin, extent,\
-        \ and data identifiers."
+        \ times, and data identifiers."
       tags:
       - Field Data Resource
       x-accepts: application/json
@@ -795,7 +827,7 @@ components:
         userKey:
           type: string
       type: object
-    AnalyzedResultsFromFieldData:
+    AnalyzedFile:
       example:
         extent:
           x: 2.3021358869347655
@@ -1096,8 +1128,8 @@ components:
       type: object
     FieldDataReference:
       example:
-        externalDataAnnotation: externalDataAnnotation
-        externalDataIdentifier:
+        annotation: annotation
+        fieldDataID:
           owner:
             testAccount: true
             name: name
@@ -1113,27 +1145,27 @@ components:
           key:
             value: 0.8008281904610115
           parameterScanType: true
-        externalDataIDSimRefs:
+        simulationsReferencingThisID:
         - value: 0.8008281904610115
         - value: 0.8008281904610115
       properties:
-        externalDataIdentifier:
+        fieldDataID:
           $ref: '#/components/schemas/ExternalDataIdentifier'
-        externalDataAnnotation:
+        annotation:
           type: string
-        externalDataIDSimRefs:
+        simulationsReferencingThisID:
           items:
             $ref: '#/components/schemas/KeyValue'
           type: array
       type: object
-    FieldDataSaveResults:
+    FieldDataSavedResults:
       example:
         fieldDataName: fieldDataName
-        fieldDataID: fieldDataID
+        fieldDataKey: fieldDataKey
       properties:
         fieldDataName:
           type: string
-        fieldDataID:
+        fieldDataKey:
           type: string
       type: object
     FieldDataShape:
@@ -1303,6 +1335,11 @@ components:
           format: int32
           type: integer
       type: object
+    ModelType:
+      enum:
+      - BIOMODEL
+      - MATHMODEL
+      type: string
     Origin:
       example:
         x: 1.4658129805029452
@@ -1565,6 +1602,16 @@ components:
         hasData:
           type: boolean
       type: object
+    SourceModel:
+      example:
+        modelID: modelID
+        modelType: null
+      properties:
+        modelID:
+          type: string
+        modelType:
+          $ref: '#/components/schemas/ModelType'
+      type: object
     Status:
       enum:
       - UNKNOWN
@@ -1762,7 +1809,7 @@ components:
         typeName:
           type: string
       type: object
-    analyzeFieldDataFile_request:
+    analyzeFile_request:
       properties:
         file:
           format: binary
@@ -1770,7 +1817,7 @@ components:
         fileName:
           type: string
       type: object
-    createNewFieldDataFromSimulation_request:
+    createFromSimulation_request:
       properties:
         simKeyReference:
           type: string

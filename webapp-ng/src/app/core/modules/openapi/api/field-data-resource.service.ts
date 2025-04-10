@@ -19,13 +19,17 @@ import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
 
 // @ts-ignore
-import { AnalyzedResultsFromFieldData } from '../model/analyzed-results-from-field-data';
+import { AnalyzedFile } from '../model/analyzed-file';
+// @ts-ignore
+import { ExternalDataIdentifier } from '../model/external-data-identifier';
 // @ts-ignore
 import { FieldDataReference } from '../model/field-data-reference';
 // @ts-ignore
-import { FieldDataSaveResults } from '../model/field-data-save-results';
+import { FieldDataSavedResults } from '../model/field-data-saved-results';
 // @ts-ignore
 import { FieldDataShape } from '../model/field-data-shape';
+// @ts-ignore
+import { SourceModel } from '../model/source-model';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -114,16 +118,79 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
     }
 
     /**
-     * Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+     * Delete the selected field data.
+     * @param fieldDataID 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public _delete(fieldDataID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<any>;
+    public _delete(fieldDataID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<HttpResponse<any>>;
+    public _delete(fieldDataID: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<HttpEvent<any>>;
+    public _delete(fieldDataID: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<any> {
+        if (fieldDataID === null || fieldDataID === undefined) {
+            throw new Error('Required parameter fieldDataID was null or undefined when calling _delete.');
+        }
+
+        let localVarHeaders = this.defaultHeaders;
+
+        let localVarCredential: string | undefined;
+        // authentication (openId) required
+        localVarCredential = this.configuration.lookupCredential('openId');
+        if (localVarCredential) {
+        }
+
+        let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
+        if (localVarHttpHeaderAcceptSelected === undefined) {
+            // to determine the Accept header
+            const httpHeaderAccepts: string[] = [
+            ];
+            localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        }
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        let localVarHttpContext: HttpContext | undefined = options && options.context;
+        if (localVarHttpContext === undefined) {
+            localVarHttpContext = new HttpContext();
+        }
+
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/v1/fieldData/delete/${this.configuration.encodeParam({name: "fieldDataID", value: fieldDataID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
+        return this.httpClient.request<any>('delete', `${this.configuration.basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                responseType: <any>responseType_,
+                withCredentials: this.configuration.withCredentials,
+                headers: localVarHeaders,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
      * @param file 
      * @param fileName 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public analyzeFieldDataFile(file?: Blob, fileName?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<AnalyzedResultsFromFieldData>;
-    public analyzeFieldDataFile(file?: Blob, fileName?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<AnalyzedResultsFromFieldData>>;
-    public analyzeFieldDataFile(file?: Blob, fileName?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<AnalyzedResultsFromFieldData>>;
-    public analyzeFieldDataFile(file?: Blob, fileName?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public analyzeFile(file?: Blob, fileName?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<AnalyzedFile>;
+    public analyzeFile(file?: Blob, fileName?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<AnalyzedFile>>;
+    public analyzeFile(file?: Blob, fileName?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<AnalyzedFile>>;
+    public analyzeFile(file?: Blob, fileName?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -187,8 +254,8 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
             }
         }
 
-        let localVarPath = `/api/v1/fieldData/analyzeFieldDataFile`;
-        return this.httpClient.request<AnalyzedResultsFromFieldData>('post', `${this.configuration.basePath}${localVarPath}`,
+        let localVarPath = `/api/v1/fieldData/analyzeFile`;
+        return this.httpClient.request<AnalyzedFile>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,
@@ -202,15 +269,15 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
     }
 
     /**
-     * Take the analyzed results of the field data, modify it to your liking, then save it on the server.
-     * @param analyzedResultsFromFieldData 
+     * Copy all existing field data from a BioModel/MathModel that you have access to, but don\&#39;t own.
+     * @param sourceModel 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createFieldDataFromAnalyzedFile(analyzedResultsFromFieldData?: AnalyzedResultsFromFieldData, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<FieldDataSaveResults>;
-    public createFieldDataFromAnalyzedFile(analyzedResultsFromFieldData?: AnalyzedResultsFromFieldData, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<FieldDataSaveResults>>;
-    public createFieldDataFromAnalyzedFile(analyzedResultsFromFieldData?: AnalyzedResultsFromFieldData, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<FieldDataSaveResults>>;
-    public createFieldDataFromAnalyzedFile(analyzedResultsFromFieldData?: AnalyzedResultsFromFieldData, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public copyModelsFieldData(sourceModel?: SourceModel, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<{ [key: string]: ExternalDataIdentifier; }>;
+    public copyModelsFieldData(sourceModel?: SourceModel, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<{ [key: string]: ExternalDataIdentifier; }>>;
+    public copyModelsFieldData(sourceModel?: SourceModel, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<{ [key: string]: ExternalDataIdentifier; }>>;
+    public copyModelsFieldData(sourceModel?: SourceModel, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -258,11 +325,11 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
             }
         }
 
-        let localVarPath = `/api/v1/fieldData/createFieldDataFromAnalyzedFile`;
-        return this.httpClient.request<FieldDataSaveResults>('post', `${this.configuration.basePath}${localVarPath}`,
+        let localVarPath = `/api/v1/fieldData/copyModelsFieldData`;
+        return this.httpClient.request<{ [key: string]: ExternalDataIdentifier; }>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: analyzedResultsFromFieldData,
+                body: sourceModel,
                 responseType: <any>responseType_,
                 withCredentials: this.configuration.withCredentials,
                 headers: localVarHeaders,
@@ -273,17 +340,88 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
     }
 
     /**
-     * Create new field data from a simulation.
+     * Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
+     * @param analyzedFile 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public createFromAnalyzedFile(analyzedFile?: AnalyzedFile, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<FieldDataSavedResults>;
+    public createFromAnalyzedFile(analyzedFile?: AnalyzedFile, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<FieldDataSavedResults>>;
+    public createFromAnalyzedFile(analyzedFile?: AnalyzedFile, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<FieldDataSavedResults>>;
+    public createFromAnalyzedFile(analyzedFile?: AnalyzedFile, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+
+        let localVarHeaders = this.defaultHeaders;
+
+        let localVarCredential: string | undefined;
+        // authentication (openId) required
+        localVarCredential = this.configuration.lookupCredential('openId');
+        if (localVarCredential) {
+        }
+
+        let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
+        if (localVarHttpHeaderAcceptSelected === undefined) {
+            // to determine the Accept header
+            const httpHeaderAccepts: string[] = [
+                'application/json'
+            ];
+            localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        }
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        let localVarHttpContext: HttpContext | undefined = options && options.context;
+        if (localVarHttpContext === undefined) {
+            localVarHttpContext = new HttpContext();
+        }
+
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'application/json'
+        ];
+        const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
+        if (httpContentTypeSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Content-Type', httpContentTypeSelected);
+        }
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/v1/fieldData/createFromSpecification`;
+        return this.httpClient.request<FieldDataSavedResults>('post', `${this.configuration.basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                body: analyzedFile,
+                responseType: <any>responseType_,
+                withCredentials: this.configuration.withCredentials,
+                headers: localVarHeaders,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Create new field data from existing simulation results.
      * @param simKeyReference 
      * @param jobIndex 
      * @param newFieldDataName 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createNewFieldDataFromSimulation(simKeyReference?: string, jobIndex?: number, newFieldDataName?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<any>;
-    public createNewFieldDataFromSimulation(simKeyReference?: string, jobIndex?: number, newFieldDataName?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<HttpResponse<any>>;
-    public createNewFieldDataFromSimulation(simKeyReference?: string, jobIndex?: number, newFieldDataName?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<HttpEvent<any>>;
-    public createNewFieldDataFromSimulation(simKeyReference?: string, jobIndex?: number, newFieldDataName?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<any> {
+    public createFromSimulation(simKeyReference?: string, jobIndex?: number, newFieldDataName?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<any>;
+    public createFromSimulation(simKeyReference?: string, jobIndex?: number, newFieldDataName?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<HttpResponse<any>>;
+    public createFromSimulation(simKeyReference?: string, jobIndex?: number, newFieldDataName?: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<HttpEvent<any>>;
+    public createFromSimulation(simKeyReference?: string, jobIndex?: number, newFieldDataName?: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -346,7 +484,7 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
             }
         }
 
-        let localVarPath = `/api/v1/fieldData/createFieldDataFromSimulation`;
+        let localVarPath = `/api/v1/fieldData/createFromSimulation`;
         return this.httpClient.request<any>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
@@ -361,77 +499,14 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
     }
 
     /**
-     * Delete the selected field data.
-     * @param fieldDataID 
-     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     */
-    public deleteFieldData(fieldDataID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<any>;
-    public deleteFieldData(fieldDataID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<HttpResponse<any>>;
-    public deleteFieldData(fieldDataID: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<HttpEvent<any>>;
-    public deleteFieldData(fieldDataID: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<any> {
-        if (fieldDataID === null || fieldDataID === undefined) {
-            throw new Error('Required parameter fieldDataID was null or undefined when calling deleteFieldData.');
-        }
-
-        let localVarHeaders = this.defaultHeaders;
-
-        let localVarCredential: string | undefined;
-        // authentication (openId) required
-        localVarCredential = this.configuration.lookupCredential('openId');
-        if (localVarCredential) {
-        }
-
-        let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
-        if (localVarHttpHeaderAcceptSelected === undefined) {
-            // to determine the Accept header
-            const httpHeaderAccepts: string[] = [
-            ];
-            localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-        }
-        if (localVarHttpHeaderAcceptSelected !== undefined) {
-            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-        }
-
-        let localVarHttpContext: HttpContext | undefined = options && options.context;
-        if (localVarHttpContext === undefined) {
-            localVarHttpContext = new HttpContext();
-        }
-
-
-        let responseType_: 'text' | 'json' | 'blob' = 'json';
-        if (localVarHttpHeaderAcceptSelected) {
-            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-                responseType_ = 'text';
-            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-                responseType_ = 'json';
-            } else {
-                responseType_ = 'blob';
-            }
-        }
-
-        let localVarPath = `/api/v1/fieldData/delete/${this.configuration.encodeParam({name: "fieldDataID", value: fieldDataID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
-        return this.httpClient.request<any>('delete', `${this.configuration.basePath}${localVarPath}`,
-            {
-                context: localVarHttpContext,
-                responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
-                headers: localVarHeaders,
-                observe: observe,
-                reportProgress: reportProgress
-            }
-        );
-    }
-
-    /**
      * Get all of the ids used to identify, and retrieve field data.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getAllFieldDataIDs(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<Array<FieldDataReference>>;
-    public getAllFieldDataIDs(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<Array<FieldDataReference>>>;
-    public getAllFieldDataIDs(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<Array<FieldDataReference>>>;
-    public getAllFieldDataIDs(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public getAllIDs(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<Array<FieldDataReference>>;
+    public getAllIDs(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<Array<FieldDataReference>>>;
+    public getAllIDs(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<Array<FieldDataReference>>>;
+    public getAllIDs(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -484,17 +559,17 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
     }
 
     /**
-     * Get the shape of the field data. That is it\&#39;s size, origin, extent, and data identifiers.
+     * Get the shape of the field data. That is it\&#39;s size, origin, extent, times, and data identifiers.
      * @param fieldDataID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getFieldDataShapeFromID(fieldDataID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<FieldDataShape>;
-    public getFieldDataShapeFromID(fieldDataID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<FieldDataShape>>;
-    public getFieldDataShapeFromID(fieldDataID: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<FieldDataShape>>;
-    public getFieldDataShapeFromID(fieldDataID: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public getShapeFromID(fieldDataID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<FieldDataShape>;
+    public getShapeFromID(fieldDataID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<FieldDataShape>>;
+    public getShapeFromID(fieldDataID: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<FieldDataShape>>;
+    public getShapeFromID(fieldDataID: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
         if (fieldDataID === null || fieldDataID === undefined) {
-            throw new Error('Required parameter fieldDataID was null or undefined when calling getFieldDataShapeFromID.');
+            throw new Error('Required parameter fieldDataID was null or undefined when calling getShapeFromID.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -534,7 +609,7 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
             }
         }
 
-        let localVarPath = `/api/v1/fieldData/fieldDataShape/${this.configuration.encodeParam({name: "fieldDataID", value: fieldDataID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
+        let localVarPath = `/api/v1/fieldData/shape/${this.configuration.encodeParam({name: "fieldDataID", value: fieldDataID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
         return this.httpClient.request<FieldDataShape>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,

@@ -24,17 +24,16 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Model tests for FieldDataSaveResults
+ * Model tests for SavedResults
  */
-public class FieldDataSaveResultsTest {
-    private final FieldDataSaveResults model = new FieldDataSaveResults();
+public class SavedResultsTest {
 
     /**
-     * Model tests for FieldDataSaveResults
+     * Model tests for SavedResults
      */
     @Test
-    public void testFieldDataSaveResults() {
-        // TODO: test FieldDataSaveResults
+    public void testSavedResults() {
+        // TODO: test SavedResults
     }
 
     /**

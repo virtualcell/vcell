@@ -1,6 +1,6 @@
 
 
-# FieldDataSaveResults
+# SavedResults
 
 
 ## Properties
@@ -8,7 +8,7 @@
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
 |**fieldDataName** | **String** |  |  [optional] |
-|**fieldDataID** | **String** |  |  [optional] |
+|**fieldDataKey** | **String** |  |  [optional] |
 
 
 

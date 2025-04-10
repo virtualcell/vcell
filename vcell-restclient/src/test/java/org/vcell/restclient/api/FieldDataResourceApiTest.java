@@ -13,20 +13,17 @@
 
 package org.vcell.restclient.api;
 
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.model.AnalyzedResultsFromFieldData;
-import org.vcell.restclient.model.FieldDataReference;
-import org.vcell.restclient.model.FieldDataSaveResults;
-import org.vcell.restclient.model.FieldDataShape;
-import java.io.File;
-import org.junit.Test;
 import org.junit.Ignore;
+import org.junit.Test;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.model.AnalyzedFile;
+import org.vcell.restclient.model.ExternalDataIdentifier;
+import org.vcell.restclient.model.FieldDataReference;
+import org.vcell.restclient.model.SourceModel;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -47,11 +44,28 @@ public class FieldDataResourceApiTest {
      *          if the Api call fails
      */
     @Test
-    public void analyzeFieldDataFileTest() throws ApiException {
+    public void analyzeFileTest() throws ApiException {
         File _file = null;
         String fileName = null;
-        AnalyzedResultsFromFieldData response = 
-        api.analyzeFieldDataFile(_file, fileName);
+        AnalyzedFile response = 
+        api.analyzeFile(_file, fileName);
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * Copy all existing field data from a BioModel/MathModel if not already owned.
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void copyModelsFieldDataTest() throws ApiException {
+        SourceModel sourceModel = null;
+        Map<String, ExternalDataIdentifier> response = 
+        api.copyModelsFieldData(sourceModel);
         
         // TODO: test validations
     }
@@ -64,11 +78,22 @@ public class FieldDataResourceApiTest {
      * @throws ApiException
      *          if the Api call fails
      */
+
+    /**
+     * Create new field data from a simulation.
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
     @Test
-    public void createFieldDataFromAnalyzedFileTest() throws ApiException {
-        AnalyzedResultsFromFieldData analyzedResultsFromFieldData = null;
-        FieldDataSaveResults response = 
-        api.createFieldDataFromAnalyzedFile(analyzedResultsFromFieldData);
+    public void createFromSimulationTest() throws ApiException {
+        String simKeyReference = null;
+        Integer jobIndex = null;
+        String newFieldDataName = null;
+        
+        api.createFromSimulation(simKeyReference, jobIndex, newFieldDataName);
         
         // TODO: test validations
     }
@@ -85,7 +110,7 @@ public class FieldDataResourceApiTest {
     public void deleteFieldDataTest() throws ApiException {
         String fieldDataID = null;
         
-        api.deleteFieldData(fieldDataID);
+        api.delete(fieldDataID);
         
         // TODO: test validations
     }
@@ -99,9 +124,9 @@ public class FieldDataResourceApiTest {
      *          if the Api call fails
      */
     @Test
-    public void getAllFieldDataIDsTest() throws ApiException {
+    public void getAllIDsTest() throws ApiException {
         List<FieldDataReference> response = 
-        api.getAllFieldDataIDs();
+        api.getAllIDs();
         
         // TODO: test validations
     }
@@ -114,13 +139,5 @@ public class FieldDataResourceApiTest {
      * @throws ApiException
      *          if the Api call fails
      */
-    @Test
-    public void getFieldDataShapeFromIDTest() throws ApiException {
-        String fieldDataID = null;
-        FieldDataShape response = 
-        api.getFieldDataShapeFromID(fieldDataID);
-        
-        // TODO: test validations
-    }
     
 }

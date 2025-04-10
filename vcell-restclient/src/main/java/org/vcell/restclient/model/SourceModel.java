@@ -25,79 +25,80 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
+import org.vcell.restclient.model.ModelType;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**
- * FieldDataSaveResults
+ * SourceModel
  */
 @JsonPropertyOrder({
-  FieldDataSaveResults.JSON_PROPERTY_FIELD_DATA_NAME,
-  FieldDataSaveResults.JSON_PROPERTY_FIELD_DATA_I_D
+  SourceModel.JSON_PROPERTY_MODEL_I_D,
+  SourceModel.JSON_PROPERTY_MODEL_TYPE
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
-public class FieldDataSaveResults {
-  public static final String JSON_PROPERTY_FIELD_DATA_NAME = "fieldDataName";
-  private String fieldDataName;
+public class SourceModel {
+  public static final String JSON_PROPERTY_MODEL_I_D = "modelID";
+  private String modelID;
 
-  public static final String JSON_PROPERTY_FIELD_DATA_I_D = "fieldDataID";
-  private String fieldDataID;
+  public static final String JSON_PROPERTY_MODEL_TYPE = "modelType";
+  private ModelType modelType;
 
-  public FieldDataSaveResults() { 
+  public SourceModel() { 
   }
 
-  public FieldDataSaveResults fieldDataName(String fieldDataName) {
-    this.fieldDataName = fieldDataName;
+  public SourceModel modelID(String modelID) {
+    this.modelID = modelID;
     return this;
   }
 
    /**
-   * Get fieldDataName
-   * @return fieldDataName
+   * Get modelID
+   * @return modelID
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_DATA_NAME)
+  @JsonProperty(JSON_PROPERTY_MODEL_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public String getFieldDataName() {
-    return fieldDataName;
+  public String getModelID() {
+    return modelID;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_DATA_NAME)
+  @JsonProperty(JSON_PROPERTY_MODEL_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldDataName(String fieldDataName) {
-    this.fieldDataName = fieldDataName;
+  public void setModelID(String modelID) {
+    this.modelID = modelID;
   }
 
 
-  public FieldDataSaveResults fieldDataID(String fieldDataID) {
-    this.fieldDataID = fieldDataID;
+  public SourceModel modelType(ModelType modelType) {
+    this.modelType = modelType;
     return this;
   }
 
    /**
-   * Get fieldDataID
-   * @return fieldDataID
+   * Get modelType
+   * @return modelType
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_DATA_I_D)
+  @JsonProperty(JSON_PROPERTY_MODEL_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public String getFieldDataID() {
-    return fieldDataID;
+  public ModelType getModelType() {
+    return modelType;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_DATA_I_D)
+  @JsonProperty(JSON_PROPERTY_MODEL_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldDataID(String fieldDataID) {
-    this.fieldDataID = fieldDataID;
+  public void setModelType(ModelType modelType) {
+    this.modelType = modelType;
   }
 
 
   /**
-   * Return true if this FieldDataSaveResults object is equal to o.
+   * Return true if this SourceModel object is equal to o.
    */
   @Override
   public boolean equals(Object o) {
@@ -107,22 +108,22 @@ public class FieldDataSaveResults {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    FieldDataSaveResults fieldDataSaveResults = (FieldDataSaveResults) o;
-    return Objects.equals(this.fieldDataName, fieldDataSaveResults.fieldDataName) &&
-        Objects.equals(this.fieldDataID, fieldDataSaveResults.fieldDataID);
+    SourceModel sourceModel = (SourceModel) o;
+    return Objects.equals(this.modelID, sourceModel.modelID) &&
+        Objects.equals(this.modelType, sourceModel.modelType);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(fieldDataName, fieldDataID);
+    return Objects.hash(modelID, modelType);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class FieldDataSaveResults {\n");
-    sb.append("    fieldDataName: ").append(toIndentedString(fieldDataName)).append("\n");
-    sb.append("    fieldDataID: ").append(toIndentedString(fieldDataID)).append("\n");
+    sb.append("class SourceModel {\n");
+    sb.append("    modelID: ").append(toIndentedString(modelID)).append("\n");
+    sb.append("    modelType: ").append(toIndentedString(modelType)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -170,14 +171,14 @@ public class FieldDataSaveResults {
 
     StringJoiner joiner = new StringJoiner("&");
 
-    // add `fieldDataName` to the URL query string
-    if (getFieldDataName() != null) {
-      joiner.add(String.format("%sfieldDataName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldDataName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    // add `modelID` to the URL query string
+    if (getModelID() != null) {
+      joiner.add(String.format("%smodelID%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getModelID()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
-    // add `fieldDataID` to the URL query string
-    if (getFieldDataID() != null) {
-      joiner.add(String.format("%sfieldDataID%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldDataID()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    // add `modelType` to the URL query string
+    if (getModelType() != null) {
+      joiner.add(String.format("%smodelType%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getModelType()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();
