@@ -271,7 +271,7 @@ public class ServerDocumentManager {
             // clone SimulationContexts so as to isolate different MathModels
             //
             try {
-                scArray[i] = (SimulationContext) BeanUtils.cloneSerializable(sc);
+                scArray[i] = XmlHelper.cloneSimulationContext(sc);
                 scArray[i].getModel().refreshDependencies();
                 scArray[i].refreshDependencies();
                 scArray[i].setModel(model);
