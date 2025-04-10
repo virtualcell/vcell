@@ -140,7 +140,16 @@ public static Expression assign(Expression lvalueExp, Expression rvalueExp) thro
 	exp.rootNode = assignNode;
 	return exp;
 }
-   public void bindExpression(SymbolTable symbolTable) throws ExpressionBindingException
+
+    public static Expression clone(Expression exp) {
+	   if (exp == null){
+		   return null;
+	   }else{
+		   return new Expression(exp);
+	   }
+    }
+
+    public void bindExpression(SymbolTable symbolTable) throws ExpressionBindingException
    {
 bindCount++;/////////////////
 	  rootNode.bind(symbolTable);

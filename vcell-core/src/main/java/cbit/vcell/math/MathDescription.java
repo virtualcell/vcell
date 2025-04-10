@@ -30,8 +30,8 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.Token;
 import org.vcell.util.IssueContext.ContextType;
+import org.vcell.util.Token;
 import org.vcell.util.document.BioModelChildSummary.MathType;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.Version;
@@ -39,7 +39,6 @@ import org.vcell.util.document.Versionable;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.function.Consumer;
@@ -3954,12 +3953,12 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                         continue;
                     }
                     try {
-                        Variable clonedVar = (Variable) BeanUtils.cloneSerializable(oldVar);
+                        Variable clonedVar = oldVar.deepClone();
                         clonedVar.rename(newName);
                         SubDomain sd = mathDescription1.getSubDomain(mathDescription2.getVariable(newName).getDomain().getName());
                         clonedVar.setDomain(new Domain(sd));
                         mathDescription1.addVariable0(clonedVar);
-                    } catch(ClassNotFoundException | ExpressionBindingException | IOException | MathException e){
+                    } catch(ExpressionBindingException | MathException e){
                         lg.error("could not add new variable " + newName);
                         return false;
                     }
@@ -4018,19 +4017,19 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                                 CompartmentSubDomain isd = msd.getInsideCompartment();
                                 CompartmentSubDomain osd = msd.getOutsideCompartment();
                                 if(isd != null && subDomainMap.get(isd) != null){
-                                    JumpCondition ijc = (JumpCondition) BeanUtils.cloneSerializable(jc);
+                                    JumpCondition ijc = jc.deepClone();
                                     ijc.setVar(mathDescription1.getVariable(subDomainMap.get(isd)));
                                     ijc.setOutFlux(new Expression(0.0));
                                     msd.addJumpCondition(ijc);
                                 }
                                 if(osd != null && subDomainMap.get(osd) != null){
-                                    JumpCondition ojc = (JumpCondition) BeanUtils.cloneSerializable(jc);
+                                    JumpCondition ojc = jc.deepClone();
                                     ojc.setVar(mathDescription1.getVariable(subDomainMap.get(osd)));
                                     ojc.setInFlux(new Expression(0.0));
                                     msd.addJumpCondition(ojc);
                                 }
                                 msd.removeJumpCondition(oldVar);
-                            } catch(ClassNotFoundException | IOException | MathException e){
+                            } catch(MathException e){
                                 lg.error("could not split jump condition for " + oldName);
                                 return false;
                             }
