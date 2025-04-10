@@ -83,7 +83,7 @@ import java.util.Map;
  */
 public class XmlHelper {
 
-	public static boolean cloneUsingXML = true;
+	public static boolean cloneUsingXML = false;
 	private final static Logger logger = LogManager.getLogger(XmlHelper.class);
 
 	//represent the containers XML element for the simulation/image data to be imported/exported.
