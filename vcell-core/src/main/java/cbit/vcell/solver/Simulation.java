@@ -980,7 +980,6 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 				}
 			}
 		}
-		
 		SimulationWarning.gatherIssues(this, issueContext, issueList);
 	}
 	
