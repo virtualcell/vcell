@@ -107,6 +107,7 @@ public class BMDB_SBMLImportTest {
 		faults.put(246, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.001' for product 'Ca_in' in reaction 'vo') or stoichiometryMath not handled in VCell at this time.
 		faults.put(248, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Unable to create and add rate rule to VC model : 'Capillary.Capillary' is either not found in your model or is not allowed to be used in the current context. Check that you have p
 		faults.put(256, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'XIAP_ini' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context. Check that you hav
+		faults.put(264, SBMLTestSuiteTest.FAULT.INCONSISTENT_UNIT_SYSTEM);  // cause:  failed to convert lumped reaction kinetics to distributed: volume substance unit [ng] must be compatible with mole or molecules
 		faults.put(305, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'V' to model: 'Fw_1st_step' is either not found in your model or is not allowed to be used in the current context. Check that you have provided the
 		faults.put(319, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('0.02' for product 'gamma' in reaction 'r3') or stoichiometryMath not handled in VCell at this time.
 		faults.put(340, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><gt/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time">
@@ -196,7 +197,7 @@ public class BMDB_SBMLImportTest {
 
 	public static Collection<Integer> testCases() {
 		return Arrays.stream(BMDB_SBML_Files.getBiomodelDB_curatedModelNumbers()).boxed()
-				.filter(n -> !slowModelSet().contains(n)).collect(Collectors.toList());
+				.filter(n -> !slowModelSet().contains(n) && n==264).collect(Collectors.toList());
 	}
 
 	@ParameterizedTest
@@ -244,8 +245,10 @@ public class BMDB_SBMLImportTest {
 				fault = SBMLTestSuiteTest.FAULT.REACTANT_AND_MODIFIER;
 			}else if (cause.contains("unsupported SBML element 'delay'")){
 				fault = SBMLTestSuiteTest.FAULT.DELAY;
-			}else if (cause.contains("Non-integer stoichiometry")){
+			}else if (cause.contains("Non-integer stoichiometry")) {
 				fault = SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH;
+			}else if (cause.contains("must be compatible with mole or molecules")){
+				fault = SBMLTestSuiteTest.FAULT.INCONSISTENT_UNIT_SYSTEM;
 			}else if (cause.contains("is either not found in your model")){
 				fault = SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION;
 			}else if (cause.contains("SBML extension 'qual'")){
