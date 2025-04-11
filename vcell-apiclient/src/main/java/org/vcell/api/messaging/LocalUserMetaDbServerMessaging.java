@@ -153,7 +153,7 @@ public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, Stri
 	try{
 		FieldDataSavedResults results = vCellApiClient.getFieldDataApi().analyzeFileAndCreate(file, fileName, DtoModelTransforms.extentToDTO(extent),
 				DtoModelTransforms.iSizeToDTO(iSize), Arrays.asList(channelNames), Doubles.asList(times),
-				"Analyzed and created.", DtoModelTransforms.originToDTO(origin));
+				annotation, DtoModelTransforms.originToDTO(origin));
 		return DtoModelTransforms.fieldDataSaveResultsDTOToFileOperationResults(results, null);
 	} catch (ApiException e){
 		lg.error(e.getMessage(),e);

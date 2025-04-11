@@ -18,10 +18,7 @@ import org.vcell.vcellij.ImageDatasetReader;
 import org.vcell.vcellij.ImageDatasetReaderService;
 
 import java.awt.*;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Enumeration;
 import java.util.TreeMap;
 import java.util.Vector;
@@ -61,6 +58,8 @@ public class FieldDataFileConversion {
             ZipEntry entry = enumZipEntry.nextElement();
             if (entry.isDirectory()) {
                 continue;
+            } else if (entry.getName().toLowerCase().contains("jpg") || entry.getName().toLowerCase().contains("jpeg")) {
+                throw new UnsupportedEncodingException("JPEG Is Not Supported. Please use an image that is either single channel or has channel information clearly stated.");
             }
             String entryName = entry.getName();
             if (entryName.contains("..")) {
