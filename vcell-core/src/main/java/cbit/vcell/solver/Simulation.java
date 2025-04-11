@@ -13,11 +13,14 @@ package cbit.vcell.solver;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Kind;
 import cbit.vcell.mapping.SimulationContextEntity;
+import cbit.vcell.mapping.SiteAttributesSpec;
+import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.MathCompareResults;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -28,6 +31,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 /**
  * Specifies the problem to be solved by a solver.
@@ -943,7 +947,41 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 			String tip = "Remove the unused Math Overrides.";
 			issueList.add(new Issue(this, issueContext, IssueCategory.Simulation_Override_NotFound, msg, tip, Issue.Severity.ERROR));
 		}
-		
+		if (getSolverTaskDescription().getSolverDescription() == SolverDescription.Langevin) {
+			int[] nPart = getSolverTaskDescription().getLangevinSimulationOptions().getNPart();
+			if(getMathDescription() != null && getMathDescription().getGeometry() != null && simulationOwner instanceof SimulationContext) {
+				SimulationContext simContext = (SimulationContext) simulationOwner;
+				double xPart = getMathDescription().getGeometry().getExtent().getX() * 1000.0 / nPart[0];    // um -> nm
+				double yPart = getMathDescription().getGeometry().getExtent().getY() * 1000.0 / nPart[1];
+				double zPart = getMathDescription().getGeometry().getExtent().getZ() * 1000.0 / nPart[2];
+				double timeStep = getSolverTaskDescription().getTimeStep().getDefaultTimeStep();
+				if(simContext.getReactionContext() != null && simContext.getReactionContext().getSpeciesContextSpecs() != null) {
+					for (SpeciesContextSpec scs : simContext.getReactionContext().getSpeciesContextSpecs()) {
+						for (Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : scs.getSiteAttributesMap().entrySet()) {
+							MolecularComponentPattern mcp = entry.getKey();
+							SiteAttributesSpec sas = entry.getValue();
+							double siteDiameter = 2.0 * sas.getRadius();
+							if (siteDiameter >= xPart || siteDiameter >= yPart || siteDiameter >= zPart) {
+								// diameter of each site must be smaller than partition size on x, y, z
+								String msg = "Molecule '" + scs.getSpeciesContext().getName() + "' site diameter must be smaller than partition size.";
+								String tip = "Increase partition size or reduce size of site '" + mcp.getMolecularComponent().getName() + "'";
+								issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+								break;
+							}
+							double step = Math.sqrt(sas.getDiffusionRate() * 1000000.0 * timeStep);
+							if (step >= xPart || step >= yPart || step >= zPart) {
+								// diffusion speed * dt must be smaller than the partition size on x, y, z so that the particle
+								//  won't be able to jump outside the current partition or its neighboring partitions
+								String msg = "Molecule '" + scs.getSpeciesContext().getName() + "' must not difuse farther than any adjacent partition within the time interval.";
+								String tip = "Reduce diffusion rate of site '" + mcp.getMolecularComponent().getName() + "' or reduce the time interval";
+								issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
 		SimulationWarning.gatherIssues(this, issueContext, issueList);
 	}
 	

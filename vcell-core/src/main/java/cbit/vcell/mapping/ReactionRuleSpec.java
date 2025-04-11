@@ -1339,12 +1339,14 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 		}
 		double kon = Double.parseDouble(lp.getExpression().infix());
 // TODO: check all scaling
-		double kon_scale = 1660000.0 * kon;			// Kon also needs some conversion (TODO: why?)
+		double kon_scale = 1660000.0 * kon;			// Kon also needs some conversion (micromolar -> particles)
 		double D_scale = D * 1000000.0;				// D is in um^2/s, convert to nm^2/s
 
-		double rhs1 = 4.0*Math.PI*R*D_scale;
+		double kD = 4.0*Math.PI*R*D_scale;
 
-		boolean check = (kon_scale < rhs1);
+		// double kOnIntrinsic = (rescalekon * kD) / (kD - rescalekon); cannot be negative,
+		// hence kD must be > kon_scale
+		boolean check = (kon_scale < kD);
 		return check;
 	}
 
