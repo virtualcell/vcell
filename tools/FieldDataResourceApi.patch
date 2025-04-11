@@ -1,5 +1,5 @@
 diff --git a/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java b/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java
-index 514975fe9..f3ce444ea 100644
+index e09cfd088..c399a8460 100644
 --- a/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java
 +++ b/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java
 @@ -12,6 +12,7 @@
@@ -10,60 +10,27 @@ index 514975fe9..f3ce444ea 100644
  import org.vcell.restclient.ApiClient;
  import org.vcell.restclient.ApiException;
  import org.vcell.restclient.ApiResponse;
-@@ -98,7 +99,7 @@ public class FieldDataResourceApi {
- 
-   /**
-    * Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
--   * 
-+   *
-    * @param _file  (optional)
-    * @param fileName  (optional)
-    * @return AnalyzedFile
-@@ -111,7 +112,7 @@ public class FieldDataResourceApi {
- 
-   /**
-    * Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
--   * 
-+   *
-    * @param _file  (optional)
-    * @param fileName  (optional)
-    * @return ApiResponse&lt;AnalyzedFile&gt;
-@@ -201,7 +202,7 @@ public class FieldDataResourceApi {
-   }
-   /**
-    * For advanced users who already understand the constraints of your field data and want to create it in one request.
--   * 
-+   *
-    * @param _file  (optional)
-    * @param fileName  (optional)
-    * @param extent  (optional)
-@@ -220,7 +221,7 @@ public class FieldDataResourceApi {
- 
-   /**
-    * For advanced users who already understand the constraints of your field data and want to create it in one request.
--   * 
-+   *
-    * @param _file  (optional)
-    * @param fileName  (optional)
-    * @param extent  (optional)
-@@ -276,8 +277,13 @@ public class FieldDataResourceApi {
+@@ -276,16 +277,20 @@ public class FieldDataResourceApi {
      multiPartBuilder.addBinaryBody("file", _file);
      hasFiles = true;
      multiPartBuilder.addTextBody("fileName", fileName.toString());
 -    multiPartBuilder.addTextBody("extent", extent.toString());
 -    multiPartBuilder.addTextBody("iSize", iSize.toString());
-+      try {
-+          multiPartBuilder.addTextBody("extent", memberVarObjectMapper.writeValueAsString(extent));
-+          multiPartBuilder.addTextBody("iSize", memberVarObjectMapper.writeValueAsString(iSize));
-+          multiPartBuilder.addTextBody("origin", memberVarObjectMapper.writeValueAsString(origin));
-+      } catch (JsonProcessingException e) {
-+          throw new RuntimeException(e);
-+      }
-     for (int i=0; i < channelNames.size(); i++) {
-         multiPartBuilder.addTextBody("channelNames", channelNames.get(i).toString());
+-    for (int i=0; i < channelNames.size(); i++) {
+-        multiPartBuilder.addTextBody("channelNames", channelNames.get(i).toString());
++    try {
++      multiPartBuilder.addTextBody("extent", memberVarObjectMapper.writeValueAsString(extent));
++      multiPartBuilder.addTextBody("iSize", memberVarObjectMapper.writeValueAsString(iSize));
++      multiPartBuilder.addTextBody("origin", memberVarObjectMapper.writeValueAsString(origin));
++    } catch (JsonProcessingException e) {
++      throw new RuntimeException(e);
      }
-@@ -285,7 +291,6 @@ public class FieldDataResourceApi {
-         multiPartBuilder.addTextBody("times", times.get(i).toString());
+     for (int i=0; i < times.size(); i++) {
+-        multiPartBuilder.addTextBody("times", times.get(i).toString());
++      multiPartBuilder.addTextBody("times", times.get(i).toString());
++    }
++    for (int i=0; i < channelNames.size(); i++) {
++      multiPartBuilder.addTextBody("channelNames", channelNames.get(i).toString());
      }
      multiPartBuilder.addTextBody("annotation", annotation.toString());
 -    multiPartBuilder.addTextBody("origin", origin.toString());
