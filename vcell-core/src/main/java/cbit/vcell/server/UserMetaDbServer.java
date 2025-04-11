@@ -9,14 +9,15 @@
  */
 
 package cbit.vcell.server;
+import java.io.File;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.TreeMap;
 
+import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
-import org.vcell.util.BigString;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.Preference;
+import com.google.common.primitives.Doubles;
+import org.vcell.util.*;
 import org.vcell.util.document.*;
 
 import cbit.image.VCImageInfo;
@@ -61,7 +62,9 @@ UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP
  */
 void deleteBioModel(KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException, RemoteProxyException;
 
-
+public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent,
+                                                                 ISize iSize, String[] channelNames, double[] times,
+                                                                 String annotation, Origin origin);
 /**
  * Insert the method's description here.
  * Creation date: (4/29/2004 1:03:11 PM)

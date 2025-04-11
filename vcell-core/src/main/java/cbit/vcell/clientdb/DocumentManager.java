@@ -9,9 +9,7 @@
  */
 
 package cbit.vcell.clientdb;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.DependencyException;
-import org.vcell.util.Preference;
+import org.vcell.util.*;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.CurateSpec;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -50,6 +48,9 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.SessionManager;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
+
+import java.io.File;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/28/00 12:05:57 AM)
@@ -164,6 +165,11 @@ ExternalDataIdentifier saveFieldData(FieldDataFileOperationSpec fdos, String fie
 
 
 FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException;
+
+
+FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent,
+																 ISize iSize, String[] channelNames, double[] times,
+																 String annotation, Origin origin) throws DataAccessException;
 
 void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) throws DataAccessException;
 

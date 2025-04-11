@@ -187,4 +187,29 @@ public class FieldDataAPITest {
         Assertions.assertEquals(0, references.size());
     }
 
+    @Test
+    public void testAdvancedEndpoint() throws ApiException, IOException {
+        FieldDataResourceApi api = new FieldDataResourceApi(aliceAPIClient);
+
+        File testFile = TestEndpointUtils.getResourceFile("/flybrain-035.tif");
+        AnalyzedFile analyzedFile = api.analyzeFile(testFile, "test_file1");
+        FieldDataSavedResults res = api.createFromAnalyzedFile(analyzedFile);
+        FieldDataShape ogShape = api.getShapeFromID(res.getFieldDataKey());
+
+
+        FieldDataSavedResults savedResults =  api.analyzeFileAndCreate(testFile, "test_file2", analyzedFile.getExtent(),
+                analyzedFile.getIsize(), analyzedFile.getVarNames(), analyzedFile.getTimes(), "", analyzedFile.getOrigin()
+        );
+
+        FieldDataShape shape = api.getShapeFromID(savedResults.getFieldDataKey());
+
+        Assertions.assertEquals(ogShape.getExtent(), shape.getExtent());
+        Assertions.assertEquals(ogShape.getIsize(), shape.getIsize());
+        Assertions.assertEquals(ogShape.getTimes(), shape.getTimes());
+        Assertions.assertEquals(ogShape.getOrigin(), shape.getOrigin());
+
+        api.delete(res.getFieldDataKey());
+        api.delete(savedResults.getFieldDataKey());
+    }
+
 }

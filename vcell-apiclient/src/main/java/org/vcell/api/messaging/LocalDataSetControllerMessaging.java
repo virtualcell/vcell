@@ -82,7 +82,7 @@ public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperati
 		}
 	} catch (ApiException e){
 		lg.error(e.getMessage(),e);
-		throw new RuntimeException(e.getMessage());
+		throw new RuntimeException(e);
 	}
 }
 

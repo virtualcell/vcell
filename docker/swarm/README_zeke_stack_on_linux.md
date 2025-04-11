@@ -30,6 +30,7 @@
    -Dvcellapi.privateKey.file=/Users/evalencia/Documents/VCellDummyFiles/apiKeys \
    -Dvcell.mongodb.database=test \
    -Dvcell.mongodb.host.internal=localhost \
-   -Dvcell.mongodb.port.internal=27020
+   -Dvcell.mongodb.port.internal=27020 \
+   -Dvcell.primarySimdatadir.internal=/Users/evalencia/Documents/TempStorage
    popd
    ```
