@@ -270,7 +270,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SavedResults'
+                $ref: '#/components/schemas/FieldDataSavedResults'
           description: OK
         "401":
           description: Not Authorized

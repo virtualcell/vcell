@@ -27,13 +27,13 @@ import { ExternalDataIdentifier } from '../model/external-data-identifier';
 // @ts-ignore
 import { FieldDataReference } from '../model/field-data-reference';
 // @ts-ignore
+import { FieldDataSavedResults } from '../model/field-data-saved-results';
+// @ts-ignore
+import { FieldDataShape } from '../model/field-data-shape';
+// @ts-ignore
 import { ISize } from '../model/i-size';
 // @ts-ignore
 import { Origin } from '../model/origin';
-// @ts-ignore
-import { SavedResults } from '../model/saved-results';
-// @ts-ignore
-import { FieldDataShape } from '../model/field-data-shape';
 // @ts-ignore
 import { SourceModel } from '../model/source-model';
 
@@ -287,9 +287,9 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public analyzeFileAndCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<SavedResults>;
-    public analyzeFileAndCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<SavedResults>>;
-    public analyzeFileAndCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<SavedResults>>;
+    public analyzeFileAndCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<FieldDataSavedResults>;
+    public analyzeFileAndCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<FieldDataSavedResults>>;
+    public analyzeFileAndCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<FieldDataSavedResults>>;
     public analyzeFileAndCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
@@ -377,7 +377,7 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
         }
 
         let localVarPath = `/api/v1/fieldData/analyzeAndCreateFromFile`;
-        return this.httpClient.request<SavedResults>('post', `${this.configuration.basePath}${localVarPath}`,
+        return this.httpClient.request<FieldDataSavedResults>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,
@@ -391,7 +391,7 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
     }
 
     /**
-     * Copy all existing field data from a BioModel/MathModel if not already owned.
+     * Copy all existing field data from a BioModel/MathModel that you have access to, but don\&#39;t own.
      * @param sourceModel 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.

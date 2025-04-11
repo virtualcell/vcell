@@ -32,10 +32,10 @@ from vcell_client.models.analyzed_file import AnalyzedFile
 from vcell_client.models.extent import Extent
 from vcell_client.models.external_data_identifier import ExternalDataIdentifier
 from vcell_client.models.field_data_reference import FieldDataReference
+from vcell_client.models.field_data_saved_results import FieldDataSavedResults
+from vcell_client.models.field_data_shape import FieldDataShape
 from vcell_client.models.i_size import ISize
 from vcell_client.models.origin import Origin
-from vcell_client.models.saved_results import SavedResults
-from vcell_client.models.shape import Shape
 from vcell_client.models.source_model import SourceModel
 
 from vcell_client.api_client import ApiClient
@@ -372,7 +372,7 @@ class FieldDataResourceApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> SavedResults:
+    ) -> FieldDataSavedResults:
         """For advanced users who already understand the constraints of your field data and want to create it in one request.
 
 
@@ -430,7 +430,7 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "SavedResults",
+            '200': "FieldDataSavedResults",
             '401': None,
             '403': None
             
@@ -469,7 +469,7 @@ class FieldDataResourceApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[SavedResults]:
+    ) -> ApiResponse[FieldDataSavedResults]:
         """For advanced users who already understand the constraints of your field data and want to create it in one request.
 
 
@@ -527,7 +527,7 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "SavedResults",
+            '200': "FieldDataSavedResults",
             '401': None,
             '403': None
             
@@ -624,7 +624,7 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "SavedResults",
+            '200': "FieldDataSavedResults",
             '401': None,
             '403': None
             

@@ -12,7 +12,6 @@
 
 package org.vcell.restclient.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
@@ -27,8 +26,6 @@ import org.vcell.restclient.model.FieldDataShape;
 import java.io.File;
 import org.vcell.restclient.model.ISize;
 import org.vcell.restclient.model.Origin;
-import org.vcell.restclient.model.SavedResults;
-import org.vcell.restclient.model.Shape;
 import org.vcell.restclient.model.SourceModel;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -204,7 +201,7 @@ public class FieldDataResourceApi {
   }
   /**
    * For advanced users who already understand the constraints of your field data and want to create it in one request.
-   *
+   * 
    * @param _file  (optional)
    * @param fileName  (optional)
    * @param extent  (optional)
@@ -213,17 +210,17 @@ public class FieldDataResourceApi {
    * @param times  (optional
    * @param annotation  (optional)
    * @param origin  (optional)
-   * @return SavedResults
+   * @return FieldDataSavedResults
    * @throws ApiException if fails to make API call
    */
-  public SavedResults analyzeFileAndCreate(File _file, String fileName, Extent extent, ISize iSize, List<String> channelNames, List<Double> times, String annotation, Origin origin) throws ApiException {
-    ApiResponse<SavedResults> localVarResponse = analyzeFileAndCreateWithHttpInfo(_file, fileName, extent, iSize, channelNames, times, annotation, origin);
+  public FieldDataSavedResults analyzeFileAndCreate(File _file, String fileName, Extent extent, ISize iSize, List<String> channelNames, List<Double> times, String annotation, Origin origin) throws ApiException {
+    ApiResponse<FieldDataSavedResults> localVarResponse = analyzeFileAndCreateWithHttpInfo(_file, fileName, extent, iSize, channelNames, times, annotation, origin);
     return localVarResponse.getData();
   }
 
   /**
    * For advanced users who already understand the constraints of your field data and want to create it in one request.
-   *
+   * 
    * @param _file  (optional)
    * @param fileName  (optional)
    * @param extent  (optional)
@@ -232,10 +229,10 @@ public class FieldDataResourceApi {
    * @param times  (optional
    * @param annotation  (optional)
    * @param origin  (optional)
-   * @return ApiResponse&lt;SavedResults&gt;
+   * @return ApiResponse&lt;FieldDataSavedResults&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<SavedResults> analyzeFileAndCreateWithHttpInfo(File _file, String fileName, Extent extent, ISize iSize, List<String> channelNames, List<Double> times, String annotation, Origin origin) throws ApiException {
+  public ApiResponse<FieldDataSavedResults> analyzeFileAndCreateWithHttpInfo(File _file, String fileName, Extent extent, ISize iSize, List<String> channelNames, List<Double> times, String annotation, Origin origin) throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = analyzeFileAndCreateRequestBuilder(_file, fileName, extent, iSize, channelNames, times, annotation, origin);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -248,10 +245,10 @@ public class FieldDataResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("analyzeFileAndCreate", localVarResponse);
         }
-        return new ApiResponse<SavedResults>(
+        return new ApiResponse<FieldDataSavedResults>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<SavedResults>() {}) // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataSavedResults>() {}) // closes the InputStream
         );
       } finally {
       }
@@ -279,13 +276,8 @@ public class FieldDataResourceApi {
     multiPartBuilder.addBinaryBody("file", _file);
     hasFiles = true;
     multiPartBuilder.addTextBody("fileName", fileName.toString());
-      try {
-          multiPartBuilder.addTextBody("extent", memberVarObjectMapper.writeValueAsString(extent));
-          multiPartBuilder.addTextBody("iSize", memberVarObjectMapper.writeValueAsString(iSize));
-          multiPartBuilder.addTextBody("origin", memberVarObjectMapper.writeValueAsString(origin));
-      } catch (JsonProcessingException e) {
-          throw new RuntimeException(e);
-      }
+    multiPartBuilder.addTextBody("extent", extent.toString());
+    multiPartBuilder.addTextBody("iSize", iSize.toString());
     for (int i=0; i < channelNames.size(); i++) {
         multiPartBuilder.addTextBody("channelNames", channelNames.get(i).toString());
     }
@@ -293,6 +285,7 @@ public class FieldDataResourceApi {
         multiPartBuilder.addTextBody("times", times.get(i).toString());
     }
     multiPartBuilder.addTextBody("annotation", annotation.toString());
+    multiPartBuilder.addTextBody("origin", origin.toString());
     HttpEntity entity = multiPartBuilder.build();
     HttpRequest.BodyPublisher formDataPublisher;
     if (hasFiles) {
@@ -332,7 +325,7 @@ public class FieldDataResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * Copy all existing field data from a BioModel/MathModel if not already owned.
+   * Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
    * 
    * @param sourceModel  (optional)
    * @return Map&lt;String, ExternalDataIdentifier&gt;

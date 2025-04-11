@@ -17,10 +17,10 @@ import { AnalyzedFile } from '../model/models';
 import { Extent } from '../model/models';
 import { ExternalDataIdentifier } from '../model/models';
 import { FieldDataReference } from '../model/models';
+import { FieldDataSavedResults } from '../model/models';
+import { FieldDataShape } from '../model/models';
 import { ISize } from '../model/models';
 import { Origin } from '../model/models';
-import { SavedResults } from '../model/models';
-import { Shape } from '../model/models';
 import { SourceModel } from '../model/models';
 
 
@@ -59,10 +59,10 @@ export interface FieldDataResourceServiceInterface {
      * @param annotation 
      * @param origin 
      */
-    analyzeFileAndCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, extraHttpRequestParams?: any): Observable<SavedResults>;
+    analyzeFileAndCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, extraHttpRequestParams?: any): Observable<FieldDataSavedResults>;
 
     /**
-     * Copy all existing field data from a BioModel/MathModel if not already owned.
+     * Copy all existing field data from a BioModel/MathModel that you have access to, but don\&#39;t own.
      * 
      * @param sourceModel 
      */

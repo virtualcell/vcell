@@ -266,7 +266,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SavedResults'
+                $ref: '#/components/schemas/FieldDataSavedResults'
         "401":
           description: Not Authorized
         "403":

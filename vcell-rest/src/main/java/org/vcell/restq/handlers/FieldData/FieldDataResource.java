@@ -103,7 +103,7 @@ public class FieldDataResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Operation(operationId = "analyzeFileAndCreate", summary = "For advanced users who already understand the constraints of your field data and want to create it in one request.")
-    public SavedResults analyzeAndCreateFieldData(@RestForm @PartType(MediaType.APPLICATION_OCTET_STREAM) File file,
+    public FieldDataSavedResults analyzeAndCreateFieldData(@RestForm @PartType(MediaType.APPLICATION_OCTET_STREAM) File file,
                                                   @RestForm @PartType(MediaType.TEXT_PLAIN) String fileName,
                                                   @RestForm("extent") @PartType(MediaType.APPLICATION_JSON) Extent extent,
                                                   @RestForm("iSize") @PartType(MediaType.APPLICATION_JSON) ISize iSize,
@@ -120,7 +120,7 @@ public class FieldDataResource {
             FieldDataFileOperationResults fileResults = fieldDataDB.saveNewFieldDataFromFile(fileName,
                     channelNames, analyzedFile.shortSpecData, annotation,
                     user, times, origin, extent, iSize);
-            return new SavedResults(fileResults.externalDataIdentifier.getName(), fileResults.externalDataIdentifier.getKey().toString());
+            return new FieldDataSavedResults(fileResults.externalDataIdentifier.getName(), fileResults.externalDataIdentifier.getKey().toString());
         } catch (ImageException | DataFormatException | DataAccessException e) {
             throw new WebApplicationException("Can't create new field data file", HTTP.INTERNAL_SERVER_ERROR);
         }
@@ -159,7 +159,7 @@ public class FieldDataResource {
             FieldDataFileOperationResults fileResults = fieldDataDB.saveNewFieldDataFromFile(saveFieldData.name,
                    saveFieldData.varNames, saveFieldData.shortSpecData, saveFieldData.annotation,
                     user, saveFieldData.times, saveFieldData.origin, saveFieldData.extent, saveFieldData.isize);
-            savedResults = new SavedResults(fileResults.externalDataIdentifier.getName(), fileResults.externalDataIdentifier.getKey().toString());
+            fieldDataSavedResults = new FieldDataSavedResults(fileResults.externalDataIdentifier.getName(), fileResults.externalDataIdentifier.getKey().toString());
         } catch (ImageException | DataFormatException | DataAccessException e) {
             throw new WebApplicationException(e.getMessage(), HTTP.INTERNAL_SERVER_ERROR);
         }

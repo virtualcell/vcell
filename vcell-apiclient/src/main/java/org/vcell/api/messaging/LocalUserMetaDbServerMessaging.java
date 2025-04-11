@@ -31,8 +31,8 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.FieldDataReference;
+import org.vcell.restclient.model.FieldDataSavedResults;
 import org.vcell.restclient.model.ModelType;
-import org.vcell.restclient.model.SavedResults;
 import org.vcell.restclient.model.SourceModel;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.util.*;
@@ -151,7 +151,7 @@ public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, Stri
 																 ISize iSize, String[] channelNames, double[] times,
 																 String annotation, Origin origin){
 	try{
-		SavedResults results = vCellApiClient.getFieldDataApi().analyzeFileAndCreate(file, fileName, DtoModelTransforms.extentToDTO(extent),
+		FieldDataSavedResults results = vCellApiClient.getFieldDataApi().analyzeFileAndCreate(file, fileName, DtoModelTransforms.extentToDTO(extent),
 				DtoModelTransforms.iSizeToDTO(iSize), Arrays.asList(channelNames), Doubles.asList(times),
 				"Analyzed and created.", DtoModelTransforms.originToDTO(origin));
 		return DtoModelTransforms.fieldDataSaveResultsDTOToFileOperationResults(results, null);

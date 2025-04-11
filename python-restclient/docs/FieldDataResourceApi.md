@@ -4,11 +4,11 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**analyze_file**](FieldDataResourceApi.md#analyze_file) | **POST** /api/v1/fieldData/analyzeFile | Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+[**analyze_file**](FieldDataResourceApi.md#analyze_file) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 [**analyze_file_and_create**](FieldDataResourceApi.md#analyze_file_and_create) | **POST** /api/v1/fieldData/analyzeAndCreateFromFile | For advanced users who already understand the constraints of your field data and want to create it in one request.
-[**copy_models_field_data**](FieldDataResourceApi.md#copy_models_field_data) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel if not already owned.
-[**create_from_analyzed_file**](FieldDataResourceApi.md#create_from_analyzed_file) | **POST** /api/v1/fieldData/createFromAnalyzedFile | Take the analyzed results of the field data, modify it to your liking, then save it on the server.
-[**create_from_simulation**](FieldDataResourceApi.md#create_from_simulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from a simulation.
+[**copy_models_field_data**](FieldDataResourceApi.md#copy_models_field_data) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
+[**create_from_analyzed_file**](FieldDataResourceApi.md#create_from_analyzed_file) | **POST** /api/v1/fieldData/createFromSpecification | Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
+[**create_from_simulation**](FieldDataResourceApi.md#create_from_simulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results.
 [**delete**](FieldDataResourceApi.md#delete) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data.
 [**get_all_ids**](FieldDataResourceApi.md#get_all_ids) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data.
 [**get_shape_from_id**](FieldDataResourceApi.md#get_shape_from_id) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
@@ -88,7 +88,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **analyze_file_and_create**
-> SavedResults analyze_file_and_create(file=file, file_name=file_name, extent=extent, i_size=i_size, channel_names=channel_names, times=times, annotation=annotation, origin=origin)
+> FieldDataSavedResults analyze_file_and_create(file=file, file_name=file_name, extent=extent, i_size=i_size, channel_names=channel_names, times=times, annotation=annotation, origin=origin)
 
 For advanced users who already understand the constraints of your field data and want to create it in one request.
 
@@ -99,9 +99,9 @@ import time
 import os
 import vcell_client
 from vcell_client.models.extent import Extent
+from vcell_client.models.field_data_saved_results import FieldDataSavedResults
 from vcell_client.models.i_size import ISize
 from vcell_client.models.origin import Origin
-from vcell_client.models.saved_results import SavedResults
 from vcell_client.rest import ApiException
 from pprint import pprint
 
@@ -155,7 +155,7 @@ Name | Type | Description  | Notes
 
 ### Return type
 
-[**SavedResults**](SavedResults.md)
+[**FieldDataSavedResults**](FieldDataSavedResults.md)
 
 ### Authorization
 
