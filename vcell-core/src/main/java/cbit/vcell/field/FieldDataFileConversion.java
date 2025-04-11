@@ -63,6 +63,9 @@ public class FieldDataFileConversion {
                 continue;
             }
             String entryName = entry.getName();
+            if (entryName.contains("..")) {
+                throw new IOException("Invalid zip entry name: " + entryName);
+            }
             String imageFileSuffix = null;
             int dotIndex = entryName.indexOf(".");
             if(dotIndex != -1){
@@ -71,6 +74,9 @@ public class FieldDataFileConversion {
             InputStream zipInputStream = zipFile.getInputStream(entry);
             File tempImageFile = File.createTempFile("ImgDataSetReader", imageFileSuffix);
             tempImageFile.deleteOnExit();
+            if (!tempImageFile.toPath().normalize().startsWith(new File(System.getProperty("java.io.tmpdir")).toPath())) {
+                throw new IOException("Invalid file path: " + tempImageFile.getAbsolutePath());
+            }
             FileOutputStream fos = new FileOutputStream(tempImageFile,false);
             fos.write(zipInputStream.readAllBytes());
             fos.close();
