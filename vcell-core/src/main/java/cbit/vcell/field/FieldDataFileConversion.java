@@ -2,14 +2,12 @@ package cbit.vcell.field;
 
 import cbit.image.ImageException;
 import cbit.image.ImageSizeInfo;
-import cbit.vcell.VirtualMicroscopy.BioformatsImageImpl;
-import cbit.vcell.VirtualMicroscopy.HiddenNonImageFile;
+import cbit.vcell.VirtualMicroscopy.BioformatsImageImplNew;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.math.VariableType;
 import loci.formats.ImageReader;
-import loci.formats.UnknownFormatException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.Extent;
@@ -20,8 +18,6 @@ import org.vcell.vcellij.ImageDatasetReaderService;
 import java.awt.*;
 import java.io.*;
 import java.util.Enumeration;
-import java.util.TreeMap;
-import java.util.Vector;
 import java.util.zip.DataFormatException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -94,10 +90,10 @@ public class FieldDataFileConversion {
         if (imageFile.getName().toLowerCase().endsWith("zip")){
             analyzedFile = getFirstFileFromZip(imageFile.getAbsolutePath());
         }
-        BioformatsImageImpl imageHandler = new BioformatsImageImpl();
+        BioformatsImageImplNew imageHandler = new BioformatsImageImplNew();
         ImageReader imageReader = imageHandler.getImageReader(analyzedFile.getAbsolutePath());
         ImageSizeInfo info = imageHandler.getImageSizeInfo(imageReader, analyzedFile.getAbsolutePath(), null);
-        BioformatsImageImpl.DomainInfo domainInfo = BioformatsImageImpl.getDomainInfo(imageReader);
+        BioformatsImageImplNew.DomainInfo domainInfo = BioformatsImageImplNew.getDomainInfo(imageReader);
 
         // [time][var][data]
         fdos.variableTypes = new VariableType[info.getNumChannels()];
