@@ -1,5 +1,10 @@
 package org.vcell.restq.apiclient;
 
+import cbit.vcell.VirtualMicroscopy.BioformatsImageImpl;
+import cbit.vcell.VirtualMicroscopy.BioformatsImageImplNew;
+import cbit.vcell.VirtualMicroscopy.ImageDataset;
+import cbit.vcell.field.FieldDataFileConversion;
+import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.resource.PropertyLoader;
 import io.quarkus.test.junit.QuarkusTest;
@@ -187,6 +192,7 @@ public class FieldDataAPITest {
         Assertions.assertEquals(0, references.size());
     }
 
+    // Assuming the two part endpoint is correct with the previous tests, use it as a baseline to test against the advanced endpoint
     @Test
     public void testAdvancedEndpoint() throws ApiException, IOException {
         FieldDataResourceApi api = new FieldDataResourceApi(aliceAPIClient);
@@ -210,6 +216,33 @@ public class FieldDataAPITest {
 
         api.delete(res.getFieldDataKey());
         api.delete(savedResults.getFieldDataKey());
+    }
+
+    @Test
+    public void oldAlgorithmTest() throws Exception {
+        BioformatsImageImpl bioformatsImage = new BioformatsImageImpl();
+        BioformatsImageImplNew bioformatsImageImplNew = new BioformatsImageImplNew();
+
+        File simpleTestFile = TestEndpointUtils.getResourceFile("/flybrain-035.tif"); // Single time, channel, and no Z
+        File complicatedTestFile = TestEndpointUtils.getResourceFile("/mitosis.tif"); // Multiple time, channels, and Z
+        File[] testFiles = {simpleTestFile, complicatedTestFile};
+
+        for (File testFile: testFiles){
+            // Merged Channels
+            ImageDataset oldAlgorithmImageDataset = bioformatsImage.readImageDataset(testFile.getAbsolutePath(), null);
+            ImageDataset newAlgorithmImageDataset = bioformatsImageImplNew.readImageDataset(testFile.getAbsolutePath(), null);
+
+            Assertions.assertTrue(oldAlgorithmImageDataset.compareEqual(newAlgorithmImageDataset));
+
+            ImageDataset[] oldImageDatasets = bioformatsImage.readImageDatasetChannels(testFile.getAbsolutePath(), false, 0, null);
+            ImageDataset[] newImageDatasets = bioformatsImageImplNew.readImageDatasetChannelsAlgo(testFile.getAbsolutePath(), false, 0, null);
+
+            // Unmerged channels
+            Assertions.assertEquals(oldImageDatasets.length, newImageDatasets.length);
+            for (int i = 0; i < oldImageDatasets.length; i++){
+                Assertions.assertTrue(oldImageDatasets[i].compareEqual(newImageDatasets[i]));
+            }
+        }
     }
 
 }
