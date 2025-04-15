@@ -46,6 +46,29 @@ public class FieldDataFileConversion {
         }
     }
 
+    public static File getFileFromZipEntry(ZipEntry zipEntry, ZipFile zipFile) throws IOException {
+        String entryName = zipEntry.getName();
+        if (entryName.contains("..")) {
+            throw new IOException("Invalid zip entry name: " + entryName);
+        }
+        String imageFileSuffix = null;
+        int dotIndex = entryName.indexOf(".");
+        if(dotIndex != -1){
+            imageFileSuffix = entryName.substring(dotIndex);
+        }
+        InputStream zipInputStream = zipFile.getInputStream(zipEntry);
+        File tempImageFile = File.createTempFile("ImgDataSetReader", imageFileSuffix);
+        tempImageFile.deleteOnExit();
+        if (!tempImageFile.toPath().normalize().startsWith(new File(System.getProperty("java.io.tmpdir")).toPath())) {
+            throw new IOException("Invalid file path: " + tempImageFile.getAbsolutePath());
+        }
+        FileOutputStream fos = new FileOutputStream(tempImageFile,false);
+        fos.write(zipInputStream.readAllBytes());
+        fos.close();
+        zipInputStream.close();
+        return tempImageFile;
+    }
+
     private static File getFirstFileFromZip(String imageID) throws IOException {
         ZipFile zipFile = new ZipFile(new File(imageID),ZipFile.OPEN_READ);
         Enumeration<? extends ZipEntry> enumZipEntry = zipFile.entries();
@@ -57,25 +80,7 @@ public class FieldDataFileConversion {
             } else if (entry.getName().toLowerCase().contains("jpg") || entry.getName().toLowerCase().contains("jpeg")) {
                 throw new UnsupportedEncodingException("JPEG Is Not Supported. Please use an image that is either single channel or has channel information clearly stated.");
             }
-            String entryName = entry.getName();
-            if (entryName.contains("..")) {
-                throw new IOException("Invalid zip entry name: " + entryName);
-            }
-            String imageFileSuffix = null;
-            int dotIndex = entryName.indexOf(".");
-            if(dotIndex != -1){
-                imageFileSuffix = entryName.substring(dotIndex);
-            }
-            InputStream zipInputStream = zipFile.getInputStream(entry);
-            File tempImageFile = File.createTempFile("ImgDataSetReader", imageFileSuffix);
-            tempImageFile.deleteOnExit();
-            if (!tempImageFile.toPath().normalize().startsWith(new File(System.getProperty("java.io.tmpdir")).toPath())) {
-                throw new IOException("Invalid file path: " + tempImageFile.getAbsolutePath());
-            }
-            FileOutputStream fos = new FileOutputStream(tempImageFile,false);
-            fos.write(zipInputStream.readAllBytes());
-            fos.close();
-            zipInputStream.close();
+            File tempImageFile = getFileFromZipEntry(entry, zipFile);
             zipFile.close();
             return tempImageFile;
         }

@@ -100,19 +100,8 @@ public class BioformatsImageImplNew implements ImageDatasetReader {
             if (entry.isDirectory()) {
                 continue;
             }
+            File tempImageFile = FieldDataFileConversion.getFileFromZipEntry(entry, zipFile);
             String entryName = entry.getName();
-            String imageFileSuffix = null;
-            int dotIndex = entryName.indexOf(".");
-            if(dotIndex != -1){
-                imageFileSuffix = entryName.substring(dotIndex);
-            }
-            InputStream zipInputStream = zipFile.getInputStream(entry);
-            File tempImageFile = File.createTempFile("ImgDataSetReader", imageFileSuffix);
-            tempImageFile.deleteOnExit();
-            FileOutputStream fos = new FileOutputStream(tempImageFile,false);
-            fos.write(zipInputStream.readAllBytes());
-            fos.close();
-            zipInputStream.close();
             ImageDataset[] imageDatasetChannels = null;
             try {
                 imageDatasetChannels = readImageDatasetChannelsAlgo(tempImageFile.getAbsolutePath(),bMergeChannels,null,resize);
