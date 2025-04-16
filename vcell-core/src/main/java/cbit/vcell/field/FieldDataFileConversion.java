@@ -92,13 +92,25 @@ public class FieldDataFileConversion {
     public static FieldDataFileOperationSpec analyzeMetaData(File imageFile) throws Exception {
         final FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
         File analyzedFile = imageFile;
+        int timePoints = 0;
         if (imageFile.getName().toLowerCase().endsWith("zip")){
             analyzedFile = getFirstFileFromZip(imageFile.getAbsolutePath());
+            try(ZipFile zipFile = new ZipFile(imageFile)){
+                Enumeration<? extends ZipEntry> enumeration = zipFile.entries();
+                while (enumeration.hasMoreElements()){
+                    enumeration.nextElement();
+                    timePoints += 1;
+                }
+            }
         }
         BioformatsImageImplNew imageHandler = new BioformatsImageImplNew();
         ImageReader imageReader = imageHandler.getImageReader(analyzedFile.getAbsolutePath());
         ImageSizeInfo info = imageHandler.getImageSizeInfo(imageReader, analyzedFile.getAbsolutePath(), null);
         BioformatsImageImplNew.DomainInfo domainInfo = BioformatsImageImplNew.getDomainInfo(imageReader);
+
+
+        BioformatsImageImplNew.checkImageDimensionsSize(info.getiSize().getX(), info.getiSize().getY(),
+                info.getiSize().getZ(),  timePoints > 0 ? timePoints : info.getTimePoints().length, info.getNumChannels());
 
         // [time][var][data]
         fdos.variableTypes = new VariableType[info.getNumChannels()];

@@ -1,6 +1,7 @@
 package cbit.vcell.VirtualMicroscopy;
 
 import cbit.image.ImageSizeInfo;
+import cbit.vcell.field.FieldDataFileConversion;
 import loci.formats.*;
 import loci.formats.gui.AWTImageTools;
 import loci.formats.gui.BufferedImageReader;
@@ -264,6 +265,9 @@ public class BioformatsImageImplNew implements ImageDatasetReader {
             int endTime = timeIndex==null ? formatReader.getSizeT() -1 : timeIndex;
             short[][] shorts = new short[formatReader.getRGBChannelCount()][formatReader.getSizeX()*formatReader.getSizeY()];
 
+            checkImageDimensionsSize(formatReader.getSizeX(), formatReader.getSizeY(), formatReader.getSizeZ(),
+                    formatReader.getEffectiveSizeC(),
+                    formatReader.getSizeT());
 
             for (int tndx = startTime; tndx <= endTime; tndx++) {
                 for (int zndx = 0; zndx < formatReader.getSizeZ(); zndx++) {
@@ -587,6 +591,17 @@ public class BioformatsImageImplNew implements ImageDatasetReader {
             ushortImages[i].setExtent(new Extent(img.getExtent().getX(),img.getExtent().getY(),img.getExtent().getZ()*argImageDatasets.length));
         }
         return new ImageDataset(ushortImages,argImageDatasets[0].getImageTimeStamps(),ushortImages.length);
+    }
+
+    public static void checkImageDimensionsSize(int x, int y, int z, int t, int c){
+        int megaBytes = 1024 * 1024;
+
+        // 2 Bytes per pixel
+        if ((x * y * z * t * c) * 2 * 8 > 500 * megaBytes){
+            String error = String.format("The dimensions of the image you provided are to large, and the resulting field data will take over 500MB. " +
+                    "Please provide an image with less time points, channels, or with cropped X,Y,Z. x: %d, y: %d, z: %d, t: %d, c: %d", x, y, z, t, c);
+            throw new IllegalArgumentException(error);
+        }
     }
 
     private void printInfo(ImageReader imageReader, String imageID, IFormatReader formatReader){
