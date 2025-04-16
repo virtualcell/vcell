@@ -1,6 +1,7 @@
 package cbit.vcell.VirtualMicroscopy;
 
 import cbit.image.ImageSizeInfo;
+import cbit.vcell.field.FieldDataFileConversion;
 import loci.formats.*;
 import loci.formats.gui.AWTImageTools;
 import loci.formats.gui.BufferedImageReader;
@@ -103,25 +104,7 @@ public class BioformatsImageImplLegacy implements ImageDatasetReader {
                 continue;
             }
             String entryName = entry.getName();
-            String imageFileSuffix = null;
-            int dotIndex = entryName.indexOf(".");
-            if(dotIndex != -1){
-                imageFileSuffix = entryName.substring(dotIndex);
-            }
-            InputStream zipInputStream = zipFile.getInputStream(entry);
-            File tempImageFile = File.createTempFile("ImgDataSetReader", imageFileSuffix);
-            tempImageFile.deleteOnExit();
-            FileOutputStream fos = new FileOutputStream(tempImageFile,false);
-            byte[] buffer = new byte[50000];
-            while (true){
-                int bytesRead = zipInputStream.read(buffer);
-                if (bytesRead==-1){
-                    break;
-                }
-                fos.write(buffer, 0, bytesRead);
-            }
-            fos.close();
-            zipInputStream.close();
+            File tempImageFile = FieldDataFileConversion.getFileFromZipEntry(entry, zipFile);
             ImageDataset[] imageDatasetChannels = null;
             try {
                 imageDatasetChannels = readImageDatasetChannels(tempImageFile.getAbsolutePath(),bMergeChannels,null,resize);
