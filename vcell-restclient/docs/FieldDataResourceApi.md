@@ -6,8 +6,8 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 |------------- | ------------- | -------------|
 | [**analyzeFile**](FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
 | [**analyzeFileWithHttpInfo**](FieldDataResourceApi.md#analyzeFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
-| [**analyzeFileAndCreate**](FieldDataResourceApi.md#analyzeFileAndCreate) | **POST** /api/v1/fieldData/analyzeAndCreateFromFile | For advanced users who already understand the constraints of your field data and want to create it in one request. |
-| [**analyzeFileAndCreateWithHttpInfo**](FieldDataResourceApi.md#analyzeFileAndCreateWithHttpInfo) | **POST** /api/v1/fieldData/analyzeAndCreateFromFile | For advanced users who already understand the constraints of your field data and want to create it in one request. |
+| [**analyzeFileAndCreate**](FieldDataResourceApi.md#analyzeFileAndCreate) | **POST** /api/v1/fieldData/analyzeAndCreateFromFile | For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip. |
+| [**analyzeFileAndCreateWithHttpInfo**](FieldDataResourceApi.md#analyzeFileAndCreateWithHttpInfo) | **POST** /api/v1/fieldData/analyzeAndCreateFromFile | For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip. |
 | [**copyModelsFieldData**](FieldDataResourceApi.md#copyModelsFieldData) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own. |
 | [**copyModelsFieldDataWithHttpInfo**](FieldDataResourceApi.md#copyModelsFieldDataWithHttpInfo) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own. |
 | [**createFromAnalyzedFile**](FieldDataResourceApi.md#createFromAnalyzedFile) | **POST** /api/v1/fieldData/createFromSpecification | Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults. |
@@ -169,7 +169,7 @@ ApiResponse<[**AnalyzedFile**](AnalyzedFile.md)>
 
 > FieldDataSavedResults analyzeFileAndCreate(_file, fileName, extent, iSize, channelNames, times, annotation, origin)
 
-For advanced users who already understand the constraints of your field data and want to create it in one request.
+For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
 
 ### Example
 
@@ -250,7 +250,7 @@ public class Example {
 
 > ApiResponse<FieldDataSavedResults> analyzeFileAndCreate analyzeFileAndCreateWithHttpInfo(_file, fileName, extent, iSize, channelNames, times, annotation, origin)
 
-For advanced users who already understand the constraints of your field data and want to create it in one request.
+For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
 
 ### Example
 

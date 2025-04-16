@@ -83,7 +83,7 @@ public void deleteBioModel(KeyValue key) throws DataAccessException, ObjectNotFo
 
 	@Override
 	public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent, ISize iSize, String[] channelNames, double[] times, String annotation, Origin origin) {
-		return null;
+		throw new UnsupportedOperationException("Analyze and save field data from file is not implemented here.");
 	}
 
 

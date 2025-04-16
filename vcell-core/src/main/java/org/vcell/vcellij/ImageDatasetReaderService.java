@@ -10,16 +10,16 @@
 
 package org.vcell.vcellij;
 
-import cbit.vcell.VirtualMicroscopy.BioformatsImageImplNew;
+import cbit.vcell.VirtualMicroscopy.BioformatsImageImpl;
 
 
 public class ImageDatasetReaderService {
 	
 	private static ImageDatasetReaderService service;
-	private final BioformatsImageImplNew bioformatsImageImpl;
+	private final BioformatsImageImpl bioformatsImageImpl;
 
 	private ImageDatasetReaderService() {
-		this.bioformatsImageImpl = new BioformatsImageImplNew();
+		this.bioformatsImageImpl = new BioformatsImageImpl();
 	}
 	
 	public static synchronized ImageDatasetReaderService getInstance(){

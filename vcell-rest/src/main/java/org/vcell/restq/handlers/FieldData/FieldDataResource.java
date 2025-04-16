@@ -102,7 +102,8 @@ public class FieldDataResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Operation(operationId = "analyzeFileAndCreate", summary = "For advanced users who already understand the constraints of your field data and want to create it in one request.")
+    @Operation(operationId = "analyzeFileAndCreate", summary = "For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. " +
+            "The following files are accepted: .tif and .zip.")
     public FieldDataSavedResults analyzeAndCreateFieldData(@RestForm @PartType(MediaType.APPLICATION_OCTET_STREAM) File file,
                                                   @RestForm @PartType(MediaType.TEXT_PLAIN) String fileName,
                                                   @RestForm("extent") @PartType(MediaType.APPLICATION_JSON) Extent extent,

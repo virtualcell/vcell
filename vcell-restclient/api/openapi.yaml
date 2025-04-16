@@ -279,8 +279,9 @@ paths:
       security:
       - openId:
         - user
-      summary: For advanced users who already understand the constraints of your field
-        data and want to create it in one request.
+      summary: "For advanced users, combines the two separate requests of Analyze\
+        \ File and Create From Analyzed File. The following files are accepted: .tif\
+        \ and .zip."
       tags:
       - Field Data Resource
       x-content-type: multipart/form-data

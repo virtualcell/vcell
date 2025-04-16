@@ -5,7 +5,7 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**analyze_file**](FieldDataResourceApi.md#analyze_file) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
-[**analyze_file_and_create**](FieldDataResourceApi.md#analyze_file_and_create) | **POST** /api/v1/fieldData/analyzeAndCreateFromFile | For advanced users who already understand the constraints of your field data and want to create it in one request.
+[**analyze_file_and_create**](FieldDataResourceApi.md#analyze_file_and_create) | **POST** /api/v1/fieldData/analyzeAndCreateFromFile | For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
 [**copy_models_field_data**](FieldDataResourceApi.md#copy_models_field_data) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
 [**create_from_analyzed_file**](FieldDataResourceApi.md#create_from_analyzed_file) | **POST** /api/v1/fieldData/createFromSpecification | Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 [**create_from_simulation**](FieldDataResourceApi.md#create_from_simulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results.
@@ -90,7 +90,7 @@ Name | Type | Description  | Notes
 # **analyze_file_and_create**
 > FieldDataSavedResults analyze_file_and_create(file=file, file_name=file_name, extent=extent, i_size=i_size, channel_names=channel_names, times=times, annotation=annotation, origin=origin)
 
-For advanced users who already understand the constraints of your field data and want to create it in one request.
+For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
 
 ### Example
 
@@ -130,7 +130,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     origin = vcell_client.Origin() # Origin |  (optional)
 
     try:
-        # For advanced users who already understand the constraints of your field data and want to create it in one request.
+        # For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
         api_response = api_instance.analyze_file_and_create(file=file, file_name=file_name, extent=extent, i_size=i_size, channel_names=channel_names, times=times, annotation=annotation, origin=origin)
         print("The response of FieldDataResourceApi->analyze_file_and_create:\n")
         pprint(api_response)

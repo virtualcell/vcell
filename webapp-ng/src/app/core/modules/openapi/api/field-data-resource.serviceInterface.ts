@@ -48,7 +48,7 @@ export interface FieldDataResourceServiceInterface {
     analyzeFile(file?: Blob, fileName?: string, extraHttpRequestParams?: any): Observable<AnalyzedFile>;
 
     /**
-     * For advanced users who already understand the constraints of your field data and want to create it in one request.
+     * For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
      * 
      * @param file 
      * @param fileName 

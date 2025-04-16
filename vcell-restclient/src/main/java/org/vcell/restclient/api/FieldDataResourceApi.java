@@ -201,7 +201,7 @@ public class FieldDataResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * For advanced users who already understand the constraints of your field data and want to create it in one request.
+   * For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
    * 
    * @param _file  (optional)
    * @param fileName  (optional)
@@ -220,7 +220,7 @@ public class FieldDataResourceApi {
   }
 
   /**
-   * For advanced users who already understand the constraints of your field data and want to create it in one request.
+   * For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
    * 
    * @param _file  (optional)
    * @param fileName  (optional)

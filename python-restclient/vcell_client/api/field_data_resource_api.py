@@ -373,7 +373,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> FieldDataSavedResults:
-        """For advanced users who already understand the constraints of your field data and want to create it in one request.
+        """For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
 
 
         :param file:
@@ -470,7 +470,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[FieldDataSavedResults]:
-        """For advanced users who already understand the constraints of your field data and want to create it in one request.
+        """For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
 
 
         :param file:
@@ -567,7 +567,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """For advanced users who already understand the constraints of your field data and want to create it in one request.
+        """For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
 
 
         :param file:

@@ -1,10 +1,8 @@
 package org.vcell.restq.apiclient;
 
+import cbit.vcell.VirtualMicroscopy.BioformatsImageImplLegacy;
 import cbit.vcell.VirtualMicroscopy.BioformatsImageImpl;
-import cbit.vcell.VirtualMicroscopy.BioformatsImageImplNew;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
-import cbit.vcell.field.FieldDataFileConversion;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.resource.PropertyLoader;
 import io.quarkus.test.junit.QuarkusTest;
@@ -220,8 +218,8 @@ public class FieldDataAPITest {
 
     @Test
     public void oldAlgorithmTest() throws Exception {
-        BioformatsImageImpl bioformatsImage = new BioformatsImageImpl();
-        BioformatsImageImplNew bioformatsImageImplNew = new BioformatsImageImplNew();
+        BioformatsImageImplLegacy bioformatsImage = new BioformatsImageImplLegacy();
+        BioformatsImageImpl bioformatsImageImplNew = new BioformatsImageImpl();
 
         File simpleTestFile = TestEndpointUtils.getResourceFile("/flybrain-035.tif"); // Single time, channel, and no Z
         File complicatedTestFile = TestEndpointUtils.getResourceFile("/mitosis.tif"); // Multiple time, channels, and Z

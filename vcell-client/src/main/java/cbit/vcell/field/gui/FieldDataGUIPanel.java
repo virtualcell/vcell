@@ -683,17 +683,17 @@ public class FieldDataGUIPanel extends JPanel {
         };
         taskArray[1] = new AsynchClientTask("Generate field data from file", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                FieldDataFileOperationSpec generatedFieldData ;
+                FieldDataFileOperationSpec imagesMetaDataOpSpec ;
                 File imageFile = (File) hashTable.get(IMAGE_FILE_KEY);
                 if (imageFile == null || imageFile.getName().contains(".vfrap")){
                     return;
                 } else {
-                    generatedFieldData = FieldDataFileConversion.analyzeMetaData(imageFile);
+                    imagesMetaDataOpSpec = FieldDataFileConversion.analyzeMetaData(imageFile);
                 }
 
-                generatedFieldData.owner = clientRequestManager.getDocumentManager().getUser();
-                generatedFieldData.opType = FieldDataFileOperationSpec.FDOS_ADD;
-                hashTable.put("fdos", generatedFieldData);
+                imagesMetaDataOpSpec.owner = clientRequestManager.getDocumentManager().getUser();
+                imagesMetaDataOpSpec.opType = FieldDataFileOperationSpec.FDOS_ADD;
+                hashTable.put("fdos", imagesMetaDataOpSpec);
                 hashTable.put("file", imageFile);
                 hashTable.put("initFDName", imageFile.getName());
             }

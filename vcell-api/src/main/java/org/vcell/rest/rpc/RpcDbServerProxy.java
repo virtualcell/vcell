@@ -54,7 +54,7 @@ public void deleteBioModel(org.vcell.util.document.KeyValue bioModelKey) throws 
 
 	@Override
 	public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent, ISize iSize, String[] channelNames, double[] times, String annotation, Origin origin) {
-		return null;
+		throw new UnsupportedOperationException("Can't perform analyze and save from field data file.");
 	}
 
 	public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, ObjectNotFoundException {

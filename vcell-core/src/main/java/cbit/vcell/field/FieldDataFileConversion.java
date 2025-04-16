@@ -2,7 +2,7 @@ package cbit.vcell.field;
 
 import cbit.image.ImageException;
 import cbit.image.ImageSizeInfo;
-import cbit.vcell.VirtualMicroscopy.BioformatsImageImplNew;
+import cbit.vcell.VirtualMicroscopy.BioformatsImageImpl;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
@@ -103,13 +103,13 @@ public class FieldDataFileConversion {
                 }
             }
         }
-        BioformatsImageImplNew imageHandler = new BioformatsImageImplNew();
+        BioformatsImageImpl imageHandler = new BioformatsImageImpl();
         ImageReader imageReader = imageHandler.getImageReader(analyzedFile.getAbsolutePath());
         ImageSizeInfo info = imageHandler.getImageSizeInfo(imageReader, analyzedFile.getAbsolutePath(), null);
-        BioformatsImageImplNew.DomainInfo domainInfo = BioformatsImageImplNew.getDomainInfo(imageReader);
+        BioformatsImageImpl.DomainInfo domainInfo = BioformatsImageImpl.getDomainInfo(imageReader);
 
 
-        BioformatsImageImplNew.checkImageDimensionsSize(info.getiSize().getX(), info.getiSize().getY(),
+        BioformatsImageImpl.checkImageDimensionsSize(info.getiSize().getX(), info.getiSize().getY(),
                 info.getiSize().getZ(),  timePoints > 0 ? timePoints : info.getTimePoints().length, info.getNumChannels());
 
         // [time][var][data]
