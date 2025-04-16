@@ -9,15 +9,14 @@
  */
 
 package cbit.vcell.modeldb;
+import java.io.File;
 import java.util.Hashtable;
 import java.util.TreeMap;
 
+import cbit.vcell.field.io.FieldDataFileOperationResults;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.KeyFactory;
-import org.vcell.util.BigString;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.Preference;
+import org.vcell.util.*;
 import org.vcell.util.document.*;
 
 import cbit.image.VCImageInfo;
@@ -82,8 +81,13 @@ public void deleteBioModel(KeyValue key) throws DataAccessException, ObjectNotFo
 	dbServerImpl.deleteBioModel(user, key);
 }
 
+	@Override
+	public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent, ISize iSize, String[] channelNames, double[] times, String annotation, Origin origin) {
+		throw new UnsupportedOperationException("Analyze and save field data from file is not implemented here.");
+	}
 
-/**
+
+	/**
  * delete method comment.
  */
 public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, ObjectNotFoundException {

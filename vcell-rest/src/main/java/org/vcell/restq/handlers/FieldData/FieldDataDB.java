@@ -9,6 +9,7 @@ import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.mathmodel.MathModel;
@@ -27,10 +28,7 @@ import jakarta.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.restq.db.AgroalConnectionFactory;
-import org.vcell.util.BigString;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.TokenMangler;
+import org.vcell.util.*;
 import org.vcell.util.document.*;
 
 import java.io.File;
@@ -87,8 +85,8 @@ public class FieldDataDB {
         Set<String> fieldNames = new HashSet<>();
         for(SimulationOwner fieldFunctionContainer : modelsListOfContext){
             FieldFunctionArguments[] fieldFuncArgsArr = {};
-            if (fieldFunctionContainer instanceof MathModel mathModel){
-                fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments(mathModel.getMathDescription());
+            if (fieldFunctionContainer instanceof MathDescription mathDescription){
+                fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments(mathDescription);
             }else if (fieldFunctionContainer instanceof SimulationContext simulationContext){
                 fieldFuncArgsArr = simulationContext.getFieldFunctionArguments();
             }
@@ -188,9 +186,11 @@ public class FieldDataDB {
     }
 
 
-    public FieldDataFileOperationResults saveNewFieldDataFromFile(FieldDataResource.AnalyzedFile saveFieldData, User user) throws DataAccessException, ImageException, DataFormatException {
+    public FieldDataFileOperationResults saveNewFieldDataFromFile(String fieldDataName, String[] varNames,
+                                                                  short[][][] imageData, String annotation,
+                                                                  User user, double[] times, Origin origin,
+                                                                  Extent extent, ISize iSize) throws DataAccessException, ImageException, DataFormatException {
         // Ensure name is unique for user
-        String fieldDataName = saveFieldData.name();
         FieldDataDBOperationResults usersFieldData = databaseServer.fieldDataDBOperation(user, FieldDataDBOperationSpec.createGetExtDataIDsSpecWithSimRefs(user));
         Set<String> namesUsed = new HashSet<>();
         for (ExternalDataIdentifier edi : usersFieldData.extDataIDArr){
@@ -201,15 +201,15 @@ public class FieldDataDB {
         }
 
 
-        VariableType[] varTypes = new VariableType[saveFieldData.varNames().length];
-        for (int j = 0; j < saveFieldData.varNames().length; j++){
+        VariableType[] varTypes = new VariableType[varNames.length];
+        for (int j = 0; j < varNames.length; j++){
             varTypes[j] = VariableType.VOLUME;
         }
-        FieldDataDBOperationSpec fieldDataDBOperationSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(user, fieldDataName, saveFieldData.annotation());
+        FieldDataDBOperationSpec fieldDataDBOperationSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(user, fieldDataName, annotation);
         FieldDataDBOperationResults results = databaseServer.fieldDataDBOperation(user, fieldDataDBOperationSpec);
-        FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec(saveFieldData.shortSpecData(), null, null,
-                results.extDataID, saveFieldData.varNames(), varTypes, saveFieldData.times(), user,
-                saveFieldData.origin(), saveFieldData.extent(), saveFieldData.isize(), saveFieldData.annotation(),
+        FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec(imageData, null, null,
+                results.extDataID, varNames, varTypes, times, user,
+                origin, extent, iSize, annotation,
                 -1, null, user);
         CartesianMesh cartesianMesh;
         fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;

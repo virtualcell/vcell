@@ -21,6 +21,8 @@ import { Observable }                                        from 'rxjs';
 // @ts-ignore
 import { AnalyzedFile } from '../model/analyzed-file';
 // @ts-ignore
+import { Extent } from '../model/extent';
+// @ts-ignore
 import { ExternalDataIdentifier } from '../model/external-data-identifier';
 // @ts-ignore
 import { FieldDataReference } from '../model/field-data-reference';
@@ -28,6 +30,10 @@ import { FieldDataReference } from '../model/field-data-reference';
 import { FieldDataSavedResults } from '../model/field-data-saved-results';
 // @ts-ignore
 import { FieldDataShape } from '../model/field-data-shape';
+// @ts-ignore
+import { ISize } from '../model/i-size';
+// @ts-ignore
+import { Origin } from '../model/origin';
 // @ts-ignore
 import { SourceModel } from '../model/source-model';
 
@@ -256,6 +262,122 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
 
         let localVarPath = `/api/v1/fieldData/analyzeFile`;
         return this.httpClient.request<AnalyzedFile>('post', `${this.configuration.basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,
+                responseType: <any>responseType_,
+                withCredentials: this.configuration.withCredentials,
+                headers: localVarHeaders,
+                observe: observe,
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
+     * @param file 
+     * @param fileName 
+     * @param extent 
+     * @param iSize 
+     * @param channelNames 
+     * @param times 
+     * @param annotation 
+     * @param origin 
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     */
+    public analyzeFileAndCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<FieldDataSavedResults>;
+    public analyzeFileAndCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<FieldDataSavedResults>>;
+    public analyzeFileAndCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<FieldDataSavedResults>>;
+    public analyzeFileAndCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+
+        let localVarHeaders = this.defaultHeaders;
+
+        let localVarCredential: string | undefined;
+        // authentication (openId) required
+        localVarCredential = this.configuration.lookupCredential('openId');
+        if (localVarCredential) {
+        }
+
+        let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
+        if (localVarHttpHeaderAcceptSelected === undefined) {
+            // to determine the Accept header
+            const httpHeaderAccepts: string[] = [
+                'application/json'
+            ];
+            localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
+        }
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        let localVarHttpContext: HttpContext | undefined = options && options.context;
+        if (localVarHttpContext === undefined) {
+            localVarHttpContext = new HttpContext();
+        }
+
+        // to determine the Content-Type header
+        const consumes: string[] = [
+            'multipart/form-data'
+        ];
+
+        const canConsumeForm = this.canConsumeForm(consumes);
+
+        let localVarFormParams: { append(param: string, value: any): any; };
+        let localVarUseForm = false;
+        let localVarConvertFormParamsToString = false;
+        // use FormData to transmit files using content-type "multipart/form-data"
+        // see https://stackoverflow.com/questions/4007969/application-x-www-form-urlencoded-or-multipart-form-data
+        localVarUseForm = canConsumeForm;
+        if (localVarUseForm) {
+            localVarFormParams = new FormData();
+        } else {
+            localVarFormParams = new HttpParams({encoder: this.encoder});
+        }
+
+        if (file !== undefined) {
+            localVarFormParams = localVarFormParams.append('file', <any>file) as any || localVarFormParams;
+        }
+        if (fileName !== undefined) {
+            localVarFormParams = localVarFormParams.append('fileName', <any>fileName) as any || localVarFormParams;
+        }
+        if (extent !== undefined) {
+            localVarFormParams = localVarFormParams.append('extent', localVarUseForm ? new Blob([JSON.stringify(extent)], {type: 'application/json'}) : <any>extent) as any || localVarFormParams;
+        }
+        if (iSize !== undefined) {
+            localVarFormParams = localVarFormParams.append('iSize', localVarUseForm ? new Blob([JSON.stringify(iSize)], {type: 'application/json'}) : <any>iSize) as any || localVarFormParams;
+        }
+        if (channelNames) {
+            channelNames.forEach((element) => {
+                localVarFormParams = localVarFormParams.append('channelNames', <any>element) as any || localVarFormParams;
+            })
+        }
+        if (times) {
+            times.forEach((element) => {
+                localVarFormParams = localVarFormParams.append('times', <any>element) as any || localVarFormParams;
+            })
+        }
+        if (annotation !== undefined) {
+            localVarFormParams = localVarFormParams.append('annotation', <any>annotation) as any || localVarFormParams;
+        }
+        if (origin !== undefined) {
+            localVarFormParams = localVarFormParams.append('origin', localVarUseForm ? new Blob([JSON.stringify(origin)], {type: 'application/json'}) : <any>origin) as any || localVarFormParams;
+        }
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/api/v1/fieldData/analyzeAndCreateFromFile`;
+        return this.httpClient.request<FieldDataSavedResults>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,

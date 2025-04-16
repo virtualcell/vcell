@@ -232,6 +232,60 @@ paths:
       tags:
       - Field Data Resource
       x-accepts: application/json
+  /api/v1/fieldData/analyzeAndCreateFromFile:
+    post:
+      operationId: analyzeFileAndCreate
+      requestBody:
+        content:
+          multipart/form-data:
+            encoding:
+              extent:
+                contentType: application/json
+                style: form
+              annotation:
+                contentType: text/plain
+                style: form
+              fileName:
+                contentType: text/plain
+                style: form
+              times:
+                contentType: text/plain
+                style: form
+              file:
+                contentType: application/octet-stream
+                style: form
+              iSize:
+                contentType: application/json
+                style: form
+              channelNames:
+                contentType: text/plain
+                style: form
+              origin:
+                contentType: application/json
+                style: form
+            schema:
+              $ref: '#/components/schemas/analyzeFileAndCreate_request'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataSavedResults'
+          description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+      summary: "For advanced users, combines the two separate requests of Analyze\
+        \ File and Create From Analyzed File. The following files are accepted: .tif\
+        \ and .zip."
+      tags:
+      - Field Data Resource
+      x-content-type: multipart/form-data
+      x-accepts: application/json
   /api/v1/fieldData/analyzeFile:
     post:
       operationId: analyzeFile
@@ -1808,6 +1862,31 @@ components:
           type: string
         typeName:
           type: string
+      type: object
+    analyzeFileAndCreate_request:
+      properties:
+        file:
+          format: binary
+          type: string
+        fileName:
+          type: string
+        extent:
+          $ref: '#/components/schemas/Extent'
+        iSize:
+          $ref: '#/components/schemas/ISize'
+        channelNames:
+          items:
+            type: string
+          type: array
+        times:
+          items:
+            format: double
+            type: number
+          type: array
+        annotation:
+          type: string
+        origin:
+          $ref: '#/components/schemas/Origin'
       type: object
     analyzeFile_request:
       properties:

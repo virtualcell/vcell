@@ -14,10 +14,13 @@ import { HttpHeaders }                                       from '@angular/comm
 import { Observable }                                        from 'rxjs';
 
 import { AnalyzedFile } from '../model/models';
+import { Extent } from '../model/models';
 import { ExternalDataIdentifier } from '../model/models';
 import { FieldDataReference } from '../model/models';
 import { FieldDataSavedResults } from '../model/models';
 import { FieldDataShape } from '../model/models';
+import { ISize } from '../model/models';
+import { Origin } from '../model/models';
 import { SourceModel } from '../model/models';
 
 
@@ -43,6 +46,20 @@ export interface FieldDataResourceServiceInterface {
      * @param fileName 
      */
     analyzeFile(file?: Blob, fileName?: string, extraHttpRequestParams?: any): Observable<AnalyzedFile>;
+
+    /**
+     * For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
+     * 
+     * @param file 
+     * @param fileName 
+     * @param extent 
+     * @param iSize 
+     * @param channelNames 
+     * @param times 
+     * @param annotation 
+     * @param origin 
+     */
+    analyzeFileAndCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, extraHttpRequestParams?: any): Observable<FieldDataSavedResults>;
 
     /**
      * Copy all existing field data from a BioModel/MathModel that you have access to, but don\&#39;t own.

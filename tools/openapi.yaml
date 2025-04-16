@@ -208,6 +208,73 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/fieldData/analyzeAndCreateFromFile:
+    post:
+      tags:
+      - Field Data Resource
+      summary: "For advanced users, combines the two separate requests of Analyze\
+        \ File and Create From Analyzed File. The following files are accepted: .tif\
+        \ and .zip."
+      operationId: analyzeFileAndCreate
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  format: binary
+                  type: string
+                fileName:
+                  type: string
+                extent:
+                  $ref: '#/components/schemas/Extent'
+                iSize:
+                  $ref: '#/components/schemas/ISize'
+                channelNames:
+                  type: array
+                  items:
+                    type: string
+                times:
+                  type: array
+                  items:
+                    format: double
+                    type: number
+                annotation:
+                  type: string
+                origin:
+                  $ref: '#/components/schemas/Origin'
+            encoding:
+              extent:
+                contentType: application/json
+              annotation:
+                contentType: text/plain
+              fileName:
+                contentType: text/plain
+              times:
+                contentType: text/plain
+              file:
+                contentType: application/octet-stream
+              iSize:
+                contentType: application/json
+              channelNames:
+                contentType: text/plain
+              origin:
+                contentType: application/json
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataSavedResults'
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
   /api/v1/fieldData/analyzeFile:
     post:
       tags:

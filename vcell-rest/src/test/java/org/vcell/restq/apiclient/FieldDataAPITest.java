@@ -1,5 +1,8 @@
 package org.vcell.restq.apiclient;
 
+import cbit.vcell.VirtualMicroscopy.BioformatsImageImplLegacy;
+import cbit.vcell.VirtualMicroscopy.BioformatsImageImpl;
+import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.resource.PropertyLoader;
 import io.quarkus.test.junit.QuarkusTest;
@@ -185,6 +188,59 @@ public class FieldDataAPITest {
         // No Longer in DB
         List<FieldDataReference> references = fieldDataResourceApi.getAllIDs();
         Assertions.assertEquals(0, references.size());
+    }
+
+    // Assuming the two part endpoint is correct with the previous tests, use it as a baseline to test against the advanced endpoint
+    @Test
+    public void testAdvancedEndpoint() throws ApiException, IOException {
+        FieldDataResourceApi api = new FieldDataResourceApi(aliceAPIClient);
+
+        File testFile = TestEndpointUtils.getResourceFile("/flybrain-035.tif");
+        AnalyzedFile analyzedFile = api.analyzeFile(testFile, "test_file1");
+        FieldDataSavedResults res = api.createFromAnalyzedFile(analyzedFile);
+        FieldDataShape ogShape = api.getShapeFromID(res.getFieldDataKey());
+
+
+        FieldDataSavedResults savedResults =  api.analyzeFileAndCreate(testFile, "test_file2", analyzedFile.getExtent(),
+                analyzedFile.getIsize(), analyzedFile.getVarNames(), analyzedFile.getTimes(), "", analyzedFile.getOrigin()
+        );
+
+        FieldDataShape shape = api.getShapeFromID(savedResults.getFieldDataKey());
+
+        Assertions.assertEquals(ogShape.getExtent(), shape.getExtent());
+        Assertions.assertEquals(ogShape.getIsize(), shape.getIsize());
+        Assertions.assertEquals(ogShape.getTimes(), shape.getTimes());
+        Assertions.assertEquals(ogShape.getOrigin(), shape.getOrigin());
+
+        api.delete(res.getFieldDataKey());
+        api.delete(savedResults.getFieldDataKey());
+    }
+
+    @Test
+    public void oldAlgorithmTest() throws Exception {
+        BioformatsImageImplLegacy bioformatsImage = new BioformatsImageImplLegacy();
+        BioformatsImageImpl bioformatsImageImplNew = new BioformatsImageImpl();
+
+        File simpleTestFile = TestEndpointUtils.getResourceFile("/flybrain-035.tif"); // Single time, channel, and no Z
+        File complicatedTestFile = TestEndpointUtils.getResourceFile("/mitosis.tif"); // Multiple time, channels, and Z
+        File[] testFiles = {simpleTestFile, complicatedTestFile};
+
+        for (File testFile: testFiles){
+            // Merged Channels
+            ImageDataset oldAlgorithmImageDataset = bioformatsImage.readImageDataset(testFile.getAbsolutePath(), null);
+            ImageDataset newAlgorithmImageDataset = bioformatsImageImplNew.readImageDataset(testFile.getAbsolutePath(), null);
+
+            Assertions.assertTrue(oldAlgorithmImageDataset.compareEqual(newAlgorithmImageDataset));
+
+            ImageDataset[] oldImageDatasets = bioformatsImage.readImageDatasetChannels(testFile.getAbsolutePath(), false, 0, null);
+            ImageDataset[] newImageDatasets = bioformatsImageImplNew.readImageDatasetChannelsAlgo(testFile.getAbsolutePath(), false, 0, null);
+
+            // Unmerged channels
+            Assertions.assertEquals(oldImageDatasets.length, newImageDatasets.length);
+            for (int i = 0; i < oldImageDatasets.length; i++){
+                Assertions.assertTrue(oldImageDatasets[i].compareEqual(newImageDatasets[i]));
+            }
+        }
     }
 
 }

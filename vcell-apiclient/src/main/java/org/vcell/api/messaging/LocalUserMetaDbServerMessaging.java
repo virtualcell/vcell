@@ -13,6 +13,7 @@ package org.vcell.api.messaging;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.message.server.bootstrap.client.RpcDbServerProxy;
 import cbit.vcell.message.server.bootstrap.client.RpcSender;
@@ -24,24 +25,22 @@ import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
+import com.google.common.primitives.Doubles;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.FieldDataReference;
+import org.vcell.restclient.model.FieldDataSavedResults;
 import org.vcell.restclient.model.ModelType;
 import org.vcell.restclient.model.SourceModel;
 import org.vcell.restclient.utils.DtoModelTransforms;
-import org.vcell.util.BigString;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.*;
 import org.vcell.util.document.*;
 
+import java.io.File;
 import java.rmi.RemoteException;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 
 /**
@@ -147,6 +146,20 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 		throw new DataAccessException(e.getMessage());
 	}
 }
+
+public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent,
+																 ISize iSize, String[] channelNames, double[] times,
+																 String annotation, Origin origin){
+	try{
+		FieldDataSavedResults results = vCellApiClient.getFieldDataApi().analyzeFileAndCreate(file, fileName, DtoModelTransforms.extentToDTO(extent),
+				DtoModelTransforms.iSizeToDTO(iSize), Arrays.asList(channelNames), Doubles.asList(times),
+				annotation, DtoModelTransforms.originToDTO(origin));
+		return DtoModelTransforms.fieldDataSaveResultsDTOToFileOperationResults(results, null);
+	} catch (ApiException e){
+		lg.error(e.getMessage(),e);
+		throw new RuntimeException(e);
+	}
+};
 
 public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {
     try {
