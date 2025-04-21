@@ -35,6 +35,7 @@ class AnalyzedFile(BaseModel):
     AnalyzedFile
     """ # noqa: E501
     short_spec_data: Optional[List[List[List[StrictInt]]]] = Field(default=None, alias="shortSpecData")
+    double_spec_data: Optional[List[List[List[Union[StrictFloat, StrictInt]]]]] = Field(default=None, alias="doubleSpecData")
     var_names: Optional[List[StrictStr]] = Field(default=None, alias="varNames")
     times: Optional[List[Union[StrictFloat, StrictInt]]] = None
     origin: Optional[Origin] = None
@@ -42,7 +43,7 @@ class AnalyzedFile(BaseModel):
     isize: Optional[ISize] = None
     annotation: Optional[StrictStr] = None
     name: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["shortSpecData", "varNames", "times", "origin", "extent", "isize", "annotation", "name"]
+    __properties: ClassVar[List[str]] = ["shortSpecData", "doubleSpecData", "varNames", "times", "origin", "extent", "isize", "annotation", "name"]
 
     model_config = {
         "populate_by_name": True,
@@ -107,6 +108,7 @@ class AnalyzedFile(BaseModel):
 
         _obj = cls.model_validate({
             "shortSpecData": obj.get("shortSpecData"),
+            "doubleSpecData": obj.get("doubleSpecData"),
             "varNames": obj.get("varNames"),
             "times": obj.get("times"),
             "origin": Origin.from_dict(obj.get("origin")) if obj.get("origin") is not None else None,

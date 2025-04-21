@@ -38,6 +38,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  */
 @JsonPropertyOrder({
   AnalyzedFile.JSON_PROPERTY_SHORT_SPEC_DATA,
+  AnalyzedFile.JSON_PROPERTY_DOUBLE_SPEC_DATA,
   AnalyzedFile.JSON_PROPERTY_VAR_NAMES,
   AnalyzedFile.JSON_PROPERTY_TIMES,
   AnalyzedFile.JSON_PROPERTY_ORIGIN,
@@ -50,6 +51,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public class AnalyzedFile {
   public static final String JSON_PROPERTY_SHORT_SPEC_DATA = "shortSpecData";
   private List<List<List<Integer>>> shortSpecData;
+
+  public static final String JSON_PROPERTY_DOUBLE_SPEC_DATA = "doubleSpecData";
+  private List<List<List<Double>>> doubleSpecData;
 
   public static final String JSON_PROPERTY_VAR_NAMES = "varNames";
   private List<String> varNames;
@@ -105,6 +109,39 @@ public class AnalyzedFile {
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setShortSpecData(List<List<List<Integer>>> shortSpecData) {
     this.shortSpecData = shortSpecData;
+  }
+
+
+  public AnalyzedFile doubleSpecData(List<List<List<Double>>> doubleSpecData) {
+    this.doubleSpecData = doubleSpecData;
+    return this;
+  }
+
+  public AnalyzedFile addDoubleSpecDataItem(List<List<Double>> doubleSpecDataItem) {
+    if (this.doubleSpecData == null) {
+      this.doubleSpecData = new ArrayList<>();
+    }
+    this.doubleSpecData.add(doubleSpecDataItem);
+    return this;
+  }
+
+   /**
+   * Get doubleSpecData
+   * @return doubleSpecData
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_DOUBLE_SPEC_DATA)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public List<List<List<Double>>> getDoubleSpecData() {
+    return doubleSpecData;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_DOUBLE_SPEC_DATA)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setDoubleSpecData(List<List<List<Double>>> doubleSpecData) {
+    this.doubleSpecData = doubleSpecData;
   }
 
 
@@ -312,6 +349,7 @@ public class AnalyzedFile {
     }
     AnalyzedFile analyzedFile = (AnalyzedFile) o;
     return Objects.equals(this.shortSpecData, analyzedFile.shortSpecData) &&
+        Objects.equals(this.doubleSpecData, analyzedFile.doubleSpecData) &&
         Objects.equals(this.varNames, analyzedFile.varNames) &&
         Objects.equals(this.times, analyzedFile.times) &&
         Objects.equals(this.origin, analyzedFile.origin) &&
@@ -323,7 +361,7 @@ public class AnalyzedFile {
 
   @Override
   public int hashCode() {
-    return Objects.hash(shortSpecData, varNames, times, origin, extent, isize, annotation, name);
+    return Objects.hash(shortSpecData, doubleSpecData, varNames, times, origin, extent, isize, annotation, name);
   }
 
   @Override
@@ -331,6 +369,7 @@ public class AnalyzedFile {
     StringBuilder sb = new StringBuilder();
     sb.append("class AnalyzedFile {\n");
     sb.append("    shortSpecData: ").append(toIndentedString(shortSpecData)).append("\n");
+    sb.append("    doubleSpecData: ").append(toIndentedString(doubleSpecData)).append("\n");
     sb.append("    varNames: ").append(toIndentedString(varNames)).append("\n");
     sb.append("    times: ").append(toIndentedString(times)).append("\n");
     sb.append("    origin: ").append(toIndentedString(origin)).append("\n");
@@ -392,6 +431,17 @@ public class AnalyzedFile {
           joiner.add(String.format("%sshortSpecData%s%s=%s", prefix, suffix,
               "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
               URLEncoder.encode(String.valueOf(getShortSpecData().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+        }
+      }
+    }
+
+    // add `doubleSpecData` to the URL query string
+    if (getDoubleSpecData() != null) {
+      for (int i = 0; i < getDoubleSpecData().size(); i++) {
+        if (getDoubleSpecData().get(i) != null) {
+          joiner.add(String.format("%sdoubleSpecData%s%s=%s", prefix, suffix,
+              "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+              URLEncoder.encode(String.valueOf(getDoubleSpecData().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
         }
       }
     }

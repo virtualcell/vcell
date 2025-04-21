@@ -228,6 +228,7 @@ public class FieldDataResource {
 
     public record AnalyzedFile(
             short[][][] shortSpecData,  //[time][var][data]
+            double[][][] doubleSpecData,
             String[] varNames,
             double[] times,
             Origin origin,

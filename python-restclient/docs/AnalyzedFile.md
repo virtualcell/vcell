@@ -5,6 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **short_spec_data** | **List[List[List[int]]]** |  | [optional] 
+**double_spec_data** | **List[List[List[float]]]** |  | [optional] 
 **var_names** | **List[str]** |  | [optional] 
 **times** | **List[float]** |  | [optional] 
 **origin** | [**Origin**](Origin.md) |  | [optional] 

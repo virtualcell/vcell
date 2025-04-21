@@ -851,6 +851,15 @@ components:
               type: array
               items:
                 type: integer
+        doubleSpecData:
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                format: double
+                type: number
         varNames:
           type: array
           items:

@@ -884,21 +884,30 @@ components:
     AnalyzedFile:
       example:
         extent:
-          x: 2.3021358869347655
-          "y": 7.061401241503109
-          z: 9.301444243932576
+          x: 7.061401241503109
+          "y": 9.301444243932576
+          z: 3.616076749251911
         annotation: annotation
         times:
-        - 6.027456183070403
-        - 6.027456183070403
+        - 1.4658129805029452
+        - 1.4658129805029452
+        doubleSpecData:
+        - - - 6.027456183070403
+            - 6.027456183070403
+          - - 6.027456183070403
+            - 6.027456183070403
+        - - - 6.027456183070403
+            - 6.027456183070403
+          - - 6.027456183070403
+            - 6.027456183070403
         origin:
-          x: 1.4658129805029452
-          "y": 5.962133916683182
-          z: 5.637376656633329
+          x: 5.962133916683182
+          "y": 5.637376656633329
+          z: 2.3021358869347655
         isize:
-          x: 3
-          "y": 2
-          z: 4
+          x: 2
+          "y": 4
+          z: 7
         name: name
         varNames:
         - varNames
@@ -918,6 +927,15 @@ components:
             items:
               items:
                 type: integer
+              type: array
+            type: array
+          type: array
+        doubleSpecData:
+          items:
+            items:
+              items:
+                format: double
+                type: number
               type: array
             type: array
           type: array
@@ -1126,9 +1144,9 @@ components:
       type: object
     Extent:
       example:
-        x: 2.3021358869347655
-        "y": 7.061401241503109
-        z: 9.301444243932576
+        x: 7.061401241503109
+        "y": 9.301444243932576
+        z: 3.616076749251911
       properties:
         x:
           format: double
@@ -1225,20 +1243,20 @@ components:
     FieldDataShape:
       example:
         extent:
-          x: 2.3021358869347655
-          "y": 7.061401241503109
-          z: 9.301444243932576
+          x: 7.061401241503109
+          "y": 9.301444243932576
+          z: 3.616076749251911
         times:
         - 6.027456183070403
         - 6.027456183070403
         origin:
-          x: 1.4658129805029452
-          "y": 5.962133916683182
-          z: 5.637376656633329
+          x: 5.962133916683182
+          "y": 5.637376656633329
+          z: 2.3021358869347655
         isize:
-          x: 3
-          "y": 2
-          z: 4
+          x: 2
+          "y": 4
+          z: 7
         dataIdentifier:
         - variableType:
             defaultUnits: defaultUnits
@@ -1314,9 +1332,9 @@ components:
       type: object
     ISize:
       example:
-        x: 3
-        "y": 2
-        z: 4
+        x: 2
+        "y": 4
+        z: 7
       properties:
         x:
           format: int32
@@ -1396,9 +1414,9 @@ components:
       type: string
     Origin:
       example:
-        x: 1.4658129805029452
-        "y": 5.962133916683182
-        z: 5.637376656633329
+        x: 5.962133916683182
+        "y": 5.637376656633329
+        z: 2.3021358869347655
       properties:
         x:
           format: double

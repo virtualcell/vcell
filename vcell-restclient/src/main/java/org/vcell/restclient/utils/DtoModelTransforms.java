@@ -2,12 +2,15 @@ package org.vcell.restclient.utils;
 
 
 import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.io.FieldData;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataIdentifier;
-import org.vcell.restclient.model.*;
+import org.vcell.restclient.model.AnalyzedFile;
+import org.vcell.restclient.model.FieldDataReference;
+import org.vcell.restclient.model.FieldDataSavedResults;
+import org.vcell.restclient.model.FieldDataShape;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -15,7 +18,10 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Vector;
 import java.util.stream.Collectors;
 
 public class DtoModelTransforms {
@@ -130,22 +136,32 @@ public class DtoModelTransforms {
         return fieldDataFileOperationResults;
     }
 
-    public static AnalyzedFile fieldDataSpecToAnalyzedResultsDTO(FieldDataFileOperationSpec fieldDataFileOperationSpec){
-        List<List<List<Integer>>> listVersion = Arrays.stream(fieldDataFileOperationSpec.shortSpecData) // Stream of short[][]
-                .map(twoDArray -> Arrays.stream(twoDArray) // Stream of short[]
-                        .map(oneDArray -> {
-                            List<Integer> list = new ArrayList<>();
-                            for (short j : oneDArray) {
-                                list.add((int) j);
-                            }
-                            return list;
-                        }).collect(Collectors.toList())).collect(Collectors.toList());
-        AnalyzedFile analyzedResultsFromFieldData = new AnalyzedFile();
-        analyzedResultsFromFieldData.annotation(fieldDataFileOperationSpec.annotation); analyzedResultsFromFieldData.isize(iSizeToDTO(fieldDataFileOperationSpec.isize));
-        analyzedResultsFromFieldData.extent(extentToDTO(fieldDataFileOperationSpec.extent)); analyzedResultsFromFieldData.origin(originToDTO(fieldDataFileOperationSpec.origin));
-        analyzedResultsFromFieldData.times(Arrays.stream(fieldDataFileOperationSpec.times).boxed().toList()); analyzedResultsFromFieldData.setName(fieldDataFileOperationSpec.fieldDataName);
-        analyzedResultsFromFieldData.varNames(Arrays.stream(fieldDataFileOperationSpec.varNames).toList()); analyzedResultsFromFieldData.shortSpecData(listVersion);
-        return analyzedResultsFromFieldData;
+    public static AnalyzedFile fieldDataToAnalyzedFile(FieldData fieldData){
+        AnalyzedFile analyzedFile = new AnalyzedFile();
+        List<List<List<Integer>>> shortData = new ArrayList<>();
+        for (int i = 0; i < fieldData.data.length; i++){
+            shortData.add(new ArrayList<>());
+            for(int j = 0; j < fieldData.data[i].length; j++){
+                shortData.get(i).add(new ArrayList<>());
+                for(int k = 0; k < fieldData.data[i][j].length; k++){
+                    shortData.get(i).get(j).add((int) fieldData.data[i][j][k]);
+                }
+            }
+        }
+        List<List<List<Double>>> doubleData = new ArrayList<>();
+        for (int i = 0; i < fieldData.doubleData.length; i++){
+            doubleData.add(new ArrayList<>());
+            for(int j = 0; j < fieldData.doubleData[i].length; j++){
+                doubleData.get(i).add(new ArrayList<>());
+                for(int k = 0; k < fieldData.doubleData[i][j].length; k++){
+                    doubleData.get(i).get(j).add(fieldData.doubleData[i][j][k]);
+                }
+            }
+        }
+        analyzedFile.times(fieldData.times).name(fieldData.fileName).annotation(fieldData.annotation)
+                .extent(extentToDTO(fieldData.extent)).isize(iSizeToDTO(fieldData.iSize)).origin(originToDTO(fieldData.origin))
+                .varNames(fieldData.channelNames).shortSpecData(shortData);
+        return analyzedFile;
     }
 
     public static FieldDataDBOperationResults fieldDataReferencesToDBResults(List<FieldDataReference> dto, User user){
