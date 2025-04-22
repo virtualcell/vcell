@@ -10,44 +10,12 @@
 
 package cbit.vcell.microscopy.gui.estparamwizard;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.util.Hashtable;
-
-import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.LineBorder;
-
-import org.vcell.util.ColorUtil;
-import org.vcell.util.Range;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.gui.DialogUtils;
-
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
-import cbit.vcell.microscopy.AnalysisParameters;
-import cbit.vcell.microscopy.FRAPData;
-import cbit.vcell.microscopy.FRAPModel;
-import cbit.vcell.microscopy.FRAPOptimizationUtils;
-import cbit.vcell.microscopy.FRAPSingleWorkspace;
-import cbit.vcell.microscopy.FRAPStudy;
-import cbit.vcell.microscopy.FRAPWorkspace;
-import cbit.vcell.microscopy.LocalWorkspace;
-import cbit.vcell.microscopy.SpatialAnalysisResults;
+import cbit.vcell.microscopy.*;
 import cbit.vcell.microscopy.gui.EstimatedParameterTableModel;
 import cbit.vcell.microscopy.gui.FRAPStudyPanel;
 import cbit.vcell.microscopy.gui.defineROIwizard.DefineROI_RoiForErrorPanel;
@@ -58,6 +26,21 @@ import cbit.vcell.opt.Parameter;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solver.ode.ODESolverResultSet;
+import org.vcell.util.ColorUtil;
+import org.vcell.util.Range;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.gui.DialogUtils;
+
+import javax.swing.*;
+import javax.swing.border.EtchedBorder;
+import javax.swing.border.LineBorder;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.util.Hashtable;
 
 @SuppressWarnings("serial")
 public class EstParams_ReacBindingPanel extends JPanel {
@@ -700,7 +683,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 					VCSimulationIdentifier vcSimID =
 						new VCSimulationIdentifier(simulationKey,LocalWorkspace.getDefaultOwner());
 					VCSimulationDataIdentifier vcSimDataID =
-						new VCSimulationDataIdentifier(vcSimID,FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
+						new VCSimulationDataIdentifier(vcSimID, FieldDataSpec.JOBINDEX_DEFAULT);
 					double[] rawSimTimePoints = getLocalWorkspace().getVCDataManager().getDataSetTimes(vcSimDataID);
 					//to store time points in frap model (simulation time points may be slightly different with exp time points)
 					setCurrentRawSimTimePoints(rawSimTimePoints);

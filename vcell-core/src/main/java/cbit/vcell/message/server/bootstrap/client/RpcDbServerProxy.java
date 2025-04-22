@@ -52,13 +52,10 @@ public void deleteBioModel(org.vcell.util.document.KeyValue bioModelKey) throws 
 	rpc("deleteBioModel",new Object[]{userLoginInfo.getUser(), bioModelKey});
 }
 
-	@Override
-	public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent, ISize iSize, String[] channelNames, double[] times, String annotation, Origin origin) {
-		return null;
-	}
+
 
 	public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, ObjectNotFoundException {
-	return (FieldDataDBOperationResults)rpc("fieldDataDBOperation",new Object[]{userLoginInfo.getUser(), fieldDataDBOperationSpec});
+	throw new UnsupportedOperationException("RPC field data calls are not supported.");
 }
 
 	@Override

@@ -62,9 +62,7 @@ UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP
  */
 void deleteBioModel(KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException, RemoteProxyException;
 
-public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent,
-                                                                 ISize iSize, String[] channelNames, double[] times,
-                                                                 String annotation, Origin origin);
+
 /**
  * Insert the method's description here.
  * Creation date: (4/29/2004 1:03:11 PM)

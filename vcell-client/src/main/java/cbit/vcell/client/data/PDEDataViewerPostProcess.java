@@ -10,6 +10,8 @@ import java.util.Hashtable;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import cbit.vcell.field.io.FieldData;
+import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
@@ -17,9 +19,7 @@ import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.TimeSeriesJobResults;
-import org.vcell.util.document.TimeSeriesJobSpec;
-import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.document.*;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
 
@@ -38,7 +38,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.server.DataSetController;
@@ -164,7 +163,27 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 						// TODO Auto-generated method stub
 						return null;
 					}
-					
+
+					@Override
+					public FieldDataFileOperationResults analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec) {
+						return null;
+					}
+
+					@Override
+					public ExternalDataIdentifier saveFieldData(FieldData fieldData) {
+						return null;
+					}
+
+					@Override
+					public void deleteFieldData(KeyValue fieldDataKey) {
+
+					}
+
+					@Override
+					public FieldDataFileOperationResults getFieldDataShape(KeyValue fieldDataKey) {
+						return null;
+					}
+
 					@Override
 					public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,VCDataIdentifier vcdataID) throws RemoteProxyException,DataAccessException {
 //						return parentPDEDataContext.getDataIdentifiers();
@@ -195,13 +214,6 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 						if(postProcessDataIDs.size() > 0){
 							return postProcessDataIDs.toArray(new DataIdentifier[0]);
 						}
-						return null;
-					}
-					
-					@Override
-					public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec)
-							throws RemoteProxyException, DataAccessException {
-						// TODO Auto-generated method stub
 						return null;
 					}
 					

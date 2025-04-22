@@ -33,7 +33,6 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.ImageSubVolume;
 import cbit.vcell.geometry.RegionImage;

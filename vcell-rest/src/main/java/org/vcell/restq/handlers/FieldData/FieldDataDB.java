@@ -5,8 +5,9 @@ import cbit.image.VCImageUncompressed;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.*;
 import cbit.vcell.field.io.CopyFieldDataResult;
+import cbit.vcell.field.io.FieldData;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
@@ -128,9 +129,7 @@ public class FieldDataDB {
                 CopyFieldDataResult dbResults = databaseServer.copyFieldData(requester,
                         edis.get(i), annotations.get(i), documentType, vcDocument.getVersion().getName());
 
-                FieldDataFileOperationSpec fileOperationSpec = FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(dbResults.newID,
-                        dbResults.oldID.getDataKey(), ogOwner, FieldDataFileOperationSpec.JOBINDEX_DEFAULT, requester);
-                dataSetController.fieldDataFileOperation(fileOperationSpec);
+                dataSetController.fieldDataCopySim(dbResults.oldID.getDataKey() ,ogOwner, dbResults.newID, FieldDataSpec.JOBINDEX_DEFAULT, requester);
 
                 oldNameNewID.put(edis.get(i).getName(), dbResults.newID);
             }
@@ -163,8 +162,8 @@ public class FieldDataDB {
         return fieldDataReferenceList;
     }
 
-    public FieldDataFileOperationResults getFieldDataFromID(User user, String id, int jobParameter) throws ObjectNotFoundException {
-        return dataSetController.fieldDataFileOperation(FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(new KeyValue(id), user, jobParameter));
+    public FieldDataFileOperationResults getFieldDataShapeFromID(User user, KeyValue keyValue, int jobParameter) throws ObjectNotFoundException {
+        return dataSetController.fieldDataInfo(keyValue, user, jobParameter);
     }
 
     public FieldDataResource.AnalyzedFile analyzeFieldDataFromFile(File imageFile, String fileName) throws DataAccessException, ImageException, DataFormatException {
@@ -173,9 +172,10 @@ public class FieldDataDB {
         }
         if (!fileName.contains(".vfrap")) {
             try {
-                FieldDataFileOperationSpec spec = FieldDataFileConversion.createFDOSFromImageFile(imageFile, false, null);
+                FieldData spec = FieldDataFileConversion.createFDOSFromImageFile(imageFile, false, null);
                 return new FieldDataResource.AnalyzedFile(
-                        spec.shortSpecData, spec.varNames, spec.times, spec.origin, spec.extent, spec.isize, spec.annotation, fileName
+                        spec.data, new double[][][]{}, spec.channelNames.toArray(new String[0]), spec.times.stream().mapToDouble(Double::doubleValue).toArray(),
+                        spec.origin, spec.extent, spec.iSize, spec.annotation, fileName
                 );
             } catch (DataFormatException  ex) {
                 throw new RuntimeException("Cannot read image " + fileName + "\n" + ex.getMessage());
@@ -185,9 +185,15 @@ public class FieldDataDB {
         }
     }
 
-
     public FieldDataFileOperationResults saveNewFieldDataFromFile(String fieldDataName, String[] varNames,
                                                                   short[][][] imageData, String annotation,
+                                                                  User user, double[] times, Origin origin,
+                                                                  Extent extent, ISize iSize) throws DataAccessException, ImageException, DataFormatException{
+        return saveNewFieldDataFromFile(fieldDataName, varNames, imageData, new double[][][]{}, annotation, user, times, origin, extent, iSize);
+    }
+
+    public FieldDataFileOperationResults saveNewFieldDataFromFile(String fieldDataName, String[] varNames,
+                                                                  short[][][] imageData, double[][][] doubleImageData, String annotation,
                                                                   User user, double[] times, Origin origin,
                                                                   Extent extent, ISize iSize) throws DataAccessException, ImageException, DataFormatException {
         // Ensure name is unique for user
@@ -207,19 +213,24 @@ public class FieldDataDB {
         }
         FieldDataDBOperationSpec fieldDataDBOperationSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(user, fieldDataName, annotation);
         FieldDataDBOperationResults results = databaseServer.fieldDataDBOperation(user, fieldDataDBOperationSpec);
-        FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec(imageData, null, null,
-                results.extDataID, varNames, varTypes, times, user,
-                origin, extent, iSize, annotation,
-                -1, null, user);
-        CartesianMesh cartesianMesh;
-        fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+
+        FieldData fieldData = new FieldData();
+        if (doubleImageData == null || doubleImageData.length == 0){
+            fieldData.data = imageData;
+        } else {
+            fieldData.doubleData = doubleImageData;
+        }
+        fieldData.channelNames = Arrays.stream(varNames).toList(); fieldData.variableTypes = varTypes;
+        fieldData.times = Arrays.stream(times).boxed().toList(); fieldData.owner = user; fieldData.origin = origin;
+        fieldData.extent = extent; fieldData.iSize = iSize; fieldData.annotation = annotation;
+
         try {
-            cartesianMesh = CartesianMesh.createSimpleCartesianMesh(fdos.origin, fdos.extent, fdos.isize,
-                    new RegionImage(new VCImageUncompressed(null, new byte[fdos.isize.getXYZ()],//empty regions
-                            fdos.extent, fdos.isize.getX(), fdos.isize.getY(), fdos.isize.getZ()),
+            fieldData.cartesianMesh = CartesianMesh.createSimpleCartesianMesh(origin, extent, iSize,
+                    new RegionImage(new VCImageUncompressed(null, new byte[iSize.getXYZ()],//empty regions
+                            extent, iSize.getX(), iSize.getY(), iSize.getZ()),
                             0, null, null, RegionImage.NO_SMOOTHING));
-            fdos.cartesianMesh = cartesianMesh;
-            FieldDataFileOperationResults fileSaveResults = dataSetController.fieldDataFileOperation(fdos);
+
+            FieldDataFileOperationResults fileSaveResults = dataSetController.fieldDataAdd(fieldData, results.extDataID);
             fileSaveResults.externalDataIdentifier = results.extDataID;
             return fileSaveResults;
         } catch (Exception e) {
@@ -241,7 +252,7 @@ public class FieldDataDB {
 
     public void deleteFieldData(ExternalDataIdentifier edi) throws DataAccessException {
         databaseServer.fieldDataDBOperation(edi.getOwner(), FieldDataDBOperationSpec.createDeleteExtDataIDSpec(edi)); // remove from DB
-        dataSetController.fieldDataFileOperation(FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(edi)); // remove from File System
+        dataSetController.fieldDataDelete(edi); // remove from File System
     }
 
 }

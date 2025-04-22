@@ -14,7 +14,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 
+import cbit.vcell.field.io.FieldData;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.ObjectNotFoundException;
@@ -27,7 +29,6 @@ import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.Cachetable;
@@ -74,19 +75,17 @@ public class LocalWorkspace implements LocalContext, Serializable {
 		
 		pixData[0][0] = pixels;
 
-		FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-		fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+		FieldData fdos = new FieldData();
 		fdos.cartesianMesh = simpleCartesianMesh;
-		fdos.doubleSpecData =  pixData;
-		fdos.specEDI = newROIExtDataID;
-		fdos.varNames = new String[] { varName };
+		fdos.doubleData =  pixData;
+		fdos.channelNames = new ArrayList<>(){{add(varName);}};
 		fdos.owner = dataSubDirOwner;
-		fdos.times = new double[] { 0.0 };
+		fdos.times = new ArrayList<>(){{add(0.0);}};
 		fdos.variableTypes = new VariableType[] { VariableType.VOLUME };
 		fdos.origin = origin;
 		fdos.extent = extent;
-		fdos.isize = isize;
-		return dataSetControllerImpl.fieldDataFileOperation(fdos);
+		fdos.iSize = isize;
+		return dataSetControllerImpl.fieldDataAdd(fdos, newROIExtDataID);
 	}
 
 	public static final KeyValue createNewKeyValue(){

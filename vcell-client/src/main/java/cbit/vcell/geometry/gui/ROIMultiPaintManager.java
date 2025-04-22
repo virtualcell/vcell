@@ -25,8 +25,8 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.io.FieldData;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.RegionImage;
@@ -41,13 +41,13 @@ import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.simdata.SimDataBlock;
 import cbit.vcell.solvers.CartesianMesh;
 import org.apache.commons.io.FilenameUtils;
-import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.*;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.GeneralGuiUtils;
 
 import javax.imageio.ImageIO;
 import javax.media.jai.InterpolationNearest;
@@ -496,17 +496,17 @@ public static void blur( short[] ins, short[] outs, int width, int height, int r
 		return pixelValuesRangeChannels;
 	}
 
-	public void initROIAndUnderlay(FieldDataFileOperationSpec importedDataContainer) throws Exception{
+	public void initROIAndUnderlay(FieldData importedDataContainer) throws Exception{
 		initUnderlayData(importedDataContainer);
 		initROIComposite();
 	}
 
-	public void initUnderlayData(FieldDataFileOperationSpec importedDataContainer) throws Exception{
+	public void initUnderlayData(FieldData importedDataContainer) throws Exception{
 
 		originalExtent = importedDataContainer.extent;
 		originalOrigin = importedDataContainer.origin;
-		originalISize = importedDataContainer.isize;
-		bHasOriginalData = importedDataContainer.shortSpecData != null;
+		originalISize = importedDataContainer.iSize;
+		bHasOriginalData = importedDataContainer.data != null;
 
 		enhancedImageDatasetChannels = null;
 		enhanceImageAmount = ROIMultiPaintManager.ENHANCE_NONE;
@@ -514,7 +514,7 @@ public static void blur( short[] ins, short[] outs, int width, int height, int r
 		//previouslyEditedVCImage and previousCrop3D can be null if this is the first time this method
 		//has been called in an editing session.
 		//
-		initImageDataSet((!bHasOriginalData?null:importedDataContainer.shortSpecData[0]),originalISize);
+		initImageDataSet((!bHasOriginalData?null:importedDataContainer.data[0]),originalISize);
 
 		allPixelValuesRangeChannels = calculateAllPixelValuesRangeChannels0(getImageDataset());
 	}
@@ -1807,42 +1807,40 @@ private ArrayList<AsynchClientTask> getImportSTLtasks(File[] selectedFiles,Vect3
 	}
 
 	private void createFD(boolean isFromSimulation,String fieldName,String annotation,Extent extent,Origin origin, String[] varNames,double[] times,ISize isize) throws Exception{
-		FieldDataFileOperationSpec fdos = null;
+		FieldData fdos = null;
 		try{
 			//Get temp, and remove it-------
 			FieldDataDBOperationSpec listExtDataIDSpec = FieldDataDBOperationSpec.createGetExtDataIDsSpec(documentManager.getUser());
 			FieldDataDBOperationResults fdDBOperation = documentManager.fieldDataDBOperation(listExtDataIDSpec);
 			for(int i=0;i<fdDBOperation.extDataIDArr.length;i++) {
 				if(fdDBOperation.extDataIDArr[i].getName().equals("fd")){
-					FieldDataFileOperationSpec deleteFieldData = FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(fdDBOperation.extDataIDArr[i]);
-					documentManager.fieldDataFileOperation(deleteFieldData);
+					documentManager.deleteFieldData(fdDBOperation.extDataID.getDataKey());
 					break;
 				}
 			}
 			//
 			//-----------
-			fdos = new FieldDataFileOperationSpec();
-			fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+			fdos = new FieldData();
 			fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
 			fdos.owner = documentManager.getUser();
-			fdos.isize = isize;
-			fdos.shortSpecData = new short[1][1][fdos.isize.getXYZ()];
+			fdos.iSize = isize;
+			fdos.data = new short[1][1][fdos.iSize.getXYZ()];
 			UShortImage[] allImages = initImageDataSetChannels[0].getAllImages();
 			for(int i=0;i<allImages.length;i++) {
 				allImages[i].getPixels();
-				System.arraycopy(allImages[i].getPixels(), 0, fdos.shortSpecData[0][0], i*allImages[i].getPixels().length, allImages[i].getPixels().length);
+				System.arraycopy(allImages[i].getPixels(), 0, fdos.data[0][0], i*allImages[i].getPixels().length, allImages[i].getPixels().length);
 			}
 			fdos.annotation = annotation;
 
 			if(!isFromSimulation){
 				fdos.extent = extent;
 				fdos.origin = origin;
-				fdos.varNames = varNames;
-				fdos.times = times;
+				fdos.channelNames = Arrays.stream(varNames).toList();
+				fdos.times = Arrays.stream(times).boxed().toList();
 			}
 
 			//Add to Server Disk
-			documentManager.fieldDataFileOperation(fdos);
+			documentManager.saveFieldData(fdos);
 
 //			//Update FieldData window
 //			Window[] windows = Window.getWindows();
@@ -2299,7 +2297,7 @@ private ArrayList<AsynchClientTask> getImportSTLtasks(File[] selectedFiles,Vect3
 		}
 	}
 
-	private FieldDataFileOperationSpec fdShort;
+	private FieldData fdShort;
 	private double[] fdDelta = new double[] {0,0,0};
 	private double[] fdDeltaLast = new double[] {0,0,0};
 	private double currScale = 1.0;
@@ -2307,9 +2305,9 @@ private ArrayList<AsynchClientTask> getImportSTLtasks(File[] selectedFiles,Vect3
 	private Range currScalePoint = new Range(0,0);
 
 	private void xlt() throws ImageException{
-		final int importedX = fdShort.isize.getX();
-		final int importedY = fdShort.isize.getY();
-		final int importedZ = fdShort.isize.getZ();
+		final int importedX = fdShort.iSize.getX();
+		final int importedY = fdShort.iSize.getY();
+		final int importedZ = fdShort.iSize.getZ();
 		final int underlayDispX = initImageDataSetChannels[0].getISize().getX();
 		double xd,yd,zd;
 		boolean bx,by,bz;
@@ -2332,7 +2330,7 @@ private ArrayList<AsynchClientTask> getImportSTLtasks(File[] selectedFiles,Vect3
 //									index = xd + (yd*importedX) + (zd*importedX*importedY);
 									index = (int)((int)xd + importedX * ((int)yd + zd*importedY));//(yd*importedX) + (zd*importedX*importedY);
 //									System.out.println("x="+x+" y="+y+" z="+z+" val="+initImageDataSetChannels[c].getImage(z, /*c*/ 0, 0/*t*/).getPixel(x, y, 0)+" xd="+xd+" yd="+yd+" zd="+zd+" "+index+" val="+fdShort.shortSpecData[/*t*/0][/*v*/0][/*data*/index]);
-									underlayZImage.setPixel(x, y, 0, fdShort.shortSpecData[/*t*/0][/*v*/0][/*data*/index] );//(short)(fdShort.shortSpecData[/*t*/0][/*v*/0][/*data*/index]==0?0:10000)
+									underlayZImage.setPixel(x, y, 0, fdShort.data[/*t*/0][/*v*/0][/*data*/index] );//(short)(fdShort.shortSpecData[/*t*/0][/*v*/0][/*data*/index]==0?0:10000)
 									xd+= currScale;
 								}else {
 //									underlayZImage.setPixel(x, y, 0, (short)0);
@@ -2600,8 +2598,7 @@ private String importSourceName;
 					ArrayList<ExternalDataIdentifier> okEDI = new ArrayList<ExternalDataIdentifier>();
 					for(int i=0;externalDataIdentifierArr != null && i<externalDataIdentifierArr.length;i++) {
 						try {
-							FieldDataFileOperationSpec fieldDataFileOperationSpec = FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(externalDataIdentifierArr[i].getSimulationKey(), externalDataIdentifierArr[i].getOwner(), externalDataIdentifierArr[i].getJobIndex());
-							FieldDataFileOperationResults fieldDataFileOperationResults = documentManager.fieldDataFileOperation(fieldDataFileOperationSpec);
+							FieldDataFileOperationResults fieldDataFileOperationResults = documentManager.getFieldDataShape(externalDataIdentifierArr[i].getKey());
 //						System.out.println(externalDataIdentifierArr[i].getName()+" "+fieldDataFileOperationResults.iSize);
 							ISize iSize = fieldDataFileOperationResults.iSize;
 							iSizes.add(iSize);
@@ -2629,13 +2626,13 @@ private String importSourceName;
 //							new String[] {"X","Y","Z","SourceType"}, rowData, ListSelectionModel.SINGLE_SELECTION);
 
 						if(selections != null && selections.length == 1) {
-							FieldDataFileOperationResults fdfor =  documentManager.fieldDataFileOperation(FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(okEDI.get(selections[0]).getSimulationKey(), okEDI.get(selections[0]).getOwner(), okEDI.get(selections[0]).getJobIndex()));
+							FieldDataFileOperationResults fdfor =  documentManager.getFieldDataShape(okEDI.get(selections[0]).getSimulationKey());
 							SimDataBlock simDataBlock = VCellClient.getInstance().getClientServerManager().getDataSetController().getSimDataBlock(null, okEDI.get(selections[0]), fdfor.dataIdentifierArr[0].getName(), 0.0);
-							FieldDataFileOperationSpec fieldDataFileOperationSpec = new FieldDataFileOperationSpec();
-							fieldDataFileOperationSpec.isize = meshes.get(selections[0]).getISize();
-							fieldDataFileOperationSpec.shortSpecData = new short[][][] {{new short[fieldDataFileOperationSpec.isize.getXYZ()]}};
+							FieldData fieldDataFileOperationSpec = new FieldData();
+							fieldDataFileOperationSpec.iSize = meshes.get(selections[0]).getISize();
+							fieldDataFileOperationSpec.data = new short[][][] {{new short[fieldDataFileOperationSpec.iSize.getXYZ()]}};
 							for(int i=0;i<simDataBlock.getData().length;i++) {
-								fieldDataFileOperationSpec.shortSpecData[0][0][i] = (short)simDataBlock.getData()[i];
+								fieldDataFileOperationSpec.data[0][0][i] = (short)simDataBlock.getData()[i];
 //								if(simDataBlock.getData()[i] != 0) {
 //									System.out.println(simDataBlock.getData()[i]);
 //								}
@@ -2695,15 +2692,15 @@ private String importSourceName;
 						Range inRange = new Range(Double.parseDouble(st.nextToken()),Double.parseDouble(st.nextToken()));
 						String simDataFile = st.nextToken();
 						DataInputStream dis = new DataInputStream(new FileInputStream(simDataFile));
-						FieldDataFileOperationSpec fieldDataFileOperationSpec = new FieldDataFileOperationSpec();
-						fieldDataFileOperationSpec.isize = isize;
-						fieldDataFileOperationSpec.shortSpecData = new short[][][] {{new short[fieldDataFileOperationSpec.isize.getXYZ()]}};
+						FieldData fieldDataFileOperationSpec = new FieldData();
+						fieldDataFileOperationSpec.iSize = isize;
+						fieldDataFileOperationSpec.data = new short[][][] {{new short[fieldDataFileOperationSpec.iSize.getXYZ()]}};
 						double outMax = 65535;
 						double outMin = 0;
 						double scale = (outMax-outMin)/(inRange.getMax()-inRange.getMin());
 						for(int i=0;i<isize.getXYZ();i++) {
 							double val = dis.readDouble();
-							fieldDataFileOperationSpec.shortSpecData[0][0][i] = (short)(scale*(val-inRange.getMin()) + outMin);
+							fieldDataFileOperationSpec.data[0][0][i] = (short)(scale*(val-inRange.getMin()) + outMin);
 						}
 						hashTable.put(ClientRequestManager.FDFOS,fieldDataFileOperationSpec);
 						hashTable.put(ClientRequestManager.IMPORT_SOURCE_NAME, "SimData="+vcDataIdentifer+" varName="+varName+" time="+timePoint);
@@ -2749,17 +2746,17 @@ private String importSourceName;
 
 
 	private void saveFDUnderlay(Hashtable<String, Object> hashTable) throws ImageException {
-		ROIMultiPaintManager.this.fdShort = (FieldDataFileOperationSpec)hashTable.get(ClientRequestManager.FDFOS);
+		ROIMultiPaintManager.this.fdShort = (FieldData) hashTable.get(ClientRequestManager.FDFOS);
 		ROIMultiPaintManager.this.importSourceName = (String)hashTable.get(ClientRequestManager.IMPORT_SOURCE_NAME);
 
 		//Calculate Info for large underlay
 		ImageDataset[] idsa = new ImageDataset[1];
-		UShortImage[] argImages = new UShortImage[fdShort.isize.getZ()];
+		UShortImage[] argImages = new UShortImage[fdShort.iSize.getZ()];
 		for(int i=0;i<argImages.length;i++) {
-			argImages[i] = new UShortImage(new short[fdShort.isize.getX()*fdShort.isize.getY()], null,null, fdShort.isize.getX(),fdShort.isize.getY(),1);
-			System.arraycopy(fdShort.shortSpecData[0][0], i*argImages[i].getPixels().length, argImages[i].getPixels(), 0, argImages[i].getPixels().length);
+			argImages[i] = new UShortImage(new short[fdShort.iSize.getX()*fdShort.iSize.getY()], null,null, fdShort.iSize.getX(),fdShort.iSize.getY(),1);
+			System.arraycopy(fdShort.data[0][0], i*argImages[i].getPixels().length, argImages[i].getPixels(), 0, argImages[i].getPixels().length);
 		}
-		idsa[0] = new ImageDataset(argImages, /*time*/new double[] {0.0}, fdShort.isize.getZ());
+		idsa[0] = new ImageDataset(argImages, /*time*/new double[] {0.0}, fdShort.iSize.getZ());
 		condensedBinsMapChannels = calculateCondensedBinsChannels0(idsa);
 		allPixelValuesRangeChannels = calculateAllPixelValuesRangeChannels0(idsa);
 	}

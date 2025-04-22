@@ -147,20 +147,6 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 	}
 }
 
-public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent,
-																 ISize iSize, String[] channelNames, double[] times,
-																 String annotation, Origin origin){
-	try{
-		FieldDataSavedResults results = vCellApiClient.getFieldDataApi().analyzeFileAndCreate(file, fileName, DtoModelTransforms.extentToDTO(extent),
-				DtoModelTransforms.iSizeToDTO(iSize), Arrays.asList(channelNames), Doubles.asList(times),
-				annotation, DtoModelTransforms.originToDTO(origin));
-		return DtoModelTransforms.fieldDataSaveResultsDTOToFileOperationResults(results, null);
-	} catch (ApiException e){
-		lg.error(e.getMessage(),e);
-		throw new RuntimeException(e);
-	}
-};
-
 public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {
     try {
         vCellApiClient.getFieldDataApi().createFromSimulation(sourceSim.toString(), jobIndex, newFieldDataName);

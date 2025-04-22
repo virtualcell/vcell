@@ -13,6 +13,7 @@ package cbit.vcell.microscopy;
 import java.io.File;
 import java.util.Arrays;
 
+import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.simdata.*;
 import org.vcell.optimization.ProfileData;
 import org.vcell.optimization.ProfileDataElement;
@@ -25,7 +26,6 @@ import cbit.util.xml.XmlUtil;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
@@ -189,7 +189,7 @@ public class FRAPOptData {
 		VCSimulationIdentifier vcSimID =
 			new VCSimulationIdentifier(referenceSimKeyValue,LocalWorkspace.getDefaultOwner());
 		VCSimulationDataIdentifier vcSimDataID =
-			new VCSimulationDataIdentifier(vcSimID,FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
+			new VCSimulationDataIdentifier(vcSimID, FieldDataSpec.JOBINDEX_DEFAULT);
 		//read results from netCDF file
 		File hdf5File = new File(getLocalWorkspace().getDefaultSimDataDirectory(), vcSimDataID.getID()+SimDataConstants.DATA_PROCESSING_OUTPUT_EXTENSION_HDF5);
 		//get dataprocessing output

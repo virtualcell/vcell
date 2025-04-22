@@ -24,9 +24,8 @@ import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataFileConversion;
 import cbit.vcell.field.gui.FieldDataGUIDataTransferObjects.*;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.simdata.SimulationData;
@@ -672,7 +671,7 @@ public class FieldDataGUIPanel extends JPanel {
 
         taskArray[0] = new AsynchClientTask("select a file", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                FieldDataFileOperationSpec argfdos = (FieldDataFileOperationSpec) hashTable.get("argfdos");
+                FieldDataSpec argfdos = (FieldDataSpec) hashTable.get("argfdos");
                 if (argfdos == null && hashTable.get(IMAGE_FILE_KEY) == null) {
                     File imageFile = DatabaseWindowManager.showFileChooserDialog(
                             fieldDataWindowManager.getComponent(), FileFilters.FILE_FILTER_FIELDIMAGES,
@@ -683,7 +682,7 @@ public class FieldDataGUIPanel extends JPanel {
         };
         taskArray[1] = new AsynchClientTask("Generate field data from file", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                FieldDataFileOperationSpec imagesMetaDataOpSpec ;
+                FieldDataSpec imagesMetaDataOpSpec ;
                 File imageFile = (File) hashTable.get(IMAGE_FILE_KEY);
                 if (imageFile == null || imageFile.getName().contains(".vfrap")){
                     return;
@@ -692,7 +691,6 @@ public class FieldDataGUIPanel extends JPanel {
                 }
 
                 imagesMetaDataOpSpec.owner = clientRequestManager.getDocumentManager().getUser();
-                imagesMetaDataOpSpec.opType = FieldDataFileOperationSpec.FDOS_ADD;
                 hashTable.put("fdos", imagesMetaDataOpSpec);
                 hashTable.put("file", imageFile);
                 hashTable.put("initFDName", imageFile.getName());
@@ -742,9 +740,7 @@ public class FieldDataGUIPanel extends JPanel {
             public void run(Hashtable<String, Object> hash) throws Exception {
                 //Remove from Disk
                 FieldDataMainList fieldDataMainList = (FieldDataMainList) mainNode.getUserObject();
-                FieldDataFileOperationSpec fdos = FieldDataFileOperationSpec.createDeleteFieldDataFileOperationSpec(
-                        fieldDataMainList.externalDataIdentifier);
-                clientRequestManager.getDocumentManager().fieldDataFileOperation(fdos);
+                clientRequestManager.getDocumentManager().deleteFieldData(fieldDataMainList.externalDataIdentifier.getKey());
             }
         };
         //
@@ -912,13 +908,7 @@ public class FieldDataGUIPanel extends JPanel {
             public void run(Hashtable<String, Object> hash) throws Exception {
                 FieldDataMainList fieldDataMainList = (FieldDataMainList) mainNode.getUserObject();
                 final FieldDataFileOperationResults fieldDataFileOperationResults =
-                        clientRequestManager.getDocumentManager().
-                                fieldDataFileOperation(
-                                        FieldDataFileOperationSpec.createInfoFieldDataFileOperationSpec(
-                                                fieldDataMainList.externalDataIdentifier.getKey(),
-                                                clientRequestManager.getDocumentManager().getUser(),
-                                                FieldDataFileOperationSpec.JOBINDEX_DEFAULT)
-                                );
+                        clientRequestManager.getDocumentManager().getFieldDataShape(fieldDataMainList.externalDataIdentifier.getKey());
                 hash.put(FDOR_INFO, fieldDataFileOperationResults);
             }
         };
@@ -1041,21 +1031,20 @@ public class FieldDataGUIPanel extends JPanel {
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
                 //Allow user to review/change info about fielddata
-                FieldDataFileOperationSpec generatedFieldDataOpSpec = (FieldDataFileOperationSpec) hashTable.get("fdos");
+                FieldDataSpec generatedFieldDataOpSpec = (FieldDataSpec) hashTable.get("fdos");
+                FieldDataSpec userDefinedFDOS = new FieldDataSpec();
                 String initialExtDataName = (String) hashTable.get("initFDName");
 
-                generatedFieldDataOpSpec.specEDI = null;
 
                 FieldDataInfoPanel fieldDataInfoPanel = new FieldDataInfoPanel();
                 fieldDataInfoPanel.setSimulationMode(isFromSimulation);
-                fieldDataInfoPanel.initISize(generatedFieldDataOpSpec.isize);
+                fieldDataInfoPanel.initISize(generatedFieldDataOpSpec.iSize);
                 fieldDataInfoPanel.initIOrigin(generatedFieldDataOpSpec.origin);
                 fieldDataInfoPanel.initIExtent(generatedFieldDataOpSpec.extent);
-                fieldDataInfoPanel.initTimes(generatedFieldDataOpSpec.times);
-                fieldDataInfoPanel.initNames(TokenMangler.fixTokenStrict(initialExtDataName), generatedFieldDataOpSpec.varNames);
+                fieldDataInfoPanel.initTimes(generatedFieldDataOpSpec.times.stream().mapToDouble(Double::doubleValue).toArray());
+                fieldDataInfoPanel.initNames(TokenMangler.fixTokenStrict(initialExtDataName), generatedFieldDataOpSpec.channelNames.toArray(new String[0]));
                 fieldDataInfoPanel.setAnnotation(generatedFieldDataOpSpec.annotation);
 
-                FieldDataFileOperationSpec userDefinedFDOS = new FieldDataFileOperationSpec();
                 while (true) {
                     int choice = PopupGenerator.showComponentOKCancelDialog(requester, fieldDataInfoPanel, "Create new field data");
                     if (choice == JOptionPane.OK_OPTION) {
@@ -1073,13 +1062,13 @@ public class FieldDataGUIPanel extends JPanel {
                             continue;
                         }
                         try {
-                            userDefinedFDOS.varNames = fieldDataInfoPanel.getVariableNames();
+                            userDefinedFDOS.channelNames = Arrays.stream(fieldDataInfoPanel.getVariableNames()).toList();
                         } catch (Exception e) {
                             PopupGenerator.showErrorDialog(requester, "Problem with Variable names. Please re-enter.\n" + e.getMessage() + "\nTry Again.", e);
                             continue;
                         }
                         userDefinedFDOS.annotation = fieldDataInfoPanel.getAnnotation();
-                        userDefinedFDOS.times = fieldDataInfoPanel.getTimes();
+                        userDefinedFDOS.times = Arrays.stream(fieldDataInfoPanel.getTimes()).boxed().toList();
                         try {
                             fieldDataGUIPanel.checkFieldDataName(fieldDataInfoPanel.getFieldName());
                         } catch (Exception e) {
@@ -1089,7 +1078,7 @@ public class FieldDataGUIPanel extends JPanel {
                         if (!isFromSimulation){
                             generatedFieldDataOpSpec.extent = userDefinedFDOS.extent;
                             generatedFieldDataOpSpec.origin = userDefinedFDOS.origin;
-                            generatedFieldDataOpSpec.varNames = userDefinedFDOS.varNames;
+                            generatedFieldDataOpSpec.channelNames = userDefinedFDOS.channelNames;
                             generatedFieldDataOpSpec.times = userDefinedFDOS.times;
                         }
                         generatedFieldDataOpSpec.annotation = userDefinedFDOS.annotation;
@@ -1109,19 +1098,16 @@ public class FieldDataGUIPanel extends JPanel {
                 //Add to Server Disk
                 //save Database
                 String fieldName = (String) hashTable.get(FIELD_NAME);
-                FieldDataFileOperationSpec generatedFieldDataOpSpec
-                        = (FieldDataFileOperationSpec) hashTable.get("fdos");
+                FieldDataSpec fieldDataSpec
+                        = (FieldDataSpec) hashTable.get("fdos");
                 DocumentManager documentManager = clientRequestManager.getDocumentManager();
-                File file = (File) hashTable.get("file");
-                generatedFieldDataOpSpec.fieldDataName = fieldName;
+                fieldDataSpec.fileName = fieldName;
                 try {
                     //Add to Server Disk
-                    FieldDataFileOperationResults results = documentManager.analyzeAndSaveFieldFromFile(file, generatedFieldDataOpSpec.fieldDataName, generatedFieldDataOpSpec.extent,
-                            generatedFieldDataOpSpec.isize, generatedFieldDataOpSpec.varNames,
-                            generatedFieldDataOpSpec.times, generatedFieldDataOpSpec.annotation, generatedFieldDataOpSpec.origin);
-                    generatedFieldDataOpSpec.specEDI = results.externalDataIdentifier;
+                    FieldDataFileOperationResults results = documentManager.analyzeAndSaveFieldFromFile(fieldDataSpec);
+                    hashTable.put("result_edi", results.externalDataIdentifier);
                 } catch (Exception e) {
-                    generatedFieldDataOpSpec.specEDI = null;
+                    hashTable.put("result_edi", null);
                     throw e;
                 }
             }
@@ -1130,8 +1116,8 @@ public class FieldDataGUIPanel extends JPanel {
         AsynchClientTask task3 = new AsynchClientTask("refreshing field data", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                FieldDataFileOperationSpec fdos = (FieldDataFileOperationSpec) hashTable.get("fdos");
-
+                FieldDataSpec fieldDataSpec = (FieldDataSpec) hashTable.get("fdos");
+                ExternalDataIdentifier resultEDI = (ExternalDataIdentifier) hashTable.get("result_edi");
                 DefaultMutableTreeNode root = ((DefaultMutableTreeNode) fieldDataGUIPanel.getFieldDataTree().getModel().getRoot());
                 if (root.getChildCount() == 0) {
                     fieldDataGUIPanel.updateJTree(clientRequestManager);
@@ -1139,7 +1125,7 @@ public class FieldDataGUIPanel extends JPanel {
                     int alphabeticalIndex = -1;
                     for (int i = 0; i < root.getChildCount(); i += 1) {
                         if ((((FieldDataMainList) ((DefaultMutableTreeNode) root.getChildAt(i)).getUserObject())).externalDataIdentifier.getName().
-                                compareToIgnoreCase(fdos.specEDI.getName()) > 0) {
+                                compareToIgnoreCase(resultEDI.getName()) > 0) {
                             alphabeticalIndex = i;
                             break;
                         }
@@ -1147,7 +1133,7 @@ public class FieldDataGUIPanel extends JPanel {
                     if (alphabeticalIndex == -1) {
                         alphabeticalIndex = root.getChildCount();
                     }
-                    DefaultMutableTreeNode mainNode = new DefaultMutableTreeNode(new FieldDataMainList(fdos.specEDI, fdos.annotation));
+                    DefaultMutableTreeNode mainNode = new DefaultMutableTreeNode(new FieldDataMainList(resultEDI, fieldDataSpec.annotation));
                     mainNode.add(new DefaultMutableTreeNode(new FieldDataVarMainList()));
                     ((DefaultTreeModel) fieldDataGUIPanel.getFieldDataTree().getModel()).insertNodeInto(mainNode, root, alphabeticalIndex);
                 }

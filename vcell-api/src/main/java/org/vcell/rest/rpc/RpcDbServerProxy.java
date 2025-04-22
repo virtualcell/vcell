@@ -9,13 +9,6 @@
  */
 
 package org.vcell.rest.rpc;
-import java.io.File;
-import java.util.Hashtable;
-import java.util.TreeMap;
-
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import org.vcell.util.*;
-import org.vcell.util.document.*;
 
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.field.FieldDataDBOperationResults;
@@ -28,6 +21,13 @@ import cbit.vcell.model.ReactionQuerySpec;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.*;
+
+import java.util.Hashtable;
+import java.util.TreeMap;
 
 public class RpcDbServerProxy extends AbstractRpcServerProxy implements cbit.vcell.server.UserMetaDbServer {
 
@@ -51,11 +51,6 @@ public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistr
 public void deleteBioModel(org.vcell.util.document.KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException {
 	rpc("deleteBioModel",new Object[]{userLoginInfo.getUser(), bioModelKey});
 }
-
-	@Override
-	public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent, ISize iSize, String[] channelNames, double[] times, String annotation, Origin origin) {
-		throw new UnsupportedOperationException("Can't perform analyze and save from field data file.");
-	}
 
 	public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, ObjectNotFoundException {
 	return (FieldDataDBOperationResults)rpc("fieldDataDBOperation",new Object[]{userLoginInfo.getUser(), fieldDataDBOperationSpec});

@@ -20,9 +20,11 @@ import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
 
+import cbit.vcell.field.io.FieldData;
 import org.jdom2.Element;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -51,7 +53,6 @@ import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.mapping.SimulationContext;
@@ -270,20 +271,18 @@ public class VFrapXmlHelper {
 //		DataSymbolType[] channelVFrapImageType = (DataSymbolType[])hashTable.get("channelVFrapImageType");
 		String mixedFieldDataName = (String)hashTable.get("mixedFieldDataName");
 
-		FieldDataFileOperationSpec vfrapMiscFieldDataOpSpec = new FieldDataFileOperationSpec();
-		vfrapMiscFieldDataOpSpec.opType = FieldDataFileOperationSpec.FDOS_ADD;
+		FieldData vfrapMiscFieldDataOpSpec = new FieldData();
+		vfrapMiscFieldDataOpSpec.fileName = mixedFieldDataName;
 		vfrapMiscFieldDataOpSpec.cartesianMesh = mesh;
-		vfrapMiscFieldDataOpSpec.doubleSpecData =  pixData;
-		vfrapMiscFieldDataOpSpec.specEDI = null;
-		vfrapMiscFieldDataOpSpec.varNames = channelNames;				// item name as it comes from vFrap
+		vfrapMiscFieldDataOpSpec.doubleData =  pixData;
+		vfrapMiscFieldDataOpSpec.channelNames = Arrays.stream(channelNames).toList();				// item name as it comes from vFrap
 		vfrapMiscFieldDataOpSpec.owner = documentManager.getUser();
-		vfrapMiscFieldDataOpSpec.times = new double[] { 0.0 };
+		vfrapMiscFieldDataOpSpec.times = new ArrayList<>(){{add(0.0);}};
 		vfrapMiscFieldDataOpSpec.variableTypes = channelTypes;
 		vfrapMiscFieldDataOpSpec.origin = new Origin(0,0,0);
 		vfrapMiscFieldDataOpSpec.extent = mesh.getExtent();
-		vfrapMiscFieldDataOpSpec.isize = new ISize(mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ());
-		ExternalDataIdentifier vfrapMisc = documentManager.saveFieldData(vfrapMiscFieldDataOpSpec, mixedFieldDataName);
-		return vfrapMisc;
+		vfrapMiscFieldDataOpSpec.iSize = new ISize(mesh.getSizeX(), mesh.getSizeY(), mesh.getSizeZ());
+        return documentManager.saveFieldData(vfrapMiscFieldDataOpSpec);
 	}
 	
 	public static void CreateSaveVFrapDataSymbols(Hashtable<String, Object> hashTable, BioModel bioModel, ExternalDataIdentifier vfrapMisc) {

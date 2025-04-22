@@ -10,65 +10,28 @@
 
 package cbit.vcell.clientdb;
 
-import java.io.File;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
-import cbit.vcell.solver.SimulationOwner;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jdom2.Element;
-import org.vcell.util.*;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.CurateSpec;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.ReferenceQueryResult;
-import org.vcell.util.document.ReferenceQuerySpec;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.VCInfoContainer;
-import org.vcell.util.document.VCellSoftwareVersion;
-import org.vcell.util.document.Version;
-import org.vcell.util.document.VersionInfo;
-import org.vcell.util.document.VersionableType;
-import org.vcell.util.document.VersionableTypeVersion;
-
 import cbit.image.BrowseImage;
 import cbit.image.GIFImage;
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
-import cbit.rmi.event.MessageEvent;
-import cbit.rmi.event.PerformanceData;
-import cbit.rmi.event.PerformanceDataEntry;
-import cbit.rmi.event.PerformanceMonitorEvent;
-import cbit.rmi.event.SimulationJobStatusEvent;
+import cbit.rmi.event.*;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
+import cbit.vcell.field.io.FieldData;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.model.DBFormalSpecies;
-import cbit.vcell.model.DBSpecies;
-import cbit.vcell.model.FormalSpeciesType;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.ReactionDescription;
-import cbit.vcell.model.ReactionQuerySpec;
-import cbit.vcell.model.ReactionStepInfo;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
+import cbit.vcell.model.*;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
@@ -81,12 +44,20 @@ import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.xml.VCMLComparator;
-import cbit.vcell.xml.XMLSource;
-import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
-import cbit.vcell.xml.XmlReader;
+import cbit.vcell.xml.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jdom2.Element;
+import org.vcell.util.*;
+import org.vcell.util.document.*;
+
+import java.io.File;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class ClientDocumentManager implements DocumentManager{
 	private static final Logger lg = LogManager.getLogger(ClientDocumentManager.class);
@@ -452,12 +423,6 @@ public void delete(MathModelInfo mathModelInfo) throws DataAccessException {
 	}	
 }
 
-public ExternalDataIdentifier saveFieldData(FieldDataFileOperationSpec fdos, String fieldDataBaseName) throws DataAccessException {
-	fdos.annotation = "";
-	FieldDataFileOperationResults results = fieldDataFileOperation(fdos);
-	return results.externalDataIdentifier;
-}
-
 public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException {
 
 	try{
@@ -468,17 +433,23 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 	}
 }
 
-public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent,
-																 ISize iSize, String[] channelNames, double[] times,
-																 String annotation, Origin origin) throws DataAccessException {
+public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(FieldDataSpec fieldDataSpec) throws DataAccessException {
 
-	return sessionManager.getUserMetaDbServer().analyzeAndSaveFieldFromFile(file, fileName, extent,
-			iSize, channelNames, times, annotation, origin);
+	return sessionManager.getVCDataManager().analyzeAndCreateFieldData(fieldDataSpec);
 }
 
-public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
 
-	return sessionManager.fieldDataFileOperation(fieldDataFileOperationSpec);	
+public void deleteFieldData(KeyValue fieldDataKey) throws DataAccessException {
+	sessionManager.getVCDataManager().deleteFieldData(fieldDataKey);
+};
+
+public FieldDataFileOperationResults getFieldDataShape(KeyValue fieldDataKey) throws DataAccessException {
+	return sessionManager.getVCDataManager().getFieldDataShape(fieldDataKey);
+};
+
+@Override
+public ExternalDataIdentifier saveFieldData(FieldData fieldData) throws DataAccessException {
+	return sessionManager.getVCDataManager().saveFieldData(fieldData);
 }
 
 
@@ -2502,7 +2473,7 @@ public VCImageInfo setGroupPublic(VCImageInfo imageInfo) throws DataAccessExcept
 }
 
 
-/**
+	/**
  * Insert the method's description here.
  * Creation date: (11/28/00 5:43:44 PM)
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo

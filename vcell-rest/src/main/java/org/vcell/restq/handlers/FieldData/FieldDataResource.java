@@ -2,6 +2,7 @@ package org.vcell.restq.handlers.FieldData;
 
 import cbit.image.ImageException;
 import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.math.MathException;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.DataIdentifier;
@@ -73,7 +74,9 @@ public class FieldDataResource {
     @Operation(operationId = "getShapeFromID", summary = "Get the shape of the field data. That is it's size, origin, extent, times, and data identifiers.")
     public FieldDataShape getFieldDataShapeFromID(@PathParam("fieldDataID") String fieldDataID){
         try {
-            FieldDataFileOperationResults results = fieldDataDB.getFieldDataFromID(userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER), fieldDataID, 0);
+            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
+            KeyValue keyValue = new KeyValue(fieldDataID);
+            FieldDataFileOperationResults results = fieldDataDB.getFieldDataShapeFromID(user, keyValue, FieldDataSpec.JOBINDEX_DEFAULT);
             return new FieldDataShape(results.extent, results.origin, results.iSize, results.dataIdentifierArr,results.times);
         } catch (DataAccessException e) {
             if (e.getCause() instanceof FileNotFoundException){
@@ -158,7 +161,7 @@ public class FieldDataResource {
         try{
             User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
             FieldDataFileOperationResults fileResults = fieldDataDB.saveNewFieldDataFromFile(saveFieldData.name,
-                   saveFieldData.varNames, saveFieldData.shortSpecData, saveFieldData.annotation,
+                   saveFieldData.varNames, saveFieldData.shortSpecData, saveFieldData.doubleSpecData, saveFieldData.annotation,
                     user, saveFieldData.times, saveFieldData.origin, saveFieldData.extent, saveFieldData.isize);
             fieldDataSavedResults = new FieldDataSavedResults(fileResults.externalDataIdentifier.getName(), fileResults.externalDataIdentifier.getKey().toString());
         } catch (ImageException | DataFormatException | DataAccessException e) {

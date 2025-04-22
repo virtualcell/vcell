@@ -1,32 +1,5 @@
 package org.vcell.vmicro.op;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Date;
-
-import cbit.vcell.simdata.*;
-import cbit.vcell.solver.*;
-import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.Origin;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.GroupAccessNone;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.SimulationVersion;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VersionFlag;
-import org.vcell.vmicro.workflow.data.ExternalDataInfo;
-import org.vcell.vmicro.workflow.data.ImageTimeSeries;
-import org.vcell.vmicro.workflow.data.LocalContext;
-import org.vcell.vmicro.workflow.data.LocalWorkspace;
-import org.vcell.vmicro.workflow.data.ROIDataGenerator;
-
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
@@ -38,12 +11,9 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.ImageSubVolume;
-import cbit.vcell.geometry.RegionImage;
-import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.SurfaceClass;
+import cbit.vcell.field.io.FieldData;
+import cbit.vcell.field.io.FieldDataSpec;
+import cbit.vcell.geometry.*;
 import cbit.vcell.mapping.FeatureMapping;
 import cbit.vcell.mapping.MembraneMapping;
 import cbit.vcell.mapping.SimulationContext;
@@ -53,17 +23,26 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.model.Feature;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.SpeciesContext;
+import cbit.vcell.model.*;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.simdata.*;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
+import cbit.vcell.solver.*;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
+import org.vcell.util.*;
+import org.vcell.util.document.*;
+import org.vcell.vmicro.workflow.data.*;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 
 public class RunRefSimulationFastOp {
 	
@@ -228,16 +207,16 @@ public class RunRefSimulationFastOp {
 			File userDir = new File(localWorkspace.getDefaultSimDataDirectory());
 			File fdLogFile =
 				new File(userDir,
-						SimulationData.createCanonicalSimLogFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
+						SimulationData.createCanonicalSimLogFileName(originalExtDataID.getKey(), FieldDataSpec.JOBINDEX_DEFAULT,false));
 			File fdMeshFile =
 				new File(userDir,
-						SimulationData.createCanonicalMeshFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
+						SimulationData.createCanonicalMeshFileName(originalExtDataID.getKey(),FieldDataSpec.JOBINDEX_DEFAULT,false));
 			File fdFunctionFile =
 				new File(userDir,
-						SimulationData.createCanonicalFunctionsFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
+						SimulationData.createCanonicalFunctionsFileName(originalExtDataID.getKey(),FieldDataSpec.JOBINDEX_DEFAULT,false));
 			File fdZipFile =
 				new File(userDir,
-						SimulationData.createCanonicalSimZipFileName(originalExtDataID.getKey(), 0,FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false,false));
+						SimulationData.createCanonicalSimZipFileName(originalExtDataID.getKey(), 0,FieldDataSpec.JOBINDEX_DEFAULT,false,false));
 			return new File[] {fdLogFile,fdMeshFile,fdFunctionFile,fdZipFile};
 		}
 		return null;
@@ -317,19 +296,17 @@ public class RunRefSimulationFastOp {
 			ExternalDataIdentifier newROIExtDataID = createNewExternalDataInfo(localWorkspace, ROI_SUMDATA_NAME).getExternalDataIdentifier();
 			try {
 		    		    	
-		    	FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-		    	fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+		    	FieldData fdos = new FieldData();
 		    	fdos.cartesianMesh = simpleCartesianMesh;
-		    	fdos.shortSpecData =  pixData;
-		    	fdos.specEDI = newROIExtDataID;
-		    	fdos.varNames = new String[] {"roiSumDataVar"};
+		    	fdos.data =  pixData;
+		    	fdos.channelNames = Arrays.stream(new String[] {"roiSumDataVar"}).toList();
 		    	fdos.owner = LocalWorkspace.getDefaultOwner();
-		    	fdos.times = new double[] { 0.0 };
+		    	fdos.times = new ArrayList<>(){{add(0.0);}};
 		    	fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
 		    	fdos.origin = origin;
 		    	fdos.extent = extent;
-		    	fdos.isize = isize;
-		    	localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
+		    	fdos.iSize = isize;
+		    	localWorkspace.getDataSetControllerImpl().fieldDataAdd(fdos, newROIExtDataID);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -428,19 +405,17 @@ public class RunRefSimulationFastOp {
 
 		pixData[0][0] = psf.getPixels();
 
-    	FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-    	fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+    	FieldData fdos = new FieldData();
     	fdos.cartesianMesh = cartesianMesh;
-    	fdos.shortSpecData =  pixData;
-    	fdos.specEDI = newPsfExtDataID;
-    	fdos.varNames = new String[] {varName};
+    	fdos.data =  pixData;
+    	fdos.channelNames = Arrays.stream(new String[] {varName}).toList();
     	fdos.owner = LocalWorkspace.getDefaultOwner();
-    	fdos.times = new double[] { 0.0 };
+    	fdos.times = new ArrayList<>(){{add(0.0);}};
     	fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
     	fdos.origin = origin;
     	fdos.extent = ext;
-    	fdos.isize = isize;
-    	localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
+    	fdos.iSize = isize;
+    	localWorkspace.getDataSetControllerImpl().fieldDataAdd(fdos, newPsfExtDataID);
 	}
 
 	private void saveExternalData(Image image, String varName, ExternalDataIdentifier newROIExtDataID, LocalWorkspace localWorkspace) throws ObjectNotFoundException, ImageException, IOException 
@@ -474,25 +449,23 @@ public class RunRefSimulationFastOp {
 		}
 	
 //		Origin origin = new Origin(0,0,0);
-		FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-		fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+		FieldData fdos = new FieldData();
 		fdos.cartesianMesh = cartesianMesh;
-		fdos.doubleSpecData =  pixData;
-		fdos.specEDI = newROIExtDataID;
+		fdos.doubleData =  pixData;
 		ArrayList<String> varNames = new ArrayList<String>();
 		ArrayList<VariableType> varTypes = new ArrayList<VariableType>();
 		for (ROI roi : rois){
 			varNames.add(ROI_MASK_NAME_PREFIX+roi.getROIName());
 			varTypes.add(VariableType.VOLUME);
 		}
-		fdos.varNames = varNames.toArray(new String[0]);
+		fdos.channelNames = varNames;
 		fdos.owner = LocalWorkspace.getDefaultOwner();
-		fdos.times = new double[] { 0.0 };
+		fdos.times = new ArrayList<>(){{add(0.0);}};
 		fdos.variableTypes = varTypes.toArray(new VariableType[0]);
 		fdos.origin = origin;
 		fdos.extent = extent;
-		fdos.isize = isize;
-		localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
+		fdos.iSize = isize;
+		localWorkspace.getDataSetControllerImpl().fieldDataAdd(fdos, newROIExtDataID);
 	}
 
 

@@ -10,22 +10,6 @@
 
 package cbit.vcell.mapping.gui;
 
-import static cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper.checkNameAvailability;
-
-import java.awt.Component;
-import java.io.File;
-import java.io.IOException;
-import java.util.Hashtable;
-
-import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.filechooser.FileFilter;
-
-import org.vcell.util.gui.GeneralGuiUtils;
-import org.vcell.util.*;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.vcellij.ImageDatasetReaderService;
-
 import cbit.image.ImageException;
 import cbit.image.ImageFile;
 import cbit.image.VCImageUncompressed;
@@ -37,11 +21,28 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
 import cbit.vcell.data.FieldDataSymbol;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldData;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.solvers.CartesianMesh;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.gui.GeneralGuiUtils;
+import org.vcell.vcellij.ImageDatasetReaderService;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Hashtable;
+
+import static cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper.checkNameAvailability;
 
 public class PointSpreadFunctionManagement {
 
@@ -133,7 +134,7 @@ public class PointSpreadFunctionManagement {
                     pixData[i][NumChannels - 1] = doubleData;
                 }
 
-                FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
+                FieldData fdos = new FieldData();
 //				try {
 //					fdos = ClientRequestManager.createFDOSFromImageFile(filePSF, false, null);
 //				} catch (DataFormatException ex) {
@@ -141,18 +142,17 @@ public class PointSpreadFunctionManagement {
 //				}
 
                 fdos.owner = documentManager.getUser();
-                fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
                 fdos.cartesianMesh = cartesianMesh;
-                fdos.doubleSpecData = pixData;
-                fdos.specEDI = null;
-                fdos.varNames = new String[]{SimulationContext.FLUOR_DATA_NAME};
-                fdos.times = imageDataset.getImageTimeStamps();
+                fdos.fileName = initialFieldDataName;
+                fdos.doubleData = pixData;
+                fdos.channelNames = Arrays.stream(new String[]{SimulationContext.FLUOR_DATA_NAME}).toList();
+                fdos.times = Arrays.stream(imageDataset.getImageTimeStamps()).boxed().toList();
                 fdos.variableTypes = new VariableType[]{VariableType.VOLUME};
                 fdos.origin = origin;
                 fdos.extent = extent;
-                fdos.isize = isize;
+                fdos.iSize = isize;
 
-                ExternalDataIdentifier pSFImageEDI = documentManager.saveFieldData(fdos, initialFieldDataName);
+                ExternalDataIdentifier pSFImageEDI = documentManager.saveFieldData(fdos);
                 hashTable.put("pSFImageEDI", pSFImageEDI);
             }
         };
