@@ -21,7 +21,6 @@ import cbit.vcell.client.desktop.biomodel.DocumentEditor;
 import cbit.vcell.client.desktop.simulation.OutputFunctionsPanel;
 import cbit.vcell.client.desktop.simulation.SimulationWindow;
 import cbit.vcell.client.desktop.simulation.SimulationWorkspace;
-import org.vcell.api.server.ConnectionStatus;
 import cbit.vcell.client.server.SimStatusEvent;
 import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
@@ -32,7 +31,7 @@ import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.gui.FieldDataGUIPanel;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.VariableType;
@@ -40,6 +39,7 @@ import cbit.vcell.math.VolVariable;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.solvers.CartesianMesh;
+import org.vcell.api.server.ConnectionStatus;
 import org.vcell.util.*;
 import org.vcell.util.document.*;
 
@@ -596,10 +596,9 @@ public class FieldDataWindowManager
 
 //	FieldDataFileOperationResults fdfor = getRequestManager().getDocumentManager().fieldDataFileOperation(
 //			FieldDataFileOperationSpec.createDependantFuncsFieldDataFileOperationSpec(targetExtDataID));	
-        FieldDataFileOperationResults fdfor = null;
 
         boolean bHasReferences = false;
-        if (choices.size() > 0 || fdfor != null) {
+        if (!choices.isEmpty()) {
             bHasReferences = true;
             if (bShowReferencingModelsList) {
                 String[] columnNames = new String[]{"Model", "Type", "Description"};
@@ -614,31 +613,6 @@ public class FieldDataWindowManager
                     );
                     varTypeV.add((modelListData[i][1].equals(bioModelType.getTypeName()) ? bioModelType : mathModelType));
                     keyValV.add(new KeyValue(modelListData[i][3]));
-                }
-                for (int i = 0; fdfor != null && i < fdfor.dependantFunctionInfo.length; i++) {
-                    String functionNames = "";
-                    for (int j = 0; j < fdfor.dependantFunctionInfo[i].funcNames.length; j++) {
-                        functionNames += (j > 0 ? "," : "") + fdfor.dependantFunctionInfo[i].funcNames[j];
-                    }
-                    choicesV.add(new String[]{
-                                    fdfor.dependantFunctionInfo[i].referenceSourceName,
-                                    fdfor.dependantFunctionInfo[i].referenceSourceType,
-                                    "Data Viewer Function(s) '" + functionNames + "' - " +
-                                            (fdfor.dependantFunctionInfo[i].applicationName == null ? "" : "App='" + fdfor.dependantFunctionInfo[i].applicationName + "' ") +
-                                            (fdfor.dependantFunctionInfo[i].simulationName == null ? "" : "Sim='" + fdfor.dependantFunctionInfo[i].simulationName + "' ") +
-                                            "version[" + fdfor.dependantFunctionInfo[i].refSourceVersionDate + "]"
-                            }
-                    );
-                    if (fdfor.dependantFunctionInfo[i].referenceSourceType.equals(FieldDataFileOperationResults.FieldDataReferenceInfo.FIELDDATATYPENAME)) {
-                        varTypeV.add(null);
-                    } else if (fdfor.dependantFunctionInfo[i].referenceSourceType.equals(bioModelType.getTypeName())) {
-                        varTypeV.add(bioModelType);
-                    } else if (fdfor.dependantFunctionInfo[i].referenceSourceType.equals(mathModelType.getTypeName())) {
-                        varTypeV.add(mathModelType);
-                    } else {
-                        throw new IllegalArgumentException("Unknown reference source type " + fdfor.dependantFunctionInfo[i].referenceSourceType);
-                    }
-                    keyValV.add(fdfor.dependantFunctionInfo[i].refSourceVersionKey);
                 }
                 int[] selectionArr = PopupGenerator.showComponentOKCancelTableList(
                         getComponent(), "References to Field Data (Select To Open) " + targetExtDataID.getName(),
