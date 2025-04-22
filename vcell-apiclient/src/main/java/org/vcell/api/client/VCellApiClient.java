@@ -53,6 +53,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.zip.InflaterInputStream;
 
@@ -512,6 +513,20 @@ public class VCellApiClient implements AutoCloseable {
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
+		}
+	}
+
+	@FunctionalInterface
+	public interface ApiCallSupplier<T>{
+		T get() throws ApiException;
+	}
+
+	public <T> T callWithHandling(ApiCallSupplier<T> apiCall){
+		try{
+			return apiCall.get();
+		} catch (ApiException e){
+			lg.error(e);
+			throw new RuntimeException(e.getResponseBody());
 		}
 	}
 
