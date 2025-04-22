@@ -19,7 +19,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.VCellTransferable;
-import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.field.FieldDataFileConversion;
 import cbit.vcell.field.gui.FieldDataGUIDataTransferObjects.*;
 import cbit.vcell.field.io.FieldDataShape;
@@ -260,10 +260,10 @@ public class FieldDataGUIPanel extends JPanel {
                 public void run(Hashtable<String, Object> hashTable) throws Exception {
                     try {
                         DocumentManager documentManager = clientRequestManager.getDocumentManager();
-                        FieldDataDBOperationResults fieldDataDBOperationResults = documentManager.getAllFieldDataIDs();
+                        FieldDataAllDBEntries fieldDataDBOperationResults = documentManager.getAllFieldDataIDs();
 
-                        ExternalDataIdentifier[] externalDataIdentifierArr = fieldDataDBOperationResults.extDataIDArr;
-                        String[] extDataAnnotArr = fieldDataDBOperationResults.extDataAnnotArr;
+                        ExternalDataIdentifier[] externalDataIdentifierArr = fieldDataDBOperationResults.ids;
+                        String[] extDataAnnotArr = fieldDataDBOperationResults.annotationsForIds;
 
                         TreeMap<ExternalDataIdentifier, String> sortedExtDataIDTreeMap = new TreeMap<ExternalDataIdentifier, String>(
                                 new Comparator<ExternalDataIdentifier>() {

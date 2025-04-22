@@ -17,7 +17,7 @@ import cbit.image.VCImageInfo;
 import cbit.rmi.event.*;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.io.FieldData;
@@ -422,7 +422,7 @@ public void delete(MathModelInfo mathModelInfo) throws DataAccessException {
 }
 
 
-public FieldDataDBOperationResults getAllFieldDataIDs() throws DataAccessException, RemoteProxyException {
+public FieldDataAllDBEntries getAllFieldDataIDs() throws DataAccessException, RemoteProxyException {
 	return sessionManager.getUserMetaDbServer().getAllFieldDataIDs();
 }
 

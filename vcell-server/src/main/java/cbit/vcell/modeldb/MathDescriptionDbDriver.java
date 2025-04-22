@@ -212,7 +212,7 @@ public KeyValue insertVersionable(InsertHashtable hash, Connection con, User use
 private void insertMathDescExternalDataLink(Connection con,User user,MathDescription mathDesc,KeyValue newMathDescKey)throws DataAccessException{
 	try{
 		ExternalDataIdentifier[] extDataIDArr =
-			getFieldDataEDIs(con, keyFactory, user).extDataIDArr;
+			getFieldDataEDIs(con, keyFactory, user).ids;
 		boolean bExtDataInserted[] = new boolean[extDataIDArr.length];
 		FieldFunctionArguments[] fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments(mathDesc);
 		for(int i=0;i<fieldFuncArgsArr.length;i+= 1){

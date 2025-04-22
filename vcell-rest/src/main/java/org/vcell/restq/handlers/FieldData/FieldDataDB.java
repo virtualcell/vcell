@@ -100,14 +100,14 @@ public class FieldDataDB {
         }
 
         // Find which ID's are appropriate
-        FieldDataDBOperationResults allIDs = databaseServer.getFieldDataIDs(ogOwner);
+        FieldDataAllDBEntries allIDs = databaseServer.getFieldDataIDs(ogOwner);
         ArrayList<ExternalDataIdentifier> edis = new ArrayList<>();
         ArrayList<String> annotations = new ArrayList<>();
-        for (int i = 0; i < allIDs.extDataIDArr.length; i++){
-            ExternalDataIdentifier edi = allIDs.extDataIDArr[i];
+        for (int i = 0; i < allIDs.ids.length; i++){
+            ExternalDataIdentifier edi = allIDs.ids[i];
             if (fieldNames.contains(edi.getName())){
                 edis.add(edi);
-                annotations.add(allIDs.extDataAnnotArr[i]);
+                annotations.add(allIDs.annotationsForIds[i]);
             }
         }
 
@@ -149,14 +149,14 @@ public class FieldDataDB {
     }
 
     public ArrayList<FieldDataResource.FieldDataReference> getAllFieldDataIDs(User user) throws SQLException, DataAccessException {
-        FieldDataDBOperationResults results = databaseServer.getFieldDataIDs(user);
+        FieldDataAllDBEntries results = databaseServer.getFieldDataIDs(user);
         ArrayList<FieldDataResource.FieldDataReference> fieldDataReferenceList = new ArrayList<>();
-        for (int i =0; i < results.extDataIDArr.length; i++){
+        for (int i =0; i < results.ids.length; i++){
             Vector<KeyValue> simRefs = new Vector<>();
-            if (results.extdataIDAndSimRefH != null){
-                simRefs = results.extdataIDAndSimRefH.get(results.extDataIDArr[i]);
+            if (results.edisToSimRefs != null){
+                simRefs = results.edisToSimRefs.get(results.ids[i]);
             }
-            FieldDataResource.FieldDataReference fieldDataReference = new FieldDataResource.FieldDataReference(results.extDataIDArr[i], results.extDataAnnotArr[i], simRefs);
+            FieldDataResource.FieldDataReference fieldDataReference = new FieldDataResource.FieldDataReference(results.ids[i], results.annotationsForIds[i], simRefs);
             fieldDataReferenceList.add(fieldDataReference);
         }
         return fieldDataReferenceList;
@@ -197,9 +197,9 @@ public class FieldDataDB {
                                                                   User user, double[] times, Origin origin,
                                                                   Extent extent, ISize iSize) throws DataAccessException, ImageException, DataFormatException {
         // Ensure name is unique for user
-        FieldDataDBOperationResults usersFieldData = databaseServer.getFieldDataIDs(user);
+        FieldDataAllDBEntries usersFieldData = databaseServer.getFieldDataIDs(user);
         Set<String> namesUsed = new HashSet<>();
-        for (ExternalDataIdentifier edi : usersFieldData.extDataIDArr){
+        for (ExternalDataIdentifier edi : usersFieldData.ids){
             namesUsed.add(edi.getName());
         }
         while (namesUsed.contains(fieldDataName)){
@@ -212,7 +212,7 @@ public class FieldDataDB {
             varTypes[j] = VariableType.VOLUME;
         }
         FieldDataDBEntry entry = new FieldDataDBEntry(user, fieldDataName, annotation);
-        FieldDataDBOperationResults results = databaseServer.saveFieldDataEDI(user, entry);
+        ExternalDataIdentifier edi = databaseServer.saveFieldDataEDI(user, entry);
 
         FieldData fieldData = new FieldData();
         if (doubleImageData == null || doubleImageData.length == 0){
@@ -229,11 +229,11 @@ public class FieldDataDB {
                     new RegionImage(new VCImageUncompressed(null, new byte[iSize.getXYZ()],//empty regions
                             extent, iSize.getX(), iSize.getY(), iSize.getZ()),
                             0, null, null, RegionImage.NO_SMOOTHING));
-            dataSetController.fieldDataAdd(fieldData, results.extDataID);
-            return results.extDataID;
+            dataSetController.fieldDataAdd(fieldData, edi);
+            return edi;
         } catch (Exception e) {
             // Remove DB entry if file creation fails
-            databaseServer.deleteFieldDataID(user, results.extDataID);
+            databaseServer.deleteFieldDataID(user, edi);
             throw new RuntimeException(e);
         }
     }
@@ -242,10 +242,10 @@ public class FieldDataDB {
         // Create DB entry
         SimulationInfo simInfo = databaseServer.getSimulationInfo(user, simKeyValue);
         FieldDataDBEntry entry = new FieldDataDBEntry(user, newFieldDataName, "");
-        FieldDataDBOperationResults results = databaseServer.saveFieldDataEDI(user, entry);
+        ExternalDataIdentifier edi = databaseServer.saveFieldDataEDI(user, entry);
 
         // Save new file with reference to DB entry
-        dataSetController.fieldDataCopySim(simKeyValue, simInfo.getOwner(), results.extDataID, jobIndex, user);
+        dataSetController.fieldDataCopySim(simKeyValue, simInfo.getOwner(), edi, jobIndex, user);
     }
 
     public void deleteFieldData(ExternalDataIdentifier edi) throws DataAccessException {

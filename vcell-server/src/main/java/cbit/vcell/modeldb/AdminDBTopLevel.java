@@ -54,7 +54,7 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
         Connection con = conFactory.getConnection(lock);
         try {
             return DbDriver.getFieldDataEDIs(
-                    con, conFactory.getKeyFactory(), fieldDataOwner).extDataIDArr;
+                    con, conFactory.getKeyFactory(), fieldDataOwner).ids;
         } catch(Throwable e){
             lg.error("failure in getExternalDataIdentifiers()", e);
             if(bEnableRetry && isBadConnection(con)){

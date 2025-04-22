@@ -1,6 +1,6 @@
 package cbit.vcell.message.server.dispatcher;
 
-import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
@@ -266,8 +266,8 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 			}
 			fieldDataIDSs = new FieldDataIdentifierSpec[0];
 			User owner = sim.getVersion().getOwner();
-			FieldDataDBOperationResults fieldDataDBOperationResults = databaseServerImpl.getFieldDataIDs(owner);
-			ExternalDataIdentifier[] externalDataIDs = fieldDataDBOperationResults.extDataIDArr;
+			FieldDataAllDBEntries fieldDataDBOperationResults = databaseServerImpl.getFieldDataIDs(owner);
+			ExternalDataIdentifier[] externalDataIDs = fieldDataDBOperationResults.ids;
 			if (externalDataIDs != null && externalDataIDs.length != 0 &&
 					fieldFuncArgs != null && fieldFuncArgs.length>0	) {
 				Vector<FieldDataIdentifierSpec> fieldDataIdV = new Vector<FieldDataIdentifierSpec>();

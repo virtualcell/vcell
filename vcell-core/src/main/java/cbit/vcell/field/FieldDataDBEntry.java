@@ -1,5 +1,6 @@
 package cbit.vcell.field;
 
+import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.User;
 
 public class FieldDataDBEntry {

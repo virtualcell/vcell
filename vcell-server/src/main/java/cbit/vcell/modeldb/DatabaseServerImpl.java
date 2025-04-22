@@ -15,8 +15,8 @@ import cbit.image.VCImageInfo;
 import cbit.sql.QueryHashtable;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.field.FieldDataDBEntry;
-import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.io.CopyFieldDataResult;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
@@ -73,9 +73,28 @@ public class DatabaseServerImpl {
 		R get() throws SQLException, ObjectNotFoundException, DataAccessException;
 	}
 
+	@FunctionalInterface
+	private interface DBCallNoReturn{
+		void get() throws SQLException, ObjectNotFoundException, DataAccessException;
+	}
+
 	<R> R callAndErrorHandler(DBCall<R> dbCall) throws DataAccessException{
 		try {
 			return dbCall.get();
+		} catch (ObjectNotFoundException e) {
+			lg.error(e.getMessage(),e);
+			throw new ObjectNotFoundException(e.getMessage());
+		} catch (SQLException e) {
+			lg.error(e.getMessage(),e);
+			throw new DataAccessException(e.getMessage());
+		} catch (DataAccessException e){
+			lg.error(e.getMessage(),e);
+			throw new DataAccessException(e);
+		}
+	}
+	void callAndErrorHandler(DBCallNoReturn dbCall) throws DataAccessException{
+		try {
+			dbCall.get();
 		} catch (ObjectNotFoundException e) {
 			lg.error(e.getMessage(),e);
 			throw new ObjectNotFoundException(e.getMessage());
@@ -200,19 +219,19 @@ public void deleteBioModel(User user, KeyValue key) throws DataAccessException, 
 	delete(user,VersionableType.BioModelMetaData, key);
 }
 
-public FieldDataDBOperationResults saveFieldDataEDI(User user, FieldDataDBEntry entry) throws DataAccessException{
+public ExternalDataIdentifier saveFieldDataEDI(User user, FieldDataDBEntry entry) throws DataAccessException{
 	lg.trace("DatabaseServerImpl.saveFieldDataEDI");
 	return callAndErrorHandler(() -> dbTop.saveFieldDataExternalDataID(user, entry));
 }
 
-public FieldDataDBOperationResults getFieldDataIDs(User user) throws DataAccessException {
+public FieldDataAllDBEntries getFieldDataIDs(User user) throws DataAccessException {
 	lg.trace("DatabaseServerImpl.getFieldDataIDs");
 	return callAndErrorHandler(() -> dbTop.getFieldDataEDIs(user));
 }
 
-public FieldDataDBOperationResults deleteFieldDataID(User user, ExternalDataIdentifier edi) throws DataAccessException {
+public void deleteFieldDataID(User user, ExternalDataIdentifier edi) throws DataAccessException {
 	lg.trace("DatabaseServerImpl.deleteFieldDataID");
-	return callAndErrorHandler(() -> dbTop.deleteFieldDataEDI(user, edi));
+	callAndErrorHandler(() -> dbTop.deleteFieldDataEDI(user, edi));
 }
 
 public CopyFieldDataResult copyFieldData(User user, ExternalDataIdentifier sourceID, String sourceAnnotation,

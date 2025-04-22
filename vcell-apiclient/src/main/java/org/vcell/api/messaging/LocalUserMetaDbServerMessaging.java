@@ -11,7 +11,7 @@
 package org.vcell.api.messaging;
 
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.message.server.bootstrap.client.RpcDbServerProxy;
 import cbit.vcell.message.server.bootstrap.client.RpcSender;
@@ -118,7 +118,7 @@ public void deleteBioModel(org.vcell.util.document.KeyValue key) throws DataAcce
 	}
 }
 
-public FieldDataDBOperationResults getAllFieldDataIDs(){
+public FieldDataAllDBEntries getAllFieldDataIDs(){
 	List<FieldDataReference> fieldDataReferences = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().getAllIDs());
 	return DtoModelTransforms.fieldDataReferencesToDBResults(fieldDataReferences);
 }

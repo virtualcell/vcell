@@ -14,8 +14,8 @@ import cbit.image.VCImageInfo;
 import cbit.sql.*;
 import cbit.sql.Field.SQLDataType;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.field.FieldDataDBEntry;
-import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.db.FieldDataDBOperationDriver;
 import cbit.vcell.field.io.CopyFieldDataResult;
 import cbit.vcell.geometry.Geometry;
@@ -545,17 +545,17 @@ public abstract class DbDriver {
         return dbVCDocumentInfo;
     }
 
-    public static FieldDataDBOperationResults saveFieldDataEDI(Connection con, KeyFactory keyFactory, User user,
+    public static ExternalDataIdentifier saveFieldDataEDI(Connection con, KeyFactory keyFactory, User user,
                                                                FieldDataDBEntry entry) throws SQLException, DataAccessException {
         return FieldDataDBOperationDriver.saveExtraDataID(con, keyFactory, user, entry);
     }
 
-    public static FieldDataDBOperationResults getFieldDataEDIs(Connection con, KeyFactory keyFactory, User user) throws SQLException {
+    public static FieldDataAllDBEntries getFieldDataEDIs(Connection con, KeyFactory keyFactory, User user) throws SQLException {
         return FieldDataDBOperationDriver.getExtraDataIDs(con, keyFactory, user, false);
     }
 
-    public static FieldDataDBOperationResults deleteFieldDataEDI(Connection con, KeyFactory keyFactory, User user, ExternalDataIdentifier edi) throws SQLException {
-        return FieldDataDBOperationDriver.deleteFieldData(con, keyFactory, user, edi);
+    public static void deleteFieldDataEDI(Connection con, KeyFactory keyFactory, User user, ExternalDataIdentifier edi) throws SQLException {
+        FieldDataDBOperationDriver.deleteFieldData(con, keyFactory, user, edi);
     }
 
     public static CopyFieldDataResult fieldDataCopy(Connection con, KeyFactory keyFactory, User user,

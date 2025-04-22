@@ -15,8 +15,8 @@ import cbit.sql.InsertHashtable;
 import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.field.FieldDataDBEntry;
-import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.io.CopyFieldDataResult;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
@@ -60,6 +60,11 @@ public class DBTopLevel extends AbstractDBTopLevel{
 	@FunctionalInterface
 	private interface DBDriverCallFunction<R>{
 		R get() throws DataAccessException, SQLException;
+	}
+
+	@FunctionalInterface
+	private interface DBDriverCallFunctionVoid{
+		void get() throws DataAccessException, SQLException;
 	}
 
 /**
@@ -160,26 +165,47 @@ void cleanupDatabase(boolean bEnableRetry) throws DataAccessException,java.sql.S
 
 }
 
-FieldDataDBOperationResults saveFieldDataExternalDataID(User user, FieldDataDBEntry dbEntry)throws SQLException, DataAccessException{
+ExternalDataIdentifier saveFieldDataExternalDataID(User user, FieldDataDBEntry dbEntry)throws SQLException, DataAccessException{
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	return handleDBRequest(() -> DbDriver.saveFieldDataEDI(con, conFactory.getKeyFactory(), user, dbEntry), con, lock,true);
 }
 
-FieldDataDBOperationResults getFieldDataEDIs(User user) throws SQLException, DataAccessException{
+FieldDataAllDBEntries getFieldDataEDIs(User user) throws SQLException, DataAccessException{
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	return handleDBRequest(() -> DbDriver.getFieldDataEDIs(con, conFactory.getKeyFactory(), user), con, lock, true);
 }
 
-FieldDataDBOperationResults deleteFieldDataEDI(User user, ExternalDataIdentifier edi) throws SQLException, DataAccessException{
+void deleteFieldDataEDI(User user, ExternalDataIdentifier edi) throws SQLException, DataAccessException{
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
-	return handleDBRequest(() -> DbDriver.deleteFieldDataEDI(con, conFactory.getKeyFactory(), user, edi), con, lock, true);
+	handleDBRequest(() -> DbDriver.deleteFieldDataEDI(con, conFactory.getKeyFactory(), user, edi), con, lock, true);
+}
+
+void handleDBRequest(DBDriverCallFunctionVoid dbFunction, Connection con, Object lock, boolean bEnableRetry) throws SQLException, DataAccessException {
+	try {
+		dbFunction.get();
+		con.commit();
+	} catch (Throwable e) {
+		lg.error(e.getMessage(),e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			handleDBRequest(dbFunction,con, lock, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
 }
 
 <R> R handleDBRequest(DBDriverCallFunction<R> dbFunction, Connection con, Object lock, boolean bEnableRetry) throws SQLException, DataAccessException {
-
 	try {
 		R executedDBCall = dbFunction.get();
 		con.commit();

@@ -21,7 +21,7 @@ import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
 import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.data.VFrapConstants.SymbolEquivalence;
-import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.io.FieldData;
@@ -102,8 +102,8 @@ public class VFrapXmlHelper {
 //	}
 
 	public static boolean isAlreadyImported(String candidateName, DocumentManager documentManager) throws DataAccessException, RemoteProxyException {
-		FieldDataDBOperationResults fieldDataDBOperationResults = documentManager.getAllFieldDataIDs();
-		ExternalDataIdentifier[] externalDataIdentifierArr = fieldDataDBOperationResults.extDataIDArr;
+		FieldDataAllDBEntries fieldDataDBOperationResults = documentManager.getAllFieldDataIDs();
+		ExternalDataIdentifier[] externalDataIdentifierArr = fieldDataDBOperationResults.ids;
 		
 		for(ExternalDataIdentifier edi : externalDataIdentifierArr) {
 			if(candidateName.equals(edi.getName())) {

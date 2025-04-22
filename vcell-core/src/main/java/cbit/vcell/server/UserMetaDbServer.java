@@ -12,7 +12,7 @@ package cbit.vcell.server;
 
 import cbit.image.VCImageInfo;
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
@@ -62,7 +62,7 @@ void deleteBioModel(KeyValue bioModelKey) throws DataAccessException, ObjectNotF
  * @param bioModelKey cbit.sql.KeyValue
  * @exception RemoteProxyException The exception description.
  */
-public FieldDataDBOperationResults getAllFieldDataIDs() throws DataAccessException, ObjectNotFoundException, RemoteProxyException;
+public FieldDataAllDBEntries getAllFieldDataIDs() throws DataAccessException, ObjectNotFoundException, RemoteProxyException;
 
 
 public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName);

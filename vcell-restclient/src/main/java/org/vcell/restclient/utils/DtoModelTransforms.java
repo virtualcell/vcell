@@ -1,7 +1,7 @@
 package org.vcell.restclient.utils;
 
 
-import cbit.vcell.field.FieldDataDBOperationResults;
+import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.field.io.FieldData;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
@@ -156,8 +156,8 @@ public class DtoModelTransforms {
         return analyzedFile;
     }
 
-    public static FieldDataDBOperationResults fieldDataReferencesToDBResults(List<FieldDataReference> dto){
-        FieldDataDBOperationResults fieldDataDBOperationResults = new FieldDataDBOperationResults();
+    public static FieldDataAllDBEntries fieldDataReferencesToDBResults(List<FieldDataReference> dto){
+        FieldDataAllDBEntries fieldDataDBOperationResults = new FieldDataAllDBEntries();
         ArrayList<ExternalDataIdentifier> externalDataIdentifiers = new ArrayList<>();
         ArrayList<String> externalDataAnnotations = new ArrayList<>();
         HashMap<ExternalDataIdentifier, Vector<KeyValue>> externalDataIDSimRefs = new HashMap<>();
@@ -168,9 +168,9 @@ public class DtoModelTransforms {
             List<KeyValue> keyValues = fieldDataReference.getSimulationsReferencingThisID().stream().map(DtoModelTransforms::dtoToKeyValue).collect(Collectors.toList());
             externalDataIDSimRefs.put(externalDataIdentifier, new Vector<>(keyValues));
         }
-        fieldDataDBOperationResults.extDataIDArr = externalDataIdentifiers.toArray(new ExternalDataIdentifier[0]);
-        fieldDataDBOperationResults.extDataAnnotArr = externalDataAnnotations.toArray(new String[0]);
-        fieldDataDBOperationResults.extdataIDAndSimRefH = externalDataIDSimRefs;
+        fieldDataDBOperationResults.ids = externalDataIdentifiers.toArray(new ExternalDataIdentifier[0]);
+        fieldDataDBOperationResults.annotationsForIds = externalDataAnnotations.toArray(new String[0]);
+        fieldDataDBOperationResults.edisToSimRefs = externalDataIDSimRefs;
         return fieldDataDBOperationResults;
     }
 
