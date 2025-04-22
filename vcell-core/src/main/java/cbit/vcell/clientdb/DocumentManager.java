@@ -17,7 +17,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.io.FieldData;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
@@ -32,10 +32,10 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.SessionManager;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import org.vcell.util.*;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
+import org.vcell.util.Preference;
 import org.vcell.util.document.*;
-
-import java.io.File;
 
 /**
  * Insert the type's description here.
@@ -149,7 +149,7 @@ FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldD
 
 
 
-FieldDataFileOperationResults analyzeAndSaveFieldFromFile(FieldDataSpec fieldDataSpec) throws DataAccessException;
+ExternalDataIdentifier analyzeAndSaveFieldFromFile(FieldDataSpec fieldDataSpec) throws DataAccessException;
 
 void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) throws DataAccessException;
 
@@ -580,7 +580,7 @@ VCImageInfo setGroupPublic(VCImageInfo imageInfo) throws DataAccessException;
 
 	public void deleteFieldData(KeyValue fieldDataKey) throws DataAccessException;
 
-	public FieldDataFileOperationResults getFieldDataShape(KeyValue fieldDataKey) throws DataAccessException;
+	public FieldDataShape getFieldDataShape(KeyValue fieldDataKey) throws DataAccessException;
 
 
 public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersion originalOwner) throws DataAccessException,MathException,ExpressionException;

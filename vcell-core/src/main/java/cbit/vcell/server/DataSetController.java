@@ -14,7 +14,7 @@ import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.io.FieldData;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.simdata.*;
@@ -34,13 +34,13 @@ import org.vcell.vis.io.VtuVarInfo;
  */
 public interface DataSetController {
 
- public FieldDataFileOperationResults analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec);
+ public ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec);
 
  public ExternalDataIdentifier saveFieldData(FieldData fieldData);
 
  public void deleteFieldData(KeyValue fieldDataKey);
 
- public FieldDataFileOperationResults getFieldDataShape(KeyValue fieldDataKey);
+ public FieldDataShape getFieldDataShape(KeyValue fieldDataKey);
 
 /**
  * This method was created by a SmartGuide.

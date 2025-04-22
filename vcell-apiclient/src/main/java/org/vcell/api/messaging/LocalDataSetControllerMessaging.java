@@ -14,7 +14,6 @@ import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.io.FieldData;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.message.server.bootstrap.client.RpcDataServerProxy;
@@ -65,6 +64,7 @@ public void deleteFieldData(KeyValue externalDataIdentifierKey) {
 	}
 }
 
+//! TODO Provide actual owner to function
 public ExternalDataIdentifier saveFieldData(FieldData fieldData){
 	FieldDataSavedResults results = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().createFromAnalyzedFile(
 			DtoModelTransforms.fieldDataToAnalyzedFile(fieldData)
@@ -72,16 +72,16 @@ public ExternalDataIdentifier saveFieldData(FieldData fieldData){
 	return new ExternalDataIdentifier(new KeyValue(results.getFieldDataKey()), null, results.getFieldDataName());
 }
 
-public FieldDataFileOperationResults getFieldDataShape(KeyValue externalDataIdentifierKey){
+public cbit.vcell.field.io.FieldDataShape getFieldDataShape(KeyValue externalDataIdentifierKey){
 	FieldDataShape shape = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().getShapeFromID(externalDataIdentifierKey.toString()));
-	return DtoModelTransforms.fieldDataInfoDTOToFileOperationResults(shape);
+	return DtoModelTransforms.DTOToFieldDataShape(shape);
 }
 
-public FieldDataFileOperationResults analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec){
+public ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec){
 	FieldDataSavedResults savedResults = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().analyzeFileAndCreate(fieldDataSpec.file, fieldDataSpec.fileName,
 			DtoModelTransforms.extentToDTO(fieldDataSpec.extent), DtoModelTransforms.iSizeToDTO(fieldDataSpec.iSize), fieldDataSpec.channelNames, fieldDataSpec.times, fieldDataSpec.annotation,
 			DtoModelTransforms.originToDTO(fieldDataSpec.origin)));
-	return DtoModelTransforms.fieldDataSaveResultsDTOToFileOperationResults(savedResults, fieldDataSpec.owner);
+	return new ExternalDataIdentifier(new KeyValue(savedResults.getFieldDataKey()), fieldDataSpec.owner, savedResults.getFieldDataName());
 }
 
 

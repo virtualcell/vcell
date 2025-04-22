@@ -3,13 +3,11 @@ package org.vcell.restclient.utils;
 
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.io.FieldData;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataIdentifier;
 import org.vcell.restclient.model.AnalyzedFile;
 import org.vcell.restclient.model.FieldDataReference;
-import org.vcell.restclient.model.FieldDataSavedResults;
 import org.vcell.restclient.model.FieldDataShape;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
@@ -120,20 +118,14 @@ public class DtoModelTransforms {
         return new User(dto.getUserName(), dtoToKeyValue(dto.getKey()));
     }
 
-    public static FieldDataFileOperationResults fieldDataInfoDTOToFileOperationResults(FieldDataShape dto){
-        FieldDataFileOperationResults results = new FieldDataFileOperationResults();
+    public static cbit.vcell.field.io.FieldDataShape DTOToFieldDataShape(FieldDataShape dto){
+        cbit.vcell.field.io.FieldDataShape results = new cbit.vcell.field.io.FieldDataShape();
         results.extent = dtoToExtent(dto.getExtent());
         results.origin = dtoToOrigin(dto.getOrigin());
         results.iSize = dtoToISize(dto.getIsize());
         results.times = dto.getTimes().stream().mapToDouble(Double::doubleValue).toArray();
-        results.dataIdentifierArr = dto.getDataIdentifier().stream().map(DtoModelTransforms::dtoToDataIdentifier).toArray(DataIdentifier[]::new);
+        results.variableInformation = dto.getDataIdentifier().stream().map(DtoModelTransforms::dtoToDataIdentifier).toArray(DataIdentifier[]::new);
         return results;
-    }
-
-    public static FieldDataFileOperationResults fieldDataSaveResultsDTOToFileOperationResults(FieldDataSavedResults dto, User owner){
-        FieldDataFileOperationResults fieldDataFileOperationResults = new FieldDataFileOperationResults();
-        fieldDataFileOperationResults.externalDataIdentifier = new ExternalDataIdentifier(new KeyValue(dto.getFieldDataKey()), owner, dto.getFieldDataName());
-        return fieldDataFileOperationResults;
     }
 
     public static AnalyzedFile fieldDataToAnalyzedFile(FieldData fieldData){

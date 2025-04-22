@@ -12,7 +12,7 @@ package cbit.vcell.simdata;
 
 import cbit.plot.PlotData;
 import cbit.vcell.field.io.FieldData;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.math.Function;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
@@ -23,13 +23,11 @@ import cbit.vcell.solvers.CartesianMesh;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
-import org.vcell.util.*;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.*;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
-
-import java.io.File;
-import java.util.List;
 
 /**
  * Insert the type's description here.
@@ -54,7 +52,7 @@ private interface RetryCall<R>{
 	R get() throws DataAccessException, RemoteProxyException;
 }
 
-public synchronized FieldDataFileOperationResults analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec) throws DataAccessException {
+public synchronized ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec) throws DataAccessException {
 	return retry(() -> getDataSetController().analyzeAndCreateFieldData(fieldDataSpec));
 }
 
@@ -63,7 +61,7 @@ public synchronized void deleteFieldData(KeyValue fieldDataKey) throws DataAcces
 	retry(method, fieldDataKey);
 };
 
-public synchronized FieldDataFileOperationResults getFieldDataShape(KeyValue fieldDataKey) throws DataAccessException {
+public synchronized FieldDataShape getFieldDataShape(KeyValue fieldDataKey) throws DataAccessException {
 	return retry(() -> getDataSetController().getFieldDataShape(fieldDataKey));
 };
 

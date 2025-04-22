@@ -6,7 +6,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.*;
 import cbit.vcell.field.io.CopyFieldDataResult;
 import cbit.vcell.field.io.FieldData;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.mapping.SimulationContext;
@@ -162,7 +162,7 @@ public class FieldDataDB {
         return fieldDataReferenceList;
     }
 
-    public FieldDataFileOperationResults getFieldDataShapeFromID(User user, KeyValue keyValue, int jobParameter) throws ObjectNotFoundException {
+    public FieldDataShape getFieldDataShapeFromID(User user, KeyValue keyValue, int jobParameter) throws ObjectNotFoundException {
         return dataSetController.fieldDataInfo(keyValue, user, jobParameter);
     }
 
@@ -185,14 +185,14 @@ public class FieldDataDB {
         }
     }
 
-    public FieldDataFileOperationResults saveNewFieldDataFromFile(String fieldDataName, String[] varNames,
+    public ExternalDataIdentifier saveNewFieldDataFromFile(String fieldDataName, String[] varNames,
                                                                   short[][][] imageData, String annotation,
                                                                   User user, double[] times, Origin origin,
                                                                   Extent extent, ISize iSize) throws DataAccessException, ImageException, DataFormatException{
         return saveNewFieldDataFromFile(fieldDataName, varNames, imageData, new double[][][]{}, annotation, user, times, origin, extent, iSize);
     }
 
-    public FieldDataFileOperationResults saveNewFieldDataFromFile(String fieldDataName, String[] varNames,
+    public ExternalDataIdentifier saveNewFieldDataFromFile(String fieldDataName, String[] varNames,
                                                                   short[][][] imageData, double[][][] doubleImageData, String annotation,
                                                                   User user, double[] times, Origin origin,
                                                                   Extent extent, ISize iSize) throws DataAccessException, ImageException, DataFormatException {
@@ -229,10 +229,8 @@ public class FieldDataDB {
                     new RegionImage(new VCImageUncompressed(null, new byte[iSize.getXYZ()],//empty regions
                             extent, iSize.getX(), iSize.getY(), iSize.getZ()),
                             0, null, null, RegionImage.NO_SMOOTHING));
-
-            FieldDataFileOperationResults fileSaveResults = dataSetController.fieldDataAdd(fieldData, results.extDataID);
-            fileSaveResults.externalDataIdentifier = results.extDataID;
-            return fileSaveResults;
+            dataSetController.fieldDataAdd(fieldData, results.extDataID);
+            return results.extDataID;
         } catch (Exception e) {
             // Remove DB entry if file creation fails
             databaseServer.fieldDataDBOperation(user, FieldDataDBOperationSpec.createDeleteExtDataIDSpec(results.extDataID));

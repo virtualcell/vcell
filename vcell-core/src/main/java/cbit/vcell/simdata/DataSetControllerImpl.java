@@ -21,7 +21,7 @@ import cbit.vcell.field.FieldDataParameterVariable;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.io.FieldData;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.*;
@@ -1182,7 +1182,7 @@ private SimDataBlock evaluateFunction(
 }
 
 
-public FieldDataFileOperationResults fieldDataCopySim(KeyValue sourceSimDataKey, User sourceSimOwner,
+public FieldDataShape fieldDataCopySim(KeyValue sourceSimDataKey, User sourceSimOwner,
 													  ExternalDataIdentifier newEDI, int sourceSimParamScanJobIndex, User ownerOfCopy){
 	Vector<File> removeFilesIfErrorV = new Vector<File>();
 	try{
@@ -1344,7 +1344,7 @@ public FieldDataFileOperationResults fieldDataCopySim(KeyValue sourceSimDataKey,
 	}
 }
 
-public FieldDataFileOperationResults fieldDataAdd(FieldData fieldData, ExternalDataIdentifier edi){
+public FieldDataShape fieldDataAdd(FieldData fieldData, ExternalDataIdentifier edi){
 	if(fieldData.cartesianMesh == null){
 		throw new RuntimeException("Field Data Operation 'ADD' cartesianMesh cannot be null");
 	}
@@ -1535,7 +1535,7 @@ public FieldDataFileOperationResults fieldDataAdd(FieldData fieldData, ExternalD
 	}
 }
 
-public FieldDataFileOperationResults fieldDataDelete(ExternalDataIdentifier externalDataIdentifier) throws ObjectNotFoundException {
+public void fieldDataDelete(ExternalDataIdentifier externalDataIdentifier) throws ObjectNotFoundException {
 	//		if(fieldDataFileOperation(
 //			FieldDataFileOperationSpec.
 //				createDependantFuncsFieldDataFileOperationSpec(
@@ -1595,19 +1595,18 @@ public FieldDataFileOperationResults fieldDataDelete(ExternalDataIdentifier exte
 		}
 		index+= 1;
 	}
-	return null;
 }
 
-public FieldDataFileOperationResults fieldDataInfo(KeyValue sourceSimDataKey, User sourceOwner, int sourceSimParamScanJobIndex) throws ObjectNotFoundException {
+public FieldDataShape fieldDataInfo(KeyValue sourceSimDataKey, User sourceOwner, int sourceSimParamScanJobIndex) throws ObjectNotFoundException {
 	try{
-		FieldDataFileOperationResults fdor = new FieldDataFileOperationResults();
+		FieldDataShape fdor = new FieldDataShape();
 		VCDataIdentifier sourceSimDataID =
 				new VCSimulationDataIdentifier(
 						new VCSimulationIdentifier(
 								sourceSimDataKey,
 								sourceOwner),
 						sourceSimParamScanJobIndex);
-		fdor.dataIdentifierArr =
+		fdor.variableInformation =
 				getDataIdentifiers(null,sourceSimDataID);
 		CartesianMesh mesh = getMesh(sourceSimDataID);
 		fdor.extent = mesh.getExtent();

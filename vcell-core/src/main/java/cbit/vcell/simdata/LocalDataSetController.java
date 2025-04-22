@@ -13,7 +13,7 @@ package cbit.vcell.simdata;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.io.FieldData;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.VCellConnection;
@@ -43,7 +43,7 @@ public LocalDataSetController (VCellConnection argvcConn, DataSetControllerImpl 
 }
 
 	@Override
-	public FieldDataFileOperationResults analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec) {
+	public ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec) {
 		return null;
 	}
 
@@ -58,7 +58,7 @@ public LocalDataSetController (VCellConnection argvcConn, DataSetControllerImpl 
 	}
 
 	@Override
-	public FieldDataFileOperationResults getFieldDataShape(KeyValue fieldDataKey) {
+	public FieldDataShape getFieldDataShape(KeyValue fieldDataKey) {
 		return null;
 	}
 

@@ -23,7 +23,7 @@ import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataFileConversion;
 import cbit.vcell.field.gui.FieldDataGUIDataTransferObjects.*;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.server.SimulationStatus;
@@ -907,7 +907,7 @@ public class FieldDataGUIPanel extends JPanel {
         AsynchClientTask FieldDataInfoTask = new AsynchClientTask("Gather Field Data info", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
             public void run(Hashtable<String, Object> hash) throws Exception {
                 FieldDataMainList fieldDataMainList = (FieldDataMainList) mainNode.getUserObject();
-                final FieldDataFileOperationResults fieldDataFileOperationResults =
+                final FieldDataShape fieldDataFileOperationResults =
                         clientRequestManager.getDocumentManager().getFieldDataShape(fieldDataMainList.externalDataIdentifier.getKey());
                 hash.put(FDOR_INFO, fieldDataFileOperationResults);
             }
@@ -916,9 +916,9 @@ public class FieldDataGUIPanel extends JPanel {
         AsynchClientTask FieldDataInfoTreeUpdate = new AsynchClientTask("Update Field Data GUI", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
             public void run(Hashtable<String, Object> hash) {
                 try {
-                    FieldDataFileOperationResults fieldDataFileOperationResults =
-                            (FieldDataFileOperationResults) hash.get(FDOR_INFO);
-                    Arrays.sort(fieldDataFileOperationResults.dataIdentifierArr,
+                    FieldDataShape fieldDataFileOperationResults =
+                            (FieldDataShape) hash.get(FDOR_INFO);
+                    Arrays.sort(fieldDataFileOperationResults.variableInformation,
                             new Comparator<DataIdentifier>() {
                                 public int compare(DataIdentifier o1, DataIdentifier o2) {
                                     return o1.getName().compareToIgnoreCase(o2.getName());
@@ -941,10 +941,10 @@ public class FieldDataGUIPanel extends JPanel {
                     ((DefaultTreeModel) getFieldDataTree().getModel()).insertNodeInto(extentNode, mainNode, 2);
                     ((DefaultTreeModel) getFieldDataTree().getModel()).insertNodeInto(timeNode, mainNode, 3);
                     ((DefaultTreeModel) getFieldDataTree().getModel()).insertNodeInto(idNode, mainNode, 4);
-                    for (int i = 0; i < fieldDataFileOperationResults.dataIdentifierArr.length; i += 1) {
+                    for (int i = 0; i < fieldDataFileOperationResults.variableInformation.length; i += 1) {
                         ((DefaultTreeModel) getFieldDataTree().getModel()).insertNodeInto(
                                 new DefaultMutableTreeNode(
-                                        new FieldDataVarList(fieldDataFileOperationResults.dataIdentifierArr[i])),
+                                        new FieldDataVarList(fieldDataFileOperationResults.variableInformation[i])),
                                 varNode, varNode.getChildCount());
                     }
                     if (isMainExpanded) {
@@ -1104,8 +1104,8 @@ public class FieldDataGUIPanel extends JPanel {
                 fieldDataSpec.fileName = fieldName;
                 try {
                     //Add to Server Disk
-                    FieldDataFileOperationResults results = documentManager.analyzeAndSaveFieldFromFile(fieldDataSpec);
-                    hashTable.put("result_edi", results.externalDataIdentifier);
+                    ExternalDataIdentifier results = documentManager.analyzeAndSaveFieldFromFile(fieldDataSpec);
+                    hashTable.put("result_edi", results);
                 } catch (Exception e) {
                     hashTable.put("result_edi", null);
                     throw e;

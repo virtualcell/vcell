@@ -9,16 +9,6 @@
  */
 
 package cbit.vcell.server;
-import java.io.File;
-import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.TreeMap;
-
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
-import com.google.common.primitives.Doubles;
-import org.vcell.util.*;
-import org.vcell.util.document.*;
 
 import cbit.image.VCImageInfo;
 import cbit.vcell.biomodel.BioModelMetaData;
@@ -26,16 +16,20 @@ import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.model.DBFormalSpecies;
-import cbit.vcell.model.DBSpecies;
-import cbit.vcell.model.FormalSpeciesType;
-import cbit.vcell.model.ReactionDescription;
-import cbit.vcell.model.ReactionQuerySpec;
-import cbit.vcell.model.ReactionStepInfo;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
+import cbit.vcell.model.*;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOP;
 import cbit.vcell.numericstest.TestSuiteOPResults;
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.Preference;
+import org.vcell.util.document.*;
+
+import java.util.Hashtable;
+import java.util.TreeMap;
 
 
 /**

@@ -26,7 +26,7 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.io.FieldData;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.RegionImage;
@@ -2598,7 +2598,7 @@ private String importSourceName;
 					ArrayList<ExternalDataIdentifier> okEDI = new ArrayList<ExternalDataIdentifier>();
 					for(int i=0;externalDataIdentifierArr != null && i<externalDataIdentifierArr.length;i++) {
 						try {
-							FieldDataFileOperationResults fieldDataFileOperationResults = documentManager.getFieldDataShape(externalDataIdentifierArr[i].getKey());
+							FieldDataShape fieldDataFileOperationResults = documentManager.getFieldDataShape(externalDataIdentifierArr[i].getKey());
 //						System.out.println(externalDataIdentifierArr[i].getName()+" "+fieldDataFileOperationResults.iSize);
 							ISize iSize = fieldDataFileOperationResults.iSize;
 							iSizes.add(iSize);
@@ -2626,8 +2626,8 @@ private String importSourceName;
 //							new String[] {"X","Y","Z","SourceType"}, rowData, ListSelectionModel.SINGLE_SELECTION);
 
 						if(selections != null && selections.length == 1) {
-							FieldDataFileOperationResults fdfor =  documentManager.getFieldDataShape(okEDI.get(selections[0]).getSimulationKey());
-							SimDataBlock simDataBlock = VCellClient.getInstance().getClientServerManager().getDataSetController().getSimDataBlock(null, okEDI.get(selections[0]), fdfor.dataIdentifierArr[0].getName(), 0.0);
+							FieldDataShape fdfor =  documentManager.getFieldDataShape(okEDI.get(selections[0]).getSimulationKey());
+							SimDataBlock simDataBlock = VCellClient.getInstance().getClientServerManager().getDataSetController().getSimDataBlock(null, okEDI.get(selections[0]), fdfor.variableInformation[0].getName(), 0.0);
 							FieldData fieldDataFileOperationSpec = new FieldData();
 							fieldDataFileOperationSpec.iSize = meshes.get(selections[0]).getISize();
 							fieldDataFileOperationSpec.data = new short[][][] {{new short[fieldDataFileOperationSpec.iSize.getXYZ()]}};

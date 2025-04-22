@@ -15,7 +15,7 @@ import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.io.FieldData;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.server.DataSetController;
@@ -43,7 +43,7 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 		}
 
 		@Override
-		public FieldDataFileOperationResults analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec) {
+		public ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec) {
 			return null;
 		}
 
@@ -58,7 +58,7 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 		}
 
 		@Override
-		public FieldDataFileOperationResults getFieldDataShape(KeyValue fieldDataKey) {
+		public FieldDataShape getFieldDataShape(KeyValue fieldDataKey) {
 			return null;
 		}
 

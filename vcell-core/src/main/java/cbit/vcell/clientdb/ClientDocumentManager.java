@@ -22,7 +22,7 @@ import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.io.FieldData;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
@@ -53,7 +53,6 @@ import org.jdom2.Element;
 import org.vcell.util.*;
 import org.vcell.util.document.*;
 
-import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -433,7 +432,7 @@ public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec
 	}
 }
 
-public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(FieldDataSpec fieldDataSpec) throws DataAccessException {
+public ExternalDataIdentifier analyzeAndSaveFieldFromFile(FieldDataSpec fieldDataSpec) throws DataAccessException {
 
 	return sessionManager.getVCDataManager().analyzeAndCreateFieldData(fieldDataSpec);
 }
@@ -443,7 +442,7 @@ public void deleteFieldData(KeyValue fieldDataKey) throws DataAccessException {
 	sessionManager.getVCDataManager().deleteFieldData(fieldDataKey);
 };
 
-public FieldDataFileOperationResults getFieldDataShape(KeyValue fieldDataKey) throws DataAccessException {
+public FieldDataShape getFieldDataShape(KeyValue fieldDataKey) throws DataAccessException {
 	return sessionManager.getVCDataManager().getFieldDataShape(fieldDataKey);
 };
 

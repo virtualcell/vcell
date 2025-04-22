@@ -13,7 +13,7 @@ package cbit.vcell.simdata;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.io.FieldData;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solvers.CartesianMesh;
 import org.apache.logging.log4j.LogManager;
@@ -219,7 +219,7 @@ public DataOperationResults doDataOperation(User user, DataOperation dataOperati
 	}
 }
 
-public FieldDataFileOperationResults saveFieldData(User user, FieldData fieldData, ExternalDataIdentifier edi) throws DataAccessException {
+public FieldDataShape saveFieldData(User user, FieldData fieldData, ExternalDataIdentifier edi) throws DataAccessException {
 	checkReadAccess(user, edi);
 	try {
 		return dataSetControllerImpl.fieldDataAdd(fieldData, edi);
@@ -229,17 +229,17 @@ public FieldDataFileOperationResults saveFieldData(User user, FieldData fieldDat
 	}
 }
 
-public FieldDataFileOperationResults deleteFieldData(User user, ExternalDataIdentifier edi) throws DataAccessException {
+public void deleteFieldData(User user, ExternalDataIdentifier edi) throws DataAccessException {
 	checkReadAccess(user, edi);
 	try {
-		return dataSetControllerImpl.fieldDataDelete(edi);
+		dataSetControllerImpl.fieldDataDelete(edi);
 	}catch (Throwable e){
 		lg.error(e.getMessage(), e);
 		throw new DataAccessException(e.getMessage());
 	}
 }
 
-public FieldDataFileOperationResults analyzeAndCreateFieldData(User user, FieldData fieldData, ExternalDataIdentifier edi) throws DataAccessException {
+public FieldDataShape analyzeAndCreateFieldData(User user, FieldData fieldData, ExternalDataIdentifier edi) throws DataAccessException {
 	checkReadAccess(user, edi);
 	try {
 		return dataSetControllerImpl.fieldDataAdd(fieldData, edi);

@@ -13,7 +13,7 @@ package cbit.vcell.field.db;
 import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.io.CopyFieldDataResult;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.io.FieldDataReferenceInfo;
 import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.resource.PropertyLoader;
@@ -387,7 +387,7 @@ public class FieldDataDBOperationDriver{
 	return functionNamesH;
 }
 
-	public static synchronized FieldDataFileOperationResults.FieldDataReferenceInfo getModelDescriptionForSimulation(User user,KeyValue simulationKey)
+	public static synchronized FieldDataReferenceInfo getModelDescriptionForSimulation(User user, KeyValue simulationKey)
 	throws DataAccessException{
 	
 	String sqlMathModel =
@@ -496,12 +496,12 @@ public class FieldDataDBOperationDriver{
 			ExternalDataTable.table.id.getQualifiedColName()+ " = " +simulationKey.toString();	
 
 	Statement stmt = null;
-	FieldDataFileOperationResults.FieldDataReferenceInfo fieldDataRefInfo = null;
+	FieldDataReferenceInfo fieldDataRefInfo = null;
 	try {
 		stmt = 	getConnection().createStatement();
 		ResultSet rset = stmt.executeQuery(sqlMathModel);
 		if(rset.next()){
-			fieldDataRefInfo = new FieldDataFileOperationResults.FieldDataReferenceInfo();
+			fieldDataRefInfo = new FieldDataReferenceInfo();
 			fieldDataRefInfo.referenceSourceType = VersionableType.MathModelMetaData.getTypeName();
 			fieldDataRefInfo.referenceSourceName = rset.getString(1);
 			fieldDataRefInfo.simulationName = rset.getString(2);
@@ -511,7 +511,7 @@ public class FieldDataDBOperationDriver{
 			rset.close();
 			rset = stmt.executeQuery(sqlBioModel);
 			if(rset.next()){
-				fieldDataRefInfo = new FieldDataFileOperationResults.FieldDataReferenceInfo();
+				fieldDataRefInfo = new FieldDataReferenceInfo();
 				fieldDataRefInfo.referenceSourceType = VersionableType.BioModelMetaData.getTypeName();
 				fieldDataRefInfo.referenceSourceName = rset.getString(1);
 				fieldDataRefInfo.applicationName = rset.getString(2);
@@ -522,8 +522,8 @@ public class FieldDataDBOperationDriver{
 				rset.close();
 				rset = stmt.executeQuery(sqlFieldData);
 				if(rset.next()){
-					fieldDataRefInfo = new FieldDataFileOperationResults.FieldDataReferenceInfo();
-					fieldDataRefInfo.referenceSourceType = FieldDataFileOperationResults.FieldDataReferenceInfo.FIELDDATATYPENAME;
+					fieldDataRefInfo = new FieldDataReferenceInfo();
+					fieldDataRefInfo.referenceSourceType = FieldDataReferenceInfo.FIELDDATATYPENAME;
 					fieldDataRefInfo.referenceSourceName = rset.getString(1);
 				}				
 			}

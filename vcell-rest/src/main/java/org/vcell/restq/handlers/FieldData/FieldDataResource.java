@@ -1,7 +1,6 @@
 package org.vcell.restq.handlers.FieldData;
 
 import cbit.image.ImageException;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
 import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.math.MathException;
 import cbit.vcell.parser.ExpressionException;
@@ -23,7 +22,10 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.Origin;
-import org.vcell.util.document.*;
+import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VersionableType;
 import org.w3c.www.http.HTTP;
 
 import java.io.File;
@@ -62,9 +64,9 @@ public class FieldDataResource {
         try {
             return fieldDataDB.getAllFieldDataIDs(userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER));
         } catch (SQLException e) {
-            throw new WebApplicationException("Can't retrieve field data ID's.", HTTP.NOT_FOUND);
+            throw new WebApplicationException("Can't retrieve field data ID's.", e, HTTP.NOT_FOUND);
         } catch (DataAccessException e) {
-            throw new WebApplicationException(e.getMessage(), HTTP.BAD_REQUEST);
+            throw new WebApplicationException(e.getMessage(), e, HTTP.BAD_REQUEST);
         }
     }
 
@@ -76,13 +78,13 @@ public class FieldDataResource {
         try {
             User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
             KeyValue keyValue = new KeyValue(fieldDataID);
-            FieldDataFileOperationResults results = fieldDataDB.getFieldDataShapeFromID(user, keyValue, FieldDataSpec.JOBINDEX_DEFAULT);
-            return new FieldDataShape(results.extent, results.origin, results.iSize, results.dataIdentifierArr,results.times);
+            cbit.vcell.field.io.FieldDataShape results = fieldDataDB.getFieldDataShapeFromID(user, keyValue, FieldDataSpec.JOBINDEX_DEFAULT);
+            return new FieldDataShape(results.extent, results.origin, results.iSize, results.variableInformation,results.times);
         } catch (DataAccessException e) {
             if (e.getCause() instanceof FileNotFoundException){
-                throw new WebApplicationException("Field data not found.", HTTP.NOT_FOUND);
+                throw new WebApplicationException("Field data not found.", e, HTTP.NOT_FOUND);
             }
-            throw new WebApplicationException("Problem retrieving file.", HTTP.INTERNAL_SERVER_ERROR);
+            throw new WebApplicationException("Problem retrieving file.", e, HTTP.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -96,7 +98,7 @@ public class FieldDataResource {
             User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
             fieldDataDB.saveFieldDataFromSimulation(user, new KeyValue(simKeyReference), jobIndex, newFieldDataName);
         } catch (DataAccessException e) {
-            throw new WebApplicationException(e.getMessage(), HTTP.INTERNAL_SERVER_ERROR);
+            throw new WebApplicationException(e.getMessage(), e, HTTP.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -121,12 +123,12 @@ public class FieldDataResource {
                 throw new WebApplicationException("Invalid file name.", HTTP.BAD_REQUEST);
             }
             AnalyzedFile analyzedFile = fieldDataDB.analyzeFieldDataFromFile(file, fileName);
-            FieldDataFileOperationResults fileResults = fieldDataDB.saveNewFieldDataFromFile(fileName,
+            ExternalDataIdentifier edi = fieldDataDB.saveNewFieldDataFromFile(fileName,
                     channelNames, analyzedFile.shortSpecData, annotation,
                     user, times, origin, extent, iSize);
-            return new FieldDataSavedResults(fileResults.externalDataIdentifier.getName(), fileResults.externalDataIdentifier.getKey().toString());
+            return new FieldDataSavedResults(edi.getName(), edi.getKey().toString());
         } catch (ImageException | DataFormatException | DataAccessException e) {
-            throw new WebApplicationException("Can't create new field data file", HTTP.INTERNAL_SERVER_ERROR);
+            throw new WebApplicationException("Can't create new field data file", e, HTTP.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -145,7 +147,7 @@ public class FieldDataResource {
             }
             return fieldDataDB.analyzeFieldDataFromFile(file, fileName);
         } catch (ImageException | DataFormatException | DataAccessException e) {
-            throw new WebApplicationException("Can't create new field data file", HTTP.INTERNAL_SERVER_ERROR);
+            throw new WebApplicationException("Can't create new field data file", e, HTTP.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -160,12 +162,12 @@ public class FieldDataResource {
         FieldDataSavedResults fieldDataSavedResults;
         try{
             User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
-            FieldDataFileOperationResults fileResults = fieldDataDB.saveNewFieldDataFromFile(saveFieldData.name,
+            ExternalDataIdentifier edi = fieldDataDB.saveNewFieldDataFromFile(saveFieldData.name,
                    saveFieldData.varNames, saveFieldData.shortSpecData, saveFieldData.doubleSpecData, saveFieldData.annotation,
                     user, saveFieldData.times, saveFieldData.origin, saveFieldData.extent, saveFieldData.isize);
-            fieldDataSavedResults = new FieldDataSavedResults(fileResults.externalDataIdentifier.getName(), fileResults.externalDataIdentifier.getKey().toString());
+            fieldDataSavedResults = new FieldDataSavedResults(edi.getName(), edi.getKey().toString());
         } catch (ImageException | DataFormatException | DataAccessException e) {
-            throw new WebApplicationException(e.getMessage(), HTTP.INTERNAL_SERVER_ERROR);
+            throw new WebApplicationException(e.getMessage(), e, HTTP.INTERNAL_SERVER_ERROR);
         }
         return fieldDataSavedResults;
     }
@@ -181,7 +183,7 @@ public class FieldDataResource {
             User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
             return fieldDataDB.copyModelsFieldData(user, new KeyValue(sourceModel.modelID()), sourceModel.modelType.getName());
         } catch (DataAccessException | MathException | XmlParseException | ExpressionException e) {
-            throw new WebApplicationException(e.getMessage(), HTTP.INTERNAL_SERVER_ERROR);
+            throw new WebApplicationException(e.getMessage(), e, HTTP.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -195,7 +197,7 @@ public class FieldDataResource {
                     null);
             fieldDataDB.deleteFieldData(edi);
         } catch (DataAccessException e) {
-            throw new WebApplicationException(e.getMessage(), HTTP.INTERNAL_SERVER_ERROR);
+            throw new WebApplicationException(e.getMessage(), e, HTTP.INTERNAL_SERVER_ERROR);
         }
     }
 
