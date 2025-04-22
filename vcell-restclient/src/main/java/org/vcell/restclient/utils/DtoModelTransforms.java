@@ -156,7 +156,7 @@ public class DtoModelTransforms {
         return analyzedFile;
     }
 
-    public static FieldDataDBOperationResults fieldDataReferencesToDBResults(List<FieldDataReference> dto, User user){
+    public static FieldDataDBOperationResults fieldDataReferencesToDBResults(List<FieldDataReference> dto){
         FieldDataDBOperationResults fieldDataDBOperationResults = new FieldDataDBOperationResults();
         ArrayList<ExternalDataIdentifier> externalDataIdentifiers = new ArrayList<>();
         ArrayList<String> externalDataAnnotations = new ArrayList<>();

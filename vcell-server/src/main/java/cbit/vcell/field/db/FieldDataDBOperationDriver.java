@@ -10,8 +10,8 @@
 
 package cbit.vcell.field.db;
 
+import cbit.vcell.field.FieldDataDBEntry;
 import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.io.CopyFieldDataResult;
 import cbit.vcell.field.io.FieldDataReferenceInfo;
 import cbit.vcell.messaging.db.SimulationJobTable;
@@ -101,8 +101,7 @@ public class FieldDataDBOperationDriver{
 			String newCopiedName = sourceID.getName();
 
 			FieldDataDBOperationResults allRequesterIDs =
-					FieldDataDBOperationDriver.fieldDataDBOperation(
-							con, keyFactory, requester,FieldDataDBOperationSpec.createGetExtDataIDsSpec(requester));
+					FieldDataDBOperationDriver.getExtraDataIDs(con, keyFactory, requester, false);
 			Set<String> usedNames = new HashSet<>();
 
 			for (ExternalDataIdentifier edi : allRequesterIDs.extDataIDArr){
@@ -128,10 +127,11 @@ public class FieldDataDBOperationDriver{
 				"Source Annotation: "+newCopiedName+"\r\n";
 			copiedAnnotation += sourceAnnotation;
 			//
+			FieldDataDBEntry entry = new FieldDataDBEntry();
+			entry.name = newCopiedName;
+			entry.annotation = copiedAnnotation;
 			FieldDataDBOperationResults fieldDataDBOperationResults =
-				fieldDataDBOperation(con,keyFactory, requester,
-						FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(
-								requester, newCopiedName,copiedAnnotation));
+				saveExtraDataID(con,keyFactory, requester, entry);
 //				errorCleanupExtDataIDV.add(fieldDataDBOperationResults.extDataID);
 			ExternalDataIdentifier externalDataIdentifier = fieldDataDBOperationResults.extDataID;
 			CopyFieldDataResult copyNoConflictResult = new CopyFieldDataResult();
@@ -141,11 +141,11 @@ public class FieldDataDBOperationDriver{
 			return copyNoConflictResult;
 	}
 
-	private static FieldDataDBOperationResults getExtraDataIDs(Connection con, KeyFactory keyFactory, User user,
-															  FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException {
+	public static FieldDataDBOperationResults getExtraDataIDs(Connection con, KeyFactory keyFactory, User user,
+															  boolean bIncludeSimRefs) throws SQLException {
 		String sql;
 			ResultSet rset;
-			if(fieldDataDBOperationSpec.bIncludeSimRefs){
+			if(bIncludeSimRefs){
 				sql = 	"SELECT "+
 					ExternalDataTable.table.id.getQualifiedColName()+","+
 					ExternalDataTable.table.externalDataName.getQualifiedColName()+","+
@@ -160,7 +160,7 @@ public class FieldDataDBOperationDriver{
 					UserTable.table.getTableName()+
 				" WHERE " +
 					UserTable.table.id.getQualifiedColName() + " = " +
-						fieldDataDBOperationSpec.owner.getID() +
+						user.getID() +
 					" AND "+
 					UserTable.table.id.getQualifiedColName() + " = " +
 						ExternalDataTable.table.ownerRef.getQualifiedColName() +
@@ -181,7 +181,7 @@ public class FieldDataDBOperationDriver{
 					ExternalDataTable.table.getTableName() + ","+
 					UserTable.table.getTableName()+
 				" WHERE " +
-					ExternalDataTable.table.ownerRef + "=" +fieldDataDBOperationSpec.owner.getID() +
+					ExternalDataTable.table.ownerRef + "=" + user.getID() +
 					" AND "+
 					UserTable.table.id.getQualifiedColName() + " = " +
 						ExternalDataTable.table.ownerRef.getQualifiedColName();
@@ -196,12 +196,12 @@ public class FieldDataDBOperationDriver{
 				while (rset.next()) {
 					ExternalDataIdentifier extDataID =
 						ExternalDataTable.table.getExternalDataIdentifier(rset);
-					if( !fieldDataDBOperationSpec.bIncludeSimRefs &&
+					if( !bIncludeSimRefs &&
 						!extDataIDV.contains(extDataID)){
 						extDataIDV.add(extDataID);
 						extDataAnnotV.add(ExternalDataTable.table.getExternalDataAnnot(rset));
 					}
-					if(fieldDataDBOperationSpec.bIncludeSimRefs){
+					if(bIncludeSimRefs){
 						if(extDataIDSimRefsH == null){
 							extDataIDSimRefsH =
 								new HashMap<ExternalDataIdentifier, Vector<KeyValue>>();
@@ -227,12 +227,12 @@ public class FieldDataDBOperationDriver{
 			return fieldDataDBOperationResults;
 	}
 
-	private static FieldDataDBOperationResults saveExtraDataID(Connection con, KeyFactory keyFactory, User user,
-															   FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, SQLException {
-		if(!fieldDataDBOperationSpec.newExtDataIDName.equals(
-					TokenMangler.fixTokenStrict(fieldDataDBOperationSpec.newExtDataIDName))){
+	public static FieldDataDBOperationResults saveExtraDataID(Connection con, KeyFactory keyFactory, User user,
+															   FieldDataDBEntry fieldDataDBOperationSpec) throws DataAccessException, SQLException {
+		if(!fieldDataDBOperationSpec.name.equals(
+					TokenMangler.fixTokenStrict(fieldDataDBOperationSpec.name))){
 				throw new DataAccessException("Error inserting Field Data name "+
-						fieldDataDBOperationSpec.newExtDataIDName+"\n"+
+						fieldDataDBOperationSpec.name+"\n"+
 						"Field Data names can contain only letters,digits and underscores");
 			}
 
@@ -243,15 +243,14 @@ public class FieldDataDBOperationDriver{
 				" VALUES "+
 				ExternalDataTable.table.getSQLValueList(
 						newKey,user,
-						fieldDataDBOperationSpec.newExtDataIDName,
+						fieldDataDBOperationSpec.name,
 						fieldDataDBOperationSpec.annotation);
 
 			DbDriver.updateCleanSQL(con,sql);
 			ExternalDataIdentifier[] fdiArr =
-				FieldDataDBOperationDriver.fieldDataDBOperation(
-					con, keyFactory, user,FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
+				FieldDataDBOperationDriver.getExtraDataIDs(con, keyFactory, user, false).extDataIDArr;
 			for (int i = 0; i < fdiArr.length; i++) {
-				if(fdiArr[i].getName().equals(fieldDataDBOperationSpec.newExtDataIDName)){
+				if(fdiArr[i].getName().equals(fieldDataDBOperationSpec.name)){
 					FieldDataDBOperationResults fieldDataDBOperationResults = new FieldDataDBOperationResults();
 					fieldDataDBOperationResults.extDataID = fdiArr[i];;
 					return fieldDataDBOperationResults;
@@ -259,34 +258,21 @@ public class FieldDataDBOperationDriver{
 			}
 			throw new DataAccessException(
 					"Unable to retrieve inserted ExternalDataIdentifier "+
-					fieldDataDBOperationSpec.newExtDataIDName);
+					fieldDataDBOperationSpec.name);
 	}
 
-	private static FieldDataDBOperationResults deleteFieldData(Connection con, KeyFactory keyFactory, User user,
-															   FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException {
+	public static FieldDataDBOperationResults deleteFieldData(Connection con, KeyFactory keyFactory, User user,
+															   ExternalDataIdentifier edi) throws SQLException {
 		String sql =
 				"DELETE" + " FROM " + ExternalDataTable.table.getTableName() +
 				" WHERE " +
 					ExternalDataTable.table.ownerRef + " = " + user.getID() +
 					" AND " +
-					ExternalDataTable.table.id + " = " + fieldDataDBOperationSpec.specEDI.getKey().toString();
+					ExternalDataTable.table.id + " = " + edi.getKey().toString();
 
 			DbDriver.updateCleanSQL(con,sql);
 
 			return new FieldDataDBOperationResults();
-	}
-
-	public static FieldDataDBOperationResults fieldDataDBOperation(Connection con, KeyFactory keyFactory, User user,
-			FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException {
-
-		if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS){
-			return getExtraDataIDs(con, keyFactory, user, fieldDataDBOperationSpec);
-		}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_SAVEEXTDATAID){
-			return saveExtraDataID(con, keyFactory, user, fieldDataDBOperationSpec);
-		}else if(fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_DELETE){
-			return deleteFieldData(con, keyFactory, user, fieldDataDBOperationSpec);
-		}
-		throw new DataAccessException("Unknown FieldDataDBOperation "+fieldDataDBOperationSpec.opType);
 	}
 	
 	public static synchronized HashMap<User, Vector<ExternalDataIdentifier>> getAllExternalDataIdentifiers() throws DataAccessException{

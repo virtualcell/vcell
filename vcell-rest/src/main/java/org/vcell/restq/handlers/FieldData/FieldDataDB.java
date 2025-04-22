@@ -100,7 +100,7 @@ public class FieldDataDB {
         }
 
         // Find which ID's are appropriate
-        FieldDataDBOperationResults allIDs = databaseServer.fieldDataDBOperation(ogOwner, FieldDataDBOperationSpec.createGetExtDataIDsSpec(ogOwner));
+        FieldDataDBOperationResults allIDs = databaseServer.getFieldDataIDs(ogOwner);
         ArrayList<ExternalDataIdentifier> edis = new ArrayList<>();
         ArrayList<String> annotations = new ArrayList<>();
         for (int i = 0; i < allIDs.extDataIDArr.length; i++){
@@ -149,7 +149,7 @@ public class FieldDataDB {
     }
 
     public ArrayList<FieldDataResource.FieldDataReference> getAllFieldDataIDs(User user) throws SQLException, DataAccessException {
-        FieldDataDBOperationResults results = databaseServer.fieldDataDBOperation(user, FieldDataDBOperationSpec.createGetExtDataIDsSpec(user));
+        FieldDataDBOperationResults results = databaseServer.getFieldDataIDs(user);
         ArrayList<FieldDataResource.FieldDataReference> fieldDataReferenceList = new ArrayList<>();
         for (int i =0; i < results.extDataIDArr.length; i++){
             Vector<KeyValue> simRefs = new Vector<>();
@@ -197,7 +197,7 @@ public class FieldDataDB {
                                                                   User user, double[] times, Origin origin,
                                                                   Extent extent, ISize iSize) throws DataAccessException, ImageException, DataFormatException {
         // Ensure name is unique for user
-        FieldDataDBOperationResults usersFieldData = databaseServer.fieldDataDBOperation(user, FieldDataDBOperationSpec.createGetExtDataIDsSpecWithSimRefs(user));
+        FieldDataDBOperationResults usersFieldData = databaseServer.getFieldDataIDs(user);
         Set<String> namesUsed = new HashSet<>();
         for (ExternalDataIdentifier edi : usersFieldData.extDataIDArr){
             namesUsed.add(edi.getName());
@@ -211,8 +211,8 @@ public class FieldDataDB {
         for (int j = 0; j < varNames.length; j++){
             varTypes[j] = VariableType.VOLUME;
         }
-        FieldDataDBOperationSpec fieldDataDBOperationSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(user, fieldDataName, annotation);
-        FieldDataDBOperationResults results = databaseServer.fieldDataDBOperation(user, fieldDataDBOperationSpec);
+        FieldDataDBEntry entry = new FieldDataDBEntry(user, fieldDataName, annotation);
+        FieldDataDBOperationResults results = databaseServer.saveFieldDataEDI(user, entry);
 
         FieldData fieldData = new FieldData();
         if (doubleImageData == null || doubleImageData.length == 0){
@@ -233,7 +233,7 @@ public class FieldDataDB {
             return results.extDataID;
         } catch (Exception e) {
             // Remove DB entry if file creation fails
-            databaseServer.fieldDataDBOperation(user, FieldDataDBOperationSpec.createDeleteExtDataIDSpec(results.extDataID));
+            databaseServer.deleteFieldDataID(user, results.extDataID);
             throw new RuntimeException(e);
         }
     }
@@ -241,15 +241,15 @@ public class FieldDataDB {
     public void saveFieldDataFromSimulation(User user, KeyValue simKeyValue, int jobIndex, String newFieldDataName) throws DataAccessException {
         // Create DB entry
         SimulationInfo simInfo = databaseServer.getSimulationInfo(user, simKeyValue);
-        FieldDataDBOperationSpec fieldDataDBOperationSpec = FieldDataDBOperationSpec.createSaveNewExtDataIDSpec(user, newFieldDataName, "");
-        FieldDataDBOperationResults results = databaseServer.fieldDataDBOperation(user, fieldDataDBOperationSpec);
+        FieldDataDBEntry entry = new FieldDataDBEntry(user, newFieldDataName, "");
+        FieldDataDBOperationResults results = databaseServer.saveFieldDataEDI(user, entry);
 
         // Save new file with reference to DB entry
         dataSetController.fieldDataCopySim(simKeyValue, simInfo.getOwner(), results.extDataID, jobIndex, user);
     }
 
     public void deleteFieldData(ExternalDataIdentifier edi) throws DataAccessException {
-        databaseServer.fieldDataDBOperation(edi.getOwner(), FieldDataDBOperationSpec.createDeleteExtDataIDSpec(edi)); // remove from DB
+        databaseServer.deleteFieldDataID(edi.getOwner(), edi); // remove from DB
         dataSetController.fieldDataDelete(edi); // remove from File System
     }
 

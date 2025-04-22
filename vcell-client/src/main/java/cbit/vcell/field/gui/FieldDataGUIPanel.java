@@ -20,7 +20,6 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldDataFileConversion;
 import cbit.vcell.field.gui.FieldDataGUIDataTransferObjects.*;
 import cbit.vcell.field.io.FieldDataShape;
@@ -261,8 +260,7 @@ public class FieldDataGUIPanel extends JPanel {
                 public void run(Hashtable<String, Object> hashTable) throws Exception {
                     try {
                         DocumentManager documentManager = clientRequestManager.getDocumentManager();
-                        FieldDataDBOperationSpec fdos = FieldDataDBOperationSpec.createGetExtDataIDsSpec(documentManager.getUser());
-                        FieldDataDBOperationResults fieldDataDBOperationResults = documentManager.fieldDataDBOperation(fdos);
+                        FieldDataDBOperationResults fieldDataDBOperationResults = documentManager.getAllFieldDataIDs();
 
                         ExternalDataIdentifier[] externalDataIdentifierArr = fieldDataDBOperationResults.extDataIDArr;
                         String[] extDataAnnotArr = fieldDataDBOperationResults.extDataAnnotArr;

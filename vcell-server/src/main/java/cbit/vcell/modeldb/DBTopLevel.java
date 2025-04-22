@@ -9,29 +9,15 @@
  */
 
 package cbit.vcell.modeldb;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.TreeMap;
-import java.util.Vector;
-
-import cbit.vcell.field.io.CopyFieldDataResult;
-import org.vcell.db.ConnectionFactory;
-import org.vcell.db.DatabaseSyntax;
-import org.vcell.db.KeyFactory;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.DependencyException;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.PermissionException;
-import org.vcell.util.Preference;
-import org.vcell.util.document.*;
 
 import cbit.image.VCImage;
 import cbit.sql.InsertHashtable;
 import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.field.FieldDataDBEntry;
 import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.io.CopyFieldDataResult;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
@@ -44,6 +30,16 @@ import cbit.vcell.numericstest.TestSuiteOPResults;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
 import cbit.vcell.solver.Simulation;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseSyntax;
+import org.vcell.db.KeyFactory;
+import org.vcell.util.*;
+import org.vcell.util.document.*;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.TreeMap;
+import java.util.Vector;
 /**
  * This type was created in VisualAge.
  */
@@ -60,6 +56,11 @@ public class DBTopLevel extends AbstractDBTopLevel{
 //	private DBCacheTable dbCacheTable = null;
 
 	private static final int SQL_ERROR_CODE_BADCONNECTION = 1010; //??????????????????????????????????????
+
+	@FunctionalInterface
+	private interface DBDriverCallFunction<R>{
+		R get() throws DataAccessException, SQLException;
+	}
 
 /**
  * DBTopLevel constructor comment.
@@ -159,22 +160,30 @@ void cleanupDatabase(boolean bEnableRetry) throws DataAccessException,java.sql.S
 
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (9/25/2003 7:57:54 AM)
- * @return cbit.vcell.modeldb.VCInfoContainer
- * @param user cbit.vcell.server.User
- */
-FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperationSpec fieldDataDBOperationSpec, boolean bEnableRetry) throws SQLException, DataAccessException {
-	
+FieldDataDBOperationResults saveFieldDataExternalDataID(User user, FieldDataDBEntry dbEntry)throws SQLException, DataAccessException{
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
+	return handleDBRequest(() -> DbDriver.saveFieldDataEDI(con, conFactory.getKeyFactory(), user, dbEntry), con, lock,true);
+}
+
+FieldDataDBOperationResults getFieldDataEDIs(User user) throws SQLException, DataAccessException{
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	return handleDBRequest(() -> DbDriver.getFieldDataEDIs(con, conFactory.getKeyFactory(), user), con, lock, true);
+}
+
+FieldDataDBOperationResults deleteFieldDataEDI(User user, ExternalDataIdentifier edi) throws SQLException, DataAccessException{
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	return handleDBRequest(() -> DbDriver.deleteFieldDataEDI(con, conFactory.getKeyFactory(), user, edi), con, lock, true);
+}
+
+<R> R handleDBRequest(DBDriverCallFunction<R> dbFunction, Connection con, Object lock, boolean bEnableRetry) throws SQLException, DataAccessException {
+
 	try {
-		FieldDataDBOperationResults fieldDataDBOperationResults =
-			DbDriver.fieldDataDBOperation(con, conFactory.getKeyFactory(), user,fieldDataDBOperationSpec);
+		R executedDBCall = dbFunction.get();
 		con.commit();
-		return fieldDataDBOperationResults;
+		return executedDBCall;
 	} catch (Throwable e) {
 		lg.error(e.getMessage(),e);
 		try {
@@ -184,7 +193,7 @@ FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperation
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return fieldDataDBOperation(user,fieldDataDBOperationSpec,false);
+			return handleDBRequest(dbFunction,con, lock, false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null;

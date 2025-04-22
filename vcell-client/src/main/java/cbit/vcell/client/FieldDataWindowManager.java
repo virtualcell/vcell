@@ -29,9 +29,7 @@ import cbit.vcell.clientdb.FieldDataDBEvent;
 import cbit.vcell.clientdb.FieldDataDBEventListener;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
-import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.gui.FieldDataGUIPanel;
-import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.VariableType;
@@ -93,8 +91,7 @@ public class FieldDataWindowManager
     }
 
     public void deleteExternalDataIdentifier(ExternalDataIdentifier deleteExtDataID) throws DataAccessException {
-        getRequestManager().getDocumentManager().fieldDataDBOperation(
-                FieldDataDBOperationSpec.createDeleteExtDataIDSpec(deleteExtDataID));
+        getRequestManager().getDocumentManager().deleteFieldData(deleteExtDataID.getKey());
         if (deleteExtDataID.equals(currentlyViewedEDI)) {
             viewData(null);
         }

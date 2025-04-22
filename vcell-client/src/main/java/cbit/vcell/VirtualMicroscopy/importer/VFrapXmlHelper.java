@@ -10,34 +10,6 @@
 
 package cbit.vcell.VirtualMicroscopy.importer;
 
-import static cbit.vcell.data.VFrapConstants.tokenNames;
-
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
-import java.awt.image.IndexColorModel;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.StringTokenizer;
-
-import cbit.vcell.field.io.FieldData;
-import org.jdom2.Element;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
-import org.vcell.util.UtilCancelException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.document.VCellSoftwareVersion;
-import org.vcell.util.gui.DialogUtils;
-
 import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
 import cbit.util.xml.XmlUtil;
@@ -50,15 +22,16 @@ import cbit.vcell.data.DataSymbol.DataSymbolType;
 import cbit.vcell.data.FieldDataSymbol;
 import cbit.vcell.data.VFrapConstants.SymbolEquivalence;
 import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
+import cbit.vcell.field.io.FieldData;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.model.ModelUnitSystem;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
@@ -72,6 +45,23 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlParseException;
 import cbit.vcell.xml.XmlReader;
+import org.jdom2.Element;
+import org.vcell.util.*;
+import org.vcell.util.document.*;
+import org.vcell.util.gui.DialogUtils;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.awt.image.IndexColorModel;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Hashtable;
+import java.util.StringTokenizer;
+
+import static cbit.vcell.data.VFrapConstants.tokenNames;
 
 
 
@@ -111,10 +101,8 @@ public class VFrapXmlHelper {
 //		}
 //	}
 
-	public static boolean isAlreadyImported(String candidateName, DocumentManager documentManager) throws DataAccessException
-	{
-		FieldDataDBOperationSpec fdos = FieldDataDBOperationSpec.createGetExtDataIDsSpec(documentManager.getUser());
-		FieldDataDBOperationResults fieldDataDBOperationResults = documentManager.fieldDataDBOperation(fdos);
+	public static boolean isAlreadyImported(String candidateName, DocumentManager documentManager) throws DataAccessException, RemoteProxyException {
+		FieldDataDBOperationResults fieldDataDBOperationResults = documentManager.getAllFieldDataIDs();
 		ExternalDataIdentifier[] externalDataIdentifierArr = fieldDataDBOperationResults.extDataIDArr;
 		
 		for(ExternalDataIdentifier edi : externalDataIdentifierArr) {
@@ -125,7 +113,7 @@ public class VFrapXmlHelper {
 		return false;
 	}
 	public static void checkNameAvailability(Hashtable<String, Object> hashTable, boolean isMixedFieldRequest,
-			DocumentManager documentManager, Component requesterComponent) throws DataAccessException, UtilCancelException {
+			DocumentManager documentManager, Component requesterComponent) throws DataAccessException, UtilCancelException, RemoteProxyException {
 
 		String initialFieldDataName = (String)hashTable.get("initialFieldDataName");
 		String mixedFieldDataName = (String)hashTable.get("mixedFieldDataName");
@@ -375,8 +363,8 @@ public class VFrapXmlHelper {
 		hashTable.put("displayROI", displayROI);
 	}
 
-	public static BioModel VFRAPToBioModel(Hashtable<String, Object> hashTable, XMLSource xmlSource, DocumentManager documentManager, final TopLevelWindowManager requester) 
-			throws XmlParseException, IOException, DataAccessException, MathException, DivideByZeroException, ExpressionException, ImageException, UtilCancelException {
+	public static BioModel VFRAPToBioModel(Hashtable<String, Object> hashTable, XMLSource xmlSource, DocumentManager documentManager, final TopLevelWindowManager requester)
+            throws XmlParseException, IOException, DataAccessException, MathException, DivideByZeroException, ExpressionException, ImageException, UtilCancelException, RemoteProxyException {
 	
 		Component requesterComponent = requester.getComponent();
 		File vFrapFile = xmlSource.getXmlFile();

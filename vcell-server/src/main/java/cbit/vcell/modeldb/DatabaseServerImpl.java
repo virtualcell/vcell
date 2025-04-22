@@ -9,12 +9,30 @@
  */
 
 package cbit.vcell.modeldb;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.TreeMap;
-import java.util.Vector;
 
+import cbit.image.VCImage;
+import cbit.image.VCImageInfo;
+import cbit.sql.QueryHashtable;
+import cbit.util.xml.XmlUtil;
+import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.field.FieldDataDBEntry;
+import cbit.vcell.field.FieldDataDBOperationResults;
 import cbit.vcell.field.io.CopyFieldDataResult;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mapping.MappingException;
+import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.model.*;
+import cbit.vcell.numericstest.TestSuiteInfoNew;
+import cbit.vcell.numericstest.TestSuiteNew;
+import cbit.vcell.numericstest.TestSuiteOP;
+import cbit.vcell.numericstest.TestSuiteOPResults;
+import cbit.vcell.server.*;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
+import cbit.vcell.xml.Xmlproducer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Element;
@@ -26,39 +44,10 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.Preference;
 import org.vcell.util.document.*;
 
-import cbit.image.VCImage;
-import cbit.image.VCImageInfo;
-import cbit.sql.QueryHashtable;
-import cbit.util.xml.XmlUtil;
-import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.model.DBFormalSpecies;
-import cbit.vcell.model.DBSpecies;
-import cbit.vcell.model.FormalSpeciesType;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.ReactionDescription;
-import cbit.vcell.model.ReactionQuerySpec;
-import cbit.vcell.model.ReactionStepInfo;
-import cbit.vcell.numericstest.TestSuiteInfoNew;
-import cbit.vcell.numericstest.TestSuiteNew;
-import cbit.vcell.numericstest.TestSuiteOP;
-import cbit.vcell.numericstest.TestSuiteOPResults;
-import cbit.vcell.server.SimpleJobStatusPersistent;
-import cbit.vcell.server.SimpleJobStatusQuerySpec;
-import cbit.vcell.server.SimulationJobStatusPersistent;
-import cbit.vcell.server.SimulationStatusPersistent;
-import cbit.vcell.server.UserRegistrationOP;
-import cbit.vcell.server.UserRegistrationResults;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
-import cbit.vcell.xml.Xmlproducer;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.TreeMap;
+import java.util.Vector;
 /**
  * This type was created in VisualAge.
  */
@@ -78,6 +67,27 @@ public class DatabaseServerImpl {
 		year_asc,
 		year_desc
 	};
+
+	@FunctionalInterface
+	private interface DBCall<R>{
+		R get() throws SQLException, ObjectNotFoundException, DataAccessException;
+	}
+
+	<R> R callAndErrorHandler(DBCall<R> dbCall) throws DataAccessException{
+		try {
+			return dbCall.get();
+		} catch (ObjectNotFoundException e) {
+			lg.error(e.getMessage(),e);
+			throw new ObjectNotFoundException(e.getMessage());
+		} catch (SQLException e) {
+			lg.error(e.getMessage(),e);
+			throw new DataAccessException(e.getMessage());
+		} catch (DataAccessException e){
+			lg.error(e.getMessage(),e);
+			throw new DataAccessException(e);
+		}
+	}
+
 /**
  * This method was created in VisualAge.
  */
@@ -190,24 +200,19 @@ public void deleteBioModel(User user, KeyValue key) throws DataAccessException, 
 	delete(user,VersionableType.BioModelMetaData, key);
 }
 
+public FieldDataDBOperationResults saveFieldDataEDI(User user, FieldDataDBEntry entry) throws DataAccessException{
+	lg.trace("DatabaseServerImpl.saveFieldDataEDI");
+	return callAndErrorHandler(() -> dbTop.saveFieldDataExternalDataID(user, entry));
+}
 
-/**
- * delete method comment.
- */
-public FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, ObjectNotFoundException {
-	try {
-		if (lg.isTraceEnabled()) lg.trace("DatabaseServerImpl.fieldDataDBOperation opType="+fieldDataDBOperationSpec.opType);
-		return dbTop.fieldDataDBOperation(user, fieldDataDBOperationSpec, true);
-	} catch (SQLException e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
-	} catch (ObjectNotFoundException e) {
-		lg.error(e.getMessage(),e);
-		throw new ObjectNotFoundException(e.getMessage());
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
-	}
+public FieldDataDBOperationResults getFieldDataIDs(User user) throws DataAccessException {
+	lg.trace("DatabaseServerImpl.getFieldDataIDs");
+	return callAndErrorHandler(() -> dbTop.getFieldDataEDIs(user));
+}
+
+public FieldDataDBOperationResults deleteFieldDataID(User user, ExternalDataIdentifier edi) throws DataAccessException {
+	lg.trace("DatabaseServerImpl.deleteFieldDataID");
+	return callAndErrorHandler(() -> dbTop.deleteFieldDataEDI(user, edi));
 }
 
 public CopyFieldDataResult copyFieldData(User user, ExternalDataIdentifier sourceID, String sourceAnnotation,

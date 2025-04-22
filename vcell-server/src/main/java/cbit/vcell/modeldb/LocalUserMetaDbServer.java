@@ -13,9 +13,9 @@ package cbit.vcell.modeldb;
 import cbit.image.VCImageInfo;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.model.*;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
@@ -76,13 +76,11 @@ public void deleteBioModel(KeyValue key) throws DataAccessException, ObjectNotFo
 	dbServerImpl.deleteBioModel(user, key);
 }
 
-
-	/**
- * delete method comment.
- */
-public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, ObjectNotFoundException {
-	return dbServerImpl.fieldDataDBOperation(user,fieldDataDBOperationSpec);
+@Override
+public FieldDataDBOperationResults getAllFieldDataIDs() throws DataAccessException, ObjectNotFoundException, RemoteProxyException {
+	return dbServerImpl.getFieldDataIDs(user);
 }
+
 
 	@Override
 	public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {

@@ -12,8 +12,6 @@ package cbit.vcell.message.server.bootstrap.client;
 
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.clientdb.ServerRejectedSaveException;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.message.VCellQueue;
@@ -29,7 +27,7 @@ import org.vcell.util.document.*;
 import java.util.Hashtable;
 import java.util.TreeMap;
 
-public class RpcDbServerProxy extends AbstractRpcServerProxy implements cbit.vcell.server.UserMetaDbServer {
+public class RpcDbServerProxy extends AbstractRpcServerProxy {
 
 public RpcDbServerProxy(UserLoginInfo userLoginInfo, RpcSender rpcSender) {
 	super(userLoginInfo, rpcSender, VCellQueue.DbRequestQueue);
@@ -53,17 +51,10 @@ public void deleteBioModel(org.vcell.util.document.KeyValue bioModelKey) throws 
 }
 
 
-
-	public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, ObjectNotFoundException {
-	throw new UnsupportedOperationException("RPC field data calls are not supported.");
-}
-
-	@Override
 	public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {
 		throw new UnsupportedOperationException("Not supported on RPC");
 	}
 
-	@Override
 	public Hashtable<String, ExternalDataIdentifier> copyModelsFieldData(String modelKey, VersionableType modelType) {
 		throw new UnsupportedOperationException("Not supported on RPC");
 	}

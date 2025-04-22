@@ -18,7 +18,6 @@ import cbit.rmi.event.*;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.field.io.FieldData;
@@ -422,17 +421,12 @@ public void delete(MathModelInfo mathModelInfo) throws DataAccessException {
 	}	
 }
 
-public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException {
 
-	try{
-		return sessionManager.getUserMetaDbServer().fieldDataDBOperation(fieldDataDBOperationSpec);	
-	}catch (RemoteProxyException e){
-		handleRemoteProxyException(e);
-		throw new DataAccessException(e.getMessage());
-	}
+public FieldDataDBOperationResults getAllFieldDataIDs() throws DataAccessException, RemoteProxyException {
+	return sessionManager.getUserMetaDbServer().getAllFieldDataIDs();
 }
 
-public ExternalDataIdentifier analyzeAndSaveFieldFromFile(FieldDataSpec fieldDataSpec) throws DataAccessException {
+	public ExternalDataIdentifier analyzeAndSaveFieldFromFile(FieldDataSpec fieldDataSpec) throws DataAccessException {
 
 	return sessionManager.getVCDataManager().analyzeAndCreateFieldData(fieldDataSpec);
 }

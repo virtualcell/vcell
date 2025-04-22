@@ -12,7 +12,6 @@ package org.vcell.api.messaging;
 
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.message.server.bootstrap.client.RpcDbServerProxy;
 import cbit.vcell.message.server.bootstrap.client.RpcSender;
@@ -119,34 +118,11 @@ public void deleteBioModel(org.vcell.util.document.KeyValue key) throws DataAcce
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/22/2003 10:23:06 AM)
- */
-public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException {
-
-	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.fieldDataDBOperation(...)");
-		if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_DELETE){
-			throw new UnsupportedOperationException("Can not call deletion on field data DB entry. Have to do both file, and DB deletion.");
-		} else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS) {
-			List<FieldDataReference> fieldDataReferences = vCellApiClient.getFieldDataApi().getAllIDs();
-			return DtoModelTransforms.fieldDataReferencesToDBResults(fieldDataReferences, fieldDataDBOperationSpec.owner);
-		} else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_SAVEEXTDATAID) {
-			UnsupportedOperationException unsupported = new UnsupportedOperationException("Call from UserLocalDataSetController, no longer allowing manual entries to DB.");
-			lg.error(unsupported);
-			throw unsupported;
-		} else{
-			UnsupportedOperationException exception = new UnsupportedOperationException("Attempting to call field data method that is unavailable.");
-			lg.error(exception.getMessage(), fieldDataDBOperationSpec);
-			throw exception;
-		}
-	} catch (ApiException e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
-	}
+public FieldDataDBOperationResults getAllFieldDataIDs(){
+	List<FieldDataReference> fieldDataReferences = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().getAllIDs());
+	return DtoModelTransforms.fieldDataReferencesToDBResults(fieldDataReferences);
 }
+
 
 public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {
     try {

@@ -24,7 +24,6 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.io.FieldData;
 import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.geometry.AnalyticSubVolume;
@@ -1810,8 +1809,7 @@ private ArrayList<AsynchClientTask> getImportSTLtasks(File[] selectedFiles,Vect3
 		FieldData fdos = null;
 		try{
 			//Get temp, and remove it-------
-			FieldDataDBOperationSpec listExtDataIDSpec = FieldDataDBOperationSpec.createGetExtDataIDsSpec(documentManager.getUser());
-			FieldDataDBOperationResults fdDBOperation = documentManager.fieldDataDBOperation(listExtDataIDSpec);
+			FieldDataDBOperationResults fdDBOperation = documentManager.getAllFieldDataIDs();
 			for(int i=0;i<fdDBOperation.extDataIDArr.length;i++) {
 				if(fdDBOperation.extDataIDArr[i].getName().equals("fd")){
 					documentManager.deleteFieldData(fdDBOperation.extDataID.getDataKey());
@@ -2586,8 +2584,7 @@ private String importSourceName;
 					ArrayList<CartesianMesh> meshes = new ArrayList<CartesianMesh>();
 
 					//DocumentManager documentManager = documentManager.getSessionManager()..getRequestManager().getDocumentManager();
-					FieldDataDBOperationSpec fdos = FieldDataDBOperationSpec.createGetExtDataIDsSpec(documentManager.getUser());
-					FieldDataDBOperationResults fieldDataDBOperationResults = documentManager.fieldDataDBOperation(fdos);
+					FieldDataDBOperationResults fieldDataDBOperationResults = documentManager.getAllFieldDataIDs();
 					ExternalDataIdentifier[] externalDataIdentifierArr = fieldDataDBOperationResults.extDataIDArr;
 					Arrays.sort(externalDataIdentifierArr, new Comparator<ExternalDataIdentifier>() {
 						@Override

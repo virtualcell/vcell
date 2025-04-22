@@ -15,7 +15,6 @@ import cbit.image.VCImageInfo;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.field.io.FieldData;
 import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.field.io.FieldDataSpec;
@@ -23,6 +22,7 @@ import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.model.*;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
@@ -145,7 +145,7 @@ void delete(MathModelInfo mathModelInfo) throws DataAccessException;
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  * @exception org.vcell.util.DataAccessException The exception description.
  */
-FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException;
+FieldDataDBOperationResults getAllFieldDataIDs() throws DataAccessException, RemoteProxyException;
 
 
 
