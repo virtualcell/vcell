@@ -166,14 +166,14 @@ public class FieldDataDB {
         return dataSetController.fieldDataInfo(keyValue, user, jobParameter);
     }
 
-    public FieldDataResource.AnalyzedFile analyzeFieldDataFromFile(File imageFile, String fileName) throws DataAccessException, ImageException, DataFormatException {
+    public FieldDataResource.FieldData analyzeFieldDataFromFile(File imageFile, String fileName) throws DataAccessException, ImageException, DataFormatException {
         if (imageFile == null) {
             throw new DataAccessException("No file present");
         }
         if (!fileName.contains(".vfrap")) {
             try {
                 FieldData spec = FieldDataFileConversion.createFDOSFromImageFile(imageFile, false, null);
-                return new FieldDataResource.AnalyzedFile(
+                return new FieldDataResource.FieldData(
                         spec.data, new double[][][]{}, spec.channelNames.toArray(new String[0]), spec.times.stream().mapToDouble(Double::doubleValue).toArray(),
                         spec.origin, spec.extent, spec.iSize, spec.annotation, fileName
                 );

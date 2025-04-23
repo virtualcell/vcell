@@ -6,7 +6,6 @@ import cbit.vcell.field.io.FieldData;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataIdentifier;
-import org.vcell.restclient.model.AnalyzedFile;
 import org.vcell.restclient.model.FieldDataReference;
 import org.vcell.restclient.model.FieldDataShape;
 import org.vcell.util.Extent;
@@ -128,8 +127,8 @@ public class DtoModelTransforms {
         return results;
     }
 
-    public static AnalyzedFile fieldDataToAnalyzedFile(FieldData fieldData){
-        AnalyzedFile analyzedFile = new AnalyzedFile();
+    public static org.vcell.restclient.model.FieldData fieldDataToDTO(FieldData fieldData){
+        org.vcell.restclient.model.FieldData analyzedFile = new org.vcell.restclient.model.FieldData();
         List<List<List<Integer>>> shortData = new ArrayList<>();
         for (int i = 0; i < fieldData.data.length; i++){
             shortData.add(new ArrayList<>());

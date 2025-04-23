@@ -16,7 +16,6 @@ package org.vcell.restclient.api;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.vcell.restclient.ApiException;
-import org.vcell.restclient.model.AnalyzedFile;
 import org.vcell.restclient.model.ExternalDataIdentifier;
 import org.vcell.restclient.model.FieldDataReference;
 import org.vcell.restclient.model.SourceModel;
@@ -47,8 +46,6 @@ public class FieldDataResourceApiTest {
     public void analyzeFileTest() throws ApiException {
         File _file = null;
         String fileName = null;
-        AnalyzedFile response = 
-        api.analyzeFile(_file, fileName);
         
         // TODO: test validations
     }

@@ -34,21 +34,21 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**
- * AnalyzedFile
+ * FieldData
  */
 @JsonPropertyOrder({
-  AnalyzedFile.JSON_PROPERTY_SHORT_SPEC_DATA,
-  AnalyzedFile.JSON_PROPERTY_DOUBLE_SPEC_DATA,
-  AnalyzedFile.JSON_PROPERTY_VAR_NAMES,
-  AnalyzedFile.JSON_PROPERTY_TIMES,
-  AnalyzedFile.JSON_PROPERTY_ORIGIN,
-  AnalyzedFile.JSON_PROPERTY_EXTENT,
-  AnalyzedFile.JSON_PROPERTY_ISIZE,
-  AnalyzedFile.JSON_PROPERTY_ANNOTATION,
-  AnalyzedFile.JSON_PROPERTY_NAME
+  FieldData.JSON_PROPERTY_SHORT_SPEC_DATA,
+  FieldData.JSON_PROPERTY_DOUBLE_SPEC_DATA,
+  FieldData.JSON_PROPERTY_VAR_NAMES,
+  FieldData.JSON_PROPERTY_TIMES,
+  FieldData.JSON_PROPERTY_ORIGIN,
+  FieldData.JSON_PROPERTY_EXTENT,
+  FieldData.JSON_PROPERTY_ISIZE,
+  FieldData.JSON_PROPERTY_ANNOTATION,
+  FieldData.JSON_PROPERTY_NAME
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
-public class AnalyzedFile {
+public class FieldData {
   public static final String JSON_PROPERTY_SHORT_SPEC_DATA = "shortSpecData";
   private List<List<List<Integer>>> shortSpecData;
 
@@ -76,15 +76,15 @@ public class AnalyzedFile {
   public static final String JSON_PROPERTY_NAME = "name";
   private String name;
 
-  public AnalyzedFile() { 
+  public FieldData() { 
   }
 
-  public AnalyzedFile shortSpecData(List<List<List<Integer>>> shortSpecData) {
+  public FieldData shortSpecData(List<List<List<Integer>>> shortSpecData) {
     this.shortSpecData = shortSpecData;
     return this;
   }
 
-  public AnalyzedFile addShortSpecDataItem(List<List<Integer>> shortSpecDataItem) {
+  public FieldData addShortSpecDataItem(List<List<Integer>> shortSpecDataItem) {
     if (this.shortSpecData == null) {
       this.shortSpecData = new ArrayList<>();
     }
@@ -112,12 +112,12 @@ public class AnalyzedFile {
   }
 
 
-  public AnalyzedFile doubleSpecData(List<List<List<Double>>> doubleSpecData) {
+  public FieldData doubleSpecData(List<List<List<Double>>> doubleSpecData) {
     this.doubleSpecData = doubleSpecData;
     return this;
   }
 
-  public AnalyzedFile addDoubleSpecDataItem(List<List<Double>> doubleSpecDataItem) {
+  public FieldData addDoubleSpecDataItem(List<List<Double>> doubleSpecDataItem) {
     if (this.doubleSpecData == null) {
       this.doubleSpecData = new ArrayList<>();
     }
@@ -145,12 +145,12 @@ public class AnalyzedFile {
   }
 
 
-  public AnalyzedFile varNames(List<String> varNames) {
+  public FieldData varNames(List<String> varNames) {
     this.varNames = varNames;
     return this;
   }
 
-  public AnalyzedFile addVarNamesItem(String varNamesItem) {
+  public FieldData addVarNamesItem(String varNamesItem) {
     if (this.varNames == null) {
       this.varNames = new ArrayList<>();
     }
@@ -178,12 +178,12 @@ public class AnalyzedFile {
   }
 
 
-  public AnalyzedFile times(List<Double> times) {
+  public FieldData times(List<Double> times) {
     this.times = times;
     return this;
   }
 
-  public AnalyzedFile addTimesItem(Double timesItem) {
+  public FieldData addTimesItem(Double timesItem) {
     if (this.times == null) {
       this.times = new ArrayList<>();
     }
@@ -211,7 +211,7 @@ public class AnalyzedFile {
   }
 
 
-  public AnalyzedFile origin(Origin origin) {
+  public FieldData origin(Origin origin) {
     this.origin = origin;
     return this;
   }
@@ -236,7 +236,7 @@ public class AnalyzedFile {
   }
 
 
-  public AnalyzedFile extent(Extent extent) {
+  public FieldData extent(Extent extent) {
     this.extent = extent;
     return this;
   }
@@ -261,7 +261,7 @@ public class AnalyzedFile {
   }
 
 
-  public AnalyzedFile isize(ISize isize) {
+  public FieldData isize(ISize isize) {
     this.isize = isize;
     return this;
   }
@@ -286,7 +286,7 @@ public class AnalyzedFile {
   }
 
 
-  public AnalyzedFile annotation(String annotation) {
+  public FieldData annotation(String annotation) {
     this.annotation = annotation;
     return this;
   }
@@ -311,7 +311,7 @@ public class AnalyzedFile {
   }
 
 
-  public AnalyzedFile name(String name) {
+  public FieldData name(String name) {
     this.name = name;
     return this;
   }
@@ -337,7 +337,7 @@ public class AnalyzedFile {
 
 
   /**
-   * Return true if this AnalyzedFile object is equal to o.
+   * Return true if this FieldData object is equal to o.
    */
   @Override
   public boolean equals(Object o) {
@@ -347,16 +347,16 @@ public class AnalyzedFile {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    AnalyzedFile analyzedFile = (AnalyzedFile) o;
-    return Objects.equals(this.shortSpecData, analyzedFile.shortSpecData) &&
-        Objects.equals(this.doubleSpecData, analyzedFile.doubleSpecData) &&
-        Objects.equals(this.varNames, analyzedFile.varNames) &&
-        Objects.equals(this.times, analyzedFile.times) &&
-        Objects.equals(this.origin, analyzedFile.origin) &&
-        Objects.equals(this.extent, analyzedFile.extent) &&
-        Objects.equals(this.isize, analyzedFile.isize) &&
-        Objects.equals(this.annotation, analyzedFile.annotation) &&
-        Objects.equals(this.name, analyzedFile.name);
+    FieldData fieldData = (FieldData) o;
+    return Objects.equals(this.shortSpecData, fieldData.shortSpecData) &&
+        Objects.equals(this.doubleSpecData, fieldData.doubleSpecData) &&
+        Objects.equals(this.varNames, fieldData.varNames) &&
+        Objects.equals(this.times, fieldData.times) &&
+        Objects.equals(this.origin, fieldData.origin) &&
+        Objects.equals(this.extent, fieldData.extent) &&
+        Objects.equals(this.isize, fieldData.isize) &&
+        Objects.equals(this.annotation, fieldData.annotation) &&
+        Objects.equals(this.name, fieldData.name);
   }
 
   @Override
@@ -367,7 +367,7 @@ public class AnalyzedFile {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class AnalyzedFile {\n");
+    sb.append("class FieldData {\n");
     sb.append("    shortSpecData: ").append(toIndentedString(shortSpecData)).append("\n");
     sb.append("    doubleSpecData: ").append(toIndentedString(doubleSpecData)).append("\n");
     sb.append("    varNames: ").append(toIndentedString(varNames)).append("\n");

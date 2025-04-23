@@ -1,7 +1,7 @@
 package org.vcell.restq.apiclient;
 
-import cbit.vcell.VirtualMicroscopy.BioformatsImageImplLegacy;
 import cbit.vcell.VirtualMicroscopy.BioformatsImageImpl;
+import cbit.vcell.VirtualMicroscopy.BioformatsImageImplLegacy;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.resource.PropertyLoader;
@@ -16,7 +16,10 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.FieldDataResourceApi;
 import org.vcell.restclient.api.UsersResourceApi;
-import org.vcell.restclient.model.*;
+import org.vcell.restclient.model.FieldData;
+import org.vcell.restclient.model.FieldDataReference;
+import org.vcell.restclient.model.FieldDataSavedResults;
+import org.vcell.restclient.model.FieldDataShape;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
@@ -114,11 +117,11 @@ public class FieldDataAPITest {
         /////////////////////
         // Add Field Data //
         ///////////////////
-        AnalyzedFile saveFieldDataFromFile = new AnalyzedFile();
+        FieldData saveFieldDataFromFile = new FieldData();
         saveFieldDataFromFile.setShortSpecData(matrix); saveFieldDataFromFile.varNames(varNames);
         saveFieldDataFromFile.times(times); saveFieldDataFromFile.origin(DtoModelTransforms.originToDTO(origin)); saveFieldDataFromFile.extent(DtoModelTransforms.extentToDTO(extent));
         saveFieldDataFromFile.isize(DtoModelTransforms.iSizeToDTO(iSize)); saveFieldDataFromFile.annotation("test annotation"); saveFieldDataFromFile.name("TestFile");
-        FieldDataSavedResults results = fieldDataResourceApi.createFromAnalyzedFile(saveFieldDataFromFile);
+        FieldDataSavedResults results = fieldDataResourceApi.save(saveFieldDataFromFile);
 
         // File is Saved on File System
         FieldDataShape fieldDataInfo = fieldDataResourceApi.getShapeFromID(results.getFieldDataKey());
@@ -162,12 +165,12 @@ public class FieldDataAPITest {
             Assertions.assertEquals(HttpStatus.BAD_REQUEST_400, e.getCode());
         }
 
-        AnalyzedFile results = fieldDataResourceApi.analyzeFile(testFile, "bob");
+        FieldData results = fieldDataResourceApi.analyzeFile(testFile, "bob");
 
         Assertions.assertNotNull(results);
         Assertions.assertNotNull(results.getShortSpecData());
 
-        FieldDataSavedResults saveResults = fieldDataResourceApi.createFromAnalyzedFile(results);
+        FieldDataSavedResults saveResults = fieldDataResourceApi.save(results);
         Assertions.assertNotNull(saveResults);
 
         FieldDataShape fieldDataInfo = fieldDataResourceApi.getShapeFromID(saveResults.getFieldDataKey());
@@ -196,8 +199,8 @@ public class FieldDataAPITest {
         FieldDataResourceApi api = new FieldDataResourceApi(aliceAPIClient);
 
         File testFile = TestEndpointUtils.getResourceFile("/flybrain-035.tif");
-        AnalyzedFile analyzedFile = api.analyzeFile(testFile, "test_file1");
-        FieldDataSavedResults res = api.createFromAnalyzedFile(analyzedFile);
+        FieldData analyzedFile = api.analyzeFile(testFile, "test_file1");
+        FieldDataSavedResults res = api.save(analyzedFile);
         FieldDataShape ogShape = api.getShapeFromID(res.getFieldDataKey());
 
 

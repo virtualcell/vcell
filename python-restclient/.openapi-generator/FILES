@@ -3,7 +3,6 @@
 README.md
 docs/AccesTokenRepresentationRecord.md
 docs/AdminResourceApi.md
-docs/AnalyzedFile.md
 docs/BatchSystemType.md
 docs/BioModel.md
 docs/BioModelResourceApi.md
@@ -13,6 +12,7 @@ docs/DetailedState.md
 docs/Domain.md
 docs/Extent.md
 docs/ExternalDataIdentifier.md
+docs/FieldData.md
 docs/FieldDataReference.md
 docs/FieldDataResourceApi.md
 docs/FieldDataSavedResults.md
@@ -66,7 +66,6 @@ vcell_client/configuration.py
 vcell_client/exceptions.py
 vcell_client/models/__init__.py
 vcell_client/models/acces_token_representation_record.py
-vcell_client/models/analyzed_file.py
 vcell_client/models/batch_system_type.py
 vcell_client/models/bio_model.py
 vcell_client/models/biomodel_ref.py
@@ -75,6 +74,7 @@ vcell_client/models/detailed_state.py
 vcell_client/models/domain.py
 vcell_client/models/extent.py
 vcell_client/models/external_data_identifier.py
+vcell_client/models/field_data.py
 vcell_client/models/field_data_reference.py
 vcell_client/models/field_data_saved_results.py
 vcell_client/models/field_data_shape.py

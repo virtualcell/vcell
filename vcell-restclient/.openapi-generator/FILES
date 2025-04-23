@@ -3,7 +3,6 @@ README.md
 api/openapi.yaml
 docs/AccesTokenRepresentationRecord.md
 docs/AdminResourceApi.md
-docs/AnalyzedFile.md
 docs/BatchSystemType.md
 docs/BioModel.md
 docs/BioModelResourceApi.md
@@ -13,6 +12,7 @@ docs/DetailedState.md
 docs/Domain.md
 docs/Extent.md
 docs/ExternalDataIdentifier.md
+docs/FieldData.md
 docs/FieldDataReference.md
 docs/FieldDataResourceApi.md
 docs/FieldDataSavedResults.md
@@ -68,7 +68,6 @@ src/main/java/org/vcell/restclient/api/SolverResourceApi.java
 src/main/java/org/vcell/restclient/api/UsersResourceApi.java
 src/main/java/org/vcell/restclient/model/AbstractOpenApiSchema.java
 src/main/java/org/vcell/restclient/model/AccesTokenRepresentationRecord.java
-src/main/java/org/vcell/restclient/model/AnalyzedFile.java
 src/main/java/org/vcell/restclient/model/BatchSystemType.java
 src/main/java/org/vcell/restclient/model/BioModel.java
 src/main/java/org/vcell/restclient/model/BiomodelRef.java
@@ -77,6 +76,7 @@ src/main/java/org/vcell/restclient/model/DetailedState.java
 src/main/java/org/vcell/restclient/model/Domain.java
 src/main/java/org/vcell/restclient/model/Extent.java
 src/main/java/org/vcell/restclient/model/ExternalDataIdentifier.java
+src/main/java/org/vcell/restclient/model/FieldData.java
 src/main/java/org/vcell/restclient/model/FieldDataReference.java
 src/main/java/org/vcell/restclient/model/FieldDataSavedResults.java
 src/main/java/org/vcell/restclient/model/FieldDataShape.java

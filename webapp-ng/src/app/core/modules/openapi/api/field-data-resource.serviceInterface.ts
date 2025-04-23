@@ -13,9 +13,9 @@ import { HttpHeaders }                                       from '@angular/comm
 
 import { Observable }                                        from 'rxjs';
 
-import { AnalyzedFile } from '../model/models';
 import { Extent } from '../model/models';
 import { ExternalDataIdentifier } from '../model/models';
+import { FieldData } from '../model/models';
 import { FieldDataReference } from '../model/models';
 import { FieldDataSavedResults } from '../model/models';
 import { FieldDataShape } from '../model/models';
@@ -40,12 +40,12 @@ export interface FieldDataResourceServiceInterface {
     _delete(fieldDataID: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
-     * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+     * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
      * 
      * @param file 
      * @param fileName 
      */
-    analyzeFile(file?: Blob, fileName?: string, extraHttpRequestParams?: any): Observable<AnalyzedFile>;
+    analyzeFile(file?: Blob, fileName?: string, extraHttpRequestParams?: any): Observable<FieldData>;
 
     /**
      * For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
@@ -69,13 +69,6 @@ export interface FieldDataResourceServiceInterface {
     copyModelsFieldData(sourceModel?: SourceModel, extraHttpRequestParams?: any): Observable<{ [key: string]: ExternalDataIdentifier; }>;
 
     /**
-     * Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
-     * 
-     * @param analyzedFile 
-     */
-    createFromAnalyzedFile(analyzedFile?: AnalyzedFile, extraHttpRequestParams?: any): Observable<FieldDataSavedResults>;
-
-    /**
      * Create new field data from existing simulation results.
      * 
      * @param simKeyReference 
@@ -96,5 +89,12 @@ export interface FieldDataResourceServiceInterface {
      * @param fieldDataID 
      */
     getShapeFromID(fieldDataID: string, extraHttpRequestParams?: any): Observable<FieldDataShape>;
+
+    /**
+     * Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
+     * 
+     * @param fieldData 
+     */
+    save(fieldData?: FieldData, extraHttpRequestParams?: any): Observable<FieldDataSavedResults>;
 
 }

@@ -122,9 +122,9 @@ public class FieldDataResource {
             if (!Pattern.matches("^[a-z0-9_]*$", fileName) || fileName.length() > 100 || fileName.isEmpty()){
                 throw new WebApplicationException("Invalid file name.", HTTP.BAD_REQUEST);
             }
-            AnalyzedFile analyzedFile = fieldDataDB.analyzeFieldDataFromFile(file, fileName);
+            FieldData fieldData = fieldDataDB.analyzeFieldDataFromFile(file, fileName);
             ExternalDataIdentifier edi = fieldDataDB.saveNewFieldDataFromFile(fileName,
-                    channelNames, analyzedFile.shortSpecData, annotation,
+                    channelNames, fieldData.shortSpecData, annotation,
                     user, times, origin, extent, iSize);
             return new FieldDataSavedResults(edi.getName(), edi.getKey().toString());
         } catch (ImageException | DataFormatException | DataAccessException e) {
@@ -137,9 +137,9 @@ public class FieldDataResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Operation(operationId = "analyzeFile", summary = "Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). " +
+    @Operation(operationId = "analyzeFile", summary = "Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). " +
             "Filenames must be lowercase alphanumeric, and can contain underscores.")
-    public AnalyzedFile analyzeFieldData(@RestForm File file, @RestForm String fileName){
+    public FieldData analyzeFile(@RestForm File file, @RestForm String fileName){
         try{
             userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
             if (!Pattern.matches("^[a-z0-9_]*$", fileName) || fileName.length() > 100 || fileName.isEmpty()){
@@ -152,13 +152,13 @@ public class FieldDataResource {
     }
 
     @POST
-    @Path("/createFromSpecification")
+    @Path("/save")
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(operationId = "createFromAnalyzedFile", summary = "Take the field data specification, and save it to the server. " +
+    @Operation(operationId = "save", summary = "Take the generated field data, and save it to the server. " +
             "User may adjust the analyzed file before uploading to edit defaults.")
-    public FieldDataSavedResults createNewFieldDataFromSpecification(AnalyzedFile saveFieldData){
+    public FieldDataSavedResults createNewFieldDataFromSpecification(FieldData saveFieldData){
         FieldDataSavedResults fieldDataSavedResults;
         try{
             User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
@@ -231,7 +231,7 @@ public class FieldDataResource {
             Vector<KeyValue> simulationsReferencingThisID
     ) { }
 
-    public record AnalyzedFile(
+    public record FieldData(
             short[][][] shortSpecData,  //[time][var][data]
             double[][][] doubleSpecData,
             String[] varNames,

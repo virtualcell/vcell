@@ -113,14 +113,12 @@ Class | Method | HTTP request | Description
 *BioModelResourceApi* | [**getBiomodelByIdWithHttpInfo**](docs/BioModelResourceApi.md#getBiomodelByIdWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
 *BioModelResourceApi* | [**uploadBioModel**](docs/BioModelResourceApi.md#uploadBioModel) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
 *BioModelResourceApi* | [**uploadBioModelWithHttpInfo**](docs/BioModelResourceApi.md#uploadBioModelWithHttpInfo) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
-*FieldDataResourceApi* | [**analyzeFile**](docs/FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
-*FieldDataResourceApi* | [**analyzeFileWithHttpInfo**](docs/FieldDataResourceApi.md#analyzeFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+*FieldDataResourceApi* | [**analyzeFile**](docs/FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+*FieldDataResourceApi* | [**analyzeFileWithHttpInfo**](docs/FieldDataResourceApi.md#analyzeFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 *FieldDataResourceApi* | [**analyzeFileAndCreate**](docs/FieldDataResourceApi.md#analyzeFileAndCreate) | **POST** /api/v1/fieldData/analyzeAndCreateFromFile | For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
 *FieldDataResourceApi* | [**analyzeFileAndCreateWithHttpInfo**](docs/FieldDataResourceApi.md#analyzeFileAndCreateWithHttpInfo) | **POST** /api/v1/fieldData/analyzeAndCreateFromFile | For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
 *FieldDataResourceApi* | [**copyModelsFieldData**](docs/FieldDataResourceApi.md#copyModelsFieldData) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
 *FieldDataResourceApi* | [**copyModelsFieldDataWithHttpInfo**](docs/FieldDataResourceApi.md#copyModelsFieldDataWithHttpInfo) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
-*FieldDataResourceApi* | [**createFromAnalyzedFile**](docs/FieldDataResourceApi.md#createFromAnalyzedFile) | **POST** /api/v1/fieldData/createFromSpecification | Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
-*FieldDataResourceApi* | [**createFromAnalyzedFileWithHttpInfo**](docs/FieldDataResourceApi.md#createFromAnalyzedFileWithHttpInfo) | **POST** /api/v1/fieldData/createFromSpecification | Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 *FieldDataResourceApi* | [**createFromSimulation**](docs/FieldDataResourceApi.md#createFromSimulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results.
 *FieldDataResourceApi* | [**createFromSimulationWithHttpInfo**](docs/FieldDataResourceApi.md#createFromSimulationWithHttpInfo) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results.
 *FieldDataResourceApi* | [**delete**](docs/FieldDataResourceApi.md#delete) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data.
@@ -129,6 +127,8 @@ Class | Method | HTTP request | Description
 *FieldDataResourceApi* | [**getAllIDsWithHttpInfo**](docs/FieldDataResourceApi.md#getAllIDsWithHttpInfo) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data.
 *FieldDataResourceApi* | [**getShapeFromID**](docs/FieldDataResourceApi.md#getShapeFromID) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
 *FieldDataResourceApi* | [**getShapeFromIDWithHttpInfo**](docs/FieldDataResourceApi.md#getShapeFromIDWithHttpInfo) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
+*FieldDataResourceApi* | [**save**](docs/FieldDataResourceApi.md#save) | **POST** /api/v1/fieldData/save | Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
+*FieldDataResourceApi* | [**saveWithHttpInfo**](docs/FieldDataResourceApi.md#saveWithHttpInfo) | **POST** /api/v1/fieldData/save | Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 *HelloWorldApi* | [**getHelloWorld**](docs/HelloWorldApi.md#getHelloWorld) | **GET** /api/v1/helloworld | Get hello world message.
 *HelloWorldApi* | [**getHelloWorldWithHttpInfo**](docs/HelloWorldApi.md#getHelloWorldWithHttpInfo) | **GET** /api/v1/helloworld | Get hello world message.
 *PublicationResourceApi* | [**createPublication**](docs/PublicationResourceApi.md#createPublication) | **POST** /api/v1/publications | Create publication
@@ -176,7 +176,6 @@ Class | Method | HTTP request | Description
 ## Documentation for Models
 
  - [AccesTokenRepresentationRecord](docs/AccesTokenRepresentationRecord.md)
- - [AnalyzedFile](docs/AnalyzedFile.md)
  - [BatchSystemType](docs/BatchSystemType.md)
  - [BioModel](docs/BioModel.md)
  - [BiomodelRef](docs/BiomodelRef.md)
@@ -185,6 +184,7 @@ Class | Method | HTTP request | Description
  - [Domain](docs/Domain.md)
  - [Extent](docs/Extent.md)
  - [ExternalDataIdentifier](docs/ExternalDataIdentifier.md)
+ - [FieldData](docs/FieldData.md)
  - [FieldDataReference](docs/FieldDataReference.md)
  - [FieldDataSavedResults](docs/FieldDataSavedResults.md)
  - [FieldDataShape](docs/FieldDataShape.md)

@@ -1,5 +1,4 @@
 export * from './acces-token-representation-record';
-export * from './analyzed-file';
 export * from './batch-system-type';
 export * from './bio-model';
 export * from './biomodel-ref';
@@ -8,6 +7,7 @@ export * from './detailed-state';
 export * from './domain';
 export * from './extent';
 export * from './external-data-identifier';
+export * from './field-data';
 export * from './field-data-reference';
 export * from './field-data-saved-results';
 export * from './field-data-shape';

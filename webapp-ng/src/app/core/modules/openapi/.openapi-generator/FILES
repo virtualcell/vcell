@@ -23,7 +23,6 @@ encoder.ts
 git_push.sh
 index.ts
 model/acces-token-representation-record.ts
-model/analyzed-file.ts
 model/batch-system-type.ts
 model/bio-model.ts
 model/biomodel-ref.ts
@@ -35,6 +34,7 @@ model/external-data-identifier.ts
 model/field-data-reference.ts
 model/field-data-saved-results.ts
 model/field-data-shape.ts
+model/field-data.ts
 model/hello-world-message.ts
 model/htc-job-id.ts
 model/i-size.ts

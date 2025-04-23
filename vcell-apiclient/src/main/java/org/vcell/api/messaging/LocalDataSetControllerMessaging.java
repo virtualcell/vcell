@@ -66,8 +66,8 @@ public void deleteFieldData(KeyValue externalDataIdentifierKey) {
 
 //! TODO Provide actual owner to function
 public ExternalDataIdentifier saveFieldData(FieldData fieldData){
-	FieldDataSavedResults results = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().createFromAnalyzedFile(
-			DtoModelTransforms.fieldDataToAnalyzedFile(fieldData)
+	FieldDataSavedResults results = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().save(
+			DtoModelTransforms.fieldDataToDTO(fieldData)
 	));
 	return new ExternalDataIdentifier(new KeyValue(results.getFieldDataKey()), null, results.getFieldDataName());
 }

@@ -280,9 +280,9 @@ paths:
       tags:
       - Field Data Resource
       summary: "Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and\
-        \ create default field data specification. Color mapped images not supported\
-        \ (the colors in those images will be interpreted as separate channels). Filenames\
-        \ must be lowercase alphanumeric, and can contain underscores."
+        \ return field data. Color mapped images not supported (the colors in those\
+        \ images will be interpreted as separate channels). Filenames must be lowercase\
+        \ alphanumeric, and can contain underscores."
       operationId: analyzeFile
       requestBody:
         content:
@@ -301,7 +301,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AnalyzedFile'
+                $ref: '#/components/schemas/FieldData'
         "401":
           description: Not Authorized
         "403":
@@ -366,32 +366,6 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/fieldData/createFromSpecification:
-    post:
-      tags:
-      - Field Data Resource
-      summary: "Take the field data specification, and save it to the server. User\
-        \ may adjust the analyzed file before uploading to edit defaults."
-      operationId: createFromAnalyzedFile
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AnalyzedFile'
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldDataSavedResults'
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - user
   /api/v1/fieldData/delete/{fieldDataID}:
     delete:
       tags:
@@ -407,6 +381,32 @@ paths:
       responses:
         "204":
           description: No Content
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+  /api/v1/fieldData/save:
+    post:
+      tags:
+      - Field Data Resource
+      summary: "Take the generated field data, and save it to the server. User may\
+        \ adjust the analyzed file before uploading to edit defaults."
+      operationId: save
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldData'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataSavedResults'
         "401":
           description: Not Authorized
         "403":
@@ -840,45 +840,6 @@ components:
           type: string
         userKey:
           type: string
-    AnalyzedFile:
-      type: object
-      properties:
-        shortSpecData:
-          type: array
-          items:
-            type: array
-            items:
-              type: array
-              items:
-                type: integer
-        doubleSpecData:
-          type: array
-          items:
-            type: array
-            items:
-              type: array
-              items:
-                format: double
-                type: number
-        varNames:
-          type: array
-          items:
-            type: string
-        times:
-          type: array
-          items:
-            format: double
-            type: number
-        origin:
-          $ref: '#/components/schemas/Origin'
-        extent:
-          $ref: '#/components/schemas/Extent'
-        isize:
-          $ref: '#/components/schemas/ISize'
-        annotation:
-          type: string
-        name:
-          type: string
     Application:
       type: object
     BatchSystemType:
@@ -1053,6 +1014,45 @@ components:
           type: boolean
         dataKey:
           $ref: '#/components/schemas/KeyValue'
+    FieldData:
+      type: object
+      properties:
+        shortSpecData:
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: integer
+        doubleSpecData:
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                format: double
+                type: number
+        varNames:
+          type: array
+          items:
+            type: string
+        times:
+          type: array
+          items:
+            format: double
+            type: number
+        origin:
+          $ref: '#/components/schemas/Origin'
+        extent:
+          $ref: '#/components/schemas/Extent'
+        isize:
+          $ref: '#/components/schemas/ISize'
+        annotation:
+          type: string
+        name:
+          type: string
     FieldDataReference:
       type: object
       properties:

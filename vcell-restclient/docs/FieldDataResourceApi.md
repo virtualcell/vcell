@@ -4,14 +4,12 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**analyzeFile**](FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
-| [**analyzeFileWithHttpInfo**](FieldDataResourceApi.md#analyzeFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
+| [**analyzeFile**](FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
+| [**analyzeFileWithHttpInfo**](FieldDataResourceApi.md#analyzeFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
 | [**analyzeFileAndCreate**](FieldDataResourceApi.md#analyzeFileAndCreate) | **POST** /api/v1/fieldData/analyzeAndCreateFromFile | For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip. |
 | [**analyzeFileAndCreateWithHttpInfo**](FieldDataResourceApi.md#analyzeFileAndCreateWithHttpInfo) | **POST** /api/v1/fieldData/analyzeAndCreateFromFile | For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip. |
 | [**copyModelsFieldData**](FieldDataResourceApi.md#copyModelsFieldData) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own. |
 | [**copyModelsFieldDataWithHttpInfo**](FieldDataResourceApi.md#copyModelsFieldDataWithHttpInfo) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own. |
-| [**createFromAnalyzedFile**](FieldDataResourceApi.md#createFromAnalyzedFile) | **POST** /api/v1/fieldData/createFromSpecification | Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults. |
-| [**createFromAnalyzedFileWithHttpInfo**](FieldDataResourceApi.md#createFromAnalyzedFileWithHttpInfo) | **POST** /api/v1/fieldData/createFromSpecification | Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults. |
 | [**createFromSimulation**](FieldDataResourceApi.md#createFromSimulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results. |
 | [**createFromSimulationWithHttpInfo**](FieldDataResourceApi.md#createFromSimulationWithHttpInfo) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results. |
 | [**delete**](FieldDataResourceApi.md#delete) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data. |
@@ -20,14 +18,16 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 | [**getAllIDsWithHttpInfo**](FieldDataResourceApi.md#getAllIDsWithHttpInfo) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data. |
 | [**getShapeFromID**](FieldDataResourceApi.md#getShapeFromID) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers. |
 | [**getShapeFromIDWithHttpInfo**](FieldDataResourceApi.md#getShapeFromIDWithHttpInfo) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers. |
+| [**save**](FieldDataResourceApi.md#save) | **POST** /api/v1/fieldData/save | Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults. |
+| [**saveWithHttpInfo**](FieldDataResourceApi.md#saveWithHttpInfo) | **POST** /api/v1/fieldData/save | Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults. |
 
 
 
 ## analyzeFile
 
-> AnalyzedFile analyzeFile(_file, fileName)
+> FieldData analyzeFile(_file, fileName)
 
-Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 
 ### Example
 
@@ -50,7 +50,7 @@ public class Example {
         File _file = new File("/path/to/file"); // File | 
         String fileName = "fileName_example"; // String | 
         try {
-            AnalyzedFile result = apiInstance.analyzeFile(_file, fileName);
+            FieldData result = apiInstance.analyzeFile(_file, fileName);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling FieldDataResourceApi#analyzeFile");
@@ -73,7 +73,7 @@ public class Example {
 
 ### Return type
 
-[**AnalyzedFile**](AnalyzedFile.md)
+[**FieldData**](FieldData.md)
 
 
 ### Authorization
@@ -94,9 +94,9 @@ public class Example {
 
 ## analyzeFileWithHttpInfo
 
-> ApiResponse<AnalyzedFile> analyzeFile analyzeFileWithHttpInfo(_file, fileName)
+> ApiResponse<FieldData> analyzeFile analyzeFileWithHttpInfo(_file, fileName)
 
-Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 
 ### Example
 
@@ -120,7 +120,7 @@ public class Example {
         File _file = new File("/path/to/file"); // File | 
         String fileName = "fileName_example"; // String | 
         try {
-            ApiResponse<AnalyzedFile> response = apiInstance.analyzeFileWithHttpInfo(_file, fileName);
+            ApiResponse<FieldData> response = apiInstance.analyzeFileWithHttpInfo(_file, fileName);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
@@ -145,7 +145,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**AnalyzedFile**](AnalyzedFile.md)>
+ApiResponse<[**FieldData**](FieldData.md)>
 
 
 ### Authorization
@@ -450,144 +450,6 @@ public class Example {
 ### Return type
 
 ApiResponse<[**Map&lt;String, ExternalDataIdentifier&gt;**](ExternalDataIdentifier.md)>
-
-
-### Authorization
-
-[openId](../README.md#openId)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
-
-
-## createFromAnalyzedFile
-
-> FieldDataSavedResults createFromAnalyzedFile(analyzedFile)
-
-Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.FieldDataResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
-        
-
-        FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
-        AnalyzedFile analyzedFile = new AnalyzedFile(); // AnalyzedFile | 
-        try {
-            FieldDataSavedResults result = apiInstance.createFromAnalyzedFile(analyzedFile);
-            System.out.println(result);
-        } catch (ApiException e) {
-            System.err.println("Exception when calling FieldDataResourceApi#createFromAnalyzedFile");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Reason: " + e.getResponseBody());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **analyzedFile** | [**AnalyzedFile**](AnalyzedFile.md)|  | [optional] |
-
-### Return type
-
-[**FieldDataSavedResults**](FieldDataSavedResults.md)
-
-
-### Authorization
-
-[openId](../README.md#openId)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
-
-## createFromAnalyzedFileWithHttpInfo
-
-> ApiResponse<FieldDataSavedResults> createFromAnalyzedFile createFromAnalyzedFileWithHttpInfo(analyzedFile)
-
-Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.ApiResponse;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.FieldDataResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
-        
-
-        FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
-        AnalyzedFile analyzedFile = new AnalyzedFile(); // AnalyzedFile | 
-        try {
-            ApiResponse<FieldDataSavedResults> response = apiInstance.createFromAnalyzedFileWithHttpInfo(analyzedFile);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
-        } catch (ApiException e) {
-            System.err.println("Exception when calling FieldDataResourceApi#createFromAnalyzedFile");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            System.err.println("Reason: " + e.getResponseBody());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **analyzedFile** | [**AnalyzedFile**](AnalyzedFile.md)|  | [optional] |
-
-### Return type
-
-ApiResponse<[**FieldDataSavedResults**](FieldDataSavedResults.md)>
 
 
 ### Authorization
@@ -1145,6 +1007,144 @@ ApiResponse<[**FieldDataShape**](FieldDataShape.md)>
 ### HTTP request headers
 
 - **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+
+
+## save
+
+> FieldDataSavedResults save(fieldData)
+
+Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.FieldDataResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
+
+        FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
+        FieldData fieldData = new FieldData(); // FieldData | 
+        try {
+            FieldDataSavedResults result = apiInstance.save(fieldData);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling FieldDataResourceApi#save");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **fieldData** | [**FieldData**](FieldData.md)|  | [optional] |
+
+### Return type
+
+[**FieldDataSavedResults**](FieldDataSavedResults.md)
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+
+## saveWithHttpInfo
+
+> ApiResponse<FieldDataSavedResults> save saveWithHttpInfo(fieldData)
+
+Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.FieldDataResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        
+
+        FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
+        FieldData fieldData = new FieldData(); // FieldData | 
+        try {
+            ApiResponse<FieldDataSavedResults> response = apiInstance.saveWithHttpInfo(fieldData);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling FieldDataResourceApi#save");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **fieldData** | [**FieldData**](FieldData.md)|  | [optional] |
+
+### Return type
+
+ApiResponse<[**FieldDataSavedResults**](FieldDataSavedResults.md)>
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 ### HTTP response details

@@ -18,9 +18,9 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Pair;
 
-import org.vcell.restclient.model.AnalyzedFile;
 import org.vcell.restclient.model.Extent;
 import org.vcell.restclient.model.ExternalDataIdentifier;
+import org.vcell.restclient.model.FieldData;
 import org.vcell.restclient.model.FieldDataReference;
 import org.vcell.restclient.model.FieldDataSavedResults;
 import org.vcell.restclient.model.FieldDataShape;
@@ -98,27 +98,27 @@ public class FieldDataResourceApi {
   }
 
   /**
-   * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+   * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
    * 
    * @param _file  (optional)
    * @param fileName  (optional)
-   * @return AnalyzedFile
+   * @return FieldData
    * @throws ApiException if fails to make API call
    */
-  public AnalyzedFile analyzeFile(File _file, String fileName) throws ApiException {
-    ApiResponse<AnalyzedFile> localVarResponse = analyzeFileWithHttpInfo(_file, fileName);
+  public FieldData analyzeFile(File _file, String fileName) throws ApiException {
+    ApiResponse<FieldData> localVarResponse = analyzeFileWithHttpInfo(_file, fileName);
     return localVarResponse.getData();
   }
 
   /**
-   * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and create default field data specification. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+   * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
    * 
    * @param _file  (optional)
    * @param fileName  (optional)
-   * @return ApiResponse&lt;AnalyzedFile&gt;
+   * @return ApiResponse&lt;FieldData&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<AnalyzedFile> analyzeFileWithHttpInfo(File _file, String fileName) throws ApiException {
+  public ApiResponse<FieldData> analyzeFileWithHttpInfo(File _file, String fileName) throws ApiException {
     HttpRequest.Builder localVarRequestBuilder = analyzeFileRequestBuilder(_file, fileName);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
@@ -131,10 +131,10 @@ public class FieldDataResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("analyzeFile", localVarResponse);
         }
-        return new ApiResponse<AnalyzedFile>(
+        return new ApiResponse<FieldData>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<AnalyzedFile>() {}) // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldData>() {}) // closes the InputStream
         );
       } finally {
       }
@@ -390,79 +390,6 @@ public class FieldDataResourceApi {
 
     try {
       byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(sourceModel);
-      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    if (memberVarReadTimeout != null) {
-      localVarRequestBuilder.timeout(memberVarReadTimeout);
-    }
-    if (memberVarInterceptor != null) {
-      memberVarInterceptor.accept(localVarRequestBuilder);
-    }
-    return localVarRequestBuilder;
-  }
-  /**
-   * Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
-   * 
-   * @param analyzedFile  (optional)
-   * @return FieldDataSavedResults
-   * @throws ApiException if fails to make API call
-   */
-  public FieldDataSavedResults createFromAnalyzedFile(AnalyzedFile analyzedFile) throws ApiException {
-    ApiResponse<FieldDataSavedResults> localVarResponse = createFromAnalyzedFileWithHttpInfo(analyzedFile);
-    return localVarResponse.getData();
-  }
-
-  /**
-   * Take the field data specification, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
-   * 
-   * @param analyzedFile  (optional)
-   * @return ApiResponse&lt;FieldDataSavedResults&gt;
-   * @throws ApiException if fails to make API call
-   */
-  public ApiResponse<FieldDataSavedResults> createFromAnalyzedFileWithHttpInfo(AnalyzedFile analyzedFile) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = createFromAnalyzedFileRequestBuilder(analyzedFile);
-    try {
-      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
-          localVarRequestBuilder.build(),
-          HttpResponse.BodyHandlers.ofInputStream());
-      if (memberVarResponseInterceptor != null) {
-        memberVarResponseInterceptor.accept(localVarResponse);
-      }
-      try {
-        if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("createFromAnalyzedFile", localVarResponse);
-        }
-        return new ApiResponse<FieldDataSavedResults>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataSavedResults>() {}) // closes the InputStream
-        );
-      } finally {
-      }
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new ApiException(e);
-    }
-  }
-
-  private HttpRequest.Builder createFromAnalyzedFileRequestBuilder(AnalyzedFile analyzedFile) throws ApiException {
-
-    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-    String localVarPath = "/api/v1/fieldData/createFromSpecification";
-
-    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
-
-    localVarRequestBuilder.header("Content-Type", "application/json");
-    localVarRequestBuilder.header("Accept", "application/json");
-
-    try {
-      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(analyzedFile);
       localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
     } catch (IOException e) {
       throw new ApiException(e);
@@ -773,6 +700,79 @@ public class FieldDataResourceApi {
     localVarRequestBuilder.header("Accept", "application/json");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
+   * 
+   * @param fieldData  (optional)
+   * @return FieldDataSavedResults
+   * @throws ApiException if fails to make API call
+   */
+  public FieldDataSavedResults save(FieldData fieldData) throws ApiException {
+    ApiResponse<FieldDataSavedResults> localVarResponse = saveWithHttpInfo(fieldData);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
+   * 
+   * @param fieldData  (optional)
+   * @return ApiResponse&lt;FieldDataSavedResults&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<FieldDataSavedResults> saveWithHttpInfo(FieldData fieldData) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = saveRequestBuilder(fieldData);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("save", localVarResponse);
+        }
+        return new ApiResponse<FieldDataSavedResults>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataSavedResults>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder saveRequestBuilder(FieldData fieldData) throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/fieldData/save";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(fieldData);
+      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
