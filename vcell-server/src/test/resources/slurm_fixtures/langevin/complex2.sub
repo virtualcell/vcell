@@ -1,0 +1,52 @@
+#!/bin/bash --login
+#SBATCH --job-name=jobStepEx1
+#SBATCH --nodes=1
+#SBATCH --ntasks=2
+#SBATCH --qos=vcell
+#SBATCH --partition=vcell
+#SBATCH -o /home/FCAM/vasilescu/jobStepEx1.stdout
+#SBATCH -e /home/FCAM/vasilescu/jobStepEx1.stderr
+#SBATCH --cpus-per-task=1
+#SBATCH --time=01:00:00
+
+log_file="job_status.log"
+max_jobs=2  # Number of cores available
+total_jobs=5  # Total number of jobs to run
+
+# Clear the log file at the start
+echo "Job Execution Log" > $log_file
+echo "------------------" >> $log_file
+
+job_pids=()  # Array to track job PIDs
+
+for i in $(seq 1 $total_jobs); do
+    # Log job start
+    echo "Job $i started at $(date)" >> $log_file
+    srun -N 1 -n 1 -c 1 ./subscript_$i.sh &  # Run each script in parallel
+    job_pids+=($!)  # Store the PID of the background job
+
+    # Manage batches of max_jobs
+    if (( i % max_jobs == 0 || i == total_jobs )); then
+        echo "Waiting for jobs to finish at $(date)" >> $log_file
+        
+        # Wait for each job in the current batch
+        for pid in "${job_pids[@]}"; do
+            wait $pid  # Wait for the specific job
+            echo "Job with PID $pid finished at $(date)" >> $log_file
+        done
+        
+        # Clear job PIDs for the next batch
+        job_pids=()
+    fi
+done
+
+# Output results of all jobs and log them
+for i in $(seq 1 $total_jobs); do
+    result=$(cat subscript_$i.output)
+    echo "Result of job $i is $result"
+    echo "Result of job $i: $result" >> $log_file
+done
+
+# Log the end of the job process
+echo "All jobs completed at $(date)" >> $log_file
+echo "End Job"
