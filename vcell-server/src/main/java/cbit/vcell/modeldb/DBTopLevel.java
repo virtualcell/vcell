@@ -57,16 +57,6 @@ public class DBTopLevel extends AbstractDBTopLevel{
 
 	private static final int SQL_ERROR_CODE_BADCONNECTION = 1010; //??????????????????????????????????????
 
-	@FunctionalInterface
-	private interface DBDriverCallFunction<R>{
-		R get() throws DataAccessException, SQLException;
-	}
-
-	@FunctionalInterface
-	private interface DBDriverCallFunctionVoid{
-		void get() throws DataAccessException, SQLException;
-	}
-
 /**
  * DBTopLevel constructor comment.
  */
@@ -165,51 +155,40 @@ void cleanupDatabase(boolean bEnableRetry) throws DataAccessException,java.sql.S
 
 }
 
-ExternalDataIdentifier saveFieldDataExternalDataID(FieldDataExternalDataIDEntry dbEntry)throws SQLException, DataAccessException{
+ExternalDataIdentifier saveFieldDataExternalDataID(FieldDataExternalDataIDEntry dbEntry, boolean bEnableRetry)throws SQLException, DataAccessException{
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
-	return handleDBRequest(() -> DbDriver.saveFieldDataEDI(con, conFactory.getKeyFactory(), dbEntry.owner, dbEntry), con, lock,true);
-}
-
-FieldDataAllDBEntries getFieldDataEDIs(User user) throws SQLException, DataAccessException{
-	Object lock = new Object();
-	Connection con = conFactory.getConnection(lock);
-	return handleDBRequest(() -> DbDriver.getFieldDataEDIs(con, conFactory.getKeyFactory(), user), con, lock, true);
-}
-
-void deleteFieldDataEDI(User user, ExternalDataIdentifier edi) throws SQLException, DataAccessException{
-	Object lock = new Object();
-	Connection con = conFactory.getConnection(lock);
-	handleDBRequest(() -> DbDriver.deleteFieldDataEDI(con, conFactory.getKeyFactory(), user, edi), con, lock, true);
-}
-
-void handleDBRequest(DBDriverCallFunctionVoid dbFunction, Connection con, Object lock, boolean bEnableRetry) throws SQLException, DataAccessException {
 	try {
-		dbFunction.get();
+		ExternalDataIdentifier fieldDataDBOperationResults = DbDriver.saveFieldDataEDI(con, conFactory.getKeyFactory(), dbEntry.owner, dbEntry);
 		con.commit();
+		return fieldDataDBOperationResults;
 	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		try {
-			con.rollback();
-		}catch (Throwable rbe){
-			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
-		}
-		if (bEnableRetry && isBadConnection(con)) {
-			conFactory.failed(con,lock);
-			handleDBRequest(dbFunction,con, lock, false);
-		}else{
-			handle_DataAccessException_SQLException(e);
-		}
-	}finally{
+			lg.error(e.getMessage(),e);
+			try {
+				con.rollback();
+			}catch (Throwable rbe){
+				lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
+			}
+			if (bEnableRetry && isBadConnection(con)) {
+				conFactory.failed(con,lock);
+				return saveFieldDataExternalDataID(dbEntry, false);
+			}else{
+				handle_DataAccessException_SQLException(e);
+				return null;
+			}
+		}finally{
 		conFactory.release(con,lock);
 	}
+
 }
 
-<R> R handleDBRequest(DBDriverCallFunction<R> dbFunction, Connection con, Object lock, boolean bEnableRetry) throws SQLException, DataAccessException {
+FieldDataAllDBEntries getFieldDataEDIs(User user, boolean bEnableRetry) throws SQLException, DataAccessException{
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
 	try {
-		R executedDBCall = dbFunction.get();
+		FieldDataAllDBEntries fieldDataDBOperationResults = DbDriver.getFieldDataEDIs(con, conFactory.getKeyFactory(), user);
 		con.commit();
-		return executedDBCall;
+		return fieldDataDBOperationResults;
 	} catch (Throwable e) {
 		lg.error(e.getMessage(),e);
 		try {
@@ -219,7 +198,7 @@ void handleDBRequest(DBDriverCallFunctionVoid dbFunction, Connection con, Object
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return handleDBRequest(dbFunction,con, lock, false);
+			return getFieldDataEDIs(user, false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null;
@@ -228,6 +207,31 @@ void handleDBRequest(DBDriverCallFunctionVoid dbFunction, Connection con, Object
 		conFactory.release(con,lock);
 	}
 }
+
+void deleteFieldDataEDI(User user, ExternalDataIdentifier edi, boolean bEnableRetry) throws SQLException, DataAccessException{
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		DbDriver.deleteFieldDataEDI(con, conFactory.getKeyFactory(), user, edi);
+		con.commit();
+	} catch (Throwable e) {
+		lg.error(e.getMessage(),e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			deleteFieldDataEDI(user, edi, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
 
 CopyFieldDataResult fieldDataCopy(User user,
 								  ExternalDataIdentifier sourceID, String sourceAnnotation,

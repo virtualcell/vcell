@@ -68,44 +68,7 @@ public class DatabaseServerImpl {
 		year_desc
 	};
 
-	@FunctionalInterface
-	private interface DBCall<R>{
-		R get() throws SQLException, ObjectNotFoundException, DataAccessException;
-	}
 
-	@FunctionalInterface
-	private interface DBCallNoReturn{
-		void get() throws SQLException, ObjectNotFoundException, DataAccessException;
-	}
-
-	<R> R callAndErrorHandler(DBCall<R> dbCall) throws DataAccessException{
-		try {
-			return dbCall.get();
-		} catch (ObjectNotFoundException e) {
-			lg.error(e.getMessage(),e);
-			throw new ObjectNotFoundException(e.getMessage());
-		} catch (SQLException e) {
-			lg.error(e.getMessage(),e);
-			throw new DataAccessException(e.getMessage());
-		} catch (DataAccessException e){
-			lg.error(e.getMessage(),e);
-			throw new DataAccessException(e);
-		}
-	}
-	void callAndErrorHandler(DBCallNoReturn dbCall) throws DataAccessException{
-		try {
-			dbCall.get();
-		} catch (ObjectNotFoundException e) {
-			lg.error(e.getMessage(),e);
-			throw new ObjectNotFoundException(e.getMessage());
-		} catch (SQLException e) {
-			lg.error(e.getMessage(),e);
-			throw new DataAccessException(e.getMessage());
-		} catch (DataAccessException e){
-			lg.error(e.getMessage(),e);
-			throw new DataAccessException(e);
-		}
-	}
 
 /**
  * This method was created in VisualAge.
@@ -220,18 +183,39 @@ public void deleteBioModel(User user, KeyValue key) throws DataAccessException, 
 }
 
 public ExternalDataIdentifier saveFieldDataEDI(FieldDataExternalDataIDEntry entry) throws DataAccessException{
-	lg.trace("DatabaseServerImpl.saveFieldDataEDI");
-	return callAndErrorHandler(() -> dbTop.saveFieldDataExternalDataID(entry));
+	try {
+		return dbTop.saveFieldDataExternalDataID(entry, true);
+	} catch (SQLException e) {
+		lg.error(e.getMessage(),e);
+		throw new DataAccessException(e.getMessage());
+	} catch (ObjectNotFoundException e) {
+		lg.error(e.getMessage(),e);
+		throw new ObjectNotFoundException(e.getMessage());
+	}
 }
 
 public FieldDataAllDBEntries getFieldDataIDs(User user) throws DataAccessException {
-	lg.trace("DatabaseServerImpl.getFieldDataIDs");
-	return callAndErrorHandler(() -> dbTop.getFieldDataEDIs(user));
+	try {
+		return dbTop.getFieldDataEDIs(user, true);
+	} catch (SQLException e) {
+		lg.error(e.getMessage(),e);
+		throw new DataAccessException(e.getMessage());
+	} catch (ObjectNotFoundException e) {
+		lg.error(e.getMessage(),e);
+		throw new ObjectNotFoundException(e.getMessage());
+	}
 }
 
 public void deleteFieldDataID(User user, ExternalDataIdentifier edi) throws DataAccessException {
-	lg.trace("DatabaseServerImpl.deleteFieldDataID");
-	callAndErrorHandler(() -> dbTop.deleteFieldDataEDI(user, edi));
+	try {
+		dbTop.deleteFieldDataEDI(user, edi, true);
+	} catch (SQLException e) {
+		lg.error(e.getMessage(),e);
+		throw new DataAccessException(e.getMessage());
+	} catch (ObjectNotFoundException e) {
+		lg.error(e.getMessage(),e);
+		throw new ObjectNotFoundException(e.getMessage());
+	}
 }
 
 public CopyFieldDataResult copyFieldData(User user, ExternalDataIdentifier sourceID, String sourceAnnotation,
