@@ -40,15 +40,7 @@ export interface FieldDataResourceServiceInterface {
     _delete(fieldDataID: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
-     * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
-     * 
-     * @param file 
-     * @param fileName 
-     */
-    analyzeFile(file?: Blob, fileName?: string, extraHttpRequestParams?: any): Observable<FieldData>;
-
-    /**
-     * For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
+     * Combines the two separate requests of Analyze File and Save. The following files are accepted: .tif and .zip.
      * 
      * @param file 
      * @param fileName 
@@ -59,7 +51,15 @@ export interface FieldDataResourceServiceInterface {
      * @param annotation 
      * @param origin 
      */
-    analyzeFileAndCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, extraHttpRequestParams?: any): Observable<FieldDataSavedResults>;
+    advancedCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, extraHttpRequestParams?: any): Observable<FieldDataSavedResults>;
+
+    /**
+     * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+     * 
+     * @param file 
+     * @param fileName 
+     */
+    analyzeFile(file?: Blob, fileName?: string, extraHttpRequestParams?: any): Observable<FieldData>;
 
     /**
      * Copy all existing field data from a BioModel/MathModel that you have access to, but don\&#39;t own.
@@ -67,6 +67,14 @@ export interface FieldDataResourceServiceInterface {
      * @param sourceModel 
      */
     copyModelsFieldData(sourceModel?: SourceModel, extraHttpRequestParams?: any): Observable<{ [key: string]: ExternalDataIdentifier; }>;
+
+    /**
+     * Submit a file that converts into field data, with all defaults derived from the file submitted.
+     * 
+     * @param file 
+     * @param fieldDataName 
+     */
+    createFromFile(file?: Blob, fieldDataName?: string, extraHttpRequestParams?: any): Observable<FieldDataSavedResults>;
 
     /**
      * Create new field data from existing simulation results.

@@ -1,5 +1,5 @@
 
-from vcell_client import Publication, HelloWorldMessage, BioModel
+from vcell_client import Publication, HelloWorldMessage, BioModel, FieldDataResourceApi
 from vcell_client.api.publication_resource_api import PublicationResourceApi
 from datetime import date
 import pandas as pd  # for pretty printing only
@@ -53,3 +53,8 @@ for pub in some_pubs:
 # confirm that all publications have been deleted
 final_pubs: list[Publication] = publication_api.get_publications()
 print(f"final publications: {final_pubs}")
+
+
+field = FieldDataResourceApi(api_client)
+
+
