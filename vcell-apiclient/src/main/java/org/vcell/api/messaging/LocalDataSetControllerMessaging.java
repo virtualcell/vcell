@@ -30,10 +30,7 @@ import org.vcell.restclient.model.FieldDataShape;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.document.*;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
 
@@ -64,12 +61,11 @@ public void deleteFieldData(KeyValue externalDataIdentifierKey) {
 	}
 }
 
-//! TODO Provide actual owner to function
 public ExternalDataIdentifier saveFieldData(FieldData fieldData){
 	FieldDataSavedResults results = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().save(
 			DtoModelTransforms.fieldDataToDTO(fieldData)
 	));
-	return new ExternalDataIdentifier(new KeyValue(results.getFieldDataKey()), null, results.getFieldDataName());
+	return new ExternalDataIdentifier(new KeyValue(results.getFieldDataKey()), new User(vCellApiClient.getCachedVCellUserName(), null), results.getFieldDataName());
 }
 
 public cbit.vcell.field.io.FieldDataShape getFieldDataShape(KeyValue externalDataIdentifierKey){

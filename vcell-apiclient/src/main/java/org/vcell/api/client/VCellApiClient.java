@@ -53,7 +53,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.zip.InflaterInputStream;
 
@@ -67,6 +66,7 @@ public class VCellApiClient implements AutoCloseable {
 	private static final Logger lg = LogManager.getLogger(VCellApiClient.class);
 	private final HttpHost httpHost;
 	private final String pathPrefix_v0;
+	private String username;
 	private final String clientID;
 	private CloseableHttpClient httpclient;
 	private HttpClientContext httpClientContext;
@@ -538,7 +538,8 @@ public class VCellApiClient implements AutoCloseable {
 		try {
 			UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
 			UserIdentityJSONSafe vcellIdentity = usersResourceApi.getMappedUser();
-			return vcellIdentity.getUserName();
+			this.username = vcellIdentity.getUserName();
+			return this.username;
 		}catch (ApiException e){
 			if (e.getCode() == 404){
 				return null;
@@ -546,6 +547,10 @@ public class VCellApiClient implements AutoCloseable {
 				throw e;
 			}
 		}
+	}
+
+	public String getCachedVCellUserName(){
+		return this.username;
 	}
 
 	public boolean isVCellIdentityMapped() throws ApiException {
