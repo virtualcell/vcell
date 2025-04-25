@@ -208,14 +208,13 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/fieldData/analyzeAndCreateFromFile:
+  /api/v1/fieldData/advancedCreate:
     post:
       tags:
       - Field Data Resource
-      summary: "For advanced users, combines the two separate requests of Analyze\
-        \ File and Create From Analyzed File. The following files are accepted: .tif\
-        \ and .zip."
-      operationId: analyzeFileAndCreate
+      summary: "Combines the two separate requests of Analyze File and Save. The following\
+        \ files are accepted: .tif and .zip."
+      operationId: advancedCreate
       requestBody:
         content:
           multipart/form-data:

@@ -103,11 +103,11 @@ public class FieldDataResource {
     }
 
     @POST
-    @Path("/analyzeAndCreateFromFile")
+    @Path("/advancedCreate")
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Operation(operationId = "analyzeFileAndCreate", summary = "For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. " +
+    @Operation(operationId = "advancedCreate", summary = "Combines the two separate requests of Analyze File and Save. " +
             "The following files are accepted: .tif and .zip.")
     public FieldDataSavedResults analyzeAndCreateFieldData(@RestForm @PartType(MediaType.APPLICATION_OCTET_STREAM) File file,
                                                   @RestForm @PartType(MediaType.TEXT_PLAIN) String fileName,
