@@ -16,7 +16,7 @@ import cbit.sql.QueryHashtable;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.field.FieldDataAllDBEntries;
-import cbit.vcell.field.FieldDataDBEntry;
+import cbit.vcell.field.FieldDataExternalDataIDEntry;
 import cbit.vcell.field.io.CopyFieldDataResult;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
@@ -219,9 +219,9 @@ public void deleteBioModel(User user, KeyValue key) throws DataAccessException, 
 	delete(user,VersionableType.BioModelMetaData, key);
 }
 
-public ExternalDataIdentifier saveFieldDataEDI(User user, FieldDataDBEntry entry) throws DataAccessException{
+public ExternalDataIdentifier saveFieldDataEDI(FieldDataExternalDataIDEntry entry) throws DataAccessException{
 	lg.trace("DatabaseServerImpl.saveFieldDataEDI");
-	return callAndErrorHandler(() -> dbTop.saveFieldDataExternalDataID(user, entry));
+	return callAndErrorHandler(() -> dbTop.saveFieldDataExternalDataID(entry));
 }
 
 public FieldDataAllDBEntries getFieldDataIDs(User user) throws DataAccessException {

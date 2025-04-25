@@ -211,8 +211,8 @@ public class FieldDataDB {
         for (int j = 0; j < varNames.length; j++){
             varTypes[j] = VariableType.VOLUME;
         }
-        FieldDataDBEntry entry = new FieldDataDBEntry(user, fieldDataName, annotation);
-        ExternalDataIdentifier edi = databaseServer.saveFieldDataEDI(user, entry);
+        FieldDataExternalDataIDEntry entry = new FieldDataExternalDataIDEntry(user, fieldDataName, annotation);
+        ExternalDataIdentifier edi = databaseServer.saveFieldDataEDI(entry);
 
         FieldData fieldData = new FieldData();
         if (doubleImageData == null || doubleImageData.length == 0){
@@ -241,8 +241,8 @@ public class FieldDataDB {
     public void saveFieldDataFromSimulation(User user, KeyValue simKeyValue, int jobIndex, String newFieldDataName) throws DataAccessException {
         // Create DB entry
         SimulationInfo simInfo = databaseServer.getSimulationInfo(user, simKeyValue);
-        FieldDataDBEntry entry = new FieldDataDBEntry(user, newFieldDataName, "");
-        ExternalDataIdentifier edi = databaseServer.saveFieldDataEDI(user, entry);
+        FieldDataExternalDataIDEntry entry = new FieldDataExternalDataIDEntry(user, newFieldDataName, "");
+        ExternalDataIdentifier edi = databaseServer.saveFieldDataEDI(entry);
 
         // Save new file with reference to DB entry
         dataSetController.fieldDataCopySim(simKeyValue, simInfo.getOwner(), edi, jobIndex, user);

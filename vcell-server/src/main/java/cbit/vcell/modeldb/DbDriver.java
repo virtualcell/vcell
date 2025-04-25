@@ -15,7 +15,7 @@ import cbit.sql.*;
 import cbit.sql.Field.SQLDataType;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.field.FieldDataAllDBEntries;
-import cbit.vcell.field.FieldDataDBEntry;
+import cbit.vcell.field.FieldDataExternalDataIDEntry;
 import cbit.vcell.field.db.FieldDataDBOperationDriver;
 import cbit.vcell.field.io.CopyFieldDataResult;
 import cbit.vcell.geometry.Geometry;
@@ -546,7 +546,7 @@ public abstract class DbDriver {
     }
 
     public static ExternalDataIdentifier saveFieldDataEDI(Connection con, KeyFactory keyFactory, User user,
-                                                               FieldDataDBEntry entry) throws SQLException, DataAccessException {
+                                                               FieldDataExternalDataIDEntry entry) throws SQLException, DataAccessException {
         return FieldDataDBOperationDriver.saveExtraDataID(con, keyFactory, user, entry);
     }
 

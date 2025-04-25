@@ -16,7 +16,7 @@ import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.field.FieldDataAllDBEntries;
-import cbit.vcell.field.FieldDataDBEntry;
+import cbit.vcell.field.FieldDataExternalDataIDEntry;
 import cbit.vcell.field.io.CopyFieldDataResult;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
@@ -165,10 +165,10 @@ void cleanupDatabase(boolean bEnableRetry) throws DataAccessException,java.sql.S
 
 }
 
-ExternalDataIdentifier saveFieldDataExternalDataID(User user, FieldDataDBEntry dbEntry)throws SQLException, DataAccessException{
+ExternalDataIdentifier saveFieldDataExternalDataID(FieldDataExternalDataIDEntry dbEntry)throws SQLException, DataAccessException{
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
-	return handleDBRequest(() -> DbDriver.saveFieldDataEDI(con, conFactory.getKeyFactory(), user, dbEntry), con, lock,true);
+	return handleDBRequest(() -> DbDriver.saveFieldDataEDI(con, conFactory.getKeyFactory(), dbEntry.owner, dbEntry), con, lock,true);
 }
 
 FieldDataAllDBEntries getFieldDataEDIs(User user) throws SQLException, DataAccessException{

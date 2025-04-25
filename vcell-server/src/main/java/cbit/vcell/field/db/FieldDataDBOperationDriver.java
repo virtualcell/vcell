@@ -10,7 +10,7 @@
 
 package cbit.vcell.field.db;
 
-import cbit.vcell.field.FieldDataDBEntry;
+import cbit.vcell.field.FieldDataExternalDataIDEntry;
 import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.field.io.CopyFieldDataResult;
 import cbit.vcell.field.io.FieldDataReferenceInfo;
@@ -124,7 +124,7 @@ public class FieldDataDBOperationDriver{
 				"Source Annotation: "+newCopiedName+"\r\n";
 			copiedAnnotation += sourceAnnotation;
 			//
-			FieldDataDBEntry entry = new FieldDataDBEntry();
+			FieldDataExternalDataIDEntry entry = new FieldDataExternalDataIDEntry(requester);
 			entry.name = newCopiedName;
 			entry.annotation = copiedAnnotation;
 			ExternalDataIdentifier edi =
@@ -224,7 +224,7 @@ public class FieldDataDBOperationDriver{
 	}
 
 	public static ExternalDataIdentifier saveExtraDataID(Connection con, KeyFactory keyFactory, User user,
-															   FieldDataDBEntry fieldDataDBOperationSpec) throws DataAccessException, SQLException {
+															   FieldDataExternalDataIDEntry fieldDataDBOperationSpec) throws DataAccessException, SQLException {
 		if(!fieldDataDBOperationSpec.name.equals(
 					TokenMangler.fixTokenStrict(fieldDataDBOperationSpec.name))){
 				throw new DataAccessException("Error inserting Field Data name "+
