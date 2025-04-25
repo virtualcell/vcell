@@ -9,33 +9,26 @@
  */
 
 package cbit.vcell.server;
-import java.io.File;
-import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.TreeMap;
-
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
-import com.google.common.primitives.Doubles;
-import org.vcell.util.*;
-import org.vcell.util.document.*;
 
 import cbit.image.VCImageInfo;
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.model.DBFormalSpecies;
-import cbit.vcell.model.DBSpecies;
-import cbit.vcell.model.FormalSpeciesType;
-import cbit.vcell.model.ReactionDescription;
-import cbit.vcell.model.ReactionQuerySpec;
-import cbit.vcell.model.ReactionStepInfo;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
+import cbit.vcell.model.*;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOP;
 import cbit.vcell.numericstest.TestSuiteOPResults;
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.Preference;
+import org.vcell.util.document.*;
+
+import java.util.Hashtable;
+import java.util.TreeMap;
 
 
 /**
@@ -62,16 +55,14 @@ UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP
  */
 void deleteBioModel(KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException, RemoteProxyException;
 
-public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent,
-                                                                 ISize iSize, String[] channelNames, double[] times,
-                                                                 String annotation, Origin origin);
+
 /**
  * Insert the method's description here.
  * Creation date: (4/29/2004 1:03:11 PM)
  * @param bioModelKey cbit.sql.KeyValue
  * @exception RemoteProxyException The exception description.
  */
-public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, ObjectNotFoundException, RemoteProxyException;
+public FieldDataAllDBEntries getAllFieldDataIDs() throws DataAccessException, ObjectNotFoundException, RemoteProxyException;
 
 
 public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName);

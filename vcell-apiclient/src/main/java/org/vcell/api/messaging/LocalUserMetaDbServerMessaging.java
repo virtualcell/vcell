@@ -11,9 +11,7 @@
 package org.vcell.api.messaging;
 
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
+import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.message.server.bootstrap.client.RpcDbServerProxy;
 import cbit.vcell.message.server.bootstrap.client.RpcSender;
@@ -25,22 +23,24 @@ import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
-import com.google.common.primitives.Doubles;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.FieldDataReference;
-import org.vcell.restclient.model.FieldDataSavedResults;
 import org.vcell.restclient.model.ModelType;
 import org.vcell.restclient.model.SourceModel;
 import org.vcell.restclient.utils.DtoModelTransforms;
-import org.vcell.util.*;
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.*;
 
-import java.io.File;
 import java.rmi.RemoteException;
-import java.util.*;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 
 /**
@@ -118,48 +118,11 @@ public void deleteBioModel(org.vcell.util.document.KeyValue key) throws DataAcce
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (10/22/2003 10:23:06 AM)
- */
-public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException {
-
-	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.fieldDataDBOperation(...)");
-		if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_DELETE){
-			throw new UnsupportedOperationException("Can not call deletion on field data DB entry. Have to do both file, and DB deletion.");
-		} else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_GETEXTDATAIDS) {
-			List<FieldDataReference> fieldDataReferences = vCellApiClient.getFieldDataApi().getAllIDs();
-			return DtoModelTransforms.fieldDataReferencesToDBResults(fieldDataReferences, fieldDataDBOperationSpec.owner);
-		} else if (fieldDataDBOperationSpec.opType == FieldDataDBOperationSpec.FDDBOS_SAVEEXTDATAID) {
-			UnsupportedOperationException unsupported = new UnsupportedOperationException("Call from UserLocalDataSetController, no longer allowing manual entries to DB.");
-			lg.error(unsupported);
-			throw unsupported;
-		} else{
-			UnsupportedOperationException exception = new UnsupportedOperationException("Attempting to call field data method that is unavailable.");
-			lg.error(exception.getMessage(), fieldDataDBOperationSpec);
-			throw exception;
-		}
-	} catch (ApiException e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
-	}
+public FieldDataAllDBEntries getAllFieldDataIDs(){
+	List<FieldDataReference> fieldDataReferences = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().getAllIDs());
+	return DtoModelTransforms.fieldDataReferencesToDBResults(fieldDataReferences);
 }
 
-public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent,
-																 ISize iSize, String[] channelNames, double[] times,
-																 String annotation, Origin origin){
-	try{
-		FieldDataSavedResults results = vCellApiClient.getFieldDataApi().analyzeFileAndCreate(file, fileName, DtoModelTransforms.extentToDTO(extent),
-				DtoModelTransforms.iSizeToDTO(iSize), Arrays.asList(channelNames), Doubles.asList(times),
-				annotation, DtoModelTransforms.originToDTO(origin));
-		return DtoModelTransforms.fieldDataSaveResultsDTOToFileOperationResults(results, null);
-	} catch (ApiException e){
-		lg.error(e.getMessage(),e);
-		throw new RuntimeException(e);
-	}
-};
 
 public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {
     try {

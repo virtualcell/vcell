@@ -24,6 +24,7 @@ import java.util.zip.ZipOutputStream;
 
 import javax.media.jai.operator.FileStoreDescriptor;
 
+import cbit.vcell.field.io.FieldDataSpec;
 import org.vcell.util.Extent;
 import org.vcell.util.FileUtils;
 import org.vcell.vcellij.ImageDatasetReader;
@@ -34,7 +35,6 @@ import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.microscopy.server.FrapDataUtils;
 import cbit.vcell.modelopt.DataSource;
 import cbit.vcell.opt.Parameter;
@@ -409,7 +409,7 @@ public class NonGUIFRAPTest {
 		VCSimulationDataIdentifier vcSimulationDataIdentifier =
 			new VCSimulationDataIdentifier(
 				bioModel.getSimulations()[0].getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),
-				FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
+				FieldDataSpec.JOBINDEX_DEFAULT);
 		PDEDataManager simulationDataManager = new PDEDataManager(null, localWorkspace.getVCDataManager(),vcSimulationDataIdentifier);
 		double[] frapDataTimeStamps = frapData.getImageDataset().getImageTimeStamps();
 		VCDataManager testVCDataManager = localWorkspace.getVCDataManager();

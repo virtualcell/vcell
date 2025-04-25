@@ -14,7 +14,7 @@ import { Extent } from './extent';
 import { ISize } from './i-size';
 
 
-export interface AnalyzedFile { 
+export interface FieldData { 
     shortSpecData?: Array<Array<Array<number>>>;
     doubleSpecData?: Array<Array<Array<number>>>;
     varNames?: Array<string>;

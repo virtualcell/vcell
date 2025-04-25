@@ -66,6 +66,7 @@ public class VCellApiClient implements AutoCloseable {
 	private static final Logger lg = LogManager.getLogger(VCellApiClient.class);
 	private final HttpHost httpHost;
 	private final String pathPrefix_v0;
+	private String username;
 	private final String clientID;
 	private CloseableHttpClient httpclient;
 	private HttpClientContext httpClientContext;
@@ -515,6 +516,20 @@ public class VCellApiClient implements AutoCloseable {
 		}
 	}
 
+	@FunctionalInterface
+	public interface ApiCallSupplier<T>{
+		T get() throws ApiException;
+	}
+
+	public <T> T callWithHandling(ApiCallSupplier<T> apiCall){
+		try{
+			return apiCall.get();
+		} catch (ApiException e){
+			lg.error(e);
+			throw new RuntimeException(e.getResponseBody());
+		}
+	}
+
 	public FieldDataResourceApi getFieldDataApi(){
 		return new FieldDataResourceApi(apiClient);
 	}
@@ -523,7 +538,8 @@ public class VCellApiClient implements AutoCloseable {
 		try {
 			UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
 			UserIdentityJSONSafe vcellIdentity = usersResourceApi.getMappedUser();
-			return vcellIdentity.getUserName();
+			this.username = vcellIdentity.getUserName();
+			return this.username;
 		}catch (ApiException e){
 			if (e.getCode() == 404){
 				return null;
@@ -531,6 +547,10 @@ public class VCellApiClient implements AutoCloseable {
 				throw e;
 			}
 		}
+	}
+
+	public String getCachedVCellUserName(){
+		return this.username;
 	}
 
 	public boolean isVCellIdentityMapped() throws ApiException {

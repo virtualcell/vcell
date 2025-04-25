@@ -1,21 +1,29 @@
 package org.vcell.vmicro.workflow.task;
 
-import java.awt.event.WindowListener;
-import java.io.IOException;
-
-import javax.swing.JFrame;
-
+import cbit.image.ImageException;
+import cbit.image.VCImage;
+import cbit.image.VCImageUncompressed;
+import cbit.plot.PlotData;
+import cbit.rmi.event.ExportEvent;
+import cbit.vcell.VirtualMicroscopy.Image;
+import cbit.vcell.client.data.PDEDataViewer;
+import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.field.io.FieldData;
+import cbit.vcell.field.io.FieldDataShape;
+import cbit.vcell.field.io.FieldDataSpec;
+import cbit.vcell.geometry.RegionImage;
+import cbit.vcell.math.Variable.Domain;
+import cbit.vcell.math.VariableType;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
+import cbit.vcell.server.DataSetController;
+import cbit.vcell.server.DataSetControllerProvider;
+import cbit.vcell.simdata.*;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.solvers.CartesianMesh;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
-import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.TimeSeriesJobResults;
-import org.vcell.util.document.TimeSeriesJobSpec;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.*;
+import org.vcell.util.document.*;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
 import org.vcell.vmicro.op.display.DisplayTimeSeriesOp;
@@ -25,38 +33,9 @@ import org.vcell.workflow.DataOutput;
 import org.vcell.workflow.Task;
 import org.vcell.workflow.TaskContext;
 
-import cbit.image.ImageException;
-import cbit.image.VCImage;
-import cbit.image.VCImageUncompressed;
-import cbit.plot.PlotData;
-import cbit.rmi.event.ExportEvent;
-import cbit.vcell.VirtualMicroscopy.Image;
-import cbit.vcell.client.data.PDEDataViewer;
-import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.geometry.RegionImage;
-import cbit.vcell.math.Variable.Domain;
-import cbit.vcell.math.VariableType;
-import cbit.vcell.server.DataSetController;
-import cbit.vcell.server.DataSetControllerProvider;
-import cbit.vcell.simdata.ClientPDEDataContext;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.DataOperation;
-import cbit.vcell.simdata.DataOperationResults;
-import cbit.vcell.simdata.DataSetMetadata;
-import cbit.vcell.simdata.DataSetTimeSeries;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.PDEDataInfo;
-import cbit.vcell.simdata.PDEDataManager;
-import cbit.vcell.simdata.ParticleDataBlock;
-import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.SpatialSelection;
-import cbit.vcell.simdata.VCDataManager;
-import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.ode.ODESimData;
-import cbit.vcell.solvers.CartesianMesh;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
+import javax.swing.*;
+import java.awt.event.WindowListener;
+import java.io.IOException;
 
 public class DisplayTimeSeries extends Task {
 	
@@ -184,15 +163,30 @@ public class DisplayTimeSeries extends Task {
 			public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException {
 				throw new RuntimeException("not yet implemented");
 			}
-			
+
+			@Override
+			public ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec) {
+				return null;
+			}
+
+			@Override
+			public ExternalDataIdentifier saveFieldData(FieldData fieldData) {
+				return null;
+			}
+
+			@Override
+			public void deleteFieldData(KeyValue fieldDataKey) {
+
+			}
+
+			@Override
+			public FieldDataShape getFieldDataShape(KeyValue fieldDataKey) {
+				return null;
+			}
+
 			@Override
 			public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,	VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException {
 				return new DataIdentifier[] { dataIdentifier };
-			}
-			
-			@Override
-			public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws RemoteProxyException, DataAccessException {
-				throw new RuntimeException("not yet implemented");
 			}
 			
 			@Override

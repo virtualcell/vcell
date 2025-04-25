@@ -1,28 +1,5 @@
 package cbit.vcell.client.data;
 
-import java.awt.BorderLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Hashtable;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
-import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.document.TimeSeriesJobResults;
-import org.vcell.util.document.TimeSeriesJobSpec;
-import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.vis.io.VtuFileContainer;
-import org.vcell.vis.io.VtuVarInfo;
-
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
 import cbit.plot.PlotData;
@@ -37,36 +14,38 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldData;
+import cbit.vcell.field.io.FieldDataShape;
+import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.DataSetControllerProvider;
-import cbit.vcell.simdata.ClientPDEDataContext;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.DataOperation;
+import cbit.vcell.simdata.*;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.DataIndexHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePointHelper;
 import cbit.vcell.simdata.DataOperation.DataProcessingOutputInfoOP;
-import cbit.vcell.simdata.DataOperationResults;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo;
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputInfo.PostProcessDataType;
-import cbit.vcell.simdata.DataSetMetadata;
-import cbit.vcell.simdata.DataSetTimeSeries;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.PDEDataContext;
-import cbit.vcell.simdata.PDEDataInfo;
-import cbit.vcell.simdata.PDEDataManager;
-import cbit.vcell.simdata.ParticleDataBlock;
-import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.SpatialSelection;
-import cbit.vcell.simdata.VCDataManager;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
+import org.vcell.util.*;
+import org.vcell.util.document.*;
+import org.vcell.vis.io.VtuFileContainer;
+import org.vcell.vis.io.VtuVarInfo;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Hashtable;
 
 public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 
@@ -164,7 +143,27 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 						// TODO Auto-generated method stub
 						return null;
 					}
-					
+
+					@Override
+					public ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec) {
+						return null;
+					}
+
+					@Override
+					public ExternalDataIdentifier saveFieldData(FieldData fieldData) {
+						return null;
+					}
+
+					@Override
+					public void deleteFieldData(KeyValue fieldDataKey) {
+
+					}
+
+					@Override
+					public FieldDataShape getFieldDataShape(KeyValue fieldDataKey) {
+						return null;
+					}
+
 					@Override
 					public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,VCDataIdentifier vcdataID) throws RemoteProxyException,DataAccessException {
 //						return parentPDEDataContext.getDataIdentifiers();
@@ -195,13 +194,6 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 						if(postProcessDataIDs.size() > 0){
 							return postProcessDataIDs.toArray(new DataIdentifier[0]);
 						}
-						return null;
-					}
-					
-					@Override
-					public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec)
-							throws RemoteProxyException, DataAccessException {
-						// TODO Auto-generated method stub
 						return null;
 					}
 					

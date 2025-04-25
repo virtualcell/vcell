@@ -10,38 +10,25 @@
 
 package cbit.vcell.client;
 
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
-import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.document.TimeSeriesJobResults;
-import org.vcell.util.document.TimeSeriesJobSpec;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.vis.io.VtuFileContainer;
-import org.vcell.vis.io.VtuVarInfo;
-
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldData;
+import cbit.vcell.field.io.FieldDataShape;
+import cbit.vcell.field.io.FieldDataSpec;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.DataSetControllerProvider;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.DataOperation;
-import cbit.vcell.simdata.DataOperationResults;
-import cbit.vcell.simdata.DataServerImpl;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.DataSetMetadata;
-import cbit.vcell.simdata.DataSetTimeSeries;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.ParticleDataBlock;
-import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.SpatialSelection;
+import cbit.vcell.simdata.*;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solvers.CartesianMesh;
+import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.*;
+import org.vcell.vis.io.VtuFileContainer;
+import org.vcell.vis.io.VtuVarInfo;
 
 public class LocalDataSetControllerProvider implements DataSetControllerProvider {
 
@@ -55,11 +42,27 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 			this.dataServerImpl = new DataServerImpl(dsci, esi);
 		}
 
-		public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
-			return dataServerImpl.fieldDataFileOperation(user,fieldDataFileOperationSpec);
+		@Override
+		public ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec) {
+			return null;
 		}
 
-		public DataIdentifier[] getDataIdentifiers(OutputContext outputContext,	VCDataIdentifier vcdataID) throws DataAccessException {
+		@Override
+		public ExternalDataIdentifier saveFieldData(FieldData fieldData) {
+			return null;
+		}
+
+		@Override
+		public void deleteFieldData(KeyValue fieldDataKey) {
+
+		}
+
+		@Override
+		public FieldDataShape getFieldDataShape(KeyValue fieldDataKey) {
+			return null;
+		}
+
+		public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
 			return dataServerImpl.getDataIdentifiers(outputContext, user, vcdataID);
 			}
 

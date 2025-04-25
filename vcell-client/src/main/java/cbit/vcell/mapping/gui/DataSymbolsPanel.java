@@ -9,44 +9,6 @@
  */
 
 package cbit.vcell.mapping.gui;
-import static cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper.CreateSaveVFrapDataSymbols;
-import static cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper.LoadVFrapDisplayRoi;
-import static cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper.LoadVFrapSpecialImages;
-import static cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper.SaveVFrapSpecialImagesAsFieldData;
-import static cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper.checkNameAvailability;
-import static cbit.vcell.data.VFrapConstants.ADD_ASSOCIATE_EXISTING_FD_MENU;
-import static cbit.vcell.data.VFrapConstants.ADD_COPY_FROM_BIOMODEL_MENU;
-import static cbit.vcell.data.VFrapConstants.ADD_IMAGE_FILE_MENU;
-import static cbit.vcell.data.VFrapConstants.ADD_PSF_MENU;
-import static cbit.vcell.data.VFrapConstants.ADD_VFRAP_DATASET_MENU;
-import static cbit.vcell.data.VFrapConstants.ADD_VFRAP_SPECIALS_MENU;
-
-import java.awt.Component;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Hashtable;
-
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.SwingConstants;
-import javax.swing.filechooser.FileFilter;
-
-import org.jdom2.Element;
-import org.vcell.util.gui.GeneralGuiUtils;
-import org.vcell.util.*;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.User;
-import org.vcell.util.document.Version;
-import org.vcell.util.gui.DialogUtils;
-import org.vcell.util.gui.DownArrowIcon;
 
 import cbit.image.VCImageUncompressed;
 import cbit.util.xml.XmlUtil;
@@ -65,12 +27,37 @@ import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
 import cbit.vcell.data.FieldDataSymbol;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldData;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.geometry.gui.OverlayEditorPanelJAI;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.solvers.CartesianMesh;
+import org.jdom2.Element;
+import org.vcell.util.Extent;
+import org.vcell.util.ISize;
+import org.vcell.util.Origin;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.User;
+import org.vcell.util.document.Version;
+import org.vcell.util.gui.DialogUtils;
+import org.vcell.util.gui.DownArrowIcon;
+import org.vcell.util.gui.GeneralGuiUtils;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Hashtable;
+
+import static cbit.vcell.VirtualMicroscopy.importer.VFrapXmlHelper.*;
+import static cbit.vcell.data.VFrapConstants.*;
 
 /**
  * This type was created in VisualAge.
@@ -318,24 +305,25 @@ private void addVFrapOriginalImages() {		// add dataset (normal images) from vFr
 				}
 				pixData[i][NumChannels-1] = doubleData;
 			}
-			FieldDataFileOperationSpec timeSeriesFieldDataOpSpec = new FieldDataFileOperationSpec();
-			timeSeriesFieldDataOpSpec.opType = FieldDataFileOperationSpec.FDOS_ADD;
+			FieldData timeSeriesFieldDataOpSpec = new FieldData();
 			timeSeriesFieldDataOpSpec.cartesianMesh = cartesianMesh;
-			timeSeriesFieldDataOpSpec.doubleSpecData =  pixData;
-			timeSeriesFieldDataOpSpec.specEDI = null;
-			timeSeriesFieldDataOpSpec.varNames = new String[] {SimulationContext.FLUOR_DATA_NAME};
+			timeSeriesFieldDataOpSpec.doubleData =  pixData;
+			timeSeriesFieldDataOpSpec.channelNames = Arrays.stream(new String[] {SimulationContext.FLUOR_DATA_NAME}).toList();
 			timeSeriesFieldDataOpSpec.owner = owner;
-			timeSeriesFieldDataOpSpec.times = imageDataset.getImageTimeStamps();
+			timeSeriesFieldDataOpSpec.times = Arrays.stream(imageDataset.getImageTimeStamps()).boxed().toList();
 			timeSeriesFieldDataOpSpec.variableTypes = new VariableType[] {VariableType.VOLUME};
 			timeSeriesFieldDataOpSpec.origin = origin;
 			timeSeriesFieldDataOpSpec.extent = extent;
-			timeSeriesFieldDataOpSpec.isize = isize;
+			timeSeriesFieldDataOpSpec.iSize = isize;
+			timeSeriesFieldDataOpSpec.fileName = initialFieldDataName;
 			// realignment for the case when first timepoint is not zero
-			if(timeSeriesFieldDataOpSpec.times[0] != 0) {
-				double shift = timeSeriesFieldDataOpSpec.times[0];
+			if(timeSeriesFieldDataOpSpec.times.get(0) != 0) {
+				double shift = timeSeriesFieldDataOpSpec.times.get(0);
 				for(int i = 0 ; i < NumTimePoints; i++)
 				{
-					timeSeriesFieldDataOpSpec.times[i] -= shift;
+					double currentDouble = timeSeriesFieldDataOpSpec.times.get(i);
+					currentDouble -= shift;
+					timeSeriesFieldDataOpSpec.times.set(i, currentDouble);
 				}
 			}
 
@@ -346,7 +334,7 @@ private void addVFrapOriginalImages() {		// add dataset (normal images) from vFr
 
 //	   		ExternalDataIdentifier timeSeriesEDI = dm.saveFieldData(timeSeriesFieldDataOpSpec, 
 //	   				initialFieldDataName + "_" + formattedDate);
-	   		ExternalDataIdentifier timeSeriesEDI = dm.saveFieldData(timeSeriesFieldDataOpSpec, initialFieldDataName);
+	   		ExternalDataIdentifier timeSeriesEDI = dm.saveFieldData(timeSeriesFieldDataOpSpec);
 			hashTable.put("imageDataset", imageDataset);
 			hashTable.put("timeSeriesEDI", timeSeriesEDI);
 		}

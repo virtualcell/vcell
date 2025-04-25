@@ -1,13 +1,13 @@
 package org.vcell.restclient.utils;
 
 
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.field.FieldDataAllDBEntries;
+import cbit.vcell.field.io.FieldData;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataIdentifier;
-import org.vcell.restclient.model.*;
+import org.vcell.restclient.model.FieldDataReference;
+import org.vcell.restclient.model.FieldDataShape;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -15,7 +15,10 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Vector;
 import java.util.stream.Collectors;
 
 public class DtoModelTransforms {
@@ -114,42 +117,46 @@ public class DtoModelTransforms {
         return new User(dto.getUserName(), dtoToKeyValue(dto.getKey()));
     }
 
-    public static FieldDataFileOperationResults fieldDataInfoDTOToFileOperationResults(FieldDataShape dto){
-        FieldDataFileOperationResults results = new FieldDataFileOperationResults();
+    public static cbit.vcell.field.io.FieldDataShape DTOToFieldDataShape(FieldDataShape dto){
+        cbit.vcell.field.io.FieldDataShape results = new cbit.vcell.field.io.FieldDataShape();
         results.extent = dtoToExtent(dto.getExtent());
         results.origin = dtoToOrigin(dto.getOrigin());
         results.iSize = dtoToISize(dto.getIsize());
         results.times = dto.getTimes().stream().mapToDouble(Double::doubleValue).toArray();
-        results.dataIdentifierArr = dto.getDataIdentifier().stream().map(DtoModelTransforms::dtoToDataIdentifier).toArray(DataIdentifier[]::new);
+        results.variableInformation = dto.getDataIdentifier().stream().map(DtoModelTransforms::dtoToDataIdentifier).toArray(DataIdentifier[]::new);
         return results;
     }
 
-    public static FieldDataFileOperationResults fieldDataSaveResultsDTOToFileOperationResults(FieldDataSavedResults dto, User owner){
-        FieldDataFileOperationResults fieldDataFileOperationResults = new FieldDataFileOperationResults();
-        fieldDataFileOperationResults.externalDataIdentifier = new ExternalDataIdentifier(new KeyValue(dto.getFieldDataKey()), owner, dto.getFieldDataName());
-        return fieldDataFileOperationResults;
+    public static org.vcell.restclient.model.FieldData fieldDataToDTO(FieldData fieldData){
+        org.vcell.restclient.model.FieldData analyzedFile = new org.vcell.restclient.model.FieldData();
+        List<List<List<Integer>>> shortData = new ArrayList<>();
+        for (int i = 0; i < fieldData.data.length; i++){
+            shortData.add(new ArrayList<>());
+            for(int j = 0; j < fieldData.data[i].length; j++){
+                shortData.get(i).add(new ArrayList<>());
+                for(int k = 0; k < fieldData.data[i][j].length; k++){
+                    shortData.get(i).get(j).add((int) fieldData.data[i][j][k]);
+                }
+            }
+        }
+        List<List<List<Double>>> doubleData = new ArrayList<>();
+        for (int i = 0; i < fieldData.doubleData.length; i++){
+            doubleData.add(new ArrayList<>());
+            for(int j = 0; j < fieldData.doubleData[i].length; j++){
+                doubleData.get(i).add(new ArrayList<>());
+                for(int k = 0; k < fieldData.doubleData[i][j].length; k++){
+                    doubleData.get(i).get(j).add(fieldData.doubleData[i][j][k]);
+                }
+            }
+        }
+        analyzedFile.times(fieldData.times).name(fieldData.fileName).annotation(fieldData.annotation)
+                .extent(extentToDTO(fieldData.extent)).isize(iSizeToDTO(fieldData.iSize)).origin(originToDTO(fieldData.origin))
+                .varNames(fieldData.channelNames).shortSpecData(shortData);
+        return analyzedFile;
     }
 
-    public static AnalyzedFile fieldDataSpecToAnalyzedResultsDTO(FieldDataFileOperationSpec fieldDataFileOperationSpec){
-        List<List<List<Integer>>> listVersion = Arrays.stream(fieldDataFileOperationSpec.shortSpecData) // Stream of short[][]
-                .map(twoDArray -> Arrays.stream(twoDArray) // Stream of short[]
-                        .map(oneDArray -> {
-                            List<Integer> list = new ArrayList<>();
-                            for (short j : oneDArray) {
-                                list.add((int) j);
-                            }
-                            return list;
-                        }).collect(Collectors.toList())).collect(Collectors.toList());
-        AnalyzedFile analyzedResultsFromFieldData = new AnalyzedFile();
-        analyzedResultsFromFieldData.annotation(fieldDataFileOperationSpec.annotation); analyzedResultsFromFieldData.isize(iSizeToDTO(fieldDataFileOperationSpec.isize));
-        analyzedResultsFromFieldData.extent(extentToDTO(fieldDataFileOperationSpec.extent)); analyzedResultsFromFieldData.origin(originToDTO(fieldDataFileOperationSpec.origin));
-        analyzedResultsFromFieldData.times(Arrays.stream(fieldDataFileOperationSpec.times).boxed().toList()); analyzedResultsFromFieldData.setName(fieldDataFileOperationSpec.fieldDataName);
-        analyzedResultsFromFieldData.varNames(Arrays.stream(fieldDataFileOperationSpec.varNames).toList()); analyzedResultsFromFieldData.shortSpecData(listVersion);
-        return analyzedResultsFromFieldData;
-    }
-
-    public static FieldDataDBOperationResults fieldDataReferencesToDBResults(List<FieldDataReference> dto, User user){
-        FieldDataDBOperationResults fieldDataDBOperationResults = new FieldDataDBOperationResults();
+    public static FieldDataAllDBEntries fieldDataReferencesToDBResults(List<FieldDataReference> dto){
+        FieldDataAllDBEntries fieldDataDBOperationResults = new FieldDataAllDBEntries();
         ArrayList<ExternalDataIdentifier> externalDataIdentifiers = new ArrayList<>();
         ArrayList<String> externalDataAnnotations = new ArrayList<>();
         HashMap<ExternalDataIdentifier, Vector<KeyValue>> externalDataIDSimRefs = new HashMap<>();
@@ -160,9 +167,9 @@ public class DtoModelTransforms {
             List<KeyValue> keyValues = fieldDataReference.getSimulationsReferencingThisID().stream().map(DtoModelTransforms::dtoToKeyValue).collect(Collectors.toList());
             externalDataIDSimRefs.put(externalDataIdentifier, new Vector<>(keyValues));
         }
-        fieldDataDBOperationResults.extDataIDArr = externalDataIdentifiers.toArray(new ExternalDataIdentifier[0]);
-        fieldDataDBOperationResults.extDataAnnotArr = externalDataAnnotations.toArray(new String[0]);
-        fieldDataDBOperationResults.extdataIDAndSimRefH = externalDataIDSimRefs;
+        fieldDataDBOperationResults.ids = externalDataIdentifiers.toArray(new ExternalDataIdentifier[0]);
+        fieldDataDBOperationResults.annotationsForIds = externalDataAnnotations.toArray(new String[0]);
+        fieldDataDBOperationResults.edisToSimRefs = externalDataIDSimRefs;
         return fieldDataDBOperationResults;
     }
 

@@ -5,7 +5,8 @@ import cbit.image.ImageSizeInfo;
 import cbit.vcell.VirtualMicroscopy.BioformatsImageImpl;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldData;
+import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.math.VariableType;
 import loci.formats.ImageReader;
 import org.apache.logging.log4j.LogManager;
@@ -17,6 +18,7 @@ import org.vcell.vcellij.ImageDatasetReaderService;
 
 import java.awt.*;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.zip.DataFormatException;
 import java.util.zip.ZipEntry;
@@ -25,7 +27,7 @@ import java.util.zip.ZipFile;
 
 public class FieldDataFileConversion {
     private static final Logger logger = LogManager.getLogger(FieldDataFileConversion.class);
-    public static FieldDataFileOperationSpec createFDOSFromImageFile(File imageFile, boolean bCropOutBlack,
+    public static FieldData createFDOSFromImageFile(File imageFile, boolean bCropOutBlack,
                                                                      Integer saveOnlyThisTimePointIndex) throws DataFormatException, ImageException {
         try {
             ImageDatasetReader imageDatasetReader = ImageDatasetReaderService.getInstance().getImageDatasetReader();
@@ -89,8 +91,8 @@ public class FieldDataFileConversion {
         throw zipException;
     }
 
-    public static FieldDataFileOperationSpec analyzeMetaData(File imageFile) throws Exception {
-        final FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
+    public static FieldDataSpec analyzeMetaData(File imageFile) throws Exception {
+        FieldDataSpec spec = new FieldDataSpec();
         File analyzedFile = imageFile;
         int timePoints = 0;
         if (imageFile.getName().toLowerCase().endsWith("zip")){
@@ -113,44 +115,47 @@ public class FieldDataFileConversion {
                 info.getiSize().getZ(),  timePoints > 0 ? timePoints : info.getTimePoints().length, info.getNumChannels());
 
         // [time][var][data]
-        fdos.variableTypes = new VariableType[info.getNumChannels()];
-        fdos.varNames = new String[info.getNumChannels()];
         // For Channel
+        spec.channelNames = new ArrayList<>();
         for (int c = 0; c < info.getNumChannels(); c += 1) {
-            fdos.variableTypes[c] = VariableType.VOLUME;
-            fdos.varNames[c] = "Channel" + c;
+            spec.channelNames.add("Channel" + c);
         }
-        fdos.times = info.getTimePoints();
-        if (fdos.times == null) {
-            fdos.times = new double[imageReader.getSizeT()];
-            for (int i = 0; i < fdos.times.length; i += 1) {
-                fdos.times[i] = i;
+        spec.times = new ArrayList<>();
+        double[] times = info.getTimePoints();
+        if (times == null) {
+            times = new double[imageReader.getSizeT()];
+            for (int i = 0; i < times.length; i += 1) {
+                times[i] = i;
             }
         }
+        for (double tp : times){
+            spec.times.add(tp);
+        }
 
-        fdos.origin = (domainInfo.getOrigin() != null ? domainInfo.getOrigin()
+
+        spec.origin = (domainInfo.getOrigin() != null ? domainInfo.getOrigin()
                 : new Origin(0, 0, 0));
-        fdos.extent = (domainInfo.getExtent() != null) ? (domainInfo.getExtent()) : (new Extent(1, 1, 1));
-        fdos.isize = domainInfo.getiSize();
+        spec.extent = (domainInfo.getExtent() != null) ? (domainInfo.getExtent()) : (new Extent(1, 1, 1));
+        spec.iSize = domainInfo.getiSize();
 
-        return fdos;
+        return spec;
     }
 
-    public static FieldDataFileOperationSpec createFDOSWithChannels(ImageDataset[] imagedataSets,
-                                                                    Integer saveOnlyThisTimePointIndex) {
-        final FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
+    public static FieldData createFDOSWithChannels(ImageDataset[] imagedataSets,
+                                                   Integer saveOnlyThisTimePointIndex) {
+        FieldData fieldData = new FieldData();
 
         // [time][var][data]
         int numXY = imagedataSets[0].getISize().getX() * imagedataSets[0].getISize().getY();
         int numXYZ = imagedataSets[0].getSizeZ() * numXY;
-        fdos.variableTypes = new VariableType[imagedataSets.length];
-        fdos.varNames = new String[imagedataSets.length];
+        fieldData.variableTypes = new VariableType[imagedataSets.length];
+        fieldData.channelNames = new ArrayList<>();
         int timeSize = saveOnlyThisTimePointIndex != null ? 1 : imagedataSets[0].getSizeT();
         short[][][] shortData = new short[timeSize][imagedataSets.length][numXYZ];
         // For Channel
         for (int c = 0; c < imagedataSets.length; c += 1) {
-            fdos.variableTypes[c] = VariableType.VOLUME;
-            fdos.varNames[c] = "Channel" + c;
+            fieldData.variableTypes[c] = VariableType.VOLUME;
+            fieldData.channelNames.add("Channel" + c);
             // For Time
             for (int t = 0; t < imagedataSets[c].getSizeT(); t += 1) {
                 if (saveOnlyThisTimePointIndex != null && saveOnlyThisTimePointIndex.intValue() != t) {
@@ -167,22 +172,27 @@ public class FieldDataFileConversion {
                 }
             }
         }
-        fdos.shortSpecData = shortData;
-        fdos.times = imagedataSets[0].getImageTimeStamps();
-        if (fdos.times == null) {
-            fdos.times = new double[imagedataSets[0].getSizeT()];
-            for (int i = 0; i < fdos.times.length; i += 1) {
-                fdos.times[i] = i;
+        fieldData.data = shortData;
+
+        double[] times = imagedataSets[0].getImageTimeStamps();
+        fieldData.times = new ArrayList<>();
+        if (times == null) {
+            times = new double[imagedataSets[0].getSizeT()];
+            for (int i = 0; i < times.length; i += 1) {
+                times[i] = i;
             }
         }
+        for(double tp : times){
+            fieldData.times.add(tp);
+        }
 
-        fdos.origin = (imagedataSets[0].getAllImages()[0].getOrigin() != null
+        fieldData.origin = (imagedataSets[0].getAllImages()[0].getOrigin() != null
                 ? imagedataSets[0].getAllImages()[0].getOrigin()
                 : new Origin(0, 0, 0));
-        fdos.extent = (imagedataSets[0].getExtent() != null) ? (imagedataSets[0].getExtent()) : (new Extent(1, 1, 1));
-        fdos.isize = imagedataSets[0].getISize();
+        fieldData.extent = (imagedataSets[0].getExtent() != null) ? (imagedataSets[0].getExtent()) : (new Extent(1, 1, 1));
+        fieldData.iSize = imagedataSets[0].getISize();
 
-        return fdos;
+        return fieldData;
 
     }
 }

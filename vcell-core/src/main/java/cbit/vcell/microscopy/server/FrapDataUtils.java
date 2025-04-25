@@ -4,9 +4,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Random;
 
+import cbit.vcell.field.io.FieldData;
+import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.simdata.*;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.Extent;
@@ -32,7 +35,6 @@ import cbit.rmi.event.DataJobListener;
 import cbit.vcell.VirtualMicroscopy.ImageDataset;
 import cbit.vcell.VirtualMicroscopy.ROI;
 import cbit.vcell.VirtualMicroscopy.UShortImage;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.microscopy.FRAPData;
@@ -409,19 +411,17 @@ public class FrapDataUtils {
 		//changed in March 2008. Though biomodel is not created, we still let user save to xml file.
 		Origin origin = new Origin(0,0,0);
 		
-		FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-		fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+		FieldData fdos = new FieldData();
 		fdos.cartesianMesh = cartesianMesh;
-		fdos.doubleSpecData =  pixData;
-		fdos.specEDI = newImageExtDataID;
-		fdos.varNames = new String[] {SimulationContext.FLUOR_DATA_NAME,"bg_average"};
+		fdos.doubleData =  pixData;
+		fdos.channelNames = Arrays.stream(new String[] {SimulationContext.FLUOR_DATA_NAME,"bg_average"}).toList();
 		fdos.owner = LocalWorkspace.getDefaultOwner();
-		fdos.times = timesArray;
+		fdos.times = Arrays.stream(timesArray).boxed().toList();
 		fdos.variableTypes = new VariableType[] {VariableType.VOLUME,VariableType.VOLUME};
 		fdos.origin = origin;
 		fdos.extent = extent;
-		fdos.isize = isize;
-		localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);	
+		fdos.iSize = isize;
+		localWorkspace.getDataSetControllerImpl().fieldDataAdd(fdos, newImageExtDataID);
 	}
 
 	// export the frap data to matlab file. The matlab file contains timestamps(1*Tn) , mask(numImgX * numImgY), 
@@ -538,12 +538,10 @@ public class FrapDataUtils {
 		}
 	
 		Origin origin = new Origin(0,0,0);
-		FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-		fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+		FieldData fdos = new FieldData();
 		fdos.cartesianMesh = cartesianMesh;
-		fdos.doubleSpecData =  pixData;
-		fdos.specEDI = newROIExtDataID;
-		fdos.varNames = new String[] {
+		fdos.doubleData =  pixData;
+		fdos.channelNames = Arrays.stream(new String[] {
 				"prebleach_avg",
 				"postbleach_first",
 				"postbleach_last",
@@ -556,9 +554,9 @@ public class FrapDataUtils {
 				"ring5_mask",
 				"ring6_mask",
 				"ring7_mask",
-				"ring8_mask"};
+				"ring8_mask"}).toList();
 		fdos.owner = LocalWorkspace.getDefaultOwner();
-		fdos.times = new double[] { 0.0 };
+		fdos.times = new ArrayList<>(){{add(0.0);}};
 		fdos.variableTypes = new VariableType[] {
 				VariableType.VOLUME,
 				VariableType.VOLUME,
@@ -575,8 +573,8 @@ public class FrapDataUtils {
 				VariableType.VOLUME};
 		fdos.origin = origin;
 		fdos.extent = extent;
-		fdos.isize = isize;
-		localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
+		fdos.iSize = isize;
+		localWorkspace.getDataSetControllerImpl().fieldDataAdd(fdos, newROIExtDataID);
 	}
 
 }

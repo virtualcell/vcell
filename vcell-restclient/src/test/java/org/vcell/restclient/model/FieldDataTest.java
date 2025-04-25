@@ -29,17 +29,17 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Model tests for AnalyzedFile
+ * Model tests for FieldData
  */
-public class AnalyzedFileTest {
-    private final AnalyzedFile model = new AnalyzedFile();
+public class FieldDataTest {
+    private final FieldData model = new FieldData();
 
     /**
-     * Model tests for AnalyzedFile
+     * Model tests for FieldData
      */
     @Test
-    public void testAnalyzedFile() {
-        // TODO: test AnalyzedFile
+    public void testFieldData() {
+        // TODO: test FieldData
     }
 
     /**
@@ -48,6 +48,14 @@ public class AnalyzedFileTest {
     @Test
     public void shortSpecDataTest() {
         // TODO: test shortSpecData
+    }
+
+    /**
+     * Test the property 'doubleSpecData'
+     */
+    @Test
+    public void doubleSpecDataTest() {
+        // TODO: test doubleSpecData
     }
 
     /**

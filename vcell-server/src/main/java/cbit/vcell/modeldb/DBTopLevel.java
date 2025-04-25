@@ -9,29 +9,15 @@
  */
 
 package cbit.vcell.modeldb;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.TreeMap;
-import java.util.Vector;
-
-import cbit.vcell.field.io.CopyFieldDataResult;
-import org.vcell.db.ConnectionFactory;
-import org.vcell.db.DatabaseSyntax;
-import org.vcell.db.KeyFactory;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.DependencyException;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.PermissionException;
-import org.vcell.util.Preference;
-import org.vcell.util.document.*;
 
 import cbit.image.VCImage;
 import cbit.sql.InsertHashtable;
 import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataAllDBEntries;
+import cbit.vcell.field.FieldDataExternalDataIDEntry;
+import cbit.vcell.field.io.CopyFieldDataResult;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.MathDescription;
@@ -44,6 +30,16 @@ import cbit.vcell.numericstest.TestSuiteOPResults;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
 import cbit.vcell.solver.Simulation;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseSyntax;
+import org.vcell.db.KeyFactory;
+import org.vcell.util.*;
+import org.vcell.util.document.*;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.TreeMap;
+import java.util.Vector;
 /**
  * This type was created in VisualAge.
  */
@@ -159,20 +155,38 @@ void cleanupDatabase(boolean bEnableRetry) throws DataAccessException,java.sql.S
 
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (9/25/2003 7:57:54 AM)
- * @return cbit.vcell.modeldb.VCInfoContainer
- * @param user cbit.vcell.server.User
- */
-FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperationSpec fieldDataDBOperationSpec, boolean bEnableRetry) throws SQLException, DataAccessException {
-	
+ExternalDataIdentifier saveFieldDataExternalDataID(FieldDataExternalDataIDEntry dbEntry, boolean bEnableRetry)throws SQLException, DataAccessException{
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
 	try {
-		FieldDataDBOperationResults fieldDataDBOperationResults =
-			DbDriver.fieldDataDBOperation(con, conFactory.getKeyFactory(), user,fieldDataDBOperationSpec);
+		ExternalDataIdentifier fieldDataDBOperationResults = DbDriver.saveFieldDataEDI(con, conFactory.getKeyFactory(), dbEntry.owner, dbEntry);
+		con.commit();
+		return fieldDataDBOperationResults;
+	} catch (Throwable e) {
+			lg.error(e.getMessage(),e);
+			try {
+				con.rollback();
+			}catch (Throwable rbe){
+				lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
+			}
+			if (bEnableRetry && isBadConnection(con)) {
+				conFactory.failed(con,lock);
+				return saveFieldDataExternalDataID(dbEntry, false);
+			}else{
+				handle_DataAccessException_SQLException(e);
+				return null;
+			}
+		}finally{
+		conFactory.release(con,lock);
+	}
+
+}
+
+FieldDataAllDBEntries getFieldDataEDIs(User user, boolean bEnableRetry) throws SQLException, DataAccessException{
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		FieldDataAllDBEntries fieldDataDBOperationResults = DbDriver.getFieldDataEDIs(con, conFactory.getKeyFactory(), user);
 		con.commit();
 		return fieldDataDBOperationResults;
 	} catch (Throwable e) {
@@ -184,7 +198,7 @@ FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperation
 		}
 		if (bEnableRetry && isBadConnection(con)) {
 			conFactory.failed(con,lock);
-			return fieldDataDBOperation(user,fieldDataDBOperationSpec,false);
+			return getFieldDataEDIs(user, false);
 		}else{
 			handle_DataAccessException_SQLException(e);
 			return null;
@@ -193,6 +207,31 @@ FieldDataDBOperationResults fieldDataDBOperation(User user, FieldDataDBOperation
 		conFactory.release(con,lock);
 	}
 }
+
+void deleteFieldDataEDI(User user, ExternalDataIdentifier edi, boolean bEnableRetry) throws SQLException, DataAccessException{
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		DbDriver.deleteFieldDataEDI(con, conFactory.getKeyFactory(), user, edi);
+		con.commit();
+	} catch (Throwable e) {
+		lg.error(e.getMessage(),e);
+		try {
+			con.rollback();
+		}catch (Throwable rbe){
+			lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
+		}
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			deleteFieldDataEDI(user, edi, false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
 
 CopyFieldDataResult fieldDataCopy(User user,
 								  ExternalDataIdentifier sourceID, String sourceAnnotation,

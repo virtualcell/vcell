@@ -10,34 +10,23 @@
 
 package cbit.vcell.modeldb;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-import org.vcell.util.DataAccessException;
-import org.vcell.util.DependencyException;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.PermissionException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.Version;
-import org.vcell.util.document.Versionable;
-import org.vcell.util.document.VersionableType;
-
-import cbit.sql.Field;
-import cbit.sql.InsertHashtable;
-import cbit.sql.QueryHashtable;
-import cbit.sql.RecordChangedException;
-import cbit.sql.Table;
-import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.sql.*;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.modeldb.DatabasePolicySQL.LeftOuterJoin;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.PermissionException;
+import org.vcell.util.document.*;
+
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 /**
  * This type was created in VisualAge.
  */
@@ -223,8 +212,7 @@ public KeyValue insertVersionable(InsertHashtable hash, Connection con, User use
 private void insertMathDescExternalDataLink(Connection con,User user,MathDescription mathDesc,KeyValue newMathDescKey)throws DataAccessException{
 	try{
 		ExternalDataIdentifier[] extDataIDArr =
-			fieldDataDBOperation(
-					con, keyFactory, user, FieldDataDBOperationSpec.createGetExtDataIDsSpec(user)).extDataIDArr;
+			getFieldDataEDIs(con, keyFactory, user).ids;
 		boolean bExtDataInserted[] = new boolean[extDataIDArr.length];
 		FieldFunctionArguments[] fieldFuncArgsArr = FieldUtilities.getFieldFunctionArguments(mathDesc);
 		for(int i=0;i<fieldFuncArgsArr.length;i+= 1){

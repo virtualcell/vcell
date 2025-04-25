@@ -10,36 +10,24 @@
 
 package cbit.vcell.modeldb;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.*;
-
+import cbit.vcell.messaging.db.SimulationJobDbDriver;
+import cbit.vcell.messaging.db.SimulationRequirements;
+import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
+import cbit.vcell.mongodb.VCMongoMessage;
+import cbit.vcell.server.*;
 import org.vcell.db.ConnectionFactory;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.UseridIDExistsException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.UserInfo;
-import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.document.VCInfoContainer;
-import org.vcell.util.document.VCellServerID;
+import org.vcell.util.document.*;
 
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.messaging.db.SimulationJobDbDriver;
-import cbit.vcell.messaging.db.SimulationRequirements;
-import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
-import cbit.vcell.mongodb.VCMongoMessage;
-import cbit.vcell.server.SimpleJobStatusPersistent;
-import cbit.vcell.server.SimpleJobStatusQuerySpec;
-import cbit.vcell.server.SimulationJobStatusPersistent;
-import cbit.vcell.server.SimulationStatusPersistent;
-import cbit.vcell.server.UpdateSynchronizationException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.*;
 
 /**
  * This type was created in VisualAge.
@@ -65,9 +53,8 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
         Object lock = new Object();
         Connection con = conFactory.getConnection(lock);
         try {
-            return DbDriver.fieldDataDBOperation(
-                    con, conFactory.getKeyFactory(), null,
-                    FieldDataDBOperationSpec.createGetExtDataIDsSpec(fieldDataOwner)).extDataIDArr;
+            return DbDriver.getFieldDataEDIs(
+                    con, conFactory.getKeyFactory(), fieldDataOwner).ids;
         } catch(Throwable e){
             lg.error("failure in getExternalDataIdentifiers()", e);
             if(bEnableRetry && isBadConnection(con)){

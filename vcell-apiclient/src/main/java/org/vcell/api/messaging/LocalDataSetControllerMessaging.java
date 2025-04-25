@@ -13,25 +13,24 @@ package org.vcell.api.messaging;
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldData;
+import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.message.server.bootstrap.client.RpcDataServerProxy;
 import cbit.vcell.message.server.bootstrap.client.RpcSender;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.simdata.*;
-import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.restclient.ApiException;
-import org.vcell.restclient.model.*;
+import org.vcell.restclient.model.FieldDataSavedResults;
+import org.vcell.restclient.model.FieldDataShape;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.UserLoginInfo;
-import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.document.*;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
 
@@ -53,37 +52,32 @@ public LocalDataSetControllerMessaging (UserLoginInfo userLoginInfo, RpcSender r
 }
 
 
-
-public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
-	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.fieldDataFileOperationSpec(...)");
-	try {
-		if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_ADD){
-			AnalyzedFile analyzedResultsFromFieldData = DtoModelTransforms.fieldDataSpecToAnalyzedResultsDTO(fieldDataFileOperationSpec);
-			FieldDataSavedResults results = vCellApiClient.getFieldDataApi().createFromAnalyzedFile(analyzedResultsFromFieldData);
-			return DtoModelTransforms.fieldDataSaveResultsDTOToFileOperationResults(results, fieldDataFileOperationSpec.owner);
-		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DELETE) {
-			vCellApiClient.getFieldDataApi().delete(fieldDataFileOperationSpec.specEDI.getKey().toString());
-			return null;
-		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_INFO) {
-			FieldDataShape fieldDataInfo = vCellApiClient.getFieldDataApi().getShapeFromID(fieldDataFileOperationSpec.sourceSimDataKey.toString());
-			return DtoModelTransforms.fieldDataInfoDTOToFileOperationResults(fieldDataInfo);
-		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_COPYSIM) {
-			UnsupportedOperationException unsupported = new UnsupportedOperationException("Call field data from simulation instead from user meta DB server.");
-			lg.error(unsupported);
-			throw unsupported;
-		} else if (fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DEPENDANTFUNCS) {
-			UnsupportedOperationException unsupported =  new UnsupportedOperationException("Field Data 'FDOS_DEPENDANTFUNCS' Operation is Not Supported.");
-			lg.error(unsupported);
-			throw unsupported;
-		} else {
-			UnsupportedOperationException unsupported = new UnsupportedOperationException("Unknown operation called.");
-			lg.error(unsupported);
-			throw unsupported;
-		}
+public void deleteFieldData(KeyValue externalDataIdentifierKey) {
+	try{
+		vCellApiClient.getFieldDataApi().delete(externalDataIdentifierKey.toString());
 	} catch (ApiException e){
-		lg.error(e.getMessage(),e);
+		lg.error(e);
 		throw new RuntimeException(e);
 	}
+}
+
+public ExternalDataIdentifier saveFieldData(FieldData fieldData){
+	FieldDataSavedResults results = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().save(
+			DtoModelTransforms.fieldDataToDTO(fieldData)
+	));
+	return new ExternalDataIdentifier(new KeyValue(results.getFieldDataKey()), new User(vCellApiClient.getCachedVCellUserName(), null), results.getFieldDataName());
+}
+
+public cbit.vcell.field.io.FieldDataShape getFieldDataShape(KeyValue externalDataIdentifierKey){
+	FieldDataShape shape = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().getShapeFromID(externalDataIdentifierKey.toString()));
+	return DtoModelTransforms.DTOToFieldDataShape(shape);
+}
+
+public ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec){
+	FieldDataSavedResults savedResults = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().analyzeFileAndCreate(fieldDataSpec.file, fieldDataSpec.fileName,
+			DtoModelTransforms.extentToDTO(fieldDataSpec.extent), DtoModelTransforms.iSizeToDTO(fieldDataSpec.iSize), fieldDataSpec.channelNames, fieldDataSpec.times, fieldDataSpec.annotation,
+			DtoModelTransforms.originToDTO(fieldDataSpec.origin)));
+	return new ExternalDataIdentifier(new KeyValue(savedResults.getFieldDataKey()), fieldDataSpec.owner, savedResults.getFieldDataName());
 }
 
 

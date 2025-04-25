@@ -9,37 +9,21 @@
  */
 
 package cbit.vcell.clientdb;
-import org.vcell.util.*;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.CurateSpec;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.ReferenceQueryResult;
-import org.vcell.util.document.ReferenceQuerySpec;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.VersionableTypeVersion;
 
 import cbit.image.VCImage;
 import cbit.image.VCImageInfo;
 import cbit.rmi.event.SimulationJobStatusEvent;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.field.FieldDataAllDBEntries;
+import cbit.vcell.field.io.FieldData;
+import cbit.vcell.field.io.FieldDataShape;
+import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.math.MathException;
 import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.model.DBFormalSpecies;
-import cbit.vcell.model.DBSpecies;
-import cbit.vcell.model.FormalSpeciesType;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.ReactionDescription;
-import cbit.vcell.model.ReactionQuerySpec;
-import cbit.vcell.model.ReactionStepInfo;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
+import cbit.vcell.model.*;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOP;
@@ -48,8 +32,10 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.server.SessionManager;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.solver.VCSimulationIdentifier;
-
-import java.io.File;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.DependencyException;
+import org.vcell.util.Preference;
+import org.vcell.util.document.*;
 
 /**
  * Insert the type's description here.
@@ -159,17 +145,11 @@ void delete(MathModelInfo mathModelInfo) throws DataAccessException;
  * @param bioModelInfo cbit.vcell.biomodel.BioModelInfo
  * @exception org.vcell.util.DataAccessException The exception description.
  */
-FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException;
-
-ExternalDataIdentifier saveFieldData(FieldDataFileOperationSpec fdos, String fieldDataBaseName) throws DataAccessException;
+FieldDataAllDBEntries getAllFieldDataIDs() throws DataAccessException, RemoteProxyException;
 
 
-FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException;
 
-
-FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent,
-																 ISize iSize, String[] channelNames, double[] times,
-																 String annotation, Origin origin) throws DataAccessException;
+ExternalDataIdentifier analyzeAndSaveFieldFromFile(FieldDataSpec fieldDataSpec) throws DataAccessException;
 
 void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) throws DataAccessException;
 
@@ -590,6 +570,17 @@ MathModelInfo setGroupPrivate(MathModelInfo mathModelInfo) throws DataAccessExce
  * @exception org.vcell.util.DataAccessException The exception description.
  */
 VCImageInfo setGroupPublic(VCImageInfo imageInfo) throws DataAccessException;
+
+	/**
+	 * Directly save field data to the server. Pre-processing should already be done.
+	 * @param fieldData
+	 * @return
+	 */
+	public ExternalDataIdentifier saveFieldData(FieldData fieldData) throws DataAccessException;
+
+	public void deleteFieldData(KeyValue fieldDataKey) throws DataAccessException;
+
+	public FieldDataShape getFieldDataShape(KeyValue fieldDataKey) throws DataAccessException;
 
 
 public void substituteFieldFuncNames(VCDocument vcDocument,VersionableTypeVersion originalOwner) throws DataAccessException,MathException,ExpressionException;

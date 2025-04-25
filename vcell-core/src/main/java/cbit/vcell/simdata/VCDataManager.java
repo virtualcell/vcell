@@ -11,8 +11,9 @@
 package cbit.vcell.simdata;
 
 import cbit.plot.PlotData;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldData;
+import cbit.vcell.field.io.FieldDataShape;
+import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.math.Function;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.server.DataSetController;
@@ -24,11 +25,10 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.VCellThreadChecker;
-import org.vcell.util.document.TimeSeriesJobResults;
-import org.vcell.util.document.TimeSeriesJobSpec;
-import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.document.*;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
+
 /**
  * Insert the type's description here.
  * Creation date: (6/11/2004 5:36:06 AM)
@@ -43,14 +43,53 @@ public VCDataManager(DataSetControllerProvider dataSetControllerProvider) {
 	this.dataSetControllerProvider = dataSetControllerProvider;
 }
 
+private interface RetryCallNoReturn<T>{
+	void dataSetCaller(T input) throws DataAccessException, RemoteProxyException;
+}
 
-public synchronized FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFielOperationSpec) throws DataAccessException {
-	try {
-		return getDataSetController().fieldDataFileOperation(fieldDataFielOperationSpec);
+@FunctionalInterface
+private interface RetryCall<R>{
+	R get() throws DataAccessException, RemoteProxyException;
+}
+
+public synchronized ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec) throws DataAccessException {
+	return retry(() -> getDataSetController().analyzeAndCreateFieldData(fieldDataSpec));
+}
+
+public synchronized void deleteFieldData(KeyValue fieldDataKey) throws DataAccessException {
+	RetryCallNoReturn<KeyValue> method = getDataSetController()::deleteFieldData;
+	retry(method, fieldDataKey);
+};
+
+public synchronized FieldDataShape getFieldDataShape(KeyValue fieldDataKey) throws DataAccessException {
+	return retry(() -> getDataSetController().getFieldDataShape(fieldDataKey));
+};
+
+public synchronized ExternalDataIdentifier saveFieldData(FieldData fieldData) throws DataAccessException{
+	return retry(() -> getDataSetController().saveFieldData(fieldData));
+}
+
+private <T> void retry(RetryCallNoReturn<T> caller, T input) throws DataAccessException{
+	try{
+		caller.dataSetCaller(input);
 	}catch (RemoteProxyException e){
 		handleRemoteProxyException(e);
 		try {
-			return getDataSetController().fieldDataFileOperation(fieldDataFielOperationSpec);
+			caller.dataSetCaller(input);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
+			throw new RuntimeException(e2.getMessage());
+		}
+	}
+}
+
+private <R> R retry(RetryCall<R> caller) throws DataAccessException{
+	try{
+		return caller.get();
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
+		try {
+			return caller.get();
 		}catch (RemoteProxyException e2){
 			handleRemoteProxyException(e2);
 			throw new RuntimeException(e2.getMessage());

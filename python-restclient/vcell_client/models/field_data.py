@@ -30,9 +30,9 @@ try:
 except ImportError:
     from typing_extensions import Self
 
-class AnalyzedFile(BaseModel):
+class FieldData(BaseModel):
     """
-    AnalyzedFile
+    FieldData
     """ # noqa: E501
     short_spec_data: Optional[List[List[List[StrictInt]]]] = Field(default=None, alias="shortSpecData")
     double_spec_data: Optional[List[List[List[Union[StrictFloat, StrictInt]]]]] = Field(default=None, alias="doubleSpecData")
@@ -62,7 +62,7 @@ class AnalyzedFile(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Self:
-        """Create an instance of AnalyzedFile from a JSON string"""
+        """Create an instance of FieldData from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -94,7 +94,7 @@ class AnalyzedFile(BaseModel):
 
     @classmethod
     def from_dict(cls, obj: Dict) -> Self:
-        """Create an instance of AnalyzedFile from a dict"""
+        """Create an instance of FieldData from a dict"""
         if obj is None:
             return None
 
@@ -104,7 +104,7 @@ class AnalyzedFile(BaseModel):
         # raise errors for additional fields in the input
         for _key in obj.keys():
             if _key not in cls.__properties:
-                raise ValueError("Error due to additional fields (not defined in AnalyzedFile) in the input: " + _key)
+                raise ValueError("Error due to additional fields (not defined in FieldData) in the input: " + _key)
 
         _obj = cls.model_validate({
             "shortSpecData": obj.get("shortSpecData"),

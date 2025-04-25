@@ -20,8 +20,9 @@ import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldDataParameterVariable;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldData;
+import cbit.vcell.field.io.FieldDataShape;
+import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.geometry.RegionImage;
 import cbit.vcell.math.*;
 import cbit.vcell.math.Variable.Domain;
@@ -1181,21 +1182,17 @@ private SimDataBlock evaluateFunction(
 }
 
 
-public FieldDataFileOperationResults fieldDataCopySim(KeyValue sourceSimDataKey, User sourceSimOwner,
-													  ExternalDataIdentifier edi, int sourceSimParamScanJobIndex, User ownerOfCopy){
-	return fieldDataCopySim(FieldDataFileOperationSpec.createCopySimFieldDataFileOperationSpec(edi, sourceSimDataKey, sourceSimOwner, sourceSimParamScanJobIndex, ownerOfCopy));
-}
-
-private FieldDataFileOperationResults fieldDataCopySim(FieldDataFileOperationSpec fieldDataFileOperationSpec){
+public FieldDataShape fieldDataCopySim(KeyValue sourceSimDataKey, User sourceSimOwner,
+													  ExternalDataIdentifier newEDI, int sourceSimParamScanJobIndex, User ownerOfCopy){
 	Vector<File> removeFilesIfErrorV = new Vector<File>();
 	try{
-		int simJobIndex = fieldDataFileOperationSpec.sourceSimParamScanJobIndex;
+		int simJobIndex = sourceSimParamScanJobIndex;
 		//Determine style so file names can be constructed properly
 		VCSimulationDataIdentifier sourceSimDataID =
 				new VCSimulationDataIdentifier(
 						new VCSimulationIdentifier(
-								fieldDataFileOperationSpec.sourceSimDataKey,
-								fieldDataFileOperationSpec.sourceOwner),
+								sourceSimDataKey,
+								sourceSimOwner),
 						simJobIndex);
 
 		SimulationData simulationData = (SimulationData)getVCData(sourceSimDataID);
@@ -1203,7 +1200,7 @@ private FieldDataFileOperationResults fieldDataCopySim(FieldDataFileOperationSpe
 		//
 		//log,mesh,zip,func
 		//
-		KeyValue origSimKey = fieldDataFileOperationSpec.sourceSimDataKey;
+		KeyValue origSimKey = sourceSimDataKey;
 		File meshFile_orig = simulationData.getMeshFile(false);
 		File funcFile_orig = simulationData.getFunctionsFile(false);
 		File subdomainFile_orig = simulationData.getSubdomainFile();
@@ -1215,12 +1212,12 @@ private FieldDataFileOperationResults fieldDataCopySim(FieldDataFileOperationSpe
 			throw new RuntimeException("Couldn't find all of the files required to copy sim");
 		}
 
-		File userDir = getPrimaryUserDir(fieldDataFileOperationSpec.owner, true);
-		File meshFile_new = new File(userDir,SimulationData.createCanonicalMeshFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
-		File funcFile_new = new File(userDir,SimulationData.createCanonicalFunctionsFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
-		File subdomainFile_new = new File(userDir,SimulationData.createCanonicalSubdomainFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
-		File fdLogFile_new = new File(userDir,SimulationData.createCanonicalSimLogFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
-		File zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,0,false,false));
+		File userDir = getPrimaryUserDir(ownerOfCopy, true);
+		File meshFile_new = new File(userDir,SimulationData.createCanonicalMeshFileName(newEDI.getKey(),0,false));
+		File funcFile_new = new File(userDir,SimulationData.createCanonicalFunctionsFileName(newEDI.getKey(),0,false));
+		File subdomainFile_new = new File(userDir,SimulationData.createCanonicalSubdomainFileName(newEDI.getKey(),0,false));
+		File fdLogFile_new = new File(userDir,SimulationData.createCanonicalSimLogFileName(newEDI.getKey(),0,false));
+		File zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(newEDI.getKey(),0,0,false,false));
 		if(meshFile_new.exists() || funcFile_new.exists() || fdLogFile_new.exists() || zipFile_new.exists() || (bCopySubdomainFile && subdomainFile_new.exists())){
 			throw new RuntimeException("File names required for new Field Data already exist on server");
 		}
@@ -1242,8 +1239,8 @@ private FieldDataFileOperationResults fieldDataCopySim(FieldDataFileOperationSpe
 			String newLogStr;
 			String replace_new =
 					SimulationData.createSimIDWithJobIndex(
-							fieldDataFileOperationSpec.specEDI.getKey(),
-							FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+							newEDI.getKey(),
+							FieldDataSpec.JOBINDEX_DEFAULT, false);
 			if(isOldStyle){
 				String replace_orig =
 						SimulationData.createSimIDWithJobIndex(origSimKey, 0, true);
@@ -1252,7 +1249,7 @@ private FieldDataFileOperationResults fieldDataCopySim(FieldDataFileOperationSpe
 				String replace_orig =
 						SimulationData.createSimIDWithJobIndex(
 								origSimKey,
-								fieldDataFileOperationSpec.sourceSimParamScanJobIndex, false);
+								sourceSimParamScanJobIndex, false);
 				newLogStr= origLog.replaceAll(replace_orig, replace_new);
 			}
 			writer = new BufferedWriter(new FileWriter(fdLogFile_new));
@@ -1272,7 +1269,7 @@ private FieldDataFileOperationResults fieldDataCopySim(FieldDataFileOperationSpe
 				//done
 				break;
 			}
-			zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(fieldDataFileOperationSpec.specEDI.getKey(),zipIndex,0,false,false));
+			zipFile_new = new File(userDir,SimulationData.createCanonicalSimZipFileName(newEDI.getKey(),zipIndex,0,false,false));
 			if(zipFile_new.exists()){
 				throw new DataAccessException("new zipfile name "+zipFile_new.getAbsolutePath()+" already exists");
 			}
@@ -1300,8 +1297,8 @@ private FieldDataFileOperationResults fieldDataCopySim(FieldDataFileOperationSpe
 					String newName;
 					String replace_new =
 							SimulationData.createSimIDWithJobIndex(
-									fieldDataFileOperationSpec.specEDI.getKey(),
-									FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+									newEDI.getKey(),
+									FieldDataSpec.JOBINDEX_DEFAULT, false);
 					if(isOldStyle){
 						String replace_orig =
 								SimulationData.createSimIDWithJobIndex(origSimKey, 0, true);
@@ -1310,7 +1307,7 @@ private FieldDataFileOperationResults fieldDataCopySim(FieldDataFileOperationSpe
 						String replace_orig =
 								SimulationData.createSimIDWithJobIndex(
 										origSimKey,
-										fieldDataFileOperationSpec.sourceSimParamScanJobIndex, false);
+										sourceSimParamScanJobIndex, false);
 						newName = zeIN.getName().replaceAll(replace_orig, replace_new);
 					}
 					ZipEntry zeOUT = new ZipEntry(newName);
@@ -1333,12 +1330,7 @@ private FieldDataFileOperationResults fieldDataCopySim(FieldDataFileOperationSpe
 			zipIndex+= 1;
 		}
 		//Now see if we can read what we just wrote
-		return fieldDataFileOperation(
-				FieldDataFileOperationSpec.
-						createInfoFieldDataFileOperationSpec(
-								fieldDataFileOperationSpec.specEDI.getKey(),
-								fieldDataFileOperationSpec.owner,
-								FieldDataFileOperationSpec.JOBINDEX_DEFAULT));
+		return fieldDataInfo(newEDI.getKey(), ownerOfCopy, FieldDataSpec.JOBINDEX_DEFAULT);
 	}catch(Exception e){
 		lg.error(e.getMessage(), e);
 		try{
@@ -1352,70 +1344,69 @@ private FieldDataFileOperationResults fieldDataCopySim(FieldDataFileOperationSpe
 	}
 }
 
-private FieldDataFileOperationResults fieldDataAdd(FieldDataFileOperationSpec fieldDataFileOperationSpec){
-	if(fieldDataFileOperationSpec.cartesianMesh == null){
+public FieldDataShape fieldDataAdd(FieldData fieldData, ExternalDataIdentifier edi){
+	if(fieldData.cartesianMesh == null){
 		throw new RuntimeException("Field Data Operation 'ADD' cartesianMesh cannot be null");
 	}
-	if(fieldDataFileOperationSpec.times == null || fieldDataFileOperationSpec.times.length == 0){
+	if(fieldData.times == null || fieldData.times.isEmpty()){
 		throw new RuntimeException("Field Data Operation 'ADD' times cannot be null");
 	}
-	if(fieldDataFileOperationSpec.times[0] != 0){
+	if(fieldData.times.get(0) != 0){
 		throw new RuntimeException("Field Data Operation 'ADD' first time must be 0.0");
 	}
-	if(fieldDataFileOperationSpec.varNames == null || fieldDataFileOperationSpec.varNames.length == 0){
+	if(fieldData.channelNames == null || fieldData.channelNames.isEmpty()){
 		throw new RuntimeException("Field Data Operation 'ADD' variable names cannot be null");
 	}
-	if((fieldDataFileOperationSpec.shortSpecData != null && fieldDataFileOperationSpec.doubleSpecData != null) ||
-			(fieldDataFileOperationSpec.shortSpecData == null && fieldDataFileOperationSpec.doubleSpecData == null)){
+	if((fieldData.data != null && fieldData.doubleData != null) ||
+			(fieldData.data == null && fieldData.doubleData == null)){
 		throw new RuntimeException("Field Data Operation 'ADD' must have ONLY 1 data specifier, short or double");
 	}
-	if(fieldDataFileOperationSpec.shortSpecData != null && (
-			fieldDataFileOperationSpec.shortSpecData.length != fieldDataFileOperationSpec.times.length ||
-					fieldDataFileOperationSpec.shortSpecData[0].length != fieldDataFileOperationSpec.varNames.length
+	if(fieldData.data != null && (
+			fieldData.data.length != fieldData.times.size() ||
+					fieldData.data[0].length != fieldData.channelNames.size()
 	)){
 		throw new RuntimeException(
 				"Field Data Operation 'ADD' 'short' data dimension does not match\n"+
 						"times and variable names array lengths");
 	}
-	if(fieldDataFileOperationSpec.doubleSpecData != null && (
-			fieldDataFileOperationSpec.doubleSpecData.length != fieldDataFileOperationSpec.times.length ||
-					fieldDataFileOperationSpec.doubleSpecData[0].length != fieldDataFileOperationSpec.varNames.length
+	if(fieldData.doubleData != null && (
+			fieldData.doubleData.length != fieldData.times.size() ||
+					fieldData.doubleData[0].length != fieldData.channelNames.size()
 	)){
 		throw new RuntimeException(
 				"Field Data Operation 'ADD' 'double' data dimension does not match\n"+
 						"times and variable names array lengths");
 	}
-	if(fieldDataFileOperationSpec.variableTypes == null || fieldDataFileOperationSpec.variableTypes.length == 0){
+	if(fieldData.variableTypes == null || fieldData.variableTypes.length == 0){
 		throw new RuntimeException("Field Data Operation 'ADD' variable types cannot be null");
 	}
-	if(fieldDataFileOperationSpec.variableTypes.length != fieldDataFileOperationSpec.varNames.length){
+	if(fieldData.variableTypes.length != fieldData.channelNames.size()){
 		throw new RuntimeException("Field Data Operation 'ADD' variable types count does not match variable names count");
 	}
 
 	//byte[][][] allData = fieldDataFileOperationSpec.specData;
-	double[] times = fieldDataFileOperationSpec.times;
-	ExternalDataIdentifier dataset = fieldDataFileOperationSpec.specEDI;
-	String[] vars = fieldDataFileOperationSpec.varNames;
-	VariableType[] varTypes = fieldDataFileOperationSpec.variableTypes;
+	double[] times = fieldData.times.stream().mapToDouble(Double::doubleValue).toArray();
+	String[] vars = fieldData.channelNames.toArray(new String[0]);
+	VariableType[] varTypes = fieldData.variableTypes;
 	File userDir = null;
 	try{
-		userDir = getPrimaryUserDir(fieldDataFileOperationSpec.owner, true);
+		userDir = getPrimaryUserDir(fieldData.owner, true);
 	}catch(FileNotFoundException e){
 		throw new RuntimeException("Couldn't create new user directory on server");
 	}
 
 	double[][][] convertedData = null;
-	if(fieldDataFileOperationSpec.doubleSpecData != null){
-		convertedData = fieldDataFileOperationSpec.doubleSpecData;
+	if(fieldData.doubleData != null){
+		convertedData = fieldData.doubleData;
 	}else{
 		//convert short to double
 		convertedData = new double[times.length][vars.length][];
 		for(int i=0;i<times.length;i+= 1){
 			for(int j=0;j<vars.length;j+= 1){
-				if (fieldDataFileOperationSpec.shortSpecData!=null){
-					convertedData[i][j] = new double[fieldDataFileOperationSpec.shortSpecData[i][j].length];
-					for (int k = 0; k < fieldDataFileOperationSpec.shortSpecData[i][j].length; k += 1) {
-						convertedData[i][j][k] = (double) (((int)fieldDataFileOperationSpec.shortSpecData[i][j][k]) & 0x0000FFFF);
+				if (fieldData.data!=null){
+					convertedData[i][j] = new double[fieldData.data[i][j].length];
+					for (int k = 0; k < fieldData.data[i][j].length; k += 1) {
+						convertedData[i][j][k] = (double) (((int)fieldData.data[i][j][k]) & 0x0000FFFF);
 					}
 				}else{
 					throw new RuntimeException("no pixel data found");
@@ -1428,12 +1419,12 @@ private FieldDataFileOperationResults fieldDataAdd(FieldDataFileOperationSpec fi
 	File fdLogFile =
 			new File(userDir,
 					SimulationData.createCanonicalSimLogFileName(
-							dataset.getKey(),0,false));
+							edi.getKey(),0,false));
 	PrintStream ps = null;
 	File zipFile =
 			new File(userDir,
 					SimulationData.createCanonicalSimZipFileName(
-							dataset.getKey(),0,0,false,false));
+							edi.getKey(),0,0,false,false));
 	Vector<String> simFileNamesV = new Vector<String>();
 	try{
 		if(!fdLogFile.createNewFile()){
@@ -1443,7 +1434,7 @@ private FieldDataFileOperationResults fieldDataAdd(FieldDataFileOperationSpec fi
 		for(int i=0;i<times.length;i+= 1){
 			String simFilename =
 					SimulationData.createCanonicalSimFilePathName(
-							dataset.getKey(), i,0,false);
+							edi.getKey(), i,0,false);
 			simFileNamesV.add(simFilename);
 			ps.println(i+"\t"+simFilename+"\t"+zipFile.getName()+"\t"+times[i]+"");
 		}
@@ -1461,7 +1452,7 @@ private FieldDataFileOperationResults fieldDataAdd(FieldDataFileOperationSpec fi
 		zipOut = new java.util.zip.ZipOutputStream(bout);
 		for(int t=0;t<times.length;t+= 1){
 			java.io.File temp = java.io.File.createTempFile("temp",null);
-			DataSet.writeNew(temp,vars,varTypes,fieldDataFileOperationSpec.isize,convertedData[t]);
+			DataSet.writeNew(temp,vars,varTypes,fieldData.iSize,convertedData[t]);
 			java.util.zip.ZipEntry zipEntry = new java.util.zip.ZipEntry(simFileNamesV.get(t));
 			zipOut.putNextEntry(zipEntry);
 			//----------------------------
@@ -1496,8 +1487,8 @@ private FieldDataFileOperationResults fieldDataAdd(FieldDataFileOperationSpec fi
 	FileOutputStream fos = null;
 	File meshFile = null;
 	try {
-		CartesianMesh mesh = fieldDataFileOperationSpec.cartesianMesh;
-		meshFile = new File(userDir,SimulationData.createCanonicalMeshFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
+		CartesianMesh mesh = fieldData.cartesianMesh;
+		meshFile = new File(userDir,SimulationData.createCanonicalMeshFileName(edi.getKey(),0,false));
 		fos = new FileOutputStream(meshFile);
 		mesh.write(new PrintStream(fos));
 	} catch (IOException e) {
@@ -1517,7 +1508,7 @@ private FieldDataFileOperationResults fieldDataAdd(FieldDataFileOperationSpec fi
 	PrintStream ps2 = null;
 	File funcFile = null;
 	try {
-		funcFile = new File(userDir,SimulationData.createCanonicalFunctionsFileName(fieldDataFileOperationSpec.specEDI.getKey(),0,false));
+		funcFile = new File(userDir,SimulationData.createCanonicalFunctionsFileName(edi.getKey(),0,false));
 		FileOutputStream fos2 = new FileOutputStream(funcFile);
 		ps2 =new PrintStream(fos2);
 		ps2.println(
@@ -1537,19 +1528,14 @@ private FieldDataFileOperationResults fieldDataAdd(FieldDataFileOperationSpec fi
 
 	try{
 		//return Info
-		return fieldDataFileOperation(
-				FieldDataFileOperationSpec.
-						createInfoFieldDataFileOperationSpec(
-								fieldDataFileOperationSpec.specEDI.getKey(),
-								fieldDataFileOperationSpec.owner,
-								FieldDataFileOperationSpec.JOBINDEX_DEFAULT));
+		return fieldDataInfo(edi.getKey(), fieldData.owner, FieldDataSpec.JOBINDEX_DEFAULT);
 	}catch(Exception e){
 		lg.error(e.getMessage(), e);
 		throw new RuntimeException(e);
 	}
 }
 
-private FieldDataFileOperationResults fieldDataDelete(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws ObjectNotFoundException {
+public void fieldDataDelete(ExternalDataIdentifier externalDataIdentifier) throws ObjectNotFoundException {
 	//		if(fieldDataFileOperation(
 //			FieldDataFileOperationSpec.
 //				createDependantFuncsFieldDataFileOperationSpec(
@@ -1562,22 +1548,22 @@ private FieldDataFileOperationResults fieldDataDelete(FieldDataFileOperationSpec
 	if(cacheTable0 != null){
 		VCSimulationIdentifier vcSimID =
 				new VCSimulationIdentifier(
-						fieldDataFileOperationSpec.specEDI.getKey(),
-						fieldDataFileOperationSpec.specEDI.getOwner());
+						externalDataIdentifier.getKey(),
+						externalDataIdentifier.getOwner());
 		VCSimulationDataIdentifier simDataID =
 				new VCSimulationDataIdentifier(
 						vcSimID,
-						FieldDataFileOperationSpec.JOBINDEX_DEFAULT);
+						FieldDataSpec.JOBINDEX_DEFAULT);
 		cacheTable0.removeAll(simDataID);
-		cacheTable0.removeAll(fieldDataFileOperationSpec.specEDI);
+		cacheTable0.removeAll(externalDataIdentifier);
 	}
 	if(userExtDataIDH != null){
-		userExtDataIDH.remove(fieldDataFileOperationSpec.specEDI.getOwner());
+		userExtDataIDH.remove(externalDataIdentifier.getOwner());
 	}
 
 	SimulationData simulationData = null;
 	try{
-		simulationData = (SimulationData)getVCData(fieldDataFileOperationSpec.specEDI);
+		simulationData = (SimulationData)getVCData(externalDataIdentifier);
 	}catch(Exception e){
 		throw new ObjectNotFoundException(e.getMessage(),e);
 	}
@@ -1609,19 +1595,18 @@ private FieldDataFileOperationResults fieldDataDelete(FieldDataFileOperationSpec
 		}
 		index+= 1;
 	}
-	return null;
 }
 
-private FieldDataFileOperationResults fieldDataInfo(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws ObjectNotFoundException {
+public FieldDataShape fieldDataInfo(KeyValue sourceSimDataKey, User sourceOwner, int sourceSimParamScanJobIndex) throws ObjectNotFoundException {
 	try{
-		FieldDataFileOperationResults fdor = new FieldDataFileOperationResults();
+		FieldDataShape fdor = new FieldDataShape();
 		VCDataIdentifier sourceSimDataID =
 				new VCSimulationDataIdentifier(
 						new VCSimulationIdentifier(
-								fieldDataFileOperationSpec.sourceSimDataKey,
-								fieldDataFileOperationSpec.sourceOwner),
-						fieldDataFileOperationSpec.sourceSimParamScanJobIndex);
-		fdor.dataIdentifierArr =
+								sourceSimDataKey,
+								sourceOwner),
+						sourceSimParamScanJobIndex);
+		fdor.variableInformation =
 				getDataIdentifiers(null,sourceSimDataID);
 		CartesianMesh mesh = getMesh(sourceSimDataID);
 		fdor.extent = mesh.getExtent();
@@ -1634,23 +1619,6 @@ private FieldDataFileOperationResults fieldDataInfo(FieldDataFileOperationSpec f
 	}catch(Exception e){
 		throw new RuntimeException("Error FieldDataFileOperationSpec INFO Operation\n"+e.getMessage());
 	}
-}
-
-public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec)
-	throws ObjectNotFoundException{
-
-	if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_COPYSIM){
-		return fieldDataCopySim(fieldDataFileOperationSpec);
-	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_ADD){
-		return fieldDataAdd(fieldDataFileOperationSpec);
-	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DEPENDANTFUNCS){
-		throw new RuntimeException("This function is not currently used");
-	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_DELETE){
-		return fieldDataDelete(fieldDataFileOperationSpec);
-	}else if(fieldDataFileOperationSpec.opType == FieldDataFileOperationSpec.FDOS_INFO){
-		return fieldDataInfo(fieldDataFileOperationSpec);
-	}
-	throw new RuntimeException("Field data operation "+fieldDataFileOperationSpec.opType+" unknown.");
 }
 
 private Vector<DataSetIdentifier> identifyDataDependencies(AnnotatedFunction function){

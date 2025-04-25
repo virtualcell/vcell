@@ -9,29 +9,14 @@
  */
 
 package cbit.vcell.modeldb;
-import java.io.File;
-import java.util.Hashtable;
-import java.util.TreeMap;
-
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import org.vcell.db.ConnectionFactory;
-import org.vcell.db.KeyFactory;
-import org.vcell.util.*;
-import org.vcell.util.document.*;
 
 import cbit.image.VCImageInfo;
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
+import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.model.DBFormalSpecies;
-import cbit.vcell.model.DBSpecies;
-import cbit.vcell.model.FormalSpeciesType;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.ReactionDescription;
-import cbit.vcell.model.ReactionQuerySpec;
-import cbit.vcell.model.ReactionStepInfo;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
+import cbit.vcell.model.*;
 import cbit.vcell.numericstest.TestSuiteInfoNew;
 import cbit.vcell.numericstest.TestSuiteNew;
 import cbit.vcell.numericstest.TestSuiteOP;
@@ -40,6 +25,16 @@ import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.KeyFactory;
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.Preference;
+import org.vcell.util.document.*;
+
+import java.util.Hashtable;
+import java.util.TreeMap;
 
 /**
  * This type was created in VisualAge.
@@ -81,18 +76,11 @@ public void deleteBioModel(KeyValue key) throws DataAccessException, ObjectNotFo
 	dbServerImpl.deleteBioModel(user, key);
 }
 
-	@Override
-	public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent, ISize iSize, String[] channelNames, double[] times, String annotation, Origin origin) {
-		throw new UnsupportedOperationException("Analyze and save field data from file is not implemented here.");
-	}
-
-
-	/**
- * delete method comment.
- */
-public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, ObjectNotFoundException {
-	return dbServerImpl.fieldDataDBOperation(user,fieldDataDBOperationSpec);
+@Override
+public FieldDataAllDBEntries getAllFieldDataIDs() throws DataAccessException, ObjectNotFoundException, RemoteProxyException {
+	return dbServerImpl.getFieldDataIDs(user);
 }
+
 
 	@Override
 	public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {

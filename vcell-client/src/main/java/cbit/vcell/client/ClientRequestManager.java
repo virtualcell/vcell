@@ -27,7 +27,8 @@ import cbit.vcell.client.data.ExportDataRepresentation;
 import cbit.vcell.client.data.MergedDatasetViewerController;
 import cbit.vcell.client.desktop.DocumentWindow;
 import cbit.vcell.client.desktop.biomodel.DocumentEditor;
-import cbit.vcell.client.server.*;
+import cbit.vcell.client.server.ClientServerInfo;
+import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.*;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.ClientLogin;
@@ -37,7 +38,7 @@ import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.HumanReadableExportData;
 import cbit.vcell.export.server.N5Specs;
 import cbit.vcell.field.FieldDataFileConversion;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.field.io.FieldData;
 import cbit.vcell.geometry.*;
 import cbit.vcell.geometry.gui.ROIMultiPaintManager;
 import cbit.vcell.geometry.surface.*;
@@ -57,10 +58,6 @@ import cbit.vcell.numericstest.ModelGeometryOPResults;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.resource.ResourceUtil;
-import org.vcell.api.server.AsynchMessageManager;
-import org.vcell.api.server.ClientServerManager;
-import org.vcell.api.server.ConnectionStatus;
-import org.vcell.api.utils.Auth0ConnectionUtils;
 import cbit.vcell.server.SimulationStatus;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.*;
@@ -90,6 +87,10 @@ import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.SEDMLDocument;
 import org.jlibsedml.SedML;
+import org.vcell.api.server.AsynchMessageManager;
+import org.vcell.api.server.ClientServerManager;
+import org.vcell.api.server.ConnectionStatus;
+import org.vcell.api.utils.Auth0ConnectionUtils;
 import org.vcell.model.bngl.ASTModel;
 import org.vcell.model.bngl.BngUnitSystem;
 import org.vcell.model.bngl.BngUnitSystem.BngUnitOrigin;
@@ -1173,7 +1174,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 	}
 
-	private static FieldDataFileOperationSpec createFDOSFromVCImage(VCImage dbImage) throws ImageException {
+	private static FieldData createFDOSFromVCImage(VCImage dbImage) throws ImageException {
 		int[] temp = new int[256];
 		short[] templateShorts = new short[dbImage.getNumXYZ()];
 		for (int i = 0; i < dbImage.getPixels().length; i++) {
@@ -1183,12 +1184,12 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		for (int j = 0; j < dbImage.getPixelClasses().length; j++) {
 			short tempshort = (short) (0x00FF & dbImage.getPixelClasses()[j].getPixel());
 		}
-		FieldDataFileOperationSpec fdfos = null;
-		fdfos = new FieldDataFileOperationSpec();
+		FieldData fdfos = null;
+		fdfos = new FieldData();
 		fdfos.origin = new Origin(0, 0, 0);
 		fdfos.extent = dbImage.getExtent();
-		fdfos.isize = new ISize(dbImage.getNumX(), dbImage.getNumY(), dbImage.getNumZ());
-		fdfos.shortSpecData = new short[][][] { { templateShorts } };
+		fdfos.iSize = new ISize(dbImage.getNumX(), dbImage.getNumY(), dbImage.getNumZ());
+		fdfos.data = new short[][][] { { templateShorts } };
 		return fdfos;
 	}
 
@@ -1267,25 +1268,25 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		return surfaceCollection;
 	}
 
-	public static FieldDataFileOperationSpec createFDOSFromSurfaceFile(File surfaceFile) throws Exception {
+	public static FieldData createFDOSFromSurfaceFile(File surfaceFile) throws Exception {
 		SurfaceCollection surfaceCollection = createSurfaceCollectionFromSurfaceFile(surfaceFile);
 		if (surfaceCollection != null) {
 			Geometry geometry = RayCaster.createGeometryFromSTL(new GeometryThumbnailImageFactoryAWT(),
 					surfaceCollection, 1000000);
-			FieldDataFileOperationSpec fdfos = new FieldDataFileOperationSpec();
+			FieldData fdfos = new FieldData();
 			fdfos.origin = geometry.getOrigin();
 			fdfos.extent = geometry.getExtent();
 			VCImage image = geometry.getGeometrySpec().getImage();
 			if (image.getNumPixelClasses() == 1) {
 				throw new Exception("STL import failed during processing, pixelclass count=1");
 			}
-			fdfos.isize = new ISize(image.getNumX(), image.getNumY(), image.getNumZ());
+			fdfos.iSize = new ISize(image.getNumX(), image.getNumY(), image.getNumZ());
 			byte[] pixels = image.getPixels();
 			short[] dataToSegment = new short[image.getNumXYZ()];
 			for (int i = 0; i < pixels.length; i++) {
 				dataToSegment[i] = pixels[i];
 			}
-			fdfos.shortSpecData = new short[][][] { { dataToSegment } };
+			fdfos.data = new short[][][] { { dataToSegment } };
 			return fdfos;
 		}
 		return null;
@@ -1319,7 +1320,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 				final Component guiParent = (Component) hashTable.get(ClientRequestManager.GUI_PARENT);
 				try {
-					FieldDataFileOperationSpec fdfos = null;
+					FieldData fdfos = null;
 					//			if(documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FIJI_IMAGEJ){
 					//				hashTable.put("imageFile",ImageJHelper.vcellWantImage(getClientTaskStatusSupport(),"Image for new VCell geometry"));
 					//			}
@@ -1469,12 +1470,12 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 									dataToSegment[i] |= (int) ((data[i] - minValue) / (maxValue - minValue)
 											* scaleShort);
 								}
-								fdfos = new FieldDataFileOperationSpec();
+								fdfos = new FieldData();
 								fdfos.origin = new Origin(0, 0, 0);
 								fdfos.extent = new Extent((xsize == 1 ? .5 : (xsize) * xspace),
 										(ysize == 1 ? .5 : (ysize) * yspace), (zsize == 1 ? .5 : (zsize) * zspace));
-								fdfos.isize = new ISize(xsize, ysize, zsize);
-								fdfos.shortSpecData = new short[][][] { { dataToSegment } };
+								fdfos.iSize = new ISize(xsize, ysize, zsize);
+								fdfos.data = new short[][][] { { dataToSegment } };
 							} finally {
 								if (dis != null) {
 									try {
@@ -1569,19 +1570,19 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						for (int i = 0; i < data.length; i++) {
 							dataToSegment[i] |= (int) ((data[i] - minValue) / (maxValue - minValue) * scaleShort);
 						}
-						fdfos = new FieldDataFileOperationSpec();
+						fdfos = new FieldData();
 						fdfos.origin = mesh.getOrigin();
 						fdfos.extent = mesh.getExtent();
-						fdfos.isize = meshISize;
-						fdfos.shortSpecData = new short[][][] { { dataToSegment } };
+						fdfos.iSize = meshISize;
+						fdfos.data = new short[][][] { { dataToSegment } };
 
 					} else if (documentCreationInfo.getOption() == VCDocument.GEOM_OPTION_FROM_SCRATCH) {
 						ISize isize = getISizeFromUser(guiParent, new ISize(256, 256, 8),
 								"Enter # of pixels for  x,y,z (e.g. 3D{256,256,8}, 2D{256,256,1}, 1D{256,1,1})");
-						fdfos = new FieldDataFileOperationSpec();
+						fdfos = new FieldData();
 						fdfos.origin = new Origin(0, 0, 0);
 						fdfos.extent = new Extent(1, 1, 1);
-						fdfos.isize = isize;
+						fdfos.iSize = isize;
 						hashTable.put(IMPORT_SOURCE_NAME, "Scratch: New Geometry");
 						//				final int SCRATCH_SIZE_LIMIT = 512*512*20;
 						//				if(isize.getXYZ() > (SCRATCH_SIZE_LIMIT)){
@@ -1677,7 +1678,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 					ImageSizeInfo newImageSizeInfo = (ImageSizeInfo) hashTable.get(NEW_IMAGE_SIZE_INFO);
 					File[] dirFiles = (File[]) hashTable.get(DIR_FILES);
 					File imageFile = (File) hashTable.get(IMAGE_FILE);
-					FieldDataFileOperationSpec fdfos = null;
+					FieldData fdfos = null;
 					boolean bMergeChannels = origImageSizeInfo.getNumChannels() != newImageSizeInfo.getNumChannels();
 					ISize resize = (origImageSizeInfo.getiSize().compareEqual(newImageSizeInfo.getiSize()) ? null
 							: newImageSizeInfo.getiSize());
@@ -1729,11 +1730,11 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 							}
 						}
-						fdfos = new FieldDataFileOperationSpec();
+						fdfos = new FieldData();
 						fdfos.origin = origin;
 						fdfos.extent = extent;
-						fdfos.isize = isize;
-						fdfos.shortSpecData = new short[][][] { dataToSegment };
+						fdfos.iSize = isize;
+						fdfos.data = new short[][][] { dataToSegment };
 					} else {
 						hashTable.put(INITIAL_ANNOTATION, imageFile.getAbsolutePath());
 						Integer userPreferredTimeIndex = null;
@@ -1764,9 +1765,9 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
 				ImageSizeInfo newImageSizeInfo = (ImageSizeInfo) hashTable.get(NEW_IMAGE_SIZE_INFO);
-				FieldDataFileOperationSpec fdfos = (FieldDataFileOperationSpec) hashTable.get(FDFOS);
+				FieldData fdfos = (FieldData) hashTable.get(FDFOS);
 				if (newImageSizeInfo != null && fdfos != null
-						&& !fdfos.isize.compareEqual(newImageSizeInfo.getiSize())) {
+						&& !fdfos.iSize.compareEqual(newImageSizeInfo.getiSize())) {
 //					resizeImage((FieldDataFileOperationSpec) hashTable.get(FDFOS), newImageSizeInfo.getiSize(),
 //							documentCreationInfo.getOption());
 					resize0(hashTable);
@@ -1800,10 +1801,10 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 		CartesianMesh origMesh = (CartesianMesh) hashTable.get("sourceMesh");
 		CartesianMesh resampleMesh = (CartesianMesh) hashTable.get("newMesh");
-		FieldDataFileOperationSpec fdfos = (FieldDataFileOperationSpec) hashTable.get(FDFOS);
-		double[] origData = new double[fdfos.isize.getXYZ()];
+		FieldData fdfos = (FieldData) hashTable.get(FDFOS);
+		double[] origData = new double[fdfos.iSize.getXYZ()];
 		for(int i=0;i<origData.length;i++) {
-			origData[i] = fdfos.shortSpecData[0][0][i];
+			origData[i] = fdfos.data[0][0][i];
 		}
 		double[] newData = null;
 		if(origMesh.getSizeY() == 1 && origMesh.getSizeZ() == 1){
@@ -1817,10 +1818,10 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		for(int i=0;i<newShort[0][0].length;i++) {
 			newShort[0][0][i] = (short)newData[i];
 		}
-		fdfos.isize = resampleMesh.getISize();
+		fdfos.iSize = resampleMesh.getISize();
 		fdfos.extent = resampleMesh.getExtent();
 		fdfos.origin = resampleMesh.getOrigin();
-		fdfos.shortSpecData = newShort;
+		fdfos.data = newShort;
 //		hashTable.put(VCPIXELCLASSES, newPixelClasses);
 	}
 
@@ -1894,7 +1895,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				getClientTaskStatusSupport().setMessage("Initializing...");
 				final ROIMultiPaintManager roiMultiPaintManager = new ROIMultiPaintManager();
 				roiMultiPaintManager.setDocumentManager(ClientRequestManager.this.getDocumentManager());
-				roiMultiPaintManager.initROIAndUnderlay((FieldDataFileOperationSpec) hashTable.get(FDFOS));
+				roiMultiPaintManager.initROIAndUnderlay((FieldData) hashTable.get(FDFOS));
 				final Geometry[] geomHolder = new Geometry[1];
 				final VCPixelClass[] postProcessPixelClasses = (VCPixelClass[]) hashTable.get(VCPIXELCLASSES);
 				AsynchClientTask task1 = new AsynchClientTask("edit geometry", AsynchClientTask.TASKTYPE_SWING_BLOCKING,
@@ -2025,29 +2026,29 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		}
 	}
 
-	private static void resizeImage(FieldDataFileOperationSpec fdfos, ISize newImagesISize, int imageType)
+	private static void resizeImage(FieldData fdfos, ISize newImagesISize, int imageType)
 			throws Exception {
-		final int ORIG_XYSIZE = fdfos.isize.getX() * fdfos.isize.getY();
+		final int ORIG_XYSIZE = fdfos.iSize.getX() * fdfos.iSize.getY();
 		try {
 			int xsize = newImagesISize.getX();
 			int ysize = newImagesISize.getY();
-			double scaleFactor = (double) newImagesISize.getX() / (double) fdfos.isize.getX();
-			if (xsize != fdfos.isize.getX() || ysize != fdfos.isize.getY()) {
-				int numChannels = fdfos.shortSpecData[0].length;// this normally contains different variables but is
+			double scaleFactor = (double) newImagesISize.getX() / (double) fdfos.iSize.getX();
+			if (xsize != fdfos.iSize.getX() || ysize != fdfos.iSize.getY()) {
+				int numChannels = fdfos.data[0].length;// this normally contains different variables but is
 				// used for channels here
 				// resize each z section to xsize,ysize
 				AffineTransform scaleAffineTransform = AffineTransform.getScaleInstance(scaleFactor, scaleFactor);
 				AffineTransformOp scaleAffineTransformOp = new AffineTransformOp(scaleAffineTransform,
 						AffineTransformOp.TYPE_NEAREST_NEIGHBOR);
-				short[][][] resizeData = new short[1][numChannels][fdfos.isize.getZ() * xsize * ysize];
+				short[][][] resizeData = new short[1][numChannels][fdfos.iSize.getZ() * xsize * ysize];
 				for (int c = 0; c < numChannels; c++) {
-					BufferedImage originalImage = new BufferedImage(fdfos.isize.getX(), fdfos.isize.getY(),
+					BufferedImage originalImage = new BufferedImage(fdfos.iSize.getX(), fdfos.iSize.getY(),
 							BufferedImage.TYPE_USHORT_GRAY);
 					BufferedImage scaledImage = new BufferedImage(xsize, ysize, BufferedImage.TYPE_USHORT_GRAY);
-					for (int z = 0; z < fdfos.isize.getZ(); z++) {
+					for (int z = 0; z < fdfos.iSize.getZ(); z++) {
 						short[] originalImageBuffer = ((DataBufferUShort) (originalImage.getRaster().getDataBuffer()))
 								.getData();
-						System.arraycopy(fdfos.shortSpecData[0][c], z * ORIG_XYSIZE, originalImageBuffer, 0,
+						System.arraycopy(fdfos.data[0][c], z * ORIG_XYSIZE, originalImageBuffer, 0,
 								ORIG_XYSIZE);
 						scaleAffineTransformOp.filter(originalImage, scaledImage);
 						short[] scaledImageBuffer = ((DataBufferUShort) (scaledImage.getRaster().getDataBuffer()))
@@ -2055,8 +2056,8 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						System.arraycopy(scaledImageBuffer, 0, resizeData[0][c], z * xsize * ysize, xsize * ysize);
 					}
 				}
-				fdfos.isize = new ISize(xsize, ysize, fdfos.isize.getZ());
-				fdfos.shortSpecData = resizeData;
+				fdfos.iSize = new ISize(xsize, ysize, fdfos.iSize.getZ());
+				fdfos.data = resizeData;
 			}
 		} catch (Exception e) {
 			throw new Exception("Error scaling imported image:\n" + e.getMessage());

@@ -1,19 +1,24 @@
 package cbit.vcell.message.server.dispatcher;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.Vector;
-import java.util.concurrent.TimeUnit;
-
-import cbit.vcell.modeldb.BioModelDbDriver;
+import cbit.vcell.field.FieldDataAllDBEntries;
+import cbit.vcell.field.FieldDataIdentifierSpec;
+import cbit.vcell.field.FieldFunctionArguments;
+import cbit.vcell.field.FieldUtilities;
+import cbit.vcell.messaging.db.SimulationRequirements;
+import cbit.vcell.modeldb.AdminDBTopLevel;
+import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.server.*;
+import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
+import cbit.vcell.server.SimulationJobStatus.SimulationQueueID;
+import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.solver.server.SimulationMessage;
+import cbit.vcell.solver.server.SimulationMessagePersistent;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.BigString;
@@ -24,39 +29,9 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.field.FieldDataIdentifierSpec;
-import cbit.vcell.field.FieldFunctionArguments;
-import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.messaging.db.SimulationRequirements;
-import cbit.vcell.modeldb.AdminDBTopLevel;
-import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.server.SimpleJobStatus;
-import cbit.vcell.server.SimpleJobStatusPersistent;
-import cbit.vcell.server.SimpleJobStatusQuerySpec;
-import cbit.vcell.server.SimulationExecutionStatus;
-import cbit.vcell.server.SimulationExecutionStatusPersistent;
-import cbit.vcell.server.SimulationJobStatus;
-import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
-import cbit.vcell.server.SimulationJobStatus.SimulationQueueID;
-import cbit.vcell.server.SimulationJobStatusPersistent;
-import cbit.vcell.server.SimulationQueueEntryStatus;
-import cbit.vcell.server.SimulationQueueEntryStatusPersistent;
-import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.server.SimulationStatusPersistent;
-import cbit.vcell.server.StateInfo;
-import cbit.vcell.server.UpdateSynchronizationException;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.solver.server.SimulationMessage;
-import cbit.vcell.solver.server.SimulationMessagePersistent;
-import cbit.vcell.xml.XmlHelper;
-import cbit.vcell.xml.XmlParseException;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class SimulationDatabaseDirect implements SimulationDatabase {
 	public static final Logger lg = LogManager.getLogger(SimulationDatabaseDirect.class);
@@ -291,9 +266,8 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 			}
 			fieldDataIDSs = new FieldDataIdentifierSpec[0];
 			User owner = sim.getVersion().getOwner();
-			FieldDataDBOperationSpec fieldDataDbOperationSpec = FieldDataDBOperationSpec.createGetExtDataIDsSpec(owner);
-			FieldDataDBOperationResults fieldDataDBOperationResults = databaseServerImpl.fieldDataDBOperation(owner,fieldDataDbOperationSpec);
-			ExternalDataIdentifier[] externalDataIDs = fieldDataDBOperationResults.extDataIDArr;
+			FieldDataAllDBEntries fieldDataDBOperationResults = databaseServerImpl.getFieldDataIDs(owner);
+			ExternalDataIdentifier[] externalDataIDs = fieldDataDBOperationResults.ids;
 			if (externalDataIDs != null && externalDataIDs.length != 0 &&
 					fieldFuncArgs != null && fieldFuncArgs.length>0	) {
 				Vector<FieldDataIdentifierSpec> fieldDataIdV = new Vector<FieldDataIdentifierSpec>();

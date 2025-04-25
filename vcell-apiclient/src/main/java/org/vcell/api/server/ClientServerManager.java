@@ -15,11 +15,7 @@ import cbit.vcell.client.server.*;
 import cbit.vcell.client.server.ClientServerInfo.ServerType;
 import cbit.vcell.clientdb.ClientDocumentManager;
 import cbit.vcell.clientdb.DocumentManager;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
-import com.google.inject.Inject;
-import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.resource.ErrorUtils;
 import cbit.vcell.resource.PropertyLoader;
@@ -27,9 +23,12 @@ import cbit.vcell.server.*;
 import cbit.vcell.simdata.VCDataManager;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import org.vcell.api.utils.Auth0ConnectionUtils;
 import org.vcell.service.registration.RegistrationService;
-import org.vcell.util.*;
+import org.vcell.util.Compare;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.VCellThreadChecker;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.VCellSoftwareVersion.VCellSite;
@@ -420,11 +419,6 @@ private VCellConnection connectToServer(InteractiveClientServerContext requester
 private String badConnectMessage(String badConnStr) {
 	String ctype = reconnectStat == ReconnectStatus.NOT ? "connect" : "reconnect";
 	return VCellErrorMessages.getErrorMessage(VCellErrorMessages.BAD_CONNECTION_MESSAGE, ctype, badConnStr);
-}
-
-
-public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFielOperationSpec) throws DataAccessException{
-	return getVCDataManager().fieldDataFileOperation(fieldDataFielOperationSpec);
 }
 
 /**

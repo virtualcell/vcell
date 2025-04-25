@@ -10,28 +10,26 @@
 
 package cbit.vcell.modeldb;
 
-import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-import java.util.Vector;
-
+import cbit.image.VCImageInfo;
+import cbit.sql.*;
+import cbit.sql.Field.SQLDataType;
+import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.field.FieldDataAllDBEntries;
+import cbit.vcell.field.FieldDataExternalDataIDEntry;
+import cbit.vcell.field.db.FieldDataDBOperationDriver;
 import cbit.vcell.field.io.CopyFieldDataResult;
+import cbit.vcell.geometry.Geometry;
+import cbit.vcell.geometry.GeometryInfo;
+import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.numericstest.*;
+import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
+import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
+import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.MathOverrides.Element;
+import cbit.vcell.solver.SimulationInfo;
+import cbit.vcell.solver.test.VariableComparisonSummary;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -39,91 +37,14 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.pub.Publication;
-import org.vcell.util.CommentStringTokenizer;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.DependencyException;
-import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.PermissionException;
-import org.vcell.util.Preference;
-import org.vcell.util.TokenMangler;
-import org.vcell.util.document.BioModelInfo;
-import org.vcell.util.document.CurateSpec;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.GroupAccess;
-import org.vcell.util.document.GroupAccessAll;
-import org.vcell.util.document.GroupAccessNone;
-import org.vcell.util.document.GroupAccessSome;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.MathModelInfo;
-import org.vcell.util.document.PublicationInfo;
-import org.vcell.util.document.User;
+import org.vcell.util.*;
+import org.vcell.util.document.*;
 import org.vcell.util.document.VCDocument.VCDocumentType;
-import org.vcell.util.document.VCDocumentInfo;
-import org.vcell.util.document.VCInfoContainer;
-import org.vcell.util.document.Version;
-import org.vcell.util.document.VersionFlag;
-import org.vcell.util.document.VersionInfo;
-import org.vcell.util.document.Versionable;
-import org.vcell.util.document.VersionableFamily;
-import org.vcell.util.document.VersionableRelationship;
-import org.vcell.util.document.VersionableType;
-import org.vcell.util.document.VersionableTypeVersion;
 
-import cbit.image.VCImageInfo;
-import cbit.sql.Field;
-import cbit.sql.Field.SQLDataType;
-import cbit.sql.InsertHashtable;
-import cbit.sql.RecordChangedException;
-import cbit.sql.StarField;
-import cbit.sql.Table;
-import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
-import cbit.vcell.field.db.FieldDataDBOperationDriver;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.mathmodel.MathModelMetaData;
-import cbit.vcell.numericstest.AddTestCasesOP;
-import cbit.vcell.numericstest.AddTestCasesOPBioModel;
-import cbit.vcell.numericstest.AddTestCasesOPMathModel;
-import cbit.vcell.numericstest.AddTestCriteriaOPBioModel;
-import cbit.vcell.numericstest.AddTestCriteriaOPMathModel;
-import cbit.vcell.numericstest.AddTestResultsOP;
-import cbit.vcell.numericstest.AddTestSuiteOP;
-import cbit.vcell.numericstest.ChangeTestCriteriaErrorLimitOP;
-import cbit.vcell.numericstest.EditTestCasesOP;
-import cbit.vcell.numericstest.EditTestCriteriaOPBioModel;
-import cbit.vcell.numericstest.EditTestCriteriaOPMathModel;
-import cbit.vcell.numericstest.EditTestCriteriaOPReportStatus;
-import cbit.vcell.numericstest.EditTestSuiteOP;
-import cbit.vcell.numericstest.LoadTestInfoOP;
-import cbit.vcell.numericstest.LoadTestInfoOP.LoadTestOpFlag;
-import cbit.vcell.numericstest.LoadTestInfoOpResults;
-import cbit.vcell.numericstest.LoadTestInfoOpResults.LoadTestSoftwareVersionTimeStamp;
-import cbit.vcell.numericstest.ModelGeometryOP;
-import cbit.vcell.numericstest.ModelGeometryOPResults;
-import cbit.vcell.numericstest.QueryTestCriteriaCrossRefOP;
-import cbit.vcell.numericstest.RemoveTestCasesOP;
-import cbit.vcell.numericstest.RemoveTestCriteriaOP;
-import cbit.vcell.numericstest.RemoveTestResultsOP;
-import cbit.vcell.numericstest.RemoveTestSuiteOP;
-import cbit.vcell.numericstest.TestCaseNew;
-import cbit.vcell.numericstest.TestCaseNewBioModel;
-import cbit.vcell.numericstest.TestCaseNewMathModel;
-import cbit.vcell.numericstest.TestCriteriaCrossRefOPResults;
-import cbit.vcell.numericstest.TestCriteriaNew;
-import cbit.vcell.numericstest.TestCriteriaNewBioModel;
-import cbit.vcell.numericstest.TestCriteriaNewMathModel;
-import cbit.vcell.numericstest.TestSuiteInfoNew;
-import cbit.vcell.numericstest.TestSuiteNew;
-import cbit.vcell.numericstest.TestSuiteOP;
-import cbit.vcell.numericstest.TestSuiteOPResults;
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.SimulationInfo;
-import cbit.vcell.solver.MathOverrides.Element;
-import cbit.vcell.solver.test.VariableComparisonSummary;
+import java.math.BigDecimal;
+import java.sql.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * This type was created in VisualAge.
@@ -624,11 +545,17 @@ public abstract class DbDriver {
         return dbVCDocumentInfo;
     }
 
+    public static ExternalDataIdentifier saveFieldDataEDI(Connection con, KeyFactory keyFactory, User user,
+                                                               FieldDataExternalDataIDEntry entry) throws SQLException, DataAccessException {
+        return FieldDataDBOperationDriver.saveExtraDataID(con, keyFactory, user, entry);
+    }
 
-    public static FieldDataDBOperationResults fieldDataDBOperation(Connection con, KeyFactory keyFactory, User user,
-                                                                   FieldDataDBOperationSpec fieldDataDBOperationSpec) throws SQLException, DataAccessException{
+    public static FieldDataAllDBEntries getFieldDataEDIs(Connection con, KeyFactory keyFactory, User user) throws SQLException {
+        return FieldDataDBOperationDriver.getExtraDataIDs(con, keyFactory, user, false);
+    }
 
-        return FieldDataDBOperationDriver.fieldDataDBOperation(con, keyFactory, user, fieldDataDBOperationSpec);
+    public static void deleteFieldDataEDI(Connection con, KeyFactory keyFactory, User user, ExternalDataIdentifier edi) throws SQLException {
+        FieldDataDBOperationDriver.deleteFieldData(con, keyFactory, user, edi);
     }
 
     public static CopyFieldDataResult fieldDataCopy(Connection con, KeyFactory keyFactory, User user,

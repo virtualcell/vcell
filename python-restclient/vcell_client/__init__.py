@@ -40,7 +40,6 @@ from vcell_client.exceptions import ApiException
 
 # import models into sdk package
 from vcell_client.models.acces_token_representation_record import AccesTokenRepresentationRecord
-from vcell_client.models.analyzed_file import AnalyzedFile
 from vcell_client.models.batch_system_type import BatchSystemType
 from vcell_client.models.bio_model import BioModel
 from vcell_client.models.biomodel_ref import BiomodelRef
@@ -49,6 +48,7 @@ from vcell_client.models.detailed_state import DetailedState
 from vcell_client.models.domain import Domain
 from vcell_client.models.extent import Extent
 from vcell_client.models.external_data_identifier import ExternalDataIdentifier
+from vcell_client.models.field_data import FieldData
 from vcell_client.models.field_data_reference import FieldDataReference
 from vcell_client.models.field_data_saved_results import FieldDataSavedResults
 from vcell_client.models.field_data_shape import FieldDataShape

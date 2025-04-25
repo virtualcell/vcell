@@ -1,4 +1,4 @@
-# AnalyzedFile
+# FieldData
 
 
 ## Properties
@@ -17,19 +17,19 @@ Name | Type | Description | Notes
 ## Example
 
 ```python
-from vcell_client.models.analyzed_file import AnalyzedFile
+from vcell_client.models.field_data import FieldData
 
 # TODO update the JSON string below
 json = "{}"
-# create an instance of AnalyzedFile from a JSON string
-analyzed_file_instance = AnalyzedFile.from_json(json)
+# create an instance of FieldData from a JSON string
+field_data_instance = FieldData.from_json(json)
 # print the JSON string representation of the object
-print AnalyzedFile.to_json()
+print FieldData.to_json()
 
 # convert the object into a dict
-analyzed_file_dict = analyzed_file_instance.to_dict()
-# create an instance of AnalyzedFile from a dict
-analyzed_file_form_dict = analyzed_file.from_dict(analyzed_file_dict)
+field_data_dict = field_data_instance.to_dict()
+# create an instance of FieldData from a dict
+field_data_form_dict = field_data.from_dict(field_data_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

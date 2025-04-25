@@ -10,38 +10,6 @@
 
 package cbit.vcell.microscopy;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.io.File;
-import java.io.FileFilter;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Hashtable;
-import java.util.Vector;
-
-import cbit.vcell.solver.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.optimization.ProfileData;
-import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.Compare;
-import org.vcell.util.Extent;
-import org.vcell.util.FileUtils;
-import org.vcell.util.ISize;
-import org.vcell.util.Issue;
-import org.vcell.util.Matchable;
-import org.vcell.util.Origin;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.GroupAccessNone;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.SimulationVersion;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.document.VersionFlag;
-
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
@@ -51,41 +19,37 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.ImageSubVolume;
-import cbit.vcell.geometry.RegionImage;
-import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.mapping.FeatureMapping;
-import cbit.vcell.mapping.MathMapping;
-import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.field.io.FieldData;
+import cbit.vcell.field.io.FieldDataSpec;
+import cbit.vcell.geometry.*;
+import cbit.vcell.mapping.*;
 import cbit.vcell.math.Function;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.microscopy.server.FrapDataUtils;
-import cbit.vcell.model.Feature;
+import cbit.vcell.model.*;
 import cbit.vcell.model.Kinetics.KineticsParameter;
-import cbit.vcell.model.MassActionKinetics;
-import cbit.vcell.model.Membrane;
-import cbit.vcell.model.Model;
-import cbit.vcell.model.SimpleReaction;
-import cbit.vcell.model.Species;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.opt.Parameter;
 import cbit.vcell.opt.SimpleReferenceData;
 import cbit.vcell.parser.Expression;
-import cbit.vcell.simdata.MergedDataInfo;
-import cbit.vcell.simdata.PDEDataManager;
-import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.SimulationData;
+import cbit.vcell.simdata.*;
+import cbit.vcell.solver.*;
 import cbit.vcell.solver.server.SolverStatus;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.optimization.ProfileData;
+import org.vcell.util.*;
+import org.vcell.util.document.*;
+
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import java.io.File;
+import java.io.FileFilter;
+import java.math.BigDecimal;
+import java.util.*;
 
 public class FRAPStudy implements Matchable{
 	private final static Logger lg = LogManager.getLogger(FRAPStudy.class);
@@ -811,13 +775,13 @@ public class FRAPStudy implements Matchable{
 			if(status.getStatus() == SolverStatus.SOLVER_FINISHED){
 				String roiMeshFileName =
 					SimulationData.createCanonicalMeshFileName(
-						roiExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+						roiExtDataID.getKey(),FieldDataSpec.JOBINDEX_DEFAULT, false);
 				String imageDataMeshFileName =
 					SimulationData.createCanonicalMeshFileName(
-						imageDataExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+						imageDataExtDataID.getKey(),FieldDataSpec.JOBINDEX_DEFAULT, false);
 				String simulationMeshFileName =
 					SimulationData.createCanonicalMeshFileName(
-						sim.getVersion().getVersionKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT, false);
+						sim.getVersion().getVersionKey(),FieldDataSpec.JOBINDEX_DEFAULT, false);
 				// delete old external data mesh files and copy simulation mesh file to them
 				File roiMeshFile = new File(simulationDataDir,roiMeshFileName);
 				File imgMeshFile = new File(simulationDataDir,imageDataMeshFileName);
@@ -848,16 +812,16 @@ public class FRAPStudy implements Matchable{
 			File userDir = new File(localWorkspace.getDefaultSimDataDirectory());
 			File fdLogFile =
 				new File(userDir,
-						SimulationData.createCanonicalSimLogFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
+						SimulationData.createCanonicalSimLogFileName(originalExtDataID.getKey(), FieldDataSpec.JOBINDEX_DEFAULT,false));
 			File fdMeshFile =
 				new File(userDir,
-						SimulationData.createCanonicalMeshFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
+						SimulationData.createCanonicalMeshFileName(originalExtDataID.getKey(),FieldDataSpec.JOBINDEX_DEFAULT,false));
 			File fdFunctionFile =
 				new File(userDir,
-						SimulationData.createCanonicalFunctionsFileName(originalExtDataID.getKey(),FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false));
+						SimulationData.createCanonicalFunctionsFileName(originalExtDataID.getKey(),FieldDataSpec.JOBINDEX_DEFAULT,false));
 			File fdZipFile =
 				new File(userDir,
-						SimulationData.createCanonicalSimZipFileName(originalExtDataID.getKey(), 0,FieldDataFileOperationSpec.JOBINDEX_DEFAULT,false,false));
+						SimulationData.createCanonicalSimZipFileName(originalExtDataID.getKey(), 0,FieldDataSpec.JOBINDEX_DEFAULT,false,false));
 			return new File[] {fdLogFile,fdMeshFile,fdFunctionFile,fdZipFile};
 		}
 		return null;
@@ -1052,19 +1016,17 @@ public class FRAPStudy implements Matchable{
 			
 	    		Origin origin = new Origin(0,0,0);
 		    		    	
-		    	FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-		    	fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+		    	FieldData fdos = new FieldData();
 		    	fdos.cartesianMesh = cartesianMesh;
-		    	fdos.shortSpecData =  pixData;
-		    	fdos.specEDI = newROIExtDataID;
-		    	fdos.varNames = new String[] {"roiSumDataVar"};
+		    	fdos.data =  pixData;
+		    	fdos.channelNames = Arrays.stream(new String[] {"roiSumDataVar"}).toList();
 		    	fdos.owner = LocalWorkspace.getDefaultOwner();
-		    	fdos.times = new double[] { 0.0 };
+		    	fdos.times = new ArrayList<>(){{add(0.0);}};
 		    	fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
 		    	fdos.origin = origin;
 		    	fdos.extent = extent;
-		    	fdos.isize = isize;
-		    	localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
+		    	fdos.iSize = isize;
+		    	localWorkspace.getDataSetControllerImpl().fieldDataAdd(fdos, newROIExtDataID);
 			} catch (Exception e) {
 				lg.error(e.getMessage(), e);
 			}
@@ -1104,19 +1066,17 @@ public class FRAPStudy implements Matchable{
 					0,null,null,RegionImage.NO_SMOOTHING));	
     		
 	    		    	
-	    	FieldDataFileOperationSpec fdos = new FieldDataFileOperationSpec();
-	    	fdos.opType = FieldDataFileOperationSpec.FDOS_ADD;
+	    	FieldData fdos = new FieldData();
 	    	fdos.cartesianMesh = cartesianMesh;
-	    	fdos.shortSpecData =  pixData;
-	    	fdos.specEDI = newPsfExtDataID;
-	    	fdos.varNames = new String[] {"psfVar"};
+	    	fdos.data =  pixData;
+	    	fdos.channelNames = Arrays.stream(new String[] {"psfVar"}).toList();
 	    	fdos.owner = LocalWorkspace.getDefaultOwner();
-	    	fdos.times = new double[] { 0.0 };
+	    	fdos.times = new ArrayList<>(){{add(0.0);}};
 	    	fdos.variableTypes = new VariableType[] {VariableType.VOLUME};
 	    	fdos.origin = origin;
 	    	fdos.extent = ext;
-	    	fdos.isize = isize;
-	    	localWorkspace.getDataSetControllerImpl().fieldDataFileOperation(fdos);
+	    	fdos.iSize = isize;
+	    	localWorkspace.getDataSetControllerImpl().fieldDataAdd(fdos, newPsfExtDataID);
 	    	
 	    	FieldFunctionArguments psfFieldFunc = new FieldFunctionArguments(
 	    			PSF_DATA_NAME, "psfVar", new Expression(0.0), VariableType.VOLUME);

@@ -299,7 +299,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AnalyzedFile'
+                $ref: '#/components/schemas/FieldData'
           description: OK
         "401":
           description: Not Authorized
@@ -309,9 +309,9 @@ paths:
       - openId:
         - user
       summary: "Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and\
-        \ create default field data specification. Color mapped images not supported\
-        \ (the colors in those images will be interpreted as separate channels). Filenames\
-        \ must be lowercase alphanumeric, and can contain underscores."
+        \ return field data. Color mapped images not supported (the colors in those\
+        \ images will be interpreted as separate channels). Filenames must be lowercase\
+        \ alphanumeric, and can contain underscores."
       tags:
       - Field Data Resource
       x-content-type: multipart/form-data
@@ -369,34 +369,6 @@ paths:
       - Field Data Resource
       x-content-type: application/x-www-form-urlencoded
       x-accepts: application/json
-  /api/v1/fieldData/createFromSpecification:
-    post:
-      operationId: createFromAnalyzedFile
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AnalyzedFile'
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FieldDataSavedResults'
-          description: OK
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - user
-      summary: "Take the field data specification, and save it to the server. User\
-        \ may adjust the analyzed file before uploading to edit defaults."
-      tags:
-      - Field Data Resource
-      x-content-type: application/json
-      x-accepts: application/json
   /api/v1/fieldData/delete/{fieldDataID}:
     delete:
       operationId: delete
@@ -421,6 +393,34 @@ paths:
       summary: Delete the selected field data.
       tags:
       - Field Data Resource
+      x-accepts: application/json
+  /api/v1/fieldData/save:
+    post:
+      operationId: save
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FieldData'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataSavedResults'
+          description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+      summary: "Take the generated field data, and save it to the server. User may\
+        \ adjust the analyzed file before uploading to edit defaults."
+      tags:
+      - Field Data Resource
+      x-content-type: application/json
       x-accepts: application/json
   /api/v1/fieldData/shape/{fieldDataID}:
     get:
@@ -881,66 +881,6 @@ components:
         userKey:
           type: string
       type: object
-    AnalyzedFile:
-      example:
-        extent:
-          x: 2.3021358869347655
-          "y": 7.061401241503109
-          z: 9.301444243932576
-        annotation: annotation
-        times:
-        - 6.027456183070403
-        - 6.027456183070403
-        origin:
-          x: 1.4658129805029452
-          "y": 5.962133916683182
-          z: 5.637376656633329
-        isize:
-          x: 3
-          "y": 2
-          z: 4
-        name: name
-        varNames:
-        - varNames
-        - varNames
-        shortSpecData:
-        - - - 0
-            - 0
-          - - 0
-            - 0
-        - - - 0
-            - 0
-          - - 0
-            - 0
-      properties:
-        shortSpecData:
-          items:
-            items:
-              items:
-                type: integer
-              type: array
-            type: array
-          type: array
-        varNames:
-          items:
-            type: string
-          type: array
-        times:
-          items:
-            format: double
-            type: number
-          type: array
-        origin:
-          $ref: '#/components/schemas/Origin'
-        extent:
-          $ref: '#/components/schemas/Extent'
-        isize:
-          $ref: '#/components/schemas/ISize'
-        annotation:
-          type: string
-        name:
-          type: string
-      type: object
     Application:
       type: object
     BatchSystemType:
@@ -1126,9 +1066,9 @@ components:
       type: object
     Extent:
       example:
-        x: 2.3021358869347655
-        "y": 7.061401241503109
-        z: 9.301444243932576
+        x: 7.061401241503109
+        "y": 9.301444243932576
+        z: 3.616076749251911
       properties:
         x:
           format: double
@@ -1180,6 +1120,84 @@ components:
         dataKey:
           $ref: '#/components/schemas/KeyValue'
       type: object
+    FieldData:
+      example:
+        extent:
+          x: 7.061401241503109
+          "y": 9.301444243932576
+          z: 3.616076749251911
+        annotation: annotation
+        times:
+        - 1.4658129805029452
+        - 1.4658129805029452
+        doubleSpecData:
+        - - - 6.027456183070403
+            - 6.027456183070403
+          - - 6.027456183070403
+            - 6.027456183070403
+        - - - 6.027456183070403
+            - 6.027456183070403
+          - - 6.027456183070403
+            - 6.027456183070403
+        origin:
+          x: 5.962133916683182
+          "y": 5.637376656633329
+          z: 2.3021358869347655
+        isize:
+          x: 2
+          "y": 4
+          z: 7
+        name: name
+        varNames:
+        - varNames
+        - varNames
+        shortSpecData:
+        - - - 0
+            - 0
+          - - 0
+            - 0
+        - - - 0
+            - 0
+          - - 0
+            - 0
+      properties:
+        shortSpecData:
+          items:
+            items:
+              items:
+                type: integer
+              type: array
+            type: array
+          type: array
+        doubleSpecData:
+          items:
+            items:
+              items:
+                format: double
+                type: number
+              type: array
+            type: array
+          type: array
+        varNames:
+          items:
+            type: string
+          type: array
+        times:
+          items:
+            format: double
+            type: number
+          type: array
+        origin:
+          $ref: '#/components/schemas/Origin'
+        extent:
+          $ref: '#/components/schemas/Extent'
+        isize:
+          $ref: '#/components/schemas/ISize'
+        annotation:
+          type: string
+        name:
+          type: string
+      type: object
     FieldDataReference:
       example:
         annotation: annotation
@@ -1225,20 +1243,20 @@ components:
     FieldDataShape:
       example:
         extent:
-          x: 2.3021358869347655
-          "y": 7.061401241503109
-          z: 9.301444243932576
+          x: 7.061401241503109
+          "y": 9.301444243932576
+          z: 3.616076749251911
         times:
         - 6.027456183070403
         - 6.027456183070403
         origin:
-          x: 1.4658129805029452
-          "y": 5.962133916683182
-          z: 5.637376656633329
+          x: 5.962133916683182
+          "y": 5.637376656633329
+          z: 2.3021358869347655
         isize:
-          x: 3
-          "y": 2
-          z: 4
+          x: 2
+          "y": 4
+          z: 7
         dataIdentifier:
         - variableType:
             defaultUnits: defaultUnits
@@ -1314,9 +1332,9 @@ components:
       type: object
     ISize:
       example:
-        x: 3
-        "y": 2
-        z: 4
+        x: 2
+        "y": 4
+        z: 7
       properties:
         x:
           format: int32
@@ -1396,9 +1414,9 @@ components:
       type: string
     Origin:
       example:
-        x: 1.4658129805029452
-        "y": 5.962133916683182
-        z: 5.637376656633329
+        x: 5.962133916683182
+        "y": 5.637376656633329
+        z: 2.3021358869347655
       properties:
         x:
           format: double

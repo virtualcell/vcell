@@ -9,18 +9,9 @@
  */
 
 package cbit.vcell.message.server.bootstrap.client;
-import java.io.File;
-import java.util.Hashtable;
-import java.util.TreeMap;
-
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import org.vcell.util.*;
-import org.vcell.util.document.*;
 
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.clientdb.ServerRejectedSaveException;
-import cbit.vcell.field.FieldDataDBOperationResults;
-import cbit.vcell.field.FieldDataDBOperationSpec;
 import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.message.VCellQueue;
@@ -28,8 +19,15 @@ import cbit.vcell.model.ReactionQuerySpec;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.server.UserRegistrationResults;
+import org.vcell.util.BigString;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.*;
 
-public class RpcDbServerProxy extends AbstractRpcServerProxy implements cbit.vcell.server.UserMetaDbServer {
+import java.util.Hashtable;
+import java.util.TreeMap;
+
+public class RpcDbServerProxy extends AbstractRpcServerProxy {
 
 public RpcDbServerProxy(UserLoginInfo userLoginInfo, RpcSender rpcSender) {
 	super(userLoginInfo, rpcSender, VCellQueue.DbRequestQueue);
@@ -52,21 +50,11 @@ public void deleteBioModel(org.vcell.util.document.KeyValue bioModelKey) throws 
 	rpc("deleteBioModel",new Object[]{userLoginInfo.getUser(), bioModelKey});
 }
 
-	@Override
-	public FieldDataFileOperationResults analyzeAndSaveFieldFromFile(File file, String fileName, Extent extent, ISize iSize, String[] channelNames, double[] times, String annotation, Origin origin) {
-		return null;
-	}
 
-	public FieldDataDBOperationResults fieldDataDBOperation(FieldDataDBOperationSpec fieldDataDBOperationSpec) throws DataAccessException, ObjectNotFoundException {
-	return (FieldDataDBOperationResults)rpc("fieldDataDBOperation",new Object[]{userLoginInfo.getUser(), fieldDataDBOperationSpec});
-}
-
-	@Override
 	public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {
 		throw new UnsupportedOperationException("Not supported on RPC");
 	}
 
-	@Override
 	public Hashtable<String, ExternalDataIdentifier> copyModelsFieldData(String modelKey, VersionableType modelType) {
 		throw new UnsupportedOperationException("Not supported on RPC");
 	}

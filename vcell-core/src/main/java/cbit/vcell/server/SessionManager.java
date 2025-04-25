@@ -11,8 +11,7 @@
 package cbit.vcell.server;
 
 import cbit.vcell.client.server.AsyncMessageManagerInterface;
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
+import cbit.vcell.simdata.VCDataManager;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
@@ -22,9 +21,8 @@ import org.vcell.util.document.User;
  * @author: Ion Moraru
  */
 public interface SessionManager {
-	
-FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFielOperationSpec) throws DataAccessException;
 
+VCDataManager getVCDataManager();
 	
 /**
  * Insert the method's description here.

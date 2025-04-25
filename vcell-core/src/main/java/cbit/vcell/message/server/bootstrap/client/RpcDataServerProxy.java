@@ -10,6 +10,9 @@
 
 package cbit.vcell.message.server.bootstrap.client;
 
+import cbit.vcell.message.VCRpcRequest.RpcServiceType;
+import cbit.vcell.message.VCellQueue;
+import cbit.vcell.simdata.*;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.UserLoginInfo;
@@ -17,37 +20,17 @@ import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.vis.io.VtuFileContainer;
 import org.vcell.vis.io.VtuVarInfo;
 
-import cbit.vcell.field.io.FieldDataFileOperationResults;
-import cbit.vcell.field.io.FieldDataFileOperationSpec;
-import cbit.vcell.message.VCRpcRequest.RpcServiceType;
-import cbit.vcell.message.VCellQueue;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.DataOperation;
-import cbit.vcell.simdata.DataOperationResults;
-import cbit.vcell.simdata.DataSetMetadata;
-import cbit.vcell.simdata.DataSetTimeSeries;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.simdata.ParticleDataBlock;
-import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.SpatialSelection;
-
 /**
  * Insert the type's description here.
  * Creation date: (12/6/2001 1:51:41 PM)
  * @author: Jim Schaff
  */
-public class RpcDataServerProxy extends AbstractRpcServerProxy implements cbit.vcell.server.DataSetController {
+public class RpcDataServerProxy extends AbstractRpcServerProxy {
 /**
  * DataServerProxy constructor comment.
  */
 public RpcDataServerProxy(UserLoginInfo userLoginInfo, RpcSender rpcSender) {
 	super(userLoginInfo, rpcSender, VCellQueue.DataRequestQueue);
-}
-
-
-
-public FieldDataFileOperationResults fieldDataFileOperation(FieldDataFileOperationSpec fieldDataFileOperationSpec) throws DataAccessException {
-	return (FieldDataFileOperationResults)rpc("fieldDataFileOperation",new Object[]{userLoginInfo.getUser(), fieldDataFileOperationSpec});
 }
 
 
@@ -128,13 +111,11 @@ public cbit.rmi.event.ExportEvent makeRemoteFile(OutputContext outputContext,cbi
 	return null;
 }
 
-@Override
 public DataSetMetadata getDataSetMetadata(VCDataIdentifier vcdataID) throws DataAccessException {
 	return (DataSetMetadata)rpc("getDataSetMetadata", new Object[]{userLoginInfo.getUser(), vcdataID});
 }
 
 
-@Override
 public DataSetTimeSeries getDataSetTimeSeries(VCDataIdentifier vcdataID, String[] variableNames) throws DataAccessException {
 	return (DataSetTimeSeries)rpc("getDataSetTimeSeries", new Object[]{userLoginInfo.getUser(), vcdataID, variableNames});
 }
@@ -157,34 +138,29 @@ private Object rpc(String methodName, Object[] args) throws DataAccessException 
 
 
 
-@Override
 public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID, int timeIndex)	throws DataAccessException {
 	return (VtuFileContainer)rpc("getEmptyVtuMeshFiles", new Object[]{userLoginInfo.getUser(), vcdataID, new Integer(timeIndex)});
 }
 
 
-@Override
 public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcdataID, VtuVarInfo var, double time)	throws DataAccessException {
 	return (double[])rpc("getVtuMeshData", new Object[]{userLoginInfo.getUser(), outputContext, vcdataID, var, new Double(time)});
 }
 
 
 
-@Override
 public VtuVarInfo[] getVtuVarInfos(OutputContext outputContext, VCDataIdentifier vcdataID) throws DataAccessException {
 	return (VtuVarInfo[])rpc("getVtuVarInfos", new Object[]{userLoginInfo.getUser(), outputContext, vcdataID});
 }
 
 
 
-@Override
 public double[] getVtuTimes(VCDataIdentifier vcdataID) throws DataAccessException {
 	return (double[])rpc("getVtuTimes", new Object[]{userLoginInfo.getUser(), vcdataID});
 }
 
 
 
-@Override
 public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID)
 		throws DataAccessException {
 	return (NFSimMolecularConfigurations)rpc("getNFSimMolecularConfigurations", new Object[]{userLoginInfo.getUser(), vcdataID});
