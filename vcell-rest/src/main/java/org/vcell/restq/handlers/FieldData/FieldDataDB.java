@@ -172,10 +172,10 @@ public class FieldDataDB {
         }
         if (!fileName.contains(".vfrap")) {
             try {
-                FieldData spec = FieldDataFileConversion.createFDOSFromImageFile(imageFile, false, null);
+                FieldData ioFieldData = FieldDataFileConversion.createFDOSFromImageFile(imageFile, false, null);
                 return new FieldDataResource.FieldData(
-                        spec.data, new double[][][]{}, spec.channelNames.toArray(new String[0]), spec.times.stream().mapToDouble(Double::doubleValue).toArray(),
-                        spec.origin, spec.extent, spec.iSize, spec.annotation, fileName
+                        ioFieldData.data, new double[][][]{}, ioFieldData.channelNames.toArray(new String[0]), ioFieldData.times.stream().mapToDouble(Double::doubleValue).toArray(),
+                        ioFieldData.origin, ioFieldData.extent, ioFieldData.iSize, ioFieldData.annotation, fileName
                 );
             } catch (DataFormatException  ex) {
                 throw new RuntimeException("Cannot read image " + fileName + "\n" + ex.getMessage());
