@@ -968,11 +968,14 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 								issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 								break;
 							}
-							double step = Math.sqrt(sas.getDiffusionRate() * 1000000.0 * timeStep);
+							double P = 0.99;        // probability
+							double D = sas.getDiffusionRate() * 1000000.0;	// nm^2/s
+							// maximum displacement:  x_max = sqrt(-4 * sas.getDiffusionRate() * 1000000.0 * deltaT * ln(1 - P))
+							double step = Simulation.computeDisplacement(D, timeStep, P);
 							if (step >= xPart || step >= yPart || step >= zPart) {
 								// diffusion speed * dt must be smaller than the partition size on x, y, z so that the particle
 								//  won't be able to jump outside the current partition or its neighboring partitions
-								String msg = "Molecule '" + scs.getSpeciesContext().getName() + "' must not difuse farther than any adjacent partition within the time interval.";
+								String msg = "Molecule '" + scs.getSpeciesContext().getName() + "' must not diffuse farther than any adjacent partition within the time interval.";
 								String tip = "Reduce diffusion rate of site '" + mcp.getMolecularComponent().getName() + "' or reduce the time interval";
 								issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 								break;
@@ -984,7 +987,16 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 		}
 		SimulationWarning.gatherIssues(this, issueContext, issueList);
 	}
-	
+	public static double computeDisplacement(double D, double deltaT, double P) {
+
+		if (P <= 0 || P >= 1) {
+			throw new IllegalArgumentException("Probability P must be between 0 and 1 (exclusive).");
+		}
+		// maximum displacement: x_max = sqrt(-4 * D * deltaT * ln(1 - P))
+		double xMax = Math.sqrt(-4 * D * deltaT * Math.log(1 - P));
+		return xMax;
+	}
+
 	@Override
 	public Kind getSimulationContextKind() {
 		return SimulationContext.Kind.SIMULATIONS_KIND;
