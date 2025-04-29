@@ -80,7 +80,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> FieldDataSavedResults:
-        """Combines the two separate requests of Analyze File and Save. The following files are accepted: .tif and .zip.
+        """Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 
 
         :param file:
@@ -177,7 +177,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[FieldDataSavedResults]:
-        """Combines the two separate requests of Analyze File and Save. The following files are accepted: .tif and .zip.
+        """Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 
 
         :param file:
@@ -274,7 +274,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Combines the two separate requests of Analyze File and Save. The following files are accepted: .tif and .zip.
+        """Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 
 
         :param file:
@@ -1030,7 +1030,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> FieldDataSavedResults:
-        """Submit a file that converts into field data, with all defaults derived from the file submitted.
+        """Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
 
 
         :param file:
@@ -1103,7 +1103,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[FieldDataSavedResults]:
-        """Submit a file that converts into field data, with all defaults derived from the file submitted.
+        """Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
 
 
         :param file:
@@ -1176,7 +1176,7 @@ class FieldDataResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Submit a file that converts into field data, with all defaults derived from the file submitted.
+        """Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
 
 
         :param file:

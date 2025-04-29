@@ -187,7 +187,7 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
     }
 
     /**
-     * Combines the two separate requests of Analyze File and Save. The following files are accepted: .tif and .zip.
+     * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
      * @param file 
      * @param fileName 
      * @param extent 
@@ -462,7 +462,7 @@ export class FieldDataResourceService implements FieldDataResourceServiceInterfa
     }
 
     /**
-     * Submit a file that converts into field data, with all defaults derived from the file submitted.
+     * Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
      * @param file 
      * @param fieldDataName 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.

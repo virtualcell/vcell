@@ -98,7 +98,7 @@ public class FieldDataResourceApi {
   }
 
   /**
-   * Combines the two separate requests of Analyze File and Save. The following files are accepted: .tif and .zip.
+   * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
    * 
    * @param _file  (optional)
    * @param fileName  (optional)
@@ -117,7 +117,7 @@ public class FieldDataResourceApi {
   }
 
   /**
-   * Combines the two separate requests of Analyze File and Save. The following files are accepted: .tif and .zip.
+   * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
    * 
    * @param _file  (optional)
    * @param fileName  (optional)
@@ -403,7 +403,7 @@ public class FieldDataResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * Submit a file that converts into field data, with all defaults derived from the file submitted.
+   * Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
    * 
    * @param _file  (optional)
    * @param fieldDataName  (optional)
@@ -416,7 +416,7 @@ public class FieldDataResourceApi {
   }
 
   /**
-   * Submit a file that converts into field data, with all defaults derived from the file submitted.
+   * Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
    * 
    * @param _file  (optional)
    * @param fieldDataName  (optional)

@@ -279,7 +279,7 @@ paths:
       security:
       - openId:
         - user
-      summary: "Combines the two separate requests of Analyze File and Save. The following\
+      summary: "Create Field Data with granular detail in one request.The following\
         \ files are accepted: .tif and .zip."
       tags:
       - Field Data Resource
@@ -371,8 +371,8 @@ paths:
       security:
       - openId:
         - user
-      summary: "Submit a file that converts into field data, with all defaults derived\
-        \ from the file submitted."
+      summary: "Submit a .zip or .tif file that converts into field data, with all\
+        \ defaults derived from the file submitted."
       tags:
       - Field Data Resource
       x-content-type: multipart/form-data

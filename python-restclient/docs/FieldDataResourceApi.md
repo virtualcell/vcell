@@ -4,10 +4,10 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**advanced_create**](FieldDataResourceApi.md#advanced_create) | **POST** /api/v1/fieldData/advancedCreate | Combines the two separate requests of Analyze File and Save. The following files are accepted: .tif and .zip.
+[**advanced_create**](FieldDataResourceApi.md#advanced_create) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 [**analyze_file**](FieldDataResourceApi.md#analyze_file) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 [**copy_models_field_data**](FieldDataResourceApi.md#copy_models_field_data) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
-[**create_from_file**](FieldDataResourceApi.md#create_from_file) | **POST** /api/v1/fieldData/createFromFile | Submit a file that converts into field data, with all defaults derived from the file submitted.
+[**create_from_file**](FieldDataResourceApi.md#create_from_file) | **POST** /api/v1/fieldData/createFromFile | Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
 [**create_from_simulation**](FieldDataResourceApi.md#create_from_simulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results.
 [**delete**](FieldDataResourceApi.md#delete) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data.
 [**get_all_ids**](FieldDataResourceApi.md#get_all_ids) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data.
@@ -18,7 +18,7 @@ Method | HTTP request | Description
 # **advanced_create**
 > FieldDataSavedResults advanced_create(file=file, file_name=file_name, extent=extent, i_size=i_size, channel_names=channel_names, times=times, annotation=annotation, origin=origin)
 
-Combines the two separate requests of Analyze File and Save. The following files are accepted: .tif and .zip.
+Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 
 ### Example
 
@@ -58,7 +58,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     origin = vcell_client.Origin() # Origin |  (optional)
 
     try:
-        # Combines the two separate requests of Analyze File and Save. The following files are accepted: .tif and .zip.
+        # Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
         api_response = api_instance.advanced_create(file=file, file_name=file_name, extent=extent, i_size=i_size, channel_names=channel_names, times=times, annotation=annotation, origin=origin)
         print("The response of FieldDataResourceApi->advanced_create:\n")
         pprint(api_response)
@@ -251,7 +251,7 @@ Name | Type | Description  | Notes
 # **create_from_file**
 > FieldDataSavedResults create_from_file(file=file, field_data_name=field_data_name)
 
-Submit a file that converts into field data, with all defaults derived from the file submitted.
+Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
 
 ### Example
 
@@ -282,7 +282,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     field_data_name = 'field_data_name_example' # str |  (optional)
 
     try:
-        # Submit a file that converts into field data, with all defaults derived from the file submitted.
+        # Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
         api_response = api_instance.create_from_file(file=file, field_data_name=field_data_name)
         print("The response of FieldDataResourceApi->create_from_file:\n")
         pprint(api_response)

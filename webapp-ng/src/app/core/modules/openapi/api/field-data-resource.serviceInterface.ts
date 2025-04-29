@@ -40,7 +40,7 @@ export interface FieldDataResourceServiceInterface {
     _delete(fieldDataID: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
-     * Combines the two separate requests of Analyze File and Save. The following files are accepted: .tif and .zip.
+     * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
      * 
      * @param file 
      * @param fileName 
@@ -69,7 +69,7 @@ export interface FieldDataResourceServiceInterface {
     copyModelsFieldData(sourceModel?: SourceModel, extraHttpRequestParams?: any): Observable<{ [key: string]: ExternalDataIdentifier; }>;
 
     /**
-     * Submit a file that converts into field data, with all defaults derived from the file submitted.
+     * Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
      * 
      * @param file 
      * @param fieldDataName 

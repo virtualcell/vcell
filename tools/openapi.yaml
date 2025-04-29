@@ -212,7 +212,7 @@ paths:
     post:
       tags:
       - Field Data Resource
-      summary: "Combines the two separate requests of Analyze File and Save. The following\
+      summary: "Create Field Data with granular detail in one request.The following\
         \ files are accepted: .tif and .zip."
       operationId: advancedCreate
       requestBody:
@@ -340,8 +340,8 @@ paths:
     post:
       tags:
       - Field Data Resource
-      summary: "Submit a file that converts into field data, with all defaults derived\
-        \ from the file submitted."
+      summary: "Submit a .zip or .tif file that converts into field data, with all\
+        \ defaults derived from the file submitted."
       operationId: createFromFile
       requestBody:
         content:

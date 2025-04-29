@@ -109,7 +109,7 @@ public class FieldDataResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Operation(operationId = "advancedCreate", summary = "Combines the two separate requests of Analyze File and Save. " +
+    @Operation(operationId = "advancedCreate", summary = "Create Field Data with granular detail in one request." +
             "The following files are accepted: .tif and .zip.")
     public FieldDataSavedResults analyzeAndCreateFieldData(@RestForm @PartType(MediaType.APPLICATION_OCTET_STREAM) File file,
                                                   @RestForm @PartType(MediaType.TEXT_PLAIN) String fileName,
@@ -139,7 +139,7 @@ public class FieldDataResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Operation(operationId = "createFromFile", summary = "Submit a file that converts into field data, with all defaults derived from the file submitted.")
+    @Operation(operationId = "createFromFile", summary = "Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.")
     public FieldDataSavedResults createFromFileWithDefaults(@RestForm @PartType(MediaType.APPLICATION_OCTET_STREAM) File file,
                                                             @RestForm String fieldDataName) throws DataAccessException, ImageException, DataFormatException {
         User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);

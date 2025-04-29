@@ -4,14 +4,14 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**advancedCreate**](FieldDataResourceApi.md#advancedCreate) | **POST** /api/v1/fieldData/advancedCreate | Combines the two separate requests of Analyze File and Save. The following files are accepted: .tif and .zip. |
-| [**advancedCreateWithHttpInfo**](FieldDataResourceApi.md#advancedCreateWithHttpInfo) | **POST** /api/v1/fieldData/advancedCreate | Combines the two separate requests of Analyze File and Save. The following files are accepted: .tif and .zip. |
+| [**advancedCreate**](FieldDataResourceApi.md#advancedCreate) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip. |
+| [**advancedCreateWithHttpInfo**](FieldDataResourceApi.md#advancedCreateWithHttpInfo) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip. |
 | [**analyzeFile**](FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
 | [**analyzeFileWithHttpInfo**](FieldDataResourceApi.md#analyzeFileWithHttpInfo) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores. |
 | [**copyModelsFieldData**](FieldDataResourceApi.md#copyModelsFieldData) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own. |
 | [**copyModelsFieldDataWithHttpInfo**](FieldDataResourceApi.md#copyModelsFieldDataWithHttpInfo) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own. |
-| [**createFromFile**](FieldDataResourceApi.md#createFromFile) | **POST** /api/v1/fieldData/createFromFile | Submit a file that converts into field data, with all defaults derived from the file submitted. |
-| [**createFromFileWithHttpInfo**](FieldDataResourceApi.md#createFromFileWithHttpInfo) | **POST** /api/v1/fieldData/createFromFile | Submit a file that converts into field data, with all defaults derived from the file submitted. |
+| [**createFromFile**](FieldDataResourceApi.md#createFromFile) | **POST** /api/v1/fieldData/createFromFile | Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted. |
+| [**createFromFileWithHttpInfo**](FieldDataResourceApi.md#createFromFileWithHttpInfo) | **POST** /api/v1/fieldData/createFromFile | Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted. |
 | [**createFromSimulation**](FieldDataResourceApi.md#createFromSimulation) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results. |
 | [**createFromSimulationWithHttpInfo**](FieldDataResourceApi.md#createFromSimulationWithHttpInfo) | **POST** /api/v1/fieldData/createFromSimulation | Create new field data from existing simulation results. |
 | [**delete**](FieldDataResourceApi.md#delete) | **DELETE** /api/v1/fieldData/delete/{fieldDataID} | Delete the selected field data. |
@@ -29,7 +29,7 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 > FieldDataSavedResults advancedCreate(_file, fileName, extent, iSize, channelNames, times, annotation, origin)
 
-Combines the two separate requests of Analyze File and Save. The following files are accepted: .tif and .zip.
+Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 
 ### Example
 
@@ -110,7 +110,7 @@ public class Example {
 
 > ApiResponse<FieldDataSavedResults> advancedCreate advancedCreateWithHttpInfo(_file, fileName, extent, iSize, channelNames, times, annotation, origin)
 
-Combines the two separate requests of Analyze File and Save. The following files are accepted: .tif and .zip.
+Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 
 ### Example
 
@@ -475,7 +475,7 @@ ApiResponse<[**Map&lt;String, ExternalDataIdentifier&gt;**](ExternalDataIdentifi
 
 > FieldDataSavedResults createFromFile(_file, fieldDataName)
 
-Submit a file that converts into field data, with all defaults derived from the file submitted.
+Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
 
 ### Example
 
@@ -544,7 +544,7 @@ public class Example {
 
 > ApiResponse<FieldDataSavedResults> createFromFile createFromFileWithHttpInfo(_file, fieldDataName)
 
-Submit a file that converts into field data, with all defaults derived from the file submitted.
+Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
 
 ### Example
 
