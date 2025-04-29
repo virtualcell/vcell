@@ -74,7 +74,7 @@ public cbit.vcell.field.io.FieldDataShape getFieldDataShape(KeyValue externalDat
 }
 
 public ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec){
-	FieldDataSavedResults savedResults = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().analyzeFileAndCreate(fieldDataSpec.file, fieldDataSpec.fileName,
+	FieldDataSavedResults savedResults = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().advancedCreate(fieldDataSpec.file, fieldDataSpec.fileName,
 			DtoModelTransforms.extentToDTO(fieldDataSpec.extent), DtoModelTransforms.iSizeToDTO(fieldDataSpec.iSize), fieldDataSpec.channelNames, fieldDataSpec.times, fieldDataSpec.annotation,
 			DtoModelTransforms.originToDTO(fieldDataSpec.origin)));
 	return new ExternalDataIdentifier(new KeyValue(savedResults.getFieldDataKey()), fieldDataSpec.owner, savedResults.getFieldDataName());

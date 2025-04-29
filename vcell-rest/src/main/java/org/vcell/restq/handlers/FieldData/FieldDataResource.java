@@ -1,6 +1,7 @@
 package org.vcell.restq.handlers.FieldData;
 
 import cbit.image.ImageException;
+import cbit.vcell.field.io.FieldData;
 import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.math.MathException;
 import cbit.vcell.parser.ExpressionException;
@@ -48,6 +49,7 @@ public class FieldDataResource {
 
     private final FieldDataDB fieldDataDB;
     private final UserRestDB userRestDB;
+    private final String allowedFieldDataNamesRegex = "^[a-zA-Z0-9_]*$";
 
     @Inject
     public FieldDataResource(FieldDataDB fieldDataDB, UserRestDB userRestDB){
@@ -103,11 +105,11 @@ public class FieldDataResource {
     }
 
     @POST
-    @Path("/analyzeAndCreateFromFile")
+    @Path("/advancedCreate")
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Operation(operationId = "analyzeFileAndCreate", summary = "For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. " +
+    @Operation(operationId = "advancedCreate", summary = "Create Field Data with granular detail in one request." +
             "The following files are accepted: .tif and .zip.")
     public FieldDataSavedResults analyzeAndCreateFieldData(@RestForm @PartType(MediaType.APPLICATION_OCTET_STREAM) File file,
                                                   @RestForm @PartType(MediaType.TEXT_PLAIN) String fileName,
@@ -119,7 +121,7 @@ public class FieldDataResource {
                                                   @RestForm("origin") @PartType(MediaType.APPLICATION_JSON) Origin origin){
         try{
             User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
-            if (!Pattern.matches("^[a-z0-9_]*$", fileName) || fileName.length() > 100 || fileName.isEmpty()){
+            if (!Pattern.matches(allowedFieldDataNamesRegex, fileName) || fileName.length() > 100 || fileName.isEmpty()){
                 throw new WebApplicationException("Invalid file name.", HTTP.BAD_REQUEST);
             }
             FieldData fieldData = fieldDataDB.analyzeFieldDataFromFile(file, fileName);
@@ -133,6 +135,24 @@ public class FieldDataResource {
     }
 
     @POST
+    @Path("/createFromFile")
+    @RolesAllowed("user")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Operation(operationId = "createFromFile", summary = "Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.")
+    public FieldDataSavedResults createFromFileWithDefaults(@RestForm @PartType(MediaType.APPLICATION_OCTET_STREAM) File file,
+                                                            @RestForm String fieldDataName) throws DataAccessException, ImageException, DataFormatException {
+        User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
+        if (!Pattern.matches(allowedFieldDataNamesRegex, fieldDataName) || fieldDataName.length() > 100 || fieldDataName.isEmpty()){
+            throw new WebApplicationException("Invalid file name.", HTTP.BAD_REQUEST);
+        }
+        FieldData fieldData = fieldDataDB.analyzeFieldDataFromFile(file, fieldDataName);
+        ExternalDataIdentifier edi = fieldDataDB.saveNewFieldDataFromFile(fieldDataName, fieldData.varNames, fieldData.shortSpecData,
+                fieldData.annotation, user, fieldData.times, fieldData.origin, fieldData.extent, fieldData.isize);
+        return new FieldDataSavedResults(edi.getName(), edi.getKey().toString());
+    }
+
+    @POST
     @Path("/analyzeFile")
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
@@ -142,7 +162,7 @@ public class FieldDataResource {
     public FieldData analyzeFile(@RestForm File file, @RestForm String fileName){
         try{
             userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
-            if (!Pattern.matches("^[a-z0-9_]*$", fileName) || fileName.length() > 100 || fileName.isEmpty()){
+            if (!Pattern.matches(allowedFieldDataNamesRegex, fileName) || fileName.length() > 100 || fileName.isEmpty()){
                 throw new WebApplicationException("Invalid file name.", HTTP.BAD_REQUEST);
             }
             return fieldDataDB.analyzeFieldDataFromFile(file, fileName);

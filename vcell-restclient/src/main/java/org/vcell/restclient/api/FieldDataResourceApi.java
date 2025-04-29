@@ -98,6 +98,135 @@ public class FieldDataResourceApi {
   }
 
   /**
+   * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
+   * 
+   * @param _file  (optional)
+   * @param fileName  (optional)
+   * @param extent  (optional)
+   * @param iSize  (optional)
+   * @param channelNames  (optional
+   * @param times  (optional
+   * @param annotation  (optional)
+   * @param origin  (optional)
+   * @return FieldDataSavedResults
+   * @throws ApiException if fails to make API call
+   */
+  public FieldDataSavedResults advancedCreate(File _file, String fileName, Extent extent, ISize iSize, List<String> channelNames, List<Double> times, String annotation, Origin origin) throws ApiException {
+    ApiResponse<FieldDataSavedResults> localVarResponse = advancedCreateWithHttpInfo(_file, fileName, extent, iSize, channelNames, times, annotation, origin);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
+   * 
+   * @param _file  (optional)
+   * @param fileName  (optional)
+   * @param extent  (optional)
+   * @param iSize  (optional)
+   * @param channelNames  (optional
+   * @param times  (optional
+   * @param annotation  (optional)
+   * @param origin  (optional)
+   * @return ApiResponse&lt;FieldDataSavedResults&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<FieldDataSavedResults> advancedCreateWithHttpInfo(File _file, String fileName, Extent extent, ISize iSize, List<String> channelNames, List<Double> times, String annotation, Origin origin) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = advancedCreateRequestBuilder(_file, fileName, extent, iSize, channelNames, times, annotation, origin);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("advancedCreate", localVarResponse);
+        }
+        return new ApiResponse<FieldDataSavedResults>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataSavedResults>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder advancedCreateRequestBuilder(File _file, String fileName, Extent extent, ISize iSize, List<String> channelNames, List<Double> times, String annotation, Origin origin) throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/fieldData/advancedCreate";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    MultipartEntityBuilder multiPartBuilder = MultipartEntityBuilder.create();
+    boolean hasFiles = false;
+    multiPartBuilder.addBinaryBody("file", _file);
+    hasFiles = true;
+    multiPartBuilder.addTextBody("fileName", fileName.toString());
+    try {
+      multiPartBuilder.addTextBody("extent", memberVarObjectMapper.writeValueAsString(extent));
+      multiPartBuilder.addTextBody("iSize", memberVarObjectMapper.writeValueAsString(iSize));
+      multiPartBuilder.addTextBody("origin", memberVarObjectMapper.writeValueAsString(origin));
+    } catch (JsonProcessingException e) {
+      throw new RuntimeException(e);
+    }
+    for (int i=0; i < times.size(); i++) {
+      multiPartBuilder.addTextBody("times", times.get(i).toString());
+    }
+    for (int i=0; i < channelNames.size(); i++) {
+      multiPartBuilder.addTextBody("channelNames", channelNames.get(i).toString());
+    }
+    multiPartBuilder.addTextBody("annotation", annotation.toString());
+    HttpEntity entity = multiPartBuilder.build();
+    HttpRequest.BodyPublisher formDataPublisher;
+    if (hasFiles) {
+        Pipe pipe;
+        try {
+            pipe = Pipe.open();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        new Thread(() -> {
+            try (OutputStream outputStream = Channels.newOutputStream(pipe.sink())) {
+                entity.writeTo(outputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+        formDataPublisher = HttpRequest.BodyPublishers.ofInputStream(() -> Channels.newInputStream(pipe.source()));
+    } else {
+        ByteArrayOutputStream formOutputStream = new ByteArrayOutputStream();
+        try {
+            entity.writeTo(formOutputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        formDataPublisher = HttpRequest.BodyPublishers
+            .ofInputStream(() -> new ByteArrayInputStream(formOutputStream.toByteArray()));
+    }
+    localVarRequestBuilder
+        .header("Content-Type", entity.getContentType().getValue())
+        .method("POST", formDataPublisher);
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
    * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
    * 
    * @param _file  (optional)
@@ -201,135 +330,6 @@ public class FieldDataResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
-   * 
-   * @param _file  (optional)
-   * @param fileName  (optional)
-   * @param extent  (optional)
-   * @param iSize  (optional)
-   * @param channelNames  (optional
-   * @param times  (optional
-   * @param annotation  (optional)
-   * @param origin  (optional)
-   * @return FieldDataSavedResults
-   * @throws ApiException if fails to make API call
-   */
-  public FieldDataSavedResults analyzeFileAndCreate(File _file, String fileName, Extent extent, ISize iSize, List<String> channelNames, List<Double> times, String annotation, Origin origin) throws ApiException {
-    ApiResponse<FieldDataSavedResults> localVarResponse = analyzeFileAndCreateWithHttpInfo(_file, fileName, extent, iSize, channelNames, times, annotation, origin);
-    return localVarResponse.getData();
-  }
-
-  /**
-   * For advanced users, combines the two separate requests of Analyze File and Create From Analyzed File. The following files are accepted: .tif and .zip.
-   * 
-   * @param _file  (optional)
-   * @param fileName  (optional)
-   * @param extent  (optional)
-   * @param iSize  (optional)
-   * @param channelNames  (optional
-   * @param times  (optional
-   * @param annotation  (optional)
-   * @param origin  (optional)
-   * @return ApiResponse&lt;FieldDataSavedResults&gt;
-   * @throws ApiException if fails to make API call
-   */
-  public ApiResponse<FieldDataSavedResults> analyzeFileAndCreateWithHttpInfo(File _file, String fileName, Extent extent, ISize iSize, List<String> channelNames, List<Double> times, String annotation, Origin origin) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = analyzeFileAndCreateRequestBuilder(_file, fileName, extent, iSize, channelNames, times, annotation, origin);
-    try {
-      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
-          localVarRequestBuilder.build(),
-          HttpResponse.BodyHandlers.ofInputStream());
-      if (memberVarResponseInterceptor != null) {
-        memberVarResponseInterceptor.accept(localVarResponse);
-      }
-      try {
-        if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("analyzeFileAndCreate", localVarResponse);
-        }
-        return new ApiResponse<FieldDataSavedResults>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataSavedResults>() {}) // closes the InputStream
-        );
-      } finally {
-      }
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new ApiException(e);
-    }
-  }
-
-  private HttpRequest.Builder analyzeFileAndCreateRequestBuilder(File _file, String fileName, Extent extent, ISize iSize, List<String> channelNames, List<Double> times, String annotation, Origin origin) throws ApiException {
-
-    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-    String localVarPath = "/api/v1/fieldData/analyzeAndCreateFromFile";
-
-    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
-
-    localVarRequestBuilder.header("Accept", "application/json");
-
-    MultipartEntityBuilder multiPartBuilder = MultipartEntityBuilder.create();
-    boolean hasFiles = false;
-    multiPartBuilder.addBinaryBody("file", _file);
-    hasFiles = true;
-    multiPartBuilder.addTextBody("fileName", fileName.toString());
-    try {
-      multiPartBuilder.addTextBody("extent", memberVarObjectMapper.writeValueAsString(extent));
-      multiPartBuilder.addTextBody("iSize", memberVarObjectMapper.writeValueAsString(iSize));
-      multiPartBuilder.addTextBody("origin", memberVarObjectMapper.writeValueAsString(origin));
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
-    }
-    for (int i=0; i < times.size(); i++) {
-      multiPartBuilder.addTextBody("times", times.get(i).toString());
-    }
-    for (int i=0; i < channelNames.size(); i++) {
-      multiPartBuilder.addTextBody("channelNames", channelNames.get(i).toString());
-    }
-    multiPartBuilder.addTextBody("annotation", annotation.toString());
-    HttpEntity entity = multiPartBuilder.build();
-    HttpRequest.BodyPublisher formDataPublisher;
-    if (hasFiles) {
-        Pipe pipe;
-        try {
-            pipe = Pipe.open();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        new Thread(() -> {
-            try (OutputStream outputStream = Channels.newOutputStream(pipe.sink())) {
-                entity.writeTo(outputStream);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }).start();
-        formDataPublisher = HttpRequest.BodyPublishers.ofInputStream(() -> Channels.newInputStream(pipe.source()));
-    } else {
-        ByteArrayOutputStream formOutputStream = new ByteArrayOutputStream();
-        try {
-            entity.writeTo(formOutputStream);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        formDataPublisher = HttpRequest.BodyPublishers
-            .ofInputStream(() -> new ByteArrayInputStream(formOutputStream.toByteArray()));
-    }
-    localVarRequestBuilder
-        .header("Content-Type", entity.getContentType().getValue())
-        .method("POST", formDataPublisher);
-    if (memberVarReadTimeout != null) {
-      localVarRequestBuilder.timeout(memberVarReadTimeout);
-    }
-    if (memberVarInterceptor != null) {
-      memberVarInterceptor.accept(localVarRequestBuilder);
-    }
-    return localVarRequestBuilder;
-  }
-  /**
    * Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
    * 
    * @param sourceModel  (optional)
@@ -394,6 +394,109 @@ public class FieldDataResourceApi {
     } catch (IOException e) {
       throw new ApiException(e);
     }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
+   * 
+   * @param _file  (optional)
+   * @param fieldDataName  (optional)
+   * @return FieldDataSavedResults
+   * @throws ApiException if fails to make API call
+   */
+  public FieldDataSavedResults createFromFile(File _file, String fieldDataName) throws ApiException {
+    ApiResponse<FieldDataSavedResults> localVarResponse = createFromFileWithHttpInfo(_file, fieldDataName);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
+   * 
+   * @param _file  (optional)
+   * @param fieldDataName  (optional)
+   * @return ApiResponse&lt;FieldDataSavedResults&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<FieldDataSavedResults> createFromFileWithHttpInfo(File _file, String fieldDataName) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = createFromFileRequestBuilder(_file, fieldDataName);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("createFromFile", localVarResponse);
+        }
+        return new ApiResponse<FieldDataSavedResults>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataSavedResults>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder createFromFileRequestBuilder(File _file, String fieldDataName) throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/fieldData/createFromFile";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    MultipartEntityBuilder multiPartBuilder = MultipartEntityBuilder.create();
+    boolean hasFiles = false;
+    multiPartBuilder.addBinaryBody("file", _file);
+    hasFiles = true;
+    multiPartBuilder.addTextBody("fieldDataName", fieldDataName.toString());
+    HttpEntity entity = multiPartBuilder.build();
+    HttpRequest.BodyPublisher formDataPublisher;
+    if (hasFiles) {
+        Pipe pipe;
+        try {
+            pipe = Pipe.open();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        new Thread(() -> {
+            try (OutputStream outputStream = Channels.newOutputStream(pipe.sink())) {
+                entity.writeTo(outputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+        formDataPublisher = HttpRequest.BodyPublishers.ofInputStream(() -> Channels.newInputStream(pipe.source()));
+    } else {
+        ByteArrayOutputStream formOutputStream = new ByteArrayOutputStream();
+        try {
+            entity.writeTo(formOutputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        formDataPublisher = HttpRequest.BodyPublishers
+            .ofInputStream(() -> new ByteArrayInputStream(formOutputStream.toByteArray()));
+    }
+    localVarRequestBuilder
+        .header("Content-Type", entity.getContentType().getValue())
+        .method("POST", formDataPublisher);
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }

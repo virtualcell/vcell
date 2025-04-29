@@ -232,9 +232,9 @@ paths:
       tags:
       - Field Data Resource
       x-accepts: application/json
-  /api/v1/fieldData/analyzeAndCreateFromFile:
+  /api/v1/fieldData/advancedCreate:
     post:
-      operationId: analyzeFileAndCreate
+      operationId: advancedCreate
       requestBody:
         content:
           multipart/form-data:
@@ -264,7 +264,7 @@ paths:
                 contentType: application/json
                 style: form
             schema:
-              $ref: '#/components/schemas/analyzeFileAndCreate_request'
+              $ref: '#/components/schemas/advancedCreate_request'
       responses:
         "200":
           content:
@@ -279,9 +279,8 @@ paths:
       security:
       - openId:
         - user
-      summary: "For advanced users, combines the two separate requests of Analyze\
-        \ File and Create From Analyzed File. The following files are accepted: .tif\
-        \ and .zip."
+      summary: "Create Field Data with granular detail in one request.The following\
+        \ files are accepted: .tif and .zip."
       tags:
       - Field Data Resource
       x-content-type: multipart/form-data
@@ -345,6 +344,38 @@ paths:
       tags:
       - Field Data Resource
       x-content-type: application/json
+      x-accepts: application/json
+  /api/v1/fieldData/createFromFile:
+    post:
+      operationId: createFromFile
+      requestBody:
+        content:
+          multipart/form-data:
+            encoding:
+              file:
+                contentType: application/octet-stream
+                style: form
+            schema:
+              $ref: '#/components/schemas/createFromFile_request'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataSavedResults'
+          description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+      summary: "Submit a .zip or .tif file that converts into field data, with all\
+        \ defaults derived from the file submitted."
+      tags:
+      - Field Data Resource
+      x-content-type: multipart/form-data
       x-accepts: application/json
   /api/v1/fieldData/createFromSimulation:
     post:
@@ -1881,7 +1912,7 @@ components:
         typeName:
           type: string
       type: object
-    analyzeFileAndCreate_request:
+    advancedCreate_request:
       properties:
         file:
           format: binary
@@ -1912,6 +1943,14 @@ components:
           format: binary
           type: string
         fileName:
+          type: string
+      type: object
+    createFromFile_request:
+      properties:
+        file:
+          format: binary
+          type: string
+        fieldDataName:
           type: string
       type: object
     createFromSimulation_request:

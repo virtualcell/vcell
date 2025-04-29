@@ -208,14 +208,13 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/fieldData/analyzeAndCreateFromFile:
+  /api/v1/fieldData/advancedCreate:
     post:
       tags:
       - Field Data Resource
-      summary: "For advanced users, combines the two separate requests of Analyze\
-        \ File and Create From Analyzed File. The following files are accepted: .tif\
-        \ and .zip."
-      operationId: analyzeFileAndCreate
+      summary: "Create Field Data with granular detail in one request.The following\
+        \ files are accepted: .tif and .zip."
+      operationId: advancedCreate
       requestBody:
         content:
           multipart/form-data:
@@ -330,6 +329,41 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/ExternalDataIdentifier'
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+  /api/v1/fieldData/createFromFile:
+    post:
+      tags:
+      - Field Data Resource
+      summary: "Submit a .zip or .tif file that converts into field data, with all\
+        \ defaults derived from the file submitted."
+      operationId: createFromFile
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  format: binary
+                  type: string
+                fieldDataName:
+                  type: string
+            encoding:
+              file:
+                contentType: application/octet-stream
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FieldDataSavedResults'
         "401":
           description: Not Authorized
         "403":

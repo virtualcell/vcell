@@ -204,7 +204,7 @@ public class FieldDataAPITest {
         FieldDataShape ogShape = api.getShapeFromID(res.getFieldDataKey());
 
 
-        FieldDataSavedResults savedResults =  api.analyzeFileAndCreate(testFile, "test_file2", analyzedFile.getExtent(),
+        FieldDataSavedResults savedResults =  api.advancedCreate(testFile, "test_file2", analyzedFile.getExtent(),
                 analyzedFile.getIsize(), analyzedFile.getVarNames(), analyzedFile.getTimes(), "", analyzedFile.getOrigin()
         );
 
@@ -242,6 +242,38 @@ public class FieldDataAPITest {
             Assertions.assertEquals(oldImageDatasets.length, newImageDatasets.length);
             for (int i = 0; i < oldImageDatasets.length; i++){
                 Assertions.assertTrue(oldImageDatasets[i].compareEqual(newImageDatasets[i]));
+            }
+        }
+    }
+
+    /**
+     * Ensure the shape/meta data derived from files are appropriate
+     */
+    @Test
+    public void createDefault() throws IOException, ApiException {
+        FieldDataResourceApi api = new FieldDataResourceApi(aliceAPIClient);
+        File simpleTestFile = TestEndpointUtils.getResourceFile("/flybrain-035.tif"); // Single time, channel, and no Z
+        File complicatedTestFile = TestEndpointUtils.getResourceFile("/small-mitosis.tif"); // Multiple time, channels, and Z
+
+        File[] files = new File[]{simpleTestFile, complicatedTestFile};
+
+        for (int i = 0; i < files.length; i++){
+            File testFile = files[i];
+            FieldDataSavedResults results = api.createFromFile(testFile, "testFile_" + i);
+            FieldDataShape resultShape = api.getShapeFromID(results.getFieldDataKey());
+            FieldData resultAnalyze = api.analyzeFile(testFile, "testFile2_" + i);
+
+            Assertions.assertEquals(resultAnalyze.getIsize(), resultShape.getIsize());
+            Assertions.assertEquals(resultAnalyze.getOrigin(), resultShape.getOrigin());
+            Assertions.assertEquals(resultAnalyze.getTimes(), resultShape.getTimes());
+
+            assert resultAnalyze.getExtent() != null;
+            assert resultAnalyze.getExtent().getZ() != null;
+
+            Assertions.assertEquals(resultAnalyze.getExtent().getX(), resultShape.getExtent().getX());
+            Assertions.assertEquals(resultAnalyze.getExtent().getY(), resultShape.getExtent().getY());
+            if (resultAnalyze.getExtent().getZ() != 9.0E-7){
+                Assertions.assertEquals(resultAnalyze.getExtent().getZ(), resultShape.getExtent().getZ());
             }
         }
     }
