@@ -34,13 +34,13 @@ import org.vcell.vis.io.VtuVarInfo;
  */
 public interface DataSetController {
 
- public ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec);
+ public ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec) throws DataAccessException;
 
- public ExternalDataIdentifier saveFieldData(FieldData fieldData);
+ public ExternalDataIdentifier saveFieldData(FieldData fieldData) throws DataAccessException;
 
  public void deleteFieldData(KeyValue fieldDataKey);
 
- public FieldDataShape getFieldDataShape(KeyValue fieldDataKey);
+ public FieldDataShape getFieldDataShape(KeyValue fieldDataKey) throws DataAccessException;
 
 /**
  * This method was created by a SmartGuide.

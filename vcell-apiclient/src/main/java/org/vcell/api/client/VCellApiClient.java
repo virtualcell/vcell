@@ -41,6 +41,7 @@ import org.vcell.restclient.auth.InteractiveLogin;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
 import org.vcell.api.types.utils.DTOOldAPI;
+import org.vcell.util.DataAccessException;
 
 import java.awt.*;
 import java.io.*;
@@ -74,6 +75,7 @@ public class VCellApiClient implements AutoCloseable {
 	boolean bIgnoreHostMismatch = true;
 	boolean bSkipSSL = true;
 	private final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
+	private final static int DATA_ACCESS_EXCEPTION_HTTP_CODE = 555;
 	private final URL quarkusURL;
 	private ApiClient apiClient = null;
 
@@ -521,12 +523,32 @@ public class VCellApiClient implements AutoCloseable {
 		T get() throws ApiException;
 	}
 
-	public <T> T callWithHandling(ApiCallSupplier<T> apiCall){
+	@FunctionalInterface
+	public interface ApiCallSupplierVoid{
+		void makeRequest() throws ApiException;
+	}
+
+	public void callWithHandling(ApiCallSupplierVoid apiCall) throws DataAccessException {
+		try{
+			apiCall.makeRequest();
+		} catch (ApiException e){
+			lg.error(e);
+			switch (e.getCode()){
+				case DATA_ACCESS_EXCEPTION_HTTP_CODE -> throw new DataAccessException(e.getResponseBody());
+				default -> throw new RuntimeException(e.getResponseBody());
+			}
+		}
+	}
+
+	public <T> T callWithHandling(ApiCallSupplier<T> apiCall) throws DataAccessException {
 		try{
 			return apiCall.get();
 		} catch (ApiException e){
 			lg.error(e);
-			throw new RuntimeException(e.getResponseBody());
+			switch (e.getCode()){
+				case DATA_ACCESS_EXCEPTION_HTTP_CODE -> throw new DataAccessException(e.getResponseBody());
+				default -> throw new RuntimeException(e.getResponseBody());
+			}
 		}
 	}
 

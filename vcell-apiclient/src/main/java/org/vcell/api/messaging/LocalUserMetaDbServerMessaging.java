@@ -118,7 +118,7 @@ public void deleteBioModel(org.vcell.util.document.KeyValue key) throws DataAcce
 	}
 }
 
-public FieldDataAllDBEntries getAllFieldDataIDs(){
+public FieldDataAllDBEntries getAllFieldDataIDs() throws DataAccessException {
 	List<FieldDataReference> fieldDataReferences = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().getAllIDs());
 	return DtoModelTransforms.fieldDataReferencesToDBResults(fieldDataReferences);
 }

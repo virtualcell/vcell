@@ -61,19 +61,19 @@ public void deleteFieldData(KeyValue externalDataIdentifierKey) {
 	}
 }
 
-public ExternalDataIdentifier saveFieldData(FieldData fieldData){
+public ExternalDataIdentifier saveFieldData(FieldData fieldData) throws DataAccessException {
 	FieldDataSavedResults results = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().save(
 			DtoModelTransforms.fieldDataToDTO(fieldData)
 	));
 	return new ExternalDataIdentifier(new KeyValue(results.getFieldDataKey()), new User(vCellApiClient.getCachedVCellUserName(), null), results.getFieldDataName());
 }
 
-public cbit.vcell.field.io.FieldDataShape getFieldDataShape(KeyValue externalDataIdentifierKey){
+public cbit.vcell.field.io.FieldDataShape getFieldDataShape(KeyValue externalDataIdentifierKey) throws DataAccessException {
 	FieldDataShape shape = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().getShapeFromID(externalDataIdentifierKey.toString()));
 	return DtoModelTransforms.DTOToFieldDataShape(shape);
 }
 
-public ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec){
+public ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec) throws DataAccessException {
 	FieldDataSavedResults savedResults = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().advancedCreate(fieldDataSpec.file, fieldDataSpec.fileName,
 			DtoModelTransforms.extentToDTO(fieldDataSpec.extent), DtoModelTransforms.iSizeToDTO(fieldDataSpec.iSize), fieldDataSpec.channelNames, fieldDataSpec.times, fieldDataSpec.annotation,
 			DtoModelTransforms.originToDTO(fieldDataSpec.origin)));
