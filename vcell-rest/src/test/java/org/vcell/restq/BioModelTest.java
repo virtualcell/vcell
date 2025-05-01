@@ -72,7 +72,7 @@ public class BioModelTest {
                 .body(vcmlString)
                 .header("Content-Type", MediaType.TEXT_XML)
                 .when()
-                .post("/api/v1/bioModel/upload_bioModel");
+                .post("/api/v1/bioModel/save");
         uploadResponse.then().statusCode(200);
         String uploadedID = uploadResponse.body().print();
 

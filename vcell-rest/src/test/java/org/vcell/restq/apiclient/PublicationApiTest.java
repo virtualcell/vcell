@@ -95,8 +95,8 @@ public class PublicationApiTest {
         BioModel realBioModel = TestEndpointUtils.defaultBiomodel();
         String bioModelXml = XmlHelper.bioModelToXML(realBioModel, true);
         BioModelResourceApi bioModelAPI = new BioModelResourceApi(aliceAPIClient);
-        String id = bioModelAPI.uploadBioModel(bioModelXml);
-        org.vcell.restclient.model.BioModel biomodel = bioModelAPI.getBiomodelById(id);
+        String id = bioModelAPI.saveBioModel(bioModelXml);
+        org.vcell.restclient.model.BioModel biomodel = bioModelAPI.getBioModel(id);
 
         Publication publication = TestEndpointUtils.defaultPublication();
         BiomodelRef bioModelRef = new BiomodelRef();

@@ -1,12 +1,14 @@
 package org.vcell.restq.db;
 
+import cbit.sql.QueryHashtable;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.vcell.restq.models.BioModel;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -14,6 +16,7 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
+import java.beans.PropertyVetoException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -76,13 +79,28 @@ public class BioModelRestDB {
         return bioModelReps[0];
     }
 
-    public KeyValue saveBioModel(User user, String bioModelXML) throws DataAccessException, XmlParseException {
+    public String getBioModel(User user, KeyValue id) throws DataAccessException {
+        return databaseServerImpl.getBioModelXML(user, id).toString();
+    }
+
+    public BioModel saveAs(User user, String bioModelXML, String newName, String[] independentSims) throws DataAccessException, XmlParseException {
+        BigString savedModel = databaseServerImpl.saveBioModelAs(user, new BigString(bioModelXML), newName, independentSims);
+        return XmlHelper.XMLToBioModel(new XMLSource(savedModel.toString()));
+    }
+
+
+
+    public BioModel saveBioModel(User user, String bioModelXML) throws DataAccessException, XmlParseException, PropertyVetoException, SQLException, MappingException {
+        return saveBioModel(user, bioModelXML, null);
+    }
+
+    public BioModel saveBioModel(User user, String bioModelXML, String[] independentSims) throws DataAccessException, XmlParseException, PropertyVetoException, SQLException, MappingException {
         if (user == null){
             throw new PermissionException("vcell user not specified");
         }
-        String savedModel = databaseServerImpl.saveBioModel(user, new BigString(bioModelXML), null).toString();
-        cbit.vcell.biomodel.BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(savedModel));
-        return bioModel.getVersion().getVersionKey();
+
+        BigString savedModel = databaseServerImpl.saveBioModel(user, new BigString(bioModelXML), independentSims);
+        return XmlHelper.XMLToBioModel(new XMLSource(savedModel.toString()));
     }
 
     public void deleteBioModel(User user, KeyValue bioModelKey) throws DataAccessException {

@@ -1,5 +1,6 @@
 package org.vcell.restq.apiclient;
 
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.resource.PropertyLoader;
@@ -89,7 +90,7 @@ public class SimulationApiTest {
     }
 
     @BeforeEach
-    public void createClients() throws ApiException, XmlParseException, DataAccessException, PropertyVetoException, IOException, SQLException {
+    public void createClients() throws ApiException, XmlParseException, DataAccessException, PropertyVetoException, IOException, SQLException, MappingException {
         aliceAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.alice);
         bobAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.bob);
         TestEndpointUtils.mapApiClientToAdmin(aliceAPIClient);
