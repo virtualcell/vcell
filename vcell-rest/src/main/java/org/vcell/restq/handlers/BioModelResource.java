@@ -1,9 +1,12 @@
 package org.vcell.restq.handlers;
 
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.annotation.Nullable;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
@@ -11,7 +14,9 @@ import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
+import org.jboss.resteasy.reactive.RestForm;
 import org.vcell.restq.Main;
+import org.vcell.restq.config.WebExceptionErrorHandler;
 import org.vcell.restq.db.BioModelRestDB;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.restq.models.BioModel;
@@ -19,8 +24,11 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.w3c.www.http.HTTP;
 
+import java.beans.PropertyVetoException;
 import java.sql.SQLException;
+import java.util.Optional;
 
 @Path("/api/v1/bioModel")
 public class BioModelResource {
@@ -38,11 +46,7 @@ public class BioModelResource {
 
     @GET
     @Path("{bioModelID}")
-    @Operation(operationId = "getBiomodelById", summary = "Get BioModel information in JSON format by ID.")
-    @APIResponses({
-            @APIResponse(responseCode = "200", description = "return BioModel information in JSON format"),
-            @APIResponse(responseCode = "404", description = "BioModel not found")
-    })
+    @Operation(operationId = "getBioModel", summary = "Get BioModel.")
     @Produces(MediaType.APPLICATION_JSON)
     public BioModel getBioModelInfo(@PathParam("bioModelID") String bioModelID) throws SQLException, DataAccessException, ExpressionException {
         User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.ALLOW_ANONYMOUS);
@@ -53,17 +57,26 @@ public class BioModelResource {
             BioModelRep bioModelRep = bioModelRestDB.getBioModelRep(new KeyValue(bioModelID), vcellUser);
             return BioModel.fromBioModelRep(bioModelRep);
         }catch (ObjectNotFoundException e) {
-            throw new WebApplicationException("BioModel not found", 404);
+            throw new WebApplicationException("BioModel not found", e, HTTP.NOT_FOUND);
         }
     }
 
-    // TODO: Specify the media type instead of leaving it as wildcard
     @GET
     @Path("{bioModelID}/vcml_download")
-    @Operation(operationId = "getBioModelVCML", summary = "Get the BioModel in VCML format.", hidden = true)
-    @Produces(MediaType.APPLICATION_XML)
-    public void getBioModelVCML(@PathParam("bioModelID") String bioModelID){
-        throw new WebApplicationException("Not implemented", 501);
+    @Operation(operationId = "getBioModelVCML", summary = "Get the BioModel in VCML format.")
+    @Produces(MediaType.TEXT_XML)
+    public String getBioModelVCML(@PathParam("bioModelID") String bioModelID){
+        User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.ALLOW_ANONYMOUS);
+        if (vcellUser == null) {
+            vcellUser = Main.DUMMY_USER;
+        }
+        try {
+            return bioModelRestDB.getBioModel(vcellUser, new KeyValue(bioModelID));
+        }catch (ObjectNotFoundException e) {
+            throw new WebApplicationException("BioModel not found", e, HTTP.NOT_FOUND);
+        } catch (DataAccessException e) {
+            throw new WebApplicationException("Can't Access BioModel", e, WebExceptionErrorHandler.DATA_ACCESS_EXCEPTION_HTTP_CODE);
+        }
     }
 
     @GET
