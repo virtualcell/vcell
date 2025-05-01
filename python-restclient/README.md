@@ -90,9 +90,13 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *AdminResourceApi* | [**get_usage**](docs/AdminResourceApi.md#get_usage) | **GET** /api/v1/admin/usage | Get usage summary
+*BioModelResourceApi* | [**advanced_save_as_bio_model**](docs/BioModelResourceApi.md#advanced_save_as_bio_model) | **POST** /api/v1/bioModel/advancedSaveAs | Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML.
+*BioModelResourceApi* | [**advanced_save_bio_model**](docs/BioModelResourceApi.md#advanced_save_bio_model) | **POST** /api/v1/bioModel/advancedSave | Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML.
 *BioModelResourceApi* | [**delete_bio_model**](docs/BioModelResourceApi.md#delete_bio_model) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
-*BioModelResourceApi* | [**get_biomodel_by_id**](docs/BioModelResourceApi.md#get_biomodel_by_id) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID.
-*BioModelResourceApi* | [**upload_bio_model**](docs/BioModelResourceApi.md#upload_bio_model) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID.
+*BioModelResourceApi* | [**get_bio_model**](docs/BioModelResourceApi.md#get_bio_model) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel.
+*BioModelResourceApi* | [**get_bio_model_vcml**](docs/BioModelResourceApi.md#get_bio_model_vcml) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
+*BioModelResourceApi* | [**save_bio_model**](docs/BioModelResourceApi.md#save_bio_model) | **POST** /api/v1/bioModel/save | Save the BioModel, returning saved BioModel as VCML.
+*BioModelResourceApi* | [**save_bio_model_as**](docs/BioModelResourceApi.md#save_bio_model_as) | **POST** /api/v1/bioModel/saveAs | Save as a new BioModel under the name given. Returns saved BioModel as VCML.
 *FieldDataResourceApi* | [**advanced_create**](docs/FieldDataResourceApi.md#advanced_create) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 *FieldDataResourceApi* | [**analyze_file**](docs/FieldDataResourceApi.md#analyze_file) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 *FieldDataResourceApi* | [**copy_models_field_data**](docs/FieldDataResourceApi.md#copy_models_field_data) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.

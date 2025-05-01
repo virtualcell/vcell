@@ -126,12 +126,82 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/bioModel/upload_bioModel:
+  /api/v1/bioModel/advancedSave:
     post:
       tags:
       - Bio Model Resource
-      summary: Upload the BioModel to VCell database. Returns BioModel ID.
-      operationId: uploadBioModel
+      summary: Save the BioModel while also specifying which simulations within the
+        BioModel need to be updated due to mathematical changes. Returns saved BioModel
+        as VCML.
+      operationId: advancedSaveBioModel
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bioModelXML:
+                  type: string
+                simsRequiringUpdates:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+  /api/v1/bioModel/advancedSaveAs:
+    post:
+      tags:
+      - Bio Model Resource
+      summary: Save the BioModel while also specifying which simulations within the
+        BioModel need to be updated due to mathematical changes. Returns saved BioModel
+        as VCML.
+      operationId: advancedSaveAsBioModel
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bioModelXML:
+                  type: string
+                name:
+                  type: string
+                simsRequiringUpdates:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
+  /api/v1/bioModel/save:
+    post:
+      tags:
+      - Bio Model Resource
+      summary: "Save the BioModel, returning saved BioModel as VCML."
+      operationId: saveBioModel
       requestBody:
         content:
           text/xml:
@@ -151,12 +221,43 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/bioModel/saveAs:
+    post:
+      tags:
+      - Bio Model Resource
+      summary: Save as a new BioModel under the name given. Returns saved BioModel
+        as VCML.
+      operationId: saveBioModelAs
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                bioModelXML:
+                  type: string
+                name:
+                  type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      security:
+      - openId:
+        - user
   /api/v1/bioModel/{bioModelID}:
     get:
       tags:
       - Bio Model Resource
-      summary: Get BioModel information in JSON format by ID.
-      operationId: getBiomodelById
+      summary: Get BioModel.
+      operationId: getBioModel
       parameters:
       - name: bioModelID
         in: path
@@ -165,13 +266,11 @@ paths:
           type: string
       responses:
         "200":
-          description: return BioModel information in JSON format
+          description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BioModel'
-        "404":
-          description: BioModel not found
     delete:
       tags:
       - Bio Model Resource
@@ -186,6 +285,25 @@ paths:
       responses:
         "204":
           description: No Content
+  /api/v1/bioModel/{bioModelID}/vcml_download:
+    get:
+      tags:
+      - Bio Model Resource
+      summary: Get the BioModel in VCML format.
+      operationId: getBioModelVCML
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/xml:
+              schema:
+                type: string
   /api/v1/fieldData/IDs:
     get:
       tags:

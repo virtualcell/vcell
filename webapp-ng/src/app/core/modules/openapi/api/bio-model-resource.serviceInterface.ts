@@ -25,6 +25,23 @@ export interface BioModelResourceServiceInterface {
     configuration: Configuration;
 
     /**
+     * Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML.
+     * 
+     * @param bioModelXML 
+     * @param name 
+     * @param simsRequiringUpdates 
+     */
+    advancedSaveAsBioModel(bioModelXML?: string, name?: string, simsRequiringUpdates?: Array<string>, extraHttpRequestParams?: any): Observable<string>;
+
+    /**
+     * Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML.
+     * 
+     * @param bioModelXML 
+     * @param simsRequiringUpdates 
+     */
+    advancedSaveBioModel(bioModelXML?: string, simsRequiringUpdates?: Array<string>, extraHttpRequestParams?: any): Observable<string>;
+
+    /**
      * Delete the BioModel from VCell\&#39;s database.
      * 
      * @param bioModelID 
@@ -32,17 +49,32 @@ export interface BioModelResourceServiceInterface {
     deleteBioModel(bioModelID: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
-     * Get BioModel information in JSON format by ID.
+     * Get BioModel.
      * 
      * @param bioModelID 
      */
-    getBiomodelById(bioModelID: string, extraHttpRequestParams?: any): Observable<BioModel>;
+    getBioModel(bioModelID: string, extraHttpRequestParams?: any): Observable<BioModel>;
 
     /**
-     * Upload the BioModel to VCell database. Returns BioModel ID.
+     * Get the BioModel in VCML format.
+     * 
+     * @param bioModelID 
+     */
+    getBioModelVCML(bioModelID: string, extraHttpRequestParams?: any): Observable<string>;
+
+    /**
+     * Save the BioModel, returning saved BioModel as VCML.
      * 
      * @param body 
      */
-    uploadBioModel(body?: string, extraHttpRequestParams?: any): Observable<string>;
+    saveBioModel(body?: string, extraHttpRequestParams?: any): Observable<string>;
+
+    /**
+     * Save as a new BioModel under the name given. Returns saved BioModel as VCML.
+     * 
+     * @param bioModelXML 
+     * @param name 
+     */
+    saveBioModelAs(bioModelXML?: string, name?: string, extraHttpRequestParams?: any): Observable<string>;
 
 }
