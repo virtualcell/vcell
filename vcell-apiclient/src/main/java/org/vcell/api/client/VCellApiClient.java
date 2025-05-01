@@ -35,6 +35,7 @@ import org.vcell.api.client.query.SimTasksQuerySpec;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.CustomApiClientCode;
+import org.vcell.restclient.api.BioModelResourceApi;
 import org.vcell.restclient.api.FieldDataResourceApi;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.auth.InteractiveLogin;
@@ -554,6 +555,10 @@ public class VCellApiClient implements AutoCloseable {
 
 	public FieldDataResourceApi getFieldDataApi(){
 		return new FieldDataResourceApi(apiClient);
+	}
+
+	public BioModelResourceApi getBioModelApi(){
+		return new BioModelResourceApi(apiClient);
 	}
 
 	public String getVCellUserNameFromAuth0Mapping() throws ApiException {

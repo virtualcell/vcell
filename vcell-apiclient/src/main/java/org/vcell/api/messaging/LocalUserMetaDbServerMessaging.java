@@ -37,10 +37,7 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.*;
 
 import java.rmi.RemoteException;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 
 /**
@@ -105,17 +102,8 @@ public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistr
  * @throws RemoteException 
  */
 public void deleteBioModel(org.vcell.util.document.KeyValue key) throws DataAccessException {
-
-	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.deleteBioModel(Key="+key+")");
-		dbServerProxy.deleteBioModel(key);
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
-	}
+	if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.deleteBioModel(Key="+key+")");
+	vCellApiClient.callWithHandling(() -> vCellApiClient.getBioModelApi().deleteBioModel(key.toString()));
 }
 
 public FieldDataAllDBEntries getAllFieldDataIDs() throws DataAccessException {
@@ -938,8 +926,10 @@ public BigString saveBioModel(BigString bioModelXML, String independentSims[]) t
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.saveBioModel()");
-		BigString savedBioModelXML = dbServerProxy.saveBioModel(bioModelXML, independentSims);
-		return savedBioModelXML;
+		String savedBioModelXML = vCellApiClient.callWithHandling(
+				() -> vCellApiClient.getBioModelApi().advancedSaveBioModel(bioModelXML.toString(), Arrays.stream(independentSims).toList())
+		);
+		return new BigString(savedBioModelXML);
 	} catch (DataAccessException e) {
 		lg.error(e.getMessage(),e);
 		throw e;
@@ -959,8 +949,10 @@ public BigString saveBioModelAs(BigString bioModelXML, String newName, String in
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.saveBioModel(newName="+newName+")");
-		BigString savedBioModelXML = dbServerProxy.saveBioModelAs(bioModelXML,newName,independentSims);
-		return savedBioModelXML;
+		String savedBioModelXML = vCellApiClient.callWithHandling(
+				() -> vCellApiClient.getBioModelApi().advancedSaveAsBioModel(bioModelXML.toString(), newName, Arrays.asList(independentSims))
+		);
+		return new BigString(savedBioModelXML);
 	} catch (DataAccessException e) {
 		lg.error(e.getMessage(),e);
 		throw e;
