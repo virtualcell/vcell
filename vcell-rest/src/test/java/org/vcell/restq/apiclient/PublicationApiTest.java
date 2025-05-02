@@ -15,6 +15,7 @@ import org.vcell.restclient.api.BioModelResourceApi;
 import org.vcell.restclient.api.PublicationResourceApi;
 import org.vcell.restclient.model.BiomodelRef;
 import org.vcell.restclient.model.Publication;
+import org.vcell.restclient.model.SaveBioModel;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
@@ -94,8 +95,9 @@ public class PublicationApiTest {
 
         BioModel realBioModel = TestEndpointUtils.defaultBiomodel();
         String bioModelXml = XmlHelper.bioModelToXML(realBioModel, true);
+        SaveBioModel saveBioModel = new SaveBioModel().bioModelXML(bioModelXml);
         BioModelResourceApi bioModelAPI = new BioModelResourceApi(aliceAPIClient);
-        String id = bioModelAPI.saveBioModel(bioModelXml);
+        String id = bioModelAPI.saveBioModel(saveBioModel);
         org.vcell.restclient.model.BioModel biomodel = bioModelAPI.getBioModel(id);
 
         Publication publication = TestEndpointUtils.defaultPublication();

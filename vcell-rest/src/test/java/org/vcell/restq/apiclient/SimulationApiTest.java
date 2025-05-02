@@ -96,7 +96,7 @@ public class SimulationApiTest {
         TestEndpointUtils.mapApiClientToAdmin(aliceAPIClient);
 
         String testBioModel = XmlHelper.bioModelToXML(TestEndpointUtils.getTestBioModel());
-        String testBioModelID = bioModelRestDB.saveBioModel(TestEndpointUtils.administratorUser, testBioModel).toString();
+        String testBioModelID = bioModelRestDB.save(TestEndpointUtils.administratorUser, testBioModel, null, null).toString();
         bioModelRep = bioModelRestDB.getBioModelRep(new org.vcell.util.document.KeyValue(testBioModelID), TestEndpointUtils.administratorUser);
     }
 

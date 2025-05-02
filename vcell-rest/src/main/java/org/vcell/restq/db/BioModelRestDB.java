@@ -1,8 +1,6 @@
 package org.vcell.restq.db;
 
-import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -16,7 +14,6 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import java.beans.PropertyVetoException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -83,23 +80,11 @@ public class BioModelRestDB {
         return databaseServerImpl.getBioModelXML(user, id).toString();
     }
 
-    public BioModel saveAs(User user, String bioModelXML, String newName, String[] independentSims) throws DataAccessException, XmlParseException {
+    /**
+     * A new Bio-Model is created if the "name" parameter is not null, and not equal to any other name present.
+     */
+    public BioModel save(User user, String bioModelXML, String newName, String[] independentSims) throws DataAccessException, XmlParseException {
         BigString savedModel = databaseServerImpl.saveBioModelAs(user, new BigString(bioModelXML), newName, independentSims);
-        return XmlHelper.XMLToBioModel(new XMLSource(savedModel.toString()));
-    }
-
-
-
-    public BioModel saveBioModel(User user, String bioModelXML) throws DataAccessException, XmlParseException, PropertyVetoException, SQLException, MappingException {
-        return saveBioModel(user, bioModelXML, null);
-    }
-
-    public BioModel saveBioModel(User user, String bioModelXML, String[] independentSims) throws DataAccessException, XmlParseException, PropertyVetoException, SQLException, MappingException {
-        if (user == null){
-            throw new PermissionException("vcell user not specified");
-        }
-
-        BigString savedModel = databaseServerImpl.saveBioModel(user, new BigString(bioModelXML), independentSims);
         return XmlHelper.XMLToBioModel(new XMLSource(savedModel.toString()));
     }
 

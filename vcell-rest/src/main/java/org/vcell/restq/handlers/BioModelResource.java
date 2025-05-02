@@ -1,20 +1,18 @@
 package org.vcell.restq.handlers;
 
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import io.quarkus.security.identity.SecurityIdentity;
-import jakarta.annotation.Nullable;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
-import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
-import org.jboss.resteasy.reactive.RestForm;
 import org.vcell.restq.Main;
 import org.vcell.restq.config.WebExceptionErrorHandler;
 import org.vcell.restq.db.BioModelRestDB;
@@ -26,7 +24,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.w3c.www.http.HTTP;
 
-import java.beans.PropertyVetoException;
 import java.sql.SQLException;
 import java.util.Optional;
 
@@ -122,72 +119,32 @@ public class BioModelResource {
     @POST
     @Path("/save")
     @RolesAllowed("user")
-    @Consumes(MediaType.TEXT_XML)
-    @Operation(operationId = "saveBioModel", summary = "Save the BioModel, returning saved BioModel as VCML.")
-    public String saveBioModel(String bioModelXML){
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_XML)
+    @Operation(operationId = "saveBioModel", summary = "Save's the given BioModel. Optional parameters of name and simulations to update due to math changes." +
+            " Returns saved BioModel as VCML.")
+    public String save(@Valid SaveBioModel saveBioModel){
         User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
         try {
-            cbit.vcell.biomodel.BioModel savedBioModel = bioModelRestDB.saveBioModel(user, bioModelXML);
-            return XmlHelper.bioModelToXML(savedBioModel);
-        } catch (DataAccessException e) {
-            throw new WebApplicationException("Data Access Exception: " + e.getMessage(), e, WebExceptionErrorHandler.DATA_ACCESS_EXCEPTION_HTTP_CODE);
-        } catch (MappingException | PropertyVetoException | SQLException e){
-            throw new WebApplicationException("Mapping, SQL, or PropertyVeto Exception.", e, HTTP.INTERNAL_SERVER_ERROR);
-        } catch (XmlParseException e) {
-            throw new WebApplicationException("Couldn't parse the BioModel.", e, WebExceptionErrorHandler.UNPROCESSABLE_HTTP_CODE);
-        }
-    }
-
-    @POST
-    @Path("/saveAs")
-    @RolesAllowed("user")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Operation(operationId = "saveBioModelAs", summary = "Save as a new BioModel under the name given. Returns saved BioModel as VCML.")
-    public String saveAsBioModel(@RestForm String bioModelXML, @RestForm String name){
-        User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
-        try {
-            cbit.vcell.biomodel.BioModel savedBioModel = bioModelRestDB.saveAs(user, bioModelXML, name, null);
+            cbit.vcell.biomodel.BioModel savedBioModel = bioModelRestDB.save(user, saveBioModel.bioModelXML,
+                    saveBioModel.name.orElse(null), saveBioModel.simsRequiringUpdates.orElse(null));
             return XmlHelper.bioModelToXML(savedBioModel);
         } catch (DataAccessException e) {
             throw new WebApplicationException("Data Access Exception: " + e.getMessage(), e, WebExceptionErrorHandler.DATA_ACCESS_EXCEPTION_HTTP_CODE);
         } catch (XmlParseException e){
             throw new WebApplicationException("Couldn't parse the BioModel.", e, WebExceptionErrorHandler.UNPROCESSABLE_HTTP_CODE);
+        } catch (RuntimeException e){
+            throw new WebApplicationException("Unexpected error occurred: " + e.getMessage(), e, HTTP.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @POST
-    @Path("/advancedSave")
-    @RolesAllowed("user")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Operation(operationId = "advancedSaveBioModel", summary = "Save the BioModel while also " +
-            "specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML.")
-    public String advancedSave(@RestForm String bioModelXML, @RestForm String[] simsRequiringUpdates){
-        User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
-        try {
-            cbit.vcell.biomodel.BioModel savedBioModel = bioModelRestDB.saveAs(user, null, bioModelXML, simsRequiringUpdates);
-            return XmlHelper.bioModelToXML(savedBioModel);
-        } catch (DataAccessException e) {
-            throw new WebApplicationException("Data Access Exception: " + e.getMessage(), e, WebExceptionErrorHandler.DATA_ACCESS_EXCEPTION_HTTP_CODE);
-        } catch (XmlParseException e){
-            throw new WebApplicationException("Couldn't parse the BioModel.", e, WebExceptionErrorHandler.UNPROCESSABLE_HTTP_CODE);
-        }
-    }
 
-    @POST
-    @Path("/advancedSaveAs")
-    @RolesAllowed("user")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Operation(operationId = "advancedSaveAsBioModel", summary = "Save the BioModel while also " +
-            "specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML.")
-    public String advancedSaveAs(@RestForm String bioModelXML, @RestForm String name, @RestForm String[] simsRequiringUpdates){
-        User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
-        try {
-            cbit.vcell.biomodel.BioModel savedBioModel = bioModelRestDB.saveAs(user, name, bioModelXML, simsRequiringUpdates);
-            return XmlHelper.bioModelToXML(savedBioModel);
-        } catch (DataAccessException e) {
-            throw new WebApplicationException("Data Access Exception: " + e.getMessage(), e, WebExceptionErrorHandler.DATA_ACCESS_EXCEPTION_HTTP_CODE);
-        } catch (XmlParseException e){
-            throw new WebApplicationException("Couldn't parse the BioModel.", e, WebExceptionErrorHandler.UNPROCESSABLE_HTTP_CODE);
-        }
-    }
+
+
+    public record SaveBioModel(
+            @NotBlank(message = "BioModel can not be an empty string.")
+            @NotNull String bioModelXML,
+            Optional<String> name,
+            Optional<String[]> simsRequiringUpdates
+    ){ }
 }
