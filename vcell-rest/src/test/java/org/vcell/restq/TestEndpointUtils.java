@@ -12,12 +12,14 @@ import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
+import org.vcell.restclient.CustomObjectMapper;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.Publication;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
@@ -83,12 +85,14 @@ public class TestEndpointUtils {
     public static ApiClient createAuthenticatedAPIClient(KeycloakTestClient keycloakClient, int testPort, TestOIDCUsers oidcUser){
         ApiClient apiClient = createUnAuthenticatedAPIClient(testPort);
         String oidcAccessToken = keycloakClient.getAccessToken(oidcUser.name());
+        apiClient.setObjectMapper(new CustomObjectMapper());
         apiClient.setRequestInterceptor(request -> request.header("Authorization", "Bearer " + oidcAccessToken));
         return apiClient;
     }
 
     public static ApiClient createUnAuthenticatedAPIClient(int testPort){
         ApiClient apiClient = new ApiClient();
+        apiClient.setObjectMapper(new CustomObjectMapper());
         apiClient.setScheme("http");
         apiClient.setHost("localhost");
         apiClient.setPort(testPort);
