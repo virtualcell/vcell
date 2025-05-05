@@ -24,6 +24,7 @@ import org.vcell.restq.config.WebExceptionErrorHandler;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 
 import java.beans.PropertyVetoException;
@@ -32,6 +33,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 @QuarkusTest
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BioModelApiTest {
 
     @ConfigProperty(name = "quarkus.oidc.auth-server-url")
@@ -64,11 +66,13 @@ public class BioModelApiTest {
     @AfterEach
     public void removeOIDCMappings() throws SQLException, DataAccessException {
         TestEndpointUtils.removeAllMappings(agroalConnectionFactory);
+        TestEndpointUtils.clearAllBioModelEntries(new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()));
     }
 
 
     @Test
-    public void testSavingBioModel() throws ApiException, IOException, XmlParseException, PropertyVetoException, DataAccessException {
+    @Order(1)
+    public void testSavingBioModel() throws ApiException, IOException, XmlParseException, PropertyVetoException, DataAccessException, SQLException {
         BioModelResourceApi bioModelResourceApi = new BioModelResourceApi(aliceAPIClient);
         DatabaseServerImpl databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         ServerDocumentManager serverDocumentManager = new ServerDocumentManager(databaseServer);
@@ -109,18 +113,22 @@ public class BioModelApiTest {
     }
 
     @Test
-    public void testRemoveBioModel() throws DataAccessException, PropertyVetoException, XmlParseException, IOException, ApiException {
+    @Order(2)
+    public void testRemoveBioModel() throws DataAccessException, PropertyVetoException, XmlParseException, IOException, ApiException, SQLException {
         BioModelResourceApi bioModelResourceApi = new BioModelResourceApi(aliceAPIClient);
         DatabaseServerImpl databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         ServerDocumentManager serverDocumentManager = new ServerDocumentManager(databaseServer);
         SaveBioModel saveBioModel = new SaveBioModel().bioModelXML(XmlHelper.bioModelToXML(TestEndpointUtils.getTestBioModel()));
 
-        String bioModelID = bioModelResourceApi.saveBioModel(saveBioModel);
-        bioModelResourceApi.getBioModel(bioModelID);
+        String bioModelVCML = bioModelResourceApi.saveBioModel(saveBioModel);
+        BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelVCML));
+        KeyValue bioModelKey = bioModel.getVersion().getVersionKey();
 
-        bioModelResourceApi.deleteBioModel(bioModelID);
+        bioModelResourceApi.getBioModel(bioModelKey.toString());
+
+        bioModelResourceApi.deleteBioModel(bioModelKey.toString());
         Assertions.assertThrowsExactly(ObjectNotFoundException.class, () ->
                 serverDocumentManager.getBioModelXML(new QueryHashtable(), TestEndpointUtils.administratorUser,
-                        new KeyValue(bioModelID), false));
+                        bioModelKey, false));
     }
 }

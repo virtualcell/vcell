@@ -2,6 +2,7 @@ package org.vcell.restq.apiclient;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
@@ -97,12 +98,13 @@ public class PublicationApiTest {
         String bioModelXml = XmlHelper.bioModelToXML(realBioModel, true);
         SaveBioModel saveBioModel = new SaveBioModel().bioModelXML(bioModelXml);
         BioModelResourceApi bioModelAPI = new BioModelResourceApi(aliceAPIClient);
-        String id = bioModelAPI.saveBioModel(saveBioModel);
-        org.vcell.restclient.model.BioModel biomodel = bioModelAPI.getBioModel(id);
+        BioModel savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelAPI.saveBioModel(saveBioModel)));
+        String savedModelKey = savedBioModel.getVersion().getVersionKey().toString();
+        org.vcell.restclient.model.BioModel biomodel = bioModelAPI.getBioModel(savedModelKey);
 
         Publication publication = TestEndpointUtils.defaultPublication();
         BiomodelRef bioModelRef = new BiomodelRef();
-        bioModelRef.setBmKey(Long.parseLong(id));
+        bioModelRef.setBmKey(Long.parseLong(savedModelKey));
         bioModelRef.setName(biomodel.getName());
         bioModelRef.setOwnerName(biomodel.getOwnerName());
         bioModelRef.setVersionFlag(VersionFlag.Current.getIntValue());
@@ -134,6 +136,6 @@ public class PublicationApiTest {
         Assertions.assertEquals(initialPubSize, finalPublications.size());
 
         // remove added BioModel
-        bioModelAPI.deleteBioModel(id);
+        bioModelAPI.deleteBioModel(savedModelKey);
     }
 }

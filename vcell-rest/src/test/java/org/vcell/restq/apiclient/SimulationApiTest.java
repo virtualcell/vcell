@@ -1,11 +1,14 @@
 package org.vcell.restq.apiclient;
 
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.modeldb.BioModelRep;
+import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.solver.server.SimulationMessagePersistent;
+import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import io.quarkus.test.junit.QuarkusTest;
@@ -61,7 +64,7 @@ public class SimulationApiTest {
 
     private ApiClient aliceAPIClient;
     private ApiClient bobAPIClient;
-    private BioModelRep bioModelRep;
+    private BioModelRep bioModelRep = null;
 
     @BeforeAll
     public static void setupConfig(){
@@ -95,15 +98,16 @@ public class SimulationApiTest {
         bobAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.bob);
         TestEndpointUtils.mapApiClientToAdmin(aliceAPIClient);
 
+
         String testBioModel = XmlHelper.bioModelToXML(TestEndpointUtils.getTestBioModel());
-        String testBioModelID = bioModelRestDB.save(TestEndpointUtils.administratorUser, testBioModel, null, null).toString();
-        bioModelRep = bioModelRestDB.getBioModelRep(new org.vcell.util.document.KeyValue(testBioModelID), TestEndpointUtils.administratorUser);
+        BioModel bioModel = bioModelRestDB.save(TestEndpointUtils.administratorUser, testBioModel, null, null);
+        bioModelRep = bioModelRestDB.getBioModelRep(bioModel.getVersion().getVersionKey(), TestEndpointUtils.administratorUser);
     }
 
     @AfterEach
     public void removeOIDCMappings() throws SQLException, DataAccessException {
         TestEndpointUtils.removeAllMappings(agroalConnectionFactory);
-        bioModelRestDB.deleteBioModel(TestEndpointUtils.administratorUser, bioModelRep.getBmKey());
+        TestEndpointUtils.clearAllBioModelEntries(new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()));
     }
 
 
