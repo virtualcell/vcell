@@ -45,6 +45,7 @@ model/model-type.ts
 model/models.ts
 model/origin.ts
 model/publication.ts
+model/save-bio-model.ts
 model/scheduler-status.ts
 model/simulation-execution-status-record.ts
 model/simulation-job-status-record.ts

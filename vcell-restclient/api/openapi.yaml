@@ -141,76 +141,18 @@ paths:
       tags:
       - Admin Resource
       x-accepts: application/pdf
-  /api/v1/bioModel/advancedSave:
-    post:
-      operationId: advancedSaveBioModel
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/advancedSaveBioModel_request'
-      responses:
-        "200":
-          content:
-            text/plain:
-              schema:
-                type: string
-          description: OK
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - user
-      summary: Save the BioModel while also specifying which simulations within the
-        BioModel need to be updated due to mathematical changes. Returns saved BioModel
-        as VCML.
-      tags:
-      - Bio Model Resource
-      x-content-type: multipart/form-data
-      x-accepts: text/plain
-  /api/v1/bioModel/advancedSaveAs:
-    post:
-      operationId: advancedSaveAsBioModel
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/advancedSaveAsBioModel_request'
-      responses:
-        "200":
-          content:
-            text/plain:
-              schema:
-                type: string
-          description: OK
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - user
-      summary: Save the BioModel while also specifying which simulations within the
-        BioModel need to be updated due to mathematical changes. Returns saved BioModel
-        as VCML.
-      tags:
-      - Bio Model Resource
-      x-content-type: multipart/form-data
-      x-accepts: text/plain
   /api/v1/bioModel/save:
     post:
       operationId: saveBioModel
       requestBody:
         content:
-          text/xml:
+          application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/SaveBioModel'
       responses:
         "200":
           content:
-            text/plain:
+            application/xml:
               schema:
                 type: string
           description: OK
@@ -221,39 +163,12 @@ paths:
       security:
       - openId:
         - user
-      summary: "Save the BioModel, returning saved BioModel as VCML."
+      summary: Save's the given BioModel. Optional parameters of name and simulations
+        to update due to math changes. Returns saved BioModel as VCML.
       tags:
       - Bio Model Resource
-      x-content-type: text/xml
-      x-accepts: text/plain
-  /api/v1/bioModel/saveAs:
-    post:
-      operationId: saveBioModelAs
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/saveBioModelAs_request'
-      responses:
-        "200":
-          content:
-            text/plain:
-              schema:
-                type: string
-          description: OK
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - user
-      summary: Save as a new BioModel under the name given. Returns saved BioModel
-        as VCML.
-      tags:
-      - Bio Model Resource
-      x-content-type: multipart/form-data
-      x-accepts: text/plain
+      x-content-type: application/json
+      x-accepts: application/xml
   /api/v1/bioModel/{bioModelID}:
     delete:
       operationId: deleteBioModel
@@ -1648,6 +1563,28 @@ components:
           format: date
           type: string
       type: object
+    SaveBioModel:
+      example:
+        simsRequiringUpdates:
+        - simsRequiringUpdates
+        - simsRequiringUpdates
+        name: name
+        bioModelXML: bioModelXML
+      properties:
+        bioModelXML:
+          pattern: \S
+          type: string
+        name:
+          nullable: true
+          type: string
+        simsRequiringUpdates:
+          items:
+            type: string
+          nullable: true
+          type: array
+      required:
+      - bioModelXML
+      type: object
     SchedulerStatus:
       enum:
       - WAITING
@@ -2016,33 +1953,6 @@ components:
         defaultUnits:
           type: string
         typeName:
-          type: string
-      type: object
-    advancedSaveBioModel_request:
-      properties:
-        bioModelXML:
-          type: string
-        simsRequiringUpdates:
-          items:
-            type: string
-          type: array
-      type: object
-    advancedSaveAsBioModel_request:
-      properties:
-        bioModelXML:
-          type: string
-        name:
-          type: string
-        simsRequiringUpdates:
-          items:
-            type: string
-          type: array
-      type: object
-    saveBioModelAs_request:
-      properties:
-        bioModelXML:
-          type: string
-        name:
           type: string
       type: object
     advancedCreate_request:

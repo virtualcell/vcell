@@ -534,9 +534,14 @@ public class VCellApiClient implements AutoCloseable {
 			apiCall.makeRequest();
 		} catch (ApiException e){
 			lg.error(e);
+			String errorMessage = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
 			switch (e.getCode()){
-				case DATA_ACCESS_EXCEPTION_HTTP_CODE -> throw new DataAccessException(e.getResponseBody());
-				default -> throw new RuntimeException(e.getResponseBody());
+				case DATA_ACCESS_EXCEPTION_HTTP_CODE -> {
+					throw new DataAccessException(errorMessage, e);
+				}
+				default -> {
+					throw new RuntimeException(errorMessage, e);
+				}
 			}
 		}
 	}
@@ -546,9 +551,14 @@ public class VCellApiClient implements AutoCloseable {
 			return apiCall.get();
 		} catch (ApiException e){
 			lg.error(e);
+			String errorMessage = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
 			switch (e.getCode()){
-				case DATA_ACCESS_EXCEPTION_HTTP_CODE -> throw new DataAccessException(e.getResponseBody());
-				default -> throw new RuntimeException(e.getResponseBody());
+				case DATA_ACCESS_EXCEPTION_HTTP_CODE -> {
+					throw new DataAccessException(errorMessage, e);
+				}
+				default -> {
+					throw new RuntimeException(errorMessage, e);
+				}
 			}
 		}
 	}

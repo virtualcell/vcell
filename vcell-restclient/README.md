@@ -107,20 +107,14 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *AdminResourceApi* | [**getUsage**](docs/AdminResourceApi.md#getUsage) | **GET** /api/v1/admin/usage | Get usage summary
 *AdminResourceApi* | [**getUsageWithHttpInfo**](docs/AdminResourceApi.md#getUsageWithHttpInfo) | **GET** /api/v1/admin/usage | Get usage summary
-*BioModelResourceApi* | [**advancedSaveAsBioModel**](docs/BioModelResourceApi.md#advancedSaveAsBioModel) | **POST** /api/v1/bioModel/advancedSaveAs | Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML.
-*BioModelResourceApi* | [**advancedSaveAsBioModelWithHttpInfo**](docs/BioModelResourceApi.md#advancedSaveAsBioModelWithHttpInfo) | **POST** /api/v1/bioModel/advancedSaveAs | Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML.
-*BioModelResourceApi* | [**advancedSaveBioModel**](docs/BioModelResourceApi.md#advancedSaveBioModel) | **POST** /api/v1/bioModel/advancedSave | Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML.
-*BioModelResourceApi* | [**advancedSaveBioModelWithHttpInfo**](docs/BioModelResourceApi.md#advancedSaveBioModelWithHttpInfo) | **POST** /api/v1/bioModel/advancedSave | Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML.
 *BioModelResourceApi* | [**deleteBioModel**](docs/BioModelResourceApi.md#deleteBioModel) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
 *BioModelResourceApi* | [**deleteBioModelWithHttpInfo**](docs/BioModelResourceApi.md#deleteBioModelWithHttpInfo) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
 *BioModelResourceApi* | [**getBioModel**](docs/BioModelResourceApi.md#getBioModel) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel.
 *BioModelResourceApi* | [**getBioModelWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel.
 *BioModelResourceApi* | [**getBioModelVCML**](docs/BioModelResourceApi.md#getBioModelVCML) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
 *BioModelResourceApi* | [**getBioModelVCMLWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelVCMLWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
-*BioModelResourceApi* | [**saveBioModel**](docs/BioModelResourceApi.md#saveBioModel) | **POST** /api/v1/bioModel/save | Save the BioModel, returning saved BioModel as VCML.
-*BioModelResourceApi* | [**saveBioModelWithHttpInfo**](docs/BioModelResourceApi.md#saveBioModelWithHttpInfo) | **POST** /api/v1/bioModel/save | Save the BioModel, returning saved BioModel as VCML.
-*BioModelResourceApi* | [**saveBioModelAs**](docs/BioModelResourceApi.md#saveBioModelAs) | **POST** /api/v1/bioModel/saveAs | Save as a new BioModel under the name given. Returns saved BioModel as VCML.
-*BioModelResourceApi* | [**saveBioModelAsWithHttpInfo**](docs/BioModelResourceApi.md#saveBioModelAsWithHttpInfo) | **POST** /api/v1/bioModel/saveAs | Save as a new BioModel under the name given. Returns saved BioModel as VCML.
+*BioModelResourceApi* | [**saveBioModel**](docs/BioModelResourceApi.md#saveBioModel) | **POST** /api/v1/bioModel/save | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
+*BioModelResourceApi* | [**saveBioModelWithHttpInfo**](docs/BioModelResourceApi.md#saveBioModelWithHttpInfo) | **POST** /api/v1/bioModel/save | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 *FieldDataResourceApi* | [**advancedCreate**](docs/FieldDataResourceApi.md#advancedCreate) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 *FieldDataResourceApi* | [**advancedCreateWithHttpInfo**](docs/FieldDataResourceApi.md#advancedCreateWithHttpInfo) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 *FieldDataResourceApi* | [**analyzeFile**](docs/FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
@@ -207,6 +201,7 @@ Class | Method | HTTP request | Description
  - [ModelType](docs/ModelType.md)
  - [Origin](docs/Origin.md)
  - [Publication](docs/Publication.md)
+ - [SaveBioModel](docs/SaveBioModel.md)
  - [SchedulerStatus](docs/SchedulerStatus.md)
  - [SimulationExecutionStatusRecord](docs/SimulationExecutionStatusRecord.md)
  - [SimulationJobStatusRecord](docs/SimulationJobStatusRecord.md)

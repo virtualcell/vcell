@@ -126,123 +126,23 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/bioModel/advancedSave:
-    post:
-      tags:
-      - Bio Model Resource
-      summary: Save the BioModel while also specifying which simulations within the
-        BioModel need to be updated due to mathematical changes. Returns saved BioModel
-        as VCML.
-      operationId: advancedSaveBioModel
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                bioModelXML:
-                  type: string
-                simsRequiringUpdates:
-                  type: array
-                  items:
-                    type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            text/plain:
-              schema:
-                type: string
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - user
-  /api/v1/bioModel/advancedSaveAs:
-    post:
-      tags:
-      - Bio Model Resource
-      summary: Save the BioModel while also specifying which simulations within the
-        BioModel need to be updated due to mathematical changes. Returns saved BioModel
-        as VCML.
-      operationId: advancedSaveAsBioModel
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                bioModelXML:
-                  type: string
-                name:
-                  type: string
-                simsRequiringUpdates:
-                  type: array
-                  items:
-                    type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            text/plain:
-              schema:
-                type: string
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - user
   /api/v1/bioModel/save:
     post:
       tags:
       - Bio Model Resource
-      summary: "Save the BioModel, returning saved BioModel as VCML."
+      summary: Save's the given BioModel. Optional parameters of name and simulations
+        to update due to math changes. Returns saved BioModel as VCML.
       operationId: saveBioModel
       requestBody:
         content:
-          text/xml:
+          application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/SaveBioModel'
       responses:
         "200":
           description: OK
           content:
-            text/plain:
-              schema:
-                type: string
-        "401":
-          description: Not Authorized
-        "403":
-          description: Not Allowed
-      security:
-      - openId:
-        - user
-  /api/v1/bioModel/saveAs:
-    post:
-      tags:
-      - Bio Model Resource
-      summary: Save as a new BioModel under the name given. Returns saved BioModel
-        as VCML.
-      operationId: saveBioModelAs
-      requestBody:
-        content:
-          multipart/form-data:
-            schema:
-              type: object
-              properties:
-                bioModelXML:
-                  type: string
-                name:
-                  type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            text/plain:
+            application/xml:
               schema:
                 type: string
         "401":
@@ -1372,6 +1272,22 @@ components:
             $ref: '#/components/schemas/MathmodelRef'
         date:
           $ref: '#/components/schemas/Date'
+    SaveBioModel:
+      required:
+      - bioModelXML
+      type: object
+      properties:
+        bioModelXML:
+          pattern: \S
+          type: string
+        name:
+          type: string
+          nullable: true
+        simsRequiringUpdates:
+          type: array
+          items:
+            type: string
+          nullable: true
     SchedulerStatus:
       enum:
       - WAITING

@@ -4,309 +4,15 @@ All URIs are relative to *https://vcell-dev.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**advancedSaveAsBioModel**](BioModelResourceApi.md#advancedSaveAsBioModel) | **POST** /api/v1/bioModel/advancedSaveAs | Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML. |
-| [**advancedSaveAsBioModelWithHttpInfo**](BioModelResourceApi.md#advancedSaveAsBioModelWithHttpInfo) | **POST** /api/v1/bioModel/advancedSaveAs | Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML. |
-| [**advancedSaveBioModel**](BioModelResourceApi.md#advancedSaveBioModel) | **POST** /api/v1/bioModel/advancedSave | Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML. |
-| [**advancedSaveBioModelWithHttpInfo**](BioModelResourceApi.md#advancedSaveBioModelWithHttpInfo) | **POST** /api/v1/bioModel/advancedSave | Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML. |
 | [**deleteBioModel**](BioModelResourceApi.md#deleteBioModel) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database. |
 | [**deleteBioModelWithHttpInfo**](BioModelResourceApi.md#deleteBioModelWithHttpInfo) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database. |
 | [**getBioModel**](BioModelResourceApi.md#getBioModel) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel. |
 | [**getBioModelWithHttpInfo**](BioModelResourceApi.md#getBioModelWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel. |
 | [**getBioModelVCML**](BioModelResourceApi.md#getBioModelVCML) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format. |
 | [**getBioModelVCMLWithHttpInfo**](BioModelResourceApi.md#getBioModelVCMLWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format. |
-| [**saveBioModel**](BioModelResourceApi.md#saveBioModel) | **POST** /api/v1/bioModel/save | Save the BioModel, returning saved BioModel as VCML. |
-| [**saveBioModelWithHttpInfo**](BioModelResourceApi.md#saveBioModelWithHttpInfo) | **POST** /api/v1/bioModel/save | Save the BioModel, returning saved BioModel as VCML. |
-| [**saveBioModelAs**](BioModelResourceApi.md#saveBioModelAs) | **POST** /api/v1/bioModel/saveAs | Save as a new BioModel under the name given. Returns saved BioModel as VCML. |
-| [**saveBioModelAsWithHttpInfo**](BioModelResourceApi.md#saveBioModelAsWithHttpInfo) | **POST** /api/v1/bioModel/saveAs | Save as a new BioModel under the name given. Returns saved BioModel as VCML. |
+| [**saveBioModel**](BioModelResourceApi.md#saveBioModel) | **POST** /api/v1/bioModel/save | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML. |
+| [**saveBioModelWithHttpInfo**](BioModelResourceApi.md#saveBioModelWithHttpInfo) | **POST** /api/v1/bioModel/save | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML. |
 
-
-
-## advancedSaveAsBioModel
-
-> String advancedSaveAsBioModel(bioModelXML, name, simsRequiringUpdates)
-
-Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
-        
-
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String bioModelXML = "bioModelXML_example"; // String | 
-        String name = "name_example"; // String | 
-        List<String> simsRequiringUpdates = Arrays.asList(); // List<String> | 
-        try {
-            String result = apiInstance.advancedSaveAsBioModel(bioModelXML, name, simsRequiringUpdates);
-            System.out.println(result);
-        } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#advancedSaveAsBioModel");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Reason: " + e.getResponseBody());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **bioModelXML** | **String**|  | [optional] |
-| **name** | **String**|  | [optional] |
-| **simsRequiringUpdates** | [**List&lt;String&gt;**](String.md)|  | [optional] |
-
-### Return type
-
-**String**
-
-
-### Authorization
-
-[openId](../README.md#openId)
-
-### HTTP request headers
-
-- **Content-Type**: multipart/form-data
-- **Accept**: text/plain
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
-
-## advancedSaveAsBioModelWithHttpInfo
-
-> ApiResponse<String> advancedSaveAsBioModel advancedSaveAsBioModelWithHttpInfo(bioModelXML, name, simsRequiringUpdates)
-
-Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.ApiResponse;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
-        
-
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String bioModelXML = "bioModelXML_example"; // String | 
-        String name = "name_example"; // String | 
-        List<String> simsRequiringUpdates = Arrays.asList(); // List<String> | 
-        try {
-            ApiResponse<String> response = apiInstance.advancedSaveAsBioModelWithHttpInfo(bioModelXML, name, simsRequiringUpdates);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
-        } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#advancedSaveAsBioModel");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            System.err.println("Reason: " + e.getResponseBody());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **bioModelXML** | **String**|  | [optional] |
-| **name** | **String**|  | [optional] |
-| **simsRequiringUpdates** | [**List&lt;String&gt;**](String.md)|  | [optional] |
-
-### Return type
-
-ApiResponse<**String**>
-
-
-### Authorization
-
-[openId](../README.md#openId)
-
-### HTTP request headers
-
-- **Content-Type**: multipart/form-data
-- **Accept**: text/plain
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
-
-
-## advancedSaveBioModel
-
-> String advancedSaveBioModel(bioModelXML, simsRequiringUpdates)
-
-Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
-        
-
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String bioModelXML = "bioModelXML_example"; // String | 
-        List<String> simsRequiringUpdates = Arrays.asList(); // List<String> | 
-        try {
-            String result = apiInstance.advancedSaveBioModel(bioModelXML, simsRequiringUpdates);
-            System.out.println(result);
-        } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#advancedSaveBioModel");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Reason: " + e.getResponseBody());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **bioModelXML** | **String**|  | [optional] |
-| **simsRequiringUpdates** | [**List&lt;String&gt;**](String.md)|  | [optional] |
-
-### Return type
-
-**String**
-
-
-### Authorization
-
-[openId](../README.md#openId)
-
-### HTTP request headers
-
-- **Content-Type**: multipart/form-data
-- **Accept**: text/plain
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
-
-## advancedSaveBioModelWithHttpInfo
-
-> ApiResponse<String> advancedSaveBioModel advancedSaveBioModelWithHttpInfo(bioModelXML, simsRequiringUpdates)
-
-Save the BioModel while also specifying which simulations within the BioModel need to be updated due to mathematical changes. Returns saved BioModel as VCML.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.ApiResponse;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
-        
-
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String bioModelXML = "bioModelXML_example"; // String | 
-        List<String> simsRequiringUpdates = Arrays.asList(); // List<String> | 
-        try {
-            ApiResponse<String> response = apiInstance.advancedSaveBioModelWithHttpInfo(bioModelXML, simsRequiringUpdates);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
-        } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#advancedSaveBioModel");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            System.err.println("Reason: " + e.getResponseBody());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **bioModelXML** | **String**|  | [optional] |
-| **simsRequiringUpdates** | [**List&lt;String&gt;**](String.md)|  | [optional] |
-
-### Return type
-
-ApiResponse<**String**>
-
-
-### Authorization
-
-[openId](../README.md#openId)
-
-### HTTP request headers
-
-- **Content-Type**: multipart/form-data
-- **Accept**: text/plain
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 
 
 ## deleteBioModel
@@ -699,9 +405,9 @@ No authorization required
 
 ## saveBioModel
 
-> String saveBioModel(body)
+> String saveBioModel(saveBioModel)
 
-Save the BioModel, returning saved BioModel as VCML.
+Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 
 ### Example
 
@@ -721,9 +427,9 @@ public class Example {
         
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String body = "body_example"; // String | 
+        SaveBioModel saveBioModel = new SaveBioModel(); // SaveBioModel | 
         try {
-            String result = apiInstance.saveBioModel(body);
+            String result = apiInstance.saveBioModel(saveBioModel);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling BioModelResourceApi#saveBioModel");
@@ -741,7 +447,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **body** | **String**|  | [optional] |
+| **saveBioModel** | [**SaveBioModel**](SaveBioModel.md)|  | [optional] |
 
 ### Return type
 
@@ -754,8 +460,8 @@ public class Example {
 
 ### HTTP request headers
 
-- **Content-Type**: text/xml
-- **Accept**: text/plain
+- **Content-Type**: application/json
+- **Accept**: application/xml
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -766,9 +472,9 @@ public class Example {
 
 ## saveBioModelWithHttpInfo
 
-> ApiResponse<String> saveBioModel saveBioModelWithHttpInfo(body)
+> ApiResponse<String> saveBioModel saveBioModelWithHttpInfo(saveBioModel)
 
-Save the BioModel, returning saved BioModel as VCML.
+Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 
 ### Example
 
@@ -789,9 +495,9 @@ public class Example {
         
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String body = "body_example"; // String | 
+        SaveBioModel saveBioModel = new SaveBioModel(); // SaveBioModel | 
         try {
-            ApiResponse<String> response = apiInstance.saveBioModelWithHttpInfo(body);
+            ApiResponse<String> response = apiInstance.saveBioModelWithHttpInfo(saveBioModel);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
@@ -811,7 +517,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **body** | **String**|  | [optional] |
+| **saveBioModel** | [**SaveBioModel**](SaveBioModel.md)|  | [optional] |
 
 ### Return type
 
@@ -824,150 +530,8 @@ ApiResponse<**String**>
 
 ### HTTP request headers
 
-- **Content-Type**: text/xml
-- **Accept**: text/plain
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
-
-
-## saveBioModelAs
-
-> String saveBioModelAs(bioModelXML, name)
-
-Save as a new BioModel under the name given. Returns saved BioModel as VCML.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
-        
-
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String bioModelXML = "bioModelXML_example"; // String | 
-        String name = "name_example"; // String | 
-        try {
-            String result = apiInstance.saveBioModelAs(bioModelXML, name);
-            System.out.println(result);
-        } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#saveBioModelAs");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Reason: " + e.getResponseBody());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **bioModelXML** | **String**|  | [optional] |
-| **name** | **String**|  | [optional] |
-
-### Return type
-
-**String**
-
-
-### Authorization
-
-[openId](../README.md#openId)
-
-### HTTP request headers
-
-- **Content-Type**: multipart/form-data
-- **Accept**: text/plain
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
-
-## saveBioModelAsWithHttpInfo
-
-> ApiResponse<String> saveBioModelAs saveBioModelAsWithHttpInfo(bioModelXML, name)
-
-Save as a new BioModel under the name given. Returns saved BioModel as VCML.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.ApiResponse;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
-        
-
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String bioModelXML = "bioModelXML_example"; // String | 
-        String name = "name_example"; // String | 
-        try {
-            ApiResponse<String> response = apiInstance.saveBioModelAsWithHttpInfo(bioModelXML, name);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
-        } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#saveBioModelAs");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            System.err.println("Reason: " + e.getResponseBody());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **bioModelXML** | **String**|  | [optional] |
-| **name** | **String**|  | [optional] |
-
-### Return type
-
-ApiResponse<**String**>
-
-
-### Authorization
-
-[openId](../README.md#openId)
-
-### HTTP request headers
-
-- **Content-Type**: multipart/form-data
-- **Accept**: text/plain
+- **Content-Type**: application/json
+- **Accept**: application/xml
 
 ### HTTP response details
 | Status code | Description | Response headers |
