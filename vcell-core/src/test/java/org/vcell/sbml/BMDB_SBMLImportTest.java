@@ -112,6 +112,8 @@ public class BMDB_SBMLImportTest {
 		faults.put(340, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><gt/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time">
 		faults.put(342, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'TGF_beta_dose_mol_per_cell' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context.
 		faults.put(353, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('12345.7' for reactant 'cpd_C00369Glc_CS' in reaction 'rn_R02112CS_G2') or stoichiometryMath not handled in VCell at this time.
+		faults.put(354, SBMLTestSuiteTest.FAULT.COMPARTMENT_CONSTANT_FALSE);  // cause:  Error adding Feature to vcModel CompartmentError: compartment 'cytosol' has constant attribute set to False, not currently supported.
+		faults.put(355, SBMLTestSuiteTest.FAULT.COMPARTMENT_CONSTANT_FALSE);  // cause:  Error adding Feature to vcModel CompartmentError: compartment 'cytosol' has constant attribute set to False, not currently supported.
 		faults.put(383, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
 		faults.put(384, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
 		faults.put(385, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
@@ -258,6 +260,8 @@ public class BMDB_SBMLImportTest {
 				fault = SBMLTestSuiteTest.FAULT.MATHML_PARSING;
 			}else if (cause.contains("class org.sbml.jsbml.Constraint cannot be cast to class org.sbml.jsbml.SBMLDocument")) {
 				fault = SBMLTestSuiteTest.FAULT.CONSTRAINT_CLASS_CAST_EXCEPTION;
+			}else if (cause.contains("CompartmentError: compartment") && cause.contains("constant attribute set to False")) {
+				fault = SBMLTestSuiteTest.FAULT.COMPARTMENT_CONSTANT_FALSE;
 			}
 
 			try (BufferedWriter codeProblemFileWriter = new BufferedWriter(new FileWriter(codeKnownProblemFile, true));
