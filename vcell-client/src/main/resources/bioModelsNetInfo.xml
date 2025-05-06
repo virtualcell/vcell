@@ -353,8 +353,8 @@
   <BioModelInfo ID="BIOMD0000000351" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vernoux2011_AuxinSignaling_AuxinSingleStepInput" />
   <BioModelInfo ID="BIOMD0000000352" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vernoux2011_AuxinSignaling_AuxinFluctuating" />
   <BioModelInfo ID="BIOMD0000000353" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nag2011_ChloroplasticStarchDegradation" exception="NONINTEGER_STOICH" />
-  <BioModelInfo ID="BIOMD0000000354" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Abell2011_CalciumSignaling_WithoutAdaptation" />
-  <BioModelInfo ID="BIOMD0000000355" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Abell2011_CalciumSignaling_WithAdaptation" />
+  <BioModelInfo ID="BIOMD0000000354" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Abell2011_CalciumSignaling_WithoutAdaptation" />
+  <BioModelInfo ID="BIOMD0000000355" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Abell2011_CalciumSignaling_WithAdaptation" />
   <BioModelInfo ID="BIOMD0000000356" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nyman2011_M3Hierarachical_InsulinGlucosedynamics" />
   <BioModelInfo ID="BIOMD0000000357" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lee2010_ThrombinActivation_OneForm_reduced" />
   <BioModelInfo ID="BIOMD0000000358" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Stortelder1997 - Thrombin Generation Amidolytic Activity" />
