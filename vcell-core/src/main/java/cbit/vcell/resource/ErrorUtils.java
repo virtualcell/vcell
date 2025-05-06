@@ -52,57 +52,62 @@ public class ErrorUtils {
     public static class ErrorReport {
         public String username;
         public String message;
+        public String exceptionType;
         public String exceptionMessage;
         public String stackTrace;
         public String softwareVersion;
-        public String platform;
+        public String targetedServerID;
+        public String javaPlatform;
+        public String machinePlatform;
 
-        public ErrorReport(){
-        }
+        public ErrorReport(){}
 
-        public ErrorReport(String username, String message, String exceptionMessage, String stackTrace, String softwareVersion,
-                           String platform){
+        public ErrorReport(String username, String message, String exceptionType, String exceptionMessage, String stackTrace, String softwareVersion, String targetedServerID,
+                           String javaPlatform, String machinePlatform){
             this.username = username;
             this.message = message;
+            this.exceptionType = exceptionType;
             this.exceptionMessage = exceptionMessage;
             this.stackTrace = stackTrace;
             this.softwareVersion = softwareVersion;
-            this.platform = platform;
+            this.targetedServerID = targetedServerID;
+            this.javaPlatform = javaPlatform;
+            this.machinePlatform = machinePlatform;
+        }
+
+        public String formatErrorMessageForEmailBody(){
+            StringBuilder sb = new StringBuilder();
+            sb.append("An issue has been encountered by \"").append(this.username)
+                    .append("\" on VCell ").append(this.softwareVersion)
+                    .append(" deployed for: ").append(this.targetedServerID).append("\n");
+            sb.append("\tIssue occurred on ").append(this.machinePlatform).append(" using ").append(this.javaPlatform).append("\n");
+            sb.append("\tException Type: ").append(this.exceptionType).append("\n");
+            sb.append("\tException Message:\n\t\t").append(this.exceptionMessage.replace("\r\n", "\n").replace("\n", "\n\t\t")).append("\n");
+            sb.append("\tStack trace:\n\t\t").append(this.exceptionMessage.replace("\r\n", "\n").replace("\n", "\n\t\t")).append("\n");
+            return sb.toString();
         }
     }
 
-    public static void sendErrorReport(Throwable exception, String message) throws RuntimeException{
-        String softwareVersion = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
-        String exceptionMessage = exception != null ? exception.getMessage() : "null";
-        String stackTrace = exception != null ? StackTraceUtils.getStackTrace(exception) : "null";
-        String platform = "Running under Java " + (System.getProperty("java.version")) +
-                ", published by " + (System.getProperty("java.vendor")) + ", on the " + (System.getProperty("os.arch")) + " architecture running version " + (System.getProperty("os.version")) +
-                " of the " + (System.getProperty("os.name")) + " operating system";
-        String username = null;
-        String serverHost = PropertyLoader.getProperty(PropertyLoader.vcellServerHost, null);
+    public static void sendErrorReport(Throwable exception, String message) throws RuntimeException {
+        boolean canGetApiHost = ErrorUtils.clientServerInfo != null && ErrorUtils.clientServerInfo.getApihost() != null;
+        String serverHost = canGetApiHost ? ErrorUtils.clientServerInfo.getApihost() : PropertyLoader.getProperty(PropertyLoader.vcellServerHost, null);
+        if(serverHost == null) throw new RuntimeException("cannot send error report to server, unknown host");
         String serverPrefixV0 = PropertyLoader.getProperty(PropertyLoader.vcellServerPrefixV0, null);
-        if(clientServerInfo != null && clientServerInfo.getApihost() != null){
-            serverHost = clientServerInfo.getApihost();
-            if(clientServerInfo.getUsername() != null){
-                username = clientServerInfo.getUsername();
-            }
-        }
-        if(serverHost == null){
-            throw new RuntimeException("cannot send error report to server, unknown host");
-        }
-        SSLConnectionSocketFactory sslsf = null;
+
+        String username = ErrorUtils.clientServerInfo != null && ErrorUtils.clientServerInfo.getUsername() != null ? ErrorUtils.clientServerInfo.getUsername() : "<Anonymous User>";
+        SSLConnectionSocketFactory ssLConnectionFactory;
         try {
             SSLContextBuilder builder = new SSLContextBuilder();
             builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
-            sslsf = new SSLConnectionSocketFactory(builder.build());
+            ssLConnectionFactory = new SSLConnectionSocketFactory(builder.build());
         } catch(Exception e){
-            lg.error(e.getMessage(), e);
-            throw new RuntimeException(e.getMessage(), e);
+            lg.error(e);
+            throw new RuntimeException("Problem encountered attempting to build SSL Connection for Error Report", e);
         }
-        try (CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslsf).build()) {
+        try (CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(ssLConnectionFactory).build()) {
             HttpPost httpPost = new HttpPost("https://" + serverHost + serverPrefixV0 + "/contactus");
             Gson gson = new Gson();
-            ErrorReport errorReport = new ErrorReport(username, message, exceptionMessage, stackTrace, softwareVersion, platform);
+            ErrorReport errorReport = ErrorUtils.generateErrorReport(exception, message, username);
             String json = gson.toJson(errorReport);
             StringEntity entity = new StringEntity(json);
             httpPost.setEntity(entity);
@@ -138,6 +143,18 @@ public class ErrorUtils {
         } else {
             System.err.println("Remote log message: " + message);
         }
+    }
+
+     static ErrorReport generateErrorReport(Throwable exception, String message, String username){
+        String softwareVersion = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
+        String exceptionType = exception != null ? exception.getClass().getSimpleName() : "<none>";
+        String exceptionMessage = exception != null ? exception.getMessage() : "N/A";
+        String stackTrace = exception != null ? StackTraceUtils.getStackTrace(exception) : "N/A";
+        String javaPlatform = "Java " + System.getProperty("java.version") + " " + "(via '" + System.getProperty("java.vendor") + exceptionType + "') ";
+        String machinePlatform = System.getProperty("os.name") + " (" + System.getProperty("os.version") + ")[" + System.getProperty("os.arch") + "]";
+        String serverID = PropertyLoader.getProperty(PropertyLoader.vcellServerIDProperty, "<UNKNOWN>");
+
+        return new ErrorReport(username, message, exceptionType, exceptionMessage, stackTrace, softwareVersion, javaPlatform, machinePlatform, serverID);
     }
 
 //	public static void main(String[] args){

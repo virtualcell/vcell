@@ -16,12 +16,12 @@ public class ErrorUtilsTest {
 
     public static ArrayList<TestCase> testCases() {
         ArrayList<TestCase> testCases = new ArrayList<>();
-        testCases.add(new TestCase("{\"username\":\"bob\",\"message\":\"msg\",\"exceptionMessage\":\"exceptionMsg\",\"softwareVersion\":\"7.5\",\"platform\":\"no platform\"}",
-                new ErrorUtils.ErrorReport("bob","msg","exceptionMsg",null,"7.5","no platform")));
-        testCases.add(new TestCase("{\"message\":\"msg\",\"softwareVersion\":\"7.5\",\"platform\":\"no platform\"}",
-                new ErrorUtils.ErrorReport(null,"msg",null,null,"7.5","no platform")));
+        testCases.add(new TestCase("{\"username\":\"bob\",\"message\":\"msg\",\"exceptionType\":\"exceptionT\",\"exceptionMessage\":\"exceptionMsg\",\"softwareVersion\":\"7.5\",\"targetedServerID\":\"TEST\",\"javaPlatform\":\"no platform\",\"machinePlatform\":\"no platform\"}",
+                new ErrorUtils.ErrorReport("bob","msg","exceptionT","exceptionMsg",null,"7.5","TEST", "no platform","no platform")));
+        testCases.add(new TestCase("{\"message\":\"msg\",\"softwareVersion\":\"7.5\",\"javaPlatform\":\"no platform\"}",
+                new ErrorUtils.ErrorReport(null,"msg",null,null,null,"7.5",null, "no platform", null)));
         testCases.add(new TestCase("{\"message\":\"msg\"}",
-                new ErrorUtils.ErrorReport(null,"msg",null,null,null,null)));
+                new ErrorUtils.ErrorReport(null,"msg",null,null, null, null,null,null,null)));
         return testCases;
     }
 
