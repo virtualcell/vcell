@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **simulation_key** | [**KeyValue**](KeyValue.md) |  | [optional] 
 **owner** | [**User**](User.md) |  | [optional] 
-**i_d** | **str** |  | [optional] 
+**id** | **str** |  | [optional] 
 
 ## Example
 

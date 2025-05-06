@@ -1,6 +1,6 @@
 # AdminResourceApi
 
-All URIs are relative to *https://vcell-dev.cam.uchc.edu*
+All URIs are relative to *https://vcell.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -29,7 +29,7 @@ import org.vcell.restclient.api.AdminResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         AdminResourceApi apiInstance = new AdminResourceApi(defaultClient);
@@ -93,7 +93,7 @@ import org.vcell.restclient.api.AdminResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         AdminResourceApi apiInstance = new AdminResourceApi(defaultClient);

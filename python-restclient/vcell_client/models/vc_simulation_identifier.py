@@ -35,8 +35,8 @@ class VCSimulationIdentifier(BaseModel):
     """ # noqa: E501
     simulation_key: Optional[KeyValue] = Field(default=None, alias="simulationKey")
     owner: Optional[User] = None
-    i_d: Optional[StrictStr] = Field(default=None, alias="iD")
-    __properties: ClassVar[List[str]] = ["simulationKey", "owner", "iD"]
+    id: Optional[StrictStr] = None
+    __properties: ClassVar[List[str]] = ["simulationKey", "owner", "id"]
 
     model_config = {
         "populate_by_name": True,
@@ -99,7 +99,7 @@ class VCSimulationIdentifier(BaseModel):
         _obj = cls.model_validate({
             "simulationKey": KeyValue.from_dict(obj.get("simulationKey")) if obj.get("simulationKey") is not None else None,
             "owner": User.from_dict(obj.get("owner")) if obj.get("owner") is not None else None,
-            "iD": obj.get("iD")
+            "id": obj.get("id")
         })
         return _obj
 

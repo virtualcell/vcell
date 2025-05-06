@@ -16,6 +16,6 @@ import { User } from './user';
 export interface VCSimulationIdentifier { 
     simulationKey?: KeyValue;
     owner?: User;
-    iD?: string;
+    id?: string;
 }
 

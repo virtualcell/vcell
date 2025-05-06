@@ -1,6 +1,6 @@
 # PublicationResourceApi
 
-All URIs are relative to *https://vcell-dev.cam.uchc.edu*
+All URIs are relative to *https://vcell.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -37,7 +37,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
@@ -105,7 +105,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
@@ -175,7 +175,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
@@ -242,7 +242,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
@@ -310,7 +310,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Long id = 56L; // Long | 
@@ -374,7 +374,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         Long id = 56L; // Long | 
@@ -440,7 +440,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         try {
@@ -500,7 +500,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
         try {
@@ -563,7 +563,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
@@ -631,7 +631,7 @@ import org.vcell.restclient.api.PublicationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);

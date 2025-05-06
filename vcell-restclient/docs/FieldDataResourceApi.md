@@ -1,6 +1,6 @@
 # FieldDataResourceApi
 
-All URIs are relative to *https://vcell-dev.cam.uchc.edu*
+All URIs are relative to *https://vcell.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -45,7 +45,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -127,7 +127,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -211,7 +211,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -281,7 +281,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -353,7 +353,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -421,7 +421,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -491,7 +491,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -561,7 +561,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -633,7 +633,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -704,7 +704,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -777,7 +777,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -844,7 +844,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -913,7 +913,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -977,7 +977,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -1043,7 +1043,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -1111,7 +1111,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -1181,7 +1181,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);
@@ -1249,7 +1249,7 @@ import org.vcell.restclient.api.FieldDataResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         FieldDataResourceApi apiInstance = new FieldDataResourceApi(defaultClient);

@@ -3,7 +3,7 @@ info:
   contact:
     email: vcell_support@uchc.com
     name: VCell API Support
-    url: http://exampleurl.com/contact
+    url: https://vcell.org
   description: VCell API
   license:
     name: MIT
@@ -12,7 +12,7 @@ info:
   title: VCell API
   version: 1.0.1
 servers:
-- url: https://vcell-dev.cam.uchc.edu
+- url: https://vcell.cam.uchc.edu
 paths:
   /api/v1/Simulation/{simID}/simulationStatus:
     get:
@@ -1657,7 +1657,7 @@ components:
               value: 0.8008281904610115
           simulationKey:
             value: 0.8008281904610115
-          iD: iD
+          id: id
         fieldTaskID: 1
         fieldSimulationQueueEntryStatus:
           fieldQueuePriority: 5
@@ -1805,7 +1805,7 @@ components:
                 value: 0.8008281904610115
             simulationKey:
               value: 0.8008281904610115
-            iD: iD
+            id: id
           fieldTaskID: 1
           fieldSimulationQueueEntryStatus:
             fieldQueuePriority: 5
@@ -1904,13 +1904,13 @@ components:
             value: 0.8008281904610115
         simulationKey:
           value: 0.8008281904610115
-        iD: iD
+        id: id
       properties:
         simulationKey:
           $ref: '#/components/schemas/KeyValue'
         owner:
           $ref: '#/components/schemas/User'
-        iD:
+        id:
           type: string
       type: object
     VariableDomain:
