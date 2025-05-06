@@ -6,14 +6,14 @@ info:
   termsOfService: Your terms of service here
   contact:
     name: VCell API Support
-    url: http://exampleurl.com/contact
+    url: https://vcell.org
     email: vcell_support@uchc.com
   license:
     name: MIT
     url: http://opensource.org/licenses/MIT
   version: 1.0.1
 servers:
-- url: https://vcell-dev.cam.uchc.edu
+- url: https://vcell.cam.uchc.edu
 paths:
   /api/v1/Simulation/{simID}/simulationStatus:
     get:
@@ -1460,7 +1460,7 @@ components:
           $ref: '#/components/schemas/KeyValue'
         owner:
           $ref: '#/components/schemas/User'
-        iD:
+        id:
           type: string
     VariableDomain:
       enum:
