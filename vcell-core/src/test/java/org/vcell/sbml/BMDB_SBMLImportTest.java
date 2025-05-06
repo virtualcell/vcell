@@ -3,24 +3,34 @@ package org.vcell.sbml;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.server.DynamicClientProperties;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.xml.ExternalDocInfo;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLReader;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.util.UnzipUtility;
 
 import java.io.*;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -283,7 +293,125 @@ public class BMDB_SBMLImportTest {
 		}
 	}
 
-	public static void main(String[] args) {
+	@Test
+	public void importAllBmdbTest() {
+		try {
+			File bioModelsNetInfoFile = new File("C:/dan/projects/git/vcell/vcell-client/src/main/resources/bioModelsNetInfo.xml");
+			Map<String, BioModelData> modelInfoMap = parseXmlFile(bioModelsNetInfoFile);
+			modelInfoMap.forEach((id, data) -> System.out.println("ID: " + id + " -> " + data));
+
+			for (Map.Entry<String, BioModelData> entry : modelInfoMap.entrySet()) {
+				String id = entry.getKey();
+				boolean supported = entry.getValue().supported;
+				String name = entry.getValue().name;
+				ExternalDocInfo externalDocInfo = download(name, id);
+
+				System.out.println("aici");
+			}
+
+			System.out.println("done");
+		} catch(Exception e) {
+			System.out.println(e.getMessage());
+		}
+
+	}
+	private ExternalDocInfo download(String name, String id) throws Exception {
+		String simDataDir = ResourceUtil.getLocalRootDir().getAbsolutePath();		// C:\Users\vasilescu\.vcell\simdata
+		String tempDir = simDataDir + File.separator + "temp";
+		String destDirectory = tempDir + File.separator + id;
+		String zipFilePath = destDirectory + ".zip";
+
+		Path tempDirPath = Paths.get(tempDir);
+		Files.createDirectories(tempDirPath);	// temp may not be there, we make it
+
+		byte[] responseContent = null;
+		URL url = new URL("https://www.ebi.ac.uk/biomodels/search/download?models=" + id);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		InputStream is = null;
+		try {
+			try {
+				is = url.openStream ();
+			}catch (Exception e) {
+				e.printStackTrace();
+				if (is != null) { is.close(); }
+				//Try with http instead of https
+				String newUrlString = url.toString().replaceFirst("^https", "http");
+				url = new URL(newUrlString);
+				is = url.openStream ();
+			}
+			byte[] byteChunk = new byte[4096]; // Or whatever size you want to read in at a time.
+			int n;
+
+			while ( (n = is.read(byteChunk)) > 0 ) {
+				baos.write(byteChunk, 0, n);
+			}
+			responseContent = baos.toByteArray();
+		}
+		catch (IOException e) {
+			System.err.printf ("Failed while reading bytes from %s: %s", url.toExternalForm(), e.getMessage());
+//		  e.printStackTrace ();
+			throw new RuntimeException("Failed while reading bytes from: " + url.toExternalForm());
+		}
+		finally {
+			if (is != null) { is.close(); }
+		}
+		if(responseContent == null) {
+			throw new RuntimeException("Failed while reading bytes from: " + url.toExternalForm());
+		}
+
+		try {
+			File file = new File(zipFilePath);
+			Files.write(file.toPath(), responseContent, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+			UnzipUtility uu = new UnzipUtility();
+			uu.unzip(zipFilePath, destDirectory);
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		String unzippedPath = destDirectory + File.separator + id + ".xml";
+		String bioModelSBML = new String(Files.readAllBytes(Paths.get(unzippedPath)), StandardCharsets.UTF_8);
+		try {
+			Files.deleteIfExists(Paths.get(zipFilePath));		// the original zip file
+			Files.deleteIfExists(Paths.get(unzippedPath));		// the unzipped SBML file
+			Files.deleteIfExists(Paths.get(destDirectory));		// its directory
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		ExternalDocInfo externalDocInfo = ExternalDocInfo.createBioModelsNetExternalDocInfo(bioModelSBML, name);
+		return externalDocInfo;
+	}
+	public Map<String, BioModelData> parseXmlFile(File xmlFile) throws Exception {
+		Map<String, BioModelData> bioModelMap = new LinkedHashMap<>();
+
+		SAXBuilder builder = new SAXBuilder();
+		Document document = builder.build(xmlFile);
+		Element rootElement = document.getRootElement();
+
+		List<Element> bioModelInfos = rootElement.getChildren("BioModelInfo");
+		for (Element bioModel : bioModelInfos) {
+			String id = bioModel.getAttributeValue("ID");
+			boolean supported = Boolean.parseBoolean(bioModel.getAttributeValue("Supported"));
+			String name = bioModel.getAttributeValue("Name");
+			bioModelMap.put(id, new BioModelData(supported, name));
+			System.out.println("ID: " + id + ", Supported: " + supported + ", Name: " + name);
+		}
+		return bioModelMap;
+	}
+
+	public class BioModelData implements Serializable {
+		public final boolean supported;
+		public final String name;
+
+		public BioModelData(boolean supported, String name) {
+			this.supported = supported;
+			this.name = name;
+		}
+		@Override
+		public String toString() {
+			return "BioModelData{name='" + name + "', supported=" + supported + "}";
+		}
+	}
+
+		public static void main(String[] args) {
 		try {
 			if (args.length != 1){
 				System.out.println("usage: BMDB_SBMLImportTest xmlManifestFile");
