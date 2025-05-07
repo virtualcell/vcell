@@ -7,8 +7,12 @@ import cbit.vcell.client.server.DynamicClientProperties;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.xml.ExternalDocInfo;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.XmlHelper;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
@@ -298,23 +302,69 @@ public class BMDB_SBMLImportTest {
 		try {
 			File bioModelsNetInfoFile = new File("C:/dan/projects/git/vcell/vcell-client/src/main/resources/bioModelsNetInfo.xml");
 			Map<String, BioModelData> modelInfoMap = parseXmlFile(bioModelsNetInfoFile);
-			modelInfoMap.forEach((id, data) -> System.out.println("ID: " + id + " -> " + data));
+//			modelInfoMap.forEach((id, data) -> System.out.println("ID: " + id + " -> " + data));
 
+			Set<Integer> failuresSet = new LinkedHashSet<> ();
 			for (Map.Entry<String, BioModelData> entry : modelInfoMap.entrySet()) {
+
 				String id = entry.getKey();
-				boolean supported = entry.getValue().supported;
 				String name = entry.getValue().name;
+				boolean supported = entry.getValue().supported;
+				if(supported == false) {
+//					System.out.println("Skipping: " + id + ", unsupported");
+					continue;
+				}
+				if(slowModelSet().contains(idToIndex(id))) {
+//					System.out.println("Skipping: " + id + ", slow");
+					continue;		// skip the slow ones
+				}
+
+				System.out.println("Reading: " + id);
 				ExternalDocInfo externalDocInfo = download(name, id);
 
-				System.out.println("aici");
-			}
+				XMLSource xmlSource = externalDocInfo.createXMLSource();
+				org.jdom2.Element rootElement = xmlSource.getXmlDoc().getRootElement();
+				String xmlType = rootElement.getName();
 
-			System.out.println("done");
+				if (!xmlType.equals(XMLTags.SbmlRootNodeTag)) {
+					throw new RuntimeException("Expected SBML document");
+				}
+				try {
+					VCLogger transLogger = null;
+					Namespace namespace = rootElement.getNamespace(XMLTags.SBML_SPATIAL_NS_PREFIX);
+					boolean isBMDB = externalDocInfo.isBioModelsNet();
+					boolean bIsSpatial = (namespace == null) ? false : true;
+					BioModel doc = XmlHelper.importSBML(transLogger, xmlSource, bIsSpatial);
+
+				} catch(Exception e) {
+					failuresSet.add(idToIndex(id));
+					System.err.println("   ...found new failure");
+				}
+				System.out.println("   ...success");
+			}
+			String failures = convertSetToString(failuresSet);
+			System.out.println(failures);
 		} catch(Exception e) {
 			System.out.println(e.getMessage());
 		}
-
 	}
+
+	private static final String IdPrefix = "BIOMD";
+	public static String indexToId(int index) {
+		String paddedSuffix = String.format("%010d", index);
+		return IdPrefix + paddedSuffix;
+	}
+	public static int idToIndex(String id) {
+		String suffixStr = id.substring(IdPrefix.length());
+		return Integer.parseInt(suffixStr);
+	}
+	public static String convertSetToString(Set<Integer> numbers) {
+		String stringOfNumbers = numbers.stream()
+				.map(String::valueOf)  		// convert each integer to a string
+				.collect(Collectors.joining(","));  // join with commas
+		return stringOfNumbers;
+	}
+
 	private ExternalDocInfo download(String name, String id) throws Exception {
 		String simDataDir = ResourceUtil.getLocalRootDir().getAbsolutePath();		// C:\Users\vasilescu\.vcell\simdata
 		String tempDir = simDataDir + File.separator + "temp";
