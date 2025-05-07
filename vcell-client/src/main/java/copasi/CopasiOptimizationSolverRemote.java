@@ -1,5 +1,6 @@
 package copasi;
 
+import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.opt.OptimizationException;
@@ -30,15 +31,8 @@ public class CopasiOptimizationSolverRemote {
         // return solveLocalPython(parameterEstimationTask);
 
         try {
-            boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
-            boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
-
-            String host = clientServerInfo.getApihost();
-            int port = clientServerInfo.getApiport();
-            String pathPrefixV0 = clientServerInfo.getPathPrefix_v0();
             // e.g. vcell.serverhost=vcellapi.cam.uchc.edu:443
-            VCellApiClient apiClient = new VCellApiClient(host, port, pathPrefixV0, bIgnoreCertProblems, bIgnoreHostMismatch);
-            apiClient.authenticate(bIgnoreCertProblems);
+            VCellApiClient apiClient = VCellClient.getInstance().getVCellApiClient();
 
             OptProblem optProblem = CopasiUtils.paramTaskToOptProblem(parameterEstimationTask);
 

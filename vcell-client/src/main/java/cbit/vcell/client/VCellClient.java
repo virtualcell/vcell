@@ -21,6 +21,7 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.server.VCellConnectionFactory;
 import com.google.inject.Inject;
 import com.install4j.api.launcher.ApplicationLauncher;
+import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import org.vcell.api.server.ClientServerManager;
 import org.vcell.api.server.ClientServerManager.InteractiveContextDefaultProvider;
@@ -141,6 +142,13 @@ public MDIManager getMdiManager() {
 
 public RequestManager getRequestManager() {
 	return requestManager;
+}
+
+public VCellApiClient getVCellApiClient(){
+	if (vcellConnectionFactory instanceof RemoteProxyVCellConnectionFactory){
+		return ((RemoteProxyVCellConnectionFactory) vcellConnectionFactory).getVCellApiClient();
+	}
+	throw new RuntimeException("Can not get VCell Api Client unless Remote Connection Factory is being used.");
 }
 
 
