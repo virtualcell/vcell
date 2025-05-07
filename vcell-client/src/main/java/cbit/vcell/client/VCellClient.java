@@ -144,13 +144,6 @@ public RequestManager getRequestManager() {
 	return requestManager;
 }
 
-public VCellApiClient getVCellApiClient(){
-	if (vcellConnectionFactory instanceof RemoteProxyVCellConnectionFactory){
-		return ((RemoteProxyVCellConnectionFactory) vcellConnectionFactory).getVCellApiClient();
-	}
-	throw new RuntimeException("Can not get VCell Api Client unless Remote Connection Factory is being used.");
-}
-
 
 StatusUpdater getStatusUpdater() {
 	return statusUpdater;

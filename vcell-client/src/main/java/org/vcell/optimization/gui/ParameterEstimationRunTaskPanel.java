@@ -14,6 +14,7 @@ import cbit.plot.Plot2D;
 import cbit.plot.PlotData;
 import cbit.plot.gui.Plot2DPanel;
 import cbit.vcell.client.ClientRequestManager;
+import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.TopLevelWindowManager;
 import cbit.vcell.client.VCellLookAndFeel;
 import cbit.vcell.client.constants.GuiConstants;
@@ -1162,14 +1163,18 @@ public class ParameterEstimationRunTaskPanel extends JPanel {
         };
         taskList.add(task1);
 
-        AsynchClientTask task2 = new AsynchClientTask("Starting param esitmation job...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+        AsynchClientTask task2 = new AsynchClientTask("Starting param estimation job...", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
                 // OptimizationResultSet optResultSet = CopasiOptimizationSolver.solveLocalPython(parameterEstimationTask);
-                ClientServerInfo clientServerInfo = TopLevelWindowManager.activeManager().getRequestManager().getClientServerInfo();
                 optSolverCallbacks.setProgressReport(new OptProgressReport());
-                OptimizationResultSet optResultSet = CopasiOptimizationSolverRemote.solveRemoteApi(parameterEstimationTask, optSolverCallbacks, getClientTaskStatusSupport(), clientServerInfo);
-                hashTable.put(ORS_KEY, optResultSet);
+                RequestManager requestManager = TopLevelWindowManager.activeManager().getRequestManager();
+                if (requestManager instanceof ClientRequestManager clientRequestManager){
+                    OptimizationResultSet optResultSet = CopasiOptimizationSolverRemote.solveRemoteApi(parameterEstimationTask, optSolverCallbacks, getClientTaskStatusSupport(), clientRequestManager);
+                    hashTable.put(ORS_KEY, optResultSet);
+                } else {
+                    throw new UnsupportedOperationException("Requires remote connection to do parameter estimation.");
+                }
             }
 
         };

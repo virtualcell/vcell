@@ -121,11 +121,7 @@ public class VCellApiClient implements AutoCloseable {
 	}
 
 	public VCellApiClient(String host, int port, String pathPrefix_v0) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
-		this(host, port, pathPrefix_v0, false, false);
-	}
-
-	public VCellApiClient(String host, int port, String pathPrefix_v0, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
-		this(host, port, pathPrefix_v0, false, bIgnoreCertProblems, bIgnoreHostMismatch);
+		this(host, port, pathPrefix_v0, false, false, false);
 	}
 
 	public VCellApiClient(String host, int port, String pathPrefix_v0, boolean bSkipSSL, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {

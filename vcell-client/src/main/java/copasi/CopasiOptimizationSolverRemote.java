@@ -1,5 +1,7 @@
 package copasi;
 
+import cbit.vcell.client.ClientRequestManager;
+import cbit.vcell.client.RequestManager;
 import cbit.vcell.client.VCellClient;
 import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.modelopt.ParameterEstimationTask;
@@ -26,13 +28,13 @@ public class CopasiOptimizationSolverRemote {
             ParameterEstimationTask parameterEstimationTask,
             CopasiOptSolverCallbacks optSolverCallbacks,
             ClientTaskStatusSupport clientTaskStatusSupport,
-            ClientServerInfo clientServerInfo) {
+            ClientRequestManager requestManager) {
 
         // return solveLocalPython(parameterEstimationTask);
 
         try {
             // e.g. vcell.serverhost=vcellapi.cam.uchc.edu:443
-            VCellApiClient apiClient = VCellClient.getInstance().getVCellApiClient();
+            VCellApiClient apiClient = requestManager.getClientServerManager().getVCellApiClient();
 
             OptProblem optProblem = CopasiUtils.paramTaskToOptProblem(parameterEstimationTask);
 
