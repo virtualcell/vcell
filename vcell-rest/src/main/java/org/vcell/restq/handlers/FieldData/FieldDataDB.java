@@ -34,6 +34,7 @@ import org.vcell.util.document.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.zip.DataFormatException;
@@ -188,14 +189,13 @@ public class FieldDataDB {
     public ExternalDataIdentifier saveNewFieldDataFromFile(String fieldDataName, String[] varNames,
                                                                   short[][][] imageData, String annotation,
                                                                   User user, double[] times, Origin origin,
-                                                                  Extent extent, ISize iSize) throws DataAccessException, ImageException, DataFormatException{
+                                                                  Extent extent, ISize iSize) throws DataAccessException, ImageException, DataFormatException, IOException{
         return saveNewFieldDataFromFile(fieldDataName, varNames, imageData, new double[][][]{}, annotation, user, times, origin, extent, iSize);
     }
 
-    public ExternalDataIdentifier saveNewFieldDataFromFile(String fieldDataName, String[] varNames,
-                                                                  short[][][] imageData, double[][][] doubleImageData, String annotation,
-                                                                  User user, double[] times, Origin origin,
-                                                                  Extent extent, ISize iSize) throws DataAccessException, ImageException, DataFormatException {
+    private ExternalDataIdentifier createDBEntry(String fieldDataName, String[] varNames,
+                                                 String annotation,
+                                                 User user) throws DataAccessException {
         // Ensure name is unique for user
         FieldDataAllDBEntries usersFieldData = databaseServer.getFieldDataIDs(user);
         Set<String> namesUsed = new HashSet<>();
@@ -206,35 +206,50 @@ public class FieldDataDB {
             fieldDataName = TokenMangler.getNextEnumeratedToken(fieldDataName);
         }
 
-
-        VariableType[] varTypes = new VariableType[varNames.length];
-        for (int j = 0; j < varNames.length; j++){
-            varTypes[j] = VariableType.VOLUME;
-        }
         FieldDataExternalDataIDEntry entry = new FieldDataExternalDataIDEntry(user, fieldDataName, annotation);
-        ExternalDataIdentifier edi = databaseServer.saveFieldDataEDI(entry);
+        return databaseServer.saveFieldDataEDI(entry);
+    }
 
+    private void createFieldDataFiles(String[] varNames,
+                                      short[][][] imageData, double[][][] doubleImageData, String annotation,
+                                      User user, double[] times, Origin origin,
+                                      Extent extent, ISize iSize, ExternalDataIdentifier newEdi) throws ImageException, IOException {
         FieldData fieldData = new FieldData();
         if (doubleImageData == null || doubleImageData.length == 0){
             fieldData.data = imageData;
         } else {
             fieldData.doubleData = doubleImageData;
         }
+        VariableType[] varTypes = new VariableType[varNames.length];
+        for (int j = 0; j < varNames.length; j++){
+            varTypes[j] = VariableType.VOLUME;
+        }
         fieldData.channelNames = Arrays.stream(varNames).toList(); fieldData.variableTypes = varTypes;
         fieldData.times = Arrays.stream(times).boxed().toList(); fieldData.owner = user; fieldData.origin = origin;
         fieldData.extent = extent; fieldData.iSize = iSize; fieldData.annotation = annotation;
 
+        fieldData.cartesianMesh = CartesianMesh.createSimpleCartesianMesh(origin, extent, iSize,
+                new RegionImage(new VCImageUncompressed(null, new byte[iSize.getXYZ()],//empty regions
+                        extent, iSize.getX(), iSize.getY(), iSize.getZ()),
+                        0, null, null, RegionImage.NO_SMOOTHING));
+        dataSetController.fieldDataAdd(fieldData, newEdi);
+    }
+
+    public ExternalDataIdentifier saveNewFieldDataFromFile(String fieldDataName, String[] varNames,
+                                                                  short[][][] imageData, double[][][] doubleImageData, String annotation,
+                                                                  User user, double[] times, Origin origin,
+                                                                  Extent extent, ISize iSize) throws DataAccessException, ImageException, DataFormatException, IOException {
+        ExternalDataIdentifier newEdi = null;
         try {
-            fieldData.cartesianMesh = CartesianMesh.createSimpleCartesianMesh(origin, extent, iSize,
-                    new RegionImage(new VCImageUncompressed(null, new byte[iSize.getXYZ()],//empty regions
-                            extent, iSize.getX(), iSize.getY(), iSize.getZ()),
-                            0, null, null, RegionImage.NO_SMOOTHING));
-            dataSetController.fieldDataAdd(fieldData, edi);
-            return edi;
-        } catch (Exception e) {
-            // Remove DB entry if file creation fails
-            databaseServer.deleteFieldDataID(user, edi);
-            throw new RuntimeException(e);
+            newEdi = createDBEntry(fieldDataName, varNames, annotation, user);
+            createFieldDataFiles(varNames, imageData, doubleImageData,annotation, user, times, origin, extent, iSize, newEdi);
+            return newEdi;
+        } catch (DataAccessException | ImageException | IOException e) {
+            if (newEdi != null){
+                databaseServer.deleteFieldDataID(user, newEdi); // remove from DB
+                dataSetController.fieldDataDelete(newEdi); // remove from File System
+            }
+            throw e;
         }
     }
 
