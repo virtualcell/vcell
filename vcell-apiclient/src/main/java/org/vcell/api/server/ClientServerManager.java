@@ -25,7 +25,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import org.vcell.api.utils.Auth0ConnectionUtils;
-import org.vcell.service.registration.RegistrationService;
 import org.vcell.util.Compare;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.VCellThreadChecker;
@@ -823,7 +822,4 @@ void setDisconnected() {
 	setConnectionStatus(new ClientConnectionStatus(getClientServerInfo().getUsername(), getClientServerInfo().getApihost(), getClientServerInfo().getApiport(), ConnectionStatus.DISCONNECTED));
 }
 
-public RegistrationService getRegistrationProvider() {
-	return new VCellConnectionRegistrationProvider(this.vcellConnection);
-}
 }

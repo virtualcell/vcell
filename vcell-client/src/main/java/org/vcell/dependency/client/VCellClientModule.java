@@ -1,13 +1,11 @@
 package org.vcell.dependency.client;
 
-import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import cbit.vcell.server.VCellConnectionFactory;
 import cbit.vcell.simdata.ExternalDataIdentifierService;
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;
 import org.vcell.DependencyConstants;
-import org.vcell.service.registration.RegistrationService;
-import org.vcell.util.network.RemoteRegistrationService;
+import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.User;
 
@@ -49,8 +47,6 @@ public class VCellClientModule extends AbstractModule {
 
         bind(VCellConnectionFactory.class).to(RemoteProxyVCellConnectionFactory.class).asEagerSingleton();
 
-        // RegistrationService interface is not clean - mixes new registration with updates - is there another way?
-        bind(RegistrationService.class).toInstance(new RemoteRegistrationService()); // used on remote client.
 
         bind(String.class).annotatedWith(Names.named(DependencyConstants.VCELL_API_HOST)).toInstance(apiHost);
         bind(Integer.class).annotatedWith(Names.named(DependencyConstants.VCELL_API_PORT)).toInstance(apiPort);
