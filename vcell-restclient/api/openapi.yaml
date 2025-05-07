@@ -1120,8 +1120,6 @@ components:
     ExternalDataIdentifier:
       example:
         owner:
-          testAccount: true
-          name: name
           userName: userName
           key:
             value: 0.8008281904610115
@@ -1234,8 +1232,6 @@ components:
         annotation: annotation
         fieldDataID:
           owner:
-            testAccount: true
-            name: name
             userName: userName
             key:
               value: 0.8008281904610115
@@ -1607,8 +1603,6 @@ components:
             jobNumber: 6
         fieldVCSimID:
           owner:
-            testAccount: true
-            name: name
             userName: userName
             key:
               value: 0.8008281904610115
@@ -1755,8 +1749,6 @@ components:
               jobNumber: 6
           fieldVCSimID:
             owner:
-              testAccount: true
-              name: name
               userName: userName
               key:
                 value: 0.8008281904610115
@@ -1788,8 +1780,6 @@ components:
       type: object
     User:
       example:
-        testAccount: true
-        name: name
         userName: userName
         key:
           value: 0.8008281904610115
@@ -1798,10 +1788,6 @@ components:
           type: string
         key:
           $ref: '#/components/schemas/KeyValue'
-        name:
-          type: string
-        testAccount:
-          type: boolean
       type: object
     UserIdentityJSONSafe:
       example:
@@ -1854,8 +1840,6 @@ components:
     VCSimulationIdentifier:
       example:
         owner:
-          testAccount: true
-          name: name
           userName: userName
           key:
             value: 0.8008281904610115

@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.vcell.util.Immutable;
 import org.vcell.util.Matchable;
 
@@ -47,9 +48,14 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 		public String toDatabaseString(){
 			return name();
 		}
-	};//Must match a name 'special' column of 'vc_specialusers' table
+	};//Must match a name 'special' column of 'vc_specialusers'// table
+
+	@JsonProperty
 	private String userName = null;
+	@JsonProperty
 	private KeyValue key = null;
+
+
 	public static final String VCellTestAccountName = "vcelltestaccount";
 
 	public static final User tempUser = new User("temp",new KeyValue("123"));
@@ -157,6 +163,7 @@ public KeyValue getID() {
  * This method was created in VisualAge.
  * @return java.lang.String
  */
+@JsonIgnore
 public String getName() {
 	return userName;
 }
@@ -175,6 +182,7 @@ public int hashCode() {
 /**
  * @return true if this is test account
  */
+@JsonIgnore
 public boolean isTestAccount() {
 	return isTestAccount(getName( ));
 }
@@ -183,6 +191,7 @@ public boolean isTestAccount() {
  * @param accountName non null
  * @return true if accountName is test account
  */
+@JsonIgnore
 public static boolean isTestAccount(String accountName) {
 	return accountName.equals(VCellTestAccountName);
 }
