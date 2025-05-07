@@ -48,7 +48,7 @@ public class VCellClient {
 
 	private static VCellClient instance = null;
 
-	public static void setInstance(VCellClient instance) {
+	private static void setInstance(VCellClient instance) {
 		VCellClient.instance = instance;
 	}
 	public static VCellClient getInstance() {
