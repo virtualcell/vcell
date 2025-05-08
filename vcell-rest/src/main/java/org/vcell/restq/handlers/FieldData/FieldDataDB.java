@@ -259,8 +259,13 @@ public class FieldDataDB {
         FieldDataExternalDataIDEntry entry = new FieldDataExternalDataIDEntry(user, newFieldDataName, "");
         ExternalDataIdentifier edi = databaseServer.saveFieldDataEDI(entry);
 
-        // Save new file with reference to DB entry
-        dataSetController.fieldDataCopySim(simKeyValue, simInfo.getOwner(), edi, jobIndex, user);
+        try{
+            // Save new file with reference to DB entry
+            dataSetController.fieldDataCopySim(simKeyValue, simInfo.getOwner(), edi, jobIndex, user);
+        } catch (RuntimeException e){
+            databaseServer.deleteFieldDataID(user, edi);
+            throw e;
+        }
     }
 
     public void deleteFieldData(ExternalDataIdentifier edi) throws DataAccessException {
