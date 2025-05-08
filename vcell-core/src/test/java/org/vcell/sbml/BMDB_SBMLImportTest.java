@@ -348,6 +348,55 @@ public class BMDB_SBMLImportTest {
 			System.out.println(e.getMessage());
 		}
 	}
+	@Test
+	public void checkExistingFailuresTest() {
+		try {
+			File bioModelsNetInfoFile = new File("C:/dan/projects/git/vcell/vcell-client/src/main/resources/bioModelsNetInfo.xml");
+			Map<String, BioModelData> modelInfoMap = parseXmlFile(bioModelsNetInfoFile);
+
+			Set<Integer> failuresNowWorkingSet = new LinkedHashSet<> ();	// models marked as failures, but now work
+			for (Map.Entry<String, BioModelData> entry : modelInfoMap.entrySet()) {
+
+				String id = entry.getKey();
+				String name = entry.getValue().name;
+				boolean supported = entry.getValue().supported;
+				if(supported == true) {
+					System.out.println("Skipping: " + id + ", marked as supported");
+					continue;
+				}
+				if(slowModelSet().contains(idToIndex(id))) {
+					System.out.println("Skipping: " + id + ", slow");
+					continue;		// skip the slow ones
+				}
+
+				System.out.println("Reading: " + id);
+				ExternalDocInfo externalDocInfo = download(name, id);
+
+				XMLSource xmlSource = externalDocInfo.createXMLSource();
+				org.jdom2.Element rootElement = xmlSource.getXmlDoc().getRootElement();
+				String xmlType = rootElement.getName();
+
+				if (!xmlType.equals(XMLTags.SbmlRootNodeTag)) {
+					throw new RuntimeException("Expected SBML document");
+				}
+				try {
+					VCLogger transLogger = null;
+					Namespace namespace = rootElement.getNamespace(XMLTags.SBML_SPATIAL_NS_PREFIX);
+					boolean isBMDB = externalDocInfo.isBioModelsNet();
+					boolean bIsSpatial = (namespace == null) ? false : true;
+					BioModel doc = XmlHelper.importSBML(transLogger, xmlSource, bIsSpatial);
+					System.out.println("   ...success");
+					failuresNowWorkingSet.add(idToIndex(id));
+				} catch(Exception e) {
+					System.err.println("   ...still fails");
+				}
+			}
+			String failuresNowWorking = convertSetToString(failuresNowWorkingSet);
+			System.out.println(failuresNowWorking);
+		} catch(Exception e) {
+			System.out.println(e.getMessage());
+		}
+	}
 
 	private static final String IdPrefix = "BIOMD";
 	public static String indexToId(int index) {
