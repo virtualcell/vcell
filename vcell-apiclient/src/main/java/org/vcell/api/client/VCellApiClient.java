@@ -76,7 +76,7 @@ public class VCellApiClient implements AutoCloseable {
 	boolean bIgnoreHostMismatch = true;
 	boolean bSkipSSL = true;
 	private final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
-	private final static int DATA_ACCESS_EXCEPTION_HTTP_CODE = 555;
+	private final static int DATA_ACCESS_EXCEPTION_HTTP_CODE = 500;
 	private final URL quarkusURL;
 	private ApiClient apiClient = null;
 

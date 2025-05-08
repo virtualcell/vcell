@@ -12,7 +12,7 @@ public class WebExceptionErrorHandler implements ExceptionMapper<WebApplicationE
 
     private final static Logger logger = LogManager.getLogger(WebExceptionErrorHandler.class);
 
-    public final static int DATA_ACCESS_EXCEPTION_HTTP_CODE = 555;
+    public final static int DATA_ACCESS_EXCEPTION_HTTP_CODE = 500;
     public final static int UNPROCESSABLE_HTTP_CODE = 422;
 
     @Override
