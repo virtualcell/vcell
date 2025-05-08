@@ -1,6 +1,6 @@
 # SolverResourceApi
 
-All URIs are relative to *https://vcell-dev.cam.uchc.edu*
+All URIs are relative to *https://vcell.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -30,7 +30,7 @@ import org.vcell.restclient.api.SolverResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         SolverResourceApi apiInstance = new SolverResourceApi(defaultClient);
         File sbmlFile = new File("/path/to/file"); // File | 
@@ -98,7 +98,7 @@ import org.vcell.restclient.api.SolverResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         SolverResourceApi apiInstance = new SolverResourceApi(defaultClient);
         File sbmlFile = new File("/path/to/file"); // File | 
@@ -168,7 +168,7 @@ import org.vcell.restclient.api.SolverResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         SolverResourceApi apiInstance = new SolverResourceApi(defaultClient);
         File vcmlFile = new File("/path/to/file"); // File | 
@@ -234,7 +234,7 @@ import org.vcell.restclient.api.SolverResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         SolverResourceApi apiInstance = new SolverResourceApi(defaultClient);
         File vcmlFile = new File("/path/to/file"); // File | 

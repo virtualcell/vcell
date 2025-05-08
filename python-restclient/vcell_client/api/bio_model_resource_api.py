@@ -29,6 +29,7 @@ from pydantic import StrictStr
 from typing import Optional
 
 from vcell_client.models.bio_model import BioModel
+from vcell_client.models.save_bio_model import SaveBioModel
 
 from vcell_client.api_client import ApiClient
 from vcell_client.api_response import ApiResponse
@@ -298,7 +299,7 @@ class BioModelResourceApi:
 
 
     @validate_call
-    def get_biomodel_by_id(
+    def get_bio_model(
         self,
         bio_model_id: StrictStr,
         _request_timeout: Union[
@@ -314,7 +315,7 @@ class BioModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> BioModel:
-        """Get BioModel information in JSON format by ID.
+        """Get BioModel.
 
 
         :param bio_model_id: (required)
@@ -341,7 +342,7 @@ class BioModelResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._get_biomodel_by_id_serialize(
+        _param = self._get_bio_model_serialize(
             bio_model_id=bio_model_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -350,8 +351,7 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "BioModel",
-            '404': None
+            '200': "BioModel"
             
         }
         response_data = self.api_client.call_api(
@@ -366,7 +366,7 @@ class BioModelResourceApi:
 
 
     @validate_call
-    def get_biomodel_by_id_with_http_info(
+    def get_bio_model_with_http_info(
         self,
         bio_model_id: StrictStr,
         _request_timeout: Union[
@@ -382,7 +382,7 @@ class BioModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[BioModel]:
-        """Get BioModel information in JSON format by ID.
+        """Get BioModel.
 
 
         :param bio_model_id: (required)
@@ -409,7 +409,7 @@ class BioModelResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._get_biomodel_by_id_serialize(
+        _param = self._get_bio_model_serialize(
             bio_model_id=bio_model_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -418,8 +418,7 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "BioModel",
-            '404': None
+            '200': "BioModel"
             
         }
         response_data = self.api_client.call_api(
@@ -434,7 +433,7 @@ class BioModelResourceApi:
 
 
     @validate_call
-    def get_biomodel_by_id_without_preload_content(
+    def get_bio_model_without_preload_content(
         self,
         bio_model_id: StrictStr,
         _request_timeout: Union[
@@ -450,7 +449,7 @@ class BioModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Get BioModel information in JSON format by ID.
+        """Get BioModel.
 
 
         :param bio_model_id: (required)
@@ -477,7 +476,7 @@ class BioModelResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._get_biomodel_by_id_serialize(
+        _param = self._get_bio_model_serialize(
             bio_model_id=bio_model_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -486,8 +485,7 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "BioModel",
-            '404': None
+            '200': "BioModel"
             
         }
         response_data = self.api_client.call_api(
@@ -497,7 +495,7 @@ class BioModelResourceApi:
         return response_data.response
 
 
-    def _get_biomodel_by_id_serialize(
+    def _get_bio_model_serialize(
         self,
         bio_model_id,
         _request_auth,
@@ -559,9 +557,9 @@ class BioModelResourceApi:
 
 
     @validate_call
-    def upload_bio_model(
+    def get_bio_model_vcml(
         self,
-        body: Optional[StrictStr] = None,
+        bio_model_id: StrictStr,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -575,11 +573,11 @@ class BioModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> str:
-        """Upload the BioModel to VCell database. Returns BioModel ID.
+        """Get the BioModel in VCML format.
 
 
-        :param body:
-        :type body: str
+        :param bio_model_id: (required)
+        :type bio_model_id: str
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -602,8 +600,266 @@ class BioModelResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._upload_bio_model_serialize(
-            body=body,
+        _param = self._get_bio_model_vcml_serialize(
+            bio_model_id=bio_model_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "str"
+            
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def get_bio_model_vcml_with_http_info(
+        self,
+        bio_model_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[str]:
+        """Get the BioModel in VCML format.
+
+
+        :param bio_model_id: (required)
+        :type bio_model_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_bio_model_vcml_serialize(
+            bio_model_id=bio_model_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "str"
+            
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def get_bio_model_vcml_without_preload_content(
+        self,
+        bio_model_id: StrictStr,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Get the BioModel in VCML format.
+
+
+        :param bio_model_id: (required)
+        :type bio_model_id: str
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_bio_model_vcml_serialize(
+            bio_model_id=bio_model_id,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "str"
+            
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _get_bio_model_vcml_serialize(
+        self,
+        bio_model_id,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> Tuple:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+            
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[str, str] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        if bio_model_id is not None:
+            _path_params['bioModelID'] = bio_model_id
+        # process the query parameters
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        _header_params['Accept'] = self.api_client.select_header_accept(
+            [
+                'text/xml'
+            ]
+        )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/api/v1/bioModel/{bioModelID}/vcml_download',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def save_bio_model(
+        self,
+        save_bio_model: Optional[SaveBioModel] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> str:
+        """Save's the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
+
+
+        :param save_bio_model:
+        :type save_bio_model: SaveBioModel
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._save_bio_model_serialize(
+            save_bio_model=save_bio_model,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -628,9 +884,9 @@ class BioModelResourceApi:
 
 
     @validate_call
-    def upload_bio_model_with_http_info(
+    def save_bio_model_with_http_info(
         self,
-        body: Optional[StrictStr] = None,
+        save_bio_model: Optional[SaveBioModel] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -644,11 +900,11 @@ class BioModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[str]:
-        """Upload the BioModel to VCell database. Returns BioModel ID.
+        """Save's the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 
 
-        :param body:
-        :type body: str
+        :param save_bio_model:
+        :type save_bio_model: SaveBioModel
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -671,8 +927,8 @@ class BioModelResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._upload_bio_model_serialize(
-            body=body,
+        _param = self._save_bio_model_serialize(
+            save_bio_model=save_bio_model,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -697,9 +953,9 @@ class BioModelResourceApi:
 
 
     @validate_call
-    def upload_bio_model_without_preload_content(
+    def save_bio_model_without_preload_content(
         self,
-        body: Optional[StrictStr] = None,
+        save_bio_model: Optional[SaveBioModel] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -713,11 +969,11 @@ class BioModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """Upload the BioModel to VCell database. Returns BioModel ID.
+        """Save's the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 
 
-        :param body:
-        :type body: str
+        :param save_bio_model:
+        :type save_bio_model: SaveBioModel
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -740,8 +996,8 @@ class BioModelResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._upload_bio_model_serialize(
-            body=body,
+        _param = self._save_bio_model_serialize(
+            save_bio_model=save_bio_model,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -761,9 +1017,9 @@ class BioModelResourceApi:
         return response_data.response
 
 
-    def _upload_bio_model_serialize(
+    def _save_bio_model_serialize(
         self,
-        body,
+        save_bio_model,
         _request_auth,
         _content_type,
         _headers,
@@ -788,14 +1044,14 @@ class BioModelResourceApi:
         # process the header parameters
         # process the form parameters
         # process the body parameter
-        if body is not None:
-            _body_params = body
+        if save_bio_model is not None:
+            _body_params = save_bio_model
 
 
         # set the HTTP header `Accept`
         _header_params['Accept'] = self.api_client.select_header_accept(
             [
-                'text/plain'
+                'application/xml'
             ]
         )
 
@@ -806,7 +1062,7 @@ class BioModelResourceApi:
             _default_content_type = (
                 self.api_client.select_header_content_type(
                     [
-                        'text/xml'
+                        'application/json'
                     ]
                 )
             )
@@ -820,7 +1076,7 @@ class BioModelResourceApi:
 
         return self.api_client.param_serialize(
             method='POST',
-            resource_path='/api/v1/bioModel/upload_bioModel',
+            resource_path='/api/v1/bioModel/save',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

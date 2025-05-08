@@ -1,12 +1,12 @@
 package org.vcell.restq.db;
 
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.modeldb.*;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.vcell.restq.models.BioModel;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -76,13 +76,16 @@ public class BioModelRestDB {
         return bioModelReps[0];
     }
 
-    public KeyValue saveBioModel(User user, String bioModelXML) throws DataAccessException, XmlParseException {
-        if (user == null){
-            throw new PermissionException("vcell user not specified");
-        }
-        String savedModel = databaseServerImpl.saveBioModel(user, new BigString(bioModelXML), null).toString();
-        cbit.vcell.biomodel.BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(savedModel));
-        return bioModel.getVersion().getVersionKey();
+    public String getBioModel(User user, KeyValue id) throws DataAccessException {
+        return databaseServerImpl.getBioModelXML(user, id).toString();
+    }
+
+    /**
+     * A new Bio-Model is created if the "name" parameter is not null, and not equal to any other name present.
+     */
+    public BioModel save(User user, String bioModelXML, String newName, String[] independentSims) throws DataAccessException, XmlParseException {
+        BigString savedModel = databaseServerImpl.saveBioModelAs(user, new BigString(bioModelXML), newName, independentSims);
+        return XmlHelper.XMLToBioModel(new XMLSource(savedModel.toString()));
     }
 
     public void deleteBioModel(User user, KeyValue bioModelKey) throws DataAccessException {

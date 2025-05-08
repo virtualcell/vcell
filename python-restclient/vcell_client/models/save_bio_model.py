@@ -20,23 +20,29 @@ import json
 
 
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictStr
+from pydantic import BaseModel, StrictStr, field_validator
 from pydantic import Field
-from vcell_client.models.key_value import KeyValue
-from vcell_client.models.user import User
+from typing_extensions import Annotated
 try:
     from typing import Self
 except ImportError:
     from typing_extensions import Self
 
-class VCSimulationIdentifier(BaseModel):
+class SaveBioModel(BaseModel):
     """
-    VCSimulationIdentifier
+    SaveBioModel
     """ # noqa: E501
-    simulation_key: Optional[KeyValue] = Field(default=None, alias="simulationKey")
-    owner: Optional[User] = None
-    id: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["simulationKey", "owner", "id"]
+    bio_model_xml: Annotated[str, Field(strict=True)] = Field(alias="bioModelXML")
+    name: Optional[StrictStr] = None
+    sims_requiring_updates: Optional[List[StrictStr]] = Field(default=None, alias="simsRequiringUpdates")
+    __properties: ClassVar[List[str]] = ["bioModelXML", "name", "simsRequiringUpdates"]
+
+    @field_validator('bio_model_xml')
+    def bio_model_xml_validate_regular_expression(cls, value):
+        """Validates the regular expression"""
+        if not re.match(r"\S", value):
+            raise ValueError(r"must validate the regular expression /\S/")
+        return value
 
     model_config = {
         "populate_by_name": True,
@@ -55,7 +61,7 @@ class VCSimulationIdentifier(BaseModel):
 
     @classmethod
     def from_json(cls, json_str: str) -> Self:
-        """Create an instance of VCSimulationIdentifier from a JSON string"""
+        """Create an instance of SaveBioModel from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
     def to_dict(self) -> Dict[str, Any]:
@@ -74,17 +80,21 @@ class VCSimulationIdentifier(BaseModel):
             },
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of simulation_key
-        if self.simulation_key:
-            _dict['simulationKey'] = self.simulation_key.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of owner
-        if self.owner:
-            _dict['owner'] = self.owner.to_dict()
+        # set to None if name (nullable) is None
+        # and model_fields_set contains the field
+        if self.name is None and "name" in self.model_fields_set:
+            _dict['name'] = None
+
+        # set to None if sims_requiring_updates (nullable) is None
+        # and model_fields_set contains the field
+        if self.sims_requiring_updates is None and "sims_requiring_updates" in self.model_fields_set:
+            _dict['simsRequiringUpdates'] = None
+
         return _dict
 
     @classmethod
     def from_dict(cls, obj: Dict) -> Self:
-        """Create an instance of VCSimulationIdentifier from a dict"""
+        """Create an instance of SaveBioModel from a dict"""
         if obj is None:
             return None
 
@@ -94,12 +104,12 @@ class VCSimulationIdentifier(BaseModel):
         # raise errors for additional fields in the input
         for _key in obj.keys():
             if _key not in cls.__properties:
-                raise ValueError("Error due to additional fields (not defined in VCSimulationIdentifier) in the input: " + _key)
+                raise ValueError("Error due to additional fields (not defined in SaveBioModel) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "simulationKey": KeyValue.from_dict(obj.get("simulationKey")) if obj.get("simulationKey") is not None else None,
-            "owner": User.from_dict(obj.get("owner")) if obj.get("owner") is not None else None,
-            "id": obj.get("id")
+            "bioModelXML": obj.get("bioModelXML"),
+            "name": obj.get("name"),
+            "simsRequiringUpdates": obj.get("simsRequiringUpdates")
         })
         return _obj
 

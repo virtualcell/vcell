@@ -51,38 +51,4 @@ public class BioModelResourceApiTest {
         // TODO: test validations
     }
     
-    /**
-     * Get BioModel information in JSON format by ID.
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
-    @Test
-    public void getBiomodelByIdTest() throws ApiException {
-        String bioModelID = null;
-        BioModel response = 
-        api.getBiomodelById(bioModelID);
-        
-        // TODO: test validations
-    }
-    
-    /**
-     * Upload the BioModel to VCell database. Returns BioModel ID.
-     *
-     * 
-     *
-     * @throws ApiException
-     *          if the Api call fails
-     */
-    @Test
-    public void uploadBioModelTest() throws ApiException {
-        String body = null;
-        String response = 
-        api.uploadBioModel(body);
-        
-        // TODO: test validations
-    }
-    
 }

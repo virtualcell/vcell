@@ -226,6 +226,10 @@
       <artifactId>jigsaw</artifactId>
       <version>2.2.6</version>
     </dependency>
+    <dependency>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-hibernate-validator</artifactId>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

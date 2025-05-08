@@ -1,15 +1,17 @@
 # BioModelResourceApi
 
-All URIs are relative to *https://vcell-dev.cam.uchc.edu*
+All URIs are relative to *https://vcell.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
 | [**deleteBioModel**](BioModelResourceApi.md#deleteBioModel) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database. |
 | [**deleteBioModelWithHttpInfo**](BioModelResourceApi.md#deleteBioModelWithHttpInfo) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database. |
-| [**getBiomodelById**](BioModelResourceApi.md#getBiomodelById) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID. |
-| [**getBiomodelByIdWithHttpInfo**](BioModelResourceApi.md#getBiomodelByIdWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel information in JSON format by ID. |
-| [**uploadBioModel**](BioModelResourceApi.md#uploadBioModel) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID. |
-| [**uploadBioModelWithHttpInfo**](BioModelResourceApi.md#uploadBioModelWithHttpInfo) | **POST** /api/v1/bioModel/upload_bioModel | Upload the BioModel to VCell database. Returns BioModel ID. |
+| [**getBioModel**](BioModelResourceApi.md#getBioModel) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel. |
+| [**getBioModelWithHttpInfo**](BioModelResourceApi.md#getBioModelWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel. |
+| [**getBioModelVCML**](BioModelResourceApi.md#getBioModelVCML) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format. |
+| [**getBioModelVCMLWithHttpInfo**](BioModelResourceApi.md#getBioModelVCMLWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format. |
+| [**saveBioModel**](BioModelResourceApi.md#saveBioModel) | **POST** /api/v1/bioModel/save | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML. |
+| [**saveBioModelWithHttpInfo**](BioModelResourceApi.md#saveBioModelWithHttpInfo) | **POST** /api/v1/bioModel/save | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML. |
 
 
 
@@ -32,7 +34,7 @@ import org.vcell.restclient.api.BioModelResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String bioModelID = "bioModelID_example"; // String | 
@@ -95,7 +97,7 @@ import org.vcell.restclient.api.BioModelResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String bioModelID = "bioModelID_example"; // String | 
@@ -141,11 +143,11 @@ No authorization required
 | **204** | No Content |  -  |
 
 
-## getBiomodelById
+## getBioModel
 
-> BioModel getBiomodelById(bioModelID)
+> BioModel getBioModel(bioModelID)
 
-Get BioModel information in JSON format by ID.
+Get BioModel.
 
 ### Example
 
@@ -160,15 +162,15 @@ import org.vcell.restclient.api.BioModelResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String bioModelID = "bioModelID_example"; // String | 
         try {
-            BioModel result = apiInstance.getBiomodelById(bioModelID);
+            BioModel result = apiInstance.getBioModel(bioModelID);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getBiomodelById");
+            System.err.println("Exception when calling BioModelResourceApi#getBioModel");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -202,14 +204,13 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** | return BioModel information in JSON format |  -  |
-| **404** | BioModel not found |  -  |
+| **200** | OK |  -  |
 
-## getBiomodelByIdWithHttpInfo
+## getBioModelWithHttpInfo
 
-> ApiResponse<BioModel> getBiomodelById getBiomodelByIdWithHttpInfo(bioModelID)
+> ApiResponse<BioModel> getBioModel getBioModelWithHttpInfo(bioModelID)
 
-Get BioModel information in JSON format by ID.
+Get BioModel.
 
 ### Example
 
@@ -225,17 +226,17 @@ import org.vcell.restclient.api.BioModelResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String bioModelID = "bioModelID_example"; // String | 
         try {
-            ApiResponse<BioModel> response = apiInstance.getBiomodelByIdWithHttpInfo(bioModelID);
+            ApiResponse<BioModel> response = apiInstance.getBioModelWithHttpInfo(bioModelID);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getBiomodelById");
+            System.err.println("Exception when calling BioModelResourceApi#getBioModel");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -269,15 +270,144 @@ No authorization required
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-| **200** | return BioModel information in JSON format |  -  |
-| **404** | BioModel not found |  -  |
+| **200** | OK |  -  |
 
 
-## uploadBioModel
+## getBioModelVCML
 
-> String uploadBioModel(body)
+> String getBioModelVCML(bioModelID)
 
-Upload the BioModel to VCell database. Returns BioModel ID.
+Get the BioModel in VCML format.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.BioModelResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+
+        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
+        String bioModelID = "bioModelID_example"; // String | 
+        try {
+            String result = apiInstance.getBioModelVCML(bioModelID);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling BioModelResourceApi#getBioModelVCML");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **bioModelID** | **String**|  | |
+
+### Return type
+
+**String**
+
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: text/xml
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+
+## getBioModelVCMLWithHttpInfo
+
+> ApiResponse<String> getBioModelVCML getBioModelVCMLWithHttpInfo(bioModelID)
+
+Get the BioModel in VCML format.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.BioModelResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+
+        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
+        String bioModelID = "bioModelID_example"; // String | 
+        try {
+            ApiResponse<String> response = apiInstance.getBioModelVCMLWithHttpInfo(bioModelID);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling BioModelResourceApi#getBioModelVCML");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **bioModelID** | **String**|  | |
+
+### Return type
+
+ApiResponse<**String**>
+
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: text/xml
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+
+
+## saveBioModel
+
+> String saveBioModel(saveBioModel)
+
+Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 
 ### Example
 
@@ -293,16 +423,16 @@ import org.vcell.restclient.api.BioModelResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String body = "body_example"; // String | 
+        SaveBioModel saveBioModel = new SaveBioModel(); // SaveBioModel | 
         try {
-            String result = apiInstance.uploadBioModel(body);
+            String result = apiInstance.saveBioModel(saveBioModel);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#uploadBioModel");
+            System.err.println("Exception when calling BioModelResourceApi#saveBioModel");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -317,7 +447,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **body** | **String**|  | [optional] |
+| **saveBioModel** | [**SaveBioModel**](SaveBioModel.md)|  | [optional] |
 
 ### Return type
 
@@ -330,8 +460,8 @@ public class Example {
 
 ### HTTP request headers
 
-- **Content-Type**: text/xml
-- **Accept**: text/plain
+- **Content-Type**: application/json
+- **Accept**: application/xml
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -340,11 +470,11 @@ public class Example {
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
 
-## uploadBioModelWithHttpInfo
+## saveBioModelWithHttpInfo
 
-> ApiResponse<String> uploadBioModel uploadBioModelWithHttpInfo(body)
+> ApiResponse<String> saveBioModel saveBioModelWithHttpInfo(saveBioModel)
 
-Upload the BioModel to VCell database. Returns BioModel ID.
+Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 
 ### Example
 
@@ -361,18 +491,18 @@ import org.vcell.restclient.api.BioModelResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String body = "body_example"; // String | 
+        SaveBioModel saveBioModel = new SaveBioModel(); // SaveBioModel | 
         try {
-            ApiResponse<String> response = apiInstance.uploadBioModelWithHttpInfo(body);
+            ApiResponse<String> response = apiInstance.saveBioModelWithHttpInfo(saveBioModel);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#uploadBioModel");
+            System.err.println("Exception when calling BioModelResourceApi#saveBioModel");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -387,7 +517,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **body** | **String**|  | [optional] |
+| **saveBioModel** | [**SaveBioModel**](SaveBioModel.md)|  | [optional] |
 
 ### Return type
 
@@ -400,8 +530,8 @@ ApiResponse<**String**>
 
 ### HTTP request headers
 
-- **Content-Type**: text/xml
-- **Accept**: text/plain
+- **Content-Type**: application/json
+- **Accept**: application/xml
 
 ### HTTP response details
 | Status code | Description | Response headers |

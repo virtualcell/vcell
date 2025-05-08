@@ -2,6 +2,7 @@ package org.vcell.restq.apiclient;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
@@ -15,6 +16,7 @@ import org.vcell.restclient.api.BioModelResourceApi;
 import org.vcell.restclient.api.PublicationResourceApi;
 import org.vcell.restclient.model.BiomodelRef;
 import org.vcell.restclient.model.Publication;
+import org.vcell.restclient.model.SaveBioModel;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
@@ -94,13 +96,15 @@ public class PublicationApiTest {
 
         BioModel realBioModel = TestEndpointUtils.defaultBiomodel();
         String bioModelXml = XmlHelper.bioModelToXML(realBioModel, true);
+        SaveBioModel saveBioModel = new SaveBioModel().bioModelXML(bioModelXml);
         BioModelResourceApi bioModelAPI = new BioModelResourceApi(aliceAPIClient);
-        String id = bioModelAPI.uploadBioModel(bioModelXml);
-        org.vcell.restclient.model.BioModel biomodel = bioModelAPI.getBiomodelById(id);
+        BioModel savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelAPI.saveBioModel(saveBioModel)));
+        String savedModelKey = savedBioModel.getVersion().getVersionKey().toString();
+        org.vcell.restclient.model.BioModel biomodel = bioModelAPI.getBioModel(savedModelKey);
 
         Publication publication = TestEndpointUtils.defaultPublication();
         BiomodelRef bioModelRef = new BiomodelRef();
-        bioModelRef.setBmKey(Long.parseLong(id));
+        bioModelRef.setBmKey(Long.parseLong(savedModelKey));
         bioModelRef.setName(biomodel.getName());
         bioModelRef.setOwnerName(biomodel.getOwnerName());
         bioModelRef.setVersionFlag(VersionFlag.Current.getIntValue());
@@ -132,6 +136,6 @@ public class PublicationApiTest {
         Assertions.assertEquals(initialPubSize, finalPublications.size());
 
         // remove added BioModel
-        bioModelAPI.deleteBioModel(id);
+        bioModelAPI.deleteBioModel(savedModelKey);
     }
 }

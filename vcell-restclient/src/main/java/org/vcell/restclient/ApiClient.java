@@ -205,7 +205,7 @@ public class ApiClient {
   }
 
   protected String getDefaultBaseUri() {
-    return "https://vcell-dev.cam.uchc.edu";
+    return "https://vcell.cam.uchc.edu";
   }
 
   protected HttpClient.Builder createDefaultHttpClientBuilder() {

@@ -68,7 +68,7 @@ class Configuration:
                  ) -> None:
         """Constructor
         """
-        self._base_path = "https://vcell-dev.cam.uchc.edu" if host is None else host
+        self._base_path = "https://vcell.cam.uchc.edu" if host is None else host
         """Default Base url
         """
         self.server_index = 0 if server_index is None and host is None else server_index
@@ -372,7 +372,7 @@ class Configuration:
         """
         return [
             {
-                'url': "https://vcell-dev.cam.uchc.edu",
+                'url': "https://vcell.cam.uchc.edu",
                 'description': "No description provided",
             }
         ]

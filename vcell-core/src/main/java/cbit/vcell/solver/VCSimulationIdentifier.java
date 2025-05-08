@@ -9,6 +9,9 @@
  */
 
 package cbit.vcell.solver;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Insert the type's description here.
  * Creation date: (8/24/2004 10:55:36 AM)
@@ -49,6 +52,7 @@ public boolean equals(Object object) {
  * Creation date: (8/24/2004 2:07:52 PM)
  * @return java.lang.String
  */
+@JsonProperty("id")
 public java.lang.String getID() {
 	return Simulation.createSimulationID(getSimulationKey());
 }

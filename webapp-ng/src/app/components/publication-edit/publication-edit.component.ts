@@ -31,7 +31,7 @@ export class PublicationEditComponent {
     if (!key) {
       return;
     }
-    this.bioModelService.getBiomodelById(key.toString(), "response").subscribe({
+    this.bioModelService.getBioModel(key.toString(), "response").subscribe({
       next: (biomodelResponse: HttpResponse<BioModel>) => {
         if (biomodelResponse.status !== 200) {
           this.snackBar.open("Error fetching biomodel", "Dismiss", {duration: 5000});
