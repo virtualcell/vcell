@@ -8,8 +8,6 @@ import cbit.vcell.message.server.bootstrap.LocalVCellConnectionServiceImpl;
 import cbit.vcell.server.LocalVCellConnectionService;
 import cbit.vcell.server.VCellConnectionFactory;
 import cbit.vcell.simdata.ExternalDataIdentifierService;
-import org.vcell.service.registration.RegistrationService;
-import org.vcell.service.registration.localdb.LocaldbRegistrationService;
 
 public class VCellServerModule extends com.google.inject.AbstractModule {
     @Override
@@ -20,11 +18,6 @@ public class VCellServerModule extends com.google.inject.AbstractModule {
         // only one implementation, to break compile-time cyclic dependency (vcell-core -> vcell-service)
         bind(LocalVCellConnectionService.class).toInstance(new LocalVCellConnectionServiceImpl());
         bind(VCellConnectionFactory.class).to(LocalVCellConnectionFactory.class).asEagerSingleton();
-
-        // server-side implementation (talk directly to database)
-        // RegistrationService interface is not clean - mixes new registration with updates - is there another way?
-        bind(RegistrationService.class).toInstance(new LocaldbRegistrationService());
-        //bind(RegistrationService.class).toInstance(new RemoteRegistrationService()); // used on remote client.
 
         bind(VCMessagingService.class).toInstance(new VCMessagingServiceActiveMQ());
         //bind(VCMessagingService.class).toInstance(new VCMessagingServiceEmbedded()); // used for testing.

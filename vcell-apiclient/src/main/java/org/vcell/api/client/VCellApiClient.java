@@ -121,11 +121,7 @@ public class VCellApiClient implements AutoCloseable {
 	}
 
 	public VCellApiClient(String host, int port, String pathPrefix_v0) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
-		this(host, port, pathPrefix_v0, false, false);
-	}
-
-	public VCellApiClient(String host, int port, String pathPrefix_v0, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
-		this(host, port, pathPrefix_v0, false, bIgnoreCertProblems, bIgnoreHostMismatch);
+		this(host, port, pathPrefix_v0, false, false, false);
 	}
 
 	public VCellApiClient(String host, int port, String pathPrefix_v0, boolean bSkipSSL, boolean bIgnoreCertProblems, boolean bIgnoreHostMismatch) throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException {
@@ -363,22 +359,6 @@ public class VCellApiClient implements AutoCloseable {
 						message = reader.lines().collect(Collectors.joining());
 					}
 					return message;
-//					HttpEntity entity = response.getEntity();
-//					if (lg.isInfoEnabled()) {
-//						try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
-//							lg.info("optimizationId = "+reader.readLine());
-//						}
-//					}
-//			        final Header locationHeader = response.getFirstHeader("location");
-//			        if (locationHeader == null) {
-//			            // got a redirect response, but no location header
-//			            throw new ClientProtocolException(
-//			                    "Received redirect response " + response.getStatusLine()
-//			                    + " but no location header");
-//			        }
-//			        final String location = locationHeader.getValue();
-//			        URI uri = createLocationURI(location);
-//					return uri.toString();
 				} else {
 					HttpEntity entity = response.getEntity();
 					String message = null;
@@ -398,8 +378,6 @@ public class VCellApiClient implements AutoCloseable {
 		}
 
 		return responseUri;
-//		String optimizationId = responseUri.substring(responseUri.lastIndexOf('/') + 1);
-//		return optimizationId;
 	}
 	
 	/**

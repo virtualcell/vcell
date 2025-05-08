@@ -2833,7 +2833,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 		return getClientServerManager().getAsynchMessageManager();
 	}
 
-	private ClientServerManager getClientServerManager() {
+	public ClientServerManager getClientServerManager() {
 		// shorthand
 		return getVcellClient().getClientServerManager();
 	}

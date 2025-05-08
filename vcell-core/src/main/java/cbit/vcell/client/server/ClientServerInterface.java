@@ -8,7 +8,6 @@ import cbit.vcell.server.ExportController;
 import cbit.vcell.server.SessionManager;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.simdata.VCDataManager;
-import org.vcell.service.registration.RegistrationService;
 
 import java.io.IOException;
 
@@ -39,5 +38,4 @@ public interface ClientServerInterface extends SessionManager, DataSetController
     public void removePropertyChangeListener(java.lang.String propertyName, java.beans.PropertyChangeListener listener);
     public void sendErrorReport(Throwable exception );
     public void sendErrorReport(Throwable exception, VCellConnection.ExtraContext extraContext);
-    public RegistrationService getRegistrationProvider();
 }

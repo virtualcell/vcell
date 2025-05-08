@@ -21,6 +21,7 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.server.VCellConnectionFactory;
 import com.google.inject.Inject;
 import com.install4j.api.launcher.ApplicationLauncher;
+import org.vcell.api.client.VCellApiClient;
 import org.vcell.api.messaging.RemoteProxyVCellConnectionFactory;
 import org.vcell.api.server.ClientServerManager;
 import org.vcell.api.server.ClientServerManager.InteractiveContextDefaultProvider;
@@ -47,7 +48,7 @@ public class VCellClient {
 
 	private static VCellClient instance = null;
 
-	public static void setInstance(VCellClient instance) {
+	private static void setInstance(VCellClient instance) {
 		VCellClient.instance = instance;
 	}
 	public static VCellClient getInstance() {
