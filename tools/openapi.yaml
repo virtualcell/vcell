@@ -1382,10 +1382,6 @@ components:
           type: string
         key:
           $ref: '#/components/schemas/KeyValue'
-        name:
-          type: string
-        testAccount:
-          type: boolean
     UserIdentityJSONSafe:
       type: object
       properties:

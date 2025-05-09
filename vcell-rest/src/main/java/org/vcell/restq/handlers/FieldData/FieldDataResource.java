@@ -31,6 +31,7 @@ import org.w3c.www.http.HTTP;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -129,7 +130,7 @@ public class FieldDataResource {
                     channelNames, fieldData.shortSpecData, annotation,
                     user, times, origin, extent, iSize);
             return new FieldDataSavedResults(edi.getName(), edi.getKey().toString());
-        } catch (ImageException | DataFormatException | DataAccessException e) {
+        } catch (ImageException | IOException | DataFormatException | DataAccessException e) {
             throw new WebApplicationException("Can't create new field data file", e, HTTP.INTERNAL_SERVER_ERROR);
         }
     }
@@ -141,7 +142,7 @@ public class FieldDataResource {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Operation(operationId = "createFromFile", summary = "Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.")
     public FieldDataSavedResults createFromFileWithDefaults(@RestForm @PartType(MediaType.APPLICATION_OCTET_STREAM) File file,
-                                                            @RestForm String fieldDataName) throws DataAccessException, ImageException, DataFormatException {
+                                                            @RestForm String fieldDataName) throws DataAccessException, ImageException, DataFormatException, IOException {
         User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
         if (!Pattern.matches(allowedFieldDataNamesRegex, fieldDataName) || fieldDataName.length() > 100 || fieldDataName.isEmpty()){
             throw new WebApplicationException("Invalid file name.", HTTP.BAD_REQUEST);
@@ -186,7 +187,7 @@ public class FieldDataResource {
                    saveFieldData.varNames, saveFieldData.shortSpecData, saveFieldData.doubleSpecData, saveFieldData.annotation,
                     user, saveFieldData.times, saveFieldData.origin, saveFieldData.extent, saveFieldData.isize);
             fieldDataSavedResults = new FieldDataSavedResults(edi.getName(), edi.getKey().toString());
-        } catch (ImageException | DataFormatException | DataAccessException e) {
+        } catch (ImageException | IOException | DataFormatException | DataAccessException e) {
             throw new WebApplicationException(e.getMessage(), e, HTTP.INTERNAL_SERVER_ERROR);
         }
         return fieldDataSavedResults;

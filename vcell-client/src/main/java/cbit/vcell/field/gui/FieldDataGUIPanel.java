@@ -54,7 +54,7 @@ public class FieldDataGUIPanel extends JPanel {
 
     private static final String FIELD_DATA_INFO = "Field Data Info";
     public static final String FIELD_NAME = "fieldName";
-    public static final String USER_DEFINED_FDOS = "userDefinedFDOS";
+    public static final String HASHTABLE_FDOS = "fdos";
 
     private final JPopupMenu jPopupMenu = new JPopupMenu();
     private static final int COPY_CSV = 0;
@@ -689,7 +689,7 @@ public class FieldDataGUIPanel extends JPanel {
                 }
 
                 imagesMetaDataOpSpec.owner = clientRequestManager.getDocumentManager().getUser();
-                hashTable.put("fdos", imagesMetaDataOpSpec);
+                hashTable.put(HASHTABLE_FDOS, imagesMetaDataOpSpec);
                 hashTable.put("file", imageFile);
                 hashTable.put("initFDName", imageFile.getName());
             }
@@ -1029,7 +1029,7 @@ public class FieldDataGUIPanel extends JPanel {
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
                 //Allow user to review/change info about fielddata
-                FieldDataSpec generatedFieldDataOpSpec = (FieldDataSpec) hashTable.get("fdos");
+                FieldDataSpec generatedFieldDataOpSpec = (FieldDataSpec) hashTable.get(HASHTABLE_FDOS);
                 FieldDataSpec userDefinedFDOS = new FieldDataSpec();
                 String initialExtDataName = (String) hashTable.get("initFDName");
 
@@ -1080,7 +1080,7 @@ public class FieldDataGUIPanel extends JPanel {
                             generatedFieldDataOpSpec.times = userDefinedFDOS.times;
                         }
                         generatedFieldDataOpSpec.annotation = userDefinedFDOS.annotation;
-                        hashTable.put(USER_DEFINED_FDOS, userDefinedFDOS);
+                        hashTable.put(HASHTABLE_FDOS, generatedFieldDataOpSpec);
                         hashTable.put(FIELD_NAME, fieldDataInfoPanel.getFieldName());
                         break;
                     } else {
@@ -1097,7 +1097,7 @@ public class FieldDataGUIPanel extends JPanel {
                 //save Database
                 String fieldName = (String) hashTable.get(FIELD_NAME);
                 FieldDataSpec fieldDataSpec
-                        = (FieldDataSpec) hashTable.get("fdos");
+                        = (FieldDataSpec) hashTable.get(HASHTABLE_FDOS);
                 DocumentManager documentManager = clientRequestManager.getDocumentManager();
                 fieldDataSpec.fileName = fieldName;
                 try {
@@ -1114,7 +1114,7 @@ public class FieldDataGUIPanel extends JPanel {
         AsynchClientTask task3 = new AsynchClientTask("refreshing field data", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                FieldDataSpec fieldDataSpec = (FieldDataSpec) hashTable.get("fdos");
+                FieldDataSpec fieldDataSpec = (FieldDataSpec) hashTable.get(HASHTABLE_FDOS);
                 ExternalDataIdentifier resultEDI = (ExternalDataIdentifier) hashTable.get("result_edi");
                 DefaultMutableTreeNode root = ((DefaultMutableTreeNode) fieldDataGUIPanel.getFieldDataTree().getModel().getRoot());
                 if (root.getChildCount() == 0) {

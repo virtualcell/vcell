@@ -20,7 +20,7 @@ import json
 
 
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictBool, StrictStr
+from pydantic import BaseModel, StrictStr
 from pydantic import Field
 from vcell_client.models.key_value import KeyValue
 try:
@@ -34,9 +34,7 @@ class User(BaseModel):
     """ # noqa: E501
     user_name: Optional[StrictStr] = Field(default=None, alias="userName")
     key: Optional[KeyValue] = None
-    name: Optional[StrictStr] = None
-    test_account: Optional[StrictBool] = Field(default=None, alias="testAccount")
-    __properties: ClassVar[List[str]] = ["userName", "key", "name", "testAccount"]
+    __properties: ClassVar[List[str]] = ["userName", "key"]
 
     model_config = {
         "populate_by_name": True,
@@ -95,9 +93,7 @@ class User(BaseModel):
 
         _obj = cls.model_validate({
             "userName": obj.get("userName"),
-            "key": KeyValue.from_dict(obj.get("key")) if obj.get("key") is not None else None,
-            "name": obj.get("name"),
-            "testAccount": obj.get("testAccount")
+            "key": KeyValue.from_dict(obj.get("key")) if obj.get("key") is not None else None
         })
         return _obj
 

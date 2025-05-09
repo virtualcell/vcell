@@ -137,6 +137,7 @@ public class FieldDataFileConversion {
                 : new Origin(0, 0, 0));
         spec.extent = (domainInfo.getExtent() != null) ? (domainInfo.getExtent()) : (new Extent(1, 1, 1));
         spec.iSize = domainInfo.getiSize();
+        spec.file = imageFile;
 
         return spec;
     }
