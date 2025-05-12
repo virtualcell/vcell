@@ -34,6 +34,7 @@ import org.vcell.util.document.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.zip.DataFormatException;
@@ -42,15 +43,15 @@ import java.util.zip.DataFormatException;
 public class FieldDataDB {
     private static final Logger logger = LogManager.getLogger(FieldDataDB.class);
 
-    private final DatabaseServerImpl databaseServer;
-    private final DataSetControllerImpl dataSetController;
+    private final DatabaseServerImpl databaseServerImpl;
+    private final DataSetControllerImpl dataSetControllerImpl;
 
     @Inject
     public FieldDataDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, FileNotFoundException {
-        databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
+        databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         String primarySimDataDir = PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty, "/simdata");
         String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, "/simdata");
-        dataSetController = new DataSetControllerImpl(null,
+        dataSetControllerImpl = new DataSetControllerImpl(null,
                 new File(primarySimDataDir),
                 new File(secondarySimDataDir));
     }
@@ -67,11 +68,11 @@ public class FieldDataDB {
         // If the requester does not have access to the Model an exception should be thrown to stop this function
         ArrayList<SimulationOwner> modelsListOfContext = new ArrayList<>();
         if(documentType.equalsIgnoreCase(VersionableType.MathModelMetaData.getTypeName())){
-            BigString mathModelXML = databaseServer.getMathModelXML(requester, documentKey);
+            BigString mathModelXML = databaseServerImpl.getMathModelXML(requester, documentKey);
             vcDocument = XmlHelper.XMLToMathModel(new XMLSource(mathModelXML.toString()));
             modelsListOfContext.add(((MathModel)vcDocument));
         }else if(documentType.equalsIgnoreCase(VersionableType.BioModelMetaData.getTypeName())){
-            BigString bioModelXML = databaseServer.getBioModelXML(requester, documentKey);
+            BigString bioModelXML = databaseServerImpl.getBioModelXML(requester, documentKey);
             vcDocument = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
             SimulationContext[] contexts = ((BioModel)vcDocument).getSimulationContexts();
             modelsListOfContext.addAll(Arrays.asList(contexts));
@@ -100,7 +101,7 @@ public class FieldDataDB {
         }
 
         // Find which ID's are appropriate
-        FieldDataAllDBEntries allIDs = databaseServer.getFieldDataIDs(ogOwner);
+        FieldDataAllDBEntries allIDs = databaseServerImpl.getFieldDataIDs(ogOwner);
         ArrayList<ExternalDataIdentifier> edis = new ArrayList<>();
         ArrayList<String> annotations = new ArrayList<>();
         for (int i = 0; i < allIDs.ids.length; i++){
@@ -126,10 +127,10 @@ public class FieldDataDB {
             // Tie those DB entries to newly created copies of the original field data that the requester owns
             for (int i = 0; i < edis.size(); i++){
                 // Create DB entries where new field data names are created
-                CopyFieldDataResult dbResults = databaseServer.copyFieldData(requester,
+                CopyFieldDataResult dbResults = databaseServerImpl.copyFieldData(requester,
                         edis.get(i), annotations.get(i), documentType, vcDocument.getVersion().getName());
 
-                dataSetController.fieldDataCopySim(dbResults.oldID.getDataKey() ,ogOwner, dbResults.newID, FieldDataSpec.JOBINDEX_DEFAULT, requester);
+                dataSetControllerImpl.fieldDataCopySim(dbResults.oldID.getDataKey() ,ogOwner, dbResults.newID, FieldDataSpec.JOBINDEX_DEFAULT, requester);
 
                 oldNameNewID.put(edis.get(i).getName(), dbResults.newID);
             }
@@ -149,7 +150,7 @@ public class FieldDataDB {
     }
 
     public ArrayList<FieldDataResource.FieldDataReference> getAllFieldDataIDs(User user) throws SQLException, DataAccessException {
-        FieldDataAllDBEntries results = databaseServer.getFieldDataIDs(user);
+        FieldDataAllDBEntries results = databaseServerImpl.getFieldDataIDs(user);
         ArrayList<FieldDataResource.FieldDataReference> fieldDataReferenceList = new ArrayList<>();
         for (int i =0; i < results.ids.length; i++){
             Vector<KeyValue> simRefs = new Vector<>();
@@ -163,7 +164,7 @@ public class FieldDataDB {
     }
 
     public FieldDataShape getFieldDataShapeFromID(User user, KeyValue keyValue, int jobParameter) throws ObjectNotFoundException {
-        return dataSetController.fieldDataInfo(keyValue, user, jobParameter);
+        return dataSetControllerImpl.fieldDataInfo(keyValue, user, jobParameter);
     }
 
     public FieldDataResource.FieldData analyzeFieldDataFromFile(File imageFile, String fileName) throws DataAccessException, ImageException, DataFormatException {
@@ -188,16 +189,15 @@ public class FieldDataDB {
     public ExternalDataIdentifier saveNewFieldDataFromFile(String fieldDataName, String[] varNames,
                                                                   short[][][] imageData, String annotation,
                                                                   User user, double[] times, Origin origin,
-                                                                  Extent extent, ISize iSize) throws DataAccessException, ImageException, DataFormatException{
+                                                                  Extent extent, ISize iSize) throws DataAccessException, ImageException, DataFormatException, IOException{
         return saveNewFieldDataFromFile(fieldDataName, varNames, imageData, new double[][][]{}, annotation, user, times, origin, extent, iSize);
     }
 
-    public ExternalDataIdentifier saveNewFieldDataFromFile(String fieldDataName, String[] varNames,
-                                                                  short[][][] imageData, double[][][] doubleImageData, String annotation,
-                                                                  User user, double[] times, Origin origin,
-                                                                  Extent extent, ISize iSize) throws DataAccessException, ImageException, DataFormatException {
+    private ExternalDataIdentifier createDBEntry(String fieldDataName, String[] varNames,
+                                                 String annotation,
+                                                 User user) throws DataAccessException {
         // Ensure name is unique for user
-        FieldDataAllDBEntries usersFieldData = databaseServer.getFieldDataIDs(user);
+        FieldDataAllDBEntries usersFieldData = databaseServerImpl.getFieldDataIDs(user);
         Set<String> namesUsed = new HashSet<>();
         for (ExternalDataIdentifier edi : usersFieldData.ids){
             namesUsed.add(edi.getName());
@@ -206,51 +206,68 @@ public class FieldDataDB {
             fieldDataName = TokenMangler.getNextEnumeratedToken(fieldDataName);
         }
 
-
-        VariableType[] varTypes = new VariableType[varNames.length];
-        for (int j = 0; j < varNames.length; j++){
-            varTypes[j] = VariableType.VOLUME;
-        }
         FieldDataExternalDataIDEntry entry = new FieldDataExternalDataIDEntry(user, fieldDataName, annotation);
-        ExternalDataIdentifier edi = databaseServer.saveFieldDataEDI(entry);
+        return databaseServerImpl.saveFieldDataEDI(entry);
+    }
 
+    private void createFieldDataFiles(String[] varNames,
+                                      short[][][] imageData, double[][][] doubleImageData, String annotation,
+                                      User user, double[] times, Origin origin,
+                                      Extent extent, ISize iSize, ExternalDataIdentifier newEdi) throws ImageException, IOException {
         FieldData fieldData = new FieldData();
         if (doubleImageData == null || doubleImageData.length == 0){
             fieldData.data = imageData;
         } else {
             fieldData.doubleData = doubleImageData;
         }
+        VariableType[] varTypes = new VariableType[varNames.length];
+        for (int j = 0; j < varNames.length; j++){
+            varTypes[j] = VariableType.VOLUME;
+        }
         fieldData.channelNames = Arrays.stream(varNames).toList(); fieldData.variableTypes = varTypes;
         fieldData.times = Arrays.stream(times).boxed().toList(); fieldData.owner = user; fieldData.origin = origin;
         fieldData.extent = extent; fieldData.iSize = iSize; fieldData.annotation = annotation;
 
+        fieldData.cartesianMesh = CartesianMesh.createSimpleCartesianMesh(origin, extent, iSize,
+                new RegionImage(new VCImageUncompressed(null, new byte[iSize.getXYZ()],//empty regions
+                        extent, iSize.getX(), iSize.getY(), iSize.getZ()),
+                        0, null, null, RegionImage.NO_SMOOTHING));
+        dataSetControllerImpl.fieldDataAdd(fieldData, newEdi);
+    }
+
+    public ExternalDataIdentifier saveNewFieldDataFromFile(String fieldDataName, String[] varNames,
+                                                                  short[][][] imageData, double[][][] doubleImageData, String annotation,
+                                                                  User user, double[] times, Origin origin,
+                                                                  Extent extent, ISize iSize) throws DataAccessException, ImageException, DataFormatException, IOException {
+
+        ExternalDataIdentifier newEdi = createDBEntry(fieldDataName, varNames, annotation, user);
         try {
-            fieldData.cartesianMesh = CartesianMesh.createSimpleCartesianMesh(origin, extent, iSize,
-                    new RegionImage(new VCImageUncompressed(null, new byte[iSize.getXYZ()],//empty regions
-                            extent, iSize.getX(), iSize.getY(), iSize.getZ()),
-                            0, null, null, RegionImage.NO_SMOOTHING));
-            dataSetController.fieldDataAdd(fieldData, edi);
-            return edi;
-        } catch (Exception e) {
-            // Remove DB entry if file creation fails
-            databaseServer.deleteFieldDataID(user, edi);
-            throw new RuntimeException(e);
+            createFieldDataFiles(varNames, imageData, doubleImageData,annotation, user, times, origin, extent, iSize, newEdi);
+        } catch (ImageException | IOException e) {
+            databaseServerImpl.deleteFieldDataID(user, newEdi); // remove from DB
+            throw e;
         }
+        return newEdi;
     }
 
     public void saveFieldDataFromSimulation(User user, KeyValue simKeyValue, int jobIndex, String newFieldDataName) throws DataAccessException {
         // Create DB entry
-        SimulationInfo simInfo = databaseServer.getSimulationInfo(user, simKeyValue);
+        SimulationInfo simInfo = databaseServerImpl.getSimulationInfo(user, simKeyValue);
         FieldDataExternalDataIDEntry entry = new FieldDataExternalDataIDEntry(user, newFieldDataName, "");
-        ExternalDataIdentifier edi = databaseServer.saveFieldDataEDI(entry);
+        ExternalDataIdentifier edi = databaseServerImpl.saveFieldDataEDI(entry);
 
-        // Save new file with reference to DB entry
-        dataSetController.fieldDataCopySim(simKeyValue, simInfo.getOwner(), edi, jobIndex, user);
+        try{
+            // Save new file with reference to DB entry
+            dataSetControllerImpl.fieldDataCopySim(simKeyValue, simInfo.getOwner(), edi, jobIndex, user);
+        } catch (RuntimeException e){
+            databaseServerImpl.deleteFieldDataID(user, edi);
+            throw e;
+        }
     }
 
     public void deleteFieldData(ExternalDataIdentifier edi) throws DataAccessException {
-        databaseServer.deleteFieldDataID(edi.getOwner(), edi); // remove from DB
-        dataSetController.fieldDataDelete(edi); // remove from File System
+        databaseServerImpl.deleteFieldDataID(edi.getOwner(), edi); // remove from DB
+        dataSetControllerImpl.fieldDataDelete(edi); // remove from File System
     }
 
 }

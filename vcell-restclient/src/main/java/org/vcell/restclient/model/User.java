@@ -34,9 +34,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  */
 @JsonPropertyOrder({
   User.JSON_PROPERTY_USER_NAME,
-  User.JSON_PROPERTY_KEY,
-  User.JSON_PROPERTY_NAME,
-  User.JSON_PROPERTY_TEST_ACCOUNT
+  User.JSON_PROPERTY_KEY
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class User {
@@ -45,12 +43,6 @@ public class User {
 
   public static final String JSON_PROPERTY_KEY = "key";
   private KeyValue key;
-
-  public static final String JSON_PROPERTY_NAME = "name";
-  private String name;
-
-  public static final String JSON_PROPERTY_TEST_ACCOUNT = "testAccount";
-  private Boolean testAccount;
 
   public User() { 
   }
@@ -105,56 +97,6 @@ public class User {
   }
 
 
-  public User name(String name) {
-    this.name = name;
-    return this;
-  }
-
-   /**
-   * Get name
-   * @return name
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_NAME)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public String getName() {
-    return name;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_NAME)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setName(String name) {
-    this.name = name;
-  }
-
-
-  public User testAccount(Boolean testAccount) {
-    this.testAccount = testAccount;
-    return this;
-  }
-
-   /**
-   * Get testAccount
-   * @return testAccount
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_TEST_ACCOUNT)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public Boolean getTestAccount() {
-    return testAccount;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_TEST_ACCOUNT)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setTestAccount(Boolean testAccount) {
-    this.testAccount = testAccount;
-  }
-
-
   /**
    * Return true if this User object is equal to o.
    */
@@ -168,14 +110,12 @@ public class User {
     }
     User user = (User) o;
     return Objects.equals(this.userName, user.userName) &&
-        Objects.equals(this.key, user.key) &&
-        Objects.equals(this.name, user.name) &&
-        Objects.equals(this.testAccount, user.testAccount);
+        Objects.equals(this.key, user.key);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(userName, key, name, testAccount);
+    return Objects.hash(userName, key);
   }
 
   @Override
@@ -184,8 +124,6 @@ public class User {
     sb.append("class User {\n");
     sb.append("    userName: ").append(toIndentedString(userName)).append("\n");
     sb.append("    key: ").append(toIndentedString(key)).append("\n");
-    sb.append("    name: ").append(toIndentedString(name)).append("\n");
-    sb.append("    testAccount: ").append(toIndentedString(testAccount)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -241,16 +179,6 @@ public class User {
     // add `key` to the URL query string
     if (getKey() != null) {
       joiner.add(getKey().toUrlQueryString(prefix + "key" + suffix));
-    }
-
-    // add `name` to the URL query string
-    if (getName() != null) {
-      joiner.add(String.format("%sname%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `testAccount` to the URL query string
-    if (getTestAccount() != null) {
-      joiner.add(String.format("%stestAccount%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getTestAccount()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();
