@@ -3,24 +3,38 @@ package org.vcell.sbml;
 import cbit.util.xml.VCLogger;
 import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.client.server.DynamicClientProperties;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.xml.ExternalDocInfo;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XMLTags;
+import cbit.vcell.xml.XmlHelper;
 import org.jdom2.Document;
 import org.jdom2.Element;
+import org.jdom2.Namespace;
+import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.sbml.jsbml.SBMLDocument;
 import org.sbml.jsbml.SBMLReader;
 import org.vcell.sbml.vcell.SBMLImporter;
+import org.vcell.util.UnzipUtility;
 
 import java.io.*;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -112,6 +126,8 @@ public class BMDB_SBMLImportTest {
 		faults.put(340, SBMLTestSuiteTest.FAULT.MATHML_PARSING);  // cause:  UnsupportedConstruct: error parsing expression ' <math><apply><gt/><piecewise><piece><apply><minus/><csymbol encoding="text" definitionURL="http://www.sbml.org/sbml/symbols/time">
 		faults.put(342, SBMLTestSuiteTest.FAULT.EXPRESSION_BINDING_EXCEPTION);  // cause:  Error binding global parameter 'TGF_beta_dose_mol_per_cell' to model: 'UNRESOLVED.initConc' is either not found in your model or is not allowed to be used in the current context.
 		faults.put(353, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('12345.7' for reactant 'cpd_C00369Glc_CS' in reaction 'rn_R02112CS_G2') or stoichiometryMath not handled in VCell at this time.
+		faults.put(354, SBMLTestSuiteTest.FAULT.COMPARTMENT_CONSTANT_FALSE);  // cause:  Error adding Feature to vcModel CompartmentError: compartment 'cytosol' has constant attribute set to False, not currently supported.
+		faults.put(355, SBMLTestSuiteTest.FAULT.COMPARTMENT_CONSTANT_FALSE);  // cause:  Error adding Feature to vcModel CompartmentError: compartment 'cytosol' has constant attribute set to False, not currently supported.
 		faults.put(383, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
 		faults.put(384, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
 		faults.put(385, SBMLTestSuiteTest.FAULT.NONINTEGER_STOICH);  // cause:  UnsupportedConstruct: Non-integer stoichiometry ('1.5' for product 'PGA' in reaction 'PGA_prod_Vo') or stoichiometryMath not handled in VCell at this time.
@@ -258,6 +274,8 @@ public class BMDB_SBMLImportTest {
 				fault = SBMLTestSuiteTest.FAULT.MATHML_PARSING;
 			}else if (cause.contains("class org.sbml.jsbml.Constraint cannot be cast to class org.sbml.jsbml.SBMLDocument")) {
 				fault = SBMLTestSuiteTest.FAULT.CONSTRAINT_CLASS_CAST_EXCEPTION;
+			}else if (cause.contains("CompartmentError: compartment") && cause.contains("constant attribute set to False")) {
+				fault = SBMLTestSuiteTest.FAULT.COMPARTMENT_CONSTANT_FALSE;
 			}
 
 			try (BufferedWriter codeProblemFileWriter = new BufferedWriter(new FileWriter(codeKnownProblemFile, true));
@@ -279,7 +297,236 @@ public class BMDB_SBMLImportTest {
 		}
 	}
 
-	public static void main(String[] args) {
+	/*
+	 * goes through the list of BMDB models (bioModelsNetInfo.xml)
+	 * downloads from the website (www.ebi.ac.uk) all those marked as supported
+	 * tries to import them in vcell
+	 * creates a list with those that fail
+	 *
+	 * for simplicity, place the bioModelsNetInfo.xml file in a convenient location and edit bioModelsNetInfoFile accordingly
+	 * this is not really a test and takes quite a long time to run, keep it commented out unless needed
+	 */
+//	@Test
+//	public void importAllBmdbTest() {
+//		try {
+//			File bioModelsNetInfoFile = new File("C:/dan/projects/git/vcell/vcell-client/src/main/resources/bioModelsNetInfo.xml");
+//			Map<String, BioModelData> modelInfoMap = parseXmlFile(bioModelsNetInfoFile);
+////			modelInfoMap.forEach((id, data) -> System.out.println("ID: " + id + " -> " + data));
+//
+//			Set<Integer> failuresSet = new LinkedHashSet<> ();
+//			for (Map.Entry<String, BioModelData> entry : modelInfoMap.entrySet()) {
+//
+//				String id = entry.getKey();
+//				String name = entry.getValue().name;
+//				boolean supported = entry.getValue().supported;
+//				if(supported == false) {
+////					System.out.println("Skipping: " + id + ", unsupported");
+//					continue;
+//				}
+//				if(slowModelSet().contains(idToIndex(id))) {
+////					System.out.println("Skipping: " + id + ", slow");
+//					continue;		// skip the slow ones
+//				}
+//
+//				System.out.println("Reading: " + id);
+//				ExternalDocInfo externalDocInfo = download(name, id);
+//
+//				XMLSource xmlSource = externalDocInfo.createXMLSource();
+//				org.jdom2.Element rootElement = xmlSource.getXmlDoc().getRootElement();
+//				String xmlType = rootElement.getName();
+//
+//				if (!xmlType.equals(XMLTags.SbmlRootNodeTag)) {
+//					throw new RuntimeException("Expected SBML document");
+//				}
+//				try {
+//					VCLogger transLogger = null;
+//					Namespace namespace = rootElement.getNamespace(XMLTags.SBML_SPATIAL_NS_PREFIX);
+//					boolean isBMDB = externalDocInfo.isBioModelsNet();
+//					boolean bIsSpatial = (namespace == null) ? false : true;
+//					BioModel doc = XmlHelper.importSBML(transLogger, xmlSource, bIsSpatial);
+//
+//				} catch(Exception e) {
+//					failuresSet.add(idToIndex(id));
+//					System.err.println("   ...found new failure");
+//				}
+//				System.out.println("   ...success");
+//			}
+//			String failures = convertSetToString(failuresSet);
+//			System.out.println(failures);
+//		} catch(Exception e) {
+//			System.out.println(e.getMessage());
+//		}
+//	}
+	/*
+	 * same as above, goes to all the models marked as fails and tries to import them, makes a list with those that actually
+	 * can be imported
+	 *
+	 * WARNING: our SBML parser is "eating" some errors, if exceptions are being fired the imported model is probably wrong
+	 * even though it gets imported
+	 */
+//	@Test
+//	public void checkExistingFailuresTest() {
+//		try {
+//			File bioModelsNetInfoFile = new File("C:/dan/projects/git/vcell/vcell-client/src/main/resources/bioModelsNetInfo.xml");
+//			Map<String, BioModelData> modelInfoMap = parseXmlFile(bioModelsNetInfoFile);
+//
+//			Set<Integer> failuresNowWorkingSet = new LinkedHashSet<> ();	// models marked as failures, but now work
+//			for (Map.Entry<String, BioModelData> entry : modelInfoMap.entrySet()) {
+//
+//				String id = entry.getKey();
+//				String name = entry.getValue().name;
+//				boolean supported = entry.getValue().supported;
+//				if(supported == true) {
+//					System.out.println("Skipping: " + id + ", marked as supported");
+//					continue;
+//				}
+//				if(slowModelSet().contains(idToIndex(id))) {
+//					System.out.println("Skipping: " + id + ", slow");
+//					continue;		// skip the slow ones
+//				}
+//
+//				System.out.println("Reading: " + id);
+//				ExternalDocInfo externalDocInfo = download(name, id);
+//
+//				XMLSource xmlSource = externalDocInfo.createXMLSource();
+//				org.jdom2.Element rootElement = xmlSource.getXmlDoc().getRootElement();
+//				String xmlType = rootElement.getName();
+//
+//				if (!xmlType.equals(XMLTags.SbmlRootNodeTag)) {
+//					throw new RuntimeException("Expected SBML document");
+//				}
+//				try {
+//					VCLogger transLogger = null;
+//					Namespace namespace = rootElement.getNamespace(XMLTags.SBML_SPATIAL_NS_PREFIX);
+//					boolean isBMDB = externalDocInfo.isBioModelsNet();
+//					boolean bIsSpatial = (namespace == null) ? false : true;
+//					BioModel doc = XmlHelper.importSBML(transLogger, xmlSource, bIsSpatial);
+//					System.out.println("   ...success");
+//					failuresNowWorkingSet.add(idToIndex(id));
+//				} catch(Exception e) {
+//					System.err.println("   ...still fails");
+//				}
+//			}
+//			String failuresNowWorking = convertSetToString(failuresNowWorkingSet);
+//			System.out.println(failuresNowWorking);
+//		} catch(Exception e) {
+//			System.out.println(e.getMessage());
+//		}
+//	}
+
+	private static final String IdPrefix = "BIOMD";
+	public static String indexToId(int index) {			// ex: 47 -> BIOMD0000000047
+		String paddedSuffix = String.format("%010d", index);
+		return IdPrefix + paddedSuffix;
+	}
+	public static int idToIndex(String id) {			// ex: BIOMD0000000123 -> 123
+		String suffixStr = id.substring(IdPrefix.length());
+		return Integer.parseInt(suffixStr);
+	}
+	public static String convertSetToString(Set<Integer> numbers) {
+		String stringOfNumbers = numbers.stream()
+				.map(String::valueOf)  		// convert each integer to a string
+				.collect(Collectors.joining(","));  // join with commas
+		return stringOfNumbers;
+	}
+
+	private ExternalDocInfo download(String name, String id) throws Exception {
+		String simDataDir = ResourceUtil.getLocalRootDir().getAbsolutePath();		// C:\Users\myname\.vcell\simdata
+		String tempDir = simDataDir + File.separator + "temp";
+		String destDirectory = tempDir + File.separator + id;
+		String zipFilePath = destDirectory + ".zip";
+
+		Path tempDirPath = Paths.get(tempDir);
+		Files.createDirectories(tempDirPath);	// temp may not be there, we make it
+
+		byte[] responseContent = null;
+		URL url = new URL("https://www.ebi.ac.uk/biomodels/search/download?models=" + id);
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		InputStream is = null;
+		try {
+			try {
+				is = url.openStream ();
+			}catch (Exception e) {
+				e.printStackTrace();
+				if (is != null) { is.close(); }
+				//Try with http instead of https
+				String newUrlString = url.toString().replaceFirst("^https", "http");
+				url = new URL(newUrlString);
+				is = url.openStream ();
+			}
+			byte[] byteChunk = new byte[4096]; // Or whatever size you want to read in at a time.
+			int n;
+
+			while ( (n = is.read(byteChunk)) > 0 ) {
+				baos.write(byteChunk, 0, n);
+			}
+			responseContent = baos.toByteArray();
+		}
+		catch (IOException e) {
+			System.err.printf ("Failed while reading bytes from %s: %s", url.toExternalForm(), e.getMessage());
+//		  e.printStackTrace ();
+			throw new RuntimeException("Failed while reading bytes from: " + url.toExternalForm());
+		}
+		finally {
+			if (is != null) { is.close(); }
+		}
+		if(responseContent == null) {
+			throw new RuntimeException("Failed while reading bytes from: " + url.toExternalForm());
+		}
+
+		try {
+			File file = new File(zipFilePath);
+			Files.write(file.toPath(), responseContent, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+			UnzipUtility uu = new UnzipUtility();
+			uu.unzip(zipFilePath, destDirectory);
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		String unzippedPath = destDirectory + File.separator + id + ".xml";
+		String bioModelSBML = new String(Files.readAllBytes(Paths.get(unzippedPath)), StandardCharsets.UTF_8);
+		try {
+			Files.deleteIfExists(Paths.get(zipFilePath));		// the original zip file
+			Files.deleteIfExists(Paths.get(unzippedPath));		// the unzipped SBML file
+			Files.deleteIfExists(Paths.get(destDirectory));		// its directory
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		ExternalDocInfo externalDocInfo = ExternalDocInfo.createBioModelsNetExternalDocInfo(bioModelSBML, name);
+		return externalDocInfo;
+	}
+	public Map<String, BioModelData> parseXmlFile(File xmlFile) throws Exception {
+		Map<String, BioModelData> bioModelMap = new LinkedHashMap<>();
+
+		SAXBuilder builder = new SAXBuilder();
+		Document document = builder.build(xmlFile);
+		Element rootElement = document.getRootElement();
+
+		List<Element> bioModelInfos = rootElement.getChildren("BioModelInfo");
+		for (Element bioModel : bioModelInfos) {
+			String id = bioModel.getAttributeValue("ID");
+			boolean supported = Boolean.parseBoolean(bioModel.getAttributeValue("Supported"));
+			String name = bioModel.getAttributeValue("Name");
+			bioModelMap.put(id, new BioModelData(supported, name));
+			System.out.println("ID: " + id + ", Supported: " + supported + ", Name: " + name);
+		}
+		return bioModelMap;
+	}
+
+	public class BioModelData implements Serializable {
+		public final boolean supported;
+		public final String name;
+
+		public BioModelData(boolean supported, String name) {
+			this.supported = supported;
+			this.name = name;
+		}
+		@Override
+		public String toString() {
+			return "BioModelData{name='" + name + "', supported=" + supported + "}";
+		}
+	}
+
+		public static void main(String[] args) {
 		try {
 			if (args.length != 1){
 				System.out.println("usage: BMDB_SBMLImportTest xmlManifestFile");

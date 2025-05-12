@@ -1,0 +1,1205 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" metaid="_524127" version="4" xmlns:html="http://www.w3.org/1999/xhtml">
+  <model id="Abell2011_CalciumSignaling_WithAdaptation" metaid="_031965" name="Abell2011_CalciumSignaling_WithAdaptation">
+    <notes>
+      <body xmlns="http://www.w3.org/1999/xhtml">
+        <p>This model is from the article:      <br/>
+        <strong>Parallel adaptive feedback enhances reliability of the Ca2+ signaling system.</strong>
+        <br/>
+          Abell E, Ahrends R, Bandara S, Park BO, Teruel MN.      <em>Proc Natl Acad Sci U S A.</em>
+          2011 Aug 15.      <a href="http://www.ncbi.nlm.nih.gov/pubmed/21844332">21844332</a>
+          ,      <br/>
+        <strong>Abstract:</strong>
+        <br/>
+          Despite large cell-to-cell variations in the concentrations of individual signaling proteins, cells transmit signals correctly. This phenomenon raises the question of what signaling systems do to prevent a predicted high failure rate. Here we combine quantitative modeling, RNA interference, and targeted selective reaction monitoring (SRM) mass spectrometry, and we show for the ubiquitous and fundamental calcium signaling system that cells monitor cytosolic and endoplasmic reticulum (ER) Ca(2+) levels and adjust in parallel the concentrations of the store-operated Ca(2+) influx mediator stromal interaction molecule (STIM), the plasma membrane Ca(2+) pump plasma membrane Ca-ATPase (PMCA), and the ER Ca(2+) pump sarco/ER Ca(2+)-ATPase (SERCA). Model calculations show that this combined parallel regulation in protein expression levels effectively stabilizes basal cytosolic and ER Ca(2+) levels and preserves receptor signaling. Our results demonstrate that, rather than directly controlling the relative level of signaling proteins in a forward regulation strategy, cells prevent transmission failure by sensing the state of the signaling pathway and using multiple parallel adaptive feedbacks.      </p>
+      <p>
+        <b>Note:</b>
+      </p>
+      <p>There are two models described in the paper to simulate basal and receptor stimulated Ca      <sup>2+</sup>
+          signaling. 1) No adaptive feedback (MODEL1108050000) and 2) with three slow adaptive feedback loops (this model: MODEL1108050001).      </p>
+  </body>
+</notes>
+    <annotation>
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:vCard="http://www.w3.org/2001/vcard-rdf/3.0#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+        <rdf:Description rdf:about="#_031965">
+	<dc:creator>
+	<rdf:Bag>
+	<rdf:li rdf:parseType="Resource">
+	<vCard:N rdf:parseType="Resource">
+	<vCard:Family>Chelliah</vCard:Family>
+	<vCard:Given>Vijayalakshmi</vCard:Given>
+	</vCard:N>
+	<vCard:EMAIL>viji@ebi.ac.uk</vCard:EMAIL>
+	<vCard:ORG rdf:parseType="Resource">
+	<vCard:Orgname>EMBL-EBI</vCard:Orgname>
+	</vCard:ORG>
+	</rdf:li>
+	<rdf:li rdf:parseType="Resource">
+	<vCard:N rdf:parseType="Resource">
+	<vCard:Family>Teruel</vCard:Family>
+	<vCard:Given>Mary N</vCard:Given>
+	</vCard:N>
+	<vCard:EMAIL>mteruel@stanford.edu</vCard:EMAIL>
+	<vCard:ORG rdf:parseType="Resource">
+	<vCard:Orgname>Department of Chemical and Systems Biology, Stanford University, Stanford, CA 94305</vCard:Orgname>
+	</vCard:ORG>
+	</rdf:li>
+	</rdf:Bag>
+	</dc:creator>
+	<dcterms:created rdf:parseType="Resource">
+	<dcterms:W3CDTF>2011-08-17T15:57:15Z</dcterms:W3CDTF>
+	</dcterms:created>
+	<dcterms:modified rdf:parseType="Resource">
+	<dcterms:W3CDTF>2011-09-08T12:03:57Z</dcterms:W3CDTF>
+	</dcterms:modified>
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/biomodels.db/MODEL1108050001"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	<bqmodel:is>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/biomodels.db/BIOMD0000000355"/>
+	</rdf:Bag>
+	</bqmodel:is>
+	<bqmodel:isDescribedBy>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/pubmed/21844332"/>
+	</rdf:Bag>
+	</bqmodel:isDescribedBy>
+	<bqbiol:hasTaxon>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/taxonomy/7215"/>
+	</rdf:Bag>
+	</bqbiol:hasTaxon>
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0019722"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	<bqbiol:hasProperty>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/mamo/MAMO_0000046"/>
+	</rdf:Bag>
+	</bqbiol:hasProperty>
+	</rdf:Description>
+	
+	
+  </rdf:RDF>
+</annotation>
+      <listOfCompartments>
+      <compartment constant="false" id="cytosol" metaid="_031966" name="cytosol" sboTerm="SBO:0000290" size="1">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031966">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005829"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+            </compartment>
+      <compartment id="outside" metaid="_031969" name="Outside" sboTerm="SBO:0000290" size="1">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031969">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005576"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+            </compartment>
+      <compartment id="mitochondria" metaid="_031970" name="mito" sboTerm="SBO:0000290" size="1">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031970">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005739"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+            </compartment>
+      <compartment constant="false" id="ER_store" metaid="_031972" name="ER_store" outside="cytosol" sboTerm="SBO:0000290" size="1">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031972">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0005783"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+            </compartment>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species compartment="cytosol" id="CaI" initialAmount="0.05" metaid="_031974" name="CaI" sboTerm="SBO:0000247">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031974">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:29108"/>
+	<rdf:li rdf:resource="http://identifiers.org/kegg.compound/C00076"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+            </species>
+      <species compartment="cytosol" id="IP3" initialAmount="0" metaid="_031976" name="IP3" sboTerm="SBO:0000247">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031976">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:16595"/>
+	<rdf:li rdf:resource="http://identifiers.org/kegg.compound/C01255"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+            </species>
+      <species compartment="cytosol" id="g" initialAmount="0.002" metaid="_031978" name="g">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031978">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0019855"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+            </species>
+      <species compartment="cytosol" id="mwaf195932_a72c_4552_8cf2_b349b15d39c4" initialAmount="0.013" metaid="_031980" name="PMCA" sboTerm="SBO:0000242">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031980">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/Q9V4C7"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+            </species>
+      <species compartment="cytosol" id="mw0ebc76ad_49d7_4845_8f88_04d443fbe7f3" initialAmount="0.266" metaid="_031982" name="SERCA" sboTerm="SBO:0000242">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031982">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P22700"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+            </species>
+      <species compartment="cytosol" id="mw7cb2644a_384a_4bbb_93fd_fd686e01d7cb" initialAmount="0.02" metaid="_031984" name="STIM" sboTerm="SBO:0000252">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031984">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/uniprot/P83094"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+            </species>
+      <species compartment="outside" id="mwd6b792d8_c983_42c1_b3bc_2494d6a3363e" initialAmount="1000" metaid="_031986" name="CaO" sboTerm="SBO:0000247">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031986">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:29108"/>
+	<rdf:li rdf:resource="http://identifiers.org/kegg.compound/C00076"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+            </species>
+      <species compartment="mitochondria" id="mw013a7c64_a9ec_483c_b3b8_ed658337ee95" initialAmount="0" metaid="_031988" name="CaM" sboTerm="SBO:0000247">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031988">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:29108"/>
+	<rdf:li rdf:resource="http://identifiers.org/kegg.compound/C00076"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+            </species>
+      <species compartment="ER_store" id="CaS" initialAmount="2" metaid="_031990" name="CaS" sboTerm="SBO:0000247">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031990">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/chebi/CHEBI:29108"/>
+	<rdf:li rdf:resource="http://identifiers.org/kegg.compound/C00076"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+            </species>
+    </listOfSpecies>
+    <listOfParameters>
+      <parameter id="A" metaid="_032031" name="IP3R" value="3"/>
+      <parameter id="B" metaid="_032033" name="SERCA0" value="0.266"/>
+      <parameter id="D" metaid="_032035" name="IP3degradation" value="2"/>
+      <parameter id="E" metaid="_032037" name="IP3Rinhibition" value="5"/>
+      <parameter id="F" metaid="_032039" name="IP3Rrecovery" value="0.018"/>
+      <parameter id="k2" metaid="_032041" name="kSERCA" value="0.175"/>
+      <parameter id="L" metaid="_032043" name="ERleak" value="0.01"/>
+      <parameter id="R" metaid="_032045" name="R" value="1"/>
+      <parameter id="mw92b257b7_00af_4fd6_a11b_8e4655a4ba65" metaid="_032047" name="kIP3R" value="0.175"/>
+      <parameter id="mw0ad64e84_bb75_4be4_a9c3_2d4741b0f45f" metaid="_032049" name="PMleak" value="0.0346"/>
+      <parameter id="mwfe8e89cf_3c67_4dd5_939e_b4cfee2e0778" metaid="_032051" name="kSTIM" value="1"/>
+      <parameter id="mw004dcb62_da5f_41c7_a7bd_033574894f48" metaid="_032053" name="STIM0" value="0.02"/>
+      <parameter id="mw78dd80b8_e003_4c62_81d1_547d001767af" metaid="_032055" name="kIP3Rca" value="0.13"/>
+      <parameter id="mw3a93c3a6_623a_44fe_84e9_a47823defd1f" metaid="_032057" name="kPMCA" value="0.2"/>
+      <parameter id="mwd21d3f76_d133_4053_8e44_02a538657e0a" metaid="_032059" name="PMCA0" value="0.013"/>
+      <parameter id="mwf998b218_be11_4aa4_81ae_41141861fb42" metaid="_032061" name="kG" value="1"/>
+      <parameter id="mwfbff577a_4e9c_40fe_8777_eb0ceade28c9" metaid="_032063" name="ProtDeg" value="1E-6"/>
+      <parameter id="mwd8bf5d8f_ad00_4119_bde1_91015ef2cd7c" metaid="_032065" name="DirTransf" value="0.03"/>
+      <parameter id="mwe3841c25_6042_49c2_9feb_90cbf6751167" metaid="_032067" name="kUnip" value="0.6"/>
+      <parameter id="mw219cf65d_18cc_4f7e_ab5a_5b87cda6fc43" metaid="_032069" name="MitNaCaEx" value="0.005"/>
+      <parameter id="mwa3072851_e3e4_4767_ac41_49fa7c0de7a7" metaid="_032071" name="Uniport" value="0.03"/>
+      <parameter id="mwd3b36919_202a_4fed_a3c8_1a3a60594404" metaid="_032073" name="cr" value="8"/>
+    </listOfParameters>
+    <listOfReactions>
+      <reaction fast="false" id="kPLC" metaid="_031992" name="PLC: Receptor and Ca2+ regulated IP3 production" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031992">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0032959"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfProducts>
+          <speciesReference metaid="_524139" species="IP3"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_524152" species="CaI"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_524164">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> R </ci>
+              <ci> CaI </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="JPump" metaid="_031994" name="SERCA: Pumps Ca2+ into ER Ca2+ stores" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031994">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0060401"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_524177" species="CaI"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_524189" species="CaS"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_524201" species="mw0ebc76ad_49d7_4845_8f88_04d443fbe7f3"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_524213">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> mw0ebc76ad_49d7_4845_8f88_04d443fbe7f3 </ci>
+                <apply>
+                  <power/>
+                  <ci> CaI </ci>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> CaI </ci>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> k2 </ci>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="JChannel" metaid="_031996" name="IP3R: IP3 and Ca2+ regulated Ca2+ channel,  plus leak" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031996">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0051209"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_524225" species="CaS"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_524237" species="CaI"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_524249" species="g"/>
+          <modifierSpeciesReference metaid="_524261" species="IP3"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_524273">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <minus/>
+                <cn type="integer"> 1 </cn>
+                <ci> mwd8bf5d8f_ad00_4119_bde1_91015ef2cd7c </ci>
+              </apply>
+              <apply>
+                <plus/>
+                <ci> L </ci>
+                <apply>
+                  <divide/>
+                  <apply>
+                    <times/>
+                    <apply>
+                      <divide/>
+                      <apply>
+                        <times/>
+                        <apply>
+                          <minus/>
+                          <cn type="integer"> 1 </cn>
+                          <ci> g </ci>
+                        </apply>
+                        <ci> A </ci>
+                        <apply>
+                          <power/>
+                          <ci> IP3 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <plus/>
+                        <apply>
+                          <power/>
+                          <ci> IP3 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <ci> mw92b257b7_00af_4fd6_a11b_8e4655a4ba65 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <power/>
+                      <ci> CaI </ci>
+                      <cn type="integer"> 2 </cn>
+                    </apply>
+                  </apply>
+                  <apply>
+                    <plus/>
+                    <apply>
+                      <power/>
+                      <ci> CaI </ci>
+                      <cn type="integer"> 2 </cn>
+                    </apply>
+                    <apply>
+                      <power/>
+                      <ci> mw78dd80b8_e003_4c62_81d1_547d001767af </ci>
+                      <cn type="integer"> 2 </cn>
+                    </apply>
+                  </apply>
+                </apply>
+              </apply>
+              <ci> CaS </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="kPhosphatase" metaid="_031998" name="IP3 phosphatase:  Degradation of IP3" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_031998">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0032961"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_524285" species="IP3"/>
+        </listOfReactants>
+        <kineticLaw metaid="_524297">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> D </ci>
+              <ci> IP3 </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="inhibition_parameter1" metaid="_032000" name="Inhibition of IP3R (mechanism not well understood)" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_032000">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0031586"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfProducts>
+          <speciesReference metaid="_524309" species="g"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_524321" species="CaI"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_524334">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <apply>
+                <divide/>
+                <apply>
+                  <times/>
+                  <ci> E </ci>
+                  <apply>
+                    <power/>
+                    <ci> CaI </ci>
+                    <cn type="integer"> 4 </cn>
+                  </apply>
+                </apply>
+                <apply>
+                  <plus/>
+                  <apply>
+                    <power/>
+                    <ci> CaI </ci>
+                    <cn type="integer"> 4 </cn>
+                  </apply>
+                  <apply>
+                    <power/>
+                    <ci> mwf998b218_be11_4aa4_81ae_41141861fb42 </ci>
+                    <cn type="integer"> 4 </cn>
+                  </apply>
+                </apply>
+              </apply>
+              <apply>
+                <minus/>
+                <cn type="integer"> 1 </cn>
+                <ci> g </ci>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="inhibition_parameter2" metaid="_032002" name="Recovery of IP3R from Ca2+ iinhibition when Ca2+ drops" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_032002">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0031587"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_524346" species="g"/>
+        </listOfReactants>
+        <kineticLaw metaid="_524358">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> F </ci>
+              <ci> g </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="mwbdcd6a40_1ae7_4c86_a99f_1fba0b8beaf7" metaid="_032004" name="Regulation of Orai by STIM, plus leak" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_032004">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0032234"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfProducts>
+          <speciesReference metaid="_524370" species="CaI"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_524383" species="mw7cb2644a_384a_4bbb_93fd_fd686e01d7cb"/>
+          <modifierSpeciesReference metaid="_524395" species="CaS"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_524407">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> mw7cb2644a_384a_4bbb_93fd_fd686e01d7cb </ci>
+              <apply>
+                <plus/>
+                <ci> mw0ad64e84_bb75_4be4_a9c3_2d4741b0f45f </ci>
+                <apply>
+                  <divide/>
+                  <apply>
+                    <power/>
+                    <ci> mwfe8e89cf_3c67_4dd5_939e_b4cfee2e0778 </ci>
+                    <cn type="integer"> 8 </cn>
+                  </apply>
+                  <apply>
+                    <plus/>
+                    <apply>
+                      <power/>
+                      <ci> CaS </ci>
+                      <cn type="integer"> 8 </cn>
+                    </apply>
+                    <apply>
+                      <power/>
+                      <ci> mwfe8e89cf_3c67_4dd5_939e_b4cfee2e0778 </ci>
+                      <cn type="integer"> 8 </cn>
+                    </apply>
+                  </apply>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="mw530793e3_76b2_4483_be11_e94364306712" metaid="_032006" name="PMCA:  Pumps Ca2+ across PM out of cell" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_032006">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0006816"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_524419" species="CaI"/>
+        </listOfReactants>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_524431" species="mwaf195932_a72c_4552_8cf2_b349b15d39c4"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_524443">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> mwaf195932_a72c_4552_8cf2_b349b15d39c4 </ci>
+                <apply>
+                  <power/>
+                  <ci> CaI </ci>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> CaI </ci>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> mw3a93c3a6_623a_44fe_84e9_a47823defd1f </ci>
+                  <cn type="integer"> 2 </cn>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="mw5658298a_d96a_4b97_9a4f_6f06dad35824" metaid="_032008" name="PMCA synthesis" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_032008">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0009058"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfProducts>
+          <speciesReference metaid="_524455" species="mwaf195932_a72c_4552_8cf2_b349b15d39c4"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_524467" species="CaI"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_524479">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> mwd3b36919_202a_4fed_a3c8_1a3a60594404 </ci>
+                <ci> mwfbff577a_4e9c_40fe_8777_eb0ceade28c9 </ci>
+                <ci> mwd21d3f76_d133_4053_8e44_02a538657e0a </ci>
+                <apply>
+                  <power/>
+                  <ci> CaI </ci>
+                  <cn type="integer"> 4 </cn>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <times/>
+                  <apply>
+                    <minus/>
+                    <ci> mwd3b36919_202a_4fed_a3c8_1a3a60594404 </ci>
+                    <cn type="integer"> 1 </cn>
+                  </apply>
+                  <apply>
+                    <power/>
+                    <cn> 0.05 </cn>
+                    <cn type="integer"> 4 </cn>
+                  </apply>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> CaI </ci>
+                  <cn type="integer"> 4 </cn>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="mw700bd02b_9fc4_47e7_864a_967c03874dd6" metaid="_032010" name="PMCA degradation" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_032010">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0009056"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_524491" species="mwaf195932_a72c_4552_8cf2_b349b15d39c4"/>
+        </listOfReactants>
+        <kineticLaw metaid="_524503">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> mwaf195932_a72c_4552_8cf2_b349b15d39c4 </ci>
+              <ci> mwfbff577a_4e9c_40fe_8777_eb0ceade28c9 </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="mw06f8fde4_d97b_4d5f_b71e_d93aa53e9932" metaid="_032012" name="SERCA synthesis" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_032012">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0009058"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfProducts>
+          <speciesReference metaid="_524515" species="mw0ebc76ad_49d7_4845_8f88_04d443fbe7f3"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_524527" species="CaS"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_524539">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <apply>
+                  <divide/>
+                  <cn type="integer"> 1 </cn>
+                  <ci> mwd3b36919_202a_4fed_a3c8_1a3a60594404 </ci>
+                </apply>
+                <ci> B </ci>
+                <ci> mwfbff577a_4e9c_40fe_8777_eb0ceade28c9 </ci>
+                <apply>
+                  <plus/>
+                  <apply>
+                    <times/>
+                    <apply>
+                      <minus/>
+                      <ci> mwd3b36919_202a_4fed_a3c8_1a3a60594404 </ci>
+                      <cn type="integer"> 1 </cn>
+                    </apply>
+                    <apply>
+                      <power/>
+                      <cn type="integer"> 2 </cn>
+                      <cn type="integer"> 4 </cn>
+                    </apply>
+                  </apply>
+                  <apply>
+                    <power/>
+                    <ci> CaS </ci>
+                    <cn type="integer"> 4 </cn>
+                  </apply>
+                </apply>
+              </apply>
+              <apply>
+                <power/>
+                <ci> CaS </ci>
+                <cn type="integer"> 4 </cn>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="mw8021d532_dd9b_4e34_a865_c2bb1689b0b5" metaid="_032014" name="STIM/Orai synthesis" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_032014">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0009058"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfProducts>
+          <speciesReference metaid="_524551" species="mw7cb2644a_384a_4bbb_93fd_fd686e01d7cb"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_524563" species="CaS"/>
+          <modifierSpeciesReference metaid="_524575" species="CaI"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_524587">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <apply>
+                  <divide/>
+                  <apply>
+                    <times/>
+                    <apply>
+                      <divide/>
+                      <cn type="integer"> 1 </cn>
+                      <apply>
+                        <times/>
+                        <ci> mwd3b36919_202a_4fed_a3c8_1a3a60594404 </ci>
+                        <ci> mwd3b36919_202a_4fed_a3c8_1a3a60594404 </ci>
+                      </apply>
+                    </apply>
+                    <ci> mw004dcb62_da5f_41c7_a7bd_033574894f48 </ci>
+                    <ci> mwfbff577a_4e9c_40fe_8777_eb0ceade28c9 </ci>
+                    <apply>
+                      <plus/>
+                      <apply>
+                        <times/>
+                        <apply>
+                          <minus/>
+                          <ci> mwd3b36919_202a_4fed_a3c8_1a3a60594404 </ci>
+                          <cn type="integer"> 1 </cn>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <cn type="integer"> 2 </cn>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <power/>
+                        <ci> CaS </ci>
+                        <cn type="integer"> 2 </cn>
+                      </apply>
+                    </apply>
+                  </apply>
+                  <apply>
+                    <power/>
+                    <ci> CaS </ci>
+                    <cn type="integer"> 2 </cn>
+                  </apply>
+                </apply>
+                <apply>
+                  <plus/>
+                  <apply>
+                    <times/>
+                    <apply>
+                      <minus/>
+                      <ci> mwd3b36919_202a_4fed_a3c8_1a3a60594404 </ci>
+                      <cn type="integer"> 1 </cn>
+                    </apply>
+                    <apply>
+                      <power/>
+                      <cn> 0.05 </cn>
+                      <cn type="integer"> 2 </cn>
+                    </apply>
+                  </apply>
+                  <apply>
+                    <power/>
+                    <ci> CaI </ci>
+                    <cn type="integer"> 2 </cn>
+                  </apply>
+                </apply>
+              </apply>
+              <apply>
+                <power/>
+                <ci> CaI </ci>
+                <cn type="integer"> 2 </cn>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="mw1f122e51_99cb_4a32_a12e_4c2921920a17" metaid="_032016" name="STIM/Orai degradation" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_032016">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0009056"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_524599" species="mw7cb2644a_384a_4bbb_93fd_fd686e01d7cb"/>
+        </listOfReactants>
+        <kineticLaw metaid="_524611">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> mw7cb2644a_384a_4bbb_93fd_fd686e01d7cb </ci>
+              <ci> mwfbff577a_4e9c_40fe_8777_eb0ceade28c9 </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="mw89d547e1_8d48_4cd2_ba3d_e4390294089d" metaid="_032018" name="SERCA degradation" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_032018">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0009056"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_524623" species="mw0ebc76ad_49d7_4845_8f88_04d443fbe7f3"/>
+        </listOfReactants>
+        <kineticLaw metaid="_524635">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> mw0ebc76ad_49d7_4845_8f88_04d443fbe7f3 </ci>
+              <ci> mwfbff577a_4e9c_40fe_8777_eb0ceade28c9 </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="mwa61047ec_49c1_47b2_b78e_4d84a33d432a" metaid="_032020" name="CytToMito" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_032020">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0006851"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_524647" species="CaI"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_524659" species="mw013a7c64_a9ec_483c_b3b8_ed658337ee95"/>
+        </listOfProducts>
+        <kineticLaw metaid="_524671">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> mwa3072851_e3e4_4767_ac41_49fa7c0de7a7 </ci>
+                <apply>
+                  <power/>
+                  <ci> CaI </ci>
+                  <cn type="integer"> 4 </cn>
+                </apply>
+              </apply>
+              <apply>
+                <plus/>
+                <apply>
+                  <power/>
+                  <ci> CaI </ci>
+                  <cn type="integer"> 4 </cn>
+                </apply>
+                <apply>
+                  <power/>
+                  <ci> mwe3841c25_6042_49c2_9feb_90cbf6751167 </ci>
+                  <cn type="integer"> 4 </cn>
+                </apply>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="ERtoMito" metaid="_032022" name="ERtoMito" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_032022">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0006889"/>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0006851"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_524684" species="CaS"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_524696" species="mw013a7c64_a9ec_483c_b3b8_ed658337ee95"/>
+        </listOfProducts>
+        <listOfModifiers>
+          <modifierSpeciesReference metaid="_524708" species="g"/>
+          <modifierSpeciesReference metaid="_524720" species="IP3"/>
+          <modifierSpeciesReference metaid="_524732" species="CaI"/>
+        </listOfModifiers>
+        <kineticLaw metaid="_524744">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <times/>
+              <ci> mwd8bf5d8f_ad00_4119_bde1_91015ef2cd7c </ci>
+              <apply>
+                <plus/>
+                <ci> L </ci>
+                <apply>
+                  <divide/>
+                  <apply>
+                    <times/>
+                    <apply>
+                      <divide/>
+                      <apply>
+                        <times/>
+                        <apply>
+                          <minus/>
+                          <cn type="integer"> 1 </cn>
+                          <ci> g </ci>
+                        </apply>
+                        <ci> A </ci>
+                        <apply>
+                          <power/>
+                          <ci> IP3 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                      </apply>
+                      <apply>
+                        <plus/>
+                        <apply>
+                          <power/>
+                          <ci> IP3 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                        <apply>
+                          <power/>
+                          <ci> mw92b257b7_00af_4fd6_a11b_8e4655a4ba65 </ci>
+                          <cn type="integer"> 2 </cn>
+                        </apply>
+                      </apply>
+                    </apply>
+                    <apply>
+                      <power/>
+                      <ci> CaI </ci>
+                      <cn type="integer"> 2 </cn>
+                    </apply>
+                  </apply>
+                  <apply>
+                    <plus/>
+                    <apply>
+                      <power/>
+                      <ci> CaI </ci>
+                      <cn type="integer"> 2 </cn>
+                    </apply>
+                    <apply>
+                      <power/>
+                      <ci> mw78dd80b8_e003_4c62_81d1_547d001767af </ci>
+                      <cn type="integer"> 2 </cn>
+                    </apply>
+                  </apply>
+                </apply>
+              </apply>
+              <ci> CaS </ci>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+      <reaction fast="false" id="mw1c50c3d1_dab9_423a_8373_6a4c75479b54" metaid="_032024" name="MitoToCytosol" reversible="false">
+        <annotation>
+      <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bqmodel="http://biomodels.net/model-qualifiers/" xmlns:bqbiol="http://biomodels.net/biology-qualifiers/">
+            <rdf:Description rdf:about="#_032024">
+	<bqbiol:isVersionOf>
+	<rdf:Bag>
+	<rdf:li rdf:resource="http://identifiers.org/go/GO:0006851"/>
+	</rdf:Bag>
+	</bqbiol:isVersionOf>
+	</rdf:Description>
+	
+	
+      </rdf:RDF>
+    </annotation>
+              <listOfReactants>
+          <speciesReference metaid="_524756" species="mw013a7c64_a9ec_483c_b3b8_ed658337ee95"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference metaid="_524768" species="CaI"/>
+        </listOfProducts>
+        <kineticLaw metaid="_524780">
+          <math xmlns="http://www.w3.org/1998/Math/MathML">          
+            <apply>
+              <divide/>
+              <apply>
+                <times/>
+                <ci> mw219cf65d_18cc_4f7e_ab5a_5b87cda6fc43 </ci>
+                <ci> mw013a7c64_a9ec_483c_b3b8_ed658337ee95 </ci>
+              </apply>
+              <apply>
+                <plus/>
+                <ci> mw013a7c64_a9ec_483c_b3b8_ed658337ee95 </ci>
+                <cn> 0.01 </cn>
+              </apply>
+            </apply>
+          </math>
+                </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>

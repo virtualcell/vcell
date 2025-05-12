@@ -39,7 +39,7 @@
   <BioModelInfo ID="BIOMD0000000037" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Marwan2003 - Genetics, regulatory hierarchy between genes" />
   <BioModelInfo ID="BIOMD0000000038" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Rohwer2000_Phosphotransferase_System" />
   <BioModelInfo ID="BIOMD0000000039" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Marhl2000_CaOscillations" exception="NONINTEGER_STOICH" />
-  <BioModelInfo ID="BIOMD0000000040" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Field1974_Oregonator" />
+  <BioModelInfo ID="BIOMD0000000040" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Field1974_Oregonator" />
   <BioModelInfo ID="BIOMD0000000041" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kongas2007 - Creatine Kinase in energy metabolic signaling in muscle" />
   <BioModelInfo ID="BIOMD0000000042" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nielsen1998_Glycolysis" />
   <BioModelInfo ID="BIOMD0000000043" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Borghans1997 - Calcium Oscillation - Model 1" />
@@ -337,8 +337,8 @@
   <BioModelInfo ID="BIOMD0000000335" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hockin2002_BloodCoagulation" />
   <BioModelInfo ID="BIOMD0000000336" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Jones1994_BloodCoagulation" />
   <BioModelInfo ID="BIOMD0000000337" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Pfeiffer2001_ATP-ProducingPathways_CooperationCompetition" />
-  <BioModelInfo ID="BIOMD0000000338" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wajima2009_BloodCoagulation_aPTTtest" />
-  <BioModelInfo ID="BIOMD0000000339" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wajima2009_BloodCoagulation_PTtest" />
+  <BioModelInfo ID="BIOMD0000000338" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wajima2009_BloodCoagulation_aPTTtest" />
+  <BioModelInfo ID="BIOMD0000000339" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wajima2009_BloodCoagulation_PTtest" />
   <BioModelInfo ID="BIOMD0000000340" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wajima2009_BloodCoagulation_warfarin_heparin" exception="MATHML_PARSING" />
   <BioModelInfo ID="BIOMD0000000341" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Topp2000_BetaCellMass_Diabetes" />
   <BioModelInfo ID="BIOMD0000000342" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Zi2011_TGF-beta_Pathway" exception="EXPRESSION_BINDING_EXCEPTION" />
@@ -353,8 +353,8 @@
   <BioModelInfo ID="BIOMD0000000351" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vernoux2011_AuxinSignaling_AuxinSingleStepInput" />
   <BioModelInfo ID="BIOMD0000000352" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Vernoux2011_AuxinSignaling_AuxinFluctuating" />
   <BioModelInfo ID="BIOMD0000000353" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nag2011_ChloroplasticStarchDegradation" exception="NONINTEGER_STOICH" />
-  <BioModelInfo ID="BIOMD0000000354" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Abell2011_CalciumSignaling_WithoutAdaptation" />
-  <BioModelInfo ID="BIOMD0000000355" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Abell2011_CalciumSignaling_WithAdaptation" />
+  <BioModelInfo ID="BIOMD0000000354" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Abell2011_CalciumSignaling_WithoutAdaptation" />
+  <BioModelInfo ID="BIOMD0000000355" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Abell2011_CalciumSignaling_WithAdaptation" />
   <BioModelInfo ID="BIOMD0000000356" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nyman2011_M3Hierarachical_InsulinGlucosedynamics" />
   <BioModelInfo ID="BIOMD0000000357" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lee2010_ThrombinActivation_OneForm_reduced" />
   <BioModelInfo ID="BIOMD0000000358" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Stortelder1997 - Thrombin Generation Amidolytic Activity" />
@@ -423,7 +423,7 @@
   <BioModelInfo ID="BIOMD0000000421" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ratushny2012_ASSURE_II" />
   <BioModelInfo ID="BIOMD0000000422" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Middleton2012_GibberellinSignalling" />
   <BioModelInfo ID="BIOMD0000000423" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Nyman2012_InsulinSignalling" />
-  <BioModelInfo ID="BIOMD0000000424" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Faratian2009 - Role of PTEN in Trastuzumab resistance" />
+  <BioModelInfo ID="BIOMD0000000424" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Faratian2009 - Role of PTEN in Trastuzumab resistance" />
   <BioModelInfo ID="BIOMD0000000425" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Tan2012 - Antibiotic Treatment, Inoculum Effect" />
   <BioModelInfo ID="BIOMD0000000426" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mosca2012 - Central Carbon Metabolism Regulated by AKT" exception="NONINTEGER_STOICH" />
   <BioModelInfo ID="BIOMD0000000427" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bianconi2012 - EGFR and IGF1R pathway in lung cancer" />
@@ -545,7 +545,7 @@
   <BioModelInfo ID="BIOMD0000000543" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Qi2013 - IL-6 and IFN crosstalk model (non-competitive)" />
   <BioModelInfo ID="BIOMD0000000544" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Qi2013 - IL-6 and IFN crosstalk model" />
   <BioModelInfo ID="BIOMD0000000545" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ouyang2014 - photomorphogenic UV-B signalling network" />
-  <BioModelInfo ID="BIOMD0000000546" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Miao2010 - Innate and adaptive immune responses to primary Influenza A Virus infection_1_1" />
+  <BioModelInfo ID="BIOMD0000000546" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Miao2010 - Innate and adaptive immune responses to primary Influenza A Virus infection_1_1" />
   <BioModelInfo ID="BIOMD0000000547" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Talemi2014 - Arsenic toxicity and detoxification mechanisms in yeast" exception="EXPRESSION_BINDING_EXCEPTION" />
   <BioModelInfo ID="BIOMD0000000548" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sneppen2009 - Modeling proteasome dynamics in Parkinson's disease" />
   <BioModelInfo ID="BIOMD0000000549" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Baker2013 - Cytokine Mediated Inflammation in Rheumatoid Arthritis - Age Dependent" />
@@ -595,7 +595,7 @@
   <BioModelInfo ID="BIOMD0000000593" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Martinez-Sanchez2015 - T CD4+ lymphocyte transcriptional-signaling regulatory network" exception="QUAL_PACKAGE" />
   <BioModelInfo ID="BIOMD0000000594" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Capuani2015 - Binding of Cbl and Gbr2 to EGFR (Multisite Phosphorylation Model - MPM)" />
   <BioModelInfo ID="BIOMD0000000595" Supported="true" Slow="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Capuani2015 - Binding of Cbl and Grb2 to EGFR (Early Activation Model - EAM)" />
-  <BioModelInfo ID="BIOMD0000000596" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Philipson2015 - Innate immune response modulated by NLRX1" />
+  <BioModelInfo ID="BIOMD0000000596" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Philipson2015 - Innate immune response modulated by NLRX1" />
   <BioModelInfo ID="BIOMD0000000597" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Flis2015 - Plant clock gene circuit (P2011.1.2 PLM_71 ver 1)" />
   <BioModelInfo ID="BIOMD0000000598" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Flis2015 - Plant clock gene circuit (P2011.2.1 PLM_71 ver 2)" />
   <BioModelInfo ID="BIOMD0000000599" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Coggins2014 - CXCL12 dependent recruitment of beta arrestin" exception="EXPRESSION_BINDING_EXCEPTION" />
@@ -783,7 +783,7 @@
   <BioModelInfo ID="BIOMD0000000783" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Dong2014 - Mathematical modeling on helper t cells in a tumor immune system" />
   <BioModelInfo ID="BIOMD0000000784" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lopez2014 - A Validated Mathematical Model of Tumor Growth Including Tumor-Host Interaction and Cell-Mediated Immune Response" />
   <BioModelInfo ID="BIOMD0000000785" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Sotolongo-Costa2003 - Behavior of tumors under nonstationary therapy" />
-  <BioModelInfo ID="BIOMD0000000786" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lipniacki2004 - Mathematical model of NFKB regulatory module" />
+  <BioModelInfo ID="BIOMD0000000786" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Lipniacki2004 - Mathematical model of NFKB regulatory module" />
   <BioModelInfo ID="BIOMD0000000787" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Frascoli2014 - A dynamical model of tumour immunotherapy" />
   <BioModelInfo ID="BIOMD0000000788" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Schropp2019 - Target-Mediated Drug Disposition Model for Bispecific Antibodies" />
   <BioModelInfo ID="BIOMD0000000789" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Jenner2018 - treatment of oncolytic virus" />
@@ -791,7 +791,7 @@
   <BioModelInfo ID="BIOMD0000000791" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wilson2012 - tumor vaccine efficacy" />
   <BioModelInfo ID="BIOMD0000000792" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hu2019 - Modeling Pancreatic Cancer Dynamics with Immunotherapy" />
   <BioModelInfo ID="BIOMD0000000793" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chen2011/1 - bone marrow invasion absolute model" />
-  <BioModelInfo ID="BIOMD0000000794" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Benary2019 - Controlling NFKB dynamics by B-TrCP" />
+  <BioModelInfo ID="BIOMD0000000794" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Benary2019 - Controlling NFKB dynamics by B-TrCP" />
   <BioModelInfo ID="BIOMD0000000795" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Chen2011/2 - bone marrow invasion relative model" />
   <BioModelInfo ID="BIOMD0000000796" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Yang2012 - cancer growth with angiogenesis" />
   <BioModelInfo ID="BIOMD0000000797" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hu2018 - Dynamics of tumor-CD4+-cytokine-host cells interactions with treatments" />
@@ -805,7 +805,7 @@
   <BioModelInfo ID="BIOMD0000000805" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Al-Husari2013 - pH and lactate in tumor" />
   <BioModelInfo ID="BIOMD0000000806" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Eftimie2019-Macrophages Plasticity" />
   <BioModelInfo ID="BIOMD0000000807" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Fassoni2019 - Oncogenesis encompassing mutations and genetic instability" />
-  <BioModelInfo ID="BIOMD0000000808" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kronik2008 - Improving alloreactive CTL immunotherapy for malignant gliomas using a simulation model of their interactive dynamics" exception="MATHML_PARSING" />
+  <BioModelInfo ID="BIOMD0000000808" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kronik2008 - Improving alloreactive CTL immunotherapy for malignant gliomas using a simulation model of their interactive dynamics" exception="MATHML_PARSING" />
   <BioModelInfo ID="BIOMD0000000809" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Malinzi2018 - tumour-immune interaction model" />
   <BioModelInfo ID="BIOMD0000000810" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ganguli2018-immuno regulatory mechanisms in tumor microenvironment" />
   <BioModelInfo ID="BIOMD0000000811" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="He2017 - A mathematical model of pancreatic cancer with two kinds of treatments" />
@@ -827,7 +827,7 @@
   <BioModelInfo ID="BIOMD0000000827" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ito2019 - gefitnib resistance of lung adenocarcinoma caused by MET amplification" />
   <BioModelInfo ID="BIOMD0000000828" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Jung2019 - Regulating glioblastoma signaling pathways and anti-invasion therapy - core control model" exception="MATHML_PARSING" />
   <BioModelInfo ID="BIOMD0000000829" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Jung2019 - egulating glioblastoma signaling pathways and anti-invasion therapy cell cycle dynamics model" exception="MATHML_PARSING" />
-  <BioModelInfo ID="BIOMD0000000830" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="GiantsosAdams2013 - Growth of glycocalyx under static conditions" />
+  <BioModelInfo ID="BIOMD0000000830" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="GiantsosAdams2013 - Growth of glycocalyx under static conditions" />
   <BioModelInfo ID="BIOMD0000000831" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smith1980 - Hypothalamic Regulation" />
   <BioModelInfo ID="BIOMD0000000832" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Shin2016 - Unveiling Hidden Dynamics of Hippo Signalling" exception="EXPRESSION_BINDING_EXCEPTION" />
   <BioModelInfo ID="BIOMD0000000833" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="DiCamillo2016 - Insulin signalling pathway - Rule-based model" />
@@ -846,17 +846,17 @@
   <BioModelInfo ID="BIOMD0000000846" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Gulbudak2019.2 - Heterogeneous viral strategies promote coexistence in virus-microbe systems (Chronic)" />
   <BioModelInfo ID="BIOMD0000000847" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Adams2019 - The regulatory role of shikimate in plant phenylalanine metabolism" />
   <BioModelInfo ID="BIOMD0000000848" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="FatehiChenar2018 - Mathematical model of immune response to hepatitis B" />
-  <BioModelInfo ID="BIOMD0000000849" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Potassium balance in lactating and non-lactating dairy cows" />
+  <BioModelInfo ID="BIOMD0000000849" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Potassium balance in lactating and non-lactating dairy cows" />
   <BioModelInfo ID="BIOMD0000000850" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Jenner2019 - Oncolytic virotherapy for tumours following a Gompertz growth law" />
   <BioModelInfo ID="BIOMD0000000851" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ho2019 - Mathematical models of transmission dynamics and vaccine strategies in Hong Kong during the 2017-2018 winter influenza season (Simple)" />
   <BioModelInfo ID="BIOMD0000000852" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Andersen2017 - Mathematical modelling as a proof of concept for MPNs as a human inflammation model for cancer development" />
   <BioModelInfo ID="BIOMD0000000853" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smolen2018 - Paradoxical LTP maintenance with inhibition of protein synthesis and the proteasome" />
   <BioModelInfo ID="BIOMD0000000854" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Gray2016 - The Akt switch model" />
   <BioModelInfo ID="BIOMD0000000855" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Cooper2015 - Modeling the effects of systemic mediators on the inflammatory phase of wound healing" />
-  <BioModelInfo ID="BIOMD0000000856" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Budding yeast size control by titration of nuclear sites" />
+  <BioModelInfo ID="BIOMD0000000856" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Budding yeast size control by titration of nuclear sites" />
   <BioModelInfo ID="BIOMD0000000857" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Larbat2016.1 - Modeling the diversion of primary carbon flux into secondary metabolism under variable nitrate and light or dark conditions (Base Model)" />
-  <BioModelInfo ID="BIOMD0000000858" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Larbat2016.2 - Modeling the diversion of primary carbon flux into secondary metabolism under variable nitrate and light or dark conditions (Light Dark Cycles)" exception="MATHML_PARSING" />
-  <BioModelInfo ID="BIOMD0000000859" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Larbat2016.3 - Modeling the diversion of primary carbon flux into secondary metabolism under variable nitrate and light or dark conditions (Light Dark Cycles with Minimum Starch Adaption)" exception="MATHML_PARSING" />
+  <BioModelInfo ID="BIOMD0000000858" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Larbat2016.2 - Modeling the diversion of primary carbon flux into secondary metabolism under variable nitrate and light or dark conditions (Light Dark Cycles)" exception="MATHML_PARSING" />
+  <BioModelInfo ID="BIOMD0000000859" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Larbat2016.3 - Modeling the diversion of primary carbon flux into secondary metabolism under variable nitrate and light or dark conditions (Light Dark Cycles with Minimum Starch Adaption)" exception="MATHML_PARSING" />
   <BioModelInfo ID="BIOMD0000000860" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Proctor2017- Role of microRNAs in osteoarthritis (Positive Feedforward Incoherent By MicroRNA)_1" />
   <BioModelInfo ID="BIOMD0000000861" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bachmann2011 - Division of labor by dual feedback regulators controls JAK2/STAT5 signaling over broad ligand range" />
   <BioModelInfo ID="BIOMD0000000862" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Proctor2017- Role of microRNAs in osteoarthritis (Positive Feedback By Micro RNA)" />
@@ -896,7 +896,7 @@
   <BioModelInfo ID="BIOMD0000000896" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Szymanska2009 - Mathematical modeling of heat shock protein synthesis in response to temperature change" />
   <BioModelInfo ID="BIOMD0000000897" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Khajanchi2015 - The combined effects of optimal control in cancer remission" />
   <BioModelInfo ID="BIOMD0000000898" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Jiao2018 - Feedback regulation in a stem cell model with acute myeloid leukaemia" />
-  <BioModelInfo ID="BIOMD0000000899" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ota2015 - Positive regulation of Rho GTPase activity by RhoGDIs as a result of their direct interaction with GAPs (GDI integrated)" />
+  <BioModelInfo ID="BIOMD0000000899" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Ota2015 - Positive regulation of Rho GTPase activity by RhoGDIs as a result of their direct interaction with GAPs (GDI integrated)" />
   <BioModelInfo ID="BIOMD0000000900" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Bianca2013 - Persistence analysis in a Kolmogorov-type model for cancer-immune system competition" />
   <BioModelInfo ID="BIOMD0000000901" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="ChowHall2008 Dynamics of Human Weight Change_ODE_1" />
   <BioModelInfo ID="BIOMD0000000902" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wang2019 - A mathematical model of oncolytic virotherapy with time delay" />
@@ -962,9 +962,9 @@
   <BioModelInfo ID="BIOMD0000000962" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Zhao2020 - SUQC model of COVID-19 transmission dynamics in Wuhan, Hubei, and China" />
   <BioModelInfo ID="BIOMD0000000963" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Weitz2020 - SIR model of COVID-19 transmission with shielding" />
   <BioModelInfo ID="BIOMD0000000964" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Mwalili2020 - SEIR model of COVID-19 transmission and environmental pathogen prevalence" />
-  <BioModelInfo ID="BIOMD0000000965" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="LeBeau1999 - IP3-dependent intracellular calcium oscillations due to agonist stimulation from Cholecytokinin" />
-  <BioModelInfo ID="BIOMD0000000966" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Cui2008 - in vitro transcriptional response of zinc homeostasis system in Escherichia coli" />
-  <BioModelInfo ID="BIOMD0000000967" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="McLean1991 - Behaviour of HIV in the presence of zidovudine" />
+  <BioModelInfo ID="BIOMD0000000965" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="LeBeau1999 - IP3-dependent intracellular calcium oscillations due to agonist stimulation from Cholecytokinin" />
+  <BioModelInfo ID="BIOMD0000000966" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Cui2008 - in vitro transcriptional response of zinc homeostasis system in Escherichia coli" />
+  <BioModelInfo ID="BIOMD0000000967" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="McLean1991 - Behaviour of HIV in the presence of zidovudine" />
   <BioModelInfo ID="BIOMD0000000968" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Palmer2008 - Negative Feedback in IL-7 mediated Jak-Stat signaling" />
   <BioModelInfo ID="BIOMD0000000969" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Cuadros2020 - SIHRD spatiotemporal model of COVID-19 transmission in Ohio" exception="EXPRESSION_BINDING_EXCEPTION" />
   <BioModelInfo ID="BIOMD0000000970" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Hou2020 - SEIR model of COVID-19 transmission in Wuhan" />
@@ -985,7 +985,7 @@
   <BioModelInfo ID="BIOMD0000000985" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Gex-Fabry1984 - model of receptor-mediated endocytosis of EGF in BALB/c 3T3 cells" />
   <BioModelInfo ID="BIOMD0000000986" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Aubry1995 - Multi-compartment model of fluid-phase endocytosis kinetics in Dictyostelium discoideum" />
   <BioModelInfo ID="BIOMD0000000987" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Aubry1995 - Nine-compartment model of fluid-phase endocytosis kinetics in Dictyostelium discoideum" />
-  <BioModelInfo ID="BIOMD0000000988" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Westerhoff2020 - systems biology model of the coronavirus pandemic 2020" />
+  <BioModelInfo ID="BIOMD0000000988" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Westerhoff2020 - systems biology model of the coronavirus pandemic 2020" />
   <BioModelInfo ID="BIOMD0000000989" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Strasen2018 - TGFb SMAD Signalling - Dose dependent dynamics upon TGFb stimulation" />
   <BioModelInfo ID="BIOMD0000000990" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Strasen2018 - TGFb SMAD Signalling - Degradation of 25pM ligand (TGFb)" />
   <BioModelInfo ID="BIOMD0000000991" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Okuonghae2020 - SEAIR model of COVID-19 transmission in Lagos, Nigeria" />
@@ -1039,7 +1039,7 @@
   <BioModelInfo ID="BIOMD0000001041" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Kimmel2021 - T cell competition and stochastic extinction events in CAR T cell therapy" />
   <BioModelInfo ID="BIOMD0000001042" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Makhlouf2020 - No treatment model of the role of CD4 T cells in tumor-immune interactions" />
   <BioModelInfo ID="BIOMD0000001043" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Wodarz2001 - Viruses as antitumor weapons" />
-  <BioModelInfo ID="BIOMD0000001044" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Csikasz-Nagy2006 - Mammalian Cell Cycle model" />
+  <BioModelInfo ID="BIOMD0000001044" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Csikasz-Nagy2006 - Mammalian Cell Cycle model" />
   <BioModelInfo ID="BIOMD0000001045" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Smith&amp;Moore2004 - The SIR model for the spread of HongKong Flu" />
   <BioModelInfo ID="BIOMD0000001046" Supported="false" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Raman2005 - Mycolic acid pathway of M. tuberculosis" exception="FBC_PACKAGE" />
   <BioModelInfo ID="BIOMD0000001047" Supported="true" vcell_ran="false" COPASI_ran="false" mSBML_ran="false" Name="Collier1996 - Delta Notch intercellular signalling and lateral inhibition" />
