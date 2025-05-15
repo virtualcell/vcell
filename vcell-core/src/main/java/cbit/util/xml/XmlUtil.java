@@ -135,8 +135,9 @@ private XmlUtil() {
 		try {
 			if (schemaLocation != null && schemaLocation.length() > 0) {           //ignores the parserClass, since xerces is the only validating parser we have
 		  		builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser", true);
-		  		builder.setFeature("http://xml.org/sax/features/validation", true); 
-	      		builder.setFeature("http://apache.org/xml/features/validation/schema", true);
+		  		builder.setFeature("https://xml.org/sax/features/validation", true);
+	      		builder.setFeature("https://apache.org/xml/features/validation/schema", true);
+			    builder.setFeature("https://apache.org/xml/features/disallow-doctype-decl", true); // disable potential attack vector https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html#java
 	      		builder.setErrorHandler(errorHandler);
 				builder.setProperty(schemaLocationPropName, schemaLocation);
 			} else {                                                              //ignore schemaLocationPropName
