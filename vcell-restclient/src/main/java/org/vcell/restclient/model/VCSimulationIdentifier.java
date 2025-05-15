@@ -36,7 +36,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
   VCSimulationIdentifier.JSON_PROPERTY_SIMULATION_KEY,
   VCSimulationIdentifier.JSON_PROPERTY_OWNER,
-  VCSimulationIdentifier.JSON_PROPERTY_I_D
+  VCSimulationIdentifier.JSON_PROPERTY_ID
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class VCSimulationIdentifier {
@@ -46,8 +46,8 @@ public class VCSimulationIdentifier {
   public static final String JSON_PROPERTY_OWNER = "owner";
   private User owner;
 
-  public static final String JSON_PROPERTY_I_D = "iD";
-  private String iD;
+  public static final String JSON_PROPERTY_ID = "id";
+  private String id;
 
   public VCSimulationIdentifier() { 
   }
@@ -102,28 +102,28 @@ public class VCSimulationIdentifier {
   }
 
 
-  public VCSimulationIdentifier iD(String iD) {
-    this.iD = iD;
+  public VCSimulationIdentifier id(String id) {
+    this.id = id;
     return this;
   }
 
    /**
-   * Get iD
-   * @return iD
+   * Get id
+   * @return id
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_I_D)
+  @JsonProperty(JSON_PROPERTY_ID)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public String getiD() {
-    return iD;
+  public String getId() {
+    return id;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_I_D)
+  @JsonProperty(JSON_PROPERTY_ID)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setiD(String iD) {
-    this.iD = iD;
+  public void setId(String id) {
+    this.id = id;
   }
 
 
@@ -141,12 +141,12 @@ public class VCSimulationIdentifier {
     VCSimulationIdentifier vcSimulationIdentifier = (VCSimulationIdentifier) o;
     return Objects.equals(this.simulationKey, vcSimulationIdentifier.simulationKey) &&
         Objects.equals(this.owner, vcSimulationIdentifier.owner) &&
-        Objects.equals(this.iD, vcSimulationIdentifier.iD);
+        Objects.equals(this.id, vcSimulationIdentifier.id);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(simulationKey, owner, iD);
+    return Objects.hash(simulationKey, owner, id);
   }
 
   @Override
@@ -155,7 +155,7 @@ public class VCSimulationIdentifier {
     sb.append("class VCSimulationIdentifier {\n");
     sb.append("    simulationKey: ").append(toIndentedString(simulationKey)).append("\n");
     sb.append("    owner: ").append(toIndentedString(owner)).append("\n");
-    sb.append("    iD: ").append(toIndentedString(iD)).append("\n");
+    sb.append("    id: ").append(toIndentedString(id)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -213,9 +213,9 @@ public class VCSimulationIdentifier {
       joiner.add(getOwner().toUrlQueryString(prefix + "owner" + suffix));
     }
 
-    // add `iD` to the URL query string
-    if (getiD() != null) {
-      joiner.add(String.format("%siD%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getiD()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    // add `id` to the URL query string
+    if (getId() != null) {
+      joiner.add(String.format("%sid%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getId()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();

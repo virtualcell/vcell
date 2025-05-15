@@ -53,7 +53,7 @@ public class UserRestDB {
         ALLOW_ANONYMOUS,
         REQUIRE_USER
     }
-    public User getUserFromIdentity(SecurityIdentity securityIdentity, UserRequirement allowAnonymous) throws DataAccessException, WebApplicationException {
+    public User getUserFromIdentity(SecurityIdentity securityIdentity, UserRequirement allowAnonymous) throws WebApplicationException {
         List<UserIdentity> userIdentities = getUserIdentities(securityIdentity);
         if (userIdentities == null || userIdentities.isEmpty()){
             if (allowAnonymous == UserRequirement.ALLOW_ANONYMOUS){
@@ -63,32 +63,32 @@ public class UserRestDB {
             }
         }
         if (userIdentities.size() > 1){
-            throw new DataAccessException("multiple identities found for user");
+            throw new WebApplicationException("Multiple identities found for user.", HTTP.FORBIDDEN);
         }
         return userIdentities.get(0).user();
     }
 
     // TODO: add some short-lived caching here to avoid repeated database calls
-    public List<UserIdentity> getUserIdentities(SecurityIdentity securityIdentity) throws DataAccessException {
+    public List<UserIdentity> getUserIdentities(SecurityIdentity securityIdentity) throws WebApplicationException {
         if (securityIdentity.isAnonymous()){
             return null;
         }
         JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
         if (jwt == null) {
-            throw new DataAccessException("securityIdentity is missing jwt");
+            throw new WebApplicationException("securityIdentity is missing jwt", HTTP.UNAUTHORIZED);
         }
         String subject = jwt.getSubject();
         String issuer = jwt.getIssuer();
         if (subject == null) {
-            throw new DataAccessException("securityIdentity is missing subject");
+            throw new WebApplicationException("securityIdentity is missing subject", HTTP.UNAUTHORIZED);
         }
         if (issuer == null) {
-            throw new DataAccessException("securityIdentity is missing issuer");
+            throw new WebApplicationException("securityIdentity is missing issuer", HTTP.UNAUTHORIZED);
         }
         try {
             return adminDBTopLevel.getUserIdentitiesFromSubjectAndIssuer(subject, issuer, true);
-        } catch (SQLException e) {
-            throw new DataAccessException("database error while retrieving user identity: "+e.getMessage(), e);
+        } catch (SQLException | DataAccessException e) {
+            throw new WebApplicationException("database error while retrieving user identity: "+e.getMessage(), e, HTTP.BAD_REQUEST);
         }
     }
 

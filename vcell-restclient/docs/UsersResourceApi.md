@@ -1,6 +1,6 @@
 # UsersResourceApi
 
-All URIs are relative to *https://vcell-dev.cam.uchc.edu*
+All URIs are relative to *https://vcell.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -47,7 +47,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -115,7 +115,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -184,7 +184,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         try {
@@ -244,7 +244,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         try {
@@ -307,7 +307,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -371,7 +371,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -437,7 +437,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -501,7 +501,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -566,7 +566,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         try {
@@ -626,7 +626,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         try {
@@ -689,7 +689,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -757,7 +757,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -827,7 +827,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -895,7 +895,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -964,7 +964,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         String magic = "magic_example"; // String | 
@@ -1028,7 +1028,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
         String magic = "magic_example"; // String | 
@@ -1095,7 +1095,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -1165,7 +1165,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -1237,7 +1237,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
@@ -1305,7 +1305,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);

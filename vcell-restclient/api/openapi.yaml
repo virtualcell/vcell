@@ -3,7 +3,7 @@ info:
   contact:
     email: vcell_support@uchc.com
     name: VCell API Support
-    url: http://exampleurl.com/contact
+    url: https://vcell.org
   description: VCell API
   license:
     name: MIT
@@ -12,7 +12,7 @@ info:
   title: VCell API
   version: 1.0.1
 servers:
-- url: https://vcell-dev.cam.uchc.edu
+- url: https://vcell.cam.uchc.edu
 paths:
   /api/v1/Simulation/{simID}/simulationStatus:
     get:
@@ -141,18 +141,18 @@ paths:
       tags:
       - Admin Resource
       x-accepts: application/pdf
-  /api/v1/bioModel/upload_bioModel:
+  /api/v1/bioModel/save:
     post:
-      operationId: uploadBioModel
+      operationId: saveBioModel
       requestBody:
         content:
-          text/xml:
+          application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/SaveBioModel'
       responses:
         "200":
           content:
-            text/plain:
+            application/xml:
               schema:
                 type: string
           description: OK
@@ -163,11 +163,12 @@ paths:
       security:
       - openId:
         - user
-      summary: Upload the BioModel to VCell database. Returns BioModel ID.
+      summary: Save's the given BioModel. Optional parameters of name and simulations
+        to update due to math changes. Returns saved BioModel as VCML.
       tags:
       - Bio Model Resource
-      x-content-type: text/xml
-      x-accepts: text/plain
+      x-content-type: application/json
+      x-accepts: application/xml
   /api/v1/bioModel/{bioModelID}:
     delete:
       operationId: deleteBioModel
@@ -187,7 +188,7 @@ paths:
       - Bio Model Resource
       x-accepts: application/json
     get:
-      operationId: getBiomodelById
+      operationId: getBioModel
       parameters:
       - explode: false
         in: path
@@ -202,13 +203,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BioModel'
-          description: return BioModel information in JSON format
-        "404":
-          description: BioModel not found
-      summary: Get BioModel information in JSON format by ID.
+          description: OK
+      summary: Get BioModel.
       tags:
       - Bio Model Resource
       x-accepts: application/json
+  /api/v1/bioModel/{bioModelID}/vcml_download:
+    get:
+      operationId: getBioModelVCML
+      parameters:
+      - explode: false
+        in: path
+        name: bioModelID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            text/xml:
+              schema:
+                type: string
+          description: OK
+      summary: Get the BioModel in VCML format.
+      tags:
+      - Bio Model Resource
+      x-accepts: text/xml
   /api/v1/fieldData/IDs:
     get:
       operationId: getAllIDs
@@ -1538,6 +1559,28 @@ components:
           format: date
           type: string
       type: object
+    SaveBioModel:
+      example:
+        simsRequiringUpdates:
+        - simsRequiringUpdates
+        - simsRequiringUpdates
+        name: name
+        bioModelXML: bioModelXML
+      properties:
+        bioModelXML:
+          pattern: \S
+          type: string
+        name:
+          nullable: true
+          type: string
+        simsRequiringUpdates:
+          items:
+            type: string
+          nullable: true
+          type: array
+      required:
+      - bioModelXML
+      type: object
     SchedulerStatus:
       enum:
       - WAITING
@@ -1608,7 +1651,7 @@ components:
               value: 0.8008281904610115
           simulationKey:
             value: 0.8008281904610115
-          iD: iD
+          id: id
         fieldTaskID: 1
         fieldSimulationQueueEntryStatus:
           fieldQueuePriority: 5
@@ -1754,7 +1797,7 @@ components:
                 value: 0.8008281904610115
             simulationKey:
               value: 0.8008281904610115
-            iD: iD
+            id: id
           fieldTaskID: 1
           fieldSimulationQueueEntryStatus:
             fieldQueuePriority: 5
@@ -1845,13 +1888,13 @@ components:
             value: 0.8008281904610115
         simulationKey:
           value: 0.8008281904610115
-        iD: iD
+        id: id
       properties:
         simulationKey:
           $ref: '#/components/schemas/KeyValue'
         owner:
           $ref: '#/components/schemas/User'
-        iD:
+        id:
           type: string
       type: object
     VariableDomain:

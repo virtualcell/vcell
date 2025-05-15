@@ -20,6 +20,7 @@ export * from './mathmodel-ref';
 export * from './model-type';
 export * from './origin';
 export * from './publication';
+export * from './save-bio-model';
 export * from './scheduler-status';
 export * from './simulation-execution-status-record';
 export * from './simulation-job-status-record';

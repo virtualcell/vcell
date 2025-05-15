@@ -11,8 +11,9 @@
  */
 
 
-export interface FieldDataSaveResults { 
-    fieldDataName?: string;
-    fieldDataID?: string;
+export interface SaveBioModel { 
+    bioModelXML: string;
+    name?: string | null;
+    simsRequiringUpdates?: Array<string> | null;
 }
 

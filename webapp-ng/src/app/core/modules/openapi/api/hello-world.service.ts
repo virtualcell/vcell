@@ -35,7 +35,7 @@ import {
 })
 export class HelloWorldService implements HelloWorldServiceInterface {
 
-    protected basePath = 'https://vcell-dev.cam.uchc.edu';
+    protected basePath = 'https://vcell.cam.uchc.edu';
     public defaultHeaders = new HttpHeaders();
     public configuration = new Configuration();
     public encoder: HttpParameterCodec;

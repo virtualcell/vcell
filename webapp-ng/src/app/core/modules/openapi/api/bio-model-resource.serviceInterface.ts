@@ -14,6 +14,7 @@ import { HttpHeaders }                                       from '@angular/comm
 import { Observable }                                        from 'rxjs';
 
 import { BioModel } from '../model/models';
+import { SaveBioModel } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';
@@ -32,17 +33,24 @@ export interface BioModelResourceServiceInterface {
     deleteBioModel(bioModelID: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
-     * Get BioModel information in JSON format by ID.
+     * Get BioModel.
      * 
      * @param bioModelID 
      */
-    getBiomodelById(bioModelID: string, extraHttpRequestParams?: any): Observable<BioModel>;
+    getBioModel(bioModelID: string, extraHttpRequestParams?: any): Observable<BioModel>;
 
     /**
-     * Upload the BioModel to VCell database. Returns BioModel ID.
+     * Get the BioModel in VCML format.
      * 
-     * @param body 
+     * @param bioModelID 
      */
-    uploadBioModel(body?: string, extraHttpRequestParams?: any): Observable<string>;
+    getBioModelVCML(bioModelID: string, extraHttpRequestParams?: any): Observable<string>;
+
+    /**
+     * Save\&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
+     * 
+     * @param saveBioModel 
+     */
+    saveBioModel(saveBioModel?: SaveBioModel, extraHttpRequestParams?: any): Observable<string>;
 
 }

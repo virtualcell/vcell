@@ -6,14 +6,14 @@ info:
   termsOfService: Your terms of service here
   contact:
     name: VCell API Support
-    url: http://exampleurl.com/contact
+    url: https://vcell.org
     email: vcell_support@uchc.com
   license:
     name: MIT
     url: http://opensource.org/licenses/MIT
   version: 1.0.1
 servers:
-- url: https://vcell-dev.cam.uchc.edu
+- url: https://vcell.cam.uchc.edu
 paths:
   /api/v1/Simulation/{simID}/simulationStatus:
     get:
@@ -126,22 +126,23 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/bioModel/upload_bioModel:
+  /api/v1/bioModel/save:
     post:
       tags:
       - Bio Model Resource
-      summary: Upload the BioModel to VCell database. Returns BioModel ID.
-      operationId: uploadBioModel
+      summary: Save's the given BioModel. Optional parameters of name and simulations
+        to update due to math changes. Returns saved BioModel as VCML.
+      operationId: saveBioModel
       requestBody:
         content:
-          text/xml:
+          application/json:
             schema:
-              type: string
+              $ref: '#/components/schemas/SaveBioModel'
       responses:
         "200":
           description: OK
           content:
-            text/plain:
+            application/xml:
               schema:
                 type: string
         "401":
@@ -155,8 +156,8 @@ paths:
     get:
       tags:
       - Bio Model Resource
-      summary: Get BioModel information in JSON format by ID.
-      operationId: getBiomodelById
+      summary: Get BioModel.
+      operationId: getBioModel
       parameters:
       - name: bioModelID
         in: path
@@ -165,13 +166,11 @@ paths:
           type: string
       responses:
         "200":
-          description: return BioModel information in JSON format
+          description: OK
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BioModel'
-        "404":
-          description: BioModel not found
     delete:
       tags:
       - Bio Model Resource
@@ -186,6 +185,25 @@ paths:
       responses:
         "204":
           description: No Content
+  /api/v1/bioModel/{bioModelID}/vcml_download:
+    get:
+      tags:
+      - Bio Model Resource
+      summary: Get the BioModel in VCML format.
+      operationId: getBioModelVCML
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/xml:
+              schema:
+                type: string
   /api/v1/fieldData/IDs:
     get:
       tags:
@@ -1254,6 +1272,22 @@ components:
             $ref: '#/components/schemas/MathmodelRef'
         date:
           $ref: '#/components/schemas/Date'
+    SaveBioModel:
+      required:
+      - bioModelXML
+      type: object
+      properties:
+        bioModelXML:
+          pattern: \S
+          type: string
+        name:
+          type: string
+          nullable: true
+        simsRequiringUpdates:
+          type: array
+          items:
+            type: string
+          nullable: true
     SchedulerStatus:
       enum:
       - WAITING
@@ -1422,7 +1456,7 @@ components:
           $ref: '#/components/schemas/KeyValue'
         owner:
           $ref: '#/components/schemas/User'
-        iD:
+        id:
           type: string
     VariableDomain:
       enum:

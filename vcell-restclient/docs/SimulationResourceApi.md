@@ -1,6 +1,6 @@
 # SimulationResourceApi
 
-All URIs are relative to *https://vcell-dev.cam.uchc.edu*
+All URIs are relative to *https://vcell.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
@@ -33,7 +33,7 @@ import org.vcell.restclient.api.SimulationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         SimulationResourceApi apiInstance = new SimulationResourceApi(defaultClient);
@@ -105,7 +105,7 @@ import org.vcell.restclient.api.SimulationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         SimulationResourceApi apiInstance = new SimulationResourceApi(defaultClient);
@@ -179,7 +179,7 @@ import org.vcell.restclient.api.SimulationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         SimulationResourceApi apiInstance = new SimulationResourceApi(defaultClient);
@@ -247,7 +247,7 @@ import org.vcell.restclient.api.SimulationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         SimulationResourceApi apiInstance = new SimulationResourceApi(defaultClient);
@@ -317,7 +317,7 @@ import org.vcell.restclient.api.SimulationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         SimulationResourceApi apiInstance = new SimulationResourceApi(defaultClient);
@@ -385,7 +385,7 @@ import org.vcell.restclient.api.SimulationResourceApi;
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell-dev.cam.uchc.edu");
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
         SimulationResourceApi apiInstance = new SimulationResourceApi(defaultClient);

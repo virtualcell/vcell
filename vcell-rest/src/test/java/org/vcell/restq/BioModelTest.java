@@ -1,6 +1,7 @@
 package org.vcell.restq;
 
 import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
@@ -13,9 +14,11 @@ import jakarta.ws.rs.core.MediaType;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.*;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.UsersResourceApi;
+import org.vcell.restclient.model.SaveBioModel;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
@@ -50,6 +53,7 @@ public class BioModelTest {
     @AfterEach
     public void removeOIDCMappings() throws SQLException, DataAccessException {
         TestEndpointUtils.removeAllMappings(agroalConnectionFactory);
+        TestEndpointUtils.clearAllBioModelEntries(agroalConnectionFactory);
     }
 
     // TODO: Right now the biomodel endpoint doesn't implement authentication, but when it does it'll need to
@@ -61,6 +65,7 @@ public class BioModelTest {
         bioModel.setName("BioModelTest_testAddAndRemove");
         bioModel.clearVersion();
         vcmlString = XmlHelper.bioModelToXML(bioModel);
+        SaveBioModel saveBioModel = new SaveBioModel().bioModelXML(vcmlString);
         // create a test publication using org.vcell.rest.model.Publication and add it to the list
 
         boolean mapped = new UsersResourceApi(aliceAPIClient).mapUser(TestEndpointUtils.vcellNagiosUserLoginInfo);
@@ -69,23 +74,25 @@ public class BioModelTest {
         // insert publication1 as user
         Response uploadResponse = given()
                 .auth().oauth2(keycloakClient.getAccessToken(TestEndpointUtils.TestOIDCUsers.alice.name()))
-                .body(vcmlString)
-                .header("Content-Type", MediaType.TEXT_XML)
+                .body(new ObjectMapper().writeValueAsString(saveBioModel))
+                .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when()
-                .post("/api/v1/bioModel/upload_bioModel");
+                .post("/api/v1/bioModel/save");
         uploadResponse.then().statusCode(200);
-        String uploadedID = uploadResponse.body().print();
+        String bioModelVCML = uploadResponse.body().print();
+        BioModel bioModel1 = XmlHelper.XMLToBioModel(new XMLSource(bioModelVCML));
+        String bioModelKey = bioModel1.getVersion().getVersionKey().toString();
 
         Response jsonBody = given()
                 .auth().oauth2(keycloakClient.getAccessToken(TestEndpointUtils.TestOIDCUsers.alice.name()))
-                .when().get("/api/v1/bioModel/" + uploadedID);
+                .when().get("/api/v1/bioModel/" + bioModelKey);
         jsonBody.then().statusCode(200);
         jsonBody.body().print();
 
         given()
                 .auth().oauth2(keycloakClient.getAccessToken(TestEndpointUtils.TestOIDCUsers.alice.name()))
                 .when()
-                .delete("/api/v1/bioModel/" + uploadedID)
+                .delete("/api/v1/bioModel/" + bioModelKey)
                 .then()
                 .statusCode(204);
         // insert publication1 as nonpubuser (doesn't have proper permission)

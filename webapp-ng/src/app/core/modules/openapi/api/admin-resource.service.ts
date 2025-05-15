@@ -33,7 +33,7 @@ import {
 })
 export class AdminResourceService implements AdminResourceServiceInterface {
 
-    protected basePath = 'https://vcell-dev.cam.uchc.edu';
+    protected basePath = 'https://vcell.cam.uchc.edu';
     public defaultHeaders = new HttpHeaders();
     public configuration = new Configuration();
     public encoder: HttpParameterCodec;

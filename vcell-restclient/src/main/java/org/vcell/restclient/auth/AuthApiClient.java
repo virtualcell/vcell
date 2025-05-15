@@ -8,6 +8,7 @@ import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.CustomApiClientCode;
+import org.vcell.restclient.CustomObjectMapper;
 
 import java.io.IOException;
 import java.net.URI;
@@ -50,6 +51,7 @@ public class AuthApiClient extends ApiClient {
         this.setHost(apiBaseUrl.getHost());
         this.setPort(apiBaseUrl.getPort());
         this.setBasePath(apiBaseUrl.getPath());
+        this.setObjectMapper(new CustomObjectMapper());
     }
 
     public void refreshAccessToken() throws IOException, ParseException {
