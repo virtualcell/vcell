@@ -211,17 +211,17 @@
 		</repository>
 
 		<!-- needed for biomodels.net web services -->
-		<repository>
-			<id>ebi-repo</id>
-			<name>The EBI internal repository</name>
-			<url>https://www.ebi.ac.uk/~maven/m2repo</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
+<!--		<repository>-->
+<!--			<id>ebi-repo</id>-->
+<!--			<name>The EBI internal repository</name>-->
+<!--			<url>https://www.ebi.ac.uk/~maven/m2repo</url>-->
+<!--			<releases>-->
+<!--				<enabled>true</enabled>-->
+<!--			</releases>-->
+<!--			<snapshots>-->
+<!--				<enabled>false</enabled>-->
+<!--			</snapshots>-->
+<!--		</repository>-->
 
 		<!-- Needed for custom JSBML artifacts we create -->
 		<repository>
