@@ -69,4 +69,8 @@ public void setValue(double argValue) {
 public String toString() {
 	return new String(getName() + ";\t" + getValue());
 }
+
+    public BNGParameter deepClone() {
+		return new BNGParameter(name, value);
+    }
 }

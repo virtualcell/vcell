@@ -1131,7 +1131,7 @@ public Model getReactionStepAsModel(KeyValue reactionStepKey) throws DataAccessE
 		Model reactionModel = new XmlReader(true).getModel(element);
 		if(reactionModel != null){
 			try{
-				reactionModel = (Model)BeanUtils.cloneSerializable(reactionModel);
+				reactionModel = XmlHelper.cloneModel(reactionModel);
 				reactionModel.refreshDependencies();
 			}catch(Exception e){
 				throw new DataAccessException(e.getMessage(), e);
