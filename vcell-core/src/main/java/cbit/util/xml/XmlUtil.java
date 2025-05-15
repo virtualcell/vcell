@@ -24,6 +24,7 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -137,7 +138,6 @@ private XmlUtil() {
 		  		builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser", true);
 		  		builder.setFeature("https://xml.org/sax/features/validation", true);
 	      		builder.setFeature("https://apache.org/xml/features/validation/schema", true);
-			    builder.setFeature("https://apache.org/xml/features/disallow-doctype-decl", true); // disable potential attack vector https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html#java
 	      		builder.setErrorHandler(errorHandler);
 				builder.setProperty(schemaLocationPropName, schemaLocation);
 			} else {                                                              //ignore schemaLocationPropName
@@ -148,7 +148,8 @@ private XmlUtil() {
 				}
 				builder.setErrorHandler(errorHandler);
 			}
-	  		sDoc = builder.build(reader);
+			builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
+			sDoc = builder.build(reader);
 			// ----- Element root = null;
 	  		// ----- root = sDoc.getRootElement();
 	  		// flush/replace previous error log with every read.
