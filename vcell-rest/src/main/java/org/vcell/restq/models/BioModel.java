@@ -21,7 +21,7 @@ public record BioModel(
         Application[] applications
 ) {
 
-        public static BioModel fromBioModelRep(cbit.vcell.modeldb.BioModelRep bioModelRep) throws ExpressionException {
+        public static BioModel fromBioModelRep(cbit.vcell.modeldb.BioModelRep bioModelRep) {
             ArrayList<String> groupList = new ArrayList<>();
             for (User user: bioModelRep.getGroupUsers()){
                 groupList.add(user.getName());
