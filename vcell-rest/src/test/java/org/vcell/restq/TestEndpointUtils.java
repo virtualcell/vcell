@@ -2,7 +2,10 @@ package org.vcell.restq;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.model.*;
+import cbit.vcell.model.Feature;
+import cbit.vcell.model.Kinetics;
+import cbit.vcell.model.SimpleReaction;
+import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.parser.Expression;
@@ -11,7 +14,6 @@ import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -24,7 +26,6 @@ import org.vcell.restclient.model.Publication;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -32,6 +33,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -101,7 +103,7 @@ public class TestEndpointUtils {
     public static cbit.vcell.biomodel.BioModel getTestBioModel() throws XmlParseException, PropertyVetoException, IOException {
         String vcmlString = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestVCML.vcml"));
         cbit.vcell.biomodel.BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlString));
-        bioModel.setName("BioModelApiTest_testAddRemove");
+        bioModel.setName("TestBioModel");
         bioModel.clearVersion();
         return bioModel;
     }
@@ -149,15 +151,31 @@ public class TestEndpointUtils {
         return tmpFile;
     }
 
-    public static void clearAllBioModelEntries(DatabaseServerImpl databaseServer) throws DataAccessException {
-        BioModelInfo[] infos = databaseServer.getBioModelInfos(TestEndpointUtils.administratorUser, false);
-        for (BioModelInfo info : infos){
-            databaseServer.deleteBioModel(TestEndpointUtils.administratorUser, info.getVersion().getVersionKey());
-        }
+    /**
+     * Empties out all BioModel, Geometry, math, and simulation related tables
+     */
+    public static void clearAllBioModelEntries(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
+        Object object = new Object();
+        Connection connection = agroalConnectionFactory.getConnection(object);
+        connection.prepareStatement("DELETE FROM VC_BIOMODEL").execute();
+        connection.prepareStatement("DELETE FROM VC_BIOMODELXML").execute();
+        connection.prepareStatement("DELETE FROM VC_BIOMODELSIM").execute();
+        connection.prepareStatement("DELETE FROM VC_METADATA").execute();
+        connection.prepareStatement("DELETE FROM VC_BIOMODELSIMCONTEXT").execute();
 
-        infos = databaseServer.getBioModelInfos(TestEndpointUtils.vcellNagiosUser, false);
-        for (BioModelInfo info : infos){
-            databaseServer.deleteBioModel(TestEndpointUtils.vcellNagiosUser, info.getVersion().getVersionKey());
-        }
+        connection.prepareStatement("DELETE FROM VC_SIMCONTEXT").execute();
+        connection.prepareStatement("DELETE FROM VC_SIMULATION").execute();
+
+        connection.prepareStatement("DELETE FROM VC_MATH").execute();
+        connection.prepareStatement("DELETE FROM VC_MATHMODELSIM").execute();
+        connection.prepareStatement("DELETE FROM VC_MATHMODELXML").execute();
+        connection.prepareStatement("DELETE FROM VC_MATHMODEL").execute();
+
+        connection.prepareStatement("DELETE FROM VC_GEOMETRY").execute();
+        connection.prepareStatement("DELETE FROM VC_GEOMETRICREGION").execute();
+        connection.prepareStatement("DELETE FROM VC_GEOMEXTENT").execute();
+
+        connection.commit();
+        new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()).cleanupDatabase();
     }
 }

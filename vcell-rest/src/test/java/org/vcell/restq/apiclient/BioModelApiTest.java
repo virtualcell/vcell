@@ -33,7 +33,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 @QuarkusTest
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class BioModelApiTest {
 
     @ConfigProperty(name = "quarkus.oidc.auth-server-url")
@@ -49,6 +48,7 @@ public class BioModelApiTest {
 
     private ApiClient aliceAPIClient;
     private ApiClient bobAPIClient;
+    private DatabaseServerImpl databaseServer;
 
     @BeforeAll
     public static void setupConfig(){
@@ -56,29 +56,27 @@ public class BioModelApiTest {
     }
 
     @BeforeEach
-    public void createClients() throws ApiException {
+    public void createClients() throws ApiException, DataAccessException {
         aliceAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.alice);
         bobAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.bob);
-
+        databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         TestEndpointUtils.mapApiClientToAdmin(aliceAPIClient);
     }
 
     @AfterEach
     public void removeOIDCMappings() throws SQLException, DataAccessException {
         TestEndpointUtils.removeAllMappings(agroalConnectionFactory);
-        TestEndpointUtils.clearAllBioModelEntries(new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()));
+        TestEndpointUtils.clearAllBioModelEntries(agroalConnectionFactory);
     }
 
 
     @Test
-    @Order(1)
     public void testSavingBioModel() throws ApiException, IOException, XmlParseException, PropertyVetoException, DataAccessException, SQLException {
         BioModelResourceApi bioModelResourceApi = new BioModelResourceApi(aliceAPIClient);
-        DatabaseServerImpl databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         ServerDocumentManager serverDocumentManager = new ServerDocumentManager(databaseServer);
         String vcmlToBeUploaded = XmlHelper.bioModelToXML(TestEndpointUtils.getTestBioModel());
 
-        SaveBioModel saveBioModel = new SaveBioModel().bioModelXML(vcmlToBeUploaded).name("BioModelApiTest_testAddRemove");
+        SaveBioModel saveBioModel = new SaveBioModel().bioModelXML(vcmlToBeUploaded);
         String vcmlReturnedFromSave = bioModelResourceApi.saveBioModel(saveBioModel);
         BioModel savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlReturnedFromSave));
 
@@ -113,10 +111,8 @@ public class BioModelApiTest {
     }
 
     @Test
-    @Order(2)
-    public void testRemoveBioModel() throws DataAccessException, PropertyVetoException, XmlParseException, IOException, ApiException, SQLException {
+    public void testRemoveBioModel() throws PropertyVetoException, XmlParseException, IOException, ApiException, SQLException {
         BioModelResourceApi bioModelResourceApi = new BioModelResourceApi(aliceAPIClient);
-        DatabaseServerImpl databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         ServerDocumentManager serverDocumentManager = new ServerDocumentManager(databaseServer);
         SaveBioModel saveBioModel = new SaveBioModel().bioModelXML(XmlHelper.bioModelToXML(TestEndpointUtils.getTestBioModel()));
 

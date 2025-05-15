@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--This biomodel was generated in VCML Version JimDev_Version_7.5.0_build_1234-->
 <vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="JimDev_Version_7.5.0_build_1234">
-  <BioModel Name="test">
+  <BioModel Name="TestBioModel">
     <Annotation>cloned from 'Solver Suite 5.1 (BETA)' owned by user schaff
 cloned from 'Solver Suite test_with_estimation' owned by user frm
 cloned from 'Solver Suite beta' owned by user anu
@@ -230,7 +230,7 @@ cloned from 'non-spatial ODE' owned by user anu
 cloned from 'non-spatial ODE' owned by user schaff
 cloned from 'non-spatial ODE' owned by user les
 (copied from non-spatial stochastic) (copied from 3D pde)</Annotation>
-      <Geometry Name="nonspatial2106460167" Dimension="0">
+      <Geometry Name="test-geometry" Dimension="0">
         <Annotation>cloned from 'nonspatial381239605' owned by user schaff
 cloned from 'nonspatial381239605' owned by user frm
 cloned from 'nonspatial1214274674' owned by user anu

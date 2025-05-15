@@ -53,7 +53,7 @@ public class BioModelTest {
     @AfterEach
     public void removeOIDCMappings() throws SQLException, DataAccessException {
         TestEndpointUtils.removeAllMappings(agroalConnectionFactory);
-        TestEndpointUtils.clearAllBioModelEntries(new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()));
+        TestEndpointUtils.clearAllBioModelEntries(agroalConnectionFactory);
     }
 
     // TODO: Right now the biomodel endpoint doesn't implement authentication, but when it does it'll need to

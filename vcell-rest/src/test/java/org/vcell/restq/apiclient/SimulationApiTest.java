@@ -107,7 +107,7 @@ public class SimulationApiTest {
     @AfterEach
     public void removeOIDCMappings() throws SQLException, DataAccessException {
         TestEndpointUtils.removeAllMappings(agroalConnectionFactory);
-        TestEndpointUtils.clearAllBioModelEntries(new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()));
+        TestEndpointUtils.clearAllBioModelEntries(agroalConnectionFactory);
     }
 
 
