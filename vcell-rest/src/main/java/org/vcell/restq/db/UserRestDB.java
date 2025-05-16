@@ -11,6 +11,8 @@ import jakarta.ws.rs.WebApplicationException;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.vcell.auth.JWTUtils;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
+import org.vcell.restq.errors.exceptions.NotAuthenticatedException;
+import org.vcell.restq.errors.exceptions.PermissionWebException;
 import org.vcell.restq.handlers.UsersResource;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -53,37 +55,37 @@ public class UserRestDB {
         ALLOW_ANONYMOUS,
         REQUIRE_USER
     }
-    public User getUserFromIdentity(SecurityIdentity securityIdentity, UserRequirement allowAnonymous) throws WebApplicationException {
+    public User getUserFromIdentity(SecurityIdentity securityIdentity, UserRequirement allowAnonymous) throws NotAuthenticatedException, PermissionWebException {
         List<UserIdentity> userIdentities = getUserIdentities(securityIdentity);
         if (userIdentities == null || userIdentities.isEmpty()){
             if (allowAnonymous == UserRequirement.ALLOW_ANONYMOUS){
                 return null;
             } else {
-                throw new WebApplicationException("User is not authenticated.", HTTP.UNAUTHORIZED);
+                throw new NotAuthenticatedException("User is not authenticated.");
             }
         }
         if (userIdentities.size() > 1){
-            throw new WebApplicationException("Multiple identities found for user.", HTTP.FORBIDDEN);
+            throw new PermissionWebException("Multiple identities found for user.");
         }
         return userIdentities.get(0).user();
     }
 
     // TODO: add some short-lived caching here to avoid repeated database calls
-    public List<UserIdentity> getUserIdentities(SecurityIdentity securityIdentity) throws WebApplicationException {
+    public List<UserIdentity> getUserIdentities(SecurityIdentity securityIdentity) throws NotAuthenticatedException {
         if (securityIdentity.isAnonymous()){
             return null;
         }
         JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
         if (jwt == null) {
-            throw new WebApplicationException("securityIdentity is missing jwt", HTTP.UNAUTHORIZED);
+            throw new NotAuthenticatedException("securityIdentity is missing jwt");
         }
         String subject = jwt.getSubject();
         String issuer = jwt.getIssuer();
         if (subject == null) {
-            throw new WebApplicationException("securityIdentity is missing subject", HTTP.UNAUTHORIZED);
+            throw new NotAuthenticatedException("securityIdentity is missing subject");
         }
         if (issuer == null) {
-            throw new WebApplicationException("securityIdentity is missing issuer", HTTP.UNAUTHORIZED);
+            throw new NotAuthenticatedException("securityIdentity is missing issuer");
         }
         try {
             return adminDBTopLevel.getUserIdentitiesFromSubjectAndIssuer(subject, issuer, true);
