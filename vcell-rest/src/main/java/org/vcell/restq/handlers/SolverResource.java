@@ -21,6 +21,7 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.jboss.resteasy.reactive.RestForm;
+import org.vcell.restq.errors.exceptions.UnprocessableContentException;
 import org.vcell.sbml.FiniteVolumeRunUtil;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
@@ -104,7 +105,7 @@ public class SolverResource {
     @Parameter(name = "simulation_name", description = "name of simulation in VCML file")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public File retrieveFiniteVolumeInputFromVCML(@RestForm File vcmlFile, @RestForm String simulation_name) throws IOException {
+    public File retrieveFiniteVolumeInputFromVCML(@RestForm File vcmlFile, @RestForm String simulation_name) throws IOException, UnprocessableContentException {
         File workingDir = Files.createTempDirectory("vcell-").toFile();
         File zipFile = Files.createTempFile("finite-volume", ".zip").toFile();
         try {
@@ -116,8 +117,7 @@ public class SolverResource {
             zip.close();
             return zipFile;
         }catch (XmlParseException | MappingException | SolverException | ExpressionException e){
-            lg.error(e);
-            throw new WebApplicationException("Error processing spatial model: "+e.getMessage(), HTTP.NOT_ACCEPTABLE);
+            throw new UnprocessableContentException("Error processing spatial model: "+e.getMessage(), e);
         } finally {
             for (File file: workingDir.listFiles()){
                 file.delete();
