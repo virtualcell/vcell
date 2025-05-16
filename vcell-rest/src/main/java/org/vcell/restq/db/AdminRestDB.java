@@ -4,6 +4,7 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.WebApplicationException;
+import org.vcell.restq.errors.exceptions.PermissionWebException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
@@ -23,12 +24,12 @@ public class AdminRestDB {
         }
     }
 
-    public String getUsageSummaryHtml(User vcUser) throws DataAccessException, SQLException {
+    public String getUsageSummaryHtml(User vcUser) throws DataAccessException, SQLException, PermissionWebException {
         User.SpecialUser specialUser = adminDBTopLevel.getUser(vcUser.getName(), true);
         if (specialUser.isAdmin()){
             return adminDBTopLevel.getBasicStatistics();
         }else{
-            throw new WebApplicationException("not authorized", 403);
+            throw new PermissionWebException("not authorized");
         }
     }
 

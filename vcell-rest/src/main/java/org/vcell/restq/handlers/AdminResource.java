@@ -22,6 +22,9 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.resteasy.reactive.NoCache;
 import org.vcell.restq.db.AdminRestDB;
 import org.vcell.restq.db.UserRestDB;
+import org.vcell.restq.errors.exceptions.DataAccessWebException;
+import org.vcell.restq.errors.exceptions.NotAuthenticatedException;
+import org.vcell.restq.errors.exceptions.PermissionWebException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
@@ -59,9 +62,9 @@ public class AdminResource {
             description = "The PDF report",
             content = @Content(mediaType = "application/pdf", schema = @Schema(type = SchemaType.STRING, format = "binary"))
     )
-    public Response getUsage() throws DataAccessException {
+    public Response getUsage() throws DataAccessWebException, NotAuthenticatedException, PermissionWebException {
         if (securityIdentity.isAnonymous()){
-            throw new WebApplicationException("not authenticated", 401);
+            throw new NotAuthenticatedException("not authenticated");
         }
         User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
         try {
@@ -83,11 +86,9 @@ public class AdminResource {
                     .ok(fileStream, "application/pdf")
                     .header("content-disposition","attachment; filename = usage_summary.pdf")
                     .build();
-        } catch (PermissionException e) {
-            throw new WebApplicationException("not authorized", 403);
-        } catch (SQLException e) {
+        } catch (SQLException | DataAccessException e) {
             lg.error("database error", e);
-            throw new DataAccessException("database error", e);
+            throw new DataAccessWebException("database error", e);
         }
     }
 }

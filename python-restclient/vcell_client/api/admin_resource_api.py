@@ -96,7 +96,8 @@ class AdminResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bytearray",
             '401': None,
-            '403': None
+            '403': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -161,7 +162,8 @@ class AdminResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bytearray",
             '401': None,
-            '403': None
+            '403': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -226,7 +228,8 @@ class AdminResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bytearray",
             '401': None,
-            '403': None
+            '403': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(

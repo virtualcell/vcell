@@ -123,6 +123,8 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "555":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -149,6 +151,10 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+        "555":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -171,6 +177,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BioModel'
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+        "404":
+          description: Not found
+        "555":
+          description: Data Access Exception
     delete:
       tags:
       - Bio Model Resource
@@ -185,6 +199,12 @@ paths:
       responses:
         "204":
           description: No Content
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+        "555":
+          description: Data Access Exception
   /api/v1/bioModel/{bioModelID}/vcml_download:
     get:
       tags:
@@ -204,6 +224,14 @@ paths:
             text/xml:
               schema:
                 type: string
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+        "404":
+          description: Not found
+        "555":
+          description: Data Access Exception
   /api/v1/fieldData/IDs:
     get:
       tags:
@@ -223,6 +251,8 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "555":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -289,6 +319,10 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+        "555":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -323,6 +357,10 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+        "555":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -351,6 +389,10 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+        "555":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -386,6 +428,10 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+        "555":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -415,6 +461,8 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "555":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -437,6 +485,8 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "555":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -463,6 +513,10 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+        "555":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -490,6 +544,10 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "404":
+          description: Not found
+        "555":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -521,6 +579,10 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Publication'
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
     put:
       tags:
       - Publication Resource
@@ -590,6 +652,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Publication'
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
     delete:
       tags:
       - Publication Resource
@@ -609,6 +675,8 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "404":
+          description: Not found
       security:
       - openId:
         - user
@@ -668,6 +736,8 @@ paths:
               schema:
                 format: binary
                 type: string
+        "422":
+          description: Unprocessable content submitted
   /api/v1/users/bearerToken:
     post:
       tags:
@@ -709,6 +779,8 @@ paths:
           description: Not Allowed
         "500":
           description: Internal Error
+        "555":
+          description: Data Access Exception
       security:
       - openId:
         - user

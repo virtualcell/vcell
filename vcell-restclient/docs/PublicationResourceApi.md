@@ -220,6 +220,7 @@ null (empty response body)
 | **204** | No Content |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **404** | Not found. |  -  |
 
 ## deletePublicationWithHttpInfo
 
@@ -289,6 +290,7 @@ ApiResponse<Void>
 | **204** | No Content |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **404** | Not found. |  -  |
 
 
 ## getPublicationById
@@ -353,6 +355,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## getPublicationByIdWithHttpInfo
 
@@ -419,6 +423,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 
 ## getPublications
@@ -479,6 +485,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 ## getPublicationsWithHttpInfo
 
@@ -541,6 +549,8 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
 
 
 ## updatePublication

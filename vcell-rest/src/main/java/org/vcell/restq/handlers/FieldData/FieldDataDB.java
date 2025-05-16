@@ -149,7 +149,7 @@ public class FieldDataDB {
         return oldNameNewID;
     }
 
-    public ArrayList<FieldDataResource.FieldDataReference> getAllFieldDataIDs(User user) throws SQLException, DataAccessException {
+    public ArrayList<FieldDataResource.FieldDataReference> getAllFieldDataIDs(User user) throws DataAccessException {
         FieldDataAllDBEntries results = databaseServerImpl.getFieldDataIDs(user);
         ArrayList<FieldDataResource.FieldDataReference> fieldDataReferenceList = new ArrayList<>();
         for (int i =0; i < results.ids.length; i++){

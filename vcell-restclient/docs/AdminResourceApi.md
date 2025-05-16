@@ -71,6 +71,7 @@ This endpoint does not need any parameter.
 | **200** | The PDF report |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## getUsageWithHttpInfo
 
@@ -137,4 +138,5 @@ ApiResponse<[**File**](File.md)>
 | **200** | The PDF report |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 

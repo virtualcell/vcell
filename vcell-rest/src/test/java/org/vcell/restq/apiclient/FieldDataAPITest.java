@@ -162,7 +162,7 @@ public class FieldDataAPITest {
         try{
             fieldDataResourceApi.analyzeFile(testFile, "invalid N@me #Ezequiel");
         } catch (ApiException e){
-            Assertions.assertEquals(HttpStatus.BAD_REQUEST_400, e.getCode());
+            Assertions.assertEquals(HttpStatus.UNPROCESSABLE_ENTITY_422, e.getCode());
         }
 
         FieldData results = fieldDataResourceApi.analyzeFile(testFile, "bob");
