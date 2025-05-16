@@ -1100,14 +1100,10 @@ public class FieldDataGUIPanel extends JPanel {
                         = (FieldDataSpec) hashTable.get(HASHTABLE_FDOS);
                 DocumentManager documentManager = clientRequestManager.getDocumentManager();
                 fieldDataSpec.fileName = fieldName;
-                try {
-                    //Add to Server Disk
-                    ExternalDataIdentifier results = documentManager.analyzeAndSaveFieldFromFile(fieldDataSpec);
-                    hashTable.put("result_edi", results);
-                } catch (Exception e) {
-                    hashTable.put("result_edi", null);
-                    throw e;
-                }
+
+                //Add to Server Disk
+                ExternalDataIdentifier results = documentManager.analyzeAndSaveFieldFromFile(fieldDataSpec);
+                hashTable.put("result_edi", results);
             }
         };
 
