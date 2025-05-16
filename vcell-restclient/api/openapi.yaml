@@ -134,6 +134,8 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "500":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -160,6 +162,10 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+        "500":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -183,6 +189,12 @@ paths:
       responses:
         "204":
           description: No Content
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+        "500":
+          description: Data Access Exception
       summary: Delete the BioModel from VCell's database.
       tags:
       - Bio Model Resource
@@ -204,6 +216,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/BioModel'
           description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+        "404":
+          description: Not found.
+        "500":
+          description: Data Access Exception
       summary: Get BioModel.
       tags:
       - Bio Model Resource
@@ -226,6 +246,14 @@ paths:
               schema:
                 type: string
           description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+        "404":
+          description: Not found.
+        "500":
+          description: Data Access Exception
       summary: Get the BioModel in VCML format.
       tags:
       - Bio Model Resource
@@ -246,6 +274,8 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "500":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -297,6 +327,10 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+        "500":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -325,6 +359,10 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+        "500":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -357,6 +395,10 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+        "500":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -389,6 +431,10 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+        "500":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -413,6 +459,8 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "500":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -439,6 +487,8 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "500":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -465,6 +515,10 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+        "500":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -496,6 +550,10 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "404":
+          description: Not found.
+        "500":
+          description: Data Access Exception
       security:
       - openId:
         - user
@@ -530,6 +588,10 @@ paths:
                   $ref: '#/components/schemas/Publication'
                 type: array
           description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
       summary: Get all publications
       tags:
       - Publication Resource
@@ -606,6 +668,8 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "404":
+          description: Not found.
       security:
       - openId:
         - user
@@ -631,6 +695,10 @@ paths:
               schema:
                 $ref: '#/components/schemas/Publication'
           description: OK
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
       summary: Get publication by ID
       tags:
       - Publication Resource
@@ -672,6 +740,8 @@ paths:
                 format: binary
                 type: string
           description: OK
+        "422":
+          description: Unprocessable content submitted
       summary: Retrieve finite volume input from SBML spatial model.
       tags:
       - Solver Resource

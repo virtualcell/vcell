@@ -213,6 +213,7 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **422** | Unprocessable content submitted |  -  |
 
 ## getFVSolverInputFromVCMLWithHttpInfo
 
@@ -281,4 +282,5 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **422** | Unprocessable content submitted |  -  |
 

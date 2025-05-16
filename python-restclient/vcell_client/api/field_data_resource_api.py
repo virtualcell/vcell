@@ -139,7 +139,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -236,7 +238,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -333,7 +337,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -500,7 +506,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldData",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -573,7 +581,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldData",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -646,7 +656,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldData",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -789,7 +801,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Dict[str, ExternalDataIdentifier]",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -858,7 +872,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Dict[str, ExternalDataIdentifier]",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -927,7 +943,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Dict[str, ExternalDataIdentifier]",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -1071,7 +1089,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -1144,7 +1164,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -1217,7 +1239,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -1899,7 +1923,8 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[FieldDataReference]",
             '401': None,
-            '403': None
+            '403': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -1964,7 +1989,8 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[FieldDataReference]",
             '401': None,
-            '403': None
+            '403': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -2029,7 +2055,8 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[FieldDataReference]",
             '401': None,
-            '403': None
+            '403': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -2153,7 +2180,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataShape",
             '401': None,
-            '403': None
+            '403': None,
+            '404': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -2222,7 +2251,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataShape",
             '401': None,
-            '403': None
+            '403': None,
+            '404': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -2291,7 +2322,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataShape",
             '401': None,
-            '403': None
+            '403': None,
+            '404': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -2418,7 +2451,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -2487,7 +2522,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -2556,7 +2593,9 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(

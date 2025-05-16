@@ -351,7 +351,11 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "BioModel"
+            '200': "BioModel",
+            '401': None,
+            '403': None,
+            '404': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -418,7 +422,11 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "BioModel"
+            '200': "BioModel",
+            '401': None,
+            '403': None,
+            '404': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -485,7 +493,11 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "BioModel"
+            '200': "BioModel",
+            '401': None,
+            '403': None,
+            '404': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -609,7 +621,11 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "str"
+            '200': "str",
+            '401': None,
+            '403': None,
+            '404': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -676,7 +692,11 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "str"
+            '200': "str",
+            '401': None,
+            '403': None,
+            '404': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -743,7 +763,11 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "str"
+            '200': "str",
+            '401': None,
+            '403': None,
+            '404': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -869,7 +893,9 @@ class BioModelResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "str",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -938,7 +964,9 @@ class BioModelResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "str",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(
@@ -1007,7 +1035,9 @@ class BioModelResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "str",
             '401': None,
-            '403': None
+            '403': None,
+            '422': None,
+            '500': None
             
         }
         response_data = self.api_client.call_api(

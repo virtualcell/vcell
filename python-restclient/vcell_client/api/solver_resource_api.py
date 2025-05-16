@@ -405,7 +405,8 @@ class SolverResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "bytearray"
+            '200': "bytearray",
+            '422': None
             
         }
         response_data = self.api_client.call_api(
@@ -476,7 +477,8 @@ class SolverResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "bytearray"
+            '200': "bytearray",
+            '422': None
             
         }
         response_data = self.api_client.call_api(
@@ -547,7 +549,8 @@ class SolverResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "bytearray"
+            '200': "bytearray",
+            '422': None
             
         }
         response_data = self.api_client.call_api(

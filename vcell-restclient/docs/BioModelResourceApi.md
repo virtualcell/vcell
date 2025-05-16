@@ -76,6 +76,9 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## deleteBioModelWithHttpInfo
 
@@ -141,6 +144,9 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## getBioModel
@@ -205,6 +211,10 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found. |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## getBioModelWithHttpInfo
 
@@ -271,6 +281,10 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found. |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## getBioModelVCML
@@ -335,6 +349,10 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found. |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## getBioModelVCMLWithHttpInfo
 
@@ -401,6 +419,10 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found. |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## saveBioModel
@@ -469,6 +491,8 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## saveBioModelWithHttpInfo
 
@@ -539,4 +563,6 @@ ApiResponse<**String**>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
+| **500** | Data Access Exception |  -  |
 
