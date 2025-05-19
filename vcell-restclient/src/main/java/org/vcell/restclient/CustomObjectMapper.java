@@ -5,7 +5,10 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.RandomStringUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -34,6 +37,10 @@ public class CustomObjectMapper extends ObjectMapper {
     public <T> T readValue(InputStream src, Class<T> valueType) throws IOException {
         if (valueType == String.class){
             return valueType.cast(new String(src.readAllBytes()));
+        } else if (valueType == File.class) {
+            File randomTmpFile = File.createTempFile("tmp-file-" + RandomStringUtils.randomAlphabetic(5), ".tmp");
+            FileUtils.copyInputStreamToFile(src, randomTmpFile);
+            return (T) randomTmpFile;
         }
         return super.readValue(src, valueType);
     }
@@ -42,6 +49,10 @@ public class CustomObjectMapper extends ObjectMapper {
     public <T> T readValue(InputStream src, TypeReference<T> valueTypeRef) throws IOException {
         if (valueTypeRef.getType() == String.class){
             return (T) new String(src.readAllBytes());
+        } else if (valueTypeRef.getType() == File.class) {
+            File randomTmpFile = File.createTempFile("tmp-file-" + RandomStringUtils.randomAlphabetic(5), ".tmp");
+            FileUtils.copyInputStreamToFile(src, randomTmpFile);
+            return (T) randomTmpFile;
         }
         return super.readValue(src, valueTypeRef);
     }
