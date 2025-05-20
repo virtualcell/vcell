@@ -20,7 +20,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
-import org.vcell.restclient.CustomObjectMapper;
+import cbit.vcell.message.CustomObjectMapper;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.Publication;
 import org.vcell.restclient.model.UserLoginInfoForMapping;

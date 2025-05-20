@@ -23,6 +23,7 @@ import cbit.vcell.simdata.*;
 import cbit.vcell.solvers.CartesianMesh;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.api.client.ExceptionHandler;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.FieldDataSavedResults;
@@ -62,22 +63,37 @@ public void deleteFieldData(KeyValue externalDataIdentifierKey) {
 }
 
 public ExternalDataIdentifier saveFieldData(FieldData fieldData) throws DataAccessException {
-	FieldDataSavedResults results = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().save(
-			DtoModelTransforms.fieldDataToDTO(fieldData)
-	));
-	return new ExternalDataIdentifier(new KeyValue(results.getFieldDataKey()), new User(vCellApiClient.getCachedVCellUserName(), null), results.getFieldDataName());
+    FieldDataSavedResults results = null;
+    try {
+        results = vCellApiClient.getFieldDataApi().save(
+                DtoModelTransforms.fieldDataToDTO(fieldData)
+        );
+    } catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessException(e);
+    }
+    return new ExternalDataIdentifier(new KeyValue(results.getFieldDataKey()), new User(vCellApiClient.getCachedVCellUserName(), null), results.getFieldDataName());
 }
 
 public cbit.vcell.field.io.FieldDataShape getFieldDataShape(KeyValue externalDataIdentifierKey) throws DataAccessException {
-	FieldDataShape shape = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().getShapeFromID(externalDataIdentifierKey.toString()));
-	return DtoModelTransforms.DTOToFieldDataShape(shape);
+    FieldDataShape shape = null;
+    try {
+        shape = vCellApiClient.getFieldDataApi().getShapeFromID(externalDataIdentifierKey.toString());
+    } catch (ApiException e) {
+        ExceptionHandler.onlyDataAccessException(e);
+    }
+    return DtoModelTransforms.DTOToFieldDataShape(shape);
 }
 
 public ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataSpec) throws DataAccessException {
-	FieldDataSavedResults savedResults = vCellApiClient.callWithHandling(() -> vCellApiClient.getFieldDataApi().advancedCreate(fieldDataSpec.file, fieldDataSpec.fileName,
-			DtoModelTransforms.extentToDTO(fieldDataSpec.extent), DtoModelTransforms.iSizeToDTO(fieldDataSpec.iSize), fieldDataSpec.channelNames, fieldDataSpec.times, fieldDataSpec.annotation,
-			DtoModelTransforms.originToDTO(fieldDataSpec.origin)));
-	return new ExternalDataIdentifier(new KeyValue(savedResults.getFieldDataKey()), fieldDataSpec.owner, savedResults.getFieldDataName());
+    FieldDataSavedResults savedResults = null;
+    try {
+        savedResults = vCellApiClient.getFieldDataApi().advancedCreate(fieldDataSpec.file, fieldDataSpec.fileName,
+                DtoModelTransforms.extentToDTO(fieldDataSpec.extent), DtoModelTransforms.iSizeToDTO(fieldDataSpec.iSize), fieldDataSpec.channelNames, fieldDataSpec.times, fieldDataSpec.annotation,
+                DtoModelTransforms.originToDTO(fieldDataSpec.origin));
+    } catch (ApiException e) {
+        ExceptionHandler.onlyDataAccessException(e);
+    }
+    return new ExternalDataIdentifier(new KeyValue(savedResults.getFieldDataKey()), fieldDataSpec.owner, savedResults.getFieldDataName());
 }
 
 
