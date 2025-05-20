@@ -10,11 +10,22 @@ import org.vcell.restq.errors.APIException;
 
 public abstract class GenericAPIExceptionHandler {
 
+    /**
+     * Should be inherited by all Exception classes
+     */
     @Produces(MediaType.APPLICATION_JSON)
     public Response genericExceptionHandler(APIException e, Logger logger){
+        return genericExceptionHandler(e, e.getHttpCode(), logger);
+    }
+
+    /**
+     * Should only be used by RuntimeWebExceptionHandler
+     */
+    @Produces(MediaType.APPLICATION_JSON)
+    public static Response genericExceptionHandler(Exception e, int httpCode, Logger logger){
         logger.error(e);
         try{
-            return Response.status(e.getHttpCode())
+            return Response.status(httpCode)
                     .entity(new CustomObjectMapper().writeValueAsString(VCellHTTPError.fromException(e)))
                     .build();
         } catch (JsonProcessingException jsonProcessingException) {
