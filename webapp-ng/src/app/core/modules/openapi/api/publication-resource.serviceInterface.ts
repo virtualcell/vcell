@@ -14,6 +14,7 @@ import { HttpHeaders }                                       from '@angular/comm
 import { Observable }                                        from 'rxjs';
 
 import { Publication } from '../model/models';
+import { VCellHTTPError } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';

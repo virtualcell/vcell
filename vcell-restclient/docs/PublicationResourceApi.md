@@ -212,7 +212,7 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -220,7 +220,7 @@ null (empty response body)
 | **204** | No Content |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
-| **404** | Not found. |  -  |
+| **404** | Not found |  -  |
 
 ## deletePublicationWithHttpInfo
 
@@ -282,7 +282,7 @@ ApiResponse<Void>
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -290,7 +290,7 @@ ApiResponse<Void>
 | **204** | No Content |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
-| **404** | Not found. |  -  |
+| **404** | Not found |  -  |
 
 
 ## getPublicationById
@@ -357,6 +357,7 @@ No authorization required
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## getPublicationByIdWithHttpInfo
 
@@ -425,6 +426,7 @@ No authorization required
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## getPublications

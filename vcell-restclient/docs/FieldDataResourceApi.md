@@ -690,7 +690,7 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: application/x-www-form-urlencoded
-- **Accept**: Not defined
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -764,7 +764,7 @@ ApiResponse<Void>
 ### HTTP request headers
 
 - **Content-Type**: application/x-www-form-urlencoded
-- **Accept**: Not defined
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -832,7 +832,7 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -902,7 +902,7 @@ ApiResponse<Void>
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -1111,7 +1111,7 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
-| **404** | Not found. |  -  |
+| **404** | Not found |  -  |
 | **500** | Data Access Exception |  -  |
 
 ## getShapeFromIDWithHttpInfo
@@ -1183,7 +1183,7 @@ ApiResponse<[**FieldDataShape**](FieldDataShape.md)>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
-| **404** | Not found. |  -  |
+| **404** | Not found |  -  |
 | **500** | Data Access Exception |  -  |
 
 

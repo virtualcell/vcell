@@ -28,6 +28,8 @@ import { UserIdentityJSONSafe } from '../model/user-identity-json-safe';
 import { UserLoginInfoForMapping } from '../model/user-login-info-for-mapping';
 // @ts-ignore
 import { UserRegistrationInfo } from '../model/user-registration-info';
+// @ts-ignore
+import { VCellHTTPError } from '../model/v-cell-http-error';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';

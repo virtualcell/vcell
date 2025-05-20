@@ -1,18 +1,20 @@
 package org.vcell.restclient.auth;
 
+import cbit.vcell.message.CustomObjectMapper;
 import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.CustomApiClientCode;
-import org.vcell.restclient.CustomObjectMapper;
+import org.vcell.restclient.*;
+import org.vcell.restclient.model.VCellHTTPError;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.function.Consumer;
 
 /**
@@ -24,6 +26,7 @@ public class AuthApiClient extends ApiClient {
     private AccessToken accessToken;
     private long accessTokenExpirationTimeMS;
     private final RenewingRequestInterceptor renewingRequestInterceptor = new RenewingRequestInterceptor();
+    private final CustomObjectMapper customObjectMapper = new CustomObjectMapper();
 
     private class RenewingRequestInterceptor implements Consumer<HttpRequest.Builder> {
         @Override
@@ -40,6 +43,25 @@ public class AuthApiClient extends ApiClient {
         }
     }
 
+    private class ErrorHandler implements Consumer<HttpResponse<InputStream>>{
+
+        @Override
+        public void accept(HttpResponse<InputStream> response) {
+            if (response.statusCode() / 100 != 2){
+                VCellHTTPError body = null;
+                try {
+                    body = response.body() == null ? null : customObjectMapper.readValue(response.body(), VCellHTTPError.class);
+                    String path = response.request().uri().getPath();
+                    String message = response.statusCode() + " - Failed while accessing server path: " + path + ".\nThe error was: " +
+                            body.getMessage();
+                    throw new RuntimeApiException(message, response.statusCode(), path, response.headers());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
     public AuthApiClient(URI apiBaseUrl, URI oidcProviderTokenEndpoint, AccessToken accessToken, RefreshToken refreshToken, boolean ignoreSSLCertProblems) {
         if (ignoreSSLCertProblems) {setHttpClientBuilder(CustomApiClientCode.createInsecureHttpClientBuilder());}
         this.oidcProviderTokenEndpoint = oidcProviderTokenEndpoint;
@@ -51,7 +73,8 @@ public class AuthApiClient extends ApiClient {
         this.setHost(apiBaseUrl.getHost());
         this.setPort(apiBaseUrl.getPort());
         this.setBasePath(apiBaseUrl.getPath());
-        this.setObjectMapper(new CustomObjectMapper());
+        this.setObjectMapper(customObjectMapper);
+        this.setResponseInterceptor(new ErrorHandler());
     }
 
     public void refreshAccessToken() throws IOException, ParseException {

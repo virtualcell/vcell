@@ -207,7 +207,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: multipart/form-data
-- **Accept**: application/octet-stream
+- **Accept**: application/octet-stream, application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -276,7 +276,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: multipart/form-data
-- **Accept**: application/octet-stream
+- **Accept**: application/octet-stream, application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |

@@ -19,6 +19,7 @@ import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.SimulationStatusPersistentRecord;
 import org.vcell.restclient.model.StatusMessage;
+import org.vcell.restclient.model.VCellHTTPError;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

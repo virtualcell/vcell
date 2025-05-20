@@ -60,6 +60,7 @@ model/user-identity-json-safe.ts
 model/user-login-info-for-mapping.ts
 model/user-registration-info.ts
 model/user.ts
+model/v-cell-http-error.ts
 model/variable-domain.ts
 model/variable-type.ts
 model/vc-simulation-identifier.ts

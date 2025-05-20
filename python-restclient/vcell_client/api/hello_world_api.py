@@ -93,7 +93,8 @@ class HelloWorldApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "HelloWorldMessage"
+            '200': "HelloWorldMessage",
+            '403': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -156,7 +157,8 @@ class HelloWorldApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "HelloWorldMessage"
+            '200': "HelloWorldMessage",
+            '403': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -219,7 +221,8 @@ class HelloWorldApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "HelloWorldMessage"
+            '200': "HelloWorldMessage",
+            '403': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(

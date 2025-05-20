@@ -47,6 +47,7 @@ docs/UserLoginInfoForMapping.md
 docs/UserRegistrationInfo.md
 docs/UsersResourceApi.md
 docs/VCSimulationIdentifier.md
+docs/VCellHTTPError.md
 docs/VariableDomain.md
 docs/VariableType.md
 test/__init__.py
@@ -103,6 +104,7 @@ vcell_client/models/user.py
 vcell_client/models/user_identity_json_safe.py
 vcell_client/models/user_login_info_for_mapping.py
 vcell_client/models/user_registration_info.py
+vcell_client/models/v_cell_http_error.py
 vcell_client/models/variable_domain.py
 vcell_client/models/variable_type.py
 vcell_client/models/vc_simulation_identifier.py

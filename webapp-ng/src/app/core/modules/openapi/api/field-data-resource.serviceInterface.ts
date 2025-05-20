@@ -22,6 +22,7 @@ import { FieldDataShape } from '../model/models';
 import { ISize } from '../model/models';
 import { Origin } from '../model/models';
 import { SourceModel } from '../model/models';
+import { VCellHTTPError } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';

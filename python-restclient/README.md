@@ -166,6 +166,7 @@ Class | Method | HTTP request | Description
  - [UserLoginInfoForMapping](docs/UserLoginInfoForMapping.md)
  - [UserRegistrationInfo](docs/UserRegistrationInfo.md)
  - [VCSimulationIdentifier](docs/VCSimulationIdentifier.md)
+ - [VCellHTTPError](docs/VCellHTTPError.md)
  - [VariableDomain](docs/VariableDomain.md)
  - [VariableType](docs/VariableType.md)
 

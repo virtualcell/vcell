@@ -406,7 +406,7 @@ class SolverResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bytearray",
-            '422': None
+            '422': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -478,7 +478,7 @@ class SolverResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bytearray",
-            '422': None
+            '422': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -550,7 +550,7 @@ class SolverResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bytearray",
-            '422': None
+            '422': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -597,7 +597,8 @@ class SolverResourceApi:
         # set the HTTP header `Accept`
         _header_params['Accept'] = self.api_client.select_header_accept(
             [
-                'application/octet-stream'
+                'application/octet-stream', 
+                'application/json'
             ]
         )
 

@@ -53,5 +53,6 @@ from vcell_client.models.user_identity_json_safe import UserIdentityJSONSafe
 from vcell_client.models.user_login_info_for_mapping import UserLoginInfoForMapping
 from vcell_client.models.user_registration_info import UserRegistrationInfo
 from vcell_client.models.vc_simulation_identifier import VCSimulationIdentifier
+from vcell_client.models.v_cell_http_error import VCellHTTPError
 from vcell_client.models.variable_domain import VariableDomain
 from vcell_client.models.variable_type import VariableType

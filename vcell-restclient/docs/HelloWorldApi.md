@@ -67,6 +67,7 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
 
 ## getHelloWorldWithHttpInfo
 
@@ -129,4 +130,5 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
 

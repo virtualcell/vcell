@@ -62,7 +62,7 @@ This endpoint does not need any parameter.
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/pdf
+ - **Accept**: application/pdf, application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |

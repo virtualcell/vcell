@@ -47,8 +47,16 @@ paths:
                 $ref: '#/components/schemas/SimulationStatusPersistentRecord'
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
       security:
       - openId:
@@ -78,8 +86,16 @@ paths:
                 type: array
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
       security:
       - openId:
@@ -109,8 +125,16 @@ paths:
                 type: array
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
       security:
       - openId:
@@ -131,10 +155,22 @@ paths:
                 type: string
           description: The PDF report
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
       - openId:
@@ -142,7 +178,7 @@ paths:
       summary: Get usage summary
       tags:
       - Admin Resource
-      x-accepts: application/pdf
+      x-accepts: application/json
   /api/v1/bioModel/save:
     post:
       operationId: saveBioModel
@@ -159,12 +195,28 @@ paths:
                 type: string
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Unprocessable content submitted
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
       - openId:
@@ -174,7 +226,7 @@ paths:
       tags:
       - Bio Model Resource
       x-content-type: application/json
-      x-accepts: application/xml
+      x-accepts: application/json
   /api/v1/bioModel/{bioModelID}:
     delete:
       operationId: deleteBioModel
@@ -190,10 +242,22 @@ paths:
         "204":
           description: No Content
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       summary: Delete the BioModel from VCell's database.
       tags:
@@ -217,12 +281,28 @@ paths:
                 $ref: '#/components/schemas/BioModel'
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "404":
-          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       summary: Get BioModel.
       tags:
@@ -247,17 +327,33 @@ paths:
                 type: string
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "404":
-          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       summary: Get the BioModel in VCML format.
       tags:
       - Bio Model Resource
-      x-accepts: text/xml
+      x-accepts: application/json
   /api/v1/fieldData/IDs:
     get:
       operationId: getAllIDs
@@ -271,10 +367,22 @@ paths:
                 type: array
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
       - openId:
@@ -324,12 +432,28 @@ paths:
                 $ref: '#/components/schemas/FieldDataSavedResults'
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Unprocessable content submitted
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
       - openId:
@@ -356,12 +480,28 @@ paths:
                 $ref: '#/components/schemas/FieldData'
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Unprocessable content submitted
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
       - openId:
@@ -392,12 +532,28 @@ paths:
                 type: object
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Unprocessable content submitted
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
       - openId:
@@ -428,12 +584,28 @@ paths:
                 $ref: '#/components/schemas/FieldDataSavedResults'
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Unprocessable content submitted
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
       - openId:
@@ -456,10 +628,22 @@ paths:
         "201":
           description: Created
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
       - openId:
@@ -484,10 +668,22 @@ paths:
         "204":
           description: No Content
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
       - openId:
@@ -512,12 +708,28 @@ paths:
                 $ref: '#/components/schemas/FieldDataSavedResults'
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Unprocessable content submitted
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
       - openId:
@@ -547,12 +759,28 @@ paths:
                 $ref: '#/components/schemas/FieldDataShape'
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "404":
-          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
         "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
       security:
       - openId:
@@ -572,6 +800,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/HelloWorldMessage'
           description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Allowed
       summary: Get hello world message.
       tags:
       - Hello World
@@ -589,8 +823,16 @@ paths:
                 type: array
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
       summary: Get all publications
       tags:
@@ -612,8 +854,16 @@ paths:
                 type: integer
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
       security:
       - openId:
@@ -638,8 +888,16 @@ paths:
                 $ref: '#/components/schemas/Publication'
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
       security:
       - openId:
@@ -665,11 +923,23 @@ paths:
         "204":
           description: No Content
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "404":
-          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
       security:
       - openId:
         - user
@@ -696,9 +966,23 @@ paths:
                 $ref: '#/components/schemas/Publication'
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
       summary: Get publication by ID
       tags:
       - Publication Resource
@@ -741,12 +1025,16 @@ paths:
                 type: string
           description: OK
         "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Unprocessable content submitted
       summary: Retrieve finite volume input from SBML spatial model.
       tags:
       - Solver Resource
       x-content-type: multipart/form-data
-      x-accepts: application/octet-stream
+      x-accepts: application/json
   /api/v1/users/bearerToken:
     post:
       operationId: getLegacyApiToken
@@ -758,8 +1046,16 @@ paths:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
           description: OK
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
       security:
       - openId:
@@ -848,6 +1144,10 @@ paths:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
           description: "Successful, returning the identity"
         "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
           description: Not Allowed
@@ -1965,6 +2265,13 @@ components:
         owner:
           $ref: '#/components/schemas/User'
         id:
+          type: string
+      type: object
+    VCellHTTPError:
+      properties:
+        exceptionType:
+          type: string
+        message:
           type: string
       type: object
     VariableDomain:

@@ -15,6 +15,7 @@ import { Observable }                                        from 'rxjs';
 
 import { BioModel } from '../model/models';
 import { SaveBioModel } from '../model/models';
+import { VCellHTTPError } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';

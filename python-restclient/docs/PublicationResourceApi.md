@@ -139,7 +139,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -147,7 +147,7 @@ void (empty response body)
 **204** | No Content |  -  |
 **401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
-**404** | Not found. |  -  |
+**404** | Not found |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -215,6 +215,7 @@ No authorization required
 **200** | OK |  -  |
 **401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
+**500** | Data Access Exception |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

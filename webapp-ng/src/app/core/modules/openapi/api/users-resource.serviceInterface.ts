@@ -18,6 +18,7 @@ import { Identity } from '../model/models';
 import { UserIdentityJSONSafe } from '../model/models';
 import { UserLoginInfoForMapping } from '../model/models';
 import { UserRegistrationInfo } from '../model/models';
+import { VCellHTTPError } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';

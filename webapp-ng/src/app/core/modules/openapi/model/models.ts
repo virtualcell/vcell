@@ -36,5 +36,6 @@ export * from './user-identity-json-safe';
 export * from './user-login-info-for-mapping';
 export * from './user-registration-info';
 export * from './vc-simulation-identifier';
+export * from './v-cell-http-error';
 export * from './variable-domain';
 export * from './variable-type';
