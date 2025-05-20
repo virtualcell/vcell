@@ -24,7 +24,7 @@ import org.vcell.auth.JWTUtils;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.restq.errors.exceptions.DataAccessWebException;
-import org.vcell.restq.errors.exceptions.NotAuthenticatedException;
+import org.vcell.restq.errors.exceptions.NotAuthenticatedWebException;
 import org.vcell.restq.errors.exceptions.PermissionWebException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UseridIDExistsException;
@@ -233,7 +233,7 @@ public class UsersResource {
             @APIResponse(responseCode = "200", description = "Successful, returning the identity"),
     })
     @Produces(MediaType.APPLICATION_JSON)
-    public UserIdentityJSONSafe getIdentity() throws NotAuthenticatedException {
+    public UserIdentityJSONSafe getIdentity() throws NotAuthenticatedWebException {
         List<UserIdentity> userIdentities = userRestDB.getUserIdentities(securityIdentity);
         if (userIdentities.isEmpty()){
             return UserIdentityJSONSafe.noIdentity();
@@ -251,7 +251,7 @@ public class UsersResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     // Not using user PASSWD because they should already be authenticated with OIDC
-    public AccesTokenRepresentationRecord generateBearerToken() throws DataAccessException, PermissionWebException, NotAuthenticatedException {
+    public AccesTokenRepresentationRecord generateBearerToken() throws DataAccessException, PermissionWebException, NotAuthenticatedWebException {
         if(securityIdentity.isAnonymous()){
             return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
         }
@@ -283,9 +283,9 @@ public class UsersResource {
             @APIResponse(responseCode = "401", description = "Need to login to Auth0"),
             @APIResponse(responseCode = "500", description = "Internal Error")
     })
-    public void forgotLegacyPassword(@QueryParam("userID") String userID) throws DataAccessWebException, NotAuthenticatedException {
+    public void forgotLegacyPassword(@QueryParam("userID") String userID) throws DataAccessWebException, NotAuthenticatedWebException {
         if(securityIdentity.isAnonymous()){
-            throw new NotAuthenticatedException("securityIdentity is missing jwt");
+            throw new NotAuthenticatedWebException("securityIdentity is missing jwt");
         }
         try {
             userRestDB.sendOldLegacyPassword(userID);

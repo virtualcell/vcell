@@ -23,10 +23,9 @@ import org.jboss.resteasy.reactive.NoCache;
 import org.vcell.restq.db.AdminRestDB;
 import org.vcell.restq.db.UserRestDB;
 import org.vcell.restq.errors.exceptions.DataAccessWebException;
-import org.vcell.restq.errors.exceptions.NotAuthenticatedException;
+import org.vcell.restq.errors.exceptions.NotAuthenticatedWebException;
 import org.vcell.restq.errors.exceptions.PermissionWebException;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.PermissionException;
 import org.vcell.util.document.User;
 
 import java.io.StringReader;
@@ -62,9 +61,9 @@ public class AdminResource {
             description = "The PDF report",
             content = @Content(mediaType = "application/pdf", schema = @Schema(type = SchemaType.STRING, format = "binary"))
     )
-    public Response getUsage() throws DataAccessWebException, NotAuthenticatedException, PermissionWebException {
+    public Response getUsage() throws DataAccessWebException, NotAuthenticatedWebException, PermissionWebException {
         if (securityIdentity.isAnonymous()){
-            throw new NotAuthenticatedException("not authenticated");
+            throw new NotAuthenticatedWebException("not authenticated");
         }
         User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
         try {

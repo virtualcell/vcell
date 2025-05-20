@@ -21,20 +21,18 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.jboss.resteasy.reactive.RestForm;
-import org.vcell.restq.errors.exceptions.UnprocessableContentException;
+import org.vcell.restq.errors.exceptions.UnprocessableContentWebException;
 import org.vcell.sbml.FiniteVolumeRunUtil;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
 import org.w3c.www.http.HTTP;
 
-import javax.swing.text.html.Option;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.util.Optional;
 
 @Path("/api/v1/solver")
 @RequestScoped
@@ -105,7 +103,7 @@ public class SolverResource {
     @Parameter(name = "simulation_name", description = "name of simulation in VCML file")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public File retrieveFiniteVolumeInputFromVCML(@RestForm File vcmlFile, @RestForm String simulation_name) throws IOException, UnprocessableContentException {
+    public File retrieveFiniteVolumeInputFromVCML(@RestForm File vcmlFile, @RestForm String simulation_name) throws IOException, UnprocessableContentWebException {
         File workingDir = Files.createTempDirectory("vcell-").toFile();
         File zipFile = Files.createTempFile("finite-volume", ".zip").toFile();
         try {
@@ -117,7 +115,7 @@ public class SolverResource {
             zip.close();
             return zipFile;
         }catch (XmlParseException | MappingException | SolverException | ExpressionException e){
-            throw new UnprocessableContentException("Error processing spatial model: "+e.getMessage(), e);
+            throw new UnprocessableContentWebException("Error processing spatial model: "+e.getMessage(), e);
         } finally {
             for (File file: workingDir.listFiles()){
                 file.delete();

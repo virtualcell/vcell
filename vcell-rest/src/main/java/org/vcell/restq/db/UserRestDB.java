@@ -11,7 +11,7 @@ import jakarta.ws.rs.WebApplicationException;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.vcell.auth.JWTUtils;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
-import org.vcell.restq.errors.exceptions.NotAuthenticatedException;
+import org.vcell.restq.errors.exceptions.NotAuthenticatedWebException;
 import org.vcell.restq.errors.exceptions.PermissionWebException;
 import org.vcell.restq.handlers.UsersResource;
 import org.vcell.util.DataAccessException;
@@ -55,13 +55,13 @@ public class UserRestDB {
         ALLOW_ANONYMOUS,
         REQUIRE_USER
     }
-    public User getUserFromIdentity(SecurityIdentity securityIdentity, UserRequirement allowAnonymous) throws NotAuthenticatedException, PermissionWebException {
+    public User getUserFromIdentity(SecurityIdentity securityIdentity, UserRequirement allowAnonymous) throws NotAuthenticatedWebException, PermissionWebException {
         List<UserIdentity> userIdentities = getUserIdentities(securityIdentity);
         if (userIdentities == null || userIdentities.isEmpty()){
             if (allowAnonymous == UserRequirement.ALLOW_ANONYMOUS){
                 return null;
             } else {
-                throw new NotAuthenticatedException("User is not authenticated.");
+                throw new NotAuthenticatedWebException("User is not authenticated.");
             }
         }
         if (userIdentities.size() > 1){
@@ -71,21 +71,21 @@ public class UserRestDB {
     }
 
     // TODO: add some short-lived caching here to avoid repeated database calls
-    public List<UserIdentity> getUserIdentities(SecurityIdentity securityIdentity) throws NotAuthenticatedException {
+    public List<UserIdentity> getUserIdentities(SecurityIdentity securityIdentity) throws NotAuthenticatedWebException {
         if (securityIdentity.isAnonymous()){
             return null;
         }
         JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
         if (jwt == null) {
-            throw new NotAuthenticatedException("securityIdentity is missing jwt");
+            throw new NotAuthenticatedWebException("securityIdentity is missing jwt");
         }
         String subject = jwt.getSubject();
         String issuer = jwt.getIssuer();
         if (subject == null) {
-            throw new NotAuthenticatedException("securityIdentity is missing subject");
+            throw new NotAuthenticatedWebException("securityIdentity is missing subject");
         }
         if (issuer == null) {
-            throw new NotAuthenticatedException("securityIdentity is missing issuer");
+            throw new NotAuthenticatedWebException("securityIdentity is missing issuer");
         }
         try {
             return adminDBTopLevel.getUserIdentitiesFromSubjectAndIssuer(subject, issuer, true);
