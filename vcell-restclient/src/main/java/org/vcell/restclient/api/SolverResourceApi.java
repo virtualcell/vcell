@@ -148,7 +148,7 @@ public class SolverResourceApi {
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
-    localVarRequestBuilder.header("Accept", "application/octet-stream");
+    localVarRequestBuilder.header("Accept", "application/octet-stream, application/json");
 
     MultipartEntityBuilder multiPartBuilder = MultipartEntityBuilder.create();
     boolean hasFiles = false;

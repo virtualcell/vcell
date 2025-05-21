@@ -115,10 +115,10 @@ export class SolverResourceService implements SolverResourceServiceInterface {
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getFVSolverInputFromSBML(sbmlFile?: Blob, duration?: number, outputTimeStep?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<Blob>;
-    public getFVSolverInputFromSBML(sbmlFile?: Blob, duration?: number, outputTimeStep?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<HttpResponse<Blob>>;
-    public getFVSolverInputFromSBML(sbmlFile?: Blob, duration?: number, outputTimeStep?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<HttpEvent<Blob>>;
-    public getFVSolverInputFromSBML(sbmlFile?: Blob, duration?: number, outputTimeStep?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/octet-stream', context?: HttpContext}): Observable<any> {
+    public getFVSolverInputFromSBML(sbmlFile?: Blob, duration?: number, outputTimeStep?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream' | 'application/json', context?: HttpContext}): Observable<Blob>;
+    public getFVSolverInputFromSBML(sbmlFile?: Blob, duration?: number, outputTimeStep?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream' | 'application/json', context?: HttpContext}): Observable<HttpResponse<Blob>>;
+    public getFVSolverInputFromSBML(sbmlFile?: Blob, duration?: number, outputTimeStep?: number, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream' | 'application/json', context?: HttpContext}): Observable<HttpEvent<Blob>>;
+    public getFVSolverInputFromSBML(sbmlFile?: Blob, duration?: number, outputTimeStep?: number, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/octet-stream' | 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -126,7 +126,8 @@ export class SolverResourceService implements SolverResourceServiceInterface {
         if (localVarHttpHeaderAcceptSelected === undefined) {
             // to determine the Accept header
             const httpHeaderAccepts: string[] = [
-                'application/octet-stream'
+                'application/octet-stream',
+                'application/json'
             ];
             localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
         }

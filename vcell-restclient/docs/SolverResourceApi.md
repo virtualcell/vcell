@@ -71,12 +71,13 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: multipart/form-data
-- **Accept**: application/octet-stream
+- **Accept**: application/octet-stream, application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **422** | Unprocessable content submitted |  -  |
 
 ## getFVSolverInputFromSBMLWithHttpInfo
 
@@ -141,12 +142,13 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: multipart/form-data
-- **Accept**: application/octet-stream
+- **Accept**: application/octet-stream, application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **422** | Unprocessable content submitted |  -  |
 
 
 ## getFVSolverInputFromVCML

@@ -83,6 +83,7 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## createPublicationWithHttpInfo
 
@@ -153,6 +154,7 @@ ApiResponse<**Long**>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## deletePublication
@@ -221,6 +223,7 @@ null (empty response body)
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
 | **404** | Not found |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## deletePublicationWithHttpInfo
 
@@ -291,6 +294,7 @@ ApiResponse<Void>
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
 | **404** | Not found |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## getPublicationById
@@ -489,6 +493,7 @@ No authorization required
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## getPublicationsWithHttpInfo
 
@@ -553,6 +558,7 @@ No authorization required
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## updatePublication
@@ -621,6 +627,7 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## updatePublicationWithHttpInfo
 
@@ -691,4 +698,5 @@ ApiResponse<[**Publication**](Publication.md)>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 

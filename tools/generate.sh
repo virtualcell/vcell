@@ -24,10 +24,10 @@ docker run --rm -v ${parentDir}:/vcell \
 
 # Apply the patch to AdminResourceApi.java to treat getUsage() as a PDF file rather than a JSON file
 pushd "${parentDir}" || { echo "Failed to change directory to ${parentDir}"; exit 1; }
-if ! git apply "${scriptDir}/FieldDataResourceApi.patch"; then
-  echo "Failed to apply FieldDataResourceApi.patch"
-  exit 1
-fi
+#if ! git apply "${scriptDir}/FieldDataResourceApi.patch"; then
+#  echo "Failed to apply FieldDataResourceApi.patch"
+#  exit 1
+#fi
 popd || { echo "Failed to return to the previous directory"; exit 1; }
 
 
