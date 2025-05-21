@@ -22,7 +22,7 @@ public abstract class GenericAPIExceptionHandler {
      * Should only be used by RuntimeWebExceptionHandler
      */
     @Produces(MediaType.APPLICATION_JSON)
-    public static Response genericExceptionHandler(Exception e, int httpCode, Logger logger){
+    public static Response genericExceptionHandler(Throwable e, int httpCode, Logger logger){
         logger.error(e);
         try{
             return Response.status(httpCode)
@@ -40,7 +40,7 @@ public abstract class GenericAPIExceptionHandler {
             String exceptionType,
             String message
     ){
-        public static VCellHTTPError fromException(Exception e){
+        public static VCellHTTPError fromException(Throwable e){
             String errorType = e.getClass().getSimpleName();
             if (e.getCause() != null){
                 errorType = e.getCause().getClass().getSimpleName();

@@ -12,7 +12,6 @@ public class CatchAllExceptionHandler implements ExceptionMapper<Throwable> {
 
     @Override
     public Response toResponse(Throwable e) {
-        logger.error(e);
-        return Response.status(500).entity("Unknown Error: " + e.getMessage()).build();
+        return GenericAPIExceptionHandler.genericExceptionHandler(e, 500, logger);
     }
 }

@@ -55,14 +55,16 @@ public class PublicationResource {
 
     @GET
     @Operation(operationId = "getPublications", summary = "Get all publications")
-    public Publication[] get_list() throws PermissionWebException, NotAuthenticatedWebException {
+    public Publication[] get_list() throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
         try {
             User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.ALLOW_ANONYMOUS);
             return publicationService.getPublications(DatabaseServerImpl.OrderBy.year_desc, vcellUser);
         } catch (PermissionException e){
             throw new PermissionWebException(e.getMessage(), e);
-        } catch (DataAccessException | SQLException e) {
-            throw new RuntimeException("failed to retrieve publications from VCell Database : " + e.getMessage(), e);
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
+        } catch (SQLException e) {
+            throw new RuntimeWebException("failed to retrieve publications from VCell Database : " + e.getMessage(), e);
         }
     }
 
@@ -71,7 +73,7 @@ public class PublicationResource {
 //    @RolesAllowed("curator")
     @RolesAllowed("user")
     @Operation(operationId = "createPublication", summary = "Create publication")
-    public Long add(Publication publication) throws DataAccessException, PermissionWebException, NotAuthenticatedWebException {
+    public Long add(Publication publication) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
         try {
             User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
@@ -79,8 +81,10 @@ public class PublicationResource {
             return Long.parseLong(key.toString());
         } catch (PermissionException e){
             throw new PermissionWebException(e.getMessage(), e);
-        } catch (DataAccessException | SQLException e) {
-            throw new RuntimeException("failed to add publication to VCell Database : " + e.getMessage(), e);
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
+        } catch (SQLException e) {
+            throw new RuntimeWebException("failed to add publication to VCell Database : " + e.getMessage(), e);
         }
     }
 
@@ -90,7 +94,7 @@ public class PublicationResource {
 //    @RolesAllowed("curator")
     @RolesAllowed("user")
     @Operation(operationId = "updatePublication", summary = "Update publication")
-    public Publication update(Publication publication) throws PermissionWebException, NotAuthenticatedWebException {
+    public Publication update(Publication publication) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
         try {
             User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
@@ -98,8 +102,10 @@ public class PublicationResource {
             return pub;
         } catch (PermissionException e){
             throw new PermissionWebException(e.getMessage(), e);
-        } catch (DataAccessException | SQLException e) {
-            throw new RuntimeException("failed to add publication to VCell Database : " + e.getMessage(), e);
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
+        } catch (SQLException e) {
+            throw new RuntimeWebException("failed to add publication to VCell Database : " + e.getMessage(), e);
         }
     }
 
@@ -109,7 +115,7 @@ public class PublicationResource {
 //    @RolesAllowed("curator")
     @RolesAllowed("user")
     @Operation(operationId = "deletePublication", summary = "Delete publication")
-    public void delete(@PathParam("id") Long publicationID) throws PermissionWebException, NotAuthenticatedWebException, NotFoundWebException {
+    public void delete(@PathParam("id") Long publicationID) throws PermissionWebException, NotAuthenticatedWebException, NotFoundWebException, DataAccessWebException {
         try {
             User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
             int numRecordsDeleted = publicationService.deletePublication(new KeyValue(publicationID.toString()), vcellUser);
@@ -118,8 +124,10 @@ public class PublicationResource {
             }
         } catch (PermissionException e){
             throw new PermissionWebException(e.getMessage(), e);
-        } catch (DataAccessException | SQLException e) {
-            throw new RuntimeException("failed to delete publication from VCell Database : " + e.getMessage(), e);
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
+        } catch (SQLException e) {
+            throw new RuntimeWebException("failed to delete publication from VCell Database : " + e.getMessage(), e);
         }
     }
 }

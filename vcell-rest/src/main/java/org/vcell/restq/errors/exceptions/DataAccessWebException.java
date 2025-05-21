@@ -9,4 +9,8 @@ public class DataAccessWebException extends APIException {
     public DataAccessWebException(String message, Exception e) {
         super(HTTP_CODE, message, e);
     }
+
+    public DataAccessWebException(String message){
+        super(HTTP_CODE, message, null);
+    }
 }

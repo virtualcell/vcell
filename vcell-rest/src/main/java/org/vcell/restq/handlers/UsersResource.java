@@ -23,9 +23,7 @@ import org.jose4j.lang.JoseException;
 import org.vcell.auth.JWTUtils;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
 import org.vcell.restq.db.UserRestDB;
-import org.vcell.restq.errors.exceptions.DataAccessWebException;
-import org.vcell.restq.errors.exceptions.NotAuthenticatedWebException;
-import org.vcell.restq.errors.exceptions.PermissionWebException;
+import org.vcell.restq.errors.exceptions.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.User;
@@ -78,7 +76,7 @@ public class UsersResource {
     @Operation(operationId = "mapUser", summary = "map vcell user")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public boolean mapUser(UserLoginInfoForMapping mapUser) throws DataAccessException {
+    public boolean mapUser(UserLoginInfoForMapping mapUser) throws DataAccessWebException, NotAuthenticatedWebException {
         return userRestDB.mapUserIdentity(securityIdentity, mapUser);
     }
 
@@ -91,60 +89,60 @@ public class UsersResource {
             @APIResponse(responseCode = "200", description = "magic link sent in email if appropriate"),
             @APIResponse(responseCode = "400", description = "unable to process request"),
     })
-    public Response requestRecoveryEmail(@QueryParam("userID") String userID, @QueryParam("email") String email) {
+    public Response requestRecoveryEmail(@QueryParam("userID") String userID, @QueryParam("email") String email) throws NotAuthenticatedWebException, DataAccessWebException, NotFoundWebException, BadRequestWebException {
         if(securityIdentity.isAnonymous()){
-            throw new WebApplicationException("securityIdentity is missing jwt", Response.Status.UNAUTHORIZED);
+            throw new NotAuthenticatedWebException("securityIdentity is missing jwt");
         }
-        try {
-            JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
-            if (jwt == null) {
-                throw new DataAccessException("securityIdentity is missing jwt");
-            }
-            String requestorSubject = jwt.getSubject();
-            String requestorIssuer = jwt.getIssuer();
-            if (requestorSubject == null) {
-                throw new DataAccessException("securityIdentity is missing subject");
-            }
-            if (requestorIssuer == null) {
-                throw new DataAccessException("securityIdentity is missing issuer");
-            }
 
-            // verify that there is a user with this userid and email
-            UserInfo userInfo = userRestDB.getUserInfo(userID);
-            if (userInfo == null) {
-                LOG.warning("supplied userid " + userID + " not found, didn't send recovery email");
-                return Response.status(Response.Status.BAD_REQUEST).entity("unable to process request").build();
-            }
-            if (!userInfo.email.equals(email)) {
-                LOG.warning("supplied email '"+email+"' doesn't match '"+userInfo.email+"' for userid " + userID + ", didn't send recovery email");
-                return Response.status(Response.Status.BAD_REQUEST).entity("unable to process request").build();
-            }
-            var magicTokenClaims = new JWTUtils.MagicTokenClaims(
-                    email, requestorSubject, requestorIssuer, new User(userInfo.userid, userInfo.id)
-            );
-            String magicJWT = JWTUtils.createMagicLinkJWT(magicTokenClaims, JWTUtils.MAGIC_LINK_DURATION_SECONDS);
-            // create URL with same host as this server, but a query parameter 'magic' with text magicJWT
-            URI uri = uriInfo.getAbsolutePath();
-            String magicLink = uri.getScheme()+"://"+uri.getHost();
-            if (uri.getPort()!=-1) {
-                magicLink += ":" + uri.getPort();
-            }
-            magicLink += "/api/v1/users/processMagicLink" + "?magic="+magicJWT;
-            String subject = "VCell Account Link Request";
-            String htmlContent = "<html><body><p>Dear VCell User,</p><p>We received a request to link your VCell username <b>"+userID+"</b> associated with this email address. " +
-                    "If you made this request, please click on the link below to confirm your email and link your account:</p>" +
-                    "<p><a href=\""+magicLink+"\">click here to claim VCell username <b>"+userID+"</b><a></p>" +
-                    "<p>If you did not request to link your account, feel free to ignore this email and no changes will be made to your account.  " +
-                    "You may contact us at <a href=\"mailto: VCell_Support@uchc.edu\">VCell_Support@uchc.edu</a> if you have any questions</p>" +
-                    "<p>Please note that this link will expire in 24 hours.</p></body></html>";
-            //Send magic link to user
-            Mail mail = Mail.withHtml(userInfo.email, subject, htmlContent);
-            mailer.send(mail);
-            return Response.ok().build();
-        } catch (Exception e) {
-            LOG.severe("Error sending magic link email: "+e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+        JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
+        if (jwt == null) {
+            throw new NotAuthenticatedWebException("securityIdentity is missing jwt");
         }
+        String requestorSubject = jwt.getSubject();
+        String requestorIssuer = jwt.getIssuer();
+        if (requestorSubject == null) {
+            throw new NotAuthenticatedWebException("securityIdentity is missing subject");
+        }
+        if (requestorIssuer == null) {
+            throw new NotAuthenticatedWebException("securityIdentity is missing issuer");
+        }
+
+        // verify that there is a user with this userid and email
+        UserInfo userInfo = userRestDB.getUserInfo(userID);
+        if (userInfo == null) {
+            throw new BadRequestWebException("unable to process request", "supplied userid " + userID + " not found, didn't send recovery email");
+        }
+        if (!userInfo.email.equals(email)) {
+            throw new BadRequestWebException("unable to process request", "supplied email '"+email+"' doesn't match '"+userInfo.email+"' for userid " + userID + ", didn't send recovery email");
+        }
+        var magicTokenClaims = new JWTUtils.MagicTokenClaims(
+                email, requestorSubject, requestorIssuer, new User(userInfo.userid, userInfo.id)
+        );
+        String magicJWT = null;
+        try {
+            magicJWT = JWTUtils.createMagicLinkJWT(magicTokenClaims, JWTUtils.MAGIC_LINK_DURATION_SECONDS);
+        } catch (JoseException e) {
+            throw new RuntimeWebException(e);
+        }
+        // create URL with same host as this server, but a query parameter 'magic' with text magicJWT
+        URI uri = uriInfo.getAbsolutePath();
+        String magicLink = uri.getScheme()+"://"+uri.getHost();
+        if (uri.getPort()!=-1) {
+            magicLink += ":" + uri.getPort();
+        }
+        magicLink += "/api/v1/users/processMagicLink" + "?magic="+magicJWT;
+        String subject = "VCell Account Link Request";
+        String htmlContent = "<html><body><p>Dear VCell User,</p><p>We received a request to link your VCell username <b>"+userID+"</b> associated with this email address. " +
+                "If you made this request, please click on the link below to confirm your email and link your account:</p>" +
+                "<p><a href=\""+magicLink+"\">click here to claim VCell username <b>"+userID+"</b><a></p>" +
+                "<p>If you did not request to link your account, feel free to ignore this email and no changes will be made to your account.  " +
+                "You may contact us at <a href=\"mailto: VCell_Support@uchc.edu\">VCell_Support@uchc.edu</a> if you have any questions</p>" +
+                "<p>Please note that this link will expire in 24 hours.</p></body></html>";
+        //Send magic link to user
+        Mail mail = Mail.withHtml(userInfo.email, subject, htmlContent);
+        mailer.send(mail);
+        return Response.ok().build();
+
     }
 
     @GET
@@ -155,32 +153,21 @@ public class UsersResource {
             @APIResponse(responseCode = "200", description = "User mapped successfully"),
             @APIResponse(responseCode = "400", description = "Invalid or expired magic link")
     })
-    public Response processMagicLink(@QueryParam("magic") String magicToken) {
+    public Response processMagicLink(@QueryParam("magic") String magicToken) throws DataAccessWebException, NotAuthenticatedWebException {
         try {
             // Decode the magic token into a MagicTokenClaims object
             JWTUtils.MagicTokenClaims magicTokenClaims = JWTUtils.decodeMagicLinkJWT(magicToken);
+            // Map the user
+            boolean mapped = userRestDB.mapUserIdentity(magicTokenClaims);
 
-            try {
-                // Map the user
-                boolean mapped = userRestDB.mapUserIdentity(magicTokenClaims);
-
-                if (mapped) {
-                    return Response.ok().entity("account successfully linked, you are ready to log into VCell").build();
-                } else {
-                    return Response.status(Response.Status.BAD_REQUEST).entity("failed to map user").build();
-                }
-            } catch (DataAccessException e) {
-                // An error occurred while mapping the user
-                LOG.warning("Error mapping user: "+e.getMessage());
+            if (mapped) {
+                return Response.ok().entity("account successfully linked, you are ready to log into VCell").build();
+            } else {
                 return Response.status(Response.Status.BAD_REQUEST).entity("failed to map user").build();
             }
         } catch (JoseException | MalformedClaimException | InvalidJwtException e) {
             // The magic token is invalid or expired
-            LOG.warning("JWT Error mapping user: "+e.getMessage());
-            return Response.status(Response.Status.BAD_REQUEST).entity("Invalid or expired magic link").build();
-        } catch (Exception e) {
-            LOG.severe("Unexpected Error while mapping user: "+e.getMessage());
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+            throw new RuntimeWebException("Invalid or expired magic link", e);
         }
     }
 
@@ -194,24 +181,24 @@ public class UsersResource {
             @APIResponse(responseCode = "200", description = "Successful, returning the identity"),
             @APIResponse(responseCode = "409", description = "VCell Identity not mapped, userid already exists")
     })
-    public void mapNewUser(UserRegistrationInfo userRegistrationInfo) {
+    public void mapNewUser(UserRegistrationInfo userRegistrationInfo) throws NotAuthenticatedWebException, ConflictWebException, DataAccessWebException {
         JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
         if (jwt == null) {
-            throw new WebApplicationException("securityIdentity is missing jwt", Response.Status.INTERNAL_SERVER_ERROR);
+            throw new NotAuthenticatedWebException("securityIdentity is missing jwt");
         }
         String subject = jwt.getSubject();
         String issuer = jwt.getIssuer();
         String email = jwt.getClaim("email");
         String name = jwt.getClaim("name");
         if (subject == null || issuer == null) {
-            throw new WebApplicationException("securityIdentity is missing subject or issuer", Response.Status.INTERNAL_SERVER_ERROR);
+            throw new NotAuthenticatedWebException("securityIdentity is missing subject or issuer");
         }
         try {
             userRestDB.createUserIdentity(subject, issuer, email, name, userRegistrationInfo);
         } catch (UseridIDExistsException e) {
-            throw new WebApplicationException("userid already used", Response.Status.CONFLICT);
+            throw new ConflictWebException("userid already used");
         } catch (DataAccessException e) {
-            throw new WebApplicationException("database error while creating user identity: "+e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR);
+            throw new DataAccessWebException("database error while creating user identity: "+e.getMessage(), e);
         }
     }
 
@@ -221,7 +208,7 @@ public class UsersResource {
     @Operation(operationId = "unmapUser", summary = "remove vcell identity mapping")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public boolean unmapUser(String userName) throws DataAccessException {
+    public boolean unmapUser(String userName) throws DataAccessWebException, NotAuthenticatedWebException {
         return userRestDB.unmapUserIdentity(securityIdentity, userName);
     }
 
@@ -251,7 +238,7 @@ public class UsersResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     // Not using user PASSWD because they should already be authenticated with OIDC
-    public AccesTokenRepresentationRecord generateBearerToken() throws DataAccessException, PermissionWebException, NotAuthenticatedWebException {
+    public AccesTokenRepresentationRecord generateBearerToken() throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
         if(securityIdentity.isAnonymous()){
             return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
         }
@@ -265,7 +252,7 @@ public class UsersResource {
     @Operation(operationId = "getGuestLegacyApiToken", summary = "Method to get legacy tokens for guest users")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public AccesTokenRepresentationRecord generateGuestBearerToken() throws DataAccessException {
+    public AccesTokenRepresentationRecord generateGuestBearerToken() throws DataAccessWebException {
         if(securityIdentity.isAnonymous()){
             ApiAccessToken apiAccessToken = userRestDB.generateApiAccessToken(userRestDB.getAPIClient().getKey(), User.VCELL_GUEST);
             return AccesTokenRepresentationRecord.getRecordFromAccessTokenRepresentation(apiAccessToken);
@@ -292,7 +279,7 @@ public class UsersResource {
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
-            throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+            throw new RuntimeWebException(e);
         }
     }
     
