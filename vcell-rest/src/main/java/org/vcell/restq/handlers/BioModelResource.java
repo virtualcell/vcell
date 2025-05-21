@@ -134,7 +134,7 @@ public class BioModelResource {
                     saveBioModel.name.orElse(null), saveBioModel.simsRequiringUpdates.orElse(null));
             return XmlHelper.bioModelToXML(savedBioModel);
         } catch (DataAccessException e) {
-            throw new DataAccessWebException("Data Access Exception: " + e.getMessage(), e);
+            throw new DataAccessWebException(e.getMessage(), e);
         } catch (XmlParseException e){
             throw new UnprocessableContentWebException("Couldn't parse the BioModel.", e);
         }

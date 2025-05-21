@@ -88,7 +88,7 @@ public class BioModelApiTest {
             Assertions.assertEquals(DataAccessWebException.HTTP_CODE, e.getCode(), "Can't resave BioModel that has the same name declared.");
             VCellHTTPError error = new CustomObjectMapper().readValue(e.getResponseBody(), VCellHTTPError.class);
             Assertions.assertEquals(DataAccessException.class.getSimpleName(), error.getExceptionType());
-            Assertions.assertEquals("Data Access Exception: 'Administrator' already has a BioModel with name 'TestBioModel'", error.getMessage());
+            Assertions.assertEquals("'Administrator' already has a BioModel with name 'TestBioModel'", error.getMessage());
         }
 
         // BioModel in DB is properly saved and is equal to file uploaded

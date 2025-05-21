@@ -43,25 +43,6 @@ public class AuthApiClient extends ApiClient {
         }
     }
 
-    private class ErrorHandler implements Consumer<HttpResponse<InputStream>>{
-
-        @Override
-        public void accept(HttpResponse<InputStream> response) {
-            if (response.statusCode() / 100 != 2){
-                VCellHTTPError body = null;
-                try {
-                    body = response.body() == null ? null : customObjectMapper.readValue(response.body(), VCellHTTPError.class);
-                    String path = response.request().uri().getPath();
-                    String message = response.statusCode() + " - Failed while accessing server path: " + path + ".\nThe error was: " +
-                            body.getMessage();
-                    throw new RuntimeApiException(message, response.statusCode(), path, response.headers());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-    }
-
     public AuthApiClient(URI apiBaseUrl, URI oidcProviderTokenEndpoint, AccessToken accessToken, RefreshToken refreshToken, boolean ignoreSSLCertProblems) {
         if (ignoreSSLCertProblems) {setHttpClientBuilder(CustomApiClientCode.createInsecureHttpClientBuilder());}
         this.oidcProviderTokenEndpoint = oidcProviderTokenEndpoint;
@@ -74,7 +55,6 @@ public class AuthApiClient extends ApiClient {
         this.setPort(apiBaseUrl.getPort());
         this.setBasePath(apiBaseUrl.getPath());
         this.setObjectMapper(customObjectMapper);
-        this.setResponseInterceptor(new ErrorHandler());
     }
 
     public void refreshAccessToken() throws IOException, ParseException {
