@@ -1,49 +1,5 @@
-diff --git a/tools/FieldDataResourceApi.patch b/tools/FieldDataResourceApi.patch
-index 08679715b..e69de29bb 100644
---- a/tools/FieldDataResourceApi.patch
-+++ b/tools/FieldDataResourceApi.patch
-@@ -1,39 +0,0 @@
--diff --git a/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java b/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java
--index e09cfd088..c399a8460 100644
----- a/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java
--+++ b/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java
--@@ -12,6 +12,7 @@
-- 
-- package org.vcell.restclient.api;
-- 
--+import com.fasterxml.jackson.core.JsonProcessingException;
-- import org.vcell.restclient.ApiClient;
-- import org.vcell.restclient.ApiException;
-- import org.vcell.restclient.ApiResponse;
--@@ -276,16 +277,20 @@ public class FieldDataResourceApi {
--     multiPartBuilder.addBinaryBody("file", _file);
--     hasFiles = true;
--     multiPartBuilder.addTextBody("fileName", fileName.toString());
---    multiPartBuilder.addTextBody("extent", extent.toString());
---    multiPartBuilder.addTextBody("iSize", iSize.toString());
---    for (int i=0; i < channelNames.size(); i++) {
---        multiPartBuilder.addTextBody("channelNames", channelNames.get(i).toString());
--+    try {
--+      multiPartBuilder.addTextBody("extent", memberVarObjectMapper.writeValueAsString(extent));
--+      multiPartBuilder.addTextBody("iSize", memberVarObjectMapper.writeValueAsString(iSize));
--+      multiPartBuilder.addTextBody("origin", memberVarObjectMapper.writeValueAsString(origin));
--+    } catch (JsonProcessingException e) {
--+      throw new RuntimeException(e);
--     }
--     for (int i=0; i < times.size(); i++) {
---        multiPartBuilder.addTextBody("times", times.get(i).toString());
--+      multiPartBuilder.addTextBody("times", times.get(i).toString());
--+    }
--+    for (int i=0; i < channelNames.size(); i++) {
--+      multiPartBuilder.addTextBody("channelNames", channelNames.get(i).toString());
--     }
--     multiPartBuilder.addTextBody("annotation", annotation.toString());
---    multiPartBuilder.addTextBody("origin", origin.toString());
--     HttpEntity entity = multiPartBuilder.build();
--     HttpRequest.BodyPublisher formDataPublisher;
--     if (hasFiles) {
 diff --git a/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java b/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java
-index 684578273..351e67f76 100644
+index 684578273..d4137383a 100644
 --- a/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java
 +++ b/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java
 @@ -12,6 +12,7 @@
@@ -54,24 +10,41 @@ index 684578273..351e67f76 100644
  import org.vcell.restclient.ApiClient;
  import org.vcell.restclient.ApiException;
  import org.vcell.restclient.ApiResponse;
-@@ -174,16 +175,20 @@ public class FieldDataResourceApi {
+@@ -99,7 +100,7 @@ public class FieldDataResourceApi {
+ 
+   /**
+    * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
+-   * 
++   *
+    * @param _file  (optional)
+    * @param fileName  (optional)
+    * @param extent  (optional)
+@@ -118,7 +119,7 @@ public class FieldDataResourceApi {
+ 
+   /**
+    * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
+-   * 
++   *
+    * @param _file  (optional)
+    * @param fileName  (optional)
+    * @param extent  (optional)
+@@ -174,8 +175,13 @@ public class FieldDataResourceApi {
      multiPartBuilder.addBinaryBody("file", _file);
      hasFiles = true;
      multiPartBuilder.addTextBody("fileName", fileName.toString());
 -    multiPartBuilder.addTextBody("extent", extent.toString());
 -    multiPartBuilder.addTextBody("iSize", iSize.toString());
--    for (int i=0; i < channelNames.size(); i++) {
 +      try {
++          multiPartBuilder.addTextBody("extent", memberVarObjectMapper.writeValueAsString(extent));
++          multiPartBuilder.addTextBody("iSize", memberVarObjectMapper.writeValueAsString(iSize));
 +          multiPartBuilder.addTextBody("origin", memberVarObjectMapper.writeValueAsString(origin));
-+        multiPartBuilder.addTextBody("extent", memberVarObjectMapper.writeValueAsString(extent));
-+        multiPartBuilder.addTextBody("iSize", memberVarObjectMapper.writeValueAsString(iSize));
 +      } catch (JsonProcessingException e) {
 +          throw new RuntimeException(e);
 +      }
-+      for (int i=0; i < channelNames.size(); i++) {
+     for (int i=0; i < channelNames.size(); i++) {
          multiPartBuilder.addTextBody("channelNames", channelNames.get(i).toString());
      }
-     for (int i=0; i < times.size(); i++) {
+@@ -183,7 +189,6 @@ public class FieldDataResourceApi {
          multiPartBuilder.addTextBody("times", times.get(i).toString());
      }
      multiPartBuilder.addTextBody("annotation", annotation.toString());
