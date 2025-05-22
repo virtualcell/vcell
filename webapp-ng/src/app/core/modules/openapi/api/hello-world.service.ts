@@ -20,6 +20,8 @@ import { Observable }                                        from 'rxjs';
 
 // @ts-ignore
 import { HelloWorldMessage } from '../model/hello-world-message';
+// @ts-ignore
+import { VCellHTTPError } from '../model/v-cell-http-error';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';

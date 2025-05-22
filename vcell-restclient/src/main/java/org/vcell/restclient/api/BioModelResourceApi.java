@@ -19,6 +19,7 @@ import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.BioModel;
 import org.vcell.restclient.model.SaveBioModel;
+import org.vcell.restclient.model.VCellHTTPError;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -290,7 +291,7 @@ public class BioModelResourceApi {
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
-    localVarRequestBuilder.header("Accept", "text/xml");
+    localVarRequestBuilder.header("Accept", "text/xml, application/json");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
@@ -358,7 +359,7 @@ public class BioModelResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Content-Type", "application/json");
-    localVarRequestBuilder.header("Accept", "application/xml");
+    localVarRequestBuilder.header("Accept", "application/xml, application/json");
 
     try {
       byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(saveBioModel);

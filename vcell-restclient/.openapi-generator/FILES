@@ -47,6 +47,7 @@ docs/UserLoginInfoForMapping.md
 docs/UserRegistrationInfo.md
 docs/UsersResourceApi.md
 docs/VCSimulationIdentifier.md
+docs/VCellHTTPError.md
 docs/VariableDomain.md
 docs/VariableType.md
 src/main/AndroidManifest.xml
@@ -106,5 +107,6 @@ src/main/java/org/vcell/restclient/model/UserIdentityJSONSafe.java
 src/main/java/org/vcell/restclient/model/UserLoginInfoForMapping.java
 src/main/java/org/vcell/restclient/model/UserRegistrationInfo.java
 src/main/java/org/vcell/restclient/model/VCSimulationIdentifier.java
+src/main/java/org/vcell/restclient/model/VCellHTTPError.java
 src/main/java/org/vcell/restclient/model/VariableDomain.java
 src/main/java/org/vcell/restclient/model/VariableType.java

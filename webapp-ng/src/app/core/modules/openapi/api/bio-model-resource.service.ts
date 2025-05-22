@@ -22,6 +22,8 @@ import { Observable }                                        from 'rxjs';
 import { BioModel } from '../model/bio-model';
 // @ts-ignore
 import { SaveBioModel } from '../model/save-bio-model';
+// @ts-ignore
+import { VCellHTTPError } from '../model/v-cell-http-error';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -102,10 +104,10 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public deleteBioModel(bioModelID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<any>;
-    public deleteBioModel(bioModelID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<HttpResponse<any>>;
-    public deleteBioModel(bioModelID: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<HttpEvent<any>>;
-    public deleteBioModel(bioModelID: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: undefined, context?: HttpContext}): Observable<any> {
+    public deleteBioModel(bioModelID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any>;
+    public deleteBioModel(bioModelID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<any>>;
+    public deleteBioModel(bioModelID: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<any>>;
+    public deleteBioModel(bioModelID: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
         if (bioModelID === null || bioModelID === undefined) {
             throw new Error('Required parameter bioModelID was null or undefined when calling deleteBioModel.');
         }
@@ -116,6 +118,7 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
         if (localVarHttpHeaderAcceptSelected === undefined) {
             // to determine the Accept header
             const httpHeaderAccepts: string[] = [
+                'application/json'
             ];
             localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
         }
@@ -217,10 +220,10 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getBioModelVCML(bioModelID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/xml', context?: HttpContext}): Observable<string>;
-    public getBioModelVCML(bioModelID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/xml', context?: HttpContext}): Observable<HttpResponse<string>>;
-    public getBioModelVCML(bioModelID: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/xml', context?: HttpContext}): Observable<HttpEvent<string>>;
-    public getBioModelVCML(bioModelID: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/xml', context?: HttpContext}): Observable<any> {
+    public getBioModelVCML(bioModelID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/xml' | 'application/json', context?: HttpContext}): Observable<string>;
+    public getBioModelVCML(bioModelID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/xml' | 'application/json', context?: HttpContext}): Observable<HttpResponse<string>>;
+    public getBioModelVCML(bioModelID: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/xml' | 'application/json', context?: HttpContext}): Observable<HttpEvent<string>>;
+    public getBioModelVCML(bioModelID: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/xml' | 'application/json', context?: HttpContext}): Observable<any> {
         if (bioModelID === null || bioModelID === undefined) {
             throw new Error('Required parameter bioModelID was null or undefined when calling getBioModelVCML.');
         }
@@ -231,7 +234,8 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
         if (localVarHttpHeaderAcceptSelected === undefined) {
             // to determine the Accept header
             const httpHeaderAccepts: string[] = [
-                'text/xml'
+                'text/xml',
+                'application/json'
             ];
             localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
         }
@@ -275,10 +279,10 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public saveBioModel(saveBioModel?: SaveBioModel, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml', context?: HttpContext}): Observable<string>;
-    public saveBioModel(saveBioModel?: SaveBioModel, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml', context?: HttpContext}): Observable<HttpResponse<string>>;
-    public saveBioModel(saveBioModel?: SaveBioModel, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml', context?: HttpContext}): Observable<HttpEvent<string>>;
-    public saveBioModel(saveBioModel?: SaveBioModel, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/xml', context?: HttpContext}): Observable<any> {
+    public saveBioModel(saveBioModel?: SaveBioModel, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<string>;
+    public saveBioModel(saveBioModel?: SaveBioModel, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<HttpResponse<string>>;
+    public saveBioModel(saveBioModel?: SaveBioModel, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<HttpEvent<string>>;
+    public saveBioModel(saveBioModel?: SaveBioModel, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -292,7 +296,8 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
         if (localVarHttpHeaderAcceptSelected === undefined) {
             // to determine the Accept header
             const httpHeaderAccepts: string[] = [
-                'application/xml'
+                'application/xml',
+                'application/json'
             ];
             localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
         }

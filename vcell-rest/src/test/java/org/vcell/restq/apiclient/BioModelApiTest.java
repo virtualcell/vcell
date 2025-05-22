@@ -2,6 +2,7 @@ package org.vcell.restq.apiclient;
 
 import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModel;
+import org.vcell.restclient.CustomObjectMapper;
 import cbit.vcell.model.Species;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.ServerDocumentManager;
@@ -18,19 +19,18 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.BioModelResourceApi;
 import org.vcell.restclient.model.SaveBioModel;
+import org.vcell.restclient.model.VCellHTTPError;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
-import org.vcell.restq.config.WebExceptionErrorHandler;
+import org.vcell.restq.errors.exceptions.DataAccessWebException;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 @QuarkusTest
 public class BioModelApiTest {
@@ -85,7 +85,10 @@ public class BioModelApiTest {
             bioModelResourceApi.saveBioModel(saveBioModel);
             throw new RuntimeException("This should not execute because an ApiException error should be thrown.");
         } catch (ApiException e){
-            Assertions.assertEquals(WebExceptionErrorHandler.DATA_ACCESS_EXCEPTION_HTTP_CODE, e.getCode(), "Can't resave BioModel that has the same name declared.");
+            Assertions.assertEquals(DataAccessWebException.HTTP_CODE, e.getCode(), "Can't resave BioModel that has the same name declared.");
+            VCellHTTPError error = new CustomObjectMapper().readValue(e.getResponseBody(), VCellHTTPError.class);
+            Assertions.assertEquals(DataAccessException.class.getSimpleName(), error.getExceptionType());
+            Assertions.assertEquals("'Administrator' already has a BioModel with name 'TestBioModel'", error.getMessage());
         }
 
         // BioModel in DB is properly saved and is equal to file uploaded

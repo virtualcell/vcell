@@ -102,8 +102,9 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "int",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -171,8 +172,9 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "int",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -240,8 +242,9 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "int",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -551,6 +554,12 @@ class PublicationResourceApi:
         # process the body parameter
 
 
+        # set the HTTP header `Accept`
+        _header_params['Accept'] = self.api_client.select_header_accept(
+            [
+                'application/json'
+            ]
+        )
 
 
         # authentication setting
@@ -629,7 +638,10 @@ class PublicationResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "Publication"
+            '200': "Publication",
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -696,7 +708,10 @@ class PublicationResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "Publication"
+            '200': "Publication",
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -763,7 +778,10 @@ class PublicationResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "Publication"
+            '200': "Publication",
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -883,7 +901,10 @@ class PublicationResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[Publication]"
+            '200': "List[Publication]",
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -946,7 +967,10 @@ class PublicationResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[Publication]"
+            '200': "List[Publication]",
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -1009,7 +1033,10 @@ class PublicationResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[Publication]"
+            '200': "List[Publication]",
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -1131,8 +1158,9 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Publication",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -1200,8 +1228,9 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Publication",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -1269,8 +1298,9 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Publication",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(

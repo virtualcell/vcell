@@ -62,7 +62,7 @@ This endpoint does not need any parameter.
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/pdf
+ - **Accept**: application/pdf, application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -70,6 +70,7 @@ This endpoint does not need any parameter.
 **200** | The PDF report |  -  |
 **401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
+**500** | Data Access Exception |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

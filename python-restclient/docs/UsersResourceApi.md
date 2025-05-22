@@ -143,6 +143,7 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
+**500** | Data Access Exception |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -210,6 +211,7 @@ This endpoint does not need any parameter.
 **200** | OK |  -  |
 **401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
+**500** | Data Access Exception |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -399,7 +401,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: application/json
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -408,6 +410,7 @@ void (empty response body)
 **401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
 **409** | VCell Identity not mapped, userid already exists |  -  |
+**500** | Data Access Exception |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -479,6 +482,7 @@ Name | Type | Description  | Notes
 **200** | OK |  -  |
 **401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
+**500** | Data Access Exception |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -535,13 +539,15 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | User mapped successfully |  -  |
 **400** | Invalid or expired magic link |  -  |
+**401** | Not Authorized |  -  |
+**500** | Data Access Exception |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -604,7 +610,7 @@ void (empty response body)
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: Not defined
+ - **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -613,6 +619,8 @@ void (empty response body)
 **400** | unable to process request |  -  |
 **401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
+**404** | Not found |  -  |
+**500** | Data Access Exception |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
@@ -683,6 +691,7 @@ Name | Type | Description  | Notes
 **200** | OK |  -  |
 **401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
+**500** | Data Access Exception |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

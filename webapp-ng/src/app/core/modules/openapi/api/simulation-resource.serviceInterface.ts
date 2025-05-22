@@ -15,6 +15,7 @@ import { Observable }                                        from 'rxjs';
 
 import { SimulationStatusPersistentRecord } from '../model/models';
 import { StatusMessage } from '../model/models';
+import { VCellHTTPError } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';

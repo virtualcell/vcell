@@ -83,6 +83,7 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## getSimulationStatusWithHttpInfo
 
@@ -157,6 +158,7 @@ ApiResponse<[**SimulationStatusPersistentRecord**](SimulationStatusPersistentRec
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## startSimulation
@@ -225,6 +227,7 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## startSimulationWithHttpInfo
 
@@ -295,6 +298,7 @@ ApiResponse<[**List&lt;StatusMessage&gt;**](StatusMessage.md)>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## stopSimulation
@@ -363,6 +367,7 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## stopSimulationWithHttpInfo
 
@@ -433,4 +438,5 @@ ApiResponse<[**List&lt;StatusMessage&gt;**](StatusMessage.md)>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 

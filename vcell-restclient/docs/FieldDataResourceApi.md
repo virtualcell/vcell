@@ -105,6 +105,8 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## advancedCreateWithHttpInfo
 
@@ -189,6 +191,8 @@ ApiResponse<[**FieldDataSavedResults**](FieldDataSavedResults.md)>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## analyzeFile
@@ -259,6 +263,8 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## analyzeFileWithHttpInfo
 
@@ -331,6 +337,8 @@ ApiResponse<[**FieldData**](FieldData.md)>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## copyModelsFieldData
@@ -399,6 +407,8 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## copyModelsFieldDataWithHttpInfo
 
@@ -469,6 +479,8 @@ ApiResponse<[**Map&lt;String, ExternalDataIdentifier&gt;**](ExternalDataIdentifi
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## createFromFile
@@ -539,6 +551,8 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## createFromFileWithHttpInfo
 
@@ -611,6 +625,8 @@ ApiResponse<[**FieldDataSavedResults**](FieldDataSavedResults.md)>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## createFromSimulation
@@ -674,7 +690,7 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: application/x-www-form-urlencoded
-- **Accept**: Not defined
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -682,6 +698,7 @@ null (empty response body)
 | **201** | Created |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## createFromSimulationWithHttpInfo
 
@@ -747,7 +764,7 @@ ApiResponse<Void>
 ### HTTP request headers
 
 - **Content-Type**: application/x-www-form-urlencoded
-- **Accept**: Not defined
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -755,6 +772,7 @@ ApiResponse<Void>
 | **201** | Created |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## delete
@@ -814,7 +832,7 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -822,6 +840,7 @@ null (empty response body)
 | **204** | No Content |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## deleteWithHttpInfo
 
@@ -883,7 +902,7 @@ ApiResponse<Void>
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -891,6 +910,7 @@ ApiResponse<Void>
 | **204** | No Content |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## getAllIDs
@@ -955,6 +975,7 @@ This endpoint does not need any parameter.
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## getAllIDsWithHttpInfo
 
@@ -1021,6 +1042,7 @@ ApiResponse<[**List&lt;FieldDataReference&gt;**](FieldDataReference.md)>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## getShapeFromID
@@ -1089,6 +1111,8 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## getShapeFromIDWithHttpInfo
 
@@ -1159,6 +1183,8 @@ ApiResponse<[**FieldDataShape**](FieldDataShape.md)>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## save
@@ -1227,6 +1253,8 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## saveWithHttpInfo
 
@@ -1297,4 +1325,6 @@ ApiResponse<[**FieldDataSavedResults**](FieldDataSavedResults.md)>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
+| **500** | Data Access Exception |  -  |
 

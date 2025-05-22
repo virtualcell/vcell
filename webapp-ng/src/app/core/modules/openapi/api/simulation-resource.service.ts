@@ -22,6 +22,8 @@ import { Observable }                                        from 'rxjs';
 import { SimulationStatusPersistentRecord } from '../model/simulation-status-persistent-record';
 // @ts-ignore
 import { StatusMessage } from '../model/status-message';
+// @ts-ignore
+import { VCellHTTPError } from '../model/v-cell-http-error';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';

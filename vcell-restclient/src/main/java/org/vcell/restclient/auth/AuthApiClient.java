@@ -1,14 +1,13 @@
 package org.vcell.restclient.auth;
 
+import org.vcell.restclient.CustomObjectMapper;
 import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
 import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.CustomApiClientCode;
-import org.vcell.restclient.CustomObjectMapper;
+import org.vcell.restclient.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -24,6 +23,7 @@ public class AuthApiClient extends ApiClient {
     private AccessToken accessToken;
     private long accessTokenExpirationTimeMS;
     private final RenewingRequestInterceptor renewingRequestInterceptor = new RenewingRequestInterceptor();
+    private final CustomObjectMapper customObjectMapper = new CustomObjectMapper();
 
     private class RenewingRequestInterceptor implements Consumer<HttpRequest.Builder> {
         @Override
@@ -51,7 +51,7 @@ public class AuthApiClient extends ApiClient {
         this.setHost(apiBaseUrl.getHost());
         this.setPort(apiBaseUrl.getPort());
         this.setBasePath(apiBaseUrl.getPath());
-        this.setObjectMapper(new CustomObjectMapper());
+        this.setObjectMapper(customObjectMapper);
     }
 
     public void refreshAccessToken() throws IOException, ParseException {

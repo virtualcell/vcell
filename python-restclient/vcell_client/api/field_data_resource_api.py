@@ -138,8 +138,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '422': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -235,8 +237,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '422': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -332,8 +336,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '422': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -499,8 +505,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldData",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '422': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -572,8 +580,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldData",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '422': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -645,8 +655,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldData",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '422': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -788,8 +800,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Dict[str, ExternalDataIdentifier]",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '422': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -857,8 +871,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Dict[str, ExternalDataIdentifier]",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '422': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -926,8 +942,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Dict[str, ExternalDataIdentifier]",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '422': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -1070,8 +1088,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '422': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -1143,8 +1163,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '422': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -1216,8 +1238,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '422': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -1560,6 +1584,12 @@ class FieldDataResourceApi:
         # process the body parameter
 
 
+        # set the HTTP header `Accept`
+        _header_params['Accept'] = self.api_client.select_header_accept(
+            [
+                'application/json'
+            ]
+        )
 
         # set the HTTP header `Content-Type`
         if _content_type:
@@ -1823,6 +1853,12 @@ class FieldDataResourceApi:
         # process the body parameter
 
 
+        # set the HTTP header `Accept`
+        _header_params['Accept'] = self.api_client.select_header_accept(
+            [
+                'application/json'
+            ]
+        )
 
 
         # authentication setting
@@ -1898,8 +1934,9 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[FieldDataReference]",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -1963,8 +2000,9 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[FieldDataReference]",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -2028,8 +2066,9 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[FieldDataReference]",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -2152,8 +2191,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataShape",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '404': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -2221,8 +2262,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataShape",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '404': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -2290,8 +2333,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataShape",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '404': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -2417,8 +2462,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '422': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -2486,8 +2533,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '422': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -2555,8 +2604,10 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
-            '401': None,
-            '403': None
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '422': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(

@@ -1,7 +1,6 @@
 package org.vcell.restq.handlers;
 
 import cbit.vcell.modeldb.BioModelRep;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import io.quarkus.security.identity.SecurityIdentity;
@@ -14,17 +13,16 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.vcell.restq.Main;
-import org.vcell.restq.config.WebExceptionErrorHandler;
 import org.vcell.restq.db.BioModelRestDB;
 import org.vcell.restq.db.UserRestDB;
+import org.vcell.restq.errors.exceptions.*;
+import org.vcell.restq.errors.exceptions.NotFoundWebException;
 import org.vcell.restq.models.BioModel;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.w3c.www.http.HTTP;
 
-import java.sql.SQLException;
 import java.util.Optional;
 
 @Path("/api/v1/bioModel")
@@ -45,7 +43,7 @@ public class BioModelResource {
     @Path("{bioModelID}")
     @Operation(operationId = "getBioModel", summary = "Get BioModel.")
     @Produces(MediaType.APPLICATION_JSON)
-    public BioModel getBioModelInfo(@PathParam("bioModelID") String bioModelID) throws SQLException, DataAccessException, ExpressionException {
+    public BioModel getBioModelInfo(@PathParam("bioModelID") String bioModelID) throws DataAccessWebException, NotFoundWebException, PermissionWebException, NotAuthenticatedWebException {
         User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.ALLOW_ANONYMOUS);
         if (vcellUser == null) {
             vcellUser = Main.DUMMY_USER;
@@ -54,7 +52,9 @@ public class BioModelResource {
             BioModelRep bioModelRep = bioModelRestDB.getBioModelRep(new KeyValue(bioModelID), vcellUser);
             return BioModel.fromBioModelRep(bioModelRep);
         }catch (ObjectNotFoundException e) {
-            throw new WebApplicationException("BioModel not found", e, HTTP.NOT_FOUND);
+            throw new NotFoundWebException(e.getMessage(), e);
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
         }
     }
 
@@ -62,7 +62,7 @@ public class BioModelResource {
     @Path("{bioModelID}/vcml_download")
     @Operation(operationId = "getBioModelVCML", summary = "Get the BioModel in VCML format.")
     @Produces(MediaType.TEXT_XML)
-    public String getBioModelVCML(@PathParam("bioModelID") String bioModelID){
+    public String getBioModelVCML(@PathParam("bioModelID") String bioModelID) throws DataAccessWebException, NotFoundWebException, PermissionWebException, NotAuthenticatedWebException {
         User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.ALLOW_ANONYMOUS);
         if (vcellUser == null) {
             vcellUser = Main.DUMMY_USER;
@@ -70,9 +70,9 @@ public class BioModelResource {
         try {
             return bioModelRestDB.getBioModel(vcellUser, new KeyValue(bioModelID));
         }catch (ObjectNotFoundException e) {
-            throw new WebApplicationException("BioModel not found", e, HTTP.NOT_FOUND);
+            throw new NotFoundWebException(e.getMessage(), e);
         } catch (DataAccessException e) {
-            throw new WebApplicationException("Can't Access BioModel", e, WebExceptionErrorHandler.DATA_ACCESS_EXCEPTION_HTTP_CODE);
+            throw new DataAccessWebException(e.getMessage(), e);
         }
     }
 
@@ -111,9 +111,13 @@ public class BioModelResource {
     @DELETE
     @Path("{bioModelID}")
     @Operation(operationId = "deleteBioModel", summary = "Delete the BioModel from VCell's database.")
-    public void deleteBioModel(@PathParam("bioModelID") String bioModelID) throws DataAccessException {
+    public void deleteBioModel(@PathParam("bioModelID") String bioModelID) throws DataAccessWebException, PermissionWebException, NotAuthenticatedWebException {
         User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);;
-        bioModelRestDB.deleteBioModel(user, new KeyValue(bioModelID));
+        try {
+            bioModelRestDB.deleteBioModel(user, new KeyValue(bioModelID));
+        } catch (DataAccessException e) {
+            throw new DataAccessWebException(e.getMessage(), e);
+        }
     }
 
     @POST
@@ -123,18 +127,16 @@ public class BioModelResource {
     @Produces(MediaType.APPLICATION_XML)
     @Operation(operationId = "saveBioModel", summary = "Save's the given BioModel. Optional parameters of name and simulations to update due to math changes." +
             " Returns saved BioModel as VCML.")
-    public String save(@Valid SaveBioModel saveBioModel){
+    public String save(@Valid SaveBioModel saveBioModel) throws DataAccessWebException, UnprocessableContentWebException, PermissionWebException, NotAuthenticatedWebException {
         User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
         try {
             cbit.vcell.biomodel.BioModel savedBioModel = bioModelRestDB.save(user, saveBioModel.bioModelXML,
                     saveBioModel.name.orElse(null), saveBioModel.simsRequiringUpdates.orElse(null));
             return XmlHelper.bioModelToXML(savedBioModel);
         } catch (DataAccessException e) {
-            throw new WebApplicationException("Data Access Exception: " + e.getMessage(), e, WebExceptionErrorHandler.DATA_ACCESS_EXCEPTION_HTTP_CODE);
+            throw new DataAccessWebException(e.getMessage(), e);
         } catch (XmlParseException e){
-            throw new WebApplicationException("Couldn't parse the BioModel.", e, WebExceptionErrorHandler.UNPROCESSABLE_HTTP_CODE);
-        } catch (RuntimeException e){
-            throw new WebApplicationException("Unexpected error occurred: " + e.getMessage(), e, HTTP.INTERNAL_SERVER_ERROR);
+            throw new UnprocessableContentWebException(e.getMessage(), e);
         }
     }
 

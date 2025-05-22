@@ -28,6 +28,7 @@ import java.io.File;
 import org.vcell.restclient.model.ISize;
 import org.vcell.restclient.model.Origin;
 import org.vcell.restclient.model.SourceModel;
+import org.vcell.restclient.model.VCellHTTPError;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -99,7 +100,7 @@ public class FieldDataResourceApi {
 
   /**
    * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
-   * 
+   *
    * @param _file  (optional)
    * @param fileName  (optional)
    * @param extent  (optional)
@@ -118,7 +119,7 @@ public class FieldDataResourceApi {
 
   /**
    * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
-   * 
+   *
    * @param _file  (optional)
    * @param fileName  (optional)
    * @param extent  (optional)
@@ -174,18 +175,18 @@ public class FieldDataResourceApi {
     multiPartBuilder.addBinaryBody("file", _file);
     hasFiles = true;
     multiPartBuilder.addTextBody("fileName", fileName.toString());
-    try {
-      multiPartBuilder.addTextBody("extent", memberVarObjectMapper.writeValueAsString(extent));
-      multiPartBuilder.addTextBody("iSize", memberVarObjectMapper.writeValueAsString(iSize));
-      multiPartBuilder.addTextBody("origin", memberVarObjectMapper.writeValueAsString(origin));
-    } catch (JsonProcessingException e) {
-      throw new RuntimeException(e);
+      try {
+          multiPartBuilder.addTextBody("extent", memberVarObjectMapper.writeValueAsString(extent));
+          multiPartBuilder.addTextBody("iSize", memberVarObjectMapper.writeValueAsString(iSize));
+          multiPartBuilder.addTextBody("origin", memberVarObjectMapper.writeValueAsString(origin));
+      } catch (JsonProcessingException e) {
+          throw new RuntimeException(e);
+      }
+    for (int i=0; i < channelNames.size(); i++) {
+        multiPartBuilder.addTextBody("channelNames", channelNames.get(i).toString());
     }
     for (int i=0; i < times.size(); i++) {
-      multiPartBuilder.addTextBody("times", times.get(i).toString());
-    }
-    for (int i=0; i < channelNames.size(); i++) {
-      multiPartBuilder.addTextBody("channelNames", channelNames.get(i).toString());
+        multiPartBuilder.addTextBody("times", times.get(i).toString());
     }
     multiPartBuilder.addTextBody("annotation", annotation.toString());
     HttpEntity entity = multiPartBuilder.build();

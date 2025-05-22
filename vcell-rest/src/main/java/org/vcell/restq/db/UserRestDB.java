@@ -11,6 +11,7 @@ import jakarta.ws.rs.WebApplicationException;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.vcell.auth.JWTUtils;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
+import org.vcell.restq.errors.exceptions.*;
 import org.vcell.restq.handlers.UsersResource;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -33,11 +34,11 @@ public class UserRestDB {
     public final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
 
     @Inject
-    public UserRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException {
+    public UserRestDB(AgroalConnectionFactory agroalConnectionFactory) {
         try {
             adminDBTopLevel = new AdminDBTopLevel(agroalConnectionFactory);
         } catch (SQLException e) {
-            throw new DataAccessException("database error during initialization", e);
+            throw new RuntimeWebException("database error during initialization", e);
         }
     }
 
@@ -53,55 +54,57 @@ public class UserRestDB {
         ALLOW_ANONYMOUS,
         REQUIRE_USER
     }
-    public User getUserFromIdentity(SecurityIdentity securityIdentity, UserRequirement allowAnonymous) throws WebApplicationException {
+    public User getUserFromIdentity(SecurityIdentity securityIdentity, UserRequirement allowAnonymous) throws NotAuthenticatedWebException, PermissionWebException, DataAccessWebException {
         List<UserIdentity> userIdentities = getUserIdentities(securityIdentity);
         if (userIdentities == null || userIdentities.isEmpty()){
             if (allowAnonymous == UserRequirement.ALLOW_ANONYMOUS){
                 return null;
             } else {
-                throw new WebApplicationException("User is not authenticated.", HTTP.UNAUTHORIZED);
+                throw new NotAuthenticatedWebException("User is not authenticated.");
             }
         }
         if (userIdentities.size() > 1){
-            throw new WebApplicationException("Multiple identities found for user.", HTTP.FORBIDDEN);
+            throw new PermissionWebException("Multiple identities found for user.");
         }
         return userIdentities.get(0).user();
     }
 
     // TODO: add some short-lived caching here to avoid repeated database calls
-    public List<UserIdentity> getUserIdentities(SecurityIdentity securityIdentity) throws WebApplicationException {
+    public List<UserIdentity> getUserIdentities(SecurityIdentity securityIdentity) throws NotAuthenticatedWebException, DataAccessWebException {
         if (securityIdentity.isAnonymous()){
             return null;
         }
         JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
         if (jwt == null) {
-            throw new WebApplicationException("securityIdentity is missing jwt", HTTP.UNAUTHORIZED);
+            throw new NotAuthenticatedWebException("securityIdentity is missing jwt");
         }
         String subject = jwt.getSubject();
         String issuer = jwt.getIssuer();
         if (subject == null) {
-            throw new WebApplicationException("securityIdentity is missing subject", HTTP.UNAUTHORIZED);
+            throw new NotAuthenticatedWebException("securityIdentity is missing subject");
         }
         if (issuer == null) {
-            throw new WebApplicationException("securityIdentity is missing issuer", HTTP.UNAUTHORIZED);
+            throw new NotAuthenticatedWebException("securityIdentity is missing issuer");
         }
         try {
             return adminDBTopLevel.getUserIdentitiesFromSubjectAndIssuer(subject, issuer, true);
-        } catch (SQLException | DataAccessException e) {
-            throw new WebApplicationException("database error while retrieving user identity: "+e.getMessage(), e, HTTP.BAD_REQUEST);
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
+        } catch (SQLException e) {
+            throw new RuntimeWebException("database error while retrieving user identity: ", e);
         }
     }
 
-    public boolean mapUserIdentity(JWTUtils.MagicTokenClaims magicTokenClaims) throws DataAccessException {
+    public boolean mapUserIdentity(JWTUtils.MagicTokenClaims magicTokenClaims) throws NotAuthenticatedWebException, DataAccessWebException {
        try {
             String subject = magicTokenClaims.requesterSubject();
             String issuer = magicTokenClaims.requesterIssuer();
             User userToMap = magicTokenClaims.user();
             if (subject == null) {
-                throw new DataAccessException("magic link token is missing subject");
+                throw new NotAuthenticatedWebException("magic link token is missing subject");
             }
             if (issuer == null) {
-                throw new DataAccessException("magic link token is missing issuer");
+                throw new NotAuthenticatedWebException("magic link token is missing issuer");
             }
 
             // check existing mappings, if already mapped to this user, return true
@@ -121,12 +124,14 @@ public class UserRestDB {
 
             adminDBTopLevel.setUserIdentityFromIdentityProvider(userToMap, subject, issuer, true);
             return true;
-        } catch (SQLException e) {
-            throw new DataAccessException("database error while mapping user identity: "+e.getMessage(), e);
+        } catch (DataAccessException e){
+           throw new DataAccessWebException(e.getMessage(), e);
+       } catch (SQLException e) {
+            throw new RuntimeWebException("database error while mapping user identity", e);
         }
     }
 
-    public boolean mapUserIdentity(SecurityIdentity securityIdentity, UsersResource.UserLoginInfoForMapping mapUser) throws DataAccessException {
+    public boolean mapUserIdentity(SecurityIdentity securityIdentity, UsersResource.UserLoginInfoForMapping mapUser) throws NotAuthenticatedWebException, DataAccessWebException {
         if (securityIdentity.isAnonymous()){
             return false;
         }
@@ -137,15 +142,15 @@ public class UserRestDB {
             }
             JsonWebToken jwt = CustomSecurityIdentityAugmentor.getJsonWebToken(securityIdentity);
             if (jwt == null) {
-                throw new DataAccessException("securityIdentity is missing jwt");
+                throw new NotAuthenticatedWebException("securityIdentity is missing jwt");
             }
             String subject = jwt.getSubject();
             String issuer = jwt.getIssuer();
             if (subject == null) {
-                throw new DataAccessException("securityIdentity is missing subject");
+                throw new NotAuthenticatedWebException("securityIdentity is missing subject");
             }
             if (issuer == null) {
-                throw new DataAccessException("securityIdentity is missing issuer");
+                throw new NotAuthenticatedWebException("securityIdentity is missing issuer");
             }
 
             // check existing mappings, if already mapped to this user, return true
@@ -165,8 +170,10 @@ public class UserRestDB {
 
             adminDBTopLevel.setUserIdentityFromIdentityProvider(user, subject, issuer, true);
             return true;
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
-            throw new DataAccessException("database error while mapping user identity: "+e.getMessage(), e);
+            throw new RuntimeWebException("database error while mapping user identity", e);
         }
     }
 
@@ -186,11 +193,11 @@ public class UserRestDB {
             User user = new User(newUserInfo.userid, newUserKey);
             adminDBTopLevel.setUserIdentityFromIdentityProvider(user, subject, issuer, true);
         } catch (SQLException e) {
-            throw new DataAccessException("Database exception", e);
+            throw new RuntimeWebException("Database exception", e);
         }
     }
 
-    public boolean unmapUserIdentity(SecurityIdentity securityIdentity, String userName) throws DataAccessException {
+    public boolean unmapUserIdentity(SecurityIdentity securityIdentity, String userName) throws NotAuthenticatedWebException, DataAccessWebException {
         if (securityIdentity.isAnonymous()){
             return false;
         }
@@ -202,10 +209,10 @@ public class UserRestDB {
             String subject = jwt.getSubject();
             String issuer = jwt.getIssuer();
             if (subject == null) {
-                throw new DataAccessException("securityIdentity is missing subject");
+                throw new NotAuthenticatedWebException("securityIdentity is missing subject");
             }
             if (issuer == null) {
-                throw new DataAccessException("securityIdentity is missing issuer");
+                throw new NotAuthenticatedWebException("securityIdentity is missing issuer");
             }
 
             User user = null;
@@ -221,19 +228,23 @@ public class UserRestDB {
 
             // remove existing mapping for this user, true = success
             return adminDBTopLevel.deleteUserIdentity(user, subject, issuer, true);
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
-            throw new DataAccessException("database error while mapping user identity: "+e.getMessage(), e);
+            throw new RuntimeWebException("database error while mapping user identity", e);
         }
     }
 
 
     // Old API Compatability Functions
 
-    public ApiAccessToken generateApiAccessToken(KeyValue apiClientKey, User user) throws DataAccessException {
+    public ApiAccessToken generateApiAccessToken(KeyValue apiClientKey, User user) throws DataAccessWebException {
         try {
             return adminDBTopLevel.generateApiAccessToken(apiClientKey, user, getNewExpireDate(), true);
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
-            throw new DataAccessException("database error while generating access token", e);
+            throw new RuntimeWebException("database error while generating access token", e);
         }
     }
 
@@ -241,11 +252,13 @@ public class UserRestDB {
         adminDBTopLevel.sendLostPassword(userID, true);
     }
 
-    public ApiClient getAPIClient() throws DataAccessException {
+    public ApiClient getAPIClient() throws DataAccessWebException {
         try {
             return adminDBTopLevel.getApiClient(DEFAULT_CLIENTID, true);
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
-            throw new DataAccessException("database error while retrieving api client info", e);
+            throw new RuntimeWebException("database error while retrieving api client info", e);
         }
     }
 
@@ -257,7 +270,7 @@ public class UserRestDB {
         return expireTime;
     }
 
-    public UserInfo getUserInfo(String userID) throws SQLException, DataAccessException {
+    public UserInfo getUserInfo(String userID) throws NotFoundWebException, DataAccessWebException {
         try {
             User user = adminDBTopLevel.getUser(userID, true);
             if (user == null){
@@ -265,7 +278,11 @@ public class UserRestDB {
             }
             return adminDBTopLevel.getUserInfo(user.getID(), true);
         } catch (ObjectNotFoundException e) {
-            return null;
+            throw new NotFoundWebException(e.getMessage(), e);
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
+        } catch (SQLException e){
+            throw new RuntimeWebException("Database Error" ,e);
         }
     }
 }

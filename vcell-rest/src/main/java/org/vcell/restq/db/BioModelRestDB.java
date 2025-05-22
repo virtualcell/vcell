@@ -19,10 +19,8 @@ import java.util.ArrayList;
 
 @ApplicationScoped
 public class BioModelRestDB {
-
     private final DatabaseServerImpl databaseServerImpl;
     private final SimulationRestDB simulationRestDB;
-
 
     @Inject
     public BioModelRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
@@ -35,7 +33,7 @@ public class BioModelRestDB {
         this.simulationRestDB = simulationRestDB;
     }
 
-    public BioModelRep getBioModelRep(KeyValue bmKey, User vcellUser) throws SQLException, DataAccessException {
+    public BioModelRep getBioModelRep(KeyValue bmKey, User vcellUser) throws DataAccessException {
         ArrayList<String> conditions = new ArrayList<String>();
         if (bmKey != null){
             conditions.add("(" + BioModelTable.table.id.getQualifiedColName() + " = " + bmKey.toString() + ")");
@@ -52,24 +50,30 @@ public class BioModelRestDB {
         }
         int startRow = 1;
         int maxRows = 1;
-        BioModelRep[] bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), null, startRow, maxRows);
-        for (BioModelRep bioModelRep : bioModelReps) {
-            KeyValue[] simContextKeys = bioModelRep.getSimContextKeyList();
-            for (KeyValue scKey : simContextKeys) {
-                SimContextRep scRep = simulationRestDB.getSimContextRep(scKey);
-                if (scRep != null){
-                    bioModelRep.addSimContextRep(scRep);
+        BioModelRep[] bioModelReps;
+        try{
+            bioModelReps = databaseServerImpl.getBioModelReps(vcellUser, conditionsBuffer.toString(), null, startRow, maxRows);
+            for (BioModelRep bioModelRep : bioModelReps) {
+                KeyValue[] simContextKeys = bioModelRep.getSimContextKeyList();
+                for (KeyValue scKey : simContextKeys) {
+                    SimContextRep scRep = simulationRestDB.getSimContextRep(scKey);
+                    if (scRep != null){
+                        bioModelRep.addSimContextRep(scRep);
+                    }
                 }
-            }
-            KeyValue[] simulationKeys = bioModelRep.getSimKeyList();
-            for (KeyValue simKey : simulationKeys) {
-                SimulationRep simulationRep = simulationRestDB.getSimulationRep(simKey);
-                if (simulationRep != null){
-                    bioModelRep.addSimulationRep(simulationRep);
+                KeyValue[] simulationKeys = bioModelRep.getSimKeyList();
+                for (KeyValue simKey : simulationKeys) {
+                    SimulationRep simulationRep = simulationRestDB.getSimulationRep(simKey);
+                    if (simulationRep != null){
+                        bioModelRep.addSimulationRep(simulationRep);
+                    }
                 }
-            }
 
+            }
+        } catch (SQLException e){
+            throw new DataAccessException("Unable to retrieve BioModel representations.", e);
         }
+
         if (bioModelReps==null || bioModelReps.length!=1){
             throw new ObjectNotFoundException("failed to get biomodel");
         }

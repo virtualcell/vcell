@@ -12,14 +12,13 @@
 
 package org.vcell.restclient.api;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.RandomStringUtils;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Pair;
 
 import java.io.File;
+import org.vcell.restclient.model.VCellHTTPError;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -125,13 +124,10 @@ public class SolverResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getFVSolverInputFromSBML", localVarResponse);
         }
-        InputStream inputStream = localVarResponse.body();
-        File file = File.createTempFile("finite-volume-input-" + RandomStringUtils.randomAlphabetic(10), ".tmp");
-        FileUtils.copyInputStreamToFile(inputStream, file);
         return new ApiResponse<File>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : file // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<File>() {}) // closes the InputStream
         );
       } finally {
       }
@@ -152,7 +148,7 @@ public class SolverResourceApi {
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
-    localVarRequestBuilder.header("Accept", "application/octet-stream");
+    localVarRequestBuilder.header("Accept", "application/octet-stream, application/json");
 
     MultipartEntityBuilder multiPartBuilder = MultipartEntityBuilder.create();
     boolean hasFiles = false;
@@ -232,13 +228,10 @@ public class SolverResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getFVSolverInputFromVCML", localVarResponse);
         }
-        InputStream inputStream = localVarResponse.body();
-        File file = File.createTempFile("finite-volume-input-" + RandomStringUtils.randomAlphabetic(10), ".tmp");
-        FileUtils.copyInputStreamToFile(inputStream, file);
         return new ApiResponse<File>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : file // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<File>() {}) // closes the InputStream
         );
       } finally {
       }
@@ -259,7 +252,7 @@ public class SolverResourceApi {
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
-    localVarRequestBuilder.header("Accept", "application/octet-stream");
+    localVarRequestBuilder.header("Accept", "application/octet-stream, application/json");
 
     MultipartEntityBuilder multiPartBuilder = MultipartEntityBuilder.create();
     boolean hasFiles = false;

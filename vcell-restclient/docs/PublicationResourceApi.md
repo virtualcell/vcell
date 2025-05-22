@@ -83,6 +83,7 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## createPublicationWithHttpInfo
 
@@ -153,6 +154,7 @@ ApiResponse<**Long**>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## deletePublication
@@ -212,7 +214,7 @@ null (empty response body)
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -220,6 +222,8 @@ null (empty response body)
 | **204** | No Content |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## deletePublicationWithHttpInfo
 
@@ -281,7 +285,7 @@ ApiResponse<Void>
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: Not defined
+- **Accept**: application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -289,6 +293,8 @@ ApiResponse<Void>
 | **204** | No Content |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## getPublicationById
@@ -353,6 +359,9 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## getPublicationByIdWithHttpInfo
 
@@ -419,6 +428,9 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## getPublications
@@ -479,6 +491,9 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## getPublicationsWithHttpInfo
 
@@ -541,6 +556,9 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## updatePublication
@@ -609,6 +627,7 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## updatePublicationWithHttpInfo
 
@@ -679,4 +698,5 @@ ApiResponse<[**Publication**](Publication.md)>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
 

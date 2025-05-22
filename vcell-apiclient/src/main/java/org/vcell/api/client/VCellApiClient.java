@@ -35,6 +35,7 @@ import org.vcell.api.client.query.SimTasksQuerySpec;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.CustomApiClientCode;
+import org.vcell.restclient.CustomObjectMapper;
 import org.vcell.restclient.api.BioModelResourceApi;
 import org.vcell.restclient.api.FieldDataResourceApi;
 import org.vcell.restclient.api.UsersResourceApi;
@@ -42,7 +43,6 @@ import org.vcell.restclient.auth.InteractiveLogin;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
 import org.vcell.api.types.utils.DTOOldAPI;
-import org.vcell.util.DataAccessException;
 
 import java.awt.*;
 import java.io.*;
@@ -79,6 +79,7 @@ public class VCellApiClient implements AutoCloseable {
 	private final static int DATA_ACCESS_EXCEPTION_HTTP_CODE = 500;
 	private final URL quarkusURL;
 	private ApiClient apiClient = null;
+	private final CustomObjectMapper customObjectMapper = new CustomObjectMapper();
 
 	// Create a custom response handler
 	public static class VCellStringResponseHandler implements ResponseHandler<String> {
@@ -493,50 +494,6 @@ public class VCellApiClient implements AutoCloseable {
 				}
 			} catch (IOException e) {
 				throw new RuntimeException(e);
-			}
-		}
-	}
-
-	@FunctionalInterface
-	public interface ApiCallSupplier<T>{
-		T get() throws ApiException;
-	}
-
-	@FunctionalInterface
-	public interface ApiCallSupplierVoid{
-		void makeRequest() throws ApiException;
-	}
-
-	public void callWithHandling(ApiCallSupplierVoid apiCall) throws DataAccessException {
-		try{
-			apiCall.makeRequest();
-		} catch (ApiException e){
-			lg.error(e);
-			String errorMessage = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
-			switch (e.getCode()){
-				case DATA_ACCESS_EXCEPTION_HTTP_CODE -> {
-					throw new DataAccessException(errorMessage, e);
-				}
-				default -> {
-					throw new RuntimeException(errorMessage, e);
-				}
-			}
-		}
-	}
-
-	public <T> T callWithHandling(ApiCallSupplier<T> apiCall) throws DataAccessException {
-		try{
-			return apiCall.get();
-		} catch (ApiException e){
-			lg.error(e);
-			String errorMessage = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
-			switch (e.getCode()){
-				case DATA_ACCESS_EXCEPTION_HTTP_CODE -> {
-					throw new DataAccessException(errorMessage, e);
-				}
-				default -> {
-					throw new RuntimeException(errorMessage, e);
-				}
 			}
 		}
 	}

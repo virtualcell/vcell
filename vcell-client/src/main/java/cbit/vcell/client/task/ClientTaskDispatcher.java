@@ -33,6 +33,7 @@ import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
+import org.vcell.restclient.ApiException;
 import org.vcell.util.*;
 import org.vcell.util.gui.AsynchProgressPopup;
 import org.vcell.util.gui.GuiUtils;
@@ -428,9 +429,13 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				// something went wrong
 				StringBuffer allCausesErrorMessageSB = new StringBuffer();
 				Throwable causeError = (Throwable)hash.get(TASK_ABORTED_BY_ERROR);
+				lg.error(causeError);
 				do{
-					allCausesErrorMessageSB.append(causeError.getClass().getSimpleName()).append("-").append(causeError.getMessage() == null || causeError.getMessage().length() == 0 ? "" : causeError.getMessage());
-					allCausesErrorMessageSB.append("\n");
+					// API exception is complicated, and would be confusing for end users
+					if (!(causeError.getClass() == ApiException.class)){
+						allCausesErrorMessageSB.append(causeError.getClass().getSimpleName()).append("-").append(causeError.getMessage() == null || causeError.getMessage().length() == 0 ? "" : causeError.getMessage());
+						allCausesErrorMessageSB.append("\n");
+					}
 				}while((causeError = causeError.getCause()) != null);
 				if (requester == null) {
 					System.out.println("ClientTaskDispatcher.dispatch(), requester is null, dialog has no parent, please try best to fix it!!!");
