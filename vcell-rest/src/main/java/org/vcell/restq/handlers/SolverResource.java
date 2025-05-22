@@ -67,7 +67,7 @@ public class SolverResource {
         } catch (PropertyVetoException | MappingException | SolverException | ExpressionException e){
             throw new UnprocessableContentWebException(e.getMessage(), e);
         } catch (VCLoggerException | IOException e){
-            throw new RuntimeWebException("Error processing spatial model", e);
+            throw new RuntimeWebException("Error processing spatial model: " + e.getMessage(), e);
         } finally {
             if (workingDir != null && zipFile != null){
                 for (File file: workingDir.listFiles()){
@@ -125,7 +125,7 @@ public class SolverResource {
         } catch (XmlParseException | MappingException | SolverException | ExpressionException e){
             throw new UnprocessableContentWebException("Error processing spatial model: "+e.getMessage(), e);
         } catch (IOException e){
-            throw new RuntimeWebException("IO Error on server.", e);
+            throw new RuntimeWebException("IO Error on server: " + e.getMessage(), e);
         } finally {
             if (workingDir != null && zipFile != null){
                 for (File file: workingDir.listFiles()){

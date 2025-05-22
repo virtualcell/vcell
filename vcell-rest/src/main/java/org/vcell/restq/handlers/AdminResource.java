@@ -78,7 +78,7 @@ public class AdminResource {
                     htmlWorker.parse(new StringReader(htmlString));
                     document.close();
                 } catch (Exception e) {
-                    throw new WebApplicationException("Error while generating PDF", e);
+                    throw new WebApplicationException("Error while generating PDF: " + e.getMessage(), e);
                 }
             };
             return Response
@@ -87,7 +87,7 @@ public class AdminResource {
                     .build();
         } catch (SQLException | DataAccessException e) {
             lg.error("database error", e);
-            throw new DataAccessWebException("database error", e);
+            throw new DataAccessWebException(e.getMessage(), e);
         }
     }
 }

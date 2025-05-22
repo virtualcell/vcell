@@ -9,8 +9,4 @@ public class RuntimeWebException extends RuntimeException{
     public RuntimeWebException(String message, Exception e){
         super(message, e);
     }
-
-    public RuntimeWebException(Exception e){
-        super(e);
-    }
 }

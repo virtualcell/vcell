@@ -49,7 +49,7 @@ public class SimulationResource {
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
-            throw new RuntimeWebException(e);
+            throw new RuntimeWebException("Database Exception", e);
         }
     }
 
@@ -64,7 +64,7 @@ public class SimulationResource {
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException | VCMessagingException e) {
-            throw new RuntimeWebException(e);
+            throw new RuntimeWebException(e.getMessage(), e);
         }
     }
 
@@ -80,7 +80,7 @@ public class SimulationResource {
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
-            throw new RuntimeWebException(e);
+            throw new RuntimeWebException(e.getMessage(), e);
         }
     }
 

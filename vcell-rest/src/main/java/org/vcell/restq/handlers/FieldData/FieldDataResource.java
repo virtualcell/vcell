@@ -133,7 +133,7 @@ public class FieldDataResource {
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (ImageException | IOException e) {
-            throw new WebApplicationException("Can't create new field data: " + e.getMessage(), e, HTTP.INTERNAL_SERVER_ERROR);
+            throw new RuntimeWebException("Can't create new field data: " + e.getMessage(), e);
         }
     }
 
@@ -159,7 +159,7 @@ public class FieldDataResource {
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (ImageException | IOException e) {
-            throw new WebApplicationException("Can't create new field data: " + e.getMessage(), e, HTTP.INTERNAL_SERVER_ERROR);
+            throw new RuntimeWebException("Can't create new field data: " + e.getMessage(), e);
         }
     }
 
@@ -182,7 +182,7 @@ public class FieldDataResource {
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (ImageException e) {
-            throw new WebApplicationException("Can't create new field data file", e, HTTP.INTERNAL_SERVER_ERROR);
+            throw new RuntimeWebException("Can't create new field data file: " + e.getMessage(), e);
         }
     }
 
@@ -206,7 +206,7 @@ public class FieldDataResource {
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (ImageException | IOException e) {
-            throw new WebApplicationException(e.getMessage(), e, HTTP.INTERNAL_SERVER_ERROR);
+            throw new RuntimeWebException(e.getMessage(), e);
         }
         return fieldDataSavedResults;
     }

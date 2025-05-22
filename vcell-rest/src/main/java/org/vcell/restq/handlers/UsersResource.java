@@ -122,7 +122,7 @@ public class UsersResource {
         try {
             magicJWT = JWTUtils.createMagicLinkJWT(magicTokenClaims, JWTUtils.MAGIC_LINK_DURATION_SECONDS);
         } catch (JoseException e) {
-            throw new RuntimeWebException(e);
+            throw new RuntimeWebException(e.getMessage(), e);
         }
         // create URL with same host as this server, but a query parameter 'magic' with text magicJWT
         URI uri = uriInfo.getAbsolutePath();
@@ -220,12 +220,12 @@ public class UsersResource {
             @APIResponse(responseCode = "200", description = "Successful, returning the identity"),
     })
     @Produces(MediaType.APPLICATION_JSON)
-    public UserIdentityJSONSafe getIdentity() throws NotAuthenticatedWebException {
+    public UserIdentityJSONSafe getIdentity() throws NotAuthenticatedWebException, ConflictWebException, DataAccessWebException {
         List<UserIdentity> userIdentities = userRestDB.getUserIdentities(securityIdentity);
         if (userIdentities.isEmpty()){
             return UserIdentityJSONSafe.noIdentity();
         } else if (userIdentities.size() > 1){
-            throw new WebApplicationException("Multiple identities found for user", Response.Status.INTERNAL_SERVER_ERROR);
+            throw new ConflictWebException("Multiple identities found for user");
         } else {
             return UserIdentityJSONSafe.fromUserIdentity(userIdentities.get(0));
         }
@@ -279,7 +279,7 @@ public class UsersResource {
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
-            throw new RuntimeWebException(e);
+            throw new RuntimeWebException(e.getMessage(), e);
         }
     }
     

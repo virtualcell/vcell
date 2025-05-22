@@ -54,7 +54,7 @@ public class UserRestDB {
         ALLOW_ANONYMOUS,
         REQUIRE_USER
     }
-    public User getUserFromIdentity(SecurityIdentity securityIdentity, UserRequirement allowAnonymous) throws NotAuthenticatedWebException, PermissionWebException {
+    public User getUserFromIdentity(SecurityIdentity securityIdentity, UserRequirement allowAnonymous) throws NotAuthenticatedWebException, PermissionWebException, DataAccessWebException {
         List<UserIdentity> userIdentities = getUserIdentities(securityIdentity);
         if (userIdentities == null || userIdentities.isEmpty()){
             if (allowAnonymous == UserRequirement.ALLOW_ANONYMOUS){
@@ -70,7 +70,7 @@ public class UserRestDB {
     }
 
     // TODO: add some short-lived caching here to avoid repeated database calls
-    public List<UserIdentity> getUserIdentities(SecurityIdentity securityIdentity) throws NotAuthenticatedWebException {
+    public List<UserIdentity> getUserIdentities(SecurityIdentity securityIdentity) throws NotAuthenticatedWebException, DataAccessWebException {
         if (securityIdentity.isAnonymous()){
             return null;
         }
@@ -88,8 +88,10 @@ public class UserRestDB {
         }
         try {
             return adminDBTopLevel.getUserIdentitiesFromSubjectAndIssuer(subject, issuer, true);
-        } catch (SQLException | DataAccessException e) {
-            throw new WebApplicationException("database error while retrieving user identity: "+e.getMessage(), e, HTTP.BAD_REQUEST);
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
+        } catch (SQLException e) {
+            throw new RuntimeWebException("database error while retrieving user identity: ", e);
         }
     }
 
@@ -125,7 +127,7 @@ public class UserRestDB {
         } catch (DataAccessException e){
            throw new DataAccessWebException(e.getMessage(), e);
        } catch (SQLException e) {
-            throw new RuntimeWebException("database error while mapping user identity: "+e.getMessage(), e);
+            throw new RuntimeWebException("database error while mapping user identity", e);
         }
     }
 
@@ -171,7 +173,7 @@ public class UserRestDB {
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
-            throw new RuntimeWebException("database error while mapping user identity: "+e.getMessage(), e);
+            throw new RuntimeWebException("database error while mapping user identity", e);
         }
     }
 
@@ -229,7 +231,7 @@ public class UserRestDB {
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
-            throw new RuntimeWebException("database error while mapping user identity: "+e.getMessage(), e);
+            throw new RuntimeWebException("database error while mapping user identity", e);
         }
     }
 
@@ -280,7 +282,7 @@ public class UserRestDB {
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e){
-            throw new RuntimeWebException(e);
+            throw new RuntimeWebException("Database Error" ,e);
         }
     }
 }

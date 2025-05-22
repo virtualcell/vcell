@@ -52,7 +52,7 @@ public class BioModelResource {
             BioModelRep bioModelRep = bioModelRestDB.getBioModelRep(new KeyValue(bioModelID), vcellUser);
             return BioModel.fromBioModelRep(bioModelRep);
         }catch (ObjectNotFoundException e) {
-            throw new NotFoundWebException("BioModel not found.", e);
+            throw new NotFoundWebException(e.getMessage(), e);
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         }
@@ -70,9 +70,9 @@ public class BioModelResource {
         try {
             return bioModelRestDB.getBioModel(vcellUser, new KeyValue(bioModelID));
         }catch (ObjectNotFoundException e) {
-            throw new NotFoundWebException("BioModel not found", e);
+            throw new NotFoundWebException(e.getMessage(), e);
         } catch (DataAccessException e) {
-            throw new DataAccessWebException("Can't Access BioModel", e);
+            throw new DataAccessWebException(e.getMessage(), e);
         }
     }
 
@@ -136,7 +136,7 @@ public class BioModelResource {
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (XmlParseException e){
-            throw new UnprocessableContentWebException("Couldn't parse the BioModel.", e);
+            throw new UnprocessableContentWebException(e.getMessage(), e);
         }
     }
 

@@ -46,7 +46,7 @@ public class PublicationResource {
         } catch (PermissionException e){
             throw new PermissionWebException(e.getMessage(), e);
         } catch (SQLException e){
-            throw new RuntimeWebException(e);
+            throw new RuntimeWebException(e.getMessage(), e);
         } catch (DataAccessException e) {
             throw new DataAccessWebException("failed to retrieve publications from VCell Database : " + e.getMessage(), e);
         }
