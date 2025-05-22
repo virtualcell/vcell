@@ -429,6 +429,7 @@ public static void dispatch(final Component requester, final Hashtable<String, O
 				// something went wrong
 				StringBuffer allCausesErrorMessageSB = new StringBuffer();
 				Throwable causeError = (Throwable)hash.get(TASK_ABORTED_BY_ERROR);
+				lg.error(causeError);
 				do{
 					// API exception is complicated, and would be confusing for end users
 					if (!(causeError.getClass() == ApiException.class)){

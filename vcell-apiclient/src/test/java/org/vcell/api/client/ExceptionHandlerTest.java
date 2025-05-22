@@ -1,6 +1,6 @@
 package org.vcell.api.client;
 
-import cbit.vcell.message.CustomObjectMapper;
+import org.vcell.restclient.CustomObjectMapper;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -25,6 +25,7 @@ public class ExceptionHandlerTest {
     private final ArrayList<Class> classesThatHaveDirectMapping = new ArrayList<>(){{
         add(DataAccessException.class);
         add(ObjectNotFoundException.class);
+        add(PermissionException.class);
     }};
 
     @Test
@@ -32,6 +33,7 @@ public class ExceptionHandlerTest {
         TestCase[] testCases = {new TestCase(DataAccessException.class, 500, "Test Data Access"),
         new TestCase(ObjectNotFoundException.class, 404, "Object not found"),
         new TestCase(PermissionException.class, 403, "Not allowed"),
+        new TestCase(PermissionException.class, 401, "Not authorized"),
         new TestCase(SQLException.class, 500, "Unknown error")};
 
         CustomObjectMapper customObjectMapper = new CustomObjectMapper();
