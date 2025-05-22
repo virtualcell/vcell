@@ -1,4 +1,4 @@
-package org.vcell.restq.handlers.FieldData;
+package org.vcell.restq.handlers;
 
 import cbit.image.ImageException;
 import cbit.vcell.field.io.FieldDataSpec;
@@ -17,7 +17,8 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.jboss.resteasy.reactive.PartType;
 import org.jboss.resteasy.reactive.RestForm;
-import org.vcell.restq.db.UserRestDB;
+import org.vcell.restq.services.FieldDataService;
+import org.vcell.restq.services.UserRestService;
 import org.vcell.restq.errors.exceptions.*;
 import org.vcell.restq.errors.exceptions.NotFoundWebException;
 import org.vcell.util.DataAccessException;
@@ -28,7 +29,6 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VersionableType;
-import org.w3c.www.http.HTTP;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -48,14 +48,14 @@ public class FieldDataResource {
     @Inject
     SecurityIdentity securityIdentity;
 
-    private final FieldDataDB fieldDataDB;
-    private final UserRestDB userRestDB;
+    private final FieldDataService fieldDataService;
+    private final UserRestService userRestService;
     private final String allowedFieldDataNamesRegex = "^[a-zA-Z0-9_]*$";
 
     @Inject
-    public FieldDataResource(FieldDataDB fieldDataDB, UserRestDB userRestDB){
-        this.fieldDataDB = fieldDataDB;
-        this.userRestDB = userRestDB;
+    public FieldDataResource(FieldDataService fieldDataService, UserRestService userRestService){
+        this.fieldDataService = fieldDataService;
+        this.userRestService = userRestService;
     }
 
 
@@ -65,7 +65,7 @@ public class FieldDataResource {
     @Operation(operationId = "getAllIDs", summary = "Get all of the ids used to identify, and retrieve field data.")
     public ArrayList<FieldDataReference> getAllFieldDataIDs() throws DataAccessWebException, PermissionWebException, NotAuthenticatedWebException {
         try {
-            return fieldDataDB.getAllFieldDataIDs(userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER));
+            return fieldDataService.getAllFieldDataIDs(userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER));
         } catch (DataAccessException e) {
             throw new DataAccessWebException("Can't get field data ID's: " + e.getMessage(), e);
         }
@@ -77,9 +77,9 @@ public class FieldDataResource {
     @Operation(operationId = "getShapeFromID", summary = "Get the shape of the field data. That is it's size, origin, extent, times, and data identifiers.")
     public FieldDataShape getFieldDataShapeFromID(@PathParam("fieldDataID") String fieldDataID) throws DataAccessWebException, NotFoundWebException, PermissionWebException, NotAuthenticatedWebException {
         try {
-            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
+            User user = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
             KeyValue keyValue = new KeyValue(fieldDataID);
-            cbit.vcell.field.io.FieldDataShape results = fieldDataDB.getFieldDataShapeFromID(user, keyValue, FieldDataSpec.JOBINDEX_DEFAULT);
+            cbit.vcell.field.io.FieldDataShape results = fieldDataService.getFieldDataShapeFromID(user, keyValue, FieldDataSpec.JOBINDEX_DEFAULT);
             return new FieldDataShape(results.extent, results.origin, results.iSize, results.variableInformation,results.times);
         } catch (DataAccessException e) {
             if (e.getCause() instanceof FileNotFoundException){
@@ -96,8 +96,8 @@ public class FieldDataResource {
     @Operation(operationId = "createFromSimulation", summary = "Create new field data from existing simulation results.")
     public void createNewFieldDataFromSimulation(@RestForm String simKeyReference, @RestForm int jobIndex, @RestForm String newFieldDataName) throws DataAccessWebException, PermissionWebException, NotAuthenticatedWebException {
         try {
-            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
-            fieldDataDB.saveFieldDataFromSimulation(user, new KeyValue(simKeyReference), jobIndex, newFieldDataName);
+            User user = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
+            fieldDataService.saveFieldDataFromSimulation(user, new KeyValue(simKeyReference), jobIndex, newFieldDataName);
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
         }
@@ -119,12 +119,12 @@ public class FieldDataResource {
                                                   @RestForm("annotation") @PartType(MediaType.TEXT_PLAIN) String annotation,
                                                   @RestForm("origin") @PartType(MediaType.APPLICATION_JSON) Origin origin) throws UnprocessableContentWebException, DataAccessWebException, PermissionWebException, NotAuthenticatedWebException {
         try{
-            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
+            User user = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
             if (!Pattern.matches(allowedFieldDataNamesRegex, fileName) || fileName.length() > 100 || fileName.isEmpty()){
                 throw new UnprocessableContentWebException("Invalid file name.");
             }
-            FieldData fieldData = fieldDataDB.analyzeFieldDataFromFile(file, fileName);
-            ExternalDataIdentifier edi = fieldDataDB.saveNewFieldDataFromFile(fileName,
+            FieldData fieldData = fieldDataService.analyzeFieldDataFromFile(file, fileName);
+            ExternalDataIdentifier edi = fieldDataService.saveNewFieldDataFromFile(fileName,
                     channelNames, fieldData.shortSpecData, annotation,
                     user, times, origin, extent, iSize);
             return new FieldDataSavedResults(edi.getName(), edi.getKey().toString());
@@ -146,12 +146,12 @@ public class FieldDataResource {
     public FieldDataSavedResults createFromFileWithDefaults(@RestForm @PartType(MediaType.APPLICATION_OCTET_STREAM) File file,
                                                             @RestForm String fieldDataName) throws UnprocessableContentWebException, DataAccessWebException, PermissionWebException, NotAuthenticatedWebException {
         try{
-            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
+            User user = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
             if (!Pattern.matches(allowedFieldDataNamesRegex, fieldDataName) || fieldDataName.length() > 100 || fieldDataName.isEmpty()){
                 throw new UnprocessableContentWebException("Invalid file name.");
             }
-            FieldData fieldData = fieldDataDB.analyzeFieldDataFromFile(file, fieldDataName);
-            ExternalDataIdentifier edi = fieldDataDB.saveNewFieldDataFromFile(fieldDataName, fieldData.varNames, fieldData.shortSpecData,
+            FieldData fieldData = fieldDataService.analyzeFieldDataFromFile(file, fieldDataName);
+            ExternalDataIdentifier edi = fieldDataService.saveNewFieldDataFromFile(fieldDataName, fieldData.varNames, fieldData.shortSpecData,
                     fieldData.annotation, user, fieldData.times, fieldData.origin, fieldData.extent, fieldData.isize);
             return new FieldDataSavedResults(edi.getName(), edi.getKey().toString());
         } catch (DataFormatException e){
@@ -172,11 +172,11 @@ public class FieldDataResource {
             "Filenames must be lowercase alphanumeric, and can contain underscores.")
     public FieldData analyzeFile(@RestForm File file, @RestForm String fileName) throws UnprocessableContentWebException, DataAccessWebException, PermissionWebException, NotAuthenticatedWebException {
         try{
-            userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
+            userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
             if (!Pattern.matches(allowedFieldDataNamesRegex, fileName) || fileName.length() > 100 || fileName.isEmpty()){
                 throw new UnprocessableContentWebException("Invalid file name.");
             }
-            return fieldDataDB.analyzeFieldDataFromFile(file, fileName);
+            return fieldDataService.analyzeFieldDataFromFile(file, fileName);
         } catch (DataFormatException e){
             throw new UnprocessableContentWebException(e.getMessage(), e);
         } catch (DataAccessException e){
@@ -196,8 +196,8 @@ public class FieldDataResource {
     public FieldDataSavedResults createNewFieldDataFromSpecification(FieldData saveFieldData) throws UnprocessableContentWebException, DataAccessWebException, PermissionWebException, NotAuthenticatedWebException {
         FieldDataSavedResults fieldDataSavedResults;
         try{
-            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
-            ExternalDataIdentifier edi = fieldDataDB.saveNewFieldDataFromFile(saveFieldData.name,
+            User user = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
+            ExternalDataIdentifier edi = fieldDataService.saveNewFieldDataFromFile(saveFieldData.name,
                    saveFieldData.varNames, saveFieldData.shortSpecData, saveFieldData.doubleSpecData, saveFieldData.annotation,
                     user, saveFieldData.times, saveFieldData.origin, saveFieldData.extent, saveFieldData.isize);
             fieldDataSavedResults = new FieldDataSavedResults(edi.getName(), edi.getKey().toString());
@@ -219,8 +219,8 @@ public class FieldDataResource {
     @Operation(operationId = "copyModelsFieldData", summary = "Copy all existing field data from a BioModel/MathModel that you have access to, but don't own.")
     public Hashtable<String, ExternalDataIdentifier> copyFieldData(SourceModel sourceModel) throws UnprocessableContentWebException, DataAccessWebException, PermissionWebException, NotAuthenticatedWebException {
         try {
-            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
-            return fieldDataDB.copyModelsFieldData(user, new KeyValue(sourceModel.modelID()), sourceModel.modelType.getName());
+            User user = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
+            return fieldDataService.copyModelsFieldData(user, new KeyValue(sourceModel.modelID()), sourceModel.modelType.getName());
         } catch (MathException | XmlParseException | ExpressionException e){
             throw new UnprocessableContentWebException(e.getMessage(), e);
         } catch (DataAccessException e){
@@ -234,9 +234,9 @@ public class FieldDataResource {
     @Operation(operationId = "delete", summary = "Delete the selected field data.")
     public void deleteFieldData(@PathParam("fieldDataID") String fieldDataID) throws DataAccessWebException, PermissionWebException, NotAuthenticatedWebException {
         try{
-            ExternalDataIdentifier edi = new ExternalDataIdentifier(new KeyValue(fieldDataID), userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER),
+            ExternalDataIdentifier edi = new ExternalDataIdentifier(new KeyValue(fieldDataID), userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER),
                     null);
-            fieldDataDB.deleteFieldData(edi);
+            fieldDataService.deleteFieldData(edi);
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
         }

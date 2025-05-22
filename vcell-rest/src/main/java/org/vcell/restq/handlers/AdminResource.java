@@ -20,8 +20,8 @@ import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.resteasy.reactive.NoCache;
-import org.vcell.restq.db.AdminRestDB;
-import org.vcell.restq.db.UserRestDB;
+import org.vcell.restq.services.AdminRestService;
+import org.vcell.restq.services.UserRestService;
 import org.vcell.restq.errors.exceptions.DataAccessWebException;
 import org.vcell.restq.errors.exceptions.NotAuthenticatedWebException;
 import org.vcell.restq.errors.exceptions.PermissionWebException;
@@ -41,13 +41,13 @@ public class AdminResource {
     @Inject
     SecurityIdentity securityIdentity;
 
-    private final AdminRestDB adminRestDB;
-    private final UserRestDB userRestDB;
+    private final AdminRestService adminRestService;
+    private final UserRestService userRestService;
 
     @Inject
-    public AdminResource(AdminRestDB adminRestDB, UserRestDB userRestDB) {
-        this.adminRestDB = adminRestDB;
-        this.userRestDB = userRestDB;
+    public AdminResource(AdminRestService adminRestService, UserRestService userRestService) {
+        this.adminRestService = adminRestService;
+        this.userRestService = userRestService;
     }
 
     @GET
@@ -65,9 +65,9 @@ public class AdminResource {
         if (securityIdentity.isAnonymous()){
             throw new NotAuthenticatedWebException("not authenticated");
         }
-        User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
+        User vcellUser = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
         try {
-            String htmlString = adminRestDB.getUsageSummaryHtml(vcellUser);
+            String htmlString = adminRestService.getUsageSummaryHtml(vcellUser);
             StreamingOutput fileStream = output -> {
                 try {
                     Document document = new Document();

@@ -8,8 +8,8 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.vcell.restq.db.PublicationService;
-import org.vcell.restq.db.UserRestDB;
+import org.vcell.restq.services.PublicationService;
+import org.vcell.restq.services.UserRestService;
 import org.vcell.restq.errors.exceptions.*;
 import org.vcell.restq.models.Publication;
 import org.vcell.util.DataAccessException;
@@ -29,7 +29,7 @@ public class PublicationResource {
     SecurityIdentity securityIdentity;
 
     @Inject
-    UserRestDB userRestDB;
+    UserRestService userRestService;
 
     @Inject
     public PublicationResource(PublicationService publicationService) {
@@ -41,7 +41,7 @@ public class PublicationResource {
     @Operation(operationId = "getPublicationById", summary = "Get publication by ID")
     public Publication get_by_id(@PathParam("id") Long publicationID) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
         try {
-            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.ALLOW_ANONYMOUS);
+            User vcellUser = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.ALLOW_ANONYMOUS);
             return publicationService.getPublication(new KeyValue(publicationID.toString()), vcellUser);
         } catch (PermissionException e){
             throw new PermissionWebException(e.getMessage(), e);
@@ -57,7 +57,7 @@ public class PublicationResource {
     @Operation(operationId = "getPublications", summary = "Get all publications")
     public Publication[] get_list() throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
         try {
-            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.ALLOW_ANONYMOUS);
+            User vcellUser = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.ALLOW_ANONYMOUS);
             return publicationService.getPublications(DatabaseServerImpl.OrderBy.year_desc, vcellUser);
         } catch (PermissionException e){
             throw new PermissionWebException(e.getMessage(), e);
@@ -76,7 +76,7 @@ public class PublicationResource {
     public Long add(Publication publication) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
         try {
-            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
+            User vcellUser = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
             KeyValue key = publicationService.savePublication(publication, vcellUser);
             return Long.parseLong(key.toString());
         } catch (PermissionException e){
@@ -97,7 +97,7 @@ public class PublicationResource {
     public Publication update(Publication publication) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
         try {
-            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
+            User vcellUser = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
             Publication pub = publicationService.updatePublication(publication, vcellUser);
             return pub;
         } catch (PermissionException e){
@@ -117,7 +117,7 @@ public class PublicationResource {
     @Operation(operationId = "deletePublication", summary = "Delete publication")
     public void delete(@PathParam("id") Long publicationID) throws PermissionWebException, NotAuthenticatedWebException, NotFoundWebException, DataAccessWebException {
         try {
-            User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
+            User vcellUser = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
             int numRecordsDeleted = publicationService.deletePublication(new KeyValue(publicationID.toString()), vcellUser);
             if (numRecordsDeleted != 1) {
                 throw new NotFoundWebException("failed to delete publication, record not found");

@@ -1,4 +1,4 @@
-package org.vcell.restq.db;
+package org.vcell.restq.services;
 
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.DatabaseServerImpl.OrderBy;
@@ -6,6 +6,7 @@ import cbit.vcell.modeldb.PublicationRep;
 import cbit.vcell.modeldb.PublicationTable;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.models.Publication;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;

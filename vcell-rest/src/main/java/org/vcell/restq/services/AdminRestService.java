@@ -1,9 +1,9 @@
-package org.vcell.restq.db;
+package org.vcell.restq.services;
 
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.WebApplicationException;
+import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.errors.exceptions.PermissionWebException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
@@ -11,12 +11,12 @@ import org.vcell.util.document.User;
 import java.sql.SQLException;
 
 @ApplicationScoped
-public class AdminRestDB {
+public class AdminRestService {
 
     private final AdminDBTopLevel adminDBTopLevel;
 
     @Inject
-    public AdminRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException {
+    public AdminRestService(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException {
         try {
             adminDBTopLevel = new AdminDBTopLevel(agroalConnectionFactory);
         } catch (SQLException e) {

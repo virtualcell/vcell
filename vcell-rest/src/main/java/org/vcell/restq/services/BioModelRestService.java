@@ -1,4 +1,4 @@
-package org.vcell.restq.db;
+package org.vcell.restq.services;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.modeldb.*;
@@ -7,6 +7,7 @@ import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
@@ -18,19 +19,19 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 @ApplicationScoped
-public class BioModelRestDB {
+public class BioModelRestService {
     private final DatabaseServerImpl databaseServerImpl;
-    private final SimulationRestDB simulationRestDB;
+    private final SimulationRestService simulationRestService;
 
     @Inject
-    public BioModelRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
+    public BioModelRestService(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
         databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
-        simulationRestDB = new SimulationRestDB(agroalConnectionFactory);
+        simulationRestService = new SimulationRestService(agroalConnectionFactory);
     }
 
-    public BioModelRestDB(SimulationRestDB simulationRestDB, DatabaseServerImpl databaseServer) {
+    public BioModelRestService(SimulationRestService simulationRestService, DatabaseServerImpl databaseServer) {
         databaseServerImpl = databaseServer;
-        this.simulationRestDB = simulationRestDB;
+        this.simulationRestService = simulationRestService;
     }
 
     public BioModelRep getBioModelRep(KeyValue bmKey, User vcellUser) throws DataAccessException {
@@ -56,14 +57,14 @@ public class BioModelRestDB {
             for (BioModelRep bioModelRep : bioModelReps) {
                 KeyValue[] simContextKeys = bioModelRep.getSimContextKeyList();
                 for (KeyValue scKey : simContextKeys) {
-                    SimContextRep scRep = simulationRestDB.getSimContextRep(scKey);
+                    SimContextRep scRep = simulationRestService.getSimContextRep(scKey);
                     if (scRep != null){
                         bioModelRep.addSimContextRep(scRep);
                     }
                 }
                 KeyValue[] simulationKeys = bioModelRep.getSimKeyList();
                 for (KeyValue simKey : simulationKeys) {
-                    SimulationRep simulationRep = simulationRestDB.getSimulationRep(simKey);
+                    SimulationRep simulationRep = simulationRestService.getSimulationRep(simKey);
                     if (simulationRep != null){
                         bioModelRep.addSimulationRep(simulationRep);
                     }

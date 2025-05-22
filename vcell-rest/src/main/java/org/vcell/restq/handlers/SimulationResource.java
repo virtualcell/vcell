@@ -9,8 +9,8 @@ import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.vcell.restq.Simulations.SimulationStatusPersistentRecord;
 import org.vcell.restq.Simulations.StatusMessage;
-import org.vcell.restq.db.SimulationRestDB;
-import org.vcell.restq.db.UserRestDB;
+import org.vcell.restq.services.SimulationRestService;
+import org.vcell.restq.services.UserRestService;
 import org.vcell.restq.errors.exceptions.DataAccessWebException;
 import org.vcell.restq.errors.exceptions.NotAuthenticatedWebException;
 import org.vcell.restq.errors.exceptions.PermissionWebException;
@@ -27,13 +27,13 @@ public class SimulationResource {
     @Inject
     SecurityIdentity securityIdentity;
 
-    private final SimulationRestDB simulationRestDB;
-    private final UserRestDB userRestDB;
+    private final SimulationRestService simulationRestService;
+    private final UserRestService userRestService;
 
     @Inject
-    public SimulationResource(SimulationRestDB simulationRestDB, UserRestDB userRestDB) {
-        this.simulationRestDB = simulationRestDB;
-        this.userRestDB = userRestDB;
+    public SimulationResource(SimulationRestService simulationRestService, UserRestService userRestService) {
+        this.simulationRestService = simulationRestService;
+        this.userRestService = userRestService;
     }
 
 
@@ -44,8 +44,8 @@ public class SimulationResource {
     @Produces(MediaType.APPLICATION_JSON)
     public ArrayList<StatusMessage> startSimulation(@PathParam("simID") String simID) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
         try {
-            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
-            return simulationRestDB.startSimulation(simID, user);
+            User user = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
+            return simulationRestService.startSimulation(simID, user);
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
@@ -59,8 +59,8 @@ public class SimulationResource {
     @Operation(operationId = "stopSimulation", summary = "Stop a simulation.")
     public ArrayList<StatusMessage> stopSimulation(@PathParam("simID") String simID) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
         try {
-            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
-            return simulationRestDB.stopSimulation(simID, user);
+            User user = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
+            return simulationRestService.stopSimulation(simID, user);
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException | VCMessagingException e) {
@@ -75,8 +75,8 @@ public class SimulationResource {
     public SimulationStatusPersistentRecord getSimulationStatus(@PathParam("simID") String simID,
                                     @QueryParam("bioModelID") String bioModelID, @QueryParam("mathModelID") String mathModelID) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
         try {
-            User user = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
-            return simulationRestDB.getBioModelSimulationStatus(simID, bioModelID, user);
+            User user = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
+            return simulationRestService.getBioModelSimulationStatus(simID, bioModelID, user);
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {

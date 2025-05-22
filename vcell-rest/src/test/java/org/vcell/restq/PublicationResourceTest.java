@@ -15,7 +15,7 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
-import org.vcell.restq.db.PublicationService;
+import org.vcell.restq.services.PublicationService;
 import org.vcell.restq.models.BiomodelRef;
 import org.vcell.restq.models.MathmodelRef;
 import org.vcell.restq.models.Publication;

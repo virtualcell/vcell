@@ -1,7 +1,6 @@
 package org.vcell.restq;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;

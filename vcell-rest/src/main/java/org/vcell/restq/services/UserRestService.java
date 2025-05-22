@@ -1,4 +1,4 @@
-package org.vcell.restq.db;
+package org.vcell.restq.services;
 
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.ApiAccessToken;
@@ -7,10 +7,10 @@ import cbit.vcell.modeldb.UserIdentity;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.ws.rs.WebApplicationException;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.vcell.auth.JWTUtils;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
+import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.errors.exceptions.*;
 import org.vcell.restq.handlers.UsersResource;
 import org.vcell.util.DataAccessException;
@@ -20,7 +20,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
-import org.w3c.www.http.HTTP;
 
 import java.sql.SQLException;
 import java.util.Date;
@@ -28,13 +27,13 @@ import java.util.List;
 import java.util.UUID;
 
 @ApplicationScoped
-public class UserRestDB {
+public class UserRestService {
 
     private final AdminDBTopLevel adminDBTopLevel;
     public final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
 
     @Inject
-    public UserRestDB(AgroalConnectionFactory agroalConnectionFactory) {
+    public UserRestService(AgroalConnectionFactory agroalConnectionFactory) {
         try {
             adminDBTopLevel = new AdminDBTopLevel(agroalConnectionFactory);
         } catch (SQLException e) {
