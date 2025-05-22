@@ -4,11 +4,9 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MappingException;
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.modeldb.BioModelRep;
-import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.solver.server.SimulationMessagePersistent;
-import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import io.quarkus.test.junit.QuarkusTest;
@@ -26,8 +24,8 @@ import org.vcell.restq.Simulations.StatusMessage;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
-import org.vcell.restq.db.BioModelRestDB;
-import org.vcell.restq.db.SimulationRestDB;
+import org.vcell.restq.services.BioModelRestService;
+import org.vcell.restq.services.SimulationRestService;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
@@ -50,10 +48,10 @@ public class SimulationApiTest {
     AgroalConnectionFactory agroalConnectionFactory;
 
     @Inject
-    BioModelRestDB bioModelRestDB;
+    BioModelRestService bioModelRestService;
 
     @Inject
-    SimulationRestDB simulationRestDB;
+    SimulationRestService simulationRestService;
 
     private static String previousServerID;
     private static String previousMongoHost;
@@ -100,8 +98,8 @@ public class SimulationApiTest {
 
 
         String testBioModel = XmlHelper.bioModelToXML(TestEndpointUtils.getTestBioModel());
-        BioModel bioModel = bioModelRestDB.save(TestEndpointUtils.administratorUser, testBioModel, null, null);
-        bioModelRep = bioModelRestDB.getBioModelRep(bioModel.getVersion().getVersionKey(), TestEndpointUtils.administratorUser);
+        BioModel bioModel = bioModelRestService.save(TestEndpointUtils.administratorUser, testBioModel, null, null);
+        bioModelRep = bioModelRestService.getBioModelRep(bioModel.getVersion().getVersionKey(), TestEndpointUtils.administratorUser);
     }
 
     @AfterEach
@@ -116,10 +114,10 @@ public class SimulationApiTest {
     public void testDBLayerStartStopAndStatus() throws ApiException, PropertyVetoException, XmlParseException, IOException, DataAccessException, SQLException, VCMessagingException {
         KeyValue simKey = bioModelRep.getSimKeyList()[0];
 
-        SimulationStatusPersistentRecord statusPersistent = simulationRestDB.getBioModelSimulationStatus(simKey.toString(), bioModelRep.getBmKey().toString(), TestEndpointUtils.administratorUser);
+        SimulationStatusPersistentRecord statusPersistent = simulationRestService.getBioModelSimulationStatus(simKey.toString(), bioModelRep.getBmKey().toString(), TestEndpointUtils.administratorUser);
         Assertions.assertNull(statusPersistent);
 
-        ArrayList<StatusMessage> statusMessages = simulationRestDB.startSimulation(simKey.toString(), TestEndpointUtils.administratorUser);
+        ArrayList<StatusMessage> statusMessages = simulationRestService.startSimulation(simKey.toString(), TestEndpointUtils.administratorUser);
         StatusMessage statusMessage = statusMessages.get(0);
 
         Assertions.assertEquals(1, statusMessages.size());
@@ -127,8 +125,8 @@ public class SimulationApiTest {
         Assertions.assertEquals(TestEndpointUtils.administratorUser.getName(), statusMessage.userName());
         Assertions.assertEquals(simKey.toString(), statusMessage.jobStatus().fieldVCSimID().getSimulationKey().toString());
 
-        simulationRestDB.stopSimulation(simKey.toString(), TestEndpointUtils.administratorUser);
-        statusPersistent = simulationRestDB.getBioModelSimulationStatus(simKey.toString(), bioModelRep.getBmKey().toString(), TestEndpointUtils.administratorUser);
+        simulationRestService.stopSimulation(simKey.toString(), TestEndpointUtils.administratorUser);
+        statusPersistent = simulationRestService.getBioModelSimulationStatus(simKey.toString(), bioModelRep.getBmKey().toString(), TestEndpointUtils.administratorUser);
         Assertions.assertEquals(SimulationStatusPersistentRecord.Status.STOPPED.statusDescription, statusPersistent.status().statusDescription);
     }
 

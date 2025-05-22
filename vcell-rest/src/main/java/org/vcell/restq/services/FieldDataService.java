@@ -1,4 +1,4 @@
-package org.vcell.restq.handlers.FieldData;
+package org.vcell.restq.services;
 
 import cbit.image.ImageException;
 import cbit.image.VCImageUncompressed;
@@ -29,25 +29,25 @@ import jakarta.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.restq.db.AgroalConnectionFactory;
+import org.vcell.restq.handlers.FieldDataResource;
 import org.vcell.util.*;
 import org.vcell.util.document.*;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.zip.DataFormatException;
 
 @ApplicationScoped
-public class FieldDataDB {
-    private static final Logger logger = LogManager.getLogger(FieldDataDB.class);
+public class FieldDataService {
+    private static final Logger logger = LogManager.getLogger(FieldDataService.class);
 
     private final DatabaseServerImpl databaseServerImpl;
     private final DataSetControllerImpl dataSetControllerImpl;
 
     @Inject
-    public FieldDataDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, FileNotFoundException {
+    public FieldDataService(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, FileNotFoundException {
         databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         String primarySimDataDir = PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty, "/simdata");
         String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, "/simdata");

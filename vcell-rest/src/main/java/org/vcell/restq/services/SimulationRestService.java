@@ -1,10 +1,8 @@
-package org.vcell.restq.db;
+package org.vcell.restq.services;
 
 import cbit.vcell.message.VCMessagingException;
 import cbit.vcell.message.server.dispatcher.SimulationDatabaseDirect;
 import cbit.vcell.modeldb.*;
-import cbit.vcell.server.SimulationStatusPersistent;
-import jakarta.inject.Inject;
 import org.vcell.restq.Simulations.SimulationDispatcherEngine;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -12,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.restq.Simulations.SimulationStatusPersistentRecord;
 import org.vcell.restq.Simulations.StatusMessage;
+import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
@@ -25,20 +24,20 @@ import java.util.concurrent.ConcurrentHashMap;
 
 // Make into seperate class in DB module
 @ApplicationScoped
-public class SimulationRestDB {
-    private final static Logger lg = LogManager.getLogger(SimulationRestDB.class);
+public class SimulationRestService {
+    private final static Logger lg = LogManager.getLogger(SimulationRestService.class);
 
 
     private final DatabaseServerImpl databaseServerImpl;
     private final SimulationDatabaseDirect simulationDatabaseDirect;
     private final SimulationDispatcherEngine simulationDispatcherEngine;
-    private final BioModelRestDB bioModelRestDB;
+    private final BioModelRestService bioModelRestService;
 
-    public SimulationRestDB(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
+    public SimulationRestService(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
         databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         simulationDatabaseDirect = new SimulationDatabaseDirect(new AdminDBTopLevel(agroalConnectionFactory), databaseServerImpl, true);
         simulationDispatcherEngine = new SimulationDispatcherEngine();
-        bioModelRestDB = new BioModelRestDB(this, databaseServerImpl);
+        bioModelRestService = new BioModelRestService(this, databaseServerImpl);
     }
 
     ConcurrentHashMap<KeyValue, SimulationRep> simMap = new ConcurrentHashMap<KeyValue, SimulationRep>();
@@ -111,7 +110,7 @@ public class SimulationRestDB {
     }
 
     public SimulationStatusPersistentRecord getBioModelSimulationStatus(String simID, String bioModelID, User vcellUser) throws DataAccessException, SQLException {
-        BioModelRep bioModelRep = bioModelRestDB.getBioModelRep(new KeyValue(bioModelID), vcellUser);
+        BioModelRep bioModelRep = bioModelRestService.getBioModelRep(new KeyValue(bioModelID), vcellUser);
         User[] users = bioModelRep.getGroupUsers();
         User owner = bioModelRep.getOwner();
         if (!Arrays.stream(users).toList().contains(vcellUser) && !owner.compareEqual(vcellUser)){

@@ -22,7 +22,7 @@ import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.lang.JoseException;
 import org.vcell.auth.JWTUtils;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
-import org.vcell.restq.db.UserRestDB;
+import org.vcell.restq.services.UserRestService;
 import org.vcell.restq.errors.exceptions.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UseridIDExistsException;
@@ -49,11 +49,11 @@ public class UsersResource {
     @Inject
     Mailer mailer;
 
-    private final UserRestDB userRestDB;
+    private final UserRestService userRestService;
 
     @Inject
-    public UsersResource(UserRestDB userRestDB) {
-        this.userRestDB = userRestDB;
+    public UsersResource(UserRestService userRestService) {
+        this.userRestService = userRestService;
     }
 
     @GET
@@ -77,7 +77,7 @@ public class UsersResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public boolean mapUser(UserLoginInfoForMapping mapUser) throws DataAccessWebException, NotAuthenticatedWebException {
-        return userRestDB.mapUserIdentity(securityIdentity, mapUser);
+        return userRestService.mapUserIdentity(securityIdentity, mapUser);
     }
 
     @POST
@@ -108,7 +108,7 @@ public class UsersResource {
         }
 
         // verify that there is a user with this userid and email
-        UserInfo userInfo = userRestDB.getUserInfo(userID);
+        UserInfo userInfo = userRestService.getUserInfo(userID);
         if (userInfo == null) {
             throw new BadRequestWebException("unable to process request", "supplied userid " + userID + " not found, didn't send recovery email");
         }
@@ -158,7 +158,7 @@ public class UsersResource {
             // Decode the magic token into a MagicTokenClaims object
             JWTUtils.MagicTokenClaims magicTokenClaims = JWTUtils.decodeMagicLinkJWT(magicToken);
             // Map the user
-            boolean mapped = userRestDB.mapUserIdentity(magicTokenClaims);
+            boolean mapped = userRestService.mapUserIdentity(magicTokenClaims);
 
             if (mapped) {
                 return Response.ok().entity("account successfully linked, you are ready to log into VCell").build();
@@ -194,7 +194,7 @@ public class UsersResource {
             throw new NotAuthenticatedWebException("securityIdentity is missing subject or issuer");
         }
         try {
-            userRestDB.createUserIdentity(subject, issuer, email, name, userRegistrationInfo);
+            userRestService.createUserIdentity(subject, issuer, email, name, userRegistrationInfo);
         } catch (UseridIDExistsException e) {
             throw new ConflictWebException("userid already used");
         } catch (DataAccessException e) {
@@ -209,7 +209,7 @@ public class UsersResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public boolean unmapUser(String userName) throws DataAccessWebException, NotAuthenticatedWebException {
-        return userRestDB.unmapUserIdentity(securityIdentity, userName);
+        return userRestService.unmapUserIdentity(securityIdentity, userName);
     }
 
     @GET
@@ -221,7 +221,7 @@ public class UsersResource {
     })
     @Produces(MediaType.APPLICATION_JSON)
     public UserIdentityJSONSafe getIdentity() throws NotAuthenticatedWebException, ConflictWebException, DataAccessWebException {
-        List<UserIdentity> userIdentities = userRestDB.getUserIdentities(securityIdentity);
+        List<UserIdentity> userIdentities = userRestService.getUserIdentities(securityIdentity);
         if (userIdentities.isEmpty()){
             return UserIdentityJSONSafe.noIdentity();
         } else if (userIdentities.size() > 1){
@@ -242,8 +242,8 @@ public class UsersResource {
         if(securityIdentity.isAnonymous()){
             return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
         }
-        org.vcell.util.document.User vcellUser = userRestDB.getUserFromIdentity(securityIdentity, UserRestDB.UserRequirement.REQUIRE_USER);
-        ApiAccessToken apiAccessToken = userRestDB.generateApiAccessToken(userRestDB.getAPIClient().getKey(), vcellUser);
+        org.vcell.util.document.User vcellUser = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
+        ApiAccessToken apiAccessToken = userRestService.generateApiAccessToken(userRestService.getAPIClient().getKey(), vcellUser);
         return AccesTokenRepresentationRecord.getRecordFromAccessTokenRepresentation(apiAccessToken);
     }
 
@@ -254,7 +254,7 @@ public class UsersResource {
     @Produces(MediaType.APPLICATION_JSON)
     public AccesTokenRepresentationRecord generateGuestBearerToken() throws DataAccessWebException {
         if(securityIdentity.isAnonymous()){
-            ApiAccessToken apiAccessToken = userRestDB.generateApiAccessToken(userRestDB.getAPIClient().getKey(), User.VCELL_GUEST);
+            ApiAccessToken apiAccessToken = userRestService.generateApiAccessToken(userRestService.getAPIClient().getKey(), User.VCELL_GUEST);
             return AccesTokenRepresentationRecord.getRecordFromAccessTokenRepresentation(apiAccessToken);
         }
         return null;
@@ -275,7 +275,7 @@ public class UsersResource {
             throw new NotAuthenticatedWebException("securityIdentity is missing jwt");
         }
         try {
-            userRestDB.sendOldLegacyPassword(userID);
+            userRestService.sendOldLegacyPassword(userID);
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
