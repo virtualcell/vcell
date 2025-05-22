@@ -1,4 +1,4 @@
-package cbit.vcell.message;
+package org.vcell.restclient;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.type.TypeReference;

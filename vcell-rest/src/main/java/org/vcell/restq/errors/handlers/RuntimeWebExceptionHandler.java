@@ -1,7 +1,5 @@
 package org.vcell.restq.errors.handlers;
 
-import cbit.vcell.message.CustomObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;

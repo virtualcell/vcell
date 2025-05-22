@@ -35,7 +35,7 @@ import org.vcell.api.client.query.SimTasksQuerySpec;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.CustomApiClientCode;
-import cbit.vcell.message.CustomObjectMapper;
+import org.vcell.restclient.CustomObjectMapper;
 import org.vcell.restclient.api.BioModelResourceApi;
 import org.vcell.restclient.api.FieldDataResourceApi;
 import org.vcell.restclient.api.UsersResourceApi;
@@ -43,7 +43,6 @@ import org.vcell.restclient.auth.InteractiveLogin;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
 import org.vcell.api.types.utils.DTOOldAPI;
-import org.vcell.util.DataAccessException;
 
 import java.awt.*;
 import java.io.*;

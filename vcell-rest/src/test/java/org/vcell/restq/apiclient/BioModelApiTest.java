@@ -2,7 +2,7 @@ package org.vcell.restq.apiclient;
 
 import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.message.CustomObjectMapper;
+import org.vcell.restclient.CustomObjectMapper;
 import cbit.vcell.model.Species;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.ServerDocumentManager;

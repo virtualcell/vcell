@@ -1,7 +1,7 @@
 package org.vcell.restq.errors.handlers;
 
-import cbit.vcell.message.CustomObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -26,7 +26,7 @@ public abstract class GenericAPIExceptionHandler {
         logger.error(e);
         try{
             return Response.status(httpCode)
-                    .entity(new CustomObjectMapper().writeValueAsString(VCellHTTPError.fromException(e)))
+                    .entity(new ObjectMapper().writeValueAsString(VCellHTTPError.fromException(e)))
                     .build();
         } catch (JsonProcessingException jsonProcessingException) {
             logger.error(jsonProcessingException);

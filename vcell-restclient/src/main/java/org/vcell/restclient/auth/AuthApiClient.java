@@ -1,6 +1,6 @@
 package org.vcell.restclient.auth;
 
-import cbit.vcell.message.CustomObjectMapper;
+import org.vcell.restclient.CustomObjectMapper;
 import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
@@ -8,13 +8,10 @@ import com.nimbusds.oauth2.sdk.token.AccessToken;
 import com.nimbusds.oauth2.sdk.token.RefreshToken;
 import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
 import org.vcell.restclient.*;
-import org.vcell.restclient.model.VCellHTTPError;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.function.Consumer;
 
 /**
