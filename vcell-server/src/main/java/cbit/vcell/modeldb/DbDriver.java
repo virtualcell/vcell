@@ -1251,7 +1251,6 @@ public abstract class DbDriver {
 
     public static final int EXTRAINFO_ALL = 0xFF;
     public static final int EXTRAINFO_ANNOTFUNC = 0x02;
-    public static final int EXTRAINFO_MATHOVERRIDES = 0x04;
     public static final int EXTRAINFO_SUBVOLUMES = 0x08;
 
     public static VCInfoContainer getVCInfoContainer(User user, Connection con, DatabaseSyntax dbSyntax, boolean bIncludeExtraInfo) throws SQLException, DataAccessException{
@@ -1264,6 +1263,14 @@ public abstract class DbDriver {
      *
      * @return cbit.vcell.modeldb.VCInfoContainer
      */
+
+    private record VCInfoContainerHolder(
+            BioModelInfo bioModelInfo,
+            TreeMap<BigDecimal, String> simContextToAnnotatedFunc,
+            TreeMap<String, BigDecimal> simNameToSimID,
+            TreeMap<Integer, String> subVolumeNameToSubVolumeID
+    ){ }
+
     public static VCInfoContainer getVCInfoContainer(User user, Connection con, DatabaseSyntax dbSyntax, int whichExtraInfo) throws SQLException, DataAccessException{
 
         VCInfoContainer results = null;
@@ -1272,7 +1279,6 @@ public abstract class DbDriver {
         GeometryInfo[] geometryInfos = null;
         MathModelInfo[] mathModelInfos = null;
         BioModelInfo[] bioModelInfos = null;
-        PublicationInfo[] publicationInfos = null;
 
         //
         StringBuffer sql = null;
@@ -1300,12 +1306,13 @@ public abstract class DbDriver {
                 sql = new StringBuffer(BioModelTable.table.getInfoSQL(user, null, (enableSpecial ? special : null), dbSyntax));
                 sql.insert(7, Table.SQL_GLOBAL_HINT);
                 rset = stmt.executeQuery(sql.toString());
-                TreeMap<BigDecimal, BioModelInfo> mapBmToBioModelInfo = new TreeMap<BigDecimal, BioModelInfo>();
+                TreeMap<BigDecimal, VCInfoContainerHolder> mapBmToHolder = new TreeMap<>();
                 while (rset.next()) {
                     BigDecimal bmID = rset.getBigDecimal(VersionTable.id_ColumnName);
-                    if(!mapBmToBioModelInfo.containsKey(bmID)){
+                    if(!mapBmToHolder.containsKey(bmID)){
                         BioModelInfo versionInfo = (BioModelInfo) BioModelTable.table.getInfo(rset, con, dbSyntax);
-                        mapBmToBioModelInfo.put(bmID, versionInfo);
+                        mapBmToHolder.put(bmID, new VCInfoContainerHolder(versionInfo,
+                                new TreeMap<>(), new TreeMap<>(), new TreeMap<>()));
                     }
                 }
                 rset.close();
@@ -1348,7 +1355,7 @@ public abstract class DbDriver {
                                         " AND " + SimContextTable.table.mathRef.getQualifiedColName() + " = " + SimulationTable.table.mathRef.getQualifiedColName()
                         );
 
-                        final BigDecimal[] array = mapBmToBioModelInfo.keySet().toArray(new BigDecimal[0]);
+                        final BigDecimal[] array = mapBmToHolder.keySet().toArray(new BigDecimal[0]);
                         final int MAX_LIST = 500;
                         for(int i = 0; i < array.length; i += MAX_LIST){
                             StringBuffer bmListStr = new StringBuffer();
@@ -1358,51 +1365,31 @@ public abstract class DbDriver {
                             final String sql2 = sql.toString() + " AND " + BioModelSimulationLinkTable.table.bioModelRef.getQualifiedColName() + " IN (" + bmListStr.toString() + ")" +
                                     " ORDER BY " + BioModelSimulationLinkTable.table.bioModelRef.getQualifiedColName() + "," + SimContextTable.table.id.getQualifiedColName() + "," + SimulationTable.table.id.getQualifiedColName();
                             rset = stmt.executeQuery(sql2);
-                            BioModelInfo bmInfo = null;
                             while (rset.next()) {
                                 final BigDecimal bmID = rset.getBigDecimal(BioModelSimContextLinkTable.table.bioModelRef.toString());
-                                bmInfo = mapBmToBioModelInfo.get(bmID);
-                                if(bmInfo != null){
+                                VCInfoContainerHolder holder = mapBmToHolder.get(bmID);
+                                if(holder.bioModelInfo != null){
                                     final BigDecimal scID = rset.getBigDecimal(SimContextTable.table.id.toString());
                                     final String scName = rset.getString(aliasSCName);
-                                    bmInfo.addSCID(scName, scID);
+                                    holder.simNameToSimID.put(scName, scID);
                                     if((whichExtraInfo & EXTRAINFO_ANNOTFUNC) != 0){
-                                        if(!bmInfo.hasSCIDForAnnotFunc(scID)){
+                                        if(!holder.simContextToAnnotatedFunc.containsKey(scID)){
                                             String outputFunctionsXML =
                                                     DbDriver.varchar2_CLOB_get(rset, ApplicationMathTable.table.outputFuncSmall, ApplicationMathTable.table.outputFuncLarge, dbSyntax);
                                             if(outputFunctionsXML != null){
-                                                bmInfo.addAnnotatedFunctionsStr(scName, scID, outputFunctionsXML);
+                                                holder.simContextToAnnotatedFunc.put(scID, outputFunctionsXML);
                                             }
                                         }
                                     }
                                     final String simName = rset.getString(aliasSimName);
-                                    if(bmInfo.getSimID(simName) == null){
+                                    if(holder.simNameToSimID.get(simName) == null){
                                         final BigDecimal simID = rset.getBigDecimal(aliasSimID);
-                                        bmInfo.addSimID(simName, simID);
-                                        if((whichExtraInfo & EXTRAINFO_MATHOVERRIDES) != 0){
-                                            CommentStringTokenizer mathOverridesTokenizer = SimulationTable.getMathOverridesTokenizer(rset, dbSyntax);
-                                            List<Element> mathOverrideElements = MathOverrides.parseOverrideElementsFromVCML(mathOverridesTokenizer);
-                                            //									int scanCount=1;
-                                            //									for(Element ele:mathOverrideElements) {
-                                            //										if(ele.getSpec() != null) {
-                                            //											scanCount*=ele.getSpec().getNumValues();
-                                            //	//										if(scanCount==0) {
-                                            //	//											scanCount=ele.getSpec().getNumValues();
-                                            //	//										}else {
-                                            //	//											scanCount*=ele.getSpec().getNumValues();
-                                            //	//										}
-                                            //										}
-                                            //									}
-                                            //		//							if(scanCount > 1) {
-                                            //		//								lg.info("bmid="+bmID+" simid="+simID+" scans="+scanCount+" "+simName);
-                                            //		//							}
-                                            bmInfo.addMathOverrides(simName, mathOverrideElements);
-                                        }
+                                        holder.simNameToSimID.put(simName, simID);
                                     }
                                     if((whichExtraInfo & EXTRAINFO_SUBVOLUMES) != 0){
                                         final int subVolumeID = rset.getInt(SubVolumeTable.table.handle.toString());
-                                        if(bmInfo.getSubVolumeName(subVolumeID) == null){
-                                            bmInfo.addSubVolume(subVolumeID, rset.getString(aliasSVName));
+                                        if(holder.subVolumeNameToSubVolumeID.get(subVolumeID) == null){
+                                            holder.subVolumeNameToSubVolumeID.put(subVolumeID, rset.getString(aliasSVName));
                                         }
                                     }
                                 }
@@ -1416,9 +1403,8 @@ public abstract class DbDriver {
                     }
                 }
 
-                if(mapBmToBioModelInfo.size() > 0){
-                    bioModelInfos = new BioModelInfo[mapBmToBioModelInfo.size()];
-                    mapBmToBioModelInfo.values().toArray(bioModelInfos);
+                if(mapBmToHolder.size() > 0){
+                    bioModelInfos = mapBmToHolder.values().stream().map(vc -> vc.bioModelInfo).toArray(BioModelInfo[]::new);
                 }
 
 //			if(tempInfos.size() > 0){

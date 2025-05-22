@@ -2029,7 +2029,7 @@ public BioModel save(BioModel bioModel, String independentSims[]) throws DataAcc
 		}
 
 		Version localTimeVersion = convertVersionToLocalTime(savedBioModel.getVersion());
-		BioModelInfo savedBioModelInfo = new BioModelInfo(localTimeVersion,savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
+		BioModelInfo savedBioModelInfo = new BioModelInfo(localTimeVersion,savedBioModel.createBioModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
 		bioModelInfoHash.put(savedKey,savedBioModelInfo);
 		
 		SimulationContext[] scArr = savedBioModel.getSimulationContexts();
@@ -2209,7 +2209,7 @@ public BioModel saveAsNew(BioModel bioModel, java.lang.String newName, String in
 		}
 
 		Version localTimeVersion = convertVersionToLocalTime(savedBioModel.getVersion());
-		BioModelInfo savedBioModelInfo = new BioModelInfo(localTimeVersion,savedBioModel.getModel().getKey(),savedBioModel.createBioModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
+		BioModelInfo savedBioModelInfo = new BioModelInfo(localTimeVersion,savedBioModel.createBioModelChildSummary(),VCellSoftwareVersion.fromSystemProperty());
 		bioModelInfoHash.put(savedKey,savedBioModelInfo);
 
 		SimulationContext[] scArr = savedBioModel.getSimulationContexts();

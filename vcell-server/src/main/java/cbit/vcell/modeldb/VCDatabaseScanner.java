@@ -401,7 +401,7 @@ public class VCDatabaseScanner {
                     }
                     databaseVisitor.visitBioModel(bioModel);
                 } catch(Exception e2){
-                    logger.warn("exception biomodel " + bmi.getModelKey(), e2);
+                    logger.warn("exception biomodel " + bmi.getVersion().getVersionKey(), e2);
                     if(bAbortOnDataAccessException){
                         throw e2;
                     }
