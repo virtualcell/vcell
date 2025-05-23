@@ -12,6 +12,7 @@ import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -99,4 +100,14 @@ public class BioModelRestService {
         }
         databaseServerImpl.deleteBioModel(user, bioModelKey);
     }
+
+
+    public BioModelInfo getBioModelInfo(User user, KeyValue bioModelKey) throws DataAccessException {
+        return databaseServerImpl.getBioModelInfo(user, bioModelKey);
+    }
+
+    public BioModelInfo[] getBioModelInfos(User user, boolean all) throws DataAccessException {
+        return databaseServerImpl.getBioModelInfos(user, all);
+    }
+
 }

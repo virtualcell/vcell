@@ -13,15 +13,13 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.vcell.restq.Main;
+import org.vcell.restq.errors.exceptions.*;
+import org.vcell.restq.models.BioModel;
 import org.vcell.restq.services.BioModelRestService;
 import org.vcell.restq.services.UserRestService;
-import org.vcell.restq.errors.exceptions.*;
-import org.vcell.restq.errors.exceptions.NotFoundWebException;
-import org.vcell.restq.models.BioModel;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
+import org.vcell.util.document.*;
 
 import java.util.Optional;
 
@@ -53,6 +51,38 @@ public class BioModelResource {
             return BioModel.fromBioModelRep(bioModelRep);
         }catch (ObjectNotFoundException e) {
             throw new NotFoundWebException(e.getMessage(), e);
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
+        }
+    }
+
+    @GET
+    @Path("{bioModelID}/context")
+    @Operation(operationId = "getBioModelContext", summary = "All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.")
+    @Produces(MediaType.APPLICATION_JSON)
+    public BioModelContext getBioModelContext(@PathParam("bioModelID") String bioModelID) throws PermissionWebException, DataAccessWebException, NotAuthenticatedWebException {
+        User vcellUser = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.ALLOW_ANONYMOUS);
+        try{
+            BioModelInfo info = bioModelRestService.getBioModelInfo(vcellUser, new KeyValue(bioModelID));
+            return new BioModelContext(info.getVersion(), info.getBioModelChildSummary(), info.getPublicationInfos(), info.getSoftwareVersion());
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
+        }
+    }
+
+    @GET
+    @Path("contexts")
+    @Operation(operationId = "getAllBioModelContexts", summary = "All of the BioModel contexts owned by the requester. If provided with a boolean of 'true', all public BioModel contexts VCell has will be given.")
+    @Produces(MediaType.APPLICATION_JSON)
+    public BioModelContext[] getBioModelContexts(@QueryParam("allVCellContexts") boolean allVCellContexts) throws PermissionWebException, DataAccessWebException, NotAuthenticatedWebException {
+        User vcellUser = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.ALLOW_ANONYMOUS);
+        try{
+            BioModelInfo[] infos = bioModelRestService.getBioModelInfos(vcellUser, allVCellContexts);
+            BioModelContext[] contexts = new BioModelContext[infos.length];
+            for (int i = 0; i < infos.length; i ++){
+                contexts[i] = new BioModelContext(infos[i].getVersion(), infos[i].getBioModelChildSummary(), infos[i].getPublicationInfos(), infos[i].getSoftwareVersion());
+            }
+            return contexts;
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         }
@@ -148,5 +178,12 @@ public class BioModelResource {
             @NotNull String bioModelXML,
             Optional<String> name,
             Optional<String[]> simsRequiringUpdates
+    ){ }
+
+    public record BioModelContext(
+        Version version, // Problematic
+        BioModelChildSummary summary,
+        PublicationInfo[] publicationInformation, // Need separate DTO
+        VCellSoftwareVersion vCellSoftwareVersion
     ){ }
 }
