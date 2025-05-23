@@ -1,0 +1,44 @@
+#!/bin/bash --login
+#SBATCH --job-name=SimID_483072744_0_   # this matches the input example we're going to use
+#SBATCH --nodes=1
+#SBATCH --qos=vcell
+#SBATCH --partition=vcell
+#SBATCH --cpus-per-task=1
+#SBATCH --time=01:00:00     # terminates any running job that failed to stop after timeout_duration below
+#SBATCH -o %x_%a.out        # uses the job name (%x) and array task ID (%a)
+#SBATCH --array=1-7%3       # running 7 jobs, limit concurrency to 3 jobs (numbers must be explicit)
+
+log_file="job_status.log"
+timeout_duration=5s  # Maximum allowed runtime for each job
+
+# clean log file BEFORE any job starts
+echo "Job Execution Log" > $log_file
+echo "------------------" >> $log_file
+sync  # ensure file write completes before jobs begin
+
+# job name is $SLURM_JOB_NAME (defined in SBATCH --job-name=SimID_483072744_0_)
+# can be combined with task id, like: echo "Job $SLURM_JOB_NAME ($SLURM_ARRAY_TASK_ID) started at $(date)" >> $log_file
+
+echo "Job $SLURM_ARRAY_TASK_ID started at $(date)" >> $log_file
+
+# execute the corresponding subscript with timeout
+timeout $timeout_duration srun -N 1 -n 1 -c 1 ./subscript_$SLURM_ARRAY_TASK_ID.sh
+
+exit_code=$?
+
+# Log results and job completion status
+if [ $exit_code -eq 0 ]; then
+    echo "Job $SLURM_ARRAY_TASK_ID finished successfully at $(date)" >> $log_file
+elif [ $exit_code -eq 124 ]; then
+    echo "Job $SLURM_ARRAY_TASK_ID timed out at $(date)" >> $log_file
+elif [ $exit_code -gt 128 ]; then
+    signal=$((exit_code - 128))
+    echo "Job $SLURM_ARRAY_TASK_ID terminated by signal $signal at $(date)" >> $log_file
+else
+    echo "Job $SLURM_ARRAY_TASK_ID failed with exit code $exit_code at $(date)" >> $log_file
+fi
+
+# output results
+result=$(cat subscript_$SLURM_ARRAY_TASK_ID.output 2>/dev/null || echo "No output (job may have failed)")
+echo "Result of job $SLURM_ARRAY_TASK_ID is $result"
+echo "Result of job $SLURM_ARRAY_TASK_ID: $result" >> $log_file

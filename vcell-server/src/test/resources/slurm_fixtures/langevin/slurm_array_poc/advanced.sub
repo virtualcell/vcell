@@ -10,7 +10,6 @@
 #SBATCH --time=01:00:00
 
 log_file="job_status.log"
-max_jobs=3  # Number of cores available, must mirror --ntasks
 total_jobs=7  # Total number of jobs to run
 timeout_duration=5s  # Maximum allowed runtime for each job
 
@@ -27,7 +26,7 @@ for i in $(seq 1 $total_jobs); do
     job_pids+=($!)  # Store the PID of the background job
 
     # Manage batches of max_jobs
-    if (( i % max_jobs == 0 || i == total_jobs )); then
+    if (( i % SLURM_NTASKS == 0 || i == total_jobs )); then
         echo "Waiting for jobs to finish at $(date)" >> $log_file
         
         # Wait for each job in the current batch
