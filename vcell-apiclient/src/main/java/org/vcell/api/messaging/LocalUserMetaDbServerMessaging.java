@@ -28,15 +28,15 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.ExceptionHandler;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.restclient.ApiException;
-import org.vcell.restclient.model.FieldDataReference;
-import org.vcell.restclient.model.ModelType;
-import org.vcell.restclient.model.SaveBioModel;
-import org.vcell.restclient.model.SourceModel;
+import org.vcell.restclient.model.*;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.*;
+import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
 
 import java.rmi.RemoteException;
 import java.util.*;
@@ -282,14 +282,11 @@ public org.vcell.util.document.VersionableFamily getAllReferences(org.vcell.util
 public org.vcell.util.document.BioModelInfo getBioModelInfo(org.vcell.util.document.KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException {
 
 	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getBioModelInfo(key="+bioModelKey+")");
-		return dbServerProxy.getBioModelInfo(bioModelKey);
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		BioModelContext context = vCellApiClient.getBioModelApi().getBioModelContext(bioModelKey.toString());
+		return DtoModelTransforms.bioModelContextToBioModelInfo(context);
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessException(e);
+		throw new RuntimeException("Exception handler did not throw an exception.");
 	}
 }
 
@@ -298,13 +295,15 @@ public org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) thr
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getBioModelInfos(bAll="+bAll+")");
-		return dbServerProxy.getBioModelInfos(bAll);
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		List<BioModelContext> contexts = vCellApiClient.getBioModelApi().getAllBioModelContexts(bAll);
+		BioModelInfo[] infos = new BioModelInfo[contexts.size()];
+		for(int i = 0; i < contexts.size(); i++){
+			infos[i] = DtoModelTransforms.bioModelContextToBioModelInfo(contexts.get(i));
+		}
+		return infos;
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessException(e);
+		throw new RuntimeException("Exception handler did not throw an exception.");
 	}
 }
 
@@ -356,19 +355,13 @@ public BioModelMetaData[] getBioModelMetaDatas(boolean bAll) throws DataAccessEx
  * @throws RemoteException 
  */
 public BigString getBioModelXML(KeyValue bioModelKey) throws DataAccessException {
-
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getBioModelXML(key="+bioModelKey+")");
-		BigString bioModelXML = dbServerProxy.getBioModelXML(bioModelKey);
-		return bioModelXML;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+        return new BigString(vCellApiClient.getBioModelApi().getBioModelVCML(bioModelKey.toString()));
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
-
 }
 
 
