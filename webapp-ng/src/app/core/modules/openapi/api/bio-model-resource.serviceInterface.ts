@@ -14,6 +14,7 @@ import { HttpHeaders }                                       from '@angular/comm
 import { Observable }                                        from 'rxjs';
 
 import { BioModel } from '../model/models';
+import { BioModelContext } from '../model/models';
 import { SaveBioModel } from '../model/models';
 import { VCellHTTPError } from '../model/models';
 
@@ -34,11 +35,25 @@ export interface BioModelResourceServiceInterface {
     deleteBioModel(bioModelID: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
+     * All of the BioModel contexts owned by the requester. If provided with a boolean of \&#39;true\&#39;, all public BioModel contexts VCell has will be given.
+     * 
+     * @param allVCellContexts 
+     */
+    getAllBioModelContexts(allVCellContexts?: boolean, extraHttpRequestParams?: any): Observable<Array<BioModelContext>>;
+
+    /**
      * Get BioModel.
      * 
      * @param bioModelID 
      */
     getBioModel(bioModelID: string, extraHttpRequestParams?: any): Observable<BioModel>;
+
+    /**
+     * All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
+     * 
+     * @param bioModelID 
+     */
+    getBioModelContext(bioModelID: string, extraHttpRequestParams?: any): Observable<BioModelContext>;
 
     /**
      * Get the BioModel in VCML format.

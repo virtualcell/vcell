@@ -5,7 +5,9 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**delete_bio_model**](BioModelResourceApi.md#delete_bio_model) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
+[**get_all_bio_model_contexts**](BioModelResourceApi.md#get_all_bio_model_contexts) | **GET** /api/v1/bioModel/contexts | All of the BioModel contexts owned by the requester. If provided with a boolean of &#39;true&#39;, all public BioModel contexts VCell has will be given.
 [**get_bio_model**](BioModelResourceApi.md#get_bio_model) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel.
+[**get_bio_model_context**](BioModelResourceApi.md#get_bio_model_context) | **GET** /api/v1/bioModel/{bioModelID}/context | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
 [**get_bio_model_vcml**](BioModelResourceApi.md#get_bio_model_vcml) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
 [**save_bio_model**](BioModelResourceApi.md#save_bio_model) | **POST** /api/v1/bioModel/save | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 
@@ -69,6 +71,74 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **204** | No Content |  -  |
+**401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
+**500** | Data Access Exception |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **get_all_bio_model_contexts**
+> List[BioModelContext] get_all_bio_model_contexts(all_v_cell_contexts=all_v_cell_contexts)
+
+All of the BioModel contexts owned by the requester. If provided with a boolean of 'true', all public BioModel contexts VCell has will be given.
+
+### Example
+
+```python
+import time
+import os
+import vcell_client
+from vcell_client.models.bio_model_context import BioModelContext
+from vcell_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://vcell.cam.uchc.edu
+# See configuration.py for a list of all supported configuration parameters.
+configuration = vcell_client.Configuration(
+    host = "https://vcell.cam.uchc.edu"
+)
+
+
+# Enter a context with an instance of the API client
+with vcell_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = vcell_client.BioModelResourceApi(api_client)
+    all_v_cell_contexts = True # bool |  (optional)
+
+    try:
+        # All of the BioModel contexts owned by the requester. If provided with a boolean of 'true', all public BioModel contexts VCell has will be given.
+        api_response = api_instance.get_all_bio_model_contexts(all_v_cell_contexts=all_v_cell_contexts)
+        print("The response of BioModelResourceApi->get_all_bio_model_contexts:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling BioModelResourceApi->get_all_bio_model_contexts: %s\n" % e)
+```
+
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **all_v_cell_contexts** | **bool**|  | [optional] 
+
+### Return type
+
+[**List[BioModelContext]**](BioModelContext.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
 **401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
 **500** | Data Access Exception |  -  |
@@ -140,6 +210,74 @@ No authorization required
 **401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
 **404** | Not found |  -  |
+**500** | Data Access Exception |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **get_bio_model_context**
+> BioModelContext get_bio_model_context(bio_model_id)
+
+All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
+
+### Example
+
+```python
+import time
+import os
+import vcell_client
+from vcell_client.models.bio_model_context import BioModelContext
+from vcell_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://vcell.cam.uchc.edu
+# See configuration.py for a list of all supported configuration parameters.
+configuration = vcell_client.Configuration(
+    host = "https://vcell.cam.uchc.edu"
+)
+
+
+# Enter a context with an instance of the API client
+with vcell_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = vcell_client.BioModelResourceApi(api_client)
+    bio_model_id = 'bio_model_id_example' # str | 
+
+    try:
+        # All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
+        api_response = api_instance.get_bio_model_context(bio_model_id)
+        print("The response of BioModelResourceApi->get_bio_model_context:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling BioModelResourceApi->get_bio_model_context: %s\n" % e)
+```
+
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **bio_model_id** | **str**|  | 
+
+### Return type
+
+[**BioModelContext**](BioModelContext.md)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+**401** | Not Authorized |  -  |
+**403** | Not Allowed |  -  |
 **500** | Data Access Exception |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

@@ -182,6 +182,45 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/bioModel/contexts:
+    get:
+      tags:
+      - Bio Model Resource
+      summary: "All of the BioModel contexts owned by the requester. If provided with\
+        \ a boolean of 'true', all public BioModel contexts VCell has will be given."
+      operationId: getAllBioModelContexts
+      parameters:
+      - name: allVCellContexts
+        in: query
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BioModelContext'
+        "401":
+          description: Not Authorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
   /api/v1/bioModel/save:
     post:
       tags:
@@ -303,6 +342,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/bioModel/{bioModelID}/context:
+    get:
+      tags:
+      - Bio Model Resource
+      summary: "All of the text based information about a BioModel (summary, version,\
+        \ publication status, etc...), but not the actual BioModel itself."
+      operationId: getBioModelContext
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BioModelContext'
+        "401":
           description: Not Authorized
           content:
             application/json:
@@ -1411,6 +1471,18 @@ components:
           type: string
     Application:
       type: object
+    ApplicationInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/MathType'
+        dimensions:
+          format: int32
+          type: integer
+        geometryName:
+          type: string
     BatchSystemType:
       enum:
       - PBS
@@ -1452,6 +1524,76 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Application'
+    BioModelChildSummary:
+      type: object
+      properties:
+        scNames:
+          type: array
+          items:
+            type: string
+        scAnnots:
+          type: array
+          items:
+            type: string
+        geoNames:
+          type: array
+          items:
+            type: string
+        geoDims:
+          type: array
+          items:
+            format: int32
+            type: integer
+        appTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MathType'
+        simNames:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        simAnnots:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        geometryDimensions:
+          type: array
+          items:
+            format: int32
+            type: integer
+        geometryNames:
+          type: array
+          items:
+            type: string
+        simulationContextAnnotations:
+          type: array
+          items:
+            type: string
+        simulationContextNames:
+          type: array
+          items:
+            type: string
+        applicationInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationInfo'
+    BioModelContext:
+      type: object
+      properties:
+        version:
+          $ref: '#/components/schemas/Version'
+        summary:
+          $ref: '#/components/schemas/BioModelChildSummary'
+        publicationInformation:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicationInfo'
+        vCellSoftwareVersion:
+          $ref: '#/components/schemas/VCellSoftwareVersion'
     BiomodelRef:
       type: object
       properties:
@@ -1658,6 +1800,60 @@ components:
           items:
             format: double
             type: number
+    GroupAccess:
+      required:
+      - groupid
+      type: object
+      properties:
+        groupid:
+          type: number
+        description:
+          type: string
+      discriminator:
+        propertyName: type
+        mapping:
+          none: '#/components/schemas/GroupAccessNone'
+          some: '#/components/schemas/GroupAccessSome'
+          all: '#/components/schemas/GroupAccessAll'
+    GroupAccessAll:
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/GroupAccess'
+      properties:
+        description:
+          type: string
+    GroupAccessNone:
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/GroupAccess'
+      properties:
+        description:
+          type: string
+    GroupAccessSome:
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/GroupAccess'
+      properties:
+        hash:
+          type: number
+        groupMembers:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        hiddenMembers:
+          type: array
+          items:
+            type: boolean
+        description:
+          type: string
+        hiddenGroupMembers:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        normalGroupMembers:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
     HelloWorldMessage:
       type: object
       properties:
@@ -1711,6 +1907,14 @@ components:
       properties:
         value:
           type: number
+    MathType:
+      enum:
+      - RuleBased
+      - Stochastic
+      - Deterministic
+      - SpringSaLaD
+      - Unknown
+      type: string
     MathmodelRef:
       type: object
       properties:
@@ -1788,6 +1992,38 @@ components:
           items:
             $ref: '#/components/schemas/MathmodelRef'
         date:
+          $ref: '#/components/schemas/Date'
+    PublicationInfo:
+      type: object
+      properties:
+        publicationKey:
+          $ref: '#/components/schemas/KeyValue'
+        versionKey:
+          $ref: '#/components/schemas/KeyValue'
+        title:
+          type: string
+        authors:
+          type: array
+          items:
+            type: string
+        citation:
+          type: string
+        pubmedid:
+          type: string
+        doi:
+          type: string
+        url:
+          type: string
+        pubdate:
+          $ref: '#/components/schemas/Date'
+        vcDocumentType:
+          $ref: '#/components/schemas/VCDocumentType'
+        user:
+          $ref: '#/components/schemas/User'
+        theHashCode:
+          format: int32
+          type: integer
+        pubDate:
           $ref: '#/components/schemas/Date'
     SaveBioModel:
       required:
@@ -1966,6 +2202,13 @@ components:
           type: string
         emailNotification:
           type: boolean
+    VCDocumentType:
+      enum:
+      - BIOMODEL_DOC
+      - MATHMODEL_DOC
+      - GEOMETRY_DOC
+      - EXTERNALFILE_DOC
+      type: string
     VCSimulationIdentifier:
       type: object
       properties:
@@ -1981,6 +2224,41 @@ components:
         exceptionType:
           type: string
         message:
+          type: string
+    VCellSite:
+      enum:
+      - alpha
+      - beta
+      - rel
+      - other
+      - unknown
+      type: string
+    VCellSoftwareVersion:
+      type: object
+      properties:
+        softwareVersionString:
+          type: string
+        vcellSite:
+          $ref: '#/components/schemas/VCellSite'
+        buildNumber:
+          type: string
+        versionNumber:
+          type: string
+        majorVersion:
+          format: int32
+          type: integer
+        minorVersion:
+          format: int32
+          type: integer
+        patchVersion:
+          format: int32
+          type: integer
+        buildInt:
+          format: int32
+          type: integer
+        site:
+          $ref: '#/components/schemas/VCellSite'
+        description:
           type: string
     VariableDomain:
       enum:
@@ -2014,6 +2292,58 @@ components:
           type: string
         typeName:
           type: string
+    Version:
+      type: object
+      properties:
+        versionKey:
+          $ref: '#/components/schemas/KeyValue'
+        versionName:
+          type: string
+        versionOwner:
+          $ref: '#/components/schemas/User'
+        versionGroupAccess:
+          $ref: '#/components/schemas/GroupAccess'
+        versionBranchPointRef:
+          $ref: '#/components/schemas/KeyValue'
+        versionBranchID:
+          type: number
+        versionDate:
+          $ref: '#/components/schemas/Date'
+        versionFlag:
+          $ref: '#/components/schemas/VersionFlag'
+        versionAnnot:
+          type: string
+        annot:
+          type: string
+        branchID:
+          type: number
+        branchPointRefKey:
+          $ref: '#/components/schemas/KeyValue'
+        date:
+          $ref: '#/components/schemas/Date'
+        flag:
+          $ref: '#/components/schemas/VersionFlag'
+        groupAccess:
+          $ref: '#/components/schemas/GroupAccess'
+        name:
+          type: string
+        owner:
+          $ref: '#/components/schemas/User'
+    VersionFlag:
+      type: object
+      properties:
+        versionFlag:
+          format: int32
+          type: integer
+        intValue:
+          format: int32
+          type: integer
+        archived:
+          type: boolean
+        current:
+          type: boolean
+        published:
+          type: boolean
   securitySchemes:
     openId:
       type: openIdConnect

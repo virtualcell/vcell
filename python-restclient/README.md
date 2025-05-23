@@ -91,7 +91,9 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *AdminResourceApi* | [**get_usage**](docs/AdminResourceApi.md#get_usage) | **GET** /api/v1/admin/usage | Get usage summary
 *BioModelResourceApi* | [**delete_bio_model**](docs/BioModelResourceApi.md#delete_bio_model) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
+*BioModelResourceApi* | [**get_all_bio_model_contexts**](docs/BioModelResourceApi.md#get_all_bio_model_contexts) | **GET** /api/v1/bioModel/contexts | All of the BioModel contexts owned by the requester. If provided with a boolean of &#39;true&#39;, all public BioModel contexts VCell has will be given.
 *BioModelResourceApi* | [**get_bio_model**](docs/BioModelResourceApi.md#get_bio_model) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel.
+*BioModelResourceApi* | [**get_bio_model_context**](docs/BioModelResourceApi.md#get_bio_model_context) | **GET** /api/v1/bioModel/{bioModelID}/context | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
 *BioModelResourceApi* | [**get_bio_model_vcml**](docs/BioModelResourceApi.md#get_bio_model_vcml) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
 *BioModelResourceApi* | [**save_bio_model**](docs/BioModelResourceApi.md#save_bio_model) | **POST** /api/v1/bioModel/save | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 *FieldDataResourceApi* | [**advanced_create**](docs/FieldDataResourceApi.md#advanced_create) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
@@ -129,8 +131,11 @@ Class | Method | HTTP request | Description
 ## Documentation For Models
 
  - [AccesTokenRepresentationRecord](docs/AccesTokenRepresentationRecord.md)
+ - [ApplicationInfo](docs/ApplicationInfo.md)
  - [BatchSystemType](docs/BatchSystemType.md)
  - [BioModel](docs/BioModel.md)
+ - [BioModelChildSummary](docs/BioModelChildSummary.md)
+ - [BioModelContext](docs/BioModelContext.md)
  - [BiomodelRef](docs/BiomodelRef.md)
  - [DataIdentifier](docs/DataIdentifier.md)
  - [DetailedState](docs/DetailedState.md)
@@ -141,15 +146,21 @@ Class | Method | HTTP request | Description
  - [FieldDataReference](docs/FieldDataReference.md)
  - [FieldDataSavedResults](docs/FieldDataSavedResults.md)
  - [FieldDataShape](docs/FieldDataShape.md)
+ - [GroupAccess](docs/GroupAccess.md)
+ - [GroupAccessAll](docs/GroupAccessAll.md)
+ - [GroupAccessNone](docs/GroupAccessNone.md)
+ - [GroupAccessSome](docs/GroupAccessSome.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)
  - [HtcJobID](docs/HtcJobID.md)
  - [ISize](docs/ISize.md)
  - [Identity](docs/Identity.md)
  - [KeyValue](docs/KeyValue.md)
+ - [MathType](docs/MathType.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [ModelType](docs/ModelType.md)
  - [Origin](docs/Origin.md)
  - [Publication](docs/Publication.md)
+ - [PublicationInfo](docs/PublicationInfo.md)
  - [SaveBioModel](docs/SaveBioModel.md)
  - [SchedulerStatus](docs/SchedulerStatus.md)
  - [SimulationExecutionStatusRecord](docs/SimulationExecutionStatusRecord.md)
@@ -165,10 +176,15 @@ Class | Method | HTTP request | Description
  - [UserIdentityJSONSafe](docs/UserIdentityJSONSafe.md)
  - [UserLoginInfoForMapping](docs/UserLoginInfoForMapping.md)
  - [UserRegistrationInfo](docs/UserRegistrationInfo.md)
+ - [VCDocumentType](docs/VCDocumentType.md)
  - [VCSimulationIdentifier](docs/VCSimulationIdentifier.md)
  - [VCellHTTPError](docs/VCellHTTPError.md)
+ - [VCellSite](docs/VCellSite.md)
+ - [VCellSoftwareVersion](docs/VCellSoftwareVersion.md)
  - [VariableDomain](docs/VariableDomain.md)
  - [VariableType](docs/VariableType.md)
+ - [Version](docs/Version.md)
+ - [VersionFlag](docs/VersionFlag.md)
 
 
 <a id="documentation-for-authorization"></a>
