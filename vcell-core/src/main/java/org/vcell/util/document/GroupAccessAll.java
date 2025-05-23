@@ -11,12 +11,15 @@
 package org.vcell.util.document;
 
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/15/2001 3:34:49 PM)
  * @author: Frank Morgan
  */
 @SuppressWarnings("serial")
+@Schema(allOf = GroupAccess.class)
 public class GroupAccessAll extends GroupAccess {
 /**
  * Insert the method's description here.

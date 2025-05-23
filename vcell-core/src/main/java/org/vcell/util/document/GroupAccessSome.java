@@ -10,6 +10,9 @@
 
 package org.vcell.util.document;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
+import java.math.BigDecimal;
 import java.util.Vector;
 
 /**
@@ -18,6 +21,7 @@ import java.util.Vector;
  * @author: Frank Morgan
  */
 @SuppressWarnings("serial")
+@Schema(allOf = {GroupAccess.class})
 public class GroupAccessSome extends GroupAccess {
 		private java.math.BigDecimal    hash			= null;
 		private User[] 					groupMembers 	= null;
