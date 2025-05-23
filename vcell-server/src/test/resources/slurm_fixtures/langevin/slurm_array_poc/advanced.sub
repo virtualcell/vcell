@@ -1,0 +1,64 @@
+#!/bin/bash --login
+#SBATCH --job-name=advancedJob
+#SBATCH --nodes=1
+#SBATCH --ntasks=3
+#SBATCH --qos=vcell
+#SBATCH --partition=vcell
+#SBATCH -o %x.stdout	# was /home/FCAM/vasilescu/advancedJob.stdout
+#SBATCH -e %x.stderr
+#SBATCH --cpus-per-task=1
+#SBATCH --time=01:00:00
+
+log_file="job_status.log"
+max_jobs=3  # Number of cores available, must mirror --ntasks
+total_jobs=7  # Total number of jobs to run
+timeout_duration=5s  # Maximum allowed runtime for each job
+
+# Clear the log file at the start
+echo "Job Execution Log" > $log_file
+echo "------------------" >> $log_file
+
+job_pids=()  # Array to track job PIDs
+
+for i in $(seq 1 $total_jobs); do
+    # Log job start
+    echo "Job $i started at $(date)" >> $log_file
+    timeout $timeout_duration srun -N 1 -n 1 -c 1 ./subscript_$i.sh &  # Run each script with a timeout in parallel
+    job_pids+=($!)  # Store the PID of the background job
+
+    # Manage batches of max_jobs
+    if (( i % max_jobs == 0 || i == total_jobs )); then
+        echo "Waiting for jobs to finish at $(date)" >> $log_file
+        
+        # Wait for each job in the current batch
+        for pid in "${job_pids[@]}"; do
+            wait $pid
+            exit_code=$?  # Capture the exit code of the job
+            
+            if [ $exit_code -eq 0 ]; then
+                echo "Job with PID $pid finished successfully at $(date)" >> $log_file
+            elif [ $exit_code -eq 124 ]; then
+                echo "Job with PID $pid timed out at $(date)" >> $log_file
+            elif [ $exit_code -gt 128 ]; then
+                signal=$((exit_code - 128))
+                echo "Job with PID $pid terminated by signal $signal at $(date)" >> $log_file
+            else
+                echo "Job with PID $pid failed with exit code $exit_code at $(date)" >> $log_file
+            fi
+        done
+        
+        # Clear job PIDs for the next batch
+        job_pids=()
+    fi
+done
+
+# Output results of all jobs and log them
+for i in $(seq 1 $total_jobs); do
+    result=$(cat subscript_$i.output 2>/dev/null || echo "No output (job may have failed)")
+    echo "Result of job $i is $result"
+    echo "Result of job $i: $result" >> $log_file
+done
+
+# Log the end of the job process
+echo "All jobs completed at $(date)" >> $log_file
+echo "End Job"

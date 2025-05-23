@@ -1,0 +1,44 @@
+#!/bin/bash --login
+#SBATCH --job-name=jobStepEx1
+#SBATCH --nodes=1
+#SBATCH --ntasks=2
+#SBATCH --qos=vcell
+#SBATCH --partition=vcell
+#SBATCH -o /home/FCAM/vasilescu/jobStepEx1.stdout
+#SBATCH -e /home/FCAM/vasilescu/jobStepEx1.stderr
+#SBATCH --cpus-per-task=1
+#SBATCH --time=01:00:00
+
+# Run with  sbatch complex.sub
+log_file="job_status.log"
+max_jobs=2  # Number of cores available
+total_jobs=5  # Total number of jobs to run
+
+# Clear the log file at the start
+echo "Job Execution Log" > $log_file
+echo "------------------" >> $log_file
+
+for i in $(seq 1 $total_jobs); do
+    # Log job start
+    echo "Job $i started at $(date)" >> $log_file
+    srun -N 1 -n 1 -c 1 ./subscript_$i.sh &  # Run each script in parallel
+
+    # Log waiting when maximum parallel jobs are reached
+    if (( i % max_jobs == 0 )); then
+        echo "Waiting for jobs to finish at $(date)" >> $log_file
+        wait
+    fi
+done
+
+# Wait for any remaining jobs to complete
+wait
+echo "All jobs completed at $(date)" >> $log_file
+
+# Output results of all jobs and log them
+for i in $(seq 1 $total_jobs); do
+    result=$(cat subscript_$i.output)
+    echo "Result of job $i: $result" >> $log_file
+done
+
+# Log the end of the job process
+echo "End Job at $(date)" >> $log_file
