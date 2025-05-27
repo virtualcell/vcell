@@ -34,9 +34,9 @@ import java.math.BigDecimal;
 //})
 @Schema( // oneOf = { GroupAccessNone.class, GroupAccessSome.class, GroupAccessAll.class }, # Including One of destroys inheritance, and instead generates a factory class
 		discriminatorMapping = {
-			@DiscriminatorMapping(value = "none", schema = GroupAccessNone.class),
-			@DiscriminatorMapping(value = "some", schema = GroupAccessSome.class),
-			@DiscriminatorMapping(value = "all", schema = GroupAccessAll.class)
+			@DiscriminatorMapping(value = "GroupAccessNone", schema = GroupAccessNone.class),
+			@DiscriminatorMapping(value = "GroupAccessSome", schema = GroupAccessSome.class),
+			@DiscriminatorMapping(value = "GroupAccessAll", schema = GroupAccessAll.class)
 		},
 		discriminatorProperty = "type",
 		requiredProperties = {"groupid"})

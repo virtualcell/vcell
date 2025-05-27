@@ -33,6 +33,7 @@ class GroupAccessSome(GroupAccess):
     """
     GroupAccessSome
     """ # noqa: E501
+    type: StrictStr
     hash: Optional[Union[StrictFloat, StrictInt]] = None
     group_members: Optional[List[User]] = Field(default=None, alias="groupMembers")
     hidden_members: Optional[List[StrictBool]] = Field(default=None, alias="hiddenMembers")

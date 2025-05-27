@@ -5,14 +5,6 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **version_key** | [**KeyValue**](KeyValue.md) |  | [optional] 
-**version_name** | **str** |  | [optional] 
-**version_owner** | [**User**](User.md) |  | [optional] 
-**version_group_access** | [**GroupAccess**](GroupAccess.md) |  | [optional] 
-**version_branch_point_ref** | [**KeyValue**](KeyValue.md) |  | [optional] 
-**version_branch_id** | **float** |  | [optional] 
-**version_date** | **date** |  | [optional] 
-**version_flag** | [**VersionFlag**](VersionFlag.md) |  | [optional] 
-**version_annot** | **str** |  | [optional] 
 **annot** | **str** |  | [optional] 
 **branch_id** | **float** |  | [optional] 
 **branch_point_ref_key** | [**KeyValue**](KeyValue.md) |  | [optional] 

@@ -4,6 +4,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**type** | **str** |  | [default to 'GroupAccessAll']
 **description** | **str** |  | [optional] 
 
 ## Example

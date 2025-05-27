@@ -1812,28 +1812,43 @@ components:
       discriminator:
         propertyName: type
         mapping:
-          none: '#/components/schemas/GroupAccessNone'
-          some: '#/components/schemas/GroupAccessSome'
-          all: '#/components/schemas/GroupAccessAll'
+          GroupAccessNone: '#/components/schemas/GroupAccessNone'
+          GroupAccessSome: '#/components/schemas/GroupAccessSome'
+          GroupAccessAll: '#/components/schemas/GroupAccessAll'
     GroupAccessAll:
+      required:
+      - type
       type: object
       allOf:
       - $ref: '#/components/schemas/GroupAccess'
       properties:
+        type:
+          default: GroupAccessAll
+          type: string
         description:
           type: string
     GroupAccessNone:
+      required:
+      - type
       type: object
       allOf:
       - $ref: '#/components/schemas/GroupAccess'
       properties:
+        type:
+          default: GroupAccessNone
+          type: string
         description:
           type: string
     GroupAccessSome:
+      required:
+      - type
       type: object
       allOf:
       - $ref: '#/components/schemas/GroupAccess'
       properties:
+        type:
+          default: GroupAccessSome
+          type: string
         hash:
           type: number
         groupMembers:
@@ -2297,22 +2312,6 @@ components:
       properties:
         versionKey:
           $ref: '#/components/schemas/KeyValue'
-        versionName:
-          type: string
-        versionOwner:
-          $ref: '#/components/schemas/User'
-        versionGroupAccess:
-          $ref: '#/components/schemas/GroupAccess'
-        versionBranchPointRef:
-          $ref: '#/components/schemas/KeyValue'
-        versionBranchID:
-          type: number
-        versionDate:
-          $ref: '#/components/schemas/Date'
-        versionFlag:
-          $ref: '#/components/schemas/VersionFlag'
-        versionAnnot:
-          type: string
         annot:
           type: string
         branchID:

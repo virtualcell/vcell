@@ -45,7 +45,7 @@ class GroupAccess(BaseModel):
 
     # discriminator mappings
     __discriminator_value_class_map: ClassVar[Dict[str, str]] = {
-        'all': 'GroupAccessAll','none': 'GroupAccessNone','some': 'GroupAccessSome'
+        'GroupAccessAll': 'GroupAccessAll','GroupAccessNone': 'GroupAccessNone','GroupAccessSome': 'GroupAccessSome'
     }
 
     @classmethod

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.RandomStringUtils;
@@ -11,6 +12,7 @@ import org.apache.commons.lang.RandomStringUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.SimpleDateFormat;
 
 public class CustomObjectMapper extends ObjectMapper {
     public CustomObjectMapper(){
@@ -31,6 +33,7 @@ public class CustomObjectMapper extends ObjectMapper {
     private void setUp(){
         registerModule(new JavaTimeModule());
         disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        setDateFormat(new StdDateFormat());
     }
 
     @Override

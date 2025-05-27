@@ -38,6 +38,7 @@ import org.vcell.restclient.JSON;
  * GroupAccessNone
  */
 @JsonPropertyOrder({
+  GroupAccessNone.JSON_PROPERTY_TYPE,
   GroupAccessNone.JSON_PROPERTY_DESCRIPTION
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
@@ -48,11 +49,39 @@ import org.vcell.restclient.JSON;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type", visible = true)
 
 public class GroupAccessNone extends GroupAccess {
+  public static final String JSON_PROPERTY_TYPE = "type";
+  private String type = "GroupAccessNone";
+
   public static final String JSON_PROPERTY_DESCRIPTION = "description";
   private String description;
 
   public GroupAccessNone() { 
   }
+
+  public GroupAccessNone type(String type) {
+    this.type = type;
+    return this;
+  }
+
+   /**
+   * Get type
+   * @return type
+  **/
+  @javax.annotation.Nonnull
+  @JsonProperty(JSON_PROPERTY_TYPE)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+
+  public String getType() {
+    return type;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_TYPE)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+  public void setType(String type) {
+    this.type = type;
+  }
+
 
   public GroupAccessNone description(String description) {
     this.description = description;
@@ -97,13 +126,14 @@ public class GroupAccessNone extends GroupAccess {
       return false;
     }
     GroupAccessNone groupAccessNone = (GroupAccessNone) o;
-    return Objects.equals(this.description, groupAccessNone.description) &&
+    return Objects.equals(this.type, groupAccessNone.type) &&
+        Objects.equals(this.description, groupAccessNone.description) &&
         super.equals(o);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(description, super.hashCode());
+    return Objects.hash(type, description, super.hashCode());
   }
 
   @Override
@@ -111,6 +141,7 @@ public class GroupAccessNone extends GroupAccess {
     StringBuilder sb = new StringBuilder();
     sb.append("class GroupAccessNone {\n");
     sb.append("    ").append(toIndentedString(super.toString())).append("\n");
+    sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("}");
     return sb.toString();

@@ -10,7 +10,9 @@
 
 package org.vcell.util.document;
 
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 
 import java.math.BigDecimal;
 import java.util.Vector;
@@ -21,11 +23,12 @@ import java.util.Vector;
  * @author: Frank Morgan
  */
 @SuppressWarnings("serial")
-@Schema(allOf = {GroupAccess.class})
+@Schema(allOf = {GroupAccess.class}, requiredProperties = {"type"}, properties = {@SchemaProperty(name = "type", defaultValue = "GroupAccessSome", type = SchemaType.STRING)})
 public class GroupAccessSome extends GroupAccess {
 		private java.math.BigDecimal    hash			= null;
 		private User[] 					groupMembers 	= null;
 		private boolean[]				hiddenMembers	= null;
+		private final String type = "GroupAccessSome";
 
 /**
  * Insert the method's description here.

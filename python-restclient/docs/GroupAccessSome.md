@@ -4,6 +4,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**type** | **str** |  | [default to 'GroupAccessSome']
 **hash** | **float** |  | [optional] 
 **group_members** | [**List[User]**](User.md) |  | [optional] 
 **hidden_members** | **List[bool]** |  | [optional] 

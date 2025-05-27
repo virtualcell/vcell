@@ -39,14 +39,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  */
 @JsonPropertyOrder({
   Version.JSON_PROPERTY_VERSION_KEY,
-  Version.JSON_PROPERTY_VERSION_NAME,
-  Version.JSON_PROPERTY_VERSION_OWNER,
-  Version.JSON_PROPERTY_VERSION_GROUP_ACCESS,
-  Version.JSON_PROPERTY_VERSION_BRANCH_POINT_REF,
-  Version.JSON_PROPERTY_VERSION_BRANCH_I_D,
-  Version.JSON_PROPERTY_VERSION_DATE,
-  Version.JSON_PROPERTY_VERSION_FLAG,
-  Version.JSON_PROPERTY_VERSION_ANNOT,
   Version.JSON_PROPERTY_ANNOT,
   Version.JSON_PROPERTY_BRANCH_I_D,
   Version.JSON_PROPERTY_BRANCH_POINT_REF_KEY,
@@ -60,30 +52,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 public class Version {
   public static final String JSON_PROPERTY_VERSION_KEY = "versionKey";
   private KeyValue versionKey;
-
-  public static final String JSON_PROPERTY_VERSION_NAME = "versionName";
-  private String versionName;
-
-  public static final String JSON_PROPERTY_VERSION_OWNER = "versionOwner";
-  private User versionOwner;
-
-  public static final String JSON_PROPERTY_VERSION_GROUP_ACCESS = "versionGroupAccess";
-  private GroupAccess versionGroupAccess;
-
-  public static final String JSON_PROPERTY_VERSION_BRANCH_POINT_REF = "versionBranchPointRef";
-  private KeyValue versionBranchPointRef;
-
-  public static final String JSON_PROPERTY_VERSION_BRANCH_I_D = "versionBranchID";
-  private BigDecimal versionBranchID;
-
-  public static final String JSON_PROPERTY_VERSION_DATE = "versionDate";
-  private LocalDate versionDate;
-
-  public static final String JSON_PROPERTY_VERSION_FLAG = "versionFlag";
-  private VersionFlag versionFlag;
-
-  public static final String JSON_PROPERTY_VERSION_ANNOT = "versionAnnot";
-  private String versionAnnot;
 
   public static final String JSON_PROPERTY_ANNOT = "annot";
   private String annot;
@@ -134,206 +102,6 @@ public class Version {
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVersionKey(KeyValue versionKey) {
     this.versionKey = versionKey;
-  }
-
-
-  public Version versionName(String versionName) {
-    this.versionName = versionName;
-    return this;
-  }
-
-   /**
-   * Get versionName
-   * @return versionName
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION_NAME)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public String getVersionName() {
-    return versionName;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_VERSION_NAME)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersionName(String versionName) {
-    this.versionName = versionName;
-  }
-
-
-  public Version versionOwner(User versionOwner) {
-    this.versionOwner = versionOwner;
-    return this;
-  }
-
-   /**
-   * Get versionOwner
-   * @return versionOwner
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION_OWNER)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public User getVersionOwner() {
-    return versionOwner;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_VERSION_OWNER)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersionOwner(User versionOwner) {
-    this.versionOwner = versionOwner;
-  }
-
-
-  public Version versionGroupAccess(GroupAccess versionGroupAccess) {
-    this.versionGroupAccess = versionGroupAccess;
-    return this;
-  }
-
-   /**
-   * Get versionGroupAccess
-   * @return versionGroupAccess
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION_GROUP_ACCESS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public GroupAccess getVersionGroupAccess() {
-    return versionGroupAccess;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_VERSION_GROUP_ACCESS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersionGroupAccess(GroupAccess versionGroupAccess) {
-    this.versionGroupAccess = versionGroupAccess;
-  }
-
-
-  public Version versionBranchPointRef(KeyValue versionBranchPointRef) {
-    this.versionBranchPointRef = versionBranchPointRef;
-    return this;
-  }
-
-   /**
-   * Get versionBranchPointRef
-   * @return versionBranchPointRef
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION_BRANCH_POINT_REF)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public KeyValue getVersionBranchPointRef() {
-    return versionBranchPointRef;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_VERSION_BRANCH_POINT_REF)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersionBranchPointRef(KeyValue versionBranchPointRef) {
-    this.versionBranchPointRef = versionBranchPointRef;
-  }
-
-
-  public Version versionBranchID(BigDecimal versionBranchID) {
-    this.versionBranchID = versionBranchID;
-    return this;
-  }
-
-   /**
-   * Get versionBranchID
-   * @return versionBranchID
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION_BRANCH_I_D)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public BigDecimal getVersionBranchID() {
-    return versionBranchID;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_VERSION_BRANCH_I_D)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersionBranchID(BigDecimal versionBranchID) {
-    this.versionBranchID = versionBranchID;
-  }
-
-
-  public Version versionDate(LocalDate versionDate) {
-    this.versionDate = versionDate;
-    return this;
-  }
-
-   /**
-   * Get versionDate
-   * @return versionDate
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION_DATE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public LocalDate getVersionDate() {
-    return versionDate;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_VERSION_DATE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersionDate(LocalDate versionDate) {
-    this.versionDate = versionDate;
-  }
-
-
-  public Version versionFlag(VersionFlag versionFlag) {
-    this.versionFlag = versionFlag;
-    return this;
-  }
-
-   /**
-   * Get versionFlag
-   * @return versionFlag
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public VersionFlag getVersionFlag() {
-    return versionFlag;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersionFlag(VersionFlag versionFlag) {
-    this.versionFlag = versionFlag;
-  }
-
-
-  public Version versionAnnot(String versionAnnot) {
-    this.versionAnnot = versionAnnot;
-    return this;
-  }
-
-   /**
-   * Get versionAnnot
-   * @return versionAnnot
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION_ANNOT)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public String getVersionAnnot() {
-    return versionAnnot;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_VERSION_ANNOT)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersionAnnot(String versionAnnot) {
-    this.versionAnnot = versionAnnot;
   }
 
 
@@ -550,14 +318,6 @@ public class Version {
     }
     Version version = (Version) o;
     return Objects.equals(this.versionKey, version.versionKey) &&
-        Objects.equals(this.versionName, version.versionName) &&
-        Objects.equals(this.versionOwner, version.versionOwner) &&
-        Objects.equals(this.versionGroupAccess, version.versionGroupAccess) &&
-        Objects.equals(this.versionBranchPointRef, version.versionBranchPointRef) &&
-        Objects.equals(this.versionBranchID, version.versionBranchID) &&
-        Objects.equals(this.versionDate, version.versionDate) &&
-        Objects.equals(this.versionFlag, version.versionFlag) &&
-        Objects.equals(this.versionAnnot, version.versionAnnot) &&
         Objects.equals(this.annot, version.annot) &&
         Objects.equals(this.branchID, version.branchID) &&
         Objects.equals(this.branchPointRefKey, version.branchPointRefKey) &&
@@ -570,7 +330,7 @@ public class Version {
 
   @Override
   public int hashCode() {
-    return Objects.hash(versionKey, versionName, versionOwner, versionGroupAccess, versionBranchPointRef, versionBranchID, versionDate, versionFlag, versionAnnot, annot, branchID, branchPointRefKey, date, flag, groupAccess, name, owner);
+    return Objects.hash(versionKey, annot, branchID, branchPointRefKey, date, flag, groupAccess, name, owner);
   }
 
   @Override
@@ -578,14 +338,6 @@ public class Version {
     StringBuilder sb = new StringBuilder();
     sb.append("class Version {\n");
     sb.append("    versionKey: ").append(toIndentedString(versionKey)).append("\n");
-    sb.append("    versionName: ").append(toIndentedString(versionName)).append("\n");
-    sb.append("    versionOwner: ").append(toIndentedString(versionOwner)).append("\n");
-    sb.append("    versionGroupAccess: ").append(toIndentedString(versionGroupAccess)).append("\n");
-    sb.append("    versionBranchPointRef: ").append(toIndentedString(versionBranchPointRef)).append("\n");
-    sb.append("    versionBranchID: ").append(toIndentedString(versionBranchID)).append("\n");
-    sb.append("    versionDate: ").append(toIndentedString(versionDate)).append("\n");
-    sb.append("    versionFlag: ").append(toIndentedString(versionFlag)).append("\n");
-    sb.append("    versionAnnot: ").append(toIndentedString(versionAnnot)).append("\n");
     sb.append("    annot: ").append(toIndentedString(annot)).append("\n");
     sb.append("    branchID: ").append(toIndentedString(branchID)).append("\n");
     sb.append("    branchPointRefKey: ").append(toIndentedString(branchPointRefKey)).append("\n");
@@ -644,46 +396,6 @@ public class Version {
     // add `versionKey` to the URL query string
     if (getVersionKey() != null) {
       joiner.add(getVersionKey().toUrlQueryString(prefix + "versionKey" + suffix));
-    }
-
-    // add `versionName` to the URL query string
-    if (getVersionName() != null) {
-      joiner.add(String.format("%sversionName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getVersionName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `versionOwner` to the URL query string
-    if (getVersionOwner() != null) {
-      joiner.add(getVersionOwner().toUrlQueryString(prefix + "versionOwner" + suffix));
-    }
-
-    // add `versionGroupAccess` to the URL query string
-    if (getVersionGroupAccess() != null) {
-      joiner.add(getVersionGroupAccess().toUrlQueryString(prefix + "versionGroupAccess" + suffix));
-    }
-
-    // add `versionBranchPointRef` to the URL query string
-    if (getVersionBranchPointRef() != null) {
-      joiner.add(getVersionBranchPointRef().toUrlQueryString(prefix + "versionBranchPointRef" + suffix));
-    }
-
-    // add `versionBranchID` to the URL query string
-    if (getVersionBranchID() != null) {
-      joiner.add(String.format("%sversionBranchID%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getVersionBranchID()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `versionDate` to the URL query string
-    if (getVersionDate() != null) {
-      joiner.add(String.format("%sversionDate%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getVersionDate()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `versionFlag` to the URL query string
-    if (getVersionFlag() != null) {
-      joiner.add(getVersionFlag().toUrlQueryString(prefix + "versionFlag" + suffix));
-    }
-
-    // add `versionAnnot` to the URL query string
-    if (getVersionAnnot() != null) {
-      joiner.add(String.format("%sversionAnnot%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getVersionAnnot()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `annot` to the URL query string

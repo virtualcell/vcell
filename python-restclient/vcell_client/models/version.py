@@ -36,14 +36,6 @@ class Version(BaseModel):
     Version
     """ # noqa: E501
     version_key: Optional[KeyValue] = Field(default=None, alias="versionKey")
-    version_name: Optional[StrictStr] = Field(default=None, alias="versionName")
-    version_owner: Optional[User] = Field(default=None, alias="versionOwner")
-    version_group_access: Optional[GroupAccess] = Field(default=None, alias="versionGroupAccess")
-    version_branch_point_ref: Optional[KeyValue] = Field(default=None, alias="versionBranchPointRef")
-    version_branch_id: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="versionBranchID")
-    version_date: Optional[date] = Field(default=None, alias="versionDate")
-    version_flag: Optional[VersionFlag] = Field(default=None, alias="versionFlag")
-    version_annot: Optional[StrictStr] = Field(default=None, alias="versionAnnot")
     annot: Optional[StrictStr] = None
     branch_id: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="branchID")
     branch_point_ref_key: Optional[KeyValue] = Field(default=None, alias="branchPointRefKey")
@@ -52,7 +44,7 @@ class Version(BaseModel):
     group_access: Optional[GroupAccess] = Field(default=None, alias="groupAccess")
     name: Optional[StrictStr] = None
     owner: Optional[User] = None
-    __properties: ClassVar[List[str]] = ["versionKey", "versionName", "versionOwner", "versionGroupAccess", "versionBranchPointRef", "versionBranchID", "versionDate", "versionFlag", "versionAnnot", "annot", "branchID", "branchPointRefKey", "date", "flag", "groupAccess", "name", "owner"]
+    __properties: ClassVar[List[str]] = ["versionKey", "annot", "branchID", "branchPointRefKey", "date", "flag", "groupAccess", "name", "owner"]
 
     model_config = {
         "populate_by_name": True,
@@ -93,18 +85,6 @@ class Version(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of version_key
         if self.version_key:
             _dict['versionKey'] = self.version_key.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of version_owner
-        if self.version_owner:
-            _dict['versionOwner'] = self.version_owner.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of version_group_access
-        if self.version_group_access:
-            _dict['versionGroupAccess'] = self.version_group_access.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of version_branch_point_ref
-        if self.version_branch_point_ref:
-            _dict['versionBranchPointRef'] = self.version_branch_point_ref.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of version_flag
-        if self.version_flag:
-            _dict['versionFlag'] = self.version_flag.to_dict()
         # override the default output from pydantic by calling `to_dict()` of branch_point_ref_key
         if self.branch_point_ref_key:
             _dict['branchPointRefKey'] = self.branch_point_ref_key.to_dict()
@@ -135,14 +115,6 @@ class Version(BaseModel):
 
         _obj = cls.model_validate({
             "versionKey": KeyValue.from_dict(obj.get("versionKey")) if obj.get("versionKey") is not None else None,
-            "versionName": obj.get("versionName"),
-            "versionOwner": User.from_dict(obj.get("versionOwner")) if obj.get("versionOwner") is not None else None,
-            "versionGroupAccess": GroupAccess.from_dict(obj.get("versionGroupAccess")) if obj.get("versionGroupAccess") is not None else None,
-            "versionBranchPointRef": KeyValue.from_dict(obj.get("versionBranchPointRef")) if obj.get("versionBranchPointRef") is not None else None,
-            "versionBranchID": obj.get("versionBranchID"),
-            "versionDate": obj.get("versionDate"),
-            "versionFlag": VersionFlag.from_dict(obj.get("versionFlag")) if obj.get("versionFlag") is not None else None,
-            "versionAnnot": obj.get("versionAnnot"),
             "annot": obj.get("annot"),
             "branchID": obj.get("branchID"),
             "branchPointRefKey": KeyValue.from_dict(obj.get("branchPointRefKey")) if obj.get("branchPointRefKey") is not None else None,

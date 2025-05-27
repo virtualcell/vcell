@@ -18,6 +18,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -25,14 +28,23 @@ import org.vcell.util.Matchable;
 @SuppressWarnings("serial")
 public class Version implements Serializable, Matchable{
 private KeyValue		versionKey = null;
+@JsonIgnore
 private String			versionName = null;
+@JsonIgnore
 private User			versionOwner = null;
+@JsonIgnore
 private GroupAccess		versionGroupAccess = null;
 
+@JsonIgnore
 private KeyValue 		versionBranchPointRef = null;
+@JsonIgnore
 private BigDecimal		versionBranchID = null;
+
+@JsonIgnore
 private java.util.Date	versionDate = null;
+@JsonIgnore
 private VersionFlag		versionFlag = null;
+@JsonIgnore
 private String			versionAnnot= null;
 
 public Version(KeyValue versionKeyNew, String versionNameNew, User versionOwnerNew,

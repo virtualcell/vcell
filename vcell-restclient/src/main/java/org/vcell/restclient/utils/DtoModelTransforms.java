@@ -180,6 +180,9 @@ public class DtoModelTransforms {
     }
 
     public static VersionFlag dtoToVersionFlag(org.vcell.restclient.model.VersionFlag dto){
+        if (dto.getVersionFlag() == null){
+            return null;
+        }
         return VersionFlag.fromInt(dto.getVersionFlag());
     }
 
@@ -206,9 +209,9 @@ public class DtoModelTransforms {
 
     public static Version versionDTOToVersion(org.vcell.restclient.model.Version dto){
         return new Version(
-                dtoToKeyValue(dto.getVersionKey()), dto.getVersionName(), dtoToUser(dto.getVersionOwner()),
+                dtoToKeyValue(dto.getVersionKey()), dto.getName(), dtoToUser(dto.getOwner()),
                 dtoToGroupAccess(dto.getGroupAccess()), dtoToKeyValue(dto.getBranchPointRefKey()), dto.getBranchID(), new Date(dto.getDate().toEpochDay()),
-                dtoToVersionFlag(dto.getVersionFlag()), dto.getVersionAnnot()
+                dtoToVersionFlag(dto.getFlag()), dto.getAnnot()
         );
     }
 
@@ -221,17 +224,26 @@ public class DtoModelTransforms {
         for (int i = 0; i < mathTypes.length; i++){
             mathTypes[i] = dtoToBioModelMathType(dto.getAppTypes().get(i));
         }
-        String[][] simNames = new String[dto.getSimNames().size()][];
-        for (int i = 0; i < simNames.length; i++){
-            simNames[i] = dto.getSimNames().get(i).toArray(new String[0]);
+        String[][] simNames = null;
+        if (dto.getSimNames() != null){
+            simNames = new String[dto.getSimNames().size()][];
+            for (int i = 0; i < simNames.length; i++){
+                simNames[i] = dto.getSimNames().get(i).toArray(new String[0]);
+            }
         }
-        String[][] simAnnots = new String[dto.getSimAnnots().size()][];
-        for (int i = 0; i < simAnnots.length; i++){
-            simAnnots[i] = dto.getSimAnnots().get(i).toArray(new String[0]);
+        String[][] simAnnots = null;
+        if (dto.getSimAnnots() != null){
+            simAnnots = new String[dto.getSimAnnots().size()][];
+            for (int i = 0; i < simAnnots.length; i++){
+                simAnnots[i] = dto.getSimAnnots().get(i).toArray(new String[0]);
+            }
         }
+        String[] scAnnotations = dto.getScAnnots() == null ? null : dto.getScAnnots().toArray(new String[0]);
+        String[] geoNames = dto.getGeoNames() == null ? null : dto.getGeoNames().toArray(new String[0]);
+        int[] geoDims = dto.getGeoDims() == null ? null : dto.getGeoDims().stream().mapToInt(Integer::intValue).toArray();
         return new BioModelChildSummary(dto.getSimulationContextNames().toArray(new String[0]),
-                mathTypes, dto.getScAnnots().toArray(new String[0]), simNames, simAnnots, dto.getGeoNames().toArray(new String[0]),
-                dto.getGeoDims().stream().mapToInt(Integer::intValue).toArray());
+                mathTypes, scAnnotations, simNames, simAnnots, geoNames,
+                geoDims);
     }
 
     public static VCellSoftwareVersion dtoToVCellSoftwareVersion(org.vcell.restclient.model.VCellSoftwareVersion dto){

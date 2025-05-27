@@ -1524,7 +1524,7 @@ components:
         geometryName: geometryName
         name: name
         type: null
-        dimensions: 9
+        dimensions: 7
       properties:
         name:
           type: string
@@ -1611,8 +1611,8 @@ components:
         - geoNames
         - geoNames
         geometryDimensions:
-        - 7
-        - 7
+        - 2
+        - 2
         geometryNames:
         - geometryNames
         - geometryNames
@@ -1622,8 +1622,8 @@ components:
         - - simAnnots
           - simAnnots
         geoDims:
-        - 2
-        - 2
+        - 5
+        - 5
         appTypes:
         - null
         - null
@@ -1634,11 +1634,11 @@ components:
         - geometryName: geometryName
           name: name
           type: null
-          dimensions: 9
+          dimensions: 7
         - geometryName: geometryName
           name: name
           type: null
-          dimensions: 9
+          dimensions: 7
         simNames:
         - - simNames
           - simNames
@@ -1716,8 +1716,8 @@ components:
           - geoNames
           - geoNames
           geometryDimensions:
-          - 7
-          - 7
+          - 2
+          - 2
           geometryNames:
           - geometryNames
           - geometryNames
@@ -1727,8 +1727,8 @@ components:
           - - simAnnots
             - simAnnots
           geoDims:
-          - 2
-          - 2
+          - 5
+          - 5
           appTypes:
           - null
           - null
@@ -1739,11 +1739,11 @@ components:
           - geometryName: geometryName
             name: name
             type: null
-            dimensions: 9
+            dimensions: 7
           - geometryName: geometryName
             name: name
             type: null
-            dimensions: 9
+            dimensions: 7
           simNames:
           - - simNames
             - simNames
@@ -1760,7 +1760,7 @@ components:
           url: url
           versionKey:
             value: 0.8008281904610115
-          theHashCode: 3
+          theHashCode: 9
           user:
             userName: userName
             key:
@@ -1780,7 +1780,7 @@ components:
           url: url
           versionKey:
             value: 0.8008281904610115
-          theHashCode: 3
+          theHashCode: 9
           user:
             userName: userName
             key:
@@ -1796,49 +1796,30 @@ components:
             userName: userName
             key:
               value: 0.8008281904610115
-          branchID: 5.637376656633329
+          branchID: 0.8008281904610115
           flag:
             archived: true
             current: true
-            intValue: 5
-            versionFlag: 1
+            intValue: 1
+            versionFlag: 6
             published: true
-          versionGroupAccess:
-            groupid: 0.8008281904610115
-            description: description
-          versionFlag:
-            archived: true
-            current: true
-            intValue: 5
-            versionFlag: 1
-            published: true
-          versionName: versionName
-          annot: annot
-          versionDate: 2022-03-10T00:00:00.000+00:00
-          versionKey:
-            value: 0.8008281904610115
-          versionAnnot: versionAnnot
           groupAccess:
-            groupid: 0.8008281904610115
+            groupid: 5.962133916683182
             description: description
-          versionBranchID: 6.027456183070403
           name: name
-          versionBranchPointRef:
-            value: 0.8008281904610115
+          annot: annot
           branchPointRefKey:
             value: 0.8008281904610115
-          versionOwner:
-            userName: userName
-            key:
-              value: 0.8008281904610115
+          versionKey:
+            value: 0.8008281904610115
         vCellSoftwareVersion:
           site: null
           vcellSite: null
-          patchVersion: 7
-          buildInt: 1
+          patchVersion: 4
+          buildInt: 7
           description: description
-          majorVersion: 2
-          minorVersion: 4
+          majorVersion: 3
+          minorVersion: 2
           buildNumber: buildNumber
           softwareVersionString: softwareVersionString
           versionNumber: versionNumber
@@ -2219,12 +2200,12 @@ components:
     GroupAccess:
       discriminator:
         mapping:
-          none: '#/components/schemas/GroupAccessNone'
-          some: '#/components/schemas/GroupAccessSome'
-          all: '#/components/schemas/GroupAccessAll'
+          GroupAccessNone: '#/components/schemas/GroupAccessNone'
+          GroupAccessSome: '#/components/schemas/GroupAccessSome'
+          GroupAccessAll: '#/components/schemas/GroupAccessAll'
         propertyName: type
       example:
-        groupid: 0.8008281904610115
+        groupid: 5.962133916683182
         description: description
       properties:
         groupid:
@@ -2238,20 +2219,33 @@ components:
       allOf:
       - $ref: '#/components/schemas/GroupAccess'
       properties:
+        type:
+          default: GroupAccessAll
+          type: string
         description:
           type: string
+      required:
+      - type
       type: object
     GroupAccessNone:
       allOf:
       - $ref: '#/components/schemas/GroupAccess'
       properties:
+        type:
+          default: GroupAccessNone
+          type: string
         description:
           type: string
+      required:
+      - type
       type: object
     GroupAccessSome:
       allOf:
       - $ref: '#/components/schemas/GroupAccess'
       properties:
+        type:
+          default: GroupAccessSome
+          type: string
         hash:
           type: number
         groupMembers:
@@ -2272,6 +2266,8 @@ components:
           items:
             $ref: '#/components/schemas/User'
           type: array
+      required:
+      - type
       type: object
     HelloWorldMessage:
       example:
@@ -2495,7 +2491,7 @@ components:
         url: url
         versionKey:
           value: 0.8008281904610115
-        theHashCode: 3
+        theHashCode: 9
         user:
           userName: userName
           key:
@@ -2904,11 +2900,11 @@ components:
       example:
         site: null
         vcellSite: null
-        patchVersion: 7
-        buildInt: 1
+        patchVersion: 4
+        buildInt: 7
         description: description
-        majorVersion: 2
-        minorVersion: 4
+        majorVersion: 3
+        minorVersion: 2
         buildNumber: buildNumber
         softwareVersionString: softwareVersionString
         versionNumber: versionNumber
@@ -2987,62 +2983,25 @@ components:
           userName: userName
           key:
             value: 0.8008281904610115
-        branchID: 5.637376656633329
+        branchID: 0.8008281904610115
         flag:
           archived: true
           current: true
-          intValue: 5
-          versionFlag: 1
+          intValue: 1
+          versionFlag: 6
           published: true
-        versionGroupAccess:
-          groupid: 0.8008281904610115
-          description: description
-        versionFlag:
-          archived: true
-          current: true
-          intValue: 5
-          versionFlag: 1
-          published: true
-        versionName: versionName
-        annot: annot
-        versionDate: 2022-03-10T00:00:00.000+00:00
-        versionKey:
-          value: 0.8008281904610115
-        versionAnnot: versionAnnot
         groupAccess:
-          groupid: 0.8008281904610115
+          groupid: 5.962133916683182
           description: description
-        versionBranchID: 6.027456183070403
         name: name
-        versionBranchPointRef:
-          value: 0.8008281904610115
+        annot: annot
         branchPointRefKey:
           value: 0.8008281904610115
-        versionOwner:
-          userName: userName
-          key:
-            value: 0.8008281904610115
+        versionKey:
+          value: 0.8008281904610115
       properties:
         versionKey:
           $ref: '#/components/schemas/KeyValue'
-        versionName:
-          type: string
-        versionOwner:
-          $ref: '#/components/schemas/User'
-        versionGroupAccess:
-          $ref: '#/components/schemas/GroupAccess'
-        versionBranchPointRef:
-          $ref: '#/components/schemas/KeyValue'
-        versionBranchID:
-          type: number
-        versionDate:
-          example: 2022-03-10
-          format: date
-          type: string
-        versionFlag:
-          $ref: '#/components/schemas/VersionFlag'
-        versionAnnot:
-          type: string
         annot:
           type: string
         branchID:
@@ -3066,8 +3025,8 @@ components:
       example:
         archived: true
         current: true
-        intValue: 5
-        versionFlag: 1
+        intValue: 1
+        versionFlag: 6
         published: true
       properties:
         versionFlag:

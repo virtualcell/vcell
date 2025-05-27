@@ -47,9 +47,9 @@ import org.vcell.restclient.JSON;
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type", visible = true)
 @JsonSubTypes({
-  @JsonSubTypes.Type(value = GroupAccessAll.class, name = "all"),
-  @JsonSubTypes.Type(value = GroupAccessNone.class, name = "none"),
-  @JsonSubTypes.Type(value = GroupAccessSome.class, name = "some"),
+  @JsonSubTypes.Type(value = GroupAccessAll.class, name = "GroupAccessAll"),
+  @JsonSubTypes.Type(value = GroupAccessNone.class, name = "GroupAccessNone"),
+  @JsonSubTypes.Type(value = GroupAccessSome.class, name = "GroupAccessSome"),
 })
 
 public class GroupAccess {
@@ -201,9 +201,9 @@ public class GroupAccess {
 static {
   // Initialize and register the discriminator mappings.
   Map<String, Class<?>> mappings = new HashMap<String, Class<?>>();
-  mappings.put("all", GroupAccessAll.class);
-  mappings.put("none", GroupAccessNone.class);
-  mappings.put("some", GroupAccessSome.class);
+  mappings.put("GroupAccessAll", GroupAccessAll.class);
+  mappings.put("GroupAccessNone", GroupAccessNone.class);
+  mappings.put("GroupAccessSome", GroupAccessSome.class);
   mappings.put("GroupAccess", GroupAccess.class);
   JSON.registerDiscriminator(GroupAccess.class, "type", mappings);
 }

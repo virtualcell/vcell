@@ -31,6 +31,7 @@ class GroupAccessNone(GroupAccess):
     """
     GroupAccessNone
     """ # noqa: E501
+    type: StrictStr
     description: Optional[StrictStr] = None
     __properties: ClassVar[List[str]] = ["groupid", "description"]
 

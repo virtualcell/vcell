@@ -41,6 +41,7 @@ import org.vcell.restclient.JSON;
  * GroupAccessSome
  */
 @JsonPropertyOrder({
+  GroupAccessSome.JSON_PROPERTY_TYPE,
   GroupAccessSome.JSON_PROPERTY_HASH,
   GroupAccessSome.JSON_PROPERTY_GROUP_MEMBERS,
   GroupAccessSome.JSON_PROPERTY_HIDDEN_MEMBERS,
@@ -56,6 +57,9 @@ import org.vcell.restclient.JSON;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type", visible = true)
 
 public class GroupAccessSome extends GroupAccess {
+  public static final String JSON_PROPERTY_TYPE = "type";
+  private String type = "GroupAccessSome";
+
   public static final String JSON_PROPERTY_HASH = "hash";
   private BigDecimal hash;
 
@@ -76,6 +80,31 @@ public class GroupAccessSome extends GroupAccess {
 
   public GroupAccessSome() { 
   }
+
+  public GroupAccessSome type(String type) {
+    this.type = type;
+    return this;
+  }
+
+   /**
+   * Get type
+   * @return type
+  **/
+  @javax.annotation.Nonnull
+  @JsonProperty(JSON_PROPERTY_TYPE)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+
+  public String getType() {
+    return type;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_TYPE)
+  @JsonInclude(value = JsonInclude.Include.ALWAYS)
+  public void setType(String type) {
+    this.type = type;
+  }
+
 
   public GroupAccessSome hash(BigDecimal hash) {
     this.hash = hash;
@@ -277,7 +306,8 @@ public class GroupAccessSome extends GroupAccess {
       return false;
     }
     GroupAccessSome groupAccessSome = (GroupAccessSome) o;
-    return Objects.equals(this.hash, groupAccessSome.hash) &&
+    return Objects.equals(this.type, groupAccessSome.type) &&
+        Objects.equals(this.hash, groupAccessSome.hash) &&
         Objects.equals(this.groupMembers, groupAccessSome.groupMembers) &&
         Objects.equals(this.hiddenMembers, groupAccessSome.hiddenMembers) &&
         Objects.equals(this.description, groupAccessSome.description) &&
@@ -288,7 +318,7 @@ public class GroupAccessSome extends GroupAccess {
 
   @Override
   public int hashCode() {
-    return Objects.hash(hash, groupMembers, hiddenMembers, description, hiddenGroupMembers, normalGroupMembers, super.hashCode());
+    return Objects.hash(type, hash, groupMembers, hiddenMembers, description, hiddenGroupMembers, normalGroupMembers, super.hashCode());
   }
 
   @Override
@@ -296,6 +326,7 @@ public class GroupAccessSome extends GroupAccess {
     StringBuilder sb = new StringBuilder();
     sb.append("class GroupAccessSome {\n");
     sb.append("    ").append(toIndentedString(super.toString())).append("\n");
+    sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    hash: ").append(toIndentedString(hash)).append("\n");
     sb.append("    groupMembers: ").append(toIndentedString(groupMembers)).append("\n");
     sb.append("    hiddenMembers: ").append(toIndentedString(hiddenMembers)).append("\n");

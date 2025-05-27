@@ -14,6 +14,7 @@ import { GroupAccess } from './group-access';
 
 
 export interface GroupAccessSome extends GroupAccess { 
+    type: string;
     hash?: number;
     groupMembers?: Array<User>;
     hiddenMembers?: Array<boolean>;

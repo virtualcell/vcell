@@ -17,14 +17,6 @@ import { GroupAccess } from './group-access';
 
 export interface Version { 
     versionKey?: KeyValue;
-    versionName?: string;
-    versionOwner?: User;
-    versionGroupAccess?: GroupAccess;
-    versionBranchPointRef?: KeyValue;
-    versionBranchID?: number;
-    versionDate?: string;
-    versionFlag?: VersionFlag;
-    versionAnnot?: string;
     annot?: string;
     branchID?: number;
     branchPointRefKey?: KeyValue;
