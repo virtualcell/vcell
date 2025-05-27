@@ -312,48 +312,6 @@ public org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) thr
  * getVersionInfo method comment.
  * @throws RemoteException 
  */
-public BioModelMetaData getBioModelMetaData(KeyValue bioModelKey) throws DataAccessException {
-
-	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getBioModelMetaData(key="+bioModelKey+")");
-		BioModelMetaData bioModelMetaData = dbServerProxy.getBioModelMetaData(bioModelKey);
-		return bioModelMetaData;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
-	}
-
-}
-
-
-/**
- * getVersionInfo method comment.
- * @throws RemoteException 
- */
-public BioModelMetaData[] getBioModelMetaDatas(boolean bAll) throws DataAccessException {
-
-	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getBioModelMetaDatas(bAll="+bAll+")");
-		BioModelMetaData bioModelMetaDataArray[] = dbServerProxy.getBioModelMetaDatas(bAll);
-		return bioModelMetaDataArray;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
-	}
-
-}
-
-
-/**
- * getVersionInfo method comment.
- * @throws RemoteException 
- */
 public BigString getBioModelXML(KeyValue bioModelKey) throws DataAccessException {
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getBioModelXML(key="+bioModelKey+")");

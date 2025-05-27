@@ -163,26 +163,6 @@ public java.lang.String getName() {
 
 /**
  * Insert the method's description here.
- * Creation date: (1/23/01 3:22:21 PM)
- * @return int
- */
-public int getNumSimulationContexts() {
-	return simulationContextKeyList.size();
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (1/23/01 3:22:21 PM)
- * @return int
- */
-public int getNumSimulations() {
-	return simulationKeyList.size();
-}
-
-
-/**
- * Insert the method's description here.
  * Creation date: (11/13/00 4:21:49 PM)
  * @return java.util.Collection
  */
