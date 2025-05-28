@@ -2295,7 +2295,9 @@ components:
         branchPointRefKey:
           $ref: '#/components/schemas/KeyValue'
         date:
-          $ref: '#/components/schemas/Date'
+          format: date-time
+          type: string
+          example: 2022-03-10
         flag:
           $ref: '#/components/schemas/VersionFlag'
         groupAccess:

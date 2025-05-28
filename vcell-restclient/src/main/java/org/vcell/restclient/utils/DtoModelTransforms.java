@@ -210,7 +210,7 @@ public class DtoModelTransforms {
     public static Version versionDTOToVersion(org.vcell.restclient.model.Version dto){
         return new Version(
                 dtoToKeyValue(dto.getVersionKey()), dto.getName(), dtoToUser(dto.getOwner()),
-                dtoToGroupAccess(dto.getGroupAccess()), dtoToKeyValue(dto.getBranchPointRefKey()), dto.getBranchID(), new Date(dto.getDate().toEpochDay()),
+                dtoToGroupAccess(dto.getGroupAccess()), dtoToKeyValue(dto.getBranchPointRefKey()), dto.getBranchID(), new Date(dto.getDate().toEpochSecond()),
                 dtoToVersionFlag(dto.getFlag()), dto.getAnnot()
         );
     }

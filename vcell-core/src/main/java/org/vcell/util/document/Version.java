@@ -166,6 +166,7 @@ public KeyValue getBranchPointRefKey() {
     return versionBranchPointRef;
 }
 
+@Schema(format = "date-time")
 public Date getDate() {
     return versionDate;
 }

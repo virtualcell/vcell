@@ -8,7 +8,7 @@ Name | Type | Description | Notes
 **annot** | **str** |  | [optional] 
 **branch_id** | **float** |  | [optional] 
 **branch_point_ref_key** | [**KeyValue**](KeyValue.md) |  | [optional] 
-**var_date** | **date** |  | [optional] 
+**var_date** | **datetime** |  | [optional] 
 **flag** | [**VersionFlag**](VersionFlag.md) |  | [optional] 
 **group_access** | [**GroupAccess**](GroupAccess.md) |  | [optional] 
 **name** | **str** |  | [optional] 

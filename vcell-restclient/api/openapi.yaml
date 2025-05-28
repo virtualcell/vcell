@@ -1767,7 +1767,7 @@ components:
           doi: doi
           pubdate: 2022-03-10T00:00:00.000+00:00
         version:
-          date: 2022-03-10T00:00:00.000+00:00
+          date: 2000-01-23T04:56:07.000+00:00
           owner:
             userName: userName
             key:
@@ -2954,7 +2954,7 @@ components:
       type: object
     Version:
       example:
-        date: 2022-03-10T00:00:00.000+00:00
+        date: 2000-01-23T04:56:07.000+00:00
         owner:
           userName: userName
           key:
@@ -2985,8 +2985,7 @@ components:
         branchPointRefKey:
           $ref: '#/components/schemas/KeyValue'
         date:
-          example: 2022-03-10
-          format: date
+          format: date-time
           type: string
         flag:
           $ref: '#/components/schemas/VersionFlag'

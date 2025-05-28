@@ -36,7 +36,6 @@ import org.vcell.util.document.KeyValue;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.ArrayList;
 
 @QuarkusTest
@@ -151,6 +150,7 @@ public class BioModelApiTest {
 
         BioModelSummary context = bioModelResourceApi.getBioModelSummary(bioModel.getVersion().getVersionKey().toString());
         BioModelInfo info = DtoModelTransforms.bioModelContextToBioModelInfo(context);
+        BioModelInfo fromTheSourceInfo = databaseServer.getBioModelInfo(TestEndpointUtils.administratorUser, bioModel.getVersion().getVersionKey());
 
         Assertions.assertEquals(context.getSummary().getGeometryNames(), new ArrayList<>(){{add("test-geometry");}});
         Assertions.assertTrue(context.getPublicationInformation().isEmpty());
@@ -158,7 +158,10 @@ public class BioModelApiTest {
         // 8.0.0 set through Java properties, and for quarkus in the Quarkus properties
         Assertions.assertEquals("8.0.0", context.getvCellSoftwareVersion().getSoftwareVersionString());
         Assertions.assertEquals("TestBioModel", context.getVersion().getName());
-        Assertions.assertTrue(LocalDate.now().isEqual(context.getVersion().getDate()));
+
+        Assertions.assertEquals(fromTheSourceInfo.getVersion().getDate().toInstant(), context.getVersion().getDate().toInstant());
+        Assertions.assertEquals(0, context.getVersion().getDate().getOffset().getTotalSeconds()); // Should have no offset from UTC
+
         Assertions.assertEquals(BioModelChildSummary.MathType.Deterministic, info.getBioModelChildSummary().getAppTypes()[0]);
         Assertions.assertEquals(new ArrayList<>(){{add("non-spatial ODE");}}, context.getSummary().getSimulationContextNames());
     }

@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import org.vcell.restclient.model.GroupAccess;
 import org.vcell.restclient.model.KeyValue;
@@ -63,7 +63,7 @@ public class Version {
   private KeyValue branchPointRefKey;
 
   public static final String JSON_PROPERTY_DATE = "date";
-  private LocalDate date;
+  private OffsetDateTime date;
 
   public static final String JSON_PROPERTY_FLAG = "flag";
   private VersionFlag flag;
@@ -180,7 +180,7 @@ public class Version {
   }
 
 
-  public Version date(LocalDate date) {
+  public Version date(OffsetDateTime date) {
     this.date = date;
     return this;
   }
@@ -193,14 +193,14 @@ public class Version {
   @JsonProperty(JSON_PROPERTY_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public LocalDate getDate() {
+  public OffsetDateTime getDate() {
     return date;
   }
 
 
   @JsonProperty(JSON_PROPERTY_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDate(LocalDate date) {
+  public void setDate(OffsetDateTime date) {
     this.date = date;
   }
 

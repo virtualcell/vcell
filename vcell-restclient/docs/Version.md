@@ -11,7 +11,7 @@
 |**annot** | **String** |  |  [optional] |
 |**branchID** | **BigDecimal** |  |  [optional] |
 |**branchPointRefKey** | [**KeyValue**](KeyValue.md) |  |  [optional] |
-|**date** | **LocalDate** |  |  [optional] |
+|**date** | **OffsetDateTime** |  |  [optional] |
 |**flag** | [**VersionFlag**](VersionFlag.md) |  |  [optional] |
 |**groupAccess** | [**GroupAccess**](GroupAccess.md) |  |  [optional] |
 |**name** | **String** |  |  [optional] |

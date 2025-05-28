@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from datetime import date
+from datetime import datetime
 from typing import Any, ClassVar, Dict, List, Optional, Union
 from pydantic import BaseModel, StrictFloat, StrictInt, StrictStr
 from pydantic import Field
@@ -39,7 +39,7 @@ class Version(BaseModel):
     annot: Optional[StrictStr] = None
     branch_id: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="branchID")
     branch_point_ref_key: Optional[KeyValue] = Field(default=None, alias="branchPointRefKey")
-    var_date: Optional[date] = Field(default=None, alias="date")
+    var_date: Optional[datetime] = Field(default=None, alias="date")
     flag: Optional[VersionFlag] = None
     group_access: Optional[GroupAccess] = Field(default=None, alias="groupAccess")
     name: Optional[StrictStr] = None
