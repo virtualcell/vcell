@@ -601,7 +601,7 @@ class UsersResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "AccesTokenRepresentationRecord",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '500': "VCellHTTPError"
             
         }
@@ -667,7 +667,7 @@ class UsersResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "AccesTokenRepresentationRecord",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '500': "VCellHTTPError"
             
         }
@@ -733,7 +733,7 @@ class UsersResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "AccesTokenRepresentationRecord",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '500': "VCellHTTPError"
             
         }

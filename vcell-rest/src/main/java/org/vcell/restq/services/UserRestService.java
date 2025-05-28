@@ -7,6 +7,7 @@ import cbit.vcell.modeldb.UserIdentity;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.WebApplicationException;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.vcell.auth.JWTUtils;
 import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
@@ -44,28 +45,33 @@ public class UserRestService {
 
     // TODO: add some short-lived caching here to avoid repeated database calls
 
-    /**
-     * Get the users identity from the requests that they make, usually this is a JWT token, placed within the
-     * HTTP Authorization header. If allowAnonymous is true, then null will be returned for anonymous users, otherwise
-     * an error will be thrown about the user being unauthenticated.
-     */
-    public enum UserRequirement{
-        ALLOW_ANONYMOUS,
-        REQUIRE_USER
-    }
-    public User getUserFromIdentity(SecurityIdentity securityIdentity, UserRequirement allowAnonymous) throws NotAuthenticatedWebException, DataAccessWebException {
+    public User getUserFromIdentity(SecurityIdentity securityIdentity) throws NotAuthenticatedWebException, DataAccessWebException {
         List<UserIdentity> userIdentities = getUserIdentities(securityIdentity);
         if (userIdentities == null || userIdentities.isEmpty()){
-            if (allowAnonymous == UserRequirement.ALLOW_ANONYMOUS){
-                return null;
-            } else {
-                throw new NotAuthenticatedWebException("User is not authenticated.");
-            }
+            throw new NotAuthenticatedWebException("User is not authenticated.");
         }
         if (userIdentities.size() > 1){
-            throw new NotAuthenticatedWebException("Multiple identities found for user.");
+            throw new WebApplicationException("Multiple identities found for user.");
         }
         return userIdentities.get(0).user();
+    }
+
+    public User getUserOrAnonymousFromIdentity(SecurityIdentity securityIdentity) throws DataAccessWebException {
+        try{
+            if (securityIdentity.isAnonymous()){
+                return null;
+            }
+            List<UserIdentity> userIdentities = getUserIdentities(securityIdentity);
+            if (userIdentities == null || userIdentities.isEmpty()){
+                return null;
+            }
+            if (userIdentities.size() > 1){
+                throw new WebApplicationException("Multiple identities found for user.");
+            }
+            return userIdentities.get(0).user();
+        } catch (NotAuthenticatedWebException e){
+            return null;
+        }
     }
 
     // TODO: add some short-lived caching here to avoid repeated database calls

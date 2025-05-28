@@ -245,12 +245,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/BioModelSummary'
-        "401":
-          description: Not Authorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "500":
           description: Data Access Exception
           content:
@@ -276,12 +270,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BioModel'
-        "401":
-          description: Not Authorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
           content:
@@ -352,12 +340,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BioModelSummary'
-        "401":
-          description: Not Authorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
           content:
@@ -389,12 +371,6 @@ paths:
             text/xml:
               schema:
                 type: string
-        "401":
-          description: Not Authorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
           content:
@@ -882,12 +858,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Publication'
-        "401":
-          description: Not Authorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "500":
           description: Data Access Exception
           content:
@@ -991,12 +961,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Publication'
-        "401":
-          description: Not Authorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
           content:
@@ -1140,10 +1104,6 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "500":
           description: Data Access Exception
           content:

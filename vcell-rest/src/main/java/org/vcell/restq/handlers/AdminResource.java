@@ -3,6 +3,7 @@ package org.vcell.restq.handlers;
 import com.lowagie.text.Document;
 import com.lowagie.text.html.simpleparser.HTMLWorker;
 import com.lowagie.text.pdf.PdfWriter;
+import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
@@ -65,7 +66,7 @@ public class AdminResource {
         if (securityIdentity.isAnonymous()){
             throw new NotAuthenticatedWebException("not authenticated");
         }
-        User vcellUser = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
+        User vcellUser = userRestService.getUserFromIdentity(securityIdentity);
         try {
             String htmlString = adminRestService.getUsageSummaryHtml(vcellUser);
             StreamingOutput fileStream = output -> {

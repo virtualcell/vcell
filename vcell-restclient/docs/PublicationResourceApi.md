@@ -359,7 +359,6 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
 
@@ -428,7 +427,6 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
 
@@ -491,7 +489,6 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **500** | Data Access Exception |  -  |
 
 ## getPublicationsWithHttpInfo
@@ -555,7 +552,6 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
 | **500** | Data Access Exception |  -  |
 
 

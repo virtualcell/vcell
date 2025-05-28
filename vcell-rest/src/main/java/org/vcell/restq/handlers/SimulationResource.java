@@ -46,7 +46,7 @@ public class SimulationResource {
     @Produces(MediaType.APPLICATION_JSON)
     public ArrayList<StatusMessage> startSimulation(@PathParam("simID") String simID) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
         try {
-            User user = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
+            User user = userRestService.getUserFromIdentity(securityIdentity);
             return simulationRestService.startSimulation(simID, user);
         } catch (PermissionException e) {
             throw new PermissionWebException(e.getMessage(), e);
@@ -63,7 +63,7 @@ public class SimulationResource {
     @Operation(operationId = "stopSimulation", summary = "Stop a simulation.")
     public ArrayList<StatusMessage> stopSimulation(@PathParam("simID") String simID) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
         try {
-            User user = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
+            User user = userRestService.getUserFromIdentity(securityIdentity);
             return simulationRestService.stopSimulation(simID, user);
         } catch (PermissionException e) {
             throw new PermissionWebException(e.getMessage(), e);
@@ -81,7 +81,7 @@ public class SimulationResource {
     public SimulationStatusPersistentRecord getSimulationStatus(@PathParam("simID") String simID,
                                     @QueryParam("bioModelID") String bioModelID, @QueryParam("mathModelID") String mathModelID) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
         try {
-            User user = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
+            User user = userRestService.getUserFromIdentity(securityIdentity);
             return simulationRestService.getBioModelSimulationStatus(simID, bioModelID, user);
         } catch (PermissionException e) {
             throw new PermissionWebException(e.getMessage(), e);

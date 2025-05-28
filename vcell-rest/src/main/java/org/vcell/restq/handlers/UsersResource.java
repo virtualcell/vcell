@@ -248,11 +248,11 @@ public class UsersResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     // Not using user PASSWD because they should already be authenticated with OIDC
-    public AccesTokenRepresentationRecord generateBearerToken() throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
+    public AccesTokenRepresentationRecord generateBearerToken() throws NotAuthenticatedWebException, DataAccessWebException {
         if(securityIdentity.isAnonymous()){
             return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
         }
-        org.vcell.util.document.User vcellUser = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
+        org.vcell.util.document.User vcellUser = userRestService.getUserFromIdentity(securityIdentity);
         ApiAccessToken apiAccessToken = userRestService.generateApiAccessToken(userRestService.getAPIClient().getKey(), vcellUser);
         return AccesTokenRepresentationRecord.getRecordFromAccessTokenRepresentation(apiAccessToken);
     }

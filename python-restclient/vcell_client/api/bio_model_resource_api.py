@@ -361,7 +361,6 @@ class BioModelResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "BioModel",
-            '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '404': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -432,7 +431,6 @@ class BioModelResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "BioModel",
-            '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '404': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -503,7 +501,6 @@ class BioModelResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "BioModel",
-            '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '404': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -631,7 +628,6 @@ class BioModelResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[BioModelSummary]",
-            '401': "VCellHTTPError",
             '500': "VCellHTTPError"
             
         }
@@ -700,7 +696,6 @@ class BioModelResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[BioModelSummary]",
-            '401': "VCellHTTPError",
             '500': "VCellHTTPError"
             
         }
@@ -769,7 +764,6 @@ class BioModelResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[BioModelSummary]",
-            '401': "VCellHTTPError",
             '500': "VCellHTTPError"
             
         }
@@ -897,7 +891,6 @@ class BioModelResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "BioModelSummary",
-            '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -967,7 +960,6 @@ class BioModelResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "BioModelSummary",
-            '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -1037,7 +1029,6 @@ class BioModelResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "BioModelSummary",
-            '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -1164,7 +1155,6 @@ class BioModelResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "str",
-            '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '404': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -1235,7 +1225,6 @@ class BioModelResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "str",
-            '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '404': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -1306,7 +1295,6 @@ class BioModelResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "str",
-            '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '404': "VCellHTTPError",
             '500': "VCellHTTPError"
