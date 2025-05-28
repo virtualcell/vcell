@@ -14,6 +14,7 @@ import { HttpHeaders }                                       from '@angular/comm
 import { Observable }                                        from 'rxjs';
 
 import { BioModel } from '../model/models';
+import { BioModelSummary } from '../model/models';
 import { SaveBioModel } from '../model/models';
 import { VCellHTTPError } from '../model/models';
 
@@ -39,6 +40,20 @@ export interface BioModelResourceServiceInterface {
      * @param bioModelID 
      */
     getBioModel(bioModelID: string, extraHttpRequestParams?: any): Observable<BioModel>;
+
+    /**
+     * Return BioModel summaries.
+     * 
+     * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester.
+     */
+    getBioModelSummaries(includePublicAndShared?: boolean, extraHttpRequestParams?: any): Observable<Array<BioModelSummary>>;
+
+    /**
+     * All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
+     * 
+     * @param bioModelID 
+     */
+    getBioModelSummary(bioModelID: string, extraHttpRequestParams?: any): Observable<BioModelSummary>;
 
     /**
      * Get the BioModel in VCML format.

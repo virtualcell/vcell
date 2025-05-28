@@ -172,27 +172,6 @@ public BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException 
 	return dbServerImpl.getBioModelInfos(user, bAll);
 }
 
-
-/**
- * This method was created in VisualAge.
- * @return Geometry
- * @param key KeyValue
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception java.rmi.RemoteException The exception description.
- */
-public BioModelMetaData getBioModelMetaData(KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return dbServerImpl.getBioModelMetaData(user, key);
-}
-
-
-/**
- * getVersionInfo method comment.
- */
-public BioModelMetaData[] getBioModelMetaDatas(boolean bAll) throws DataAccessException {
-	return dbServerImpl.getBioModelMetaDatas(user, bAll);
-}
-
-
 /**
  * This method was created in VisualAge.
  * @return Geometry

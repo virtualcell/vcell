@@ -11,13 +11,21 @@
 package org.vcell.util.document;
 
 
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
+
 /**
  * Insert the type's description here.
  * Creation date: (11/15/2001 3:34:49 PM)
  * @author: Frank Morgan
  */
 @SuppressWarnings("serial")
+@Schema(allOf = GroupAccess.class, requiredProperties = {"type"}, properties = {@SchemaProperty(name = "type", defaultValue = "GroupAccessAll", type = SchemaType.STRING)})
 public class GroupAccessAll extends GroupAccess {
+
+	public final String type = "GroupAccessAll";
+
 /**
  * Insert the method's description here.
  * Creation date: (11/15/2001 3:35:22 PM)

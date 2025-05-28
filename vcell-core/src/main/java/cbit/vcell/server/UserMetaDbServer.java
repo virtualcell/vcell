@@ -141,27 +141,6 @@ BioModelInfo getBioModelInfo(KeyValue key) throws DataAccessException, ObjectNot
  */
 BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException, RemoteProxyException;
 
-
-/**
- * This method was created in VisualAge.
- * @return Geometry
- * @param key KeyValue
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception RemoteProxyException The exception description.
- */
-BioModelMetaData getBioModelMetaData(KeyValue key) throws DataAccessException, ObjectNotFoundException, RemoteProxyException;
-
-
-/**
- * This method was created in VisualAge.
- * @return Geometry
- * @param key KeyValue
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception RemoteProxyException The exception description.
- */
-BioModelMetaData[] getBioModelMetaDatas(boolean bAll) throws DataAccessException, RemoteProxyException;
-
-
 /**
  * This method was created in VisualAge.
  * @return Geometry

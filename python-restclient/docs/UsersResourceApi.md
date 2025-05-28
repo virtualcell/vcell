@@ -279,6 +279,8 @@ This endpoint does not need any parameter.
 **200** | Successful, returning the identity |  -  |
 **401** | Not Authorized |  -  |
 **403** | Not Allowed |  -  |
+**409** | Conflict with server state. |  -  |
+**500** | Data Access Exception |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

@@ -6,19 +6,25 @@ import cbit.vcell.field.io.FieldData;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataIdentifier;
-import org.vcell.restclient.model.FieldDataReference;
-import org.vcell.restclient.model.FieldDataShape;
+import org.vcell.restclient.model.*;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
+import org.vcell.util.document.*;
+import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.GroupAccess;
+import org.vcell.util.document.GroupAccessAll;
+import org.vcell.util.document.GroupAccessNone;
+import org.vcell.util.document.GroupAccessSome;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCellSoftwareVersion;
+import org.vcell.util.document.Version;
+import org.vcell.util.document.VersionFlag;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DtoModelTransforms {
@@ -171,6 +177,99 @@ public class DtoModelTransforms {
         fieldDataDBOperationResults.annotationsForIds = externalDataAnnotations.toArray(new String[0]);
         fieldDataDBOperationResults.edisToSimRefs = externalDataIDSimRefs;
         return fieldDataDBOperationResults;
+    }
+
+    public static VersionFlag dtoToVersionFlag(org.vcell.restclient.model.VersionFlag dto){
+        if (dto.getVersionFlag() == null){
+            return null;
+        }
+        return VersionFlag.fromInt(dto.getVersionFlag());
+    }
+
+    public static GroupAccess dtoToGroupAccess(org.vcell.restclient.model.GroupAccess dto){
+
+        if (dto instanceof org.vcell.restclient.model.GroupAccessAll){
+            return new GroupAccessAll();
+        } else if (dto instanceof org.vcell.restclient.model.GroupAccessSome gs){
+
+            boolean[] bValues = new boolean[gs.getHiddenMembers().size()];
+            for (int i = 0; i < bValues.length; i++){
+                bValues[i] = gs.getHiddenMembers().get(i);
+            }
+            User[] users = new User[gs.getGroupMembers().size()];
+            for (int i = 0; i < users.length; i++){
+                users[i] = dtoToUser(gs.getGroupMembers().get(i));
+            }
+            return new GroupAccessSome(gs.getGroupid(), gs.getHash(), users, bValues);
+        } else if (dto instanceof org.vcell.restclient.model.GroupAccessNone) {
+            return new GroupAccessNone();
+        }
+        throw new ClassCastException("Expected classes of 'GroupAccessAll', 'GroupAccessSome', or 'GroupAccessNone' but instead got: " + dto.getClass().getName());
+    }
+
+    public static Version versionDTOToVersion(org.vcell.restclient.model.Version dto){
+        return new Version(
+                dtoToKeyValue(dto.getVersionKey()), dto.getName(), dtoToUser(dto.getOwner()),
+                dtoToGroupAccess(dto.getGroupAccess()), dtoToKeyValue(dto.getBranchPointRefKey()), dto.getBranchID(), new Date(dto.getDate().toEpochSecond()),
+                dtoToVersionFlag(dto.getFlag()), dto.getAnnot()
+        );
+    }
+
+    public static BioModelChildSummary.MathType dtoToBioModelMathType(MathType dto){
+        return BioModelChildSummary.MathType.valueOf(dto.getValue());
+    }
+
+    public static BioModelChildSummary dtoToBioModelChildSummary(org.vcell.restclient.model.BioModelChildSummary dto){
+        BioModelChildSummary.MathType[] mathTypes = new BioModelChildSummary.MathType[dto.getAppTypes().size()];
+        for (int i = 0; i < mathTypes.length; i++){
+            mathTypes[i] = dtoToBioModelMathType(dto.getAppTypes().get(i));
+        }
+        String[][] simNames = null;
+        if (dto.getSimNames() != null){
+            simNames = new String[dto.getSimNames().size()][];
+            for (int i = 0; i < simNames.length; i++){
+                simNames[i] = dto.getSimNames().get(i).toArray(new String[0]);
+            }
+        }
+        String[][] simAnnots = null;
+        if (dto.getSimAnnots() != null){
+            simAnnots = new String[dto.getSimAnnots().size()][];
+            for (int i = 0; i < simAnnots.length; i++){
+                simAnnots[i] = dto.getSimAnnots().get(i).toArray(new String[0]);
+            }
+        }
+        String[] scAnnotations = dto.getScAnnots() == null ? null : dto.getScAnnots().toArray(new String[0]);
+        String[] geoNames = dto.getGeoNames() == null ? null : dto.getGeoNames().toArray(new String[0]);
+        int[] geoDims = dto.getGeoDims() == null ? null : dto.getGeoDims().stream().mapToInt(Integer::intValue).toArray();
+        return new BioModelChildSummary(dto.getSimulationContextNames().toArray(new String[0]),
+                mathTypes, scAnnotations, simNames, simAnnots, geoNames,
+                geoDims);
+    }
+
+    public static VCellSoftwareVersion dtoToVCellSoftwareVersion(org.vcell.restclient.model.VCellSoftwareVersion dto){
+        return VCellSoftwareVersion.fromString(dto.getSoftwareVersionString());
+    }
+
+    public static VCDocument.VCDocumentType dtoToVCDocumentType(VCDocumentType dto){
+        return VCDocument.VCDocumentType.valueOf(dto.name());
+    }
+
+    public static PublicationInfo dtoToPublicationInfo(org.vcell.restclient.model.PublicationInfo dto){
+        return new PublicationInfo(dtoToKeyValue(dto.getPublicationKey()), dtoToKeyValue(dto.getVersionKey()),
+                dto.getTitle(), dto.getAuthors().toArray(new String[0]), dto.getCitation(),dto.getPubmedid(),
+                dto.getDoi(), dto.getUrl(), dtoToVCDocumentType(dto.getVcDocumentType()), dtoToUser(dto.getUser()),
+                new Date(dto.getPubdate().toEpochDay()));
+    }
+
+    public static BioModelInfo bioModelContextToBioModelInfo(BioModelSummary summary){
+        BioModelInfo bioModelInfo = new BioModelInfo(versionDTOToVersion(summary.getVersion()), dtoToBioModelChildSummary(summary.getSummary()),
+                dtoToVCellSoftwareVersion(summary.getvCellSoftwareVersion()));
+        if (summary.getPublicationInformation() != null){
+            for (org.vcell.restclient.model.PublicationInfo pubInfo : summary.getPublicationInformation()){
+                bioModelInfo.addPublicationInfo(dtoToPublicationInfo(pubInfo));
+            }
+        }
+        return bioModelInfo;
     }
 
 }

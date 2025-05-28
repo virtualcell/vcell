@@ -323,7 +323,7 @@ public class DictionaryDbDriver {
                 while (rset.next()) {
                     BigDecimal versionKey = rset.getBigDecimal(1);
                     Version version = new Version(new KeyValue(versionKey), null, null, null, null, null, null, null, null);
-                    matchedVCDocumentInfos.add(new BioModelInfo(version, null, (BioModelChildSummary) null, null));
+                    matchedVCDocumentInfos.add(new BioModelInfo(version, (BioModelChildSummary) null, null));
                 }
 
             } finally {

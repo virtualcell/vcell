@@ -114,14 +114,13 @@ public BioModelMetaData getBioModelMetaData(ResultSet rset, Connection con, KeyV
 
 public VersionInfo getInfo(ResultSet rset,Connection con,DatabaseSyntax dbSyntax) throws SQLException,org.vcell.util.DataAccessException {
 
-	KeyValue modelRef = new KeyValue(rset.getBigDecimal(table.modelRef.toString()));
 	BigDecimal groupid = rset.getBigDecimal(VersionTable.privacy_ColumnName);
 	Version version = getVersion(rset,dbSyntax,DbDriver.getGroupAccessFromGroupID(con,groupid));
 	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	VCellSoftwareVersion vcSoftwareVersion = VCellSoftwareVersion.fromString(softwareVersion);
 	String serialDbChildSummary = DbDriver.varchar2_CLOB_get(rset,BioModelTable.table.childSummarySmall,BioModelTable.table.childSummaryLarge,dbSyntax);
 	
-	return new org.vcell.util.document.BioModelInfo(version, modelRef, serialDbChildSummary, vcSoftwareVersion);
+	return new org.vcell.util.document.BioModelInfo(version, serialDbChildSummary, vcSoftwareVersion);
 }
 
 public String getInfoSQL(User user,String extraConditions,String special, DatabaseSyntax dbSyntax) {

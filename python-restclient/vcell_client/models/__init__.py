@@ -16,8 +16,11 @@
 
 # import models into model package
 from vcell_client.models.acces_token_representation_record import AccesTokenRepresentationRecord
+from vcell_client.models.application_info import ApplicationInfo
 from vcell_client.models.batch_system_type import BatchSystemType
 from vcell_client.models.bio_model import BioModel
+from vcell_client.models.bio_model_child_summary import BioModelChildSummary
+from vcell_client.models.bio_model_summary import BioModelSummary
 from vcell_client.models.biomodel_ref import BiomodelRef
 from vcell_client.models.data_identifier import DataIdentifier
 from vcell_client.models.detailed_state import DetailedState
@@ -28,15 +31,21 @@ from vcell_client.models.field_data import FieldData
 from vcell_client.models.field_data_reference import FieldDataReference
 from vcell_client.models.field_data_saved_results import FieldDataSavedResults
 from vcell_client.models.field_data_shape import FieldDataShape
+from vcell_client.models.group_access import GroupAccess
+from vcell_client.models.group_access_all import GroupAccessAll
+from vcell_client.models.group_access_none import GroupAccessNone
+from vcell_client.models.group_access_some import GroupAccessSome
 from vcell_client.models.hello_world_message import HelloWorldMessage
 from vcell_client.models.htc_job_id import HtcJobID
 from vcell_client.models.i_size import ISize
 from vcell_client.models.identity import Identity
 from vcell_client.models.key_value import KeyValue
+from vcell_client.models.math_type import MathType
 from vcell_client.models.mathmodel_ref import MathmodelRef
 from vcell_client.models.model_type import ModelType
 from vcell_client.models.origin import Origin
 from vcell_client.models.publication import Publication
+from vcell_client.models.publication_info import PublicationInfo
 from vcell_client.models.save_bio_model import SaveBioModel
 from vcell_client.models.scheduler_status import SchedulerStatus
 from vcell_client.models.simulation_execution_status_record import SimulationExecutionStatusRecord
@@ -52,7 +61,12 @@ from vcell_client.models.user import User
 from vcell_client.models.user_identity_json_safe import UserIdentityJSONSafe
 from vcell_client.models.user_login_info_for_mapping import UserLoginInfoForMapping
 from vcell_client.models.user_registration_info import UserRegistrationInfo
+from vcell_client.models.vc_document_type import VCDocumentType
 from vcell_client.models.vc_simulation_identifier import VCSimulationIdentifier
 from vcell_client.models.v_cell_http_error import VCellHTTPError
+from vcell_client.models.v_cell_site import VCellSite
+from vcell_client.models.v_cell_software_version import VCellSoftwareVersion
 from vcell_client.models.variable_domain import VariableDomain
 from vcell_client.models.variable_type import VariableType
+from vcell_client.models.version import Version
+from vcell_client.models.version_flag import VersionFlag

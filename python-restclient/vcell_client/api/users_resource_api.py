@@ -601,7 +601,7 @@ class UsersResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "AccesTokenRepresentationRecord",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '500': "VCellHTTPError"
             
         }
@@ -667,7 +667,7 @@ class UsersResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "AccesTokenRepresentationRecord",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '500': "VCellHTTPError"
             
         }
@@ -733,7 +733,7 @@ class UsersResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "AccesTokenRepresentationRecord",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '500': "VCellHTTPError"
             
         }
@@ -854,7 +854,9 @@ class UsersResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "UserIdentityJSONSafe",
             '401': "VCellHTTPError",
-            '403': None
+            '403': None,
+            '409': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -919,7 +921,9 @@ class UsersResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "UserIdentityJSONSafe",
             '401': "VCellHTTPError",
-            '403': None
+            '403': None,
+            '409': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -984,7 +988,9 @@ class UsersResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "UserIdentityJSONSafe",
             '401': "VCellHTTPError",
-            '403': None
+            '403': None,
+            '409': "VCellHTTPError",
+            '500': "VCellHTTPError"
             
         }
         response_data = self.api_client.call_api(
@@ -1620,7 +1626,7 @@ class UsersResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
             '401': "VCellHTTPError",
-            '403': None,
+            '403': "VCellHTTPError",
             '500': "VCellHTTPError"
             
         }
@@ -1690,7 +1696,7 @@ class UsersResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
             '401': "VCellHTTPError",
-            '403': None,
+            '403': "VCellHTTPError",
             '500': "VCellHTTPError"
             
         }
@@ -1760,7 +1766,7 @@ class UsersResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
             '401': "VCellHTTPError",
-            '403': None,
+            '403': "VCellHTTPError",
             '500': "VCellHTTPError"
             
         }
@@ -2433,7 +2439,7 @@ class UsersResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
             '401': "VCellHTTPError",
-            '403': None,
+            '403': "VCellHTTPError",
             '500': "VCellHTTPError"
             
         }
@@ -2503,7 +2509,7 @@ class UsersResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
             '401': "VCellHTTPError",
-            '403': None,
+            '403': "VCellHTTPError",
             '500': "VCellHTTPError"
             
         }
@@ -2573,7 +2579,7 @@ class UsersResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bool",
             '401': "VCellHTTPError",
-            '403': None,
+            '403': "VCellHTTPError",
             '500': "VCellHTTPError"
             
         }

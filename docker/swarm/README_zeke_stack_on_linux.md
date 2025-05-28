@@ -34,3 +34,14 @@
    -Dvcell.primarySimdatadir.internal=/Users/evalencia/Documents/TempStorage
    popd
    ```
+
+---
+Build and Generate Clients
+
+``` bash 
+    pushd ../../
+    mvn clean install dependency:copy-dependencies -DskipTests=true
+    cp ./vcell-rest/target/generated/openapi.yaml ./tools/openapi.yaml
+    ./tools/generate.sh
+    popd
+ ```

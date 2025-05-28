@@ -76,7 +76,7 @@ public class BioModelTest {
                 .body(new ObjectMapper().writeValueAsString(saveBioModel))
                 .header("Content-Type", MediaType.APPLICATION_JSON)
                 .when()
-                .post("/api/v1/bioModel/save");
+                .post("/api/v1/bioModel");
         uploadResponse.then().statusCode(200);
         String bioModelVCML = uploadResponse.body().print();
         BioModel bioModel1 = XmlHelper.XMLToBioModel(new XMLSource(bioModelVCML));

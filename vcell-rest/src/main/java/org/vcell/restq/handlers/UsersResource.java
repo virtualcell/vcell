@@ -4,6 +4,7 @@ import cbit.vcell.modeldb.ApiAccessToken;
 import cbit.vcell.modeldb.UserIdentity;
 import io.quarkus.mailer.Mail;
 import io.quarkus.mailer.Mailer;
+import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
@@ -25,6 +26,7 @@ import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
 import org.vcell.restq.services.UserRestService;
 import org.vcell.restq.errors.exceptions.*;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.PermissionException;
 import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
@@ -76,8 +78,12 @@ public class UsersResource {
     @Operation(operationId = "mapUser", summary = "map vcell user")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public boolean mapUser(UserLoginInfoForMapping mapUser) throws DataAccessWebException, NotAuthenticatedWebException {
-        return userRestService.mapUserIdentity(securityIdentity, mapUser);
+    public boolean mapUser(UserLoginInfoForMapping mapUser) throws DataAccessWebException, NotAuthenticatedWebException, PermissionWebException {
+        try{
+            return userRestService.mapUserIdentity(securityIdentity, mapUser);
+        } catch (PermissionException e){
+            throw new PermissionWebException(e.getMessage(), e);
+        }
     }
 
     @POST
@@ -208,8 +214,12 @@ public class UsersResource {
     @Operation(operationId = "unmapUser", summary = "remove vcell identity mapping")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public boolean unmapUser(String userName) throws DataAccessWebException, NotAuthenticatedWebException {
-        return userRestService.unmapUserIdentity(securityIdentity, userName);
+    public boolean unmapUser(String userName) throws DataAccessWebException, NotAuthenticatedWebException, PermissionWebException {
+        try {
+            return userRestService.unmapUserIdentity(securityIdentity, userName);
+        } catch (PermissionException e){
+            throw new PermissionWebException(e.getMessage(), e);
+        }
     }
 
     @GET
@@ -238,11 +248,11 @@ public class UsersResource {
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
     // Not using user PASSWD because they should already be authenticated with OIDC
-    public AccesTokenRepresentationRecord generateBearerToken() throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
+    public AccesTokenRepresentationRecord generateBearerToken() throws NotAuthenticatedWebException, DataAccessWebException {
         if(securityIdentity.isAnonymous()){
             return new AccesTokenRepresentationRecord(null, 0, 0, null, null);
         }
-        org.vcell.util.document.User vcellUser = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.REQUIRE_USER);
+        org.vcell.util.document.User vcellUser = userRestService.getUserFromIdentity(securityIdentity);
         ApiAccessToken apiAccessToken = userRestService.generateApiAccessToken(userRestService.getAPIClient().getKey(), vcellUser);
         return AccesTokenRepresentationRecord.getRecordFromAccessTokenRepresentation(apiAccessToken);
     }

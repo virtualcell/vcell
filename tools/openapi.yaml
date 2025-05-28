@@ -182,7 +182,7 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/bioModel/save:
+  /api/v1/bioModel:
     post:
       tags:
       - Bio Model Resource
@@ -209,10 +209,6 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "422":
           description: Unprocessable content submitted
           content:
@@ -228,6 +224,33 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/bioModel/summaries:
+    get:
+      tags:
+      - Bio Model Resource
+      summary: Return BioModel summaries.
+      operationId: getBioModelSummaries
+      parameters:
+      - name: includePublicAndShared
+        in: query
+        description: Includes BioModel summaries that are public or shared with requester.
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BioModelSummary'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
   /api/v1/bioModel/{bioModelID}:
     get:
       tags:
@@ -247,12 +270,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BioModel'
-        "401":
-          description: Not Authorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
           content:
@@ -303,6 +320,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/bioModel/{bioModelID}/summary:
+    get:
+      tags:
+      - Bio Model Resource
+      summary: "All of the text based information about a BioModel (summary, version,\
+        \ publication status, etc...), but not the actual BioModel itself."
+      operationId: getBioModelSummary
+      parameters:
+      - name: bioModelID
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BioModelSummary'
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
   /api/v1/bioModel/{bioModelID}/vcml_download:
     get:
       tags:
@@ -322,12 +371,6 @@ paths:
             text/xml:
               schema:
                 type: string
-        "401":
-          description: Not Authorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
           content:
@@ -449,10 +492,6 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "422":
           description: Unprocessable content submitted
           content:
@@ -503,10 +542,6 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "422":
           description: Unprocessable content submitted
           content:
@@ -606,10 +641,6 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "422":
           description: Unprocessable content submitted
           content:
@@ -731,10 +762,6 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "422":
           description: Unprocessable content submitted
           content:
@@ -831,18 +858,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Publication'
-        "401":
-          description: Not Authorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "500":
           description: Data Access Exception
           content:
@@ -946,18 +961,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Publication'
-        "401":
-          description: Not Authorized
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "500":
           description: Data Access Exception
           content:
@@ -1095,10 +1098,6 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "500":
           description: Data Access Exception
           content:
@@ -1177,6 +1176,10 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
         "500":
           description: Data Access Exception
           content:
@@ -1207,6 +1210,18 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
+        "409":
+          description: Conflict with server state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
       security:
       - openId:
         - user
@@ -1354,6 +1369,10 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
         "500":
           description: Data Access Exception
           content:
@@ -1382,6 +1401,18 @@ components:
           type: string
     Application:
       type: object
+    ApplicationInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          $ref: '#/components/schemas/MathType'
+        dimensions:
+          format: int32
+          type: integer
+        geometryName:
+          type: string
     BatchSystemType:
       enum:
       - PBS
@@ -1423,6 +1454,76 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Application'
+    BioModelChildSummary:
+      type: object
+      properties:
+        scNames:
+          type: array
+          items:
+            type: string
+        scAnnots:
+          type: array
+          items:
+            type: string
+        geoNames:
+          type: array
+          items:
+            type: string
+        geoDims:
+          type: array
+          items:
+            format: int32
+            type: integer
+        appTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MathType'
+        simNames:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        simAnnots:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        geometryDimensions:
+          type: array
+          items:
+            format: int32
+            type: integer
+        geometryNames:
+          type: array
+          items:
+            type: string
+        simulationContextAnnotations:
+          type: array
+          items:
+            type: string
+        simulationContextNames:
+          type: array
+          items:
+            type: string
+        applicationInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/ApplicationInfo'
+    BioModelSummary:
+      type: object
+      properties:
+        version:
+          $ref: '#/components/schemas/Version'
+        summary:
+          $ref: '#/components/schemas/BioModelChildSummary'
+        publicationInformation:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicationInfo'
+        vCellSoftwareVersion:
+          $ref: '#/components/schemas/VCellSoftwareVersion'
     BiomodelRef:
       type: object
       properties:
@@ -1629,6 +1730,75 @@ components:
           items:
             format: double
             type: number
+    GroupAccess:
+      required:
+      - groupid
+      type: object
+      properties:
+        groupid:
+          type: number
+        description:
+          type: string
+      discriminator:
+        propertyName: type
+        mapping:
+          GroupAccessNone: '#/components/schemas/GroupAccessNone'
+          GroupAccessSome: '#/components/schemas/GroupAccessSome'
+          GroupAccessAll: '#/components/schemas/GroupAccessAll'
+    GroupAccessAll:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/GroupAccess'
+      properties:
+        type:
+          default: GroupAccessAll
+          type: string
+        description:
+          type: string
+    GroupAccessNone:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/GroupAccess'
+      properties:
+        type:
+          default: GroupAccessNone
+          type: string
+        description:
+          type: string
+    GroupAccessSome:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/GroupAccess'
+      properties:
+        type:
+          default: GroupAccessSome
+          type: string
+        hash:
+          type: number
+        groupMembers:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        hiddenMembers:
+          type: array
+          items:
+            type: boolean
+        description:
+          type: string
+        hiddenGroupMembers:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        normalGroupMembers:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
     HelloWorldMessage:
       type: object
       properties:
@@ -1682,6 +1852,14 @@ components:
       properties:
         value:
           type: number
+    MathType:
+      enum:
+      - RuleBased
+      - Stochastic
+      - Deterministic
+      - SpringSaLaD
+      - Unknown
+      type: string
     MathmodelRef:
       type: object
       properties:
@@ -1760,6 +1938,36 @@ components:
             $ref: '#/components/schemas/MathmodelRef'
         date:
           $ref: '#/components/schemas/Date'
+    PublicationInfo:
+      type: object
+      properties:
+        publicationKey:
+          $ref: '#/components/schemas/KeyValue'
+        versionKey:
+          $ref: '#/components/schemas/KeyValue'
+        title:
+          type: string
+        authors:
+          type: array
+          items:
+            type: string
+        citation:
+          type: string
+        pubmedid:
+          type: string
+        doi:
+          type: string
+        url:
+          type: string
+        pubdate:
+          $ref: '#/components/schemas/Date'
+        vcDocumentType:
+          $ref: '#/components/schemas/VCDocumentType'
+        user:
+          $ref: '#/components/schemas/User'
+        theHashCode:
+          format: int32
+          type: integer
     SaveBioModel:
       required:
       - bioModelXML
@@ -1937,6 +2145,13 @@ components:
           type: string
         emailNotification:
           type: boolean
+    VCDocumentType:
+      enum:
+      - BIOMODEL_DOC
+      - MATHMODEL_DOC
+      - GEOMETRY_DOC
+      - EXTERNALFILE_DOC
+      type: string
     VCSimulationIdentifier:
       type: object
       properties:
@@ -1952,6 +2167,39 @@ components:
         exceptionType:
           type: string
         message:
+          type: string
+    VCellSite:
+      enum:
+      - alpha
+      - beta
+      - rel
+      - other
+      - unknown
+      type: string
+    VCellSoftwareVersion:
+      type: object
+      properties:
+        softwareVersionString:
+          type: string
+        vcellSite:
+          $ref: '#/components/schemas/VCellSite'
+        buildNumber:
+          type: string
+        versionNumber:
+          type: string
+        majorVersion:
+          format: int32
+          type: integer
+        minorVersion:
+          format: int32
+          type: integer
+        patchVersion:
+          format: int32
+          type: integer
+        buildInt:
+          format: int32
+          type: integer
+        description:
           type: string
     VariableDomain:
       enum:
@@ -1985,6 +2233,44 @@ components:
           type: string
         typeName:
           type: string
+    Version:
+      type: object
+      properties:
+        versionKey:
+          $ref: '#/components/schemas/KeyValue'
+        annot:
+          type: string
+        branchID:
+          type: number
+        branchPointRefKey:
+          $ref: '#/components/schemas/KeyValue'
+        date:
+          format: date-time
+          type: string
+          example: 2022-03-10
+        flag:
+          $ref: '#/components/schemas/VersionFlag'
+        groupAccess:
+          $ref: '#/components/schemas/GroupAccess'
+        name:
+          type: string
+        owner:
+          $ref: '#/components/schemas/User'
+    VersionFlag:
+      type: object
+      properties:
+        versionFlag:
+          format: int32
+          type: integer
+        intValue:
+          format: int32
+          type: integer
+        archived:
+          type: boolean
+        current:
+          type: boolean
+        published:
+          type: boolean
   securitySchemes:
     openId:
       type: openIdConnect

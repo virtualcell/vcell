@@ -46,10 +46,6 @@ public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistr
 	return (UserRegistrationResults)rpc("userRegistrationOP",new Object[]{userLoginInfo.getUser(),userRegistrationOP});
 }
 
-public void deleteBioModel(org.vcell.util.document.KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException {
-	rpc("deleteBioModel",new Object[]{userLoginInfo.getUser(), bioModelKey});
-}
-
 
 	public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {
         throw new UnsupportedOperationException("Not implemented on RPC");
@@ -88,21 +84,6 @@ public org.vcell.util.document.VersionableFamily getAllReferences(org.vcell.util
 	return (VersionableFamily)rpc("getAllReferences",new Object[]{userLoginInfo.getUser(), vType,key});
 }
 
-public org.vcell.util.document.BioModelInfo getBioModelInfo(org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (org.vcell.util.document.BioModelInfo)rpc("getBioModelInfo",new Object[]{userLoginInfo.getUser(),key});
-}
-
-public org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) throws DataAccessException {
-	return (org.vcell.util.document.BioModelInfo[])rpc("getBioModelInfos",new Object[]{userLoginInfo.getUser(), new Boolean(bAll)});
-}
-
-public cbit.vcell.biomodel.BioModelMetaData getBioModelMetaData(org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (BioModelMetaData)rpc("getBioModelMetaData",new Object[]{userLoginInfo.getUser(), key});
-}
-
-public cbit.vcell.biomodel.BioModelMetaData[] getBioModelMetaDatas(boolean bAll) throws DataAccessException {
-	return (BioModelMetaData[])rpc("getBioModelMetaDatas",new Object[]{userLoginInfo.getUser(), new Boolean(bAll)});
-}
 
 public BigString getBioModelXML(org.vcell.util.document.KeyValue key) throws DataAccessException {
 	return (BigString)rpc("getBioModelXML",new Object[]{userLoginInfo.getUser(), key});

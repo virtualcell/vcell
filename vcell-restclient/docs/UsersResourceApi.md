@@ -483,6 +483,8 @@ This endpoint does not need any parameter.
 | **200** | Successful, returning the identity |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **409** | Conflict with server state. |  -  |
+| **500** | Data Access Exception |  -  |
 
 ## getMappedUserWithHttpInfo
 
@@ -549,6 +551,8 @@ ApiResponse<[**UserIdentityJSONSafe**](UserIdentityJSONSafe.md)>
 | **200** | Successful, returning the identity |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **409** | Conflict with server state. |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## getMe

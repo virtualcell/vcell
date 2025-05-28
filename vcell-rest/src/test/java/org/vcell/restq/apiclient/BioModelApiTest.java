@@ -2,7 +2,7 @@ package org.vcell.restq.apiclient;
 
 import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModel;
-import org.vcell.restclient.CustomObjectMapper;
+import cbit.vcell.mapping.MappingException;
 import cbit.vcell.model.Species;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.ServerDocumentManager;
@@ -17,20 +17,26 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.*;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
+import org.vcell.restclient.CustomObjectMapper;
 import org.vcell.restclient.api.BioModelResourceApi;
+import org.vcell.restclient.model.BioModelSummary;
 import org.vcell.restclient.model.SaveBioModel;
 import org.vcell.restclient.model.VCellHTTPError;
+import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
-import org.vcell.restq.errors.exceptions.DataAccessWebException;
 import org.vcell.restq.db.AgroalConnectionFactory;
+import org.vcell.restq.errors.exceptions.DataAccessWebException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 @QuarkusTest
 public class BioModelApiTest {
@@ -129,5 +135,34 @@ public class BioModelApiTest {
         Assertions.assertThrowsExactly(ObjectNotFoundException.class, () ->
                 serverDocumentManager.getBioModelXML(new QueryHashtable(), TestEndpointUtils.administratorUser,
                         bioModelKey, false));
+    }
+
+
+    @Test
+    public void testGetBioModelContext() throws PropertyVetoException, XmlParseException, IOException, SQLException, DataAccessException, MappingException, ApiException {
+        BioModelResourceApi bioModelResourceApi = new BioModelResourceApi(aliceAPIClient);
+        ServerDocumentManager serverDocumentManager = new ServerDocumentManager(databaseServer);
+        String vcmlToBeSaved = XmlHelper.bioModelToXML(TestEndpointUtils.getTestBioModel());
+
+        String savedVCML = serverDocumentManager.saveBioModel(new QueryHashtable(), TestEndpointUtils.administratorUser, vcmlToBeSaved, "TestBioModel",
+                new String[]{});
+        BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(savedVCML));
+
+        BioModelSummary context = bioModelResourceApi.getBioModelSummary(bioModel.getVersion().getVersionKey().toString());
+        BioModelInfo info = DtoModelTransforms.bioModelContextToBioModelInfo(context);
+        BioModelInfo fromTheSourceInfo = databaseServer.getBioModelInfo(TestEndpointUtils.administratorUser, bioModel.getVersion().getVersionKey());
+
+        Assertions.assertEquals(context.getSummary().getGeometryNames(), new ArrayList<>(){{add("test-geometry");}});
+        Assertions.assertTrue(context.getPublicationInformation().isEmpty());
+
+        // 8.0.0 set through Java properties, and for quarkus in the Quarkus properties
+        Assertions.assertEquals("8.0.0", context.getvCellSoftwareVersion().getSoftwareVersionString());
+        Assertions.assertEquals("TestBioModel", context.getVersion().getName());
+
+        Assertions.assertEquals(fromTheSourceInfo.getVersion().getDate().toInstant(), context.getVersion().getDate().toInstant());
+        Assertions.assertEquals(0, context.getVersion().getDate().getOffset().getTotalSeconds()); // Should have no offset from UTC
+
+        Assertions.assertEquals(BioModelChildSummary.MathType.Deterministic, info.getBioModelChildSummary().getAppTypes()[0]);
+        Assertions.assertEquals(new ArrayList<>(){{add("non-spatial ODE");}}, context.getSummary().getSimulationContextNames());
     }
 }

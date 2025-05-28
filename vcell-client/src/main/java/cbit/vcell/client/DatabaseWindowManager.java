@@ -261,35 +261,6 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
 
 //public void compareAnotherEdition1() {
 
-    public void batchOmexPublished() {
-
-        Map<KeyValue, BioModelInfo> publishedModelMap = new LinkedHashMap<>();
-        BioModelDbTreePanel bmdbtp = getBioModelDbTreePanel();
-        BioModelInfo[] bmInfos = bmdbtp.getDocumentManager().getBioModelInfos();
-        for (BioModelInfo bmi : bmInfos) {
-            if (bmi instanceof VCDocumentInfo) {
-                VCDocumentInfo versionVCDocumentInfo = (VCDocumentInfo) bmi;
-                if (versionVCDocumentInfo.getPublicationInfos() != null &&
-                        versionVCDocumentInfo.getPublicationInfos().length > 0) {
-                    publishedModelMap.put(bmi.getModelKey(), bmi);
-                }
-            }
-        }
-        for (Map.Entry<KeyValue, BioModelInfo> entry : publishedModelMap.entrySet()) {
-            KeyValue key = entry.getKey();
-            BioModelInfo bmi = entry.getValue();
-            System.out.println(bmi.getPublicationInfos()[0].getTitle());
-
-// must make array of tasks here, or something... anyway, can't call from swing thread
-//		try {
-//			BioModel bm = bmdbtp.getDocumentManager().getBioModel(bmi);
-//			doSomeOmexThing();
-//		} catch (DataAccessException e) {
-//			e.printStackTrace();
-//		}
-
-        }
-    }
 
     /**
      * Comment

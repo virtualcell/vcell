@@ -13,6 +13,7 @@ package org.vcell.util.document;
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.vcell.util.logging.NoLogging;
 
 import cbit.vcell.resource.PropertyLoader;
@@ -109,7 +110,8 @@ public class VCellSoftwareVersion implements Serializable {
 	public static VCellSoftwareVersion fromString(String softwareVersion) {
 		return new VCellSoftwareVersion(softwareVersion);
 	}
-	
+
+	@JsonIgnore
 	public VCellSite getSite(){
 		return vcellSite;
 	}
