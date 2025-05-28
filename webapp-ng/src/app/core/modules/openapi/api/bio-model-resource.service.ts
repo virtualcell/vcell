@@ -453,7 +453,7 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
             }
         }
 
-        let localVarPath = `/api/v1/bioModel/save`;
+        let localVarPath = `/api/v1/bioModel`;
         return this.httpClient.request<string>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,

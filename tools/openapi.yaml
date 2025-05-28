@@ -182,7 +182,7 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/bioModel/save:
+  /api/v1/bioModel:
     post:
       tags:
       - Bio Model Resource

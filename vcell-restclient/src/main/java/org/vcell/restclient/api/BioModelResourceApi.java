@@ -509,7 +509,7 @@ public class BioModelResourceApi {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/v1/bioModel/save";
+    String localVarPath = "/api/v1/bioModel";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 

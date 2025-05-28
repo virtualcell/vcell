@@ -197,7 +197,7 @@ paths:
       tags:
       - Admin Resource
       x-accepts: application/json
-  /api/v1/bioModel/save:
+  /api/v1/bioModel:
     post:
       operationId: saveBioModel
       requestBody:
