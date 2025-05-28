@@ -1029,12 +1029,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/Publication'
           description: OK
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Allowed
         "500":
           content:
             application/json:
@@ -1687,40 +1681,38 @@ components:
             - simNames
         publicationInformation:
         - vcDocumentType: null
+          theHashCode: 9
           citation: citation
           title: title
           publicationKey:
             value: 0.8008281904610115
           pubmedid: pubmedid
-          pubDate: 2022-03-10T00:00:00.000+00:00
-          url: url
-          versionKey:
-            value: 0.8008281904610115
-          theHashCode: 9
           user:
             userName: userName
             key:
               value: 0.8008281904610115
+          url: url
+          versionKey:
+            value: 0.8008281904610115
           authors:
           - authors
           - authors
           doi: doi
           pubdate: 2022-03-10T00:00:00.000+00:00
         - vcDocumentType: null
+          theHashCode: 9
           citation: citation
           title: title
           publicationKey:
             value: 0.8008281904610115
           pubmedid: pubmedid
-          pubDate: 2022-03-10T00:00:00.000+00:00
-          url: url
-          versionKey:
-            value: 0.8008281904610115
-          theHashCode: 9
           user:
             userName: userName
             key:
               value: 0.8008281904610115
+          url: url
+          versionKey:
+            value: 0.8008281904610115
           authors:
           - authors
           - authors
@@ -1749,7 +1741,6 @@ components:
           versionKey:
             value: 0.8008281904610115
         vCellSoftwareVersion:
-          site: null
           vcellSite: null
           patchVersion: 4
           buildInt: 7
@@ -2418,20 +2409,19 @@ components:
     PublicationInfo:
       example:
         vcDocumentType: null
+        theHashCode: 9
         citation: citation
         title: title
         publicationKey:
           value: 0.8008281904610115
         pubmedid: pubmedid
-        pubDate: 2022-03-10T00:00:00.000+00:00
-        url: url
-        versionKey:
-          value: 0.8008281904610115
-        theHashCode: 9
         user:
           userName: userName
           key:
             value: 0.8008281904610115
+        url: url
+        versionKey:
+          value: 0.8008281904610115
         authors:
         - authors
         - authors
@@ -2467,10 +2457,6 @@ components:
         theHashCode:
           format: int32
           type: integer
-        pubDate:
-          example: 2022-03-10
-          format: date
-          type: string
       type: object
     SaveBioModel:
       example:
@@ -2834,7 +2820,6 @@ components:
       type: string
     VCellSoftwareVersion:
       example:
-        site: null
         vcellSite: null
         patchVersion: 4
         buildInt: 7
@@ -2865,8 +2850,6 @@ components:
         buildInt:
           format: int32
           type: integer
-        site:
-          $ref: '#/components/schemas/VCellSite'
         description:
           type: string
       type: object

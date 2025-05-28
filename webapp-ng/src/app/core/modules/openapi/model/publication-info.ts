@@ -27,7 +27,6 @@ export interface PublicationInfo {
     vcDocumentType?: VCDocumentType;
     user?: User;
     theHashCode?: number;
-    pubDate?: string;
 }
 export namespace PublicationInfo {
 }

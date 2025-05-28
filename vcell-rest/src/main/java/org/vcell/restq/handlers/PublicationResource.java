@@ -39,12 +39,10 @@ public class PublicationResource {
     @GET
     @Path("{id}")
     @Operation(operationId = "getPublicationById", summary = "Get publication by ID")
-    public Publication get_by_id(@PathParam("id") Long publicationID) throws PermissionWebException, DataAccessWebException {
+    public Publication get_by_id(@PathParam("id") Long publicationID) throws DataAccessWebException {
         try {
             User vcellUser = userRestService.getUserOrAnonymousFromIdentity(securityIdentity);
             return publicationService.getPublication(new KeyValue(publicationID.toString()), vcellUser);
-        } catch (PermissionException e){
-            throw new PermissionWebException(e.getMessage(), e);
         } catch (SQLException e){
             throw new RuntimeWebException(e.getMessage(), e);
         } catch (DataAccessException e) {

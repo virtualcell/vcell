@@ -961,12 +961,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Publication'
-        "403":
-          description: Not Allowed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "500":
           description: Data Access Exception
           content:
@@ -1974,8 +1968,6 @@ components:
         theHashCode:
           format: int32
           type: integer
-        pubDate:
-          $ref: '#/components/schemas/Date'
     SaveBioModel:
       required:
       - bioModelXML
@@ -2207,8 +2199,6 @@ components:
         buildInt:
           format: int32
           type: integer
-        site:
-          $ref: '#/components/schemas/VCellSite'
         description:
           type: string
     VariableDomain:

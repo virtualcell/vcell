@@ -16,7 +16,6 @@ Name | Type | Description | Notes
 **vc_document_type** | [**VCDocumentType**](VCDocumentType.md) |  | [optional] 
 **user** | [**User**](User.md) |  | [optional] 
 **the_hash_code** | **int** |  | [optional] 
-**pub_date** | **date** |  | [optional] 
 
 ## Example
 

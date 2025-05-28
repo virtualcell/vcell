@@ -46,8 +46,7 @@ class PublicationInfo(BaseModel):
     vc_document_type: Optional[VCDocumentType] = Field(default=None, alias="vcDocumentType")
     user: Optional[User] = None
     the_hash_code: Optional[StrictInt] = Field(default=None, alias="theHashCode")
-    pub_date: Optional[date] = Field(default=None, alias="pubDate")
-    __properties: ClassVar[List[str]] = ["publicationKey", "versionKey", "title", "authors", "citation", "pubmedid", "doi", "url", "pubdate", "vcDocumentType", "user", "theHashCode", "pubDate"]
+    __properties: ClassVar[List[str]] = ["publicationKey", "versionKey", "title", "authors", "citation", "pubmedid", "doi", "url", "pubdate", "vcDocumentType", "user", "theHashCode"]
 
     model_config = {
         "populate_by_name": True,
@@ -122,8 +121,7 @@ class PublicationInfo(BaseModel):
             "pubdate": obj.get("pubdate"),
             "vcDocumentType": obj.get("vcDocumentType"),
             "user": User.from_dict(obj.get("user")) if obj.get("user") is not None else None,
-            "theHashCode": obj.get("theHashCode"),
-            "pubDate": obj.get("pubDate")
+            "theHashCode": obj.get("theHashCode")
         })
         return _obj
 

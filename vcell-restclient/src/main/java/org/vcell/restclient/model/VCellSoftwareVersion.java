@@ -41,7 +41,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   VCellSoftwareVersion.JSON_PROPERTY_MINOR_VERSION,
   VCellSoftwareVersion.JSON_PROPERTY_PATCH_VERSION,
   VCellSoftwareVersion.JSON_PROPERTY_BUILD_INT,
-  VCellSoftwareVersion.JSON_PROPERTY_SITE,
   VCellSoftwareVersion.JSON_PROPERTY_DESCRIPTION
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
@@ -69,9 +68,6 @@ public class VCellSoftwareVersion {
 
   public static final String JSON_PROPERTY_BUILD_INT = "buildInt";
   private Integer buildInt;
-
-  public static final String JSON_PROPERTY_SITE = "site";
-  private VCellSite site;
 
   public static final String JSON_PROPERTY_DESCRIPTION = "description";
   private String description;
@@ -279,31 +275,6 @@ public class VCellSoftwareVersion {
   }
 
 
-  public VCellSoftwareVersion site(VCellSite site) {
-    this.site = site;
-    return this;
-  }
-
-   /**
-   * Get site
-   * @return site
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SITE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public VCellSite getSite() {
-    return site;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_SITE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSite(VCellSite site) {
-    this.site = site;
-  }
-
-
   public VCellSoftwareVersion description(String description) {
     this.description = description;
     return this;
@@ -349,13 +320,12 @@ public class VCellSoftwareVersion {
         Objects.equals(this.minorVersion, vcellSoftwareVersion.minorVersion) &&
         Objects.equals(this.patchVersion, vcellSoftwareVersion.patchVersion) &&
         Objects.equals(this.buildInt, vcellSoftwareVersion.buildInt) &&
-        Objects.equals(this.site, vcellSoftwareVersion.site) &&
         Objects.equals(this.description, vcellSoftwareVersion.description);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(softwareVersionString, vcellSite, buildNumber, versionNumber, majorVersion, minorVersion, patchVersion, buildInt, site, description);
+    return Objects.hash(softwareVersionString, vcellSite, buildNumber, versionNumber, majorVersion, minorVersion, patchVersion, buildInt, description);
   }
 
   @Override
@@ -370,7 +340,6 @@ public class VCellSoftwareVersion {
     sb.append("    minorVersion: ").append(toIndentedString(minorVersion)).append("\n");
     sb.append("    patchVersion: ").append(toIndentedString(patchVersion)).append("\n");
     sb.append("    buildInt: ").append(toIndentedString(buildInt)).append("\n");
-    sb.append("    site: ").append(toIndentedString(site)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("}");
     return sb.toString();
@@ -457,11 +426,6 @@ public class VCellSoftwareVersion {
     // add `buildInt` to the URL query string
     if (getBuildInt() != null) {
       joiner.add(String.format("%sbuildInt%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getBuildInt()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `site` to the URL query string
-    if (getSite() != null) {
-      joiner.add(String.format("%ssite%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSite()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `description` to the URL query string

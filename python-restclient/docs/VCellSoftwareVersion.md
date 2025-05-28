@@ -12,7 +12,6 @@ Name | Type | Description | Notes
 **minor_version** | **int** |  | [optional] 
 **patch_version** | **int** |  | [optional] 
 **build_int** | **int** |  | [optional] 
-**site** | [**VCellSite**](VCellSite.md) |  | [optional] 
 **description** | **str** |  | [optional] 
 
 ## Example

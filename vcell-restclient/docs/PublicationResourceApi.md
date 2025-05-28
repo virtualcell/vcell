@@ -359,7 +359,6 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
 
 ## getPublicationByIdWithHttpInfo
@@ -427,7 +426,6 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
 
 

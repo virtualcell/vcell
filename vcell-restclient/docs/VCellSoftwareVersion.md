@@ -15,7 +15,6 @@
 |**minorVersion** | **Integer** |  |  [optional] |
 |**patchVersion** | **Integer** |  |  [optional] |
 |**buildInt** | **Integer** |  |  [optional] |
-|**site** | **VCellSite** |  |  [optional] |
 |**description** | **String** |  |  [optional] |
 
 

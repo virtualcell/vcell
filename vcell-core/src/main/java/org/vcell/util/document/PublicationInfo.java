@@ -3,6 +3,8 @@ package org.vcell.util.document;
 import java.io.Serializable;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 
 public class PublicationInfo implements Serializable{
@@ -64,6 +66,7 @@ public class PublicationInfo implements Serializable{
 	public User getUser() {
 		return user;
 	}
+	@JsonIgnore
 	public Date getPubDate() {
 		return pubdate;
 	}

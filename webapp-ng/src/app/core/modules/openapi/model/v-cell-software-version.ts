@@ -21,7 +21,6 @@ export interface VCellSoftwareVersion {
     minorVersion?: number;
     patchVersion?: number;
     buildInt?: number;
-    site?: VCellSite;
     description?: string;
 }
 export namespace VCellSoftwareVersion {

@@ -40,9 +40,8 @@ class VCellSoftwareVersion(BaseModel):
     minor_version: Optional[StrictInt] = Field(default=None, alias="minorVersion")
     patch_version: Optional[StrictInt] = Field(default=None, alias="patchVersion")
     build_int: Optional[StrictInt] = Field(default=None, alias="buildInt")
-    site: Optional[VCellSite] = None
     description: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["softwareVersionString", "vcellSite", "buildNumber", "versionNumber", "majorVersion", "minorVersion", "patchVersion", "buildInt", "site", "description"]
+    __properties: ClassVar[List[str]] = ["softwareVersionString", "vcellSite", "buildNumber", "versionNumber", "majorVersion", "minorVersion", "patchVersion", "buildInt", "description"]
 
     model_config = {
         "populate_by_name": True,
@@ -105,7 +104,6 @@ class VCellSoftwareVersion(BaseModel):
             "minorVersion": obj.get("minorVersion"),
             "patchVersion": obj.get("patchVersion"),
             "buildInt": obj.get("buildInt"),
-            "site": obj.get("site"),
             "description": obj.get("description")
         })
         return _obj
