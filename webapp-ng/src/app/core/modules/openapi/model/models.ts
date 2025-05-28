@@ -3,7 +3,7 @@ export * from './application-info';
 export * from './batch-system-type';
 export * from './bio-model';
 export * from './bio-model-child-summary';
-export * from './bio-model-context';
+export * from './bio-model-summary';
 export * from './biomodel-ref';
 export * from './data-identifier';
 export * from './detailed-state';

@@ -53,7 +53,7 @@ public class UserRestService {
         ALLOW_ANONYMOUS,
         REQUIRE_USER
     }
-    public User getUserFromIdentity(SecurityIdentity securityIdentity, UserRequirement allowAnonymous) throws NotAuthenticatedWebException, PermissionWebException, DataAccessWebException {
+    public User getUserFromIdentity(SecurityIdentity securityIdentity, UserRequirement allowAnonymous) throws NotAuthenticatedWebException, DataAccessWebException {
         List<UserIdentity> userIdentities = getUserIdentities(securityIdentity);
         if (userIdentities == null || userIdentities.isEmpty()){
             if (allowAnonymous == UserRequirement.ALLOW_ANONYMOUS){
@@ -63,7 +63,7 @@ public class UserRestService {
             }
         }
         if (userIdentities.size() > 1){
-            throw new PermissionWebException("Multiple identities found for user.");
+            throw new NotAuthenticatedWebException("Multiple identities found for user.");
         }
         return userIdentities.get(0).user();
     }

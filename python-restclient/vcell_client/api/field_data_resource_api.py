@@ -139,7 +139,7 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -238,7 +238,7 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -337,7 +337,7 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -506,7 +506,7 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldData",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -581,7 +581,7 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldData",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -656,7 +656,7 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldData",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -1089,7 +1089,7 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -1164,7 +1164,7 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -1239,7 +1239,7 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -2463,7 +2463,7 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -2534,7 +2534,7 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -2605,7 +2605,7 @@ class FieldDataResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             

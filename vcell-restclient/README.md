@@ -109,12 +109,12 @@ Class | Method | HTTP request | Description
 *AdminResourceApi* | [**getUsageWithHttpInfo**](docs/AdminResourceApi.md#getUsageWithHttpInfo) | **GET** /api/v1/admin/usage | Get usage summary
 *BioModelResourceApi* | [**deleteBioModel**](docs/BioModelResourceApi.md#deleteBioModel) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
 *BioModelResourceApi* | [**deleteBioModelWithHttpInfo**](docs/BioModelResourceApi.md#deleteBioModelWithHttpInfo) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
-*BioModelResourceApi* | [**getAllBioModelContexts**](docs/BioModelResourceApi.md#getAllBioModelContexts) | **GET** /api/v1/bioModel/contexts | All of the BioModel contexts owned by the requester. If provided with a boolean of &#39;true&#39;, all public BioModel contexts VCell has will be given.
-*BioModelResourceApi* | [**getAllBioModelContextsWithHttpInfo**](docs/BioModelResourceApi.md#getAllBioModelContextsWithHttpInfo) | **GET** /api/v1/bioModel/contexts | All of the BioModel contexts owned by the requester. If provided with a boolean of &#39;true&#39;, all public BioModel contexts VCell has will be given.
 *BioModelResourceApi* | [**getBioModel**](docs/BioModelResourceApi.md#getBioModel) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel.
 *BioModelResourceApi* | [**getBioModelWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel.
-*BioModelResourceApi* | [**getBioModelContext**](docs/BioModelResourceApi.md#getBioModelContext) | **GET** /api/v1/bioModel/{bioModelID}/context | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
-*BioModelResourceApi* | [**getBioModelContextWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelContextWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/context | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
+*BioModelResourceApi* | [**getBioModelSummaries**](docs/BioModelResourceApi.md#getBioModelSummaries) | **GET** /api/v1/bioModel/summaries | Return BioModel summaries.
+*BioModelResourceApi* | [**getBioModelSummariesWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelSummariesWithHttpInfo) | **GET** /api/v1/bioModel/summaries | Return BioModel summaries.
+*BioModelResourceApi* | [**getBioModelSummary**](docs/BioModelResourceApi.md#getBioModelSummary) | **GET** /api/v1/bioModel/{bioModelID}/summary | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
+*BioModelResourceApi* | [**getBioModelSummaryWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelSummaryWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/summary | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
 *BioModelResourceApi* | [**getBioModelVCML**](docs/BioModelResourceApi.md#getBioModelVCML) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
 *BioModelResourceApi* | [**getBioModelVCMLWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelVCMLWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
 *BioModelResourceApi* | [**saveBioModel**](docs/BioModelResourceApi.md#saveBioModel) | **POST** /api/v1/bioModel/save | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
@@ -188,7 +188,7 @@ Class | Method | HTTP request | Description
  - [BatchSystemType](docs/BatchSystemType.md)
  - [BioModel](docs/BioModel.md)
  - [BioModelChildSummary](docs/BioModelChildSummary.md)
- - [BioModelContext](docs/BioModelContext.md)
+ - [BioModelSummary](docs/BioModelSummary.md)
  - [BiomodelRef](docs/BiomodelRef.md)
  - [DataIdentifier](docs/DataIdentifier.md)
  - [DetailedState](docs/DetailedState.md)

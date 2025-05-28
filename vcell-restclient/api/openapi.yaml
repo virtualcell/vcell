@@ -197,49 +197,6 @@ paths:
       tags:
       - Admin Resource
       x-accepts: application/json
-  /api/v1/bioModel/contexts:
-    get:
-      operationId: getAllBioModelContexts
-      parameters:
-      - explode: true
-        in: query
-        name: allVCellContexts
-        required: false
-        schema:
-          type: boolean
-        style: form
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/BioModelContext'
-                type: array
-          description: OK
-        "401":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Allowed
-        "500":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-          description: Data Access Exception
-      summary: "All of the BioModel contexts owned by the requester. If provided with\
-        \ a boolean of 'true', all public BioModel contexts VCell has will be given."
-      tags:
-      - Bio Model Resource
-      x-accepts: application/json
   /api/v1/bioModel/save:
     post:
       operationId: saveBioModel
@@ -262,10 +219,6 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "422":
           content:
@@ -287,6 +240,43 @@ paths:
       tags:
       - Bio Model Resource
       x-content-type: application/json
+      x-accepts: application/json
+  /api/v1/bioModel/summaries:
+    get:
+      operationId: getBioModelSummaries
+      parameters:
+      - description: Includes BioModel summaries that are public or shared with requester.
+        explode: true
+        in: query
+        name: includePublicAndShared
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/BioModelSummary'
+                type: array
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authorized
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      summary: Return BioModel summaries.
+      tags:
+      - Bio Model Resource
       x-accepts: application/json
   /api/v1/bioModel/{bioModelID}:
     delete:
@@ -369,9 +359,9 @@ paths:
       tags:
       - Bio Model Resource
       x-accepts: application/json
-  /api/v1/bioModel/{bioModelID}/context:
+  /api/v1/bioModel/{bioModelID}/summary:
     get:
-      operationId: getBioModelContext
+      operationId: getBioModelSummary
       parameters:
       - explode: false
         in: path
@@ -385,7 +375,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BioModelContext'
+                $ref: '#/components/schemas/BioModelSummary'
           description: OK
         "401":
           content:
@@ -540,10 +530,6 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "422":
           content:
@@ -588,10 +574,6 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "422":
           content:
@@ -692,10 +674,6 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "422":
           content:
@@ -816,10 +794,6 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "422":
           content:
@@ -930,12 +904,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
-        "403":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Allowed
         "500":
           content:
             application/json:
@@ -1272,6 +1240,10 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "500":
           content:
@@ -1480,6 +1452,10 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Not Authorized
         "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
           description: Not Allowed
         "500":
           content:
@@ -1700,7 +1676,7 @@ components:
             $ref: '#/components/schemas/ApplicationInfo'
           type: array
       type: object
-    BioModelContext:
+    BioModelSummary:
       example:
         summary:
           simulationContextAnnotations:

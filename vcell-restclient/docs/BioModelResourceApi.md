@@ -6,12 +6,12 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 |------------- | ------------- | -------------|
 | [**deleteBioModel**](BioModelResourceApi.md#deleteBioModel) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database. |
 | [**deleteBioModelWithHttpInfo**](BioModelResourceApi.md#deleteBioModelWithHttpInfo) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database. |
-| [**getAllBioModelContexts**](BioModelResourceApi.md#getAllBioModelContexts) | **GET** /api/v1/bioModel/contexts | All of the BioModel contexts owned by the requester. If provided with a boolean of &#39;true&#39;, all public BioModel contexts VCell has will be given. |
-| [**getAllBioModelContextsWithHttpInfo**](BioModelResourceApi.md#getAllBioModelContextsWithHttpInfo) | **GET** /api/v1/bioModel/contexts | All of the BioModel contexts owned by the requester. If provided with a boolean of &#39;true&#39;, all public BioModel contexts VCell has will be given. |
 | [**getBioModel**](BioModelResourceApi.md#getBioModel) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel. |
 | [**getBioModelWithHttpInfo**](BioModelResourceApi.md#getBioModelWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel. |
-| [**getBioModelContext**](BioModelResourceApi.md#getBioModelContext) | **GET** /api/v1/bioModel/{bioModelID}/context | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself. |
-| [**getBioModelContextWithHttpInfo**](BioModelResourceApi.md#getBioModelContextWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/context | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself. |
+| [**getBioModelSummaries**](BioModelResourceApi.md#getBioModelSummaries) | **GET** /api/v1/bioModel/summaries | Return BioModel summaries. |
+| [**getBioModelSummariesWithHttpInfo**](BioModelResourceApi.md#getBioModelSummariesWithHttpInfo) | **GET** /api/v1/bioModel/summaries | Return BioModel summaries. |
+| [**getBioModelSummary**](BioModelResourceApi.md#getBioModelSummary) | **GET** /api/v1/bioModel/{bioModelID}/summary | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself. |
+| [**getBioModelSummaryWithHttpInfo**](BioModelResourceApi.md#getBioModelSummaryWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/summary | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself. |
 | [**getBioModelVCML**](BioModelResourceApi.md#getBioModelVCML) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format. |
 | [**getBioModelVCMLWithHttpInfo**](BioModelResourceApi.md#getBioModelVCMLWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format. |
 | [**saveBioModel**](BioModelResourceApi.md#saveBioModel) | **POST** /api/v1/bioModel/save | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML. |
@@ -148,142 +148,6 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
-| **500** | Data Access Exception |  -  |
-
-
-## getAllBioModelContexts
-
-> List<BioModelContext> getAllBioModelContexts(allVCellContexts)
-
-All of the BioModel contexts owned by the requester. If provided with a boolean of &#39;true&#39;, all public BioModel contexts VCell has will be given.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
-
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        Boolean allVCellContexts = true; // Boolean | 
-        try {
-            List<BioModelContext> result = apiInstance.getAllBioModelContexts(allVCellContexts);
-            System.out.println(result);
-        } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getAllBioModelContexts");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Reason: " + e.getResponseBody());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **allVCellContexts** | **Boolean**|  | [optional] |
-
-### Return type
-
-[**List&lt;BioModelContext&gt;**](BioModelContext.md)
-
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
-| **500** | Data Access Exception |  -  |
-
-## getAllBioModelContextsWithHttpInfo
-
-> ApiResponse<List<BioModelContext>> getAllBioModelContexts getAllBioModelContextsWithHttpInfo(allVCellContexts)
-
-All of the BioModel contexts owned by the requester. If provided with a boolean of &#39;true&#39;, all public BioModel contexts VCell has will be given.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.ApiResponse;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
-
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        Boolean allVCellContexts = true; // Boolean | 
-        try {
-            ApiResponse<List<BioModelContext>> response = apiInstance.getAllBioModelContextsWithHttpInfo(allVCellContexts);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
-        } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getAllBioModelContexts");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            System.err.println("Reason: " + e.getResponseBody());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **allVCellContexts** | **Boolean**|  | [optional] |
-
-### Return type
-
-ApiResponse<[**List&lt;BioModelContext&gt;**](BioModelContext.md)>
-
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
@@ -427,9 +291,143 @@ No authorization required
 | **500** | Data Access Exception |  -  |
 
 
-## getBioModelContext
+## getBioModelSummaries
 
-> BioModelContext getBioModelContext(bioModelID)
+> List<BioModelSummary> getBioModelSummaries(includePublicAndShared)
+
+Return BioModel summaries.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.BioModelResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+
+        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
+        Boolean includePublicAndShared = true; // Boolean | Includes BioModel summaries that are public or shared with requester.
+        try {
+            List<BioModelSummary> result = apiInstance.getBioModelSummaries(includePublicAndShared);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling BioModelResourceApi#getBioModelSummaries");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **includePublicAndShared** | **Boolean**| Includes BioModel summaries that are public or shared with requester. | [optional] |
+
+### Return type
+
+[**List&lt;BioModelSummary&gt;**](BioModelSummary.md)
+
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **500** | Data Access Exception |  -  |
+
+## getBioModelSummariesWithHttpInfo
+
+> ApiResponse<List<BioModelSummary>> getBioModelSummaries getBioModelSummariesWithHttpInfo(includePublicAndShared)
+
+Return BioModel summaries.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.BioModelResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+
+        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
+        Boolean includePublicAndShared = true; // Boolean | Includes BioModel summaries that are public or shared with requester.
+        try {
+            ApiResponse<List<BioModelSummary>> response = apiInstance.getBioModelSummariesWithHttpInfo(includePublicAndShared);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling BioModelResourceApi#getBioModelSummaries");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **includePublicAndShared** | **Boolean**| Includes BioModel summaries that are public or shared with requester. | [optional] |
+
+### Return type
+
+ApiResponse<[**List&lt;BioModelSummary&gt;**](BioModelSummary.md)>
+
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **401** | Not Authorized |  -  |
+| **500** | Data Access Exception |  -  |
+
+
+## getBioModelSummary
+
+> BioModelSummary getBioModelSummary(bioModelID)
 
 All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
 
@@ -451,10 +449,10 @@ public class Example {
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String bioModelID = "bioModelID_example"; // String | 
         try {
-            BioModelContext result = apiInstance.getBioModelContext(bioModelID);
+            BioModelSummary result = apiInstance.getBioModelSummary(bioModelID);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getBioModelContext");
+            System.err.println("Exception when calling BioModelResourceApi#getBioModelSummary");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -473,7 +471,7 @@ public class Example {
 
 ### Return type
 
-[**BioModelContext**](BioModelContext.md)
+[**BioModelSummary**](BioModelSummary.md)
 
 
 ### Authorization
@@ -493,9 +491,9 @@ No authorization required
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
 
-## getBioModelContextWithHttpInfo
+## getBioModelSummaryWithHttpInfo
 
-> ApiResponse<BioModelContext> getBioModelContext getBioModelContextWithHttpInfo(bioModelID)
+> ApiResponse<BioModelSummary> getBioModelSummary getBioModelSummaryWithHttpInfo(bioModelID)
 
 All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
 
@@ -518,12 +516,12 @@ public class Example {
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         String bioModelID = "bioModelID_example"; // String | 
         try {
-            ApiResponse<BioModelContext> response = apiInstance.getBioModelContextWithHttpInfo(bioModelID);
+            ApiResponse<BioModelSummary> response = apiInstance.getBioModelSummaryWithHttpInfo(bioModelID);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getBioModelContext");
+            System.err.println("Exception when calling BioModelResourceApi#getBioModelSummary");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -542,7 +540,7 @@ public class Example {
 
 ### Return type
 
-ApiResponse<[**BioModelContext**](BioModelContext.md)>
+ApiResponse<[**BioModelSummary**](BioModelSummary.md)>
 
 
 ### Authorization

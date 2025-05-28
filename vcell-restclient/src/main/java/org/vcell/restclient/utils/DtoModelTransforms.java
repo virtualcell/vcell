@@ -261,11 +261,11 @@ public class DtoModelTransforms {
                 new Date(dto.getPubdate().toEpochDay()));
     }
 
-    public static BioModelInfo bioModelContextToBioModelInfo(BioModelContext context){
-        BioModelInfo bioModelInfo = new BioModelInfo(versionDTOToVersion(context.getVersion()), dtoToBioModelChildSummary(context.getSummary()),
-                dtoToVCellSoftwareVersion(context.getvCellSoftwareVersion()));
-        if (context.getPublicationInformation() != null){
-            for (org.vcell.restclient.model.PublicationInfo pubInfo : context.getPublicationInformation()){
+    public static BioModelInfo bioModelContextToBioModelInfo(BioModelSummary summary){
+        BioModelInfo bioModelInfo = new BioModelInfo(versionDTOToVersion(summary.getVersion()), dtoToBioModelChildSummary(summary.getSummary()),
+                dtoToVCellSoftwareVersion(summary.getvCellSoftwareVersion()));
+        if (summary.getPublicationInformation() != null){
+            for (org.vcell.restclient.model.PublicationInfo pubInfo : summary.getPublicationInformation()){
                 bioModelInfo.addPublicationInfo(dtoToPublicationInfo(pubInfo));
             }
         }

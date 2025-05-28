@@ -55,12 +55,10 @@ public class PublicationResource {
 
     @GET
     @Operation(operationId = "getPublications", summary = "Get all publications")
-    public Publication[] get_list() throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
+    public Publication[] get_list() throws NotAuthenticatedWebException, DataAccessWebException {
         try {
             User vcellUser = userRestService.getUserFromIdentity(securityIdentity, UserRestService.UserRequirement.ALLOW_ANONYMOUS);
             return publicationService.getPublications(DatabaseServerImpl.OrderBy.year_desc, vcellUser);
-        } catch (PermissionException e){
-            throw new PermissionWebException(e.getMessage(), e);
         } catch (DataAccessException e){
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {

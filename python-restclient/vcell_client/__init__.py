@@ -44,7 +44,7 @@ from vcell_client.models.application_info import ApplicationInfo
 from vcell_client.models.batch_system_type import BatchSystemType
 from vcell_client.models.bio_model import BioModel
 from vcell_client.models.bio_model_child_summary import BioModelChildSummary
-from vcell_client.models.bio_model_context import BioModelContext
+from vcell_client.models.bio_model_summary import BioModelSummary
 from vcell_client.models.biomodel_ref import BiomodelRef
 from vcell_client.models.data_identifier import DataIdentifier
 from vcell_client.models.detailed_state import DetailedState

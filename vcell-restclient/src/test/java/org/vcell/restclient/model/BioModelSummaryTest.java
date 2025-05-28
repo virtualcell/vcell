@@ -30,17 +30,17 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 /**
- * Model tests for BioModelContext
+ * Model tests for BioModelSummary
  */
-public class BioModelContextTest {
-    private final BioModelContext model = new BioModelContext();
+public class BioModelSummaryTest {
+    private final BioModelSummary model = new BioModelSummary();
 
     /**
-     * Model tests for BioModelContext
+     * Model tests for BioModelSummary
      */
     @Test
-    public void testBioModelContext() {
-        // TODO: test BioModelContext
+    public void testBioModelSummary() {
+        // TODO: test BioModelSummary
     }
 
     /**

@@ -24,12 +24,14 @@ try:
 except ImportError:
     from typing_extensions import Annotated
 
+from pydantic import Field
+from typing_extensions import Annotated
 from pydantic import StrictBool, StrictStr
 
 from typing import List, Optional
 
 from vcell_client.models.bio_model import BioModel
-from vcell_client.models.bio_model_context import BioModelContext
+from vcell_client.models.bio_model_summary import BioModelSummary
 from vcell_client.models.save_bio_model import SaveBioModel
 
 from vcell_client.api_client import ApiClient
@@ -290,275 +292,6 @@ class BioModelResourceApi:
         return self.api_client.param_serialize(
             method='DELETE',
             resource_path='/api/v1/bioModel/{bioModelID}',
-            path_params=_path_params,
-            query_params=_query_params,
-            header_params=_header_params,
-            body=_body_params,
-            post_params=_form_params,
-            files=_files,
-            auth_settings=_auth_settings,
-            collection_formats=_collection_formats,
-            _host=_host,
-            _request_auth=_request_auth
-        )
-
-
-
-
-    @validate_call
-    def get_all_bio_model_contexts(
-        self,
-        all_v_cell_contexts: Optional[StrictBool] = None,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
-                Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> List[BioModelContext]:
-        """All of the BioModel contexts owned by the requester. If provided with a boolean of 'true', all public BioModel contexts VCell has will be given.
-
-
-        :param all_v_cell_contexts:
-        :type all_v_cell_contexts: bool
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :type _request_timeout: int, tuple(int, int), optional
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the
-                              authentication in the spec for a single request.
-        :type _request_auth: dict, optional
-        :param _content_type: force content-type for the request.
-        :type _content_type: str, Optional
-        :param _headers: set to override the headers for a single
-                         request; this effectively ignores the headers
-                         in the spec for a single request.
-        :type _headers: dict, optional
-        :param _host_index: set to override the host_index for a single
-                            request; this effectively ignores the host_index
-                            in the spec for a single request.
-        :type _host_index: int, optional
-        :return: Returns the result object.
-        """ # noqa: E501
-
-        _param = self._get_all_bio_model_contexts_serialize(
-            all_v_cell_contexts=all_v_cell_contexts,
-            _request_auth=_request_auth,
-            _content_type=_content_type,
-            _headers=_headers,
-            _host_index=_host_index
-        )
-
-        _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[BioModelContext]",
-            '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
-        }
-        response_data = self.api_client.call_api(
-            *_param,
-            _request_timeout=_request_timeout
-        )
-        response_data.read()
-        return self.api_client.response_deserialize(
-            response_data=response_data,
-            response_types_map=_response_types_map,
-        ).data
-
-
-    @validate_call
-    def get_all_bio_model_contexts_with_http_info(
-        self,
-        all_v_cell_contexts: Optional[StrictBool] = None,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
-                Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[List[BioModelContext]]:
-        """All of the BioModel contexts owned by the requester. If provided with a boolean of 'true', all public BioModel contexts VCell has will be given.
-
-
-        :param all_v_cell_contexts:
-        :type all_v_cell_contexts: bool
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :type _request_timeout: int, tuple(int, int), optional
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the
-                              authentication in the spec for a single request.
-        :type _request_auth: dict, optional
-        :param _content_type: force content-type for the request.
-        :type _content_type: str, Optional
-        :param _headers: set to override the headers for a single
-                         request; this effectively ignores the headers
-                         in the spec for a single request.
-        :type _headers: dict, optional
-        :param _host_index: set to override the host_index for a single
-                            request; this effectively ignores the host_index
-                            in the spec for a single request.
-        :type _host_index: int, optional
-        :return: Returns the result object.
-        """ # noqa: E501
-
-        _param = self._get_all_bio_model_contexts_serialize(
-            all_v_cell_contexts=all_v_cell_contexts,
-            _request_auth=_request_auth,
-            _content_type=_content_type,
-            _headers=_headers,
-            _host_index=_host_index
-        )
-
-        _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[BioModelContext]",
-            '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
-        }
-        response_data = self.api_client.call_api(
-            *_param,
-            _request_timeout=_request_timeout
-        )
-        response_data.read()
-        return self.api_client.response_deserialize(
-            response_data=response_data,
-            response_types_map=_response_types_map,
-        )
-
-
-    @validate_call
-    def get_all_bio_model_contexts_without_preload_content(
-        self,
-        all_v_cell_contexts: Optional[StrictBool] = None,
-        _request_timeout: Union[
-            None,
-            Annotated[StrictFloat, Field(gt=0)],
-            Tuple[
-                Annotated[StrictFloat, Field(gt=0)],
-                Annotated[StrictFloat, Field(gt=0)]
-            ]
-        ] = None,
-        _request_auth: Optional[Dict[StrictStr, Any]] = None,
-        _content_type: Optional[StrictStr] = None,
-        _headers: Optional[Dict[StrictStr, Any]] = None,
-        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> RESTResponseType:
-        """All of the BioModel contexts owned by the requester. If provided with a boolean of 'true', all public BioModel contexts VCell has will be given.
-
-
-        :param all_v_cell_contexts:
-        :type all_v_cell_contexts: bool
-        :param _request_timeout: timeout setting for this request. If one
-                                 number provided, it will be total request
-                                 timeout. It can also be a pair (tuple) of
-                                 (connection, read) timeouts.
-        :type _request_timeout: int, tuple(int, int), optional
-        :param _request_auth: set to override the auth_settings for an a single
-                              request; this effectively ignores the
-                              authentication in the spec for a single request.
-        :type _request_auth: dict, optional
-        :param _content_type: force content-type for the request.
-        :type _content_type: str, Optional
-        :param _headers: set to override the headers for a single
-                         request; this effectively ignores the headers
-                         in the spec for a single request.
-        :type _headers: dict, optional
-        :param _host_index: set to override the host_index for a single
-                            request; this effectively ignores the host_index
-                            in the spec for a single request.
-        :type _host_index: int, optional
-        :return: Returns the result object.
-        """ # noqa: E501
-
-        _param = self._get_all_bio_model_contexts_serialize(
-            all_v_cell_contexts=all_v_cell_contexts,
-            _request_auth=_request_auth,
-            _content_type=_content_type,
-            _headers=_headers,
-            _host_index=_host_index
-        )
-
-        _response_types_map: Dict[str, Optional[str]] = {
-            '200': "List[BioModelContext]",
-            '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
-        }
-        response_data = self.api_client.call_api(
-            *_param,
-            _request_timeout=_request_timeout
-        )
-        return response_data.response
-
-
-    def _get_all_bio_model_contexts_serialize(
-        self,
-        all_v_cell_contexts,
-        _request_auth,
-        _content_type,
-        _headers,
-        _host_index,
-    ) -> Tuple:
-
-        _host = None
-
-        _collection_formats: Dict[str, str] = {
-            
-        }
-
-        _path_params: Dict[str, str] = {}
-        _query_params: List[Tuple[str, str]] = []
-        _header_params: Dict[str, Optional[str]] = _headers or {}
-        _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
-        _body_params: Optional[bytes] = None
-
-        # process the path parameters
-        # process the query parameters
-        if all_v_cell_contexts is not None:
-            
-            _query_params.append(('allVCellContexts', all_v_cell_contexts))
-            
-        # process the header parameters
-        # process the form parameters
-        # process the body parameter
-
-
-        # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
-
-
-        # authentication setting
-        _auth_settings: List[str] = [
-        ]
-
-        return self.api_client.param_serialize(
-            method='GET',
-            resource_path='/api/v1/bioModel/contexts',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -845,7 +578,273 @@ class BioModelResourceApi:
 
 
     @validate_call
-    def get_bio_model_context(
+    def get_bio_model_summaries(
+        self,
+        include_public_and_shared: Annotated[Optional[StrictBool], Field(description="Includes BioModel summaries that are public or shared with requester.")] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> List[BioModelSummary]:
+        """Return BioModel summaries.
+
+
+        :param include_public_and_shared: Includes BioModel summaries that are public or shared with requester.
+        :type include_public_and_shared: bool
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_bio_model_summaries_serialize(
+            include_public_and_shared=include_public_and_shared,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "List[BioModelSummary]",
+            '401': "VCellHTTPError",
+            '500': "VCellHTTPError"
+            
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        ).data
+
+
+    @validate_call
+    def get_bio_model_summaries_with_http_info(
+        self,
+        include_public_and_shared: Annotated[Optional[StrictBool], Field(description="Includes BioModel summaries that are public or shared with requester.")] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> ApiResponse[List[BioModelSummary]]:
+        """Return BioModel summaries.
+
+
+        :param include_public_and_shared: Includes BioModel summaries that are public or shared with requester.
+        :type include_public_and_shared: bool
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_bio_model_summaries_serialize(
+            include_public_and_shared=include_public_and_shared,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "List[BioModelSummary]",
+            '401': "VCellHTTPError",
+            '500': "VCellHTTPError"
+            
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        response_data.read()
+        return self.api_client.response_deserialize(
+            response_data=response_data,
+            response_types_map=_response_types_map,
+        )
+
+
+    @validate_call
+    def get_bio_model_summaries_without_preload_content(
+        self,
+        include_public_and_shared: Annotated[Optional[StrictBool], Field(description="Includes BioModel summaries that are public or shared with requester.")] = None,
+        _request_timeout: Union[
+            None,
+            Annotated[StrictFloat, Field(gt=0)],
+            Tuple[
+                Annotated[StrictFloat, Field(gt=0)],
+                Annotated[StrictFloat, Field(gt=0)]
+            ]
+        ] = None,
+        _request_auth: Optional[Dict[StrictStr, Any]] = None,
+        _content_type: Optional[StrictStr] = None,
+        _headers: Optional[Dict[StrictStr, Any]] = None,
+        _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
+    ) -> RESTResponseType:
+        """Return BioModel summaries.
+
+
+        :param include_public_and_shared: Includes BioModel summaries that are public or shared with requester.
+        :type include_public_and_shared: bool
+        :param _request_timeout: timeout setting for this request. If one
+                                 number provided, it will be total request
+                                 timeout. It can also be a pair (tuple) of
+                                 (connection, read) timeouts.
+        :type _request_timeout: int, tuple(int, int), optional
+        :param _request_auth: set to override the auth_settings for an a single
+                              request; this effectively ignores the
+                              authentication in the spec for a single request.
+        :type _request_auth: dict, optional
+        :param _content_type: force content-type for the request.
+        :type _content_type: str, Optional
+        :param _headers: set to override the headers for a single
+                         request; this effectively ignores the headers
+                         in the spec for a single request.
+        :type _headers: dict, optional
+        :param _host_index: set to override the host_index for a single
+                            request; this effectively ignores the host_index
+                            in the spec for a single request.
+        :type _host_index: int, optional
+        :return: Returns the result object.
+        """ # noqa: E501
+
+        _param = self._get_bio_model_summaries_serialize(
+            include_public_and_shared=include_public_and_shared,
+            _request_auth=_request_auth,
+            _content_type=_content_type,
+            _headers=_headers,
+            _host_index=_host_index
+        )
+
+        _response_types_map: Dict[str, Optional[str]] = {
+            '200': "List[BioModelSummary]",
+            '401': "VCellHTTPError",
+            '500': "VCellHTTPError"
+            
+        }
+        response_data = self.api_client.call_api(
+            *_param,
+            _request_timeout=_request_timeout
+        )
+        return response_data.response
+
+
+    def _get_bio_model_summaries_serialize(
+        self,
+        include_public_and_shared,
+        _request_auth,
+        _content_type,
+        _headers,
+        _host_index,
+    ) -> Tuple:
+
+        _host = None
+
+        _collection_formats: Dict[str, str] = {
+            
+        }
+
+        _path_params: Dict[str, str] = {}
+        _query_params: List[Tuple[str, str]] = []
+        _header_params: Dict[str, Optional[str]] = _headers or {}
+        _form_params: List[Tuple[str, str]] = []
+        _files: Dict[str, str] = {}
+        _body_params: Optional[bytes] = None
+
+        # process the path parameters
+        # process the query parameters
+        if include_public_and_shared is not None:
+            
+            _query_params.append(('includePublicAndShared', include_public_and_shared))
+            
+        # process the header parameters
+        # process the form parameters
+        # process the body parameter
+
+
+        # set the HTTP header `Accept`
+        _header_params['Accept'] = self.api_client.select_header_accept(
+            [
+                'application/json'
+            ]
+        )
+
+
+        # authentication setting
+        _auth_settings: List[str] = [
+        ]
+
+        return self.api_client.param_serialize(
+            method='GET',
+            resource_path='/api/v1/bioModel/summaries',
+            path_params=_path_params,
+            query_params=_query_params,
+            header_params=_header_params,
+            body=_body_params,
+            post_params=_form_params,
+            files=_files,
+            auth_settings=_auth_settings,
+            collection_formats=_collection_formats,
+            _host=_host,
+            _request_auth=_request_auth
+        )
+
+
+
+
+    @validate_call
+    def get_bio_model_summary(
         self,
         bio_model_id: StrictStr,
         _request_timeout: Union[
@@ -860,7 +859,7 @@ class BioModelResourceApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> BioModelContext:
+    ) -> BioModelSummary:
         """All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
 
 
@@ -888,7 +887,7 @@ class BioModelResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._get_bio_model_context_serialize(
+        _param = self._get_bio_model_summary_serialize(
             bio_model_id=bio_model_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -897,7 +896,7 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "BioModelContext",
+            '200': "BioModelSummary",
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -915,7 +914,7 @@ class BioModelResourceApi:
 
 
     @validate_call
-    def get_bio_model_context_with_http_info(
+    def get_bio_model_summary_with_http_info(
         self,
         bio_model_id: StrictStr,
         _request_timeout: Union[
@@ -930,7 +929,7 @@ class BioModelResourceApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[BioModelContext]:
+    ) -> ApiResponse[BioModelSummary]:
         """All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
 
 
@@ -958,7 +957,7 @@ class BioModelResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._get_bio_model_context_serialize(
+        _param = self._get_bio_model_summary_serialize(
             bio_model_id=bio_model_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -967,7 +966,7 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "BioModelContext",
+            '200': "BioModelSummary",
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -985,7 +984,7 @@ class BioModelResourceApi:
 
 
     @validate_call
-    def get_bio_model_context_without_preload_content(
+    def get_bio_model_summary_without_preload_content(
         self,
         bio_model_id: StrictStr,
         _request_timeout: Union[
@@ -1028,7 +1027,7 @@ class BioModelResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._get_bio_model_context_serialize(
+        _param = self._get_bio_model_summary_serialize(
             bio_model_id=bio_model_id,
             _request_auth=_request_auth,
             _content_type=_content_type,
@@ -1037,7 +1036,7 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "BioModelContext",
+            '200': "BioModelSummary",
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -1050,7 +1049,7 @@ class BioModelResourceApi:
         return response_data.response
 
 
-    def _get_bio_model_context_serialize(
+    def _get_bio_model_summary_serialize(
         self,
         bio_model_id,
         _request_auth,
@@ -1095,7 +1094,7 @@ class BioModelResourceApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/bioModel/{bioModelID}/context',
+            resource_path='/api/v1/bioModel/{bioModelID}/summary',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,
@@ -1437,7 +1436,7 @@ class BioModelResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "str",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -1508,7 +1507,7 @@ class BioModelResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "str",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
@@ -1579,7 +1578,7 @@ class BioModelResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "str",
             '401': "VCellHTTPError",
-            '403': "VCellHTTPError",
+            '403': None,
             '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             

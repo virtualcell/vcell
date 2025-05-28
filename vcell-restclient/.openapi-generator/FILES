@@ -7,8 +7,8 @@ docs/ApplicationInfo.md
 docs/BatchSystemType.md
 docs/BioModel.md
 docs/BioModelChildSummary.md
-docs/BioModelContext.md
 docs/BioModelResourceApi.md
+docs/BioModelSummary.md
 docs/BiomodelRef.md
 docs/DataIdentifier.md
 docs/DetailedState.md
@@ -88,7 +88,7 @@ src/main/java/org/vcell/restclient/model/ApplicationInfo.java
 src/main/java/org/vcell/restclient/model/BatchSystemType.java
 src/main/java/org/vcell/restclient/model/BioModel.java
 src/main/java/org/vcell/restclient/model/BioModelChildSummary.java
-src/main/java/org/vcell/restclient/model/BioModelContext.java
+src/main/java/org/vcell/restclient/model/BioModelSummary.java
 src/main/java/org/vcell/restclient/model/BiomodelRef.java
 src/main/java/org/vcell/restclient/model/DataIdentifier.java
 src/main/java/org/vcell/restclient/model/DetailedState.java

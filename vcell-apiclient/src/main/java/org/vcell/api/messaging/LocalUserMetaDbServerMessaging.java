@@ -282,7 +282,7 @@ public org.vcell.util.document.VersionableFamily getAllReferences(org.vcell.util
 public org.vcell.util.document.BioModelInfo getBioModelInfo(org.vcell.util.document.KeyValue bioModelKey) throws DataAccessException, ObjectNotFoundException {
 
 	try {
-		BioModelContext context = vCellApiClient.getBioModelApi().getBioModelContext(bioModelKey.toString());
+		BioModelSummary context = vCellApiClient.getBioModelApi().getBioModelSummary(bioModelKey.toString());
 		return DtoModelTransforms.bioModelContextToBioModelInfo(context);
 	} catch (ApiException e) {
 		ExceptionHandler.onlyDataAccessException(e);
@@ -295,7 +295,7 @@ public org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) thr
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getBioModelInfos(bAll="+bAll+")");
-		List<BioModelContext> contexts = vCellApiClient.getBioModelApi().getAllBioModelContexts(bAll);
+		List<BioModelSummary> contexts = vCellApiClient.getBioModelApi().getBioModelSummaries(bAll);
 		BioModelInfo[] infos = new BioModelInfo[contexts.size()];
 		for(int i = 0; i < contexts.size(); i++){
 			infos[i] = DtoModelTransforms.bioModelContextToBioModelInfo(contexts.get(i));

@@ -7,8 +7,8 @@ docs/ApplicationInfo.md
 docs/BatchSystemType.md
 docs/BioModel.md
 docs/BioModelChildSummary.md
-docs/BioModelContext.md
 docs/BioModelResourceApi.md
+docs/BioModelSummary.md
 docs/BiomodelRef.md
 docs/DataIdentifier.md
 docs/DetailedState.md
@@ -86,7 +86,7 @@ vcell_client/models/application_info.py
 vcell_client/models/batch_system_type.py
 vcell_client/models/bio_model.py
 vcell_client/models/bio_model_child_summary.py
-vcell_client/models/bio_model_context.py
+vcell_client/models/bio_model_summary.py
 vcell_client/models/biomodel_ref.py
 vcell_client/models/data_identifier.py
 vcell_client/models/detailed_state.py

@@ -35,16 +35,16 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 /**
- * BioModelContext
+ * BioModelSummary
  */
 @JsonPropertyOrder({
-  BioModelContext.JSON_PROPERTY_VERSION,
-  BioModelContext.JSON_PROPERTY_SUMMARY,
-  BioModelContext.JSON_PROPERTY_PUBLICATION_INFORMATION,
-  BioModelContext.JSON_PROPERTY_V_CELL_SOFTWARE_VERSION
+  BioModelSummary.JSON_PROPERTY_VERSION,
+  BioModelSummary.JSON_PROPERTY_SUMMARY,
+  BioModelSummary.JSON_PROPERTY_PUBLICATION_INFORMATION,
+  BioModelSummary.JSON_PROPERTY_V_CELL_SOFTWARE_VERSION
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
-public class BioModelContext {
+public class BioModelSummary {
   public static final String JSON_PROPERTY_VERSION = "version";
   private Version version;
 
@@ -57,10 +57,10 @@ public class BioModelContext {
   public static final String JSON_PROPERTY_V_CELL_SOFTWARE_VERSION = "vCellSoftwareVersion";
   private VCellSoftwareVersion vCellSoftwareVersion;
 
-  public BioModelContext() { 
+  public BioModelSummary() { 
   }
 
-  public BioModelContext version(Version version) {
+  public BioModelSummary version(Version version) {
     this.version = version;
     return this;
   }
@@ -85,7 +85,7 @@ public class BioModelContext {
   }
 
 
-  public BioModelContext summary(BioModelChildSummary summary) {
+  public BioModelSummary summary(BioModelChildSummary summary) {
     this.summary = summary;
     return this;
   }
@@ -110,12 +110,12 @@ public class BioModelContext {
   }
 
 
-  public BioModelContext publicationInformation(List<PublicationInfo> publicationInformation) {
+  public BioModelSummary publicationInformation(List<PublicationInfo> publicationInformation) {
     this.publicationInformation = publicationInformation;
     return this;
   }
 
-  public BioModelContext addPublicationInformationItem(PublicationInfo publicationInformationItem) {
+  public BioModelSummary addPublicationInformationItem(PublicationInfo publicationInformationItem) {
     if (this.publicationInformation == null) {
       this.publicationInformation = new ArrayList<>();
     }
@@ -143,7 +143,7 @@ public class BioModelContext {
   }
 
 
-  public BioModelContext vCellSoftwareVersion(VCellSoftwareVersion vCellSoftwareVersion) {
+  public BioModelSummary vCellSoftwareVersion(VCellSoftwareVersion vCellSoftwareVersion) {
     this.vCellSoftwareVersion = vCellSoftwareVersion;
     return this;
   }
@@ -169,7 +169,7 @@ public class BioModelContext {
 
 
   /**
-   * Return true if this BioModelContext object is equal to o.
+   * Return true if this BioModelSummary object is equal to o.
    */
   @Override
   public boolean equals(Object o) {
@@ -179,11 +179,11 @@ public class BioModelContext {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    BioModelContext bioModelContext = (BioModelContext) o;
-    return Objects.equals(this.version, bioModelContext.version) &&
-        Objects.equals(this.summary, bioModelContext.summary) &&
-        Objects.equals(this.publicationInformation, bioModelContext.publicationInformation) &&
-        Objects.equals(this.vCellSoftwareVersion, bioModelContext.vCellSoftwareVersion);
+    BioModelSummary bioModelSummary = (BioModelSummary) o;
+    return Objects.equals(this.version, bioModelSummary.version) &&
+        Objects.equals(this.summary, bioModelSummary.summary) &&
+        Objects.equals(this.publicationInformation, bioModelSummary.publicationInformation) &&
+        Objects.equals(this.vCellSoftwareVersion, bioModelSummary.vCellSoftwareVersion);
   }
 
   @Override
@@ -194,7 +194,7 @@ public class BioModelContext {
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class BioModelContext {\n");
+    sb.append("class BioModelSummary {\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    summary: ").append(toIndentedString(summary)).append("\n");
     sb.append("    publicationInformation: ").append(toIndentedString(publicationInformation)).append("\n");

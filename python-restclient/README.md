@@ -91,9 +91,9 @@ Class | Method | HTTP request | Description
 ------------ | ------------- | ------------- | -------------
 *AdminResourceApi* | [**get_usage**](docs/AdminResourceApi.md#get_usage) | **GET** /api/v1/admin/usage | Get usage summary
 *BioModelResourceApi* | [**delete_bio_model**](docs/BioModelResourceApi.md#delete_bio_model) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database.
-*BioModelResourceApi* | [**get_all_bio_model_contexts**](docs/BioModelResourceApi.md#get_all_bio_model_contexts) | **GET** /api/v1/bioModel/contexts | All of the BioModel contexts owned by the requester. If provided with a boolean of &#39;true&#39;, all public BioModel contexts VCell has will be given.
 *BioModelResourceApi* | [**get_bio_model**](docs/BioModelResourceApi.md#get_bio_model) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel.
-*BioModelResourceApi* | [**get_bio_model_context**](docs/BioModelResourceApi.md#get_bio_model_context) | **GET** /api/v1/bioModel/{bioModelID}/context | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
+*BioModelResourceApi* | [**get_bio_model_summaries**](docs/BioModelResourceApi.md#get_bio_model_summaries) | **GET** /api/v1/bioModel/summaries | Return BioModel summaries.
+*BioModelResourceApi* | [**get_bio_model_summary**](docs/BioModelResourceApi.md#get_bio_model_summary) | **GET** /api/v1/bioModel/{bioModelID}/summary | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
 *BioModelResourceApi* | [**get_bio_model_vcml**](docs/BioModelResourceApi.md#get_bio_model_vcml) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
 *BioModelResourceApi* | [**save_bio_model**](docs/BioModelResourceApi.md#save_bio_model) | **POST** /api/v1/bioModel/save | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 *FieldDataResourceApi* | [**advanced_create**](docs/FieldDataResourceApi.md#advanced_create) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
@@ -135,7 +135,7 @@ Class | Method | HTTP request | Description
  - [BatchSystemType](docs/BatchSystemType.md)
  - [BioModel](docs/BioModel.md)
  - [BioModelChildSummary](docs/BioModelChildSummary.md)
- - [BioModelContext](docs/BioModelContext.md)
+ - [BioModelSummary](docs/BioModelSummary.md)
  - [BiomodelRef](docs/BiomodelRef.md)
  - [DataIdentifier](docs/DataIdentifier.md)
  - [DetailedState](docs/DetailedState.md)

@@ -492,7 +492,6 @@ No authorization required
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
 
 ## getPublicationsWithHttpInfo
@@ -557,7 +556,6 @@ No authorization required
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
-| **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
 
 

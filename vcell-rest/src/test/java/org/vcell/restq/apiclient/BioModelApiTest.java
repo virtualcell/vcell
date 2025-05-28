@@ -3,7 +3,6 @@ package org.vcell.restq.apiclient;
 import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.MappingException;
-import org.vcell.restclient.CustomObjectMapper;
 import cbit.vcell.model.Species;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.ServerDocumentManager;
@@ -18,15 +17,16 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.*;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
+import org.vcell.restclient.CustomObjectMapper;
 import org.vcell.restclient.api.BioModelResourceApi;
-import org.vcell.restclient.model.BioModelContext;
+import org.vcell.restclient.model.BioModelSummary;
 import org.vcell.restclient.model.SaveBioModel;
 import org.vcell.restclient.model.VCellHTTPError;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
-import org.vcell.restq.errors.exceptions.DataAccessWebException;
 import org.vcell.restq.db.AgroalConnectionFactory;
+import org.vcell.restq.errors.exceptions.DataAccessWebException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.BioModelChildSummary;
@@ -149,7 +149,7 @@ public class BioModelApiTest {
                 new String[]{});
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(savedVCML));
 
-        BioModelContext context = bioModelResourceApi.getBioModelContext(bioModel.getVersion().getVersionKey().toString());
+        BioModelSummary context = bioModelResourceApi.getBioModelSummary(bioModel.getVersion().getVersionKey().toString());
         BioModelInfo info = DtoModelTransforms.bioModelContextToBioModelInfo(context);
 
         Assertions.assertEquals(context.getSummary().getGeometryNames(), new ArrayList<>(){{add("test-geometry");}});
