@@ -290,6 +290,7 @@ public class InteractiveLogin {
                 .endpointURI(authorizationEndpoint)
                 .redirectionURI(redirectURI)
                 .customParameter("audience", audience.getScheme() + "://" + audience.getHost() + audiencePort)
+                .customParameter("prompt", "select_account")
                 .state(state)
                 .scope(scope) // Add any other required scopes
                 .codeChallenge(codeVerifier, CodeChallengeMethod.S256)

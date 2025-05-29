@@ -77,7 +77,8 @@ export function apiConfigFactory() {
       authorizationParams: {
         scope: 'openid profile email offline_access',
         audience: env.auth.authorizationParams.audience,
-        redirect_uri: window.location.origin
+        redirect_uri: window.location.origin,
+        prompt: "select_account"
       },
       errorPath: auth_config.errorPath,
       httpInterceptor: {
