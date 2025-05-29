@@ -54,10 +54,31 @@ done
 # Output results of all jobs and log them
 for i in $(seq 1 $total_jobs); do
     result=$(cat subscript_$i.output 2>/dev/null || echo "No output (job may have failed)")
-    echo "Result of job $i is $result"
-    echo "Result of job $i: $result" >> $log_file
+    echo "Result of job $i is $result"              # simple echo goes to stdout
+    echo "Result of job $i: $result" >> $log_file   # redirected echo goes to log_file
 done
 
+echo "Starting the last job at $(date)"
+echo "Starting the last job at $(date)" >> $log_file
+timeout $timeout_duration srun -N 1 -n 1 -c 1 ./last.sh &  # Run last script with a timeout
+last_pid=$!
+wait $last_pid  # Explicitly wait for last.sh to finish
+exit_code=$?  # Capture the exit code of the job
+if [ $exit_code -eq 0 ]; then
+    echo "Job with PID $last_pid finished successfully at $(date)" >> $log_file
+elif [ $exit_code -eq 124 ]; then
+    echo "Job with PID $last_pid timed out at $(date)" >> $log_file
+elif [ $exit_code -gt 128 ]; then
+    signal=$((exit_code - 128))
+    echo "Job with PID $last_pid terminated by signal $signal at $(date)" >> $log_file
+else
+    echo "Job with PID $last_pid failed with exit code $exit_code at $(date)" >> $log_file
+fi
+echo "Last job finished at $(date)"
+echo "Last job finished at $(date)" >> $log_file
+
 # Log the end of the job process
+echo "All jobs completed at $(date)"
 echo "All jobs completed at $(date)" >> $log_file
-echo "End Job"
+echo "End Script"
+echo "End Script" >> $log_file
