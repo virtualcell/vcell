@@ -11,7 +11,7 @@
 
 log_file="job_status.log"
 total_jobs=7  # Total number of jobs to run
-timeout_duration=5s  # Maximum allowed runtime for each job
+timeout_duration=10s  # Maximum allowed runtime for each job
 
 # Clear the log file at the start
 echo "Job Execution Log" > $log_file
