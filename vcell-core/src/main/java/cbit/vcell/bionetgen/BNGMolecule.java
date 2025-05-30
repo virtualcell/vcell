@@ -117,4 +117,15 @@ public class BNGMolecule implements Serializable {
     public String toString(){
         return getName();
     }
+
+    public BNGMolecule deepClone() {
+        BNGMolecule bngMoleculeClone = new BNGMolecule(getName());
+        if (molComponents != null) {
+            bngMoleculeClone.molComponents = new BNGSpeciesComponent[molComponents.length];
+            for (int i = 0; i < molComponents.length; i++) {
+                bngMoleculeClone.molComponents[i] = molComponents[i].deepClone();
+            }
+        }
+        return bngMoleculeClone;
+    }
 }
