@@ -174,12 +174,14 @@ jobs:
           java -version
           if [ "${{ matrix.test-group }}" == "Quarkus" ]; then
             mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
-            ./tools/validate-openapi-spec.sh
             cd vcell-rest
             mvn test
           else
             mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="${{ matrix.test-group }}"
           fi
+
+      - name: Validate OpenAPI Spec
+        run: ./tools/validate-openapi-spec.sh
 
 #      - name: Setup tmate session
 #        uses: mxschmitt/action-tmate@v3
