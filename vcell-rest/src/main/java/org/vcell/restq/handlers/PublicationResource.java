@@ -88,7 +88,7 @@ public class PublicationResource {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
 //    @RolesAllowed("curator")
-//    @RolesAllowed("user")
+    @RolesAllowed("user")
     @Operation(operationId = "updatePublication", summary = "Update publication")
     public Publication update(Publication publication) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
