@@ -4,7 +4,16 @@ NC='\033[0m' # No Color
 GREEN='\033[0;32m'
 
 
-pushd ../
+# Get the directory where the script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Get the current working directory
+CURRENT_DIR="$(pwd)"
+
+if [[ "$CURRENT_DIR" == "$SCRIPT_DIR" ]]; then
+  pushd ../
+fi
+
 FILE="./tools/openapi.yaml"
 
 echo "This test should only be done after the entire codebase has been compiled."
@@ -27,4 +36,6 @@ fi
 
 echo -e "${GREEN}Success: OpenAPI spec is up to date.${NC}"
 
-popd || exit 0
+if [[ "$CURRENT_DIR" == "$SCRIPT_DIR" ]]; then
+  popd || exit
+fi
