@@ -1,5 +1,5 @@
 #!/bin/bash --login
-#SBATCH --job-name=advancedJob
+#SBATCH --job-name=dynamicJob
 #SBATCH --nodes=1
 #SBATCH --ntasks=3
 #SBATCH --qos=vcell
@@ -25,7 +25,7 @@ running_jobs=0
 for i in $(seq 1 $total_jobs); do
     # Log job start
     echo "Job $i started at $(date)" >> $log_file
-    timeout $timeout_duration srun -N 1 -n 1 -c 1 ./subscript.sh $i &   # run each script in parallel
+    timeout $timeout_duration srun -N 1 -n 1 -c 1 ./subscript.sh $i dynamic.langevinInput & # run each script in parallel
     pid=$!  # Capture the job PID
     job_pids+=($pid)  # Store the PID
     job_pid_map[$pid]=$i  # Map job index to PID
