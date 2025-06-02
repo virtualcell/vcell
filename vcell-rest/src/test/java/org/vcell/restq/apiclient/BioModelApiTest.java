@@ -7,6 +7,7 @@ import cbit.vcell.model.Species;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.ServerDocumentManager;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.xml.VCMLComparator;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -104,6 +105,7 @@ public class BioModelApiTest {
         BioModel retrievedBioModel = XmlHelper.XMLToBioModel(new XMLSource(retrievedVCML));
         Assertions.assertTrue(ogBioModel.compareEqual(retrievedBioModel));
         Assertions.assertEquals(retrievedVCML, vcmlReturnedFromSave);
+        Assertions.assertTrue(VCMLComparator.compareEquals(retrievedVCML, vcmlReturnedFromSave, false));
 
         // Saving same model, but with slight change works
         retrievedBioModel.getModel().addSpecies(new Species("bob", "annotation"));
