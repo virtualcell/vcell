@@ -4,8 +4,8 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**publication_key** | [**KeyValue**](KeyValue.md) |  | [optional] 
-**version_key** | [**KeyValue**](KeyValue.md) |  | [optional] 
+**publication_key** | **str** |  | [optional] 
+**version_key** | **str** |  | [optional] 
 **title** | **str** |  | [optional] 
 **authors** | **List[str]** |  | [optional] 
 **citation** | **str** |  | [optional] 

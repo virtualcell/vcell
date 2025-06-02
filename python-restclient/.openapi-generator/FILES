@@ -29,7 +29,6 @@ docs/HelloWorldMessage.md
 docs/HtcJobID.md
 docs/ISize.md
 docs/Identity.md
-docs/KeyValue.md
 docs/MathType.md
 docs/MathmodelRef.md
 docs/ModelType.md
@@ -105,7 +104,6 @@ vcell_client/models/hello_world_message.py
 vcell_client/models/htc_job_id.py
 vcell_client/models/i_size.py
 vcell_client/models/identity.py
-vcell_client/models/key_value.py
 vcell_client/models/math_type.py
 vcell_client/models/mathmodel_ref.py
 vcell_client/models/model_type.py

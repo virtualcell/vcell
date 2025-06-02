@@ -27,7 +27,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.vcell.restclient.model.KeyValue;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -81,7 +80,7 @@ public class BioModel {
   private String ownerKey;
 
   public static final String JSON_PROPERTY_SIMULATION_KEY_LIST = "simulationKeyList";
-  private List<KeyValue> simulationKeyList;
+  private List<String> simulationKeyList;
 
   public static final String JSON_PROPERTY_APPLICATIONS = "applications";
   private List<Object> applications;
@@ -347,12 +346,12 @@ public class BioModel {
   }
 
 
-  public BioModel simulationKeyList(List<KeyValue> simulationKeyList) {
+  public BioModel simulationKeyList(List<String> simulationKeyList) {
     this.simulationKeyList = simulationKeyList;
     return this;
   }
 
-  public BioModel addSimulationKeyListItem(KeyValue simulationKeyListItem) {
+  public BioModel addSimulationKeyListItem(String simulationKeyListItem) {
     if (this.simulationKeyList == null) {
       this.simulationKeyList = new ArrayList<>();
     }
@@ -368,14 +367,14 @@ public class BioModel {
   @JsonProperty(JSON_PROPERTY_SIMULATION_KEY_LIST)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<KeyValue> getSimulationKeyList() {
+  public List<String> getSimulationKeyList() {
     return simulationKeyList;
   }
 
 
   @JsonProperty(JSON_PROPERTY_SIMULATION_KEY_LIST)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimulationKeyList(List<KeyValue> simulationKeyList) {
+  public void setSimulationKeyList(List<String> simulationKeyList) {
     this.simulationKeyList = simulationKeyList;
   }
 
@@ -564,10 +563,9 @@ public class BioModel {
     // add `simulationKeyList` to the URL query string
     if (getSimulationKeyList() != null) {
       for (int i = 0; i < getSimulationKeyList().size(); i++) {
-        if (getSimulationKeyList().get(i) != null) {
-          joiner.add(getSimulationKeyList().get(i).toUrlQueryString(String.format("%ssimulationKeyList%s%s", prefix, suffix,
-          "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
-        }
+        joiner.add(String.format("%ssimulationKeyList%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+            URLEncoder.encode(String.valueOf(getSimulationKeyList().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
       }
     }
 

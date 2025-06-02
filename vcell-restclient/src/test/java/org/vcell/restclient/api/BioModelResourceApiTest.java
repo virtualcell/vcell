@@ -15,6 +15,9 @@ package org.vcell.restclient.api;
 
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.BioModel;
+import org.vcell.restclient.model.BioModelSummary;
+import org.vcell.restclient.model.SaveBioModel;
+import org.vcell.restclient.model.VCellHTTPError;
 import org.junit.Test;
 import org.junit.Ignore;
 
@@ -47,6 +50,91 @@ public class BioModelResourceApiTest {
         String bioModelID = null;
         
         api.deleteBioModel(bioModelID);
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * Get BioModel.
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void getBioModelTest() throws ApiException {
+        String bioModelID = null;
+        BioModel response = 
+        api.getBioModel(bioModelID);
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * Return BioModel summaries.
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void getBioModelSummariesTest() throws ApiException {
+        Boolean includePublicAndShared = null;
+        List<BioModelSummary> response = 
+        api.getBioModelSummaries(includePublicAndShared);
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void getBioModelSummaryTest() throws ApiException {
+        String bioModelID = null;
+        BioModelSummary response = 
+        api.getBioModelSummary(bioModelID);
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * Get the BioModel in VCML format.
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void getBioModelVCMLTest() throws ApiException {
+        String bioModelID = null;
+        String response = 
+        api.getBioModelVCML(bioModelID);
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void saveBioModelTest() throws ApiException {
+        SaveBioModel saveBioModel = null;
+        String response = 
+        api.saveBioModel(saveBioModel);
         
         // TODO: test validations
     }

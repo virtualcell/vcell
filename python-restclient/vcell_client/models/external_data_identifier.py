@@ -22,7 +22,6 @@ import json
 from typing import Any, ClassVar, Dict, List, Optional
 from pydantic import BaseModel, StrictBool, StrictInt, StrictStr
 from pydantic import Field
-from vcell_client.models.key_value import KeyValue
 from vcell_client.models.user import User
 try:
     from typing import Self
@@ -33,13 +32,13 @@ class ExternalDataIdentifier(BaseModel):
     """
     ExternalDataIdentifier
     """ # noqa: E501
-    key: Optional[KeyValue] = None
+    key: Optional[StrictStr] = None
     owner: Optional[User] = None
     name: Optional[StrictStr] = None
     job_index: Optional[StrictInt] = Field(default=None, alias="jobIndex")
-    simulation_key: Optional[KeyValue] = Field(default=None, alias="simulationKey")
+    simulation_key: Optional[StrictStr] = Field(default=None, alias="simulationKey")
     parameter_scan_type: Optional[StrictBool] = Field(default=None, alias="parameterScanType")
-    data_key: Optional[KeyValue] = Field(default=None, alias="dataKey")
+    data_key: Optional[StrictStr] = Field(default=None, alias="dataKey")
     __properties: ClassVar[List[str]] = ["key", "owner", "name", "jobIndex", "simulationKey", "parameterScanType", "dataKey"]
 
     model_config = {
@@ -78,18 +77,9 @@ class ExternalDataIdentifier(BaseModel):
             },
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of key
-        if self.key:
-            _dict['key'] = self.key.to_dict()
         # override the default output from pydantic by calling `to_dict()` of owner
         if self.owner:
             _dict['owner'] = self.owner.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of simulation_key
-        if self.simulation_key:
-            _dict['simulationKey'] = self.simulation_key.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of data_key
-        if self.data_key:
-            _dict['dataKey'] = self.data_key.to_dict()
         return _dict
 
     @classmethod
@@ -107,13 +97,13 @@ class ExternalDataIdentifier(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in ExternalDataIdentifier) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "key": KeyValue.from_dict(obj.get("key")) if obj.get("key") is not None else None,
+            "key": obj.get("key"),
             "owner": User.from_dict(obj.get("owner")) if obj.get("owner") is not None else None,
             "name": obj.get("name"),
             "jobIndex": obj.get("jobIndex"),
-            "simulationKey": KeyValue.from_dict(obj.get("simulationKey")) if obj.get("simulationKey") is not None else None,
+            "simulationKey": obj.get("simulationKey"),
             "parameterScanType": obj.get("parameterScanType"),
-            "dataKey": KeyValue.from_dict(obj.get("dataKey")) if obj.get("dataKey") is not None else None
+            "dataKey": obj.get("dataKey")
         })
         return _obj
 

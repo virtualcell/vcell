@@ -28,7 +28,6 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import org.vcell.restclient.model.GroupAccess;
-import org.vcell.restclient.model.KeyValue;
 import org.vcell.restclient.model.User;
 import org.vcell.restclient.model.VersionFlag;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -51,7 +50,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class Version {
   public static final String JSON_PROPERTY_VERSION_KEY = "versionKey";
-  private KeyValue versionKey;
+  private String versionKey;
 
   public static final String JSON_PROPERTY_ANNOT = "annot";
   private String annot;
@@ -60,7 +59,7 @@ public class Version {
   private BigDecimal branchID;
 
   public static final String JSON_PROPERTY_BRANCH_POINT_REF_KEY = "branchPointRefKey";
-  private KeyValue branchPointRefKey;
+  private String branchPointRefKey;
 
   public static final String JSON_PROPERTY_DATE = "date";
   private OffsetDateTime date;
@@ -80,7 +79,7 @@ public class Version {
   public Version() { 
   }
 
-  public Version versionKey(KeyValue versionKey) {
+  public Version versionKey(String versionKey) {
     this.versionKey = versionKey;
     return this;
   }
@@ -93,14 +92,14 @@ public class Version {
   @JsonProperty(JSON_PROPERTY_VERSION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public KeyValue getVersionKey() {
+  public String getVersionKey() {
     return versionKey;
   }
 
 
   @JsonProperty(JSON_PROPERTY_VERSION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersionKey(KeyValue versionKey) {
+  public void setVersionKey(String versionKey) {
     this.versionKey = versionKey;
   }
 
@@ -155,7 +154,7 @@ public class Version {
   }
 
 
-  public Version branchPointRefKey(KeyValue branchPointRefKey) {
+  public Version branchPointRefKey(String branchPointRefKey) {
     this.branchPointRefKey = branchPointRefKey;
     return this;
   }
@@ -168,14 +167,14 @@ public class Version {
   @JsonProperty(JSON_PROPERTY_BRANCH_POINT_REF_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public KeyValue getBranchPointRefKey() {
+  public String getBranchPointRefKey() {
     return branchPointRefKey;
   }
 
 
   @JsonProperty(JSON_PROPERTY_BRANCH_POINT_REF_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setBranchPointRefKey(KeyValue branchPointRefKey) {
+  public void setBranchPointRefKey(String branchPointRefKey) {
     this.branchPointRefKey = branchPointRefKey;
   }
 
@@ -395,7 +394,7 @@ public class Version {
 
     // add `versionKey` to the URL query string
     if (getVersionKey() != null) {
-      joiner.add(getVersionKey().toUrlQueryString(prefix + "versionKey" + suffix));
+      joiner.add(String.format("%sversionKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getVersionKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `annot` to the URL query string
@@ -410,7 +409,7 @@ public class Version {
 
     // add `branchPointRefKey` to the URL query string
     if (getBranchPointRefKey() != null) {
-      joiner.add(getBranchPointRefKey().toUrlQueryString(prefix + "branchPointRefKey" + suffix));
+      joiner.add(String.format("%sbranchPointRefKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getBranchPointRefKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `date` to the URL query string

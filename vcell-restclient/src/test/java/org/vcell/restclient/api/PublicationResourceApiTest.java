@@ -15,6 +15,7 @@ package org.vcell.restclient.api;
 
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.Publication;
+import org.vcell.restclient.model.VCellHTTPError;
 import org.junit.Test;
 import org.junit.Ignore;
 

@@ -19,6 +19,7 @@ import org.vcell.restclient.model.Identity;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
 import org.vcell.restclient.model.UserRegistrationInfo;
+import org.vcell.restclient.model.VCellHTTPError;
 import org.junit.Test;
 import org.junit.Ignore;
 

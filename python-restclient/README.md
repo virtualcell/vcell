@@ -154,7 +154,6 @@ Class | Method | HTTP request | Description
  - [HtcJobID](docs/HtcJobID.md)
  - [ISize](docs/ISize.md)
  - [Identity](docs/Identity.md)
- - [KeyValue](docs/KeyValue.md)
  - [MathType](docs/MathType.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [ModelType](docs/ModelType.md)

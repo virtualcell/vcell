@@ -23,7 +23,6 @@ from typing import Any, ClassVar, Dict, List, Optional
 from pydantic import BaseModel, StrictStr
 from pydantic import Field
 from vcell_client.models.external_data_identifier import ExternalDataIdentifier
-from vcell_client.models.key_value import KeyValue
 try:
     from typing import Self
 except ImportError:
@@ -35,7 +34,7 @@ class FieldDataReference(BaseModel):
     """ # noqa: E501
     field_data_id: Optional[ExternalDataIdentifier] = Field(default=None, alias="fieldDataID")
     annotation: Optional[StrictStr] = None
-    simulations_referencing_this_id: Optional[List[KeyValue]] = Field(default=None, alias="simulationsReferencingThisID")
+    simulations_referencing_this_id: Optional[List[StrictStr]] = Field(default=None, alias="simulationsReferencingThisID")
     __properties: ClassVar[List[str]] = ["fieldDataID", "annotation", "simulationsReferencingThisID"]
 
     model_config = {
@@ -77,13 +76,6 @@ class FieldDataReference(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of field_data_id
         if self.field_data_id:
             _dict['fieldDataID'] = self.field_data_id.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of each item in simulations_referencing_this_id (list)
-        _items = []
-        if self.simulations_referencing_this_id:
-            for _item in self.simulations_referencing_this_id:
-                if _item:
-                    _items.append(_item.to_dict())
-            _dict['simulationsReferencingThisID'] = _items
         return _dict
 
     @classmethod
@@ -103,7 +95,7 @@ class FieldDataReference(BaseModel):
         _obj = cls.model_validate({
             "fieldDataID": ExternalDataIdentifier.from_dict(obj.get("fieldDataID")) if obj.get("fieldDataID") is not None else None,
             "annotation": obj.get("annotation"),
-            "simulationsReferencingThisID": [KeyValue.from_dict(_item) for _item in obj.get("simulationsReferencingThisID")] if obj.get("simulationsReferencingThisID") is not None else None
+            "simulationsReferencingThisID": obj.get("simulationsReferencingThisID")
         })
         return _obj
 

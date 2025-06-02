@@ -25,7 +25,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import org.vcell.restclient.model.KeyValue;
 import org.vcell.restclient.model.User;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -45,7 +44,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class ExternalDataIdentifier {
   public static final String JSON_PROPERTY_KEY = "key";
-  private KeyValue key;
+  private String key;
 
   public static final String JSON_PROPERTY_OWNER = "owner";
   private User owner;
@@ -57,18 +56,18 @@ public class ExternalDataIdentifier {
   private Integer jobIndex;
 
   public static final String JSON_PROPERTY_SIMULATION_KEY = "simulationKey";
-  private KeyValue simulationKey;
+  private String simulationKey;
 
   public static final String JSON_PROPERTY_PARAMETER_SCAN_TYPE = "parameterScanType";
   private Boolean parameterScanType;
 
   public static final String JSON_PROPERTY_DATA_KEY = "dataKey";
-  private KeyValue dataKey;
+  private String dataKey;
 
   public ExternalDataIdentifier() { 
   }
 
-  public ExternalDataIdentifier key(KeyValue key) {
+  public ExternalDataIdentifier key(String key) {
     this.key = key;
     return this;
   }
@@ -81,14 +80,14 @@ public class ExternalDataIdentifier {
   @JsonProperty(JSON_PROPERTY_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public KeyValue getKey() {
+  public String getKey() {
     return key;
   }
 
 
   @JsonProperty(JSON_PROPERTY_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setKey(KeyValue key) {
+  public void setKey(String key) {
     this.key = key;
   }
 
@@ -168,7 +167,7 @@ public class ExternalDataIdentifier {
   }
 
 
-  public ExternalDataIdentifier simulationKey(KeyValue simulationKey) {
+  public ExternalDataIdentifier simulationKey(String simulationKey) {
     this.simulationKey = simulationKey;
     return this;
   }
@@ -181,14 +180,14 @@ public class ExternalDataIdentifier {
   @JsonProperty(JSON_PROPERTY_SIMULATION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public KeyValue getSimulationKey() {
+  public String getSimulationKey() {
     return simulationKey;
   }
 
 
   @JsonProperty(JSON_PROPERTY_SIMULATION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimulationKey(KeyValue simulationKey) {
+  public void setSimulationKey(String simulationKey) {
     this.simulationKey = simulationKey;
   }
 
@@ -218,7 +217,7 @@ public class ExternalDataIdentifier {
   }
 
 
-  public ExternalDataIdentifier dataKey(KeyValue dataKey) {
+  public ExternalDataIdentifier dataKey(String dataKey) {
     this.dataKey = dataKey;
     return this;
   }
@@ -231,14 +230,14 @@ public class ExternalDataIdentifier {
   @JsonProperty(JSON_PROPERTY_DATA_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public KeyValue getDataKey() {
+  public String getDataKey() {
     return dataKey;
   }
 
 
   @JsonProperty(JSON_PROPERTY_DATA_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDataKey(KeyValue dataKey) {
+  public void setDataKey(String dataKey) {
     this.dataKey = dataKey;
   }
 
@@ -329,7 +328,7 @@ public class ExternalDataIdentifier {
 
     // add `key` to the URL query string
     if (getKey() != null) {
-      joiner.add(getKey().toUrlQueryString(prefix + "key" + suffix));
+      joiner.add(String.format("%skey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `owner` to the URL query string
@@ -349,7 +348,7 @@ public class ExternalDataIdentifier {
 
     // add `simulationKey` to the URL query string
     if (getSimulationKey() != null) {
-      joiner.add(getSimulationKey().toUrlQueryString(prefix + "simulationKey" + suffix));
+      joiner.add(String.format("%ssimulationKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSimulationKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `parameterScanType` to the URL query string
@@ -359,7 +358,7 @@ public class ExternalDataIdentifier {
 
     // add `dataKey` to the URL query string
     if (getDataKey() != null) {
-      joiner.add(getDataKey().toUrlQueryString(prefix + "dataKey" + suffix));
+      joiner.add(String.format("%sdataKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDataKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();

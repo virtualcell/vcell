@@ -9,11 +9,10 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { KeyValue } from './key-value';
 
 
 export interface User { 
     userName?: string;
-    key?: KeyValue;
+    key?: string;
 }
 

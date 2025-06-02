@@ -4,7 +4,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**simulation_key** | [**KeyValue**](KeyValue.md) |  | [optional] 
+**simulation_key** | **str** |  | [optional] 
 **owner** | [**User**](User.md) |  | [optional] 
 **id** | **str** |  | [optional] 
 

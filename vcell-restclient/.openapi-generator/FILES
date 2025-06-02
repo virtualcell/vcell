@@ -29,7 +29,6 @@ docs/HelloWorldMessage.md
 docs/HtcJobID.md
 docs/ISize.md
 docs/Identity.md
-docs/KeyValue.md
 docs/MathType.md
 docs/MathmodelRef.md
 docs/ModelType.md
@@ -107,7 +106,6 @@ src/main/java/org/vcell/restclient/model/HelloWorldMessage.java
 src/main/java/org/vcell/restclient/model/HtcJobID.java
 src/main/java/org/vcell/restclient/model/ISize.java
 src/main/java/org/vcell/restclient/model/Identity.java
-src/main/java/org/vcell/restclient/model/KeyValue.java
 src/main/java/org/vcell/restclient/model/MathType.java
 src/main/java/org/vcell/restclient/model/MathmodelRef.java
 src/main/java/org/vcell/restclient/model/ModelType.java

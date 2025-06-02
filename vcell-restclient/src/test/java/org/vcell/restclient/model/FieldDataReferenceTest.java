@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.vcell.restclient.model.ExternalDataIdentifier;
-import org.vcell.restclient.model.KeyValue;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -58,11 +57,11 @@ public class FieldDataReferenceTest {
     }
 
     /**
-     * Test the property 'externalDataIDSimRefs'
+     * Test the property 'simulationsReferencingThisID'
      */
     @Test
-    public void externalDataIDSimRefsTest() {
-        // TODO: test externalDataIDSimRefs
+    public void simulationsReferencingThisIDTest() {
+        // TODO: test simulationsReferencingThisID
     }
 
 }

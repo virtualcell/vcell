@@ -22,7 +22,6 @@ export * from './hello-world-message';
 export * from './htc-job-id';
 export * from './i-size';
 export * from './identity';
-export * from './key-value';
 export * from './math-type';
 export * from './mathmodel-ref';
 export * from './model-type';

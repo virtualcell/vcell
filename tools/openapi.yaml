@@ -1848,10 +1848,7 @@ components:
       type: string
       example: 2022-03-10T16:15:50Z
     KeyValue:
-      type: object
-      properties:
-        value:
-          type: number
+      type: string
     MathType:
       enum:
       - RuleBased

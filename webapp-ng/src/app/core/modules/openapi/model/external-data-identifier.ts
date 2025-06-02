@@ -9,17 +9,16 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { KeyValue } from './key-value';
 import { User } from './user';
 
 
 export interface ExternalDataIdentifier { 
-    key?: KeyValue;
+    key?: string;
     owner?: User;
     name?: string;
     jobIndex?: number;
-    simulationKey?: KeyValue;
+    simulationKey?: string;
     parameterScanType?: boolean;
-    dataKey?: KeyValue;
+    dataKey?: string;
 }
 

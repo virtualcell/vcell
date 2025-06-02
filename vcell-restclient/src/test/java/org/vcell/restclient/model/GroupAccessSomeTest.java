@@ -13,15 +13,19 @@
 
 package org.vcell.restclient.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.vcell.restclient.model.GroupAccess;
 import org.vcell.restclient.model.User;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -50,51 +54,11 @@ public class GroupAccessSomeTest {
     }
 
     /**
-     * Test the property 'hash'
-     */
-    @Test
-    public void hashTest() {
-        // TODO: test hash
-    }
-
-    /**
-     * Test the property 'groupMembers'
-     */
-    @Test
-    public void groupMembersTest() {
-        // TODO: test groupMembers
-    }
-
-    /**
-     * Test the property 'hiddenMembers'
-     */
-    @Test
-    public void hiddenMembersTest() {
-        // TODO: test hiddenMembers
-    }
-
-    /**
      * Test the property 'description'
      */
     @Test
     public void descriptionTest() {
         // TODO: test description
-    }
-
-    /**
-     * Test the property 'hiddenGroupMembers'
-     */
-    @Test
-    public void hiddenGroupMembersTest() {
-        // TODO: test hiddenGroupMembers
-    }
-
-    /**
-     * Test the property 'normalGroupMembers'
-     */
-    @Test
-    public void normalGroupMembersTest() {
-        // TODO: test normalGroupMembers
     }
 
 }

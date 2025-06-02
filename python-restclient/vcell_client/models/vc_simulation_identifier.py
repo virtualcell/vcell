@@ -22,7 +22,6 @@ import json
 from typing import Any, ClassVar, Dict, List, Optional
 from pydantic import BaseModel, StrictStr
 from pydantic import Field
-from vcell_client.models.key_value import KeyValue
 from vcell_client.models.user import User
 try:
     from typing import Self
@@ -33,7 +32,7 @@ class VCSimulationIdentifier(BaseModel):
     """
     VCSimulationIdentifier
     """ # noqa: E501
-    simulation_key: Optional[KeyValue] = Field(default=None, alias="simulationKey")
+    simulation_key: Optional[StrictStr] = Field(default=None, alias="simulationKey")
     owner: Optional[User] = None
     id: Optional[StrictStr] = None
     __properties: ClassVar[List[str]] = ["simulationKey", "owner", "id"]
@@ -74,9 +73,6 @@ class VCSimulationIdentifier(BaseModel):
             },
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of simulation_key
-        if self.simulation_key:
-            _dict['simulationKey'] = self.simulation_key.to_dict()
         # override the default output from pydantic by calling `to_dict()` of owner
         if self.owner:
             _dict['owner'] = self.owner.to_dict()
@@ -97,7 +93,7 @@ class VCSimulationIdentifier(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in VCSimulationIdentifier) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "simulationKey": KeyValue.from_dict(obj.get("simulationKey")) if obj.get("simulationKey") is not None else None,
+            "simulationKey": obj.get("simulationKey"),
             "owner": User.from_dict(obj.get("owner")) if obj.get("owner") is not None else None,
             "id": obj.get("id")
         })

@@ -19,10 +19,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import org.vcell.restclient.model.GroupAccess;
-import org.vcell.restclient.model.KeyValue;
 import org.vcell.restclient.model.User;
 import org.vcell.restclient.model.VersionFlag;
 import org.junit.Assert;
@@ -49,70 +48,6 @@ public class VersionTest {
     @Test
     public void versionKeyTest() {
         // TODO: test versionKey
-    }
-
-    /**
-     * Test the property 'versionName'
-     */
-    @Test
-    public void versionNameTest() {
-        // TODO: test versionName
-    }
-
-    /**
-     * Test the property 'versionOwner'
-     */
-    @Test
-    public void versionOwnerTest() {
-        // TODO: test versionOwner
-    }
-
-    /**
-     * Test the property 'versionGroupAccess'
-     */
-    @Test
-    public void versionGroupAccessTest() {
-        // TODO: test versionGroupAccess
-    }
-
-    /**
-     * Test the property 'versionBranchPointRef'
-     */
-    @Test
-    public void versionBranchPointRefTest() {
-        // TODO: test versionBranchPointRef
-    }
-
-    /**
-     * Test the property 'versionBranchID'
-     */
-    @Test
-    public void versionBranchIDTest() {
-        // TODO: test versionBranchID
-    }
-
-    /**
-     * Test the property 'versionDate'
-     */
-    @Test
-    public void versionDateTest() {
-        // TODO: test versionDate
-    }
-
-    /**
-     * Test the property 'versionFlag'
-     */
-    @Test
-    public void versionFlagTest() {
-        // TODO: test versionFlag
-    }
-
-    /**
-     * Test the property 'versionAnnot'
-     */
-    @Test
-    public void versionAnnotTest() {
-        // TODO: test versionAnnot
     }
 
     /**

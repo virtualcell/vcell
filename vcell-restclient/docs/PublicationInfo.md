@@ -7,8 +7,8 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**publicationKey** | [**KeyValue**](KeyValue.md) |  |  [optional] |
-|**versionKey** | [**KeyValue**](KeyValue.md) |  |  [optional] |
+|**publicationKey** | **String** |  |  [optional] |
+|**versionKey** | **String** |  |  [optional] |
 |**title** | **String** |  |  [optional] |
 |**authors** | **List&lt;String&gt;** |  |  [optional] |
 |**citation** | **String** |  |  [optional] |

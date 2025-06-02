@@ -9,13 +9,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { KeyValue } from './key-value';
 import { ExternalDataIdentifier } from './external-data-identifier';
 
 
 export interface FieldDataReference { 
     fieldDataID?: ExternalDataIdentifier;
     annotation?: string;
-    simulationsReferencingThisID?: Array<KeyValue>;
+    simulationsReferencingThisID?: Array<string>;
 }
 

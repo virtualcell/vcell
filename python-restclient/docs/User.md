@@ -5,7 +5,7 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **user_name** | **str** |  | [optional] 
-**key** | [**KeyValue**](KeyValue.md) |  | [optional] 
+**key** | **str** |  | [optional] 
 
 ## Example
 

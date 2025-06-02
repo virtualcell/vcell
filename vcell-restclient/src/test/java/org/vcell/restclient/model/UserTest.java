@@ -19,7 +19,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import org.vcell.restclient.model.KeyValue;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -52,22 +51,6 @@ public class UserTest {
     @Test
     public void keyTest() {
         // TODO: test key
-    }
-
-    /**
-     * Test the property 'name'
-     */
-    @Test
-    public void nameTest() {
-        // TODO: test name
-    }
-
-    /**
-     * Test the property 'testAccount'
-     */
-    @Test
-    public void testAccountTest() {
-        // TODO: test testAccount
     }
 
 }

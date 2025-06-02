@@ -25,7 +25,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import org.vcell.restclient.model.KeyValue;
 import org.vcell.restclient.model.User;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
@@ -41,7 +40,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class VCSimulationIdentifier {
   public static final String JSON_PROPERTY_SIMULATION_KEY = "simulationKey";
-  private KeyValue simulationKey;
+  private String simulationKey;
 
   public static final String JSON_PROPERTY_OWNER = "owner";
   private User owner;
@@ -52,7 +51,7 @@ public class VCSimulationIdentifier {
   public VCSimulationIdentifier() { 
   }
 
-  public VCSimulationIdentifier simulationKey(KeyValue simulationKey) {
+  public VCSimulationIdentifier simulationKey(String simulationKey) {
     this.simulationKey = simulationKey;
     return this;
   }
@@ -65,14 +64,14 @@ public class VCSimulationIdentifier {
   @JsonProperty(JSON_PROPERTY_SIMULATION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public KeyValue getSimulationKey() {
+  public String getSimulationKey() {
     return simulationKey;
   }
 
 
   @JsonProperty(JSON_PROPERTY_SIMULATION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimulationKey(KeyValue simulationKey) {
+  public void setSimulationKey(String simulationKey) {
     this.simulationKey = simulationKey;
   }
 
@@ -205,7 +204,7 @@ public class VCSimulationIdentifier {
 
     // add `simulationKey` to the URL query string
     if (getSimulationKey() != null) {
-      joiner.add(getSimulationKey().toUrlQueryString(prefix + "simulationKey" + suffix));
+      joiner.add(String.format("%ssimulationKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSimulationKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `owner` to the URL query string

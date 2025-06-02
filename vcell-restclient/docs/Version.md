@@ -7,10 +7,10 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**versionKey** | [**KeyValue**](KeyValue.md) |  |  [optional] |
+|**versionKey** | **String** |  |  [optional] |
 |**annot** | **String** |  |  [optional] |
 |**branchID** | **BigDecimal** |  |  [optional] |
-|**branchPointRefKey** | [**KeyValue**](KeyValue.md) |  |  [optional] |
+|**branchPointRefKey** | **String** |  |  [optional] |
 |**date** | **OffsetDateTime** |  |  [optional] |
 |**flag** | [**VersionFlag**](VersionFlag.md) |  |  [optional] |
 |**groupAccess** | [**GroupAccess**](GroupAccess.md) |  |  [optional] |

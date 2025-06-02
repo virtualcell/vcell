@@ -22,7 +22,6 @@ import json
 from typing import Any, ClassVar, Dict, List, Optional
 from pydantic import BaseModel, StrictStr
 from pydantic import Field
-from vcell_client.models.key_value import KeyValue
 try:
     from typing import Self
 except ImportError:
@@ -33,7 +32,7 @@ class User(BaseModel):
     User
     """ # noqa: E501
     user_name: Optional[StrictStr] = Field(default=None, alias="userName")
-    key: Optional[KeyValue] = None
+    key: Optional[StrictStr] = None
     __properties: ClassVar[List[str]] = ["userName", "key"]
 
     model_config = {
@@ -72,9 +71,6 @@ class User(BaseModel):
             },
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of key
-        if self.key:
-            _dict['key'] = self.key.to_dict()
         return _dict
 
     @classmethod
@@ -93,7 +89,7 @@ class User(BaseModel):
 
         _obj = cls.model_validate({
             "userName": obj.get("userName"),
-            "key": KeyValue.from_dict(obj.get("key")) if obj.get("key") is not None else None
+            "key": obj.get("key")
         })
         return _obj
 

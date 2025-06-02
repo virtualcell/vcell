@@ -28,7 +28,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.vcell.restclient.model.KeyValue;
 import org.vcell.restclient.model.User;
 import org.vcell.restclient.model.VCDocumentType;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -54,10 +53,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class PublicationInfo {
   public static final String JSON_PROPERTY_PUBLICATION_KEY = "publicationKey";
-  private KeyValue publicationKey;
+  private String publicationKey;
 
   public static final String JSON_PROPERTY_VERSION_KEY = "versionKey";
-  private KeyValue versionKey;
+  private String versionKey;
 
   public static final String JSON_PROPERTY_TITLE = "title";
   private String title;
@@ -92,7 +91,7 @@ public class PublicationInfo {
   public PublicationInfo() { 
   }
 
-  public PublicationInfo publicationKey(KeyValue publicationKey) {
+  public PublicationInfo publicationKey(String publicationKey) {
     this.publicationKey = publicationKey;
     return this;
   }
@@ -105,19 +104,19 @@ public class PublicationInfo {
   @JsonProperty(JSON_PROPERTY_PUBLICATION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public KeyValue getPublicationKey() {
+  public String getPublicationKey() {
     return publicationKey;
   }
 
 
   @JsonProperty(JSON_PROPERTY_PUBLICATION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPublicationKey(KeyValue publicationKey) {
+  public void setPublicationKey(String publicationKey) {
     this.publicationKey = publicationKey;
   }
 
 
-  public PublicationInfo versionKey(KeyValue versionKey) {
+  public PublicationInfo versionKey(String versionKey) {
     this.versionKey = versionKey;
     return this;
   }
@@ -130,14 +129,14 @@ public class PublicationInfo {
   @JsonProperty(JSON_PROPERTY_VERSION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public KeyValue getVersionKey() {
+  public String getVersionKey() {
     return versionKey;
   }
 
 
   @JsonProperty(JSON_PROPERTY_VERSION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersionKey(KeyValue versionKey) {
+  public void setVersionKey(String versionKey) {
     this.versionKey = versionKey;
   }
 
@@ -496,12 +495,12 @@ public class PublicationInfo {
 
     // add `publicationKey` to the URL query string
     if (getPublicationKey() != null) {
-      joiner.add(getPublicationKey().toUrlQueryString(prefix + "publicationKey" + suffix));
+      joiner.add(String.format("%spublicationKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPublicationKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `versionKey` to the URL query string
     if (getVersionKey() != null) {
-      joiner.add(getVersionKey().toUrlQueryString(prefix + "versionKey" + suffix));
+      joiner.add(String.format("%sversionKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getVersionKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `title` to the URL query string

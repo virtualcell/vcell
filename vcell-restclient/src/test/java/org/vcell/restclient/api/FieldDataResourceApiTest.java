@@ -13,16 +13,26 @@
 
 package org.vcell.restclient.api;
 
-import org.junit.Ignore;
-import org.junit.Test;
 import org.vcell.restclient.ApiException;
+import org.vcell.restclient.model.Extent;
 import org.vcell.restclient.model.ExternalDataIdentifier;
+import org.vcell.restclient.model.FieldData;
 import org.vcell.restclient.model.FieldDataReference;
-import org.vcell.restclient.model.SourceModel;
-
+import org.vcell.restclient.model.FieldDataSavedResults;
+import org.vcell.restclient.model.FieldDataShape;
 import java.io.File;
+import org.vcell.restclient.model.ISize;
+import org.vcell.restclient.model.Origin;
+import org.vcell.restclient.model.SourceModel;
+import org.vcell.restclient.model.VCellHTTPError;
+import org.junit.Test;
+import org.junit.Ignore;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -35,7 +45,31 @@ public class FieldDataResourceApiTest {
 
     
     /**
-     * Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+     * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void advancedCreateTest() throws ApiException {
+        File _file = null;
+        String fileName = null;
+        Extent extent = null;
+        ISize iSize = null;
+        List<String> channelNames = null;
+        List<Double> times = null;
+        String annotation = null;
+        Origin origin = null;
+        FieldDataSavedResults response = 
+        api.advancedCreate(_file, fileName, extent, iSize, channelNames, times, annotation, origin);
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
      *
      * 
      *
@@ -46,12 +80,14 @@ public class FieldDataResourceApiTest {
     public void analyzeFileTest() throws ApiException {
         File _file = null;
         String fileName = null;
+        FieldData response = 
+        api.analyzeFile(_file, fileName);
         
         // TODO: test validations
     }
     
     /**
-     * Copy all existing field data from a BioModel/MathModel if not already owned.
+     * Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
      *
      * 
      *
@@ -68,16 +104,25 @@ public class FieldDataResourceApiTest {
     }
     
     /**
-     * Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+     * Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
      *
      * 
      *
      * @throws ApiException
      *          if the Api call fails
      */
-
+    @Test
+    public void createFromFileTest() throws ApiException {
+        File _file = null;
+        String fieldDataName = null;
+        FieldDataSavedResults response = 
+        api.createFromFile(_file, fieldDataName);
+        
+        // TODO: test validations
+    }
+    
     /**
-     * Create new field data from a simulation.
+     * Create new field data from existing simulation results.
      *
      * 
      *
@@ -104,7 +149,7 @@ public class FieldDataResourceApiTest {
      *          if the Api call fails
      */
     @Test
-    public void deleteFieldDataTest() throws ApiException {
+    public void deleteTest() throws ApiException {
         String fieldDataID = null;
         
         api.delete(fieldDataID);
@@ -129,12 +174,37 @@ public class FieldDataResourceApiTest {
     }
     
     /**
-     * Get the shape of the field data. That is it&#39;s size, origin, extent, and data identifiers.
+     * Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
      *
      * 
      *
      * @throws ApiException
      *          if the Api call fails
      */
+    @Test
+    public void getShapeFromIDTest() throws ApiException {
+        String fieldDataID = null;
+        FieldDataShape response = 
+        api.getShapeFromID(fieldDataID);
+        
+        // TODO: test validations
+    }
+    
+    /**
+     * Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
+     *
+     * 
+     *
+     * @throws ApiException
+     *          if the Api call fails
+     */
+    @Test
+    public void saveTest() throws ApiException {
+        FieldData fieldData = null;
+        FieldDataSavedResults response = 
+        api.save(fieldData);
+        
+        // TODO: test validations
+    }
     
 }

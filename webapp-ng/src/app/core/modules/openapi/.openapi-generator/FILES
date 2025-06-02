@@ -46,7 +46,6 @@ model/hello-world-message.ts
 model/htc-job-id.ts
 model/i-size.ts
 model/identity.ts
-model/key-value.ts
 model/math-type.ts
 model/mathmodel-ref.ts
 model/model-type.ts

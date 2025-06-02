@@ -91,7 +91,7 @@ public class DtoModelTransforms {
 
     public static org.vcell.restclient.model.ExternalDataIdentifier externalDataIdentifierToDTO(ExternalDataIdentifier externalDataIdentifier) {
         org.vcell.restclient.model.ExternalDataIdentifier dto = new org.vcell.restclient.model.ExternalDataIdentifier();
-        dto.key(keyValueToDTO(externalDataIdentifier.getKey()));
+        dto.key(externalDataIdentifier.getKey().toString());
         dto.owner(userToDTO(externalDataIdentifier.getOwner()));
         dto.name(externalDataIdentifier.getName());
         return dto;
@@ -99,28 +99,19 @@ public class DtoModelTransforms {
 
     public static ExternalDataIdentifier dtoToExternalDataIdentifier(org.vcell.restclient.model.ExternalDataIdentifier dto){
         return new ExternalDataIdentifier(
-                dtoToKeyValue(dto.getKey()), dtoToUser(dto.getOwner()), dto.getName()
+                new KeyValue(dto.getKey()), dtoToUser(dto.getOwner()), dto.getName()
         );
-    }
-
-    public static org.vcell.restclient.model.KeyValue keyValueToDTO(KeyValue kv) {
-        org.vcell.restclient.model.KeyValue k = new org.vcell.restclient.model.KeyValue();
-        k.setValue(kv.toString().transform(BigDecimal::new));
-        return k;
-    }
-    public static KeyValue dtoToKeyValue(org.vcell.restclient.model.KeyValue dto){
-        return dto == null ? null : new KeyValue(dto.getValue());
     }
 
     public static org.vcell.restclient.model.User userToDTO(User user) {
         org.vcell.restclient.model.User userDTO = new org.vcell.restclient.model.User();
         userDTO.setUserName(user.getName());
-        userDTO.setKey(keyValueToDTO(user.getID()));
+        userDTO.setKey(user.getID().toString());
         return userDTO;
     }
 
     public static User dtoToUser(org.vcell.restclient.model.User dto){
-        return new User(dto.getUserName(), dtoToKeyValue(dto.getKey()));
+        return new User(dto.getUserName(), new KeyValue(dto.getKey()));
     }
 
     public static cbit.vcell.field.io.FieldDataShape DTOToFieldDataShape(FieldDataShape dto){
@@ -170,7 +161,7 @@ public class DtoModelTransforms {
             ExternalDataIdentifier externalDataIdentifier = dtoToExternalDataIdentifier(fieldDataReference.getFieldDataID());
             externalDataIdentifiers.add(externalDataIdentifier);
             externalDataAnnotations.add(fieldDataReference.getAnnotation());
-            List<KeyValue> keyValues = fieldDataReference.getSimulationsReferencingThisID().stream().map(DtoModelTransforms::dtoToKeyValue).collect(Collectors.toList());
+            List<KeyValue> keyValues = fieldDataReference.getSimulationsReferencingThisID().stream().map(KeyValue::new).collect(Collectors.toList());
             externalDataIDSimRefs.put(externalDataIdentifier, new Vector<>(keyValues));
         }
         fieldDataDBOperationResults.ids = externalDataIdentifiers.toArray(new ExternalDataIdentifier[0]);
@@ -209,8 +200,9 @@ public class DtoModelTransforms {
 
     public static Version versionDTOToVersion(org.vcell.restclient.model.Version dto){
         return new Version(
-                dtoToKeyValue(dto.getVersionKey()), dto.getName(), dtoToUser(dto.getOwner()),
-                dtoToGroupAccess(dto.getGroupAccess()), dtoToKeyValue(dto.getBranchPointRefKey()), dto.getBranchID(), new Date(dto.getDate().toEpochSecond()),
+                new KeyValue(dto.getVersionKey()), dto.getName(), dtoToUser(dto.getOwner()),
+                dtoToGroupAccess(dto.getGroupAccess()), dto.getBranchPointRefKey() == null ? null : new KeyValue(dto.getBranchPointRefKey()),
+                dto.getBranchID(), new Date(dto.getDate().toEpochSecond()),
                 dtoToVersionFlag(dto.getFlag()), dto.getAnnot()
         );
     }
@@ -255,7 +247,7 @@ public class DtoModelTransforms {
     }
 
     public static PublicationInfo dtoToPublicationInfo(org.vcell.restclient.model.PublicationInfo dto){
-        return new PublicationInfo(dtoToKeyValue(dto.getPublicationKey()), dtoToKeyValue(dto.getVersionKey()),
+        return new PublicationInfo(new KeyValue(dto.getPublicationKey()), new KeyValue(dto.getVersionKey()),
                 dto.getTitle(), dto.getAuthors().toArray(new String[0]), dto.getCitation(),dto.getPubmedid(),
                 dto.getDoi(), dto.getUrl(), dtoToVCDocumentType(dto.getVcDocumentType()), dtoToUser(dto.getUser()),
                 new Date(dto.getPubdate().toEpochDay()));

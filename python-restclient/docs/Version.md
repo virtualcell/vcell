@@ -4,10 +4,10 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**version_key** | [**KeyValue**](KeyValue.md) |  | [optional] 
+**version_key** | **str** |  | [optional] 
 **annot** | **str** |  | [optional] 
 **branch_id** | **float** |  | [optional] 
-**branch_point_ref_key** | [**KeyValue**](KeyValue.md) |  | [optional] 
+**branch_point_ref_key** | **str** |  | [optional] 
 **var_date** | **datetime** |  | [optional] 
 **flag** | [**VersionFlag**](VersionFlag.md) |  | [optional] 
 **group_access** | [**GroupAccess**](GroupAccess.md) |  | [optional] 

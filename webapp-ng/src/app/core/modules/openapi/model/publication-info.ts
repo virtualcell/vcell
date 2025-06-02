@@ -9,14 +9,13 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { KeyValue } from './key-value';
 import { User } from './user';
 import { VCDocumentType } from './vc-document-type';
 
 
 export interface PublicationInfo { 
-    publicationKey?: KeyValue;
-    versionKey?: KeyValue;
+    publicationKey?: string;
+    versionKey?: string;
     title?: string;
     authors?: Array<string>;
     citation?: string;
