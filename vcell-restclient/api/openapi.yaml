@@ -200,11 +200,35 @@ paths:
   /api/v1/bioModel:
     post:
       operationId: saveBioModel
+      parameters:
+      - allowEmptyValue: true
+        description: Name to save new BioModel under. Leave blank if re-saving existing
+          BioModel.
+        explode: true
+        in: query
+        name: newName
+        required: false
+        schema:
+          type: string
+        style: form
+      - allowEmptyValue: true
+        description: The name of simulations that will be prepared for future execution.
+        explode: true
+        in: query
+        name: simsRequiringUpdates
+        required: false
+        schema:
+          items:
+            type: string
+          type: array
+        style: form
       requestBody:
         content:
-          application/json:
+          application/xml:
             schema:
-              $ref: '#/components/schemas/SaveBioModel'
+              type: string
+        description: BioModelVCML which will be saved.
+        required: true
       responses:
         "200":
           content:
@@ -239,7 +263,7 @@ paths:
         to update due to math changes. Returns saved BioModel as VCML.
       tags:
       - Bio Model Resource
-      x-content-type: application/json
+      x-content-type: application/xml
       x-accepts: application/json
   /api/v1/bioModel/summaries:
     get:
@@ -2432,28 +2456,6 @@ components:
         theHashCode:
           format: int32
           type: integer
-      type: object
-    SaveBioModel:
-      example:
-        simsRequiringUpdates:
-        - simsRequiringUpdates
-        - simsRequiringUpdates
-        name: name
-        bioModelXML: bioModelXML
-      properties:
-        bioModelXML:
-          pattern: \S
-          type: string
-        name:
-          nullable: true
-          type: string
-        simsRequiringUpdates:
-          items:
-            type: string
-          nullable: true
-          type: array
-      required:
-      - bioModelXML
       type: object
     SchedulerStatus:
       enum:

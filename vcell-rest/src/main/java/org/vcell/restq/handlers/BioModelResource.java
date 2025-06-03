@@ -3,19 +3,17 @@ package org.vcell.restq.handlers;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
-import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.media.Content;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
+import org.jboss.resteasy.reactive.Separator;
 import org.vcell.restq.Main;
 import org.vcell.restq.errors.exceptions.*;
 import org.vcell.restq.models.BioModel;
@@ -26,6 +24,7 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @Path("/api/v1/bioModel")
@@ -168,16 +167,18 @@ public class BioModelResource {
 
     @POST
     @Path("")
-    @Consumes(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @Operation(operationId = "saveBioModel", summary = "Save's the given BioModel. Optional parameters of name and simulations to update due to math changes." +
             " Returns saved BioModel as VCML.")
     @RolesAllowed("user")
-    public String save(@Valid SaveBioModel saveBioModel) throws DataAccessWebException, UnprocessableContentWebException, NotAuthenticatedWebException {
+    public String save(@RequestBody(name = "bioModelVCML", required = true, description = "BioModelVCML which will be saved.") String bioModelVCML,
+                       @QueryParam("newName") @Parameter(required = false, allowEmptyValue = true, description = "Name to save new BioModel under. Leave blank if re-saving existing BioModel.") Optional<String> newName,
+                       @QueryParam("simsRequiringUpdates") @Parameter(required = false, allowEmptyValue = true, description = "The name of simulations that will be prepared for future execution.") List<String> simNames) throws DataAccessWebException, UnprocessableContentWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try {
-            cbit.vcell.biomodel.BioModel savedBioModel = bioModelRestService.save(user, saveBioModel.bioModelXML,
-                    saveBioModel.name.orElse(null), saveBioModel.simsRequiringUpdates.orElse(null));
+            cbit.vcell.biomodel.BioModel savedBioModel = bioModelRestService.save(user, bioModelVCML,
+                    newName.orElse(null), simNames.toArray(new String[0]));
             return XmlHelper.bioModelToXML(savedBioModel);
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
@@ -185,16 +186,6 @@ public class BioModelResource {
             throw new UnprocessableContentWebException(e.getMessage(), e);
         }
     }
-
-
-
-
-    public record SaveBioModel(
-            @NotBlank(message = "BioModel can not be an empty string.")
-            @NotNull String bioModelXML,
-            Optional<String> name,
-            Optional<String[]> simsRequiringUpdates
-    ){ }
 
     public record BioModelSummary(
         Version version, // Problematic

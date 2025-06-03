@@ -64,7 +64,6 @@ public class BioModelTest {
         bioModel.setName("BioModelTest_testAddAndRemove");
         bioModel.clearVersion();
         vcmlString = XmlHelper.bioModelToXML(bioModel);
-        SaveBioModel saveBioModel = new SaveBioModel().bioModelXML(vcmlString);
         // create a test publication using org.vcell.rest.model.Publication and add it to the list
 
         boolean mapped = new UsersResourceApi(aliceAPIClient).mapUser(TestEndpointUtils.vcellNagiosUserLoginInfo);
@@ -73,8 +72,8 @@ public class BioModelTest {
         // insert publication1 as user
         Response uploadResponse = given()
                 .auth().oauth2(keycloakClient.getAccessToken(TestEndpointUtils.TestOIDCUsers.alice.name()))
-                .body(new ObjectMapper().writeValueAsString(saveBioModel))
-                .header("Content-Type", MediaType.APPLICATION_JSON)
+                .body(vcmlString)
+                .header("Content-Type", MediaType.APPLICATION_XML)
                 .when()
                 .post("/api/v1/bioModel");
         uploadResponse.then().statusCode(200);

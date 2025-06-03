@@ -19,7 +19,6 @@ import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.BioModel;
 import org.vcell.restclient.model.BioModelSummary;
-import org.vcell.restclient.model.SaveBioModel;
 import org.vcell.restclient.model.VCellHTTPError;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -460,24 +459,28 @@ public class BioModelResourceApi {
   /**
    * Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
    * 
-   * @param saveBioModel  (optional)
+   * @param body BioModelVCML which will be saved. (required)
+   * @param newName Name to save new BioModel under. Leave blank if re-saving existing BioModel. (optional)
+   * @param simsRequiringUpdates The name of simulations that will be prepared for future execution. (optional
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String saveBioModel(SaveBioModel saveBioModel) throws ApiException {
-    ApiResponse<String> localVarResponse = saveBioModelWithHttpInfo(saveBioModel);
+  public String saveBioModel(String body, String newName, List<String> simsRequiringUpdates) throws ApiException {
+    ApiResponse<String> localVarResponse = saveBioModelWithHttpInfo(body, newName, simsRequiringUpdates);
     return localVarResponse.getData();
   }
 
   /**
    * Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
    * 
-   * @param saveBioModel  (optional)
+   * @param body BioModelVCML which will be saved. (required)
+   * @param newName Name to save new BioModel under. Leave blank if re-saving existing BioModel. (optional)
+   * @param simsRequiringUpdates The name of simulations that will be prepared for future execution. (optional
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> saveBioModelWithHttpInfo(SaveBioModel saveBioModel) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = saveBioModelRequestBuilder(saveBioModel);
+  public ApiResponse<String> saveBioModelWithHttpInfo(String body, String newName, List<String> simsRequiringUpdates) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = saveBioModelRequestBuilder(body, newName, simsRequiringUpdates);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -505,23 +508,39 @@ public class BioModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder saveBioModelRequestBuilder(SaveBioModel saveBioModel) throws ApiException {
+  private HttpRequest.Builder saveBioModelRequestBuilder(String body, String newName, List<String> simsRequiringUpdates) throws ApiException {
+    // verify the required parameter 'body' is set
+    if (body == null) {
+      throw new ApiException(400, "Missing the required parameter 'body' when calling saveBioModel");
+    }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
     String localVarPath = "/api/v1/bioModel";
 
-    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    List<Pair> localVarQueryParams = new ArrayList<>();
+    StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
+    String localVarQueryParameterBaseName;
+    localVarQueryParameterBaseName = "newName";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("newName", newName));
+    localVarQueryParameterBaseName = "simsRequiringUpdates";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("multi", "simsRequiringUpdates", simsRequiringUpdates));
 
-    localVarRequestBuilder.header("Content-Type", "application/json");
+    if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
+      StringJoiner queryJoiner = new StringJoiner("&");
+      localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
+      if (localVarQueryStringJoiner.length() != 0) {
+        queryJoiner.add(localVarQueryStringJoiner.toString());
+      }
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath + '?' + queryJoiner.toString()));
+    } else {
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    }
+
+    localVarRequestBuilder.header("Content-Type", "application/xml");
     localVarRequestBuilder.header("Accept", "application/xml, application/json");
 
-    try {
-      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(saveBioModel);
-      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
+    localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofString(body));
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }

@@ -23,8 +23,6 @@ import { BioModel } from '../model/bio-model';
 // @ts-ignore
 import { BioModelSummary } from '../model/bio-model-summary';
 // @ts-ignore
-import { SaveBioModel } from '../model/save-bio-model';
-// @ts-ignore
 import { VCellHTTPError } from '../model/v-cell-http-error';
 
 // @ts-ignore
@@ -397,14 +395,31 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
 
     /**
      * Save\&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
-     * @param saveBioModel 
+     * @param body BioModelVCML which will be saved.
+     * @param newName Name to save new BioModel under. Leave blank if re-saving existing BioModel.
+     * @param simsRequiringUpdates The name of simulations that will be prepared for future execution.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public saveBioModel(saveBioModel?: SaveBioModel, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<string>;
-    public saveBioModel(saveBioModel?: SaveBioModel, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<HttpResponse<string>>;
-    public saveBioModel(saveBioModel?: SaveBioModel, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<HttpEvent<string>>;
-    public saveBioModel(saveBioModel?: SaveBioModel, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<any> {
+    public saveBioModel(body: string, newName?: string, simsRequiringUpdates?: Array<string>, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<string>;
+    public saveBioModel(body: string, newName?: string, simsRequiringUpdates?: Array<string>, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<HttpResponse<string>>;
+    public saveBioModel(body: string, newName?: string, simsRequiringUpdates?: Array<string>, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<HttpEvent<string>>;
+    public saveBioModel(body: string, newName?: string, simsRequiringUpdates?: Array<string>, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<any> {
+        if (body === null || body === undefined) {
+            throw new Error('Required parameter body was null or undefined when calling saveBioModel.');
+        }
+
+        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
+        if (newName !== undefined && newName !== null) {
+          localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+            <any>newName, 'newName');
+        }
+        if (simsRequiringUpdates) {
+            simsRequiringUpdates.forEach((element) => {
+                localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
+                  <any>element, 'simsRequiringUpdates');
+            })
+        }
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -435,7 +450,7 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
 
         // to determine the Content-Type header
         const consumes: string[] = [
-            'application/json'
+            'application/xml'
         ];
         const httpContentTypeSelected: string | undefined = this.configuration.selectHeaderContentType(consumes);
         if (httpContentTypeSelected !== undefined) {
@@ -457,7 +472,8 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
         return this.httpClient.request<string>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                body: saveBioModel,
+                body: body,
+                params: localVarQueryParameters,
                 responseType: <any>responseType_,
                 withCredentials: this.configuration.withCredentials,
                 headers: localVarHeaders,

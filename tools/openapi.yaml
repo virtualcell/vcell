@@ -189,11 +189,31 @@ paths:
       summary: Save's the given BioModel. Optional parameters of name and simulations
         to update due to math changes. Returns saved BioModel as VCML.
       operationId: saveBioModel
+      parameters:
+      - name: newName
+        in: query
+        description: Name to save new BioModel under. Leave blank if re-saving existing
+          BioModel.
+        required: false
+        schema:
+          type: string
+        allowEmptyValue: true
+      - name: simsRequiringUpdates
+        in: query
+        description: The name of simulations that will be prepared for future execution.
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+        allowEmptyValue: true
       requestBody:
+        description: BioModelVCML which will be saved.
         content:
-          application/json:
+          application/xml:
             schema:
-              $ref: '#/components/schemas/SaveBioModel'
+              type: string
+        required: true
       responses:
         "200":
           description: OK
@@ -1965,22 +1985,6 @@ components:
         theHashCode:
           format: int32
           type: integer
-    SaveBioModel:
-      required:
-      - bioModelXML
-      type: object
-      properties:
-        bioModelXML:
-          pattern: \S
-          type: string
-        name:
-          type: string
-          nullable: true
-        simsRequiringUpdates:
-          type: array
-          items:
-            type: string
-          nullable: true
     SchedulerStatus:
       enum:
       - WAITING

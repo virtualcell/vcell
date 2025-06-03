@@ -54,6 +54,7 @@ for pub in some_pubs:
 final_pubs: list[Publication] = publication_api.get_publications()
 print(f"final publications: {final_pubs}")
 
+BioModelResourceApi(api_client).save_bio_model("")
 
 field = FieldDataResourceApi(api_client)
 

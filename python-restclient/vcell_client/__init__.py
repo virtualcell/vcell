@@ -69,7 +69,6 @@ from vcell_client.models.model_type import ModelType
 from vcell_client.models.origin import Origin
 from vcell_client.models.publication import Publication
 from vcell_client.models.publication_info import PublicationInfo
-from vcell_client.models.save_bio_model import SaveBioModel
 from vcell_client.models.scheduler_status import SchedulerStatus
 from vcell_client.models.simulation_execution_status_record import SimulationExecutionStatusRecord
 from vcell_client.models.simulation_job_status_record import SimulationJobStatusRecord

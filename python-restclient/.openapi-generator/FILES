@@ -36,7 +36,6 @@ docs/Origin.md
 docs/Publication.md
 docs/PublicationInfo.md
 docs/PublicationResourceApi.md
-docs/SaveBioModel.md
 docs/SchedulerStatus.md
 docs/SimulationExecutionStatusRecord.md
 docs/SimulationJobStatusRecord.md
@@ -110,7 +109,6 @@ vcell_client/models/model_type.py
 vcell_client/models/origin.py
 vcell_client/models/publication.py
 vcell_client/models/publication_info.py
-vcell_client/models/save_bio_model.py
 vcell_client/models/scheduler_status.py
 vcell_client/models/simulation_execution_status_record.py
 vcell_client/models/simulation_job_status_record.py

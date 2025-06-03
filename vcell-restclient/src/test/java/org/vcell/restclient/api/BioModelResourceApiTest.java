@@ -13,19 +13,14 @@
 
 package org.vcell.restclient.api;
 
+import org.junit.Ignore;
+import org.junit.Test;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.BioModel;
 import org.vcell.restclient.model.BioModelSummary;
 import org.vcell.restclient.model.SaveBioModel;
-import org.vcell.restclient.model.VCellHTTPError;
-import org.junit.Test;
-import org.junit.Ignore;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 
 /**
@@ -133,9 +128,7 @@ public class BioModelResourceApiTest {
     @Test
     public void saveBioModelTest() throws ApiException {
         SaveBioModel saveBioModel = null;
-        String response = 
-        api.saveBioModel(saveBioModel);
-        
+
         // TODO: test validations
     }
     

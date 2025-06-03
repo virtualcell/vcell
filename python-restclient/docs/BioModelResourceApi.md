@@ -346,7 +346,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **save_bio_model**
-> str save_bio_model(save_bio_model=save_bio_model)
+> str save_bio_model(body, new_name=new_name, sims_requiring_updates=sims_requiring_updates)
 
 Save's the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 
@@ -356,7 +356,6 @@ Save's the given BioModel. Optional parameters of name and simulations to update
 import time
 import os
 import vcell_client
-from vcell_client.models.save_bio_model import SaveBioModel
 from vcell_client.rest import ApiException
 from pprint import pprint
 
@@ -375,11 +374,13 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.BioModelResourceApi(api_client)
-    save_bio_model = vcell_client.SaveBioModel() # SaveBioModel |  (optional)
+    body = 'body_example' # str | BioModelVCML which will be saved.
+    new_name = 'new_name_example' # str | Name to save new BioModel under. Leave blank if re-saving existing BioModel. (optional)
+    sims_requiring_updates = ['sims_requiring_updates_example'] # List[str] | The name of simulations that will be prepared for future execution. (optional)
 
     try:
         # Save's the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
-        api_response = api_instance.save_bio_model(save_bio_model=save_bio_model)
+        api_response = api_instance.save_bio_model(body, new_name=new_name, sims_requiring_updates=sims_requiring_updates)
         print("The response of BioModelResourceApi->save_bio_model:\n")
         pprint(api_response)
     except Exception as e:
@@ -392,7 +393,9 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **save_bio_model** | [**SaveBioModel**](SaveBioModel.md)|  | [optional] 
+ **body** | **str**| BioModelVCML which will be saved. | 
+ **new_name** | **str**| Name to save new BioModel under. Leave blank if re-saving existing BioModel. | [optional] 
+ **sims_requiring_updates** | [**List[str]**](str.md)| The name of simulations that will be prepared for future execution. | [optional] 
 
 ### Return type
 
@@ -404,7 +407,7 @@ Name | Type | Description  | Notes
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: application/xml
  - **Accept**: application/xml, application/json
 
 ### HTTP response details
