@@ -24,7 +24,7 @@ running_jobs=0
 
 for i in $(seq 0 $((total_jobs - 1))); do
     # log job start
-    echo "job $i started at $(date)" >> $log_file
+    echo "Job $i started at $(date)" >> $log_file
     timeout $timeout_duration srun -N 1 -n 1 -c 1 ./subscript.sh $i dynamic.langevinInput & # run each script in parallel
     pid=$!  # capture the job PID
     job_pids+=($pid)  # store the PID
@@ -39,7 +39,7 @@ for i in $(seq 0 $((total_jobs - 1))); do
                 wait "$pid"  # ensure exit status is collected
                 exit_code=$?
                 job_index=${job_pid_map[$pid]}  # retrieve original job index
-                echo "job $job_index with PID $pid finished with exit code $exit_code at $(date)" >> $log_file
+                echo "Job $job_index with PID $pid finished with exit code $exit_code at $(date)" >> $log_file
                 unset "job_pids[$idx]"  # remove PID from list
                 unset "job_pid_map[$pid]"  # remove mapping
                 ((running_jobs--))  # decrement count
@@ -55,17 +55,17 @@ for pid in "${job_pids[@]}"; do
     wait $pid
     exit_code=$?
     job_index=${job_pid_map[$pid]}  # retrieve original job index
-    echo "job $job_index with PID $pid finished with exit code $exit_code at $(date)" >> $log_file
+    echo "Job $job_index with PID $pid finished with exit code $exit_code at $(date)" >> $log_file
 done
-echo "batch jobs completed at $(date)" >> $log_file
+echo "Batch jobs completed at $(date)" >> $log_file
 
-echo "starting the last job at $(date)" >> $log_file
+echo "Starting the last job at $(date)" >> $log_file
 timeout $timeout_duration srun -N 1 -n 1 -c 1 ./last.sh &  # run last script with a timeout
 last_pid=$!
 wait $last_pid  # explicitly wait for last.sh to finish
 exit_code=$?    # capture the exit code of the job
-echo "job 'Last' with PID $last_pid finished with exit code $exit_code at $(date)" >> $log_file
-echo "last job finished at $(date)" >> $log_file
+echo "Job 'Last' with PID $last_pid finished with exit code $exit_code at $(date)" >> $log_file
+echo "The final job finished at $(date)" >> $log_file
 
-echo "all jobs completed at $(date)" >> $log_file
-echo "end Script" >> $log_file
+echo "All jobs completed at $(date)" >> $log_file
+echo "End Script" >> $log_file
