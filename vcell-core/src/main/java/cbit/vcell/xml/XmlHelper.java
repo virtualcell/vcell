@@ -112,7 +112,7 @@ public class XmlHelper {
 	}
 
 	static String getEscapedSoftwareVersion(){
-		return TokenMangler.getEscapedString(PropertyLoader.getRequiredProperty("vcell.softwareVersion"));
+		return TokenMangler.getEscapedString(PropertyLoader.getProperty("vcell.softwareVersion", "unknown"));
 	}
 	public static String bioModelToXML(BioModel bioModel, boolean printkeys) throws XmlParseException {
 
