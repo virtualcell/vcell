@@ -255,7 +255,7 @@ private static class MonitorJobInfo {
 	
 }
 private static String MONITOR_JOBS_FILE_NAME = "monitorJobsList";
-private static File monitorJobsFile = new File(System.getProperty(PropertyLoader.primarySimDataDirInternalProperty), MONITOR_JOBS_FILE_NAME+"_"+System.getProperty(PropertyLoader.vcellServerIDProperty)+".txt");
+private static File monitorJobsFile = new File(PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty), MONITOR_JOBS_FILE_NAME+"_"+PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty)+".txt");
 private static Hashtable<String,MonitorJobInfo> getMonitorJobs(){
 	Hashtable<String,MonitorJobInfo> result = new Hashtable<>();
 	ArrayList<String> theseJobsAreDone = new ArrayList<>();

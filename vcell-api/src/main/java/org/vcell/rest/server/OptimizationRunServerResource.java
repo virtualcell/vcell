@@ -180,7 +180,7 @@ public class OptimizationRunServerResource extends AbstractServerResource implem
 		String swarmSubmitTaskName = PropertyLoader.getProperty(PropertyLoader.vcellsubmit_service_host, null);
 		if (swarmSubmitTaskName == null){
 			// if not provided, then calculate the DNS name of the docker swarm service for vcell-submit
-			swarmSubmitTaskName = "tasks."+"vcell"+System.getProperty("vcell.server.id").toLowerCase()+"_submit";
+			swarmSubmitTaskName = "tasks."+"vcell"+PropertyLoader.getRequiredProperty("vcell.server.id").toLowerCase()+"_submit";
 		}
 		ProcessBuilder pb =new ProcessBuilder("nslookup",swarmSubmitTaskName);
 		pb.redirectErrorStream(true);
