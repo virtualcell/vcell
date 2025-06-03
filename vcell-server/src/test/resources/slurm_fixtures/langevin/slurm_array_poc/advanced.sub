@@ -1,5 +1,5 @@
 #!/bin/bash --login
-#SBATCH --job-name=advancedJob
+#SBATCH --job-name=advanced
 #SBATCH --nodes=1
 #SBATCH --ntasks=4
 #SBATCH --qos=vcell
@@ -9,7 +9,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --time=01:00:00
 
-log_file="job_status.log"
+log_file="${SLURM_JOB_NAME}.log"
 total_jobs=10  # total number of jobs to run
 timeout_duration=15s  # maximum allowed runtime for each job
 max_concurrent_jobs=$SLURM_NTASKS  # number of jobs allowed at once
