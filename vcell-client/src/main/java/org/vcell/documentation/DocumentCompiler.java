@@ -23,10 +23,8 @@ import java.io.File;
 import java.util.*;
 
 public class DocumentCompiler {
-	private final static int MAX_IMG_FILE_SIZE = 50000;
-	private final static int WARN_IMG_FILE_SIZE = 25000;
-	private final static int maxImgWidth = 600;
-	private final static int maxImgHeight = 600;
+	private final static int MAX_IMG_FILE_SIZE = 500000;
+	private final static int WARN_IMG_FILE_SIZE = 250000;
 	private final static String imageFilePath = "topics/image/";
 	private final static String tocFileName = "TOC.xml";
 	private final static String definitionXMLFileName = "Definitions.xml";
@@ -142,10 +140,6 @@ public class DocumentCompiler {
 				int imgWidth = img.getWidth();
 				int imgHeight = img.getHeight();
 				String imgChkStr = "";
-				if(imgWidth > maxImgWidth || imgHeight > maxImgHeight)
-				{
-					imgChkStr = "ERROR: (" + imgFile.getName() + ") image dimension ("+imgWidth+","+imgHeight+") exceeds the maximum allowed image dimension("+ maxImgWidth + ","+maxImgHeight+") in VCell Help.";
-				}
 				if(imgFile.length() > MAX_IMG_FILE_SIZE){
 					imgChkStr = (!imgChkStr.isEmpty() ? imgChkStr+"\n" : "") +
 							"ERROR: (" + imgFile.getName() + ") ERROR file size ("+imgFile.length()+") greater than maximum allowed file size ("+MAX_IMG_FILE_SIZE+") in VCell Help.";
