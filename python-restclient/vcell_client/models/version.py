@@ -23,7 +23,6 @@ from typing import Any, ClassVar, Dict, List, Optional, Union
 from pydantic import BaseModel, StrictFloat, StrictInt, StrictStr
 from pydantic import Field
 from vcell_client.models.group_access import GroupAccess
-from vcell_client.models.key_value import KeyValue
 from vcell_client.models.user import User
 from vcell_client.models.version_flag import VersionFlag
 try:
@@ -35,10 +34,10 @@ class Version(BaseModel):
     """
     Version
     """ # noqa: E501
-    version_key: Optional[KeyValue] = Field(default=None, alias="versionKey")
+    version_key: Optional[StrictStr] = Field(default=None, alias="versionKey")
     annot: Optional[StrictStr] = None
     branch_id: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="branchID")
-    branch_point_ref_key: Optional[KeyValue] = Field(default=None, alias="branchPointRefKey")
+    branch_point_ref_key: Optional[StrictStr] = Field(default=None, alias="branchPointRefKey")
     var_date: Optional[datetime] = Field(default=None, alias="date")
     flag: Optional[VersionFlag] = None
     group_access: Optional[GroupAccess] = Field(default=None, alias="groupAccess")
@@ -82,12 +81,6 @@ class Version(BaseModel):
             },
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of version_key
-        if self.version_key:
-            _dict['versionKey'] = self.version_key.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of branch_point_ref_key
-        if self.branch_point_ref_key:
-            _dict['branchPointRefKey'] = self.branch_point_ref_key.to_dict()
         # override the default output from pydantic by calling `to_dict()` of flag
         if self.flag:
             _dict['flag'] = self.flag.to_dict()
@@ -114,10 +107,10 @@ class Version(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in Version) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "versionKey": KeyValue.from_dict(obj.get("versionKey")) if obj.get("versionKey") is not None else None,
+            "versionKey": obj.get("versionKey"),
             "annot": obj.get("annot"),
             "branchID": obj.get("branchID"),
-            "branchPointRefKey": KeyValue.from_dict(obj.get("branchPointRefKey")) if obj.get("branchPointRefKey") is not None else None,
+            "branchPointRefKey": obj.get("branchPointRefKey"),
             "date": obj.get("date"),
             "flag": VersionFlag.from_dict(obj.get("flag")) if obj.get("flag") is not None else None,
             "groupAccess": GroupAccess.from_dict(obj.get("groupAccess")) if obj.get("groupAccess") is not None else None,

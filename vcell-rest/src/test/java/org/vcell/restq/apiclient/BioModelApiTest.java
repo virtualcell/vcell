@@ -7,6 +7,7 @@ import cbit.vcell.model.Species;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.ServerDocumentManager;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.xml.VCMLComparator;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -83,12 +84,12 @@ public class BioModelApiTest {
         String vcmlToBeUploaded = XmlHelper.bioModelToXML(TestEndpointUtils.getTestBioModel());
 
         SaveBioModel saveBioModel = new SaveBioModel().bioModelXML(vcmlToBeUploaded);
-        String vcmlReturnedFromSave = bioModelResourceApi.saveBioModel(saveBioModel);
+        String vcmlReturnedFromSave = bioModelResourceApi.saveBioModel(vcmlToBeUploaded,null, null);
         BioModel savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlReturnedFromSave));
 
         // Can't save again without changes being made
         try{
-            bioModelResourceApi.saveBioModel(saveBioModel);
+            bioModelResourceApi.saveBioModel(vcmlToBeUploaded, null, null);
             throw new RuntimeException("This should not execute because an ApiException error should be thrown.");
         } catch (ApiException e){
             Assertions.assertEquals(DataAccessWebException.HTTP_CODE, e.getCode(), "Can't resave BioModel that has the same name declared.");
@@ -104,15 +105,16 @@ public class BioModelApiTest {
         BioModel retrievedBioModel = XmlHelper.XMLToBioModel(new XMLSource(retrievedVCML));
         Assertions.assertTrue(ogBioModel.compareEqual(retrievedBioModel));
         Assertions.assertEquals(retrievedVCML, vcmlReturnedFromSave);
+        Assertions.assertTrue(VCMLComparator.compareEquals(retrievedVCML, vcmlReturnedFromSave, false));
 
         // Saving same model, but with slight change works
         retrievedBioModel.getModel().addSpecies(new Species("bob", "annotation"));
         saveBioModel.bioModelXML(XmlHelper.bioModelToXML(retrievedBioModel));
         saveBioModel.name(null);
-        String secondSave = bioModelResourceApi.saveBioModel(saveBioModel);
+        String secondSave = bioModelResourceApi.saveBioModel(XmlHelper.bioModelToXML(retrievedBioModel), null, null);
 
         try {
-            bioModelResourceApi.saveBioModel(new SaveBioModel());
+            bioModelResourceApi.saveBioModel(null, null, null);
             throw new RuntimeException("This should not execute because an ApiException error should be thrown.");
         } catch (ApiException e){
             Assertions.assertEquals(400, e.getCode(), "Validation does not allow for saving a BioModel with no text.");
@@ -123,9 +125,8 @@ public class BioModelApiTest {
     public void testRemoveBioModel() throws PropertyVetoException, XmlParseException, IOException, ApiException, SQLException {
         BioModelResourceApi bioModelResourceApi = new BioModelResourceApi(aliceAPIClient);
         ServerDocumentManager serverDocumentManager = new ServerDocumentManager(databaseServer);
-        SaveBioModel saveBioModel = new SaveBioModel().bioModelXML(XmlHelper.bioModelToXML(TestEndpointUtils.getTestBioModel()));
 
-        String bioModelVCML = bioModelResourceApi.saveBioModel(saveBioModel);
+        String bioModelVCML = bioModelResourceApi.saveBioModel(XmlHelper.bioModelToXML(TestEndpointUtils.getTestBioModel()), null, null);
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelVCML));
         KeyValue bioModelKey = bioModel.getVersion().getVersionKey();
 

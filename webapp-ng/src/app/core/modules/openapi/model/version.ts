@@ -10,16 +10,15 @@
  * Do not edit the class manually.
  */
 import { VersionFlag } from './version-flag';
-import { KeyValue } from './key-value';
 import { User } from './user';
 import { GroupAccess } from './group-access';
 
 
 export interface Version { 
-    versionKey?: KeyValue;
+    versionKey?: string;
     annot?: string;
     branchID?: number;
-    branchPointRefKey?: KeyValue;
+    branchPointRefKey?: string;
     date?: string;
     flag?: VersionFlag;
     groupAccess?: GroupAccess;

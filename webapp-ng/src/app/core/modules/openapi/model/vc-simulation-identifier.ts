@@ -9,12 +9,11 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { KeyValue } from './key-value';
 import { User } from './user';
 
 
 export interface VCSimulationIdentifier { 
-    simulationKey?: KeyValue;
+    simulationKey?: string;
     owner?: User;
     id?: string;
 }

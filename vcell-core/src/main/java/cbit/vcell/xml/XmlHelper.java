@@ -38,6 +38,7 @@ import cbit.vcell.model.Parameter;
 import cbit.vcell.model.ReactionStep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.*;
 import cbit.xml.merge.NodeInfo;
@@ -111,7 +112,7 @@ public class XmlHelper {
 	}
 
 	static String getEscapedSoftwareVersion(){
-		return TokenMangler.getEscapedString(System.getProperty("vcell.softwareVersion", "unknown"));
+		return TokenMangler.getEscapedString(PropertyLoader.getProperty("vcell.softwareVersion", "unknown"));
 	}
 	public static String bioModelToXML(BioModel bioModel, boolean printkeys) throws XmlParseException {
 

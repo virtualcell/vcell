@@ -693,7 +693,7 @@ No authorization required
 
 ## saveBioModel
 
-> String saveBioModel(saveBioModel)
+> String saveBioModel(body, newName, simsRequiringUpdates)
 
 Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 
@@ -715,9 +715,11 @@ public class Example {
         
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        SaveBioModel saveBioModel = new SaveBioModel(); // SaveBioModel | 
+        String body = "body_example"; // String | BioModelVCML which will be saved.
+        String newName = "newName_example"; // String | Name to save new BioModel under. Leave blank if re-saving existing BioModel.
+        List<String> simsRequiringUpdates = Arrays.asList(); // List<String> | The name of simulations that will be prepared for future execution.
         try {
-            String result = apiInstance.saveBioModel(saveBioModel);
+            String result = apiInstance.saveBioModel(body, newName, simsRequiringUpdates);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling BioModelResourceApi#saveBioModel");
@@ -735,7 +737,9 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **saveBioModel** | [**SaveBioModel**](SaveBioModel.md)|  | [optional] |
+| **body** | **String**| BioModelVCML which will be saved. | |
+| **newName** | **String**| Name to save new BioModel under. Leave blank if re-saving existing BioModel. | [optional] |
+| **simsRequiringUpdates** | [**List&lt;String&gt;**](String.md)| The name of simulations that will be prepared for future execution. | [optional] |
 
 ### Return type
 
@@ -748,7 +752,7 @@ public class Example {
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/xml
 - **Accept**: application/xml, application/json
 
 ### HTTP response details
@@ -762,7 +766,7 @@ public class Example {
 
 ## saveBioModelWithHttpInfo
 
-> ApiResponse<String> saveBioModel saveBioModelWithHttpInfo(saveBioModel)
+> ApiResponse<String> saveBioModel saveBioModelWithHttpInfo(body, newName, simsRequiringUpdates)
 
 Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 
@@ -785,9 +789,11 @@ public class Example {
         
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        SaveBioModel saveBioModel = new SaveBioModel(); // SaveBioModel | 
+        String body = "body_example"; // String | BioModelVCML which will be saved.
+        String newName = "newName_example"; // String | Name to save new BioModel under. Leave blank if re-saving existing BioModel.
+        List<String> simsRequiringUpdates = Arrays.asList(); // List<String> | The name of simulations that will be prepared for future execution.
         try {
-            ApiResponse<String> response = apiInstance.saveBioModelWithHttpInfo(saveBioModel);
+            ApiResponse<String> response = apiInstance.saveBioModelWithHttpInfo(body, newName, simsRequiringUpdates);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
@@ -807,7 +813,9 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **saveBioModel** | [**SaveBioModel**](SaveBioModel.md)|  | [optional] |
+| **body** | **String**| BioModelVCML which will be saved. | |
+| **newName** | **String**| Name to save new BioModel under. Leave blank if re-saving existing BioModel. | [optional] |
+| **simsRequiringUpdates** | [**List&lt;String&gt;**](String.md)| The name of simulations that will be prepared for future execution. | [optional] |
 
 ### Return type
 
@@ -820,7 +828,7 @@ ApiResponse<**String**>
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: application/xml
 - **Accept**: application/xml, application/json
 
 ### HTTP response details

@@ -889,8 +889,9 @@ public BigString saveBioModel(BigString bioModelXML, String independentSims[]) t
     String savedBioModelXML = null;
     try {
         savedBioModelXML = vCellApiClient.getBioModelApi().saveBioModel(
-                        new SaveBioModel().bioModelXML(bioModelXML.toString())
-                                .simsRequiringUpdates(independentSims == null ? null : Arrays.asList(independentSims))
+				bioModelXML.toString(),
+				null,
+				independentSims == null ? null : Arrays.asList(independentSims)
         );
     } catch (ApiException e) {
         ExceptionHandler.onlyDataAccessException(e);
@@ -909,9 +910,10 @@ public BigString saveBioModelAs(BigString bioModelXML, String newName, String in
     String savedBioModelXML = null;
     try {
         savedBioModelXML = vCellApiClient.getBioModelApi().saveBioModel(
-                        new SaveBioModel().bioModelXML(bioModelXML.toString())
-                                .name(newName)
-                                .simsRequiringUpdates(independentSims == null ? null : Arrays.asList(independentSims)));
+						bioModelXML.toString(),
+						newName,
+						independentSims == null ? null : Arrays.asList(independentSims)
+		);
     } catch (ApiException e) {
         ExceptionHandler.onlyDataAccessException(e);
     }

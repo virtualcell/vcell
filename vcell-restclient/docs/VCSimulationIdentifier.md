@@ -7,7 +7,7 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**simulationKey** | [**KeyValue**](KeyValue.md) |  |  [optional] |
+|**simulationKey** | **String** |  |  [optional] |
 |**owner** | [**User**](User.md) |  |  [optional] |
 |**id** | **String** |  |  [optional] |
 

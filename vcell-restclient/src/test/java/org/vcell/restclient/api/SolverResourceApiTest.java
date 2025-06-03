@@ -15,6 +15,7 @@ package org.vcell.restclient.api;
 
 import org.vcell.restclient.ApiException;
 import java.io.File;
+import org.vcell.restclient.model.VCellHTTPError;
 import org.junit.Test;
 import org.junit.Ignore;
 

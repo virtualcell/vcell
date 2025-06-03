@@ -22,7 +22,6 @@ from datetime import date
 from typing import Any, ClassVar, Dict, List, Optional
 from pydantic import BaseModel, StrictInt, StrictStr
 from pydantic import Field
-from vcell_client.models.key_value import KeyValue
 from vcell_client.models.user import User
 from vcell_client.models.vc_document_type import VCDocumentType
 try:
@@ -34,8 +33,8 @@ class PublicationInfo(BaseModel):
     """
     PublicationInfo
     """ # noqa: E501
-    publication_key: Optional[KeyValue] = Field(default=None, alias="publicationKey")
-    version_key: Optional[KeyValue] = Field(default=None, alias="versionKey")
+    publication_key: Optional[StrictStr] = Field(default=None, alias="publicationKey")
+    version_key: Optional[StrictStr] = Field(default=None, alias="versionKey")
     title: Optional[StrictStr] = None
     authors: Optional[List[StrictStr]] = None
     citation: Optional[StrictStr] = None
@@ -84,12 +83,6 @@ class PublicationInfo(BaseModel):
             },
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of publication_key
-        if self.publication_key:
-            _dict['publicationKey'] = self.publication_key.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of version_key
-        if self.version_key:
-            _dict['versionKey'] = self.version_key.to_dict()
         # override the default output from pydantic by calling `to_dict()` of user
         if self.user:
             _dict['user'] = self.user.to_dict()
@@ -110,8 +103,8 @@ class PublicationInfo(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in PublicationInfo) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "publicationKey": KeyValue.from_dict(obj.get("publicationKey")) if obj.get("publicationKey") is not None else None,
-            "versionKey": KeyValue.from_dict(obj.get("versionKey")) if obj.get("versionKey") is not None else None,
+            "publicationKey": obj.get("publicationKey"),
+            "versionKey": obj.get("versionKey"),
             "title": obj.get("title"),
             "authors": obj.get("authors"),
             "citation": obj.get("citation"),

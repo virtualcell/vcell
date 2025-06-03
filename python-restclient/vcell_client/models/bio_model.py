@@ -22,7 +22,6 @@ import json
 from typing import Any, ClassVar, Dict, List, Optional, Union
 from pydantic import BaseModel, StrictInt, StrictStr
 from pydantic import Field
-from vcell_client.models.key_value import KeyValue
 try:
     from typing import Self
 except ImportError:
@@ -42,7 +41,7 @@ class BioModel(BaseModel):
     phys_model_key: Optional[StrictStr] = Field(default=None, alias="physModelKey")
     owner_name: Optional[StrictStr] = Field(default=None, alias="ownerName")
     owner_key: Optional[StrictStr] = Field(default=None, alias="ownerKey")
-    simulation_key_list: Optional[List[KeyValue]] = Field(default=None, alias="simulationKeyList")
+    simulation_key_list: Optional[List[StrictStr]] = Field(default=None, alias="simulationKeyList")
     applications: Optional[List[Union[str, Any]]] = None
     __properties: ClassVar[List[str]] = ["bmKey", "name", "privacy", "groupUsers", "savedDate", "annot", "branchID", "physModelKey", "ownerName", "ownerKey", "simulationKeyList", "applications"]
 
@@ -82,13 +81,6 @@ class BioModel(BaseModel):
             },
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of each item in simulation_key_list (list)
-        _items = []
-        if self.simulation_key_list:
-            for _item in self.simulation_key_list:
-                if _item:
-                    _items.append(_item.to_dict())
-            _dict['simulationKeyList'] = _items
         return _dict
 
     @classmethod
@@ -116,7 +108,7 @@ class BioModel(BaseModel):
             "physModelKey": obj.get("physModelKey"),
             "ownerName": obj.get("ownerName"),
             "ownerKey": obj.get("ownerKey"),
-            "simulationKeyList": [KeyValue.from_dict(_item) for _item in obj.get("simulationKeyList")] if obj.get("simulationKeyList") is not None else None,
+            "simulationKeyList": obj.get("simulationKeyList"),
             "applications": obj.get("applications")
         })
         return _obj

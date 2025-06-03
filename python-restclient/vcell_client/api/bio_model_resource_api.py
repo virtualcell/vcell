@@ -32,7 +32,6 @@ from typing import List, Optional
 
 from vcell_client.models.bio_model import BioModel
 from vcell_client.models.bio_model_summary import BioModelSummary
-from vcell_client.models.save_bio_model import SaveBioModel
 
 from vcell_client.api_client import ApiClient
 from vcell_client.api_response import ApiResponse
@@ -1372,7 +1371,9 @@ class BioModelResourceApi:
     @validate_call
     def save_bio_model(
         self,
-        save_bio_model: Optional[SaveBioModel] = None,
+        body: Annotated[StrictStr, Field(description="BioModelVCML which will be saved.")],
+        new_name: Annotated[Optional[StrictStr], Field(description="Name to save new BioModel under. Leave blank if re-saving existing BioModel.")] = None,
+        sims_requiring_updates: Annotated[Optional[List[StrictStr]], Field(description="The name of simulations that will be prepared for future execution.")] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1389,8 +1390,12 @@ class BioModelResourceApi:
         """Save's the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 
 
-        :param save_bio_model:
-        :type save_bio_model: SaveBioModel
+        :param body: BioModelVCML which will be saved. (required)
+        :type body: str
+        :param new_name: Name to save new BioModel under. Leave blank if re-saving existing BioModel.
+        :type new_name: str
+        :param sims_requiring_updates: The name of simulations that will be prepared for future execution.
+        :type sims_requiring_updates: List[str]
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1414,7 +1419,9 @@ class BioModelResourceApi:
         """ # noqa: E501
 
         _param = self._save_bio_model_serialize(
-            save_bio_model=save_bio_model,
+            body=body,
+            new_name=new_name,
+            sims_requiring_updates=sims_requiring_updates,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1443,7 +1450,9 @@ class BioModelResourceApi:
     @validate_call
     def save_bio_model_with_http_info(
         self,
-        save_bio_model: Optional[SaveBioModel] = None,
+        body: Annotated[StrictStr, Field(description="BioModelVCML which will be saved.")],
+        new_name: Annotated[Optional[StrictStr], Field(description="Name to save new BioModel under. Leave blank if re-saving existing BioModel.")] = None,
+        sims_requiring_updates: Annotated[Optional[List[StrictStr]], Field(description="The name of simulations that will be prepared for future execution.")] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1460,8 +1469,12 @@ class BioModelResourceApi:
         """Save's the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 
 
-        :param save_bio_model:
-        :type save_bio_model: SaveBioModel
+        :param body: BioModelVCML which will be saved. (required)
+        :type body: str
+        :param new_name: Name to save new BioModel under. Leave blank if re-saving existing BioModel.
+        :type new_name: str
+        :param sims_requiring_updates: The name of simulations that will be prepared for future execution.
+        :type sims_requiring_updates: List[str]
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1485,7 +1498,9 @@ class BioModelResourceApi:
         """ # noqa: E501
 
         _param = self._save_bio_model_serialize(
-            save_bio_model=save_bio_model,
+            body=body,
+            new_name=new_name,
+            sims_requiring_updates=sims_requiring_updates,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1514,7 +1529,9 @@ class BioModelResourceApi:
     @validate_call
     def save_bio_model_without_preload_content(
         self,
-        save_bio_model: Optional[SaveBioModel] = None,
+        body: Annotated[StrictStr, Field(description="BioModelVCML which will be saved.")],
+        new_name: Annotated[Optional[StrictStr], Field(description="Name to save new BioModel under. Leave blank if re-saving existing BioModel.")] = None,
+        sims_requiring_updates: Annotated[Optional[List[StrictStr]], Field(description="The name of simulations that will be prepared for future execution.")] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1531,8 +1548,12 @@ class BioModelResourceApi:
         """Save's the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 
 
-        :param save_bio_model:
-        :type save_bio_model: SaveBioModel
+        :param body: BioModelVCML which will be saved. (required)
+        :type body: str
+        :param new_name: Name to save new BioModel under. Leave blank if re-saving existing BioModel.
+        :type new_name: str
+        :param sims_requiring_updates: The name of simulations that will be prepared for future execution.
+        :type sims_requiring_updates: List[str]
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -1556,7 +1577,9 @@ class BioModelResourceApi:
         """ # noqa: E501
 
         _param = self._save_bio_model_serialize(
-            save_bio_model=save_bio_model,
+            body=body,
+            new_name=new_name,
+            sims_requiring_updates=sims_requiring_updates,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1580,7 +1603,9 @@ class BioModelResourceApi:
 
     def _save_bio_model_serialize(
         self,
-        save_bio_model,
+        body,
+        new_name,
+        sims_requiring_updates,
         _request_auth,
         _content_type,
         _headers,
@@ -1591,6 +1616,7 @@ class BioModelResourceApi:
 
         _collection_formats: Dict[str, str] = {
             
+            'simsRequiringUpdates': 'multi',
         }
 
         _path_params: Dict[str, str] = {}
@@ -1602,11 +1628,19 @@ class BioModelResourceApi:
 
         # process the path parameters
         # process the query parameters
+        if new_name is not None:
+            
+            _query_params.append(('newName', new_name))
+            
+        if sims_requiring_updates is not None:
+            
+            _query_params.append(('simsRequiringUpdates', sims_requiring_updates))
+            
         # process the header parameters
         # process the form parameters
         # process the body parameter
-        if save_bio_model is not None:
-            _body_params = save_bio_model
+        if body is not None:
+            _body_params = body
 
 
         # set the HTTP header `Accept`
@@ -1624,7 +1658,7 @@ class BioModelResourceApi:
             _default_content_type = (
                 self.api_client.select_header_content_type(
                     [
-                        'application/json'
+                        'application/xml'
                     ]
                 )
             )

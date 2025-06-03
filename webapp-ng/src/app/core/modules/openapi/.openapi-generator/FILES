@@ -46,7 +46,6 @@ model/hello-world-message.ts
 model/htc-job-id.ts
 model/i-size.ts
 model/identity.ts
-model/key-value.ts
 model/math-type.ts
 model/mathmodel-ref.ts
 model/model-type.ts
@@ -54,7 +53,6 @@ model/models.ts
 model/origin.ts
 model/publication-info.ts
 model/publication.ts
-model/save-bio-model.ts
 model/scheduler-status.ts
 model/simulation-execution-status-record.ts
 model/simulation-job-status-record.ts

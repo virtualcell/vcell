@@ -134,7 +134,7 @@ public class FieldDataAPITest {
         // It's in the DB
         List<FieldDataReference> references = fieldDataResourceApi.getAllIDs();
         Assertions.assertEquals(saveFieldDataFromFile.getAnnotation(), references.get(0).getAnnotation());
-        Assertions.assertEquals(results.getFieldDataKey(), references.get(0).getFieldDataID().getKey().getValue().toString());
+        Assertions.assertEquals(results.getFieldDataKey(), references.get(0).getFieldDataID().getDataKey());
         Assertions.assertEquals(0, references.get(0).getSimulationsReferencingThisID().size());
 
         ///////////////////////

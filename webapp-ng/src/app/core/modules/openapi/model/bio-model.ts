@@ -9,7 +9,6 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { KeyValue } from './key-value';
 
 
 export interface BioModel { 
@@ -23,7 +22,7 @@ export interface BioModel {
     physModelKey?: string;
     ownerName?: string;
     ownerKey?: string;
-    simulationKeyList?: Array<KeyValue>;
+    simulationKeyList?: Array<string>;
     applications?: Array<object>;
 }
 

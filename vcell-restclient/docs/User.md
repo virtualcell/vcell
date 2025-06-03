@@ -8,7 +8,7 @@
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
 |**userName** | **String** |  |  [optional] |
-|**key** | [**KeyValue**](KeyValue.md) |  |  [optional] |
+|**key** | **String** |  |  [optional] |
 
 
 

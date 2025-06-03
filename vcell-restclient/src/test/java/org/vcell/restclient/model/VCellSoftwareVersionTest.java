@@ -103,14 +103,6 @@ public class VCellSoftwareVersionTest {
     }
 
     /**
-     * Test the property 'site'
-     */
-    @Test
-    public void siteTest() {
-        // TODO: test site
-    }
-
-    /**
      * Test the property 'description'
      */
     @Test

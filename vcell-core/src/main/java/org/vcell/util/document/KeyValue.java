@@ -11,12 +11,15 @@
 package org.vcell.util.document;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.vcell.util.Matchable;
 
 @SuppressWarnings("serial")
 
 
 @JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY)
+@Schema(type = SchemaType.STRING)
 public class KeyValue implements java.io.Serializable, Matchable {
 	private java.math.BigDecimal value = null;
 

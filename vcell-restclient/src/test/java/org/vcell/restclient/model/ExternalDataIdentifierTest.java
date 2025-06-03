@@ -19,7 +19,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import org.vcell.restclient.model.KeyValue;
 import org.vcell.restclient.model.User;
 import org.junit.Assert;
 import org.junit.Ignore;

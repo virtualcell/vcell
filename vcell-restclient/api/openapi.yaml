@@ -200,11 +200,35 @@ paths:
   /api/v1/bioModel:
     post:
       operationId: saveBioModel
+      parameters:
+      - allowEmptyValue: true
+        description: Name to save new BioModel under. Leave blank if re-saving existing
+          BioModel.
+        explode: true
+        in: query
+        name: newName
+        required: false
+        schema:
+          type: string
+        style: form
+      - allowEmptyValue: true
+        description: The name of simulations that will be prepared for future execution.
+        explode: true
+        in: query
+        name: simsRequiringUpdates
+        required: false
+        schema:
+          items:
+            type: string
+          type: array
+        style: form
       requestBody:
         content:
-          application/json:
+          application/xml:
             schema:
-              $ref: '#/components/schemas/SaveBioModel'
+              type: string
+        description: BioModelVCML which will be saved.
+        required: true
       responses:
         "200":
           content:
@@ -239,7 +263,7 @@ paths:
         to update due to math changes. Returns saved BioModel as VCML.
       tags:
       - Bio Model Resource
-      x-content-type: application/json
+      x-content-type: application/xml
       x-accepts: application/json
   /api/v1/bioModel/summaries:
     get:
@@ -1485,8 +1509,8 @@ components:
         - groupUsers
         annot: annot
         simulationKeyList:
-        - value: 0.8008281904610115
-        - value: 0.8008281904610115
+        - null
+        - null
         ownerKey: ownerKey
         savedDate: 6
         applications:
@@ -1684,16 +1708,13 @@ components:
           theHashCode: 9
           citation: citation
           title: title
-          publicationKey:
-            value: 0.8008281904610115
+          publicationKey: publicationKey
           pubmedid: pubmedid
           user:
             userName: userName
-            key:
-              value: 0.8008281904610115
+            key: key
           url: url
-          versionKey:
-            value: 0.8008281904610115
+          versionKey: versionKey
           authors:
           - authors
           - authors
@@ -1703,16 +1724,13 @@ components:
           theHashCode: 9
           citation: citation
           title: title
-          publicationKey:
-            value: 0.8008281904610115
+          publicationKey: publicationKey
           pubmedid: pubmedid
           user:
             userName: userName
-            key:
-              value: 0.8008281904610115
+            key: key
           url: url
-          versionKey:
-            value: 0.8008281904610115
+          versionKey: versionKey
           authors:
           - authors
           - authors
@@ -1722,8 +1740,7 @@ components:
           date: 2000-01-23T04:56:07.000+00:00
           owner:
             userName: userName
-            key:
-              value: 0.8008281904610115
+            key: key
           branchID: 0.8008281904610115
           flag:
             archived: true
@@ -1736,10 +1753,8 @@ components:
             description: description
           name: name
           annot: annot
-          branchPointRefKey:
-            value: 0.8008281904610115
-          versionKey:
-            value: 0.8008281904610115
+          branchPointRefKey: branchPointRefKey
+          versionKey: versionKey
         vCellSoftwareVersion:
           vcellSite: null
           patchVersion: 4
@@ -1909,20 +1924,16 @@ components:
       example:
         owner:
           userName: userName
-          key:
-            value: 0.8008281904610115
-        dataKey:
-          value: 0.8008281904610115
-        simulationKey:
-          value: 0.8008281904610115
+          key: key
+        dataKey: dataKey
+        simulationKey: simulationKey
         jobIndex: 0
         name: name
-        key:
-          value: 0.8008281904610115
+        key: key
         parameterScanType: true
       properties:
         key:
-          $ref: '#/components/schemas/KeyValue'
+          type: string
         owner:
           $ref: '#/components/schemas/User'
         name:
@@ -1931,11 +1942,11 @@ components:
           format: int32
           type: integer
         simulationKey:
-          $ref: '#/components/schemas/KeyValue'
+          type: string
         parameterScanType:
           type: boolean
         dataKey:
-          $ref: '#/components/schemas/KeyValue'
+          type: string
       type: object
     FieldData:
       example:
@@ -2021,20 +2032,16 @@ components:
         fieldDataID:
           owner:
             userName: userName
-            key:
-              value: 0.8008281904610115
-          dataKey:
-            value: 0.8008281904610115
-          simulationKey:
-            value: 0.8008281904610115
+            key: key
+          dataKey: dataKey
+          simulationKey: simulationKey
           jobIndex: 0
           name: name
-          key:
-            value: 0.8008281904610115
+          key: key
           parameterScanType: true
         simulationsReferencingThisID:
-        - value: 0.8008281904610115
-        - value: 0.8008281904610115
+        - null
+        - null
       properties:
         fieldDataID:
           $ref: '#/components/schemas/ExternalDataIdentifier'
@@ -2207,7 +2214,7 @@ components:
       example:
         server: server
         batchSystemType: null
-        jobNumber: 6
+        jobNumber: 0
       properties:
         jobNumber:
           format: int64
@@ -2266,12 +2273,7 @@ components:
       format: date-time
       type: string
     KeyValue:
-      example:
-        value: 0.8008281904610115
-      properties:
-        value:
-          type: number
-      type: object
+      type: string
     MathType:
       enum:
       - RuleBased
@@ -2412,16 +2414,13 @@ components:
         theHashCode: 9
         citation: citation
         title: title
-        publicationKey:
-          value: 0.8008281904610115
+        publicationKey: publicationKey
         pubmedid: pubmedid
         user:
           userName: userName
-          key:
-            value: 0.8008281904610115
+          key: key
         url: url
-        versionKey:
-          value: 0.8008281904610115
+        versionKey: versionKey
         authors:
         - authors
         - authors
@@ -2429,9 +2428,9 @@ components:
         pubdate: 2022-03-10T00:00:00.000+00:00
       properties:
         publicationKey:
-          $ref: '#/components/schemas/KeyValue'
+          type: string
         versionKey:
-          $ref: '#/components/schemas/KeyValue'
+          type: string
         title:
           type: string
         authors:
@@ -2458,28 +2457,6 @@ components:
           format: int32
           type: integer
       type: object
-    SaveBioModel:
-      example:
-        simsRequiringUpdates:
-        - simsRequiringUpdates
-        - simsRequiringUpdates
-        name: name
-        bioModelXML: bioModelXML
-      properties:
-        bioModelXML:
-          pattern: \S
-          type: string
-        name:
-          nullable: true
-          type: string
-        simsRequiringUpdates:
-          items:
-            type: string
-          nullable: true
-          type: array
-      required:
-      - bioModelXML
-      type: object
     SchedulerStatus:
       enum:
       - WAITING
@@ -2500,7 +2477,7 @@ components:
         fieldHtcJobID:
           server: server
           batchSystemType: null
-          jobNumber: 6
+          jobNumber: 0
       properties:
         fieldStartDate:
           example: 2022-03-10T16:15:50Z
@@ -2527,7 +2504,7 @@ components:
           htcJobId:
             server: server
             batchSystemType: null
-            jobNumber: 6
+            jobNumber: 0
           displayMessage: displayMessage
           detailedState: null
           message: message
@@ -2542,23 +2519,21 @@ components:
           fieldHtcJobID:
             server: server
             batchSystemType: null
-            jobNumber: 6
+            jobNumber: 0
         fieldVCSimID:
           owner:
             userName: userName
-            key:
-              value: 0.8008281904610115
-          simulationKey:
-            value: 0.8008281904610115
+            key: key
+          simulationKey: simulationKey
           id: id
-        fieldTaskID: 1
+        fieldTaskID: 6
         fieldSimulationQueueEntryStatus:
           fieldQueuePriority: 5
           fieldQueueID: null
           fieldQueueDate: 2022-03-10T16:15:50Z
         fieldSubmitDate: 2022-03-10T16:15:50Z
         fieldSchedulerStatus: null
-        fieldJobIndex: 5
+        fieldJobIndex: 1
       properties:
         fieldTimeDataStamp:
           example: 2022-03-10T16:15:50Z
@@ -2592,7 +2567,7 @@ components:
         htcJobId:
           server: server
           batchSystemType: null
-          jobNumber: 6
+          jobNumber: 0
         displayMessage: displayMessage
         detailedState: null
         message: message
@@ -2673,7 +2648,7 @@ components:
             htcJobId:
               server: server
               batchSystemType: null
-              jobNumber: 6
+              jobNumber: 0
             displayMessage: displayMessage
             detailedState: null
             message: message
@@ -2688,26 +2663,24 @@ components:
             fieldHtcJobID:
               server: server
               batchSystemType: null
-              jobNumber: 6
+              jobNumber: 0
           fieldVCSimID:
             owner:
               userName: userName
-              key:
-                value: 0.8008281904610115
-            simulationKey:
-              value: 0.8008281904610115
+              key: key
+            simulationKey: simulationKey
             id: id
-          fieldTaskID: 1
+          fieldTaskID: 6
           fieldSimulationQueueEntryStatus:
             fieldQueuePriority: 5
             fieldQueueID: null
             fieldQueueDate: 2022-03-10T16:15:50Z
           fieldSubmitDate: 2022-03-10T16:15:50Z
           fieldSchedulerStatus: null
-          fieldJobIndex: 5
-        progress: 2.3021358869347655
+          fieldJobIndex: 1
+        progress: 5.637376656633329
         userName: userName
-        timepoint: 7.061401241503109
+        timepoint: 2.3021358869347655
       properties:
         jobStatus:
           $ref: '#/components/schemas/SimulationJobStatusRecord'
@@ -2723,13 +2696,12 @@ components:
     User:
       example:
         userName: userName
-        key:
-          value: 0.8008281904610115
+        key: key
       properties:
         userName:
           type: string
         key:
-          $ref: '#/components/schemas/KeyValue'
+          type: string
       type: object
     UserIdentityJSONSafe:
       example:
@@ -2790,14 +2762,12 @@ components:
       example:
         owner:
           userName: userName
-          key:
-            value: 0.8008281904610115
-        simulationKey:
-          value: 0.8008281904610115
+          key: key
+        simulationKey: simulationKey
         id: id
       properties:
         simulationKey:
-          $ref: '#/components/schemas/KeyValue'
+          type: string
         owner:
           $ref: '#/components/schemas/User'
         id:
@@ -2900,8 +2870,7 @@ components:
         date: 2000-01-23T04:56:07.000+00:00
         owner:
           userName: userName
-          key:
-            value: 0.8008281904610115
+          key: key
         branchID: 0.8008281904610115
         flag:
           archived: true
@@ -2914,19 +2883,17 @@ components:
           description: description
         name: name
         annot: annot
-        branchPointRefKey:
-          value: 0.8008281904610115
-        versionKey:
-          value: 0.8008281904610115
+        branchPointRefKey: branchPointRefKey
+        versionKey: versionKey
       properties:
         versionKey:
-          $ref: '#/components/schemas/KeyValue'
+          type: string
         annot:
           type: string
         branchID:
           type: number
         branchPointRefKey:
-          $ref: '#/components/schemas/KeyValue'
+          type: string
         date:
           format: date-time
           type: string

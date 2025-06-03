@@ -6,7 +6,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **field_data_id** | [**ExternalDataIdentifier**](ExternalDataIdentifier.md) |  | [optional] 
 **annotation** | **str** |  | [optional] 
-**simulations_referencing_this_id** | [**List[KeyValue]**](KeyValue.md) |  | [optional] 
+**simulations_referencing_this_id** | **List[str]** |  | [optional] 
 
 ## Example
 

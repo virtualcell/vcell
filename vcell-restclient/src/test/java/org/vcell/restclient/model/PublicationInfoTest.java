@@ -22,7 +22,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.vcell.restclient.model.KeyValue;
 import org.vcell.restclient.model.User;
 import org.vcell.restclient.model.VCDocumentType;
 import org.junit.Assert;
@@ -137,14 +136,6 @@ public class PublicationInfoTest {
     @Test
     public void theHashCodeTest() {
         // TODO: test theHashCode
-    }
-
-    /**
-     * Test the property 'pubDate'
-     */
-    @Test
-    public void pubDateTest() {
-        // TODO: test pubDate
     }
 
 }

@@ -25,7 +25,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
-import org.vcell.restclient.model.KeyValue;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -42,7 +41,7 @@ public class User {
   private String userName;
 
   public static final String JSON_PROPERTY_KEY = "key";
-  private KeyValue key;
+  private String key;
 
   public User() { 
   }
@@ -72,7 +71,7 @@ public class User {
   }
 
 
-  public User key(KeyValue key) {
+  public User key(String key) {
     this.key = key;
     return this;
   }
@@ -85,14 +84,14 @@ public class User {
   @JsonProperty(JSON_PROPERTY_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public KeyValue getKey() {
+  public String getKey() {
     return key;
   }
 
 
   @JsonProperty(JSON_PROPERTY_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setKey(KeyValue key) {
+  public void setKey(String key) {
     this.key = key;
   }
 
@@ -178,7 +177,7 @@ public class User {
 
     // add `key` to the URL query string
     if (getKey() != null) {
-      joiner.add(getKey().toUrlQueryString(prefix + "key" + suffix));
+      joiner.add(String.format("%skey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();

@@ -4,13 +4,13 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**key** | [**KeyValue**](KeyValue.md) |  | [optional] 
+**key** | **str** |  | [optional] 
 **owner** | [**User**](User.md) |  | [optional] 
 **name** | **str** |  | [optional] 
 **job_index** | **int** |  | [optional] 
-**simulation_key** | [**KeyValue**](KeyValue.md) |  | [optional] 
+**simulation_key** | **str** |  | [optional] 
 **parameter_scan_type** | **bool** |  | [optional] 
-**data_key** | [**KeyValue**](KeyValue.md) |  | [optional] 
+**data_key** | **str** |  | [optional] 
 
 ## Example
 

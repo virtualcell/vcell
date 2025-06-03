@@ -15,7 +15,6 @@ import { Observable }                                        from 'rxjs';
 
 import { BioModel } from '../model/models';
 import { BioModelSummary } from '../model/models';
-import { SaveBioModel } from '../model/models';
 import { VCellHTTPError } from '../model/models';
 
 
@@ -65,8 +64,10 @@ export interface BioModelResourceServiceInterface {
     /**
      * Save\&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
      * 
-     * @param saveBioModel 
+     * @param body BioModelVCML which will be saved.
+     * @param newName Name to save new BioModel under. Leave blank if re-saving existing BioModel.
+     * @param simsRequiringUpdates The name of simulations that will be prepared for future execution.
      */
-    saveBioModel(saveBioModel?: SaveBioModel, extraHttpRequestParams?: any): Observable<string>;
+    saveBioModel(body: string, newName?: string, simsRequiringUpdates?: Array<string>, extraHttpRequestParams?: any): Observable<string>;
 
 }

@@ -28,7 +28,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.vcell.restclient.model.ExternalDataIdentifier;
-import org.vcell.restclient.model.KeyValue;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -49,7 +48,7 @@ public class FieldDataReference {
   private String annotation;
 
   public static final String JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D = "simulationsReferencingThisID";
-  private List<KeyValue> simulationsReferencingThisID;
+  private List<String> simulationsReferencingThisID;
 
   public FieldDataReference() { 
   }
@@ -104,12 +103,12 @@ public class FieldDataReference {
   }
 
 
-  public FieldDataReference simulationsReferencingThisID(List<KeyValue> simulationsReferencingThisID) {
+  public FieldDataReference simulationsReferencingThisID(List<String> simulationsReferencingThisID) {
     this.simulationsReferencingThisID = simulationsReferencingThisID;
     return this;
   }
 
-  public FieldDataReference addSimulationsReferencingThisIDItem(KeyValue simulationsReferencingThisIDItem) {
+  public FieldDataReference addSimulationsReferencingThisIDItem(String simulationsReferencingThisIDItem) {
     if (this.simulationsReferencingThisID == null) {
       this.simulationsReferencingThisID = new ArrayList<>();
     }
@@ -125,14 +124,14 @@ public class FieldDataReference {
   @JsonProperty(JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<KeyValue> getSimulationsReferencingThisID() {
+  public List<String> getSimulationsReferencingThisID() {
     return simulationsReferencingThisID;
   }
 
 
   @JsonProperty(JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimulationsReferencingThisID(List<KeyValue> simulationsReferencingThisID) {
+  public void setSimulationsReferencingThisID(List<String> simulationsReferencingThisID) {
     this.simulationsReferencingThisID = simulationsReferencingThisID;
   }
 
@@ -226,10 +225,9 @@ public class FieldDataReference {
     // add `simulationsReferencingThisID` to the URL query string
     if (getSimulationsReferencingThisID() != null) {
       for (int i = 0; i < getSimulationsReferencingThisID().size(); i++) {
-        if (getSimulationsReferencingThisID().get(i) != null) {
-          joiner.add(getSimulationsReferencingThisID().get(i).toUrlQueryString(String.format("%ssimulationsReferencingThisID%s%s", prefix, suffix,
-          "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
-        }
+        joiner.add(String.format("%ssimulationsReferencingThisID%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+            URLEncoder.encode(String.valueOf(getSimulationsReferencingThisID().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
       }
     }
 

@@ -9,7 +9,7 @@
 |------------ | ------------- | ------------- | -------------|
 |**fieldDataID** | [**ExternalDataIdentifier**](ExternalDataIdentifier.md) |  |  [optional] |
 |**annotation** | **String** |  |  [optional] |
-|**simulationsReferencingThisID** | [**List&lt;KeyValue&gt;**](KeyValue.md) |  |  [optional] |
+|**simulationsReferencingThisID** | **List&lt;String&gt;** |  |  [optional] |
 
 
 

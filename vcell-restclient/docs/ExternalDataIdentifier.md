@@ -7,13 +7,13 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**key** | [**KeyValue**](KeyValue.md) |  |  [optional] |
+|**key** | **String** |  |  [optional] |
 |**owner** | [**User**](User.md) |  |  [optional] |
 |**name** | **String** |  |  [optional] |
 |**jobIndex** | **Integer** |  |  [optional] |
-|**simulationKey** | [**KeyValue**](KeyValue.md) |  |  [optional] |
+|**simulationKey** | **String** |  |  [optional] |
 |**parameterScanType** | **Boolean** |  |  [optional] |
-|**dataKey** | [**KeyValue**](KeyValue.md) |  |  [optional] |
+|**dataKey** | **String** |  |  [optional] |
 
 
 
