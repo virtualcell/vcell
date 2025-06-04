@@ -209,27 +209,6 @@ MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException, ObjectN
  */
 MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException, RemoteProxyException;
 
-
-/**
- * This method was created in VisualAge.
- * @return Geometry
- * @param key KeyValue
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception RemoteProxyException The exception description.
- */
-MathModelMetaData getMathModelMetaData(KeyValue key) throws DataAccessException, ObjectNotFoundException, RemoteProxyException;
-
-
-/**
- * This method was created in VisualAge.
- * @return MathModelMetaData[]
- * @param bAll boolean
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception RemoteProxyException The exception description.
- */
-MathModelMetaData[] getMathModelMetaDatas(boolean bAll) throws DataAccessException, RemoteProxyException;
-
-
 /**
  * This method was created in VisualAge.
  * @return Geometry

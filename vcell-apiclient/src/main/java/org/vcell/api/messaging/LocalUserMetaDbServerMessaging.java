@@ -13,12 +13,10 @@ package org.vcell.api.messaging;
 import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.mathmodel.MathModelMetaData;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.message.server.bootstrap.client.RpcDbServerProxy;
 import cbit.vcell.message.server.bootstrap.client.RpcSender;
-import cbit.vcell.model.DBFormalSpecies;
-import cbit.vcell.model.DBSpecies;
-import cbit.vcell.model.FormalSpeciesType;
-import cbit.vcell.model.ReactionQuerySpec;
+import cbit.vcell.model.*;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.UserMetaDbServer;
 import cbit.vcell.server.UserRegistrationOP;
@@ -178,13 +176,10 @@ public void deleteMathModel(org.vcell.util.document.KeyValue key) throws DataAcc
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.deleteMathModel(Key="+key+")");
-		dbServerProxy.deleteMathModel(key);
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		vCellApiClient.getMathModelApi().deleteMathModel(key.toString());
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessException(e);
+		throw new RuntimeException("Expected error handler to throw an error.", e);
 	}
 }
 
@@ -432,75 +427,30 @@ public BigString getGeometryXML(KeyValue geometryKey) throws DataAccessException
 }
 
 
-public org.vcell.util.document.MathModelInfo getMathModelInfo(org.vcell.util.document.KeyValue mathModelKey) throws DataAccessException, ObjectNotFoundException {
-
-	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getMathModelInfo(key="+mathModelKey+")");
-		return dbServerProxy.getMathModelInfo(mathModelKey);
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
+	public MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, RemoteProxyException {
+		try {
+			MathModelSummary summary = vCellApiClient.getMathModelApi().getSummary(key.toString());
+			return DtoModelTransforms.mathModelContextToMathModel(summary);
+		} catch (ApiException e) {
+            ExceptionHandler.onlyDataAccessException(e);
+			throw new RuntimeException("Exception handler did not throw an exception.");
+        }
+    }
 
 
-public org.vcell.util.document.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
-
+	public org.vcell.util.document.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getMathModelInfos(bAll="+bAll+")");
-		return dbServerProxy.getMathModelInfos(bAll);
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		List<MathModelSummary> summaries = vCellApiClient.getMathModelApi().getSummaries(bAll);
+		MathModelInfo[] modelInfos = new MathModelInfo[summaries.size()];
+		for (int i = 0; i < summaries.size(); i++) {
+			modelInfos[i] = DtoModelTransforms.mathModelContextToMathModel(summaries.get(i));
+		}
+		return modelInfos;
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
-}
-
-
-/**
- * getVersionInfo method comment.
- * @throws RemoteException 
- */
-public MathModelMetaData getMathModelMetaData(KeyValue mathModelKey) throws DataAccessException {
-
-	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getMathModelMetaData(key="+mathModelKey+")");
-		MathModelMetaData mathModelMetaData = dbServerProxy.getMathModelMetaData(mathModelKey);
-		return mathModelMetaData;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
-	}
-
-}
-
-
-/**
- * getVersionInfo method comment.
- * @throws RemoteException 
- */
-public MathModelMetaData[] getMathModelMetaDatas(boolean bAll) throws DataAccessException {
-
-	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getMathModelMetaDatas(bAll="+bAll+")");
-		MathModelMetaData mathModelMetaDataArray[] = dbServerProxy.getMathModelMetaDatas(bAll);
-		return mathModelMetaDataArray;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
-	}
-
 }
 
 

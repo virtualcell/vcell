@@ -38,6 +38,7 @@ import org.vcell.restclient.CustomApiClientCode;
 import org.vcell.restclient.CustomObjectMapper;
 import org.vcell.restclient.api.BioModelResourceApi;
 import org.vcell.restclient.api.FieldDataResourceApi;
+import org.vcell.restclient.api.MathModelResourceApi;
 import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.auth.InteractiveLogin;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
@@ -288,21 +289,6 @@ public class VCellApiClient implements AutoCloseable {
 		return biomodelRep;
 	}
 	
-	public String getBioModelVCML(String bmId) throws IOException {
-		  
-		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/biomodel/"+bmId+"/biomodel.vcml");
-		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
-
-		if (lg.isInfoEnabled()) {
-			lg.info("Executing request to retrieve biomodel " + httpget.getRequestLine());
-		}
-
-		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getBioModelVCML()", httpget), httpClientContext);
-		String vcml = responseBody;
-
-		return vcml;
-	}
-	
 	public SimulationRepresentation getSimulation(String bmId, String simKey) throws IOException {
 		  
 		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/biomodel/"+bmId+"/simulation/"+simKey);
@@ -504,6 +490,10 @@ public class VCellApiClient implements AutoCloseable {
 
 	public BioModelResourceApi getBioModelApi(){
 		return new BioModelResourceApi(apiClient);
+	}
+
+	public MathModelResourceApi getMathModelApi(){
+		return new MathModelResourceApi(apiClient);
 	}
 
 	public String getVCellUserNameFromAuth0Mapping() throws ApiException {
