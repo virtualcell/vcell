@@ -17,6 +17,7 @@ import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.GroupAccessNone;
 import org.vcell.util.document.GroupAccessSome;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
@@ -262,6 +263,19 @@ public class DtoModelTransforms {
             }
         }
         return bioModelInfo;
+    }
+
+    public static MathModelChildSummary mathModelChildSummary(org.vcell.restclient.model.MathModelChildSummary dto){
+        return new MathModelChildSummary(BioModelChildSummary.MathType.valueOf(dto.getModelType().getValue()),
+                dto.getGeoName(), dto.getGeoDim(), dto.getSimNames().toArray(new String[0]),
+                dto.getSimAnnots().toArray(new String[0]));
+    }
+
+    public static MathModelInfo mathModelContextToMathModel(MathModelSummary summary){
+        return new MathModelInfo(
+                versionDTOToVersion(summary.getVersion()), new KeyValue(summary.getKeyValue()),
+                mathModelChildSummary(summary.getChildSummary()), dtoToVCellSoftwareVersion(summary.getSoftwareVersion())
+        );
     }
 
 }

@@ -106,6 +106,11 @@ Class | Method | HTTP request | Description
 *FieldDataResourceApi* | [**get_shape_from_id**](docs/FieldDataResourceApi.md#get_shape_from_id) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
 *FieldDataResourceApi* | [**save**](docs/FieldDataResourceApi.md#save) | **POST** /api/v1/fieldData/save | Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 *HelloWorldApi* | [**get_hello_world**](docs/HelloWorldApi.md#get_hello_world) | **GET** /api/v1/helloworld | Get hello world message.
+*MathModelResourceApi* | [**delete_math_model**](docs/MathModelResourceApi.md#delete_math_model) | **DELETE** /api/v1/mathModel/{id} | 
+*MathModelResourceApi* | [**get_summaries**](docs/MathModelResourceApi.md#get_summaries) | **GET** /api/v1/mathModel/summaries | 
+*MathModelResourceApi* | [**get_summary**](docs/MathModelResourceApi.md#get_summary) | **GET** /api/v1/mathModel/summary/{id} | 
+*MathModelResourceApi* | [**get_vcml**](docs/MathModelResourceApi.md#get_vcml) | **GET** /api/v1/mathModel/{id} | 
+*MathModelResourceApi* | [**save_math_model**](docs/MathModelResourceApi.md#save_math_model) | **POST** /api/v1/mathModel | 
 *PublicationResourceApi* | [**create_publication**](docs/PublicationResourceApi.md#create_publication) | **POST** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/v1/publications/{id} | Delete publication
 *PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/v1/publications/{id} | Get publication by ID
@@ -154,6 +159,8 @@ Class | Method | HTTP request | Description
  - [HtcJobID](docs/HtcJobID.md)
  - [ISize](docs/ISize.md)
  - [Identity](docs/Identity.md)
+ - [MathModelChildSummary](docs/MathModelChildSummary.md)
+ - [MathModelSummary](docs/MathModelSummary.md)
  - [MathType](docs/MathType.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [ModelType](docs/ModelType.md)

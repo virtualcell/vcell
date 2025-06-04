@@ -886,6 +886,215 @@ paths:
       tags:
       - Hello World
       x-accepts: application/json
+  /api/v1/mathModel:
+    post:
+      operationId: saveMathModel
+      parameters:
+      - description: Name to save new MathModel under. Leave blank if re-saving existing
+          MathModel.
+        explode: true
+        in: query
+        name: newName
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: The name of simulations that will be prepared for future execution.
+        explode: true
+        in: query
+        name: simNames
+        required: false
+        schema:
+          items:
+            type: string
+          type: array
+        style: form
+      requestBody:
+        content:
+          application/xml:
+            schema:
+              type: string
+        required: true
+      responses:
+        "200":
+          content:
+            application/xml:
+              schema:
+                type: string
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      tags:
+      - Math Model Resource
+      x-content-type: application/xml
+      x-accepts: application/json
+  /api/v1/mathModel/summaries:
+    get:
+      description: Return MathModel summaries.
+      operationId: getSummaries
+      parameters:
+      - description: Include MathModel summaries that are public and shared with the
+          requester.
+        explode: true
+        in: query
+        name: includePublicAndShared
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/MathModelSummary'
+                type: array
+          description: OK
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - Math Model Resource
+      x-accepts: application/json
+  /api/v1/mathModel/summary/{id}:
+    get:
+      description: "All of the text based information about a MathModel (summary,\
+        \ version, publication status, etc...), but not the actual MathModel itself."
+      operationId: getSummary
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MathModelSummary'
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - Math Model Resource
+      x-accepts: application/json
+  /api/v1/mathModel/{id}:
+    delete:
+      operationId: deleteMathModel
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - Math Model Resource
+      x-accepts: application/json
+    get:
+      operationId: getVCML
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/xml:
+              schema:
+                type: string
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - Math Model Resource
+      x-accepts: application/json
   /api/v1/publications:
     get:
       operationId: getPublications
@@ -2274,6 +2483,155 @@ components:
       type: string
     KeyValue:
       type: string
+    MathModelChildSummary:
+      example:
+        geoName: geoName
+        simulationAnnotations:
+        - simulationAnnotations
+        - simulationAnnotations
+        simulationNames:
+        - simulationNames
+        - simulationNames
+        geoDim: 0
+        geometryName: geometryName
+        geometryDimension: 6
+        simAnnots:
+        - simAnnots
+        - simAnnots
+        modelType: null
+        simNames:
+        - simNames
+        - simNames
+      properties:
+        geoName:
+          type: string
+        geoDim:
+          format: int32
+          type: integer
+        simNames:
+          items:
+            type: string
+          type: array
+        simAnnots:
+          items:
+            type: string
+          type: array
+        modelType:
+          $ref: '#/components/schemas/MathType'
+        geometryDimension:
+          format: int32
+          type: integer
+        geometryName:
+          type: string
+        simulationAnnotations:
+          items:
+            type: string
+          type: array
+        simulationNames:
+          items:
+            type: string
+          type: array
+      type: object
+    MathModelSummary:
+      example:
+        childSummary:
+          geoName: geoName
+          simulationAnnotations:
+          - simulationAnnotations
+          - simulationAnnotations
+          simulationNames:
+          - simulationNames
+          - simulationNames
+          geoDim: 0
+          geometryName: geometryName
+          geometryDimension: 6
+          simAnnots:
+          - simAnnots
+          - simAnnots
+          modelType: null
+          simNames:
+          - simNames
+          - simNames
+        keyValue: keyValue
+        annotatedFunctions: annotatedFunctions
+        version:
+          date: 2000-01-23T04:56:07.000+00:00
+          owner:
+            userName: userName
+            key: key
+          branchID: 0.8008281904610115
+          flag:
+            archived: true
+            current: true
+            intValue: 1
+            versionFlag: 6
+            published: true
+          groupAccess:
+            groupid: 5.962133916683182
+            description: description
+          name: name
+          annot: annot
+          branchPointRefKey: branchPointRefKey
+          versionKey: versionKey
+        softwareVersion:
+          vcellSite: null
+          patchVersion: 4
+          buildInt: 7
+          description: description
+          majorVersion: 3
+          minorVersion: 2
+          buildNumber: buildNumber
+          softwareVersionString: softwareVersionString
+          versionNumber: versionNumber
+        publicationInfos:
+        - vcDocumentType: null
+          theHashCode: 9
+          citation: citation
+          title: title
+          publicationKey: publicationKey
+          pubmedid: pubmedid
+          user:
+            userName: userName
+            key: key
+          url: url
+          versionKey: versionKey
+          authors:
+          - authors
+          - authors
+          doi: doi
+          pubdate: 2022-03-10T00:00:00.000+00:00
+        - vcDocumentType: null
+          theHashCode: 9
+          citation: citation
+          title: title
+          publicationKey: publicationKey
+          pubmedid: pubmedid
+          user:
+            userName: userName
+            key: key
+          url: url
+          versionKey: versionKey
+          authors:
+          - authors
+          - authors
+          doi: doi
+          pubdate: 2022-03-10T00:00:00.000+00:00
+      properties:
+        version:
+          $ref: '#/components/schemas/Version'
+        keyValue:
+          type: string
+        childSummary:
+          $ref: '#/components/schemas/MathModelChildSummary'
+        softwareVersion:
+          $ref: '#/components/schemas/VCellSoftwareVersion'
+        publicationInfos:
+          items:
+            $ref: '#/components/schemas/PublicationInfo'
+          type: array
+        annotatedFunctions:
+          type: string
+      type: object
     MathType:
       enum:
       - RuleBased
