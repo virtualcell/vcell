@@ -35,6 +35,8 @@ public class BioModelResource {
     private final BioModelRestService bioModelRestService;
     private final UserRestService userRestService;
 
+    public static final String simsRequiringUpdatesDescription = "The name of simulations that will be prepared for future execution.";
+
     @Inject
     public BioModelResource(BioModelRestService bioModelRestService, UserRestService userRestService) {
         this.bioModelRestService = bioModelRestService;
@@ -174,7 +176,7 @@ public class BioModelResource {
     @RolesAllowed("user")
     public String save(@RequestBody(name = "bioModelVCML", required = true, description = "BioModelVCML which will be saved.") String bioModelVCML,
                        @QueryParam("newName") @Parameter(required = false, allowEmptyValue = true, description = "Name to save new BioModel under. Leave blank if re-saving existing BioModel.") Optional<String> newName,
-                       @QueryParam("simsRequiringUpdates") @Parameter(required = false, allowEmptyValue = true, description = "The name of simulations that will be prepared for future execution.") List<String> simNames) throws DataAccessWebException, UnprocessableContentWebException, NotAuthenticatedWebException {
+                       @QueryParam("simsRequiringUpdates") @Parameter(required = false, allowEmptyValue = true, description = simsRequiringUpdatesDescription) List<String> simNames) throws DataAccessWebException, UnprocessableContentWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try {
             cbit.vcell.biomodel.BioModel savedBioModel = bioModelRestService.save(user, bioModelVCML,
