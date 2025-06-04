@@ -1271,6 +1271,13 @@ public abstract class DbDriver {
             TreeMap<Integer, String> subVolumeNameToSubVolumeID
     ){ }
 
+    private record VCInfoMathModelContainer(
+            MathModelInfo mathModelInfo,
+            TreeMap<String,BigDecimal> mapSimNameToSimD,
+            TreeMap<String,List<MathOverrides.Element>> mapSimNameToMathOverrideElements,
+            TreeMap<Integer,String> mapSubVolumeNameToSubVolumeID
+    ){ }
+
     public static VCInfoContainer getVCInfoContainer(User user, Connection con, DatabaseSyntax dbSyntax, int whichExtraInfo) throws SQLException, DataAccessException{
 
         VCInfoContainer results = null;
@@ -1427,7 +1434,7 @@ public abstract class DbDriver {
                         MathModelTable.table.versionDate.getQualifiedColName();
                 sql = new StringBuffer(MathModelTable.table.getInfoSQL(user, null, (enableSpecial ? special : null), dbSyntax));
                 sql.insert(7, Table.SQL_GLOBAL_HINT);
-                TreeMap<BigDecimal, MathModelInfo> mapMmToMathModelInfo = new TreeMap<BigDecimal, MathModelInfo>();
+                TreeMap<BigDecimal, VCInfoMathModelContainer> mathModelContainer = new TreeMap<>();
                 rset = stmt.executeQuery(sql.toString());
                 ArrayList<MathModelInfo> tempInfos = new ArrayList<MathModelInfo>();
                 Set<String> distinctV = new HashSet<String>();
@@ -1436,7 +1443,8 @@ public abstract class DbDriver {
                     if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
                         tempInfos.add(versionInfo);
                         distinctV.add(versionInfo.getVersion().getVersionKey().toString());
-                        mapMmToMathModelInfo.put(BigDecimal.valueOf(Long.parseLong(versionInfo.getVersion().getVersionKey().toString())), versionInfo);
+                        mathModelContainer.put(BigDecimal.valueOf(Long.parseLong(versionInfo.getVersion().getVersionKey().toString())),
+                                new VCInfoMathModelContainer(versionInfo, new TreeMap<>(), new TreeMap<>(), new TreeMap<>()));
                     }
                 }
                 rset.close();
@@ -1471,7 +1479,7 @@ public abstract class DbDriver {
                                         " AND " + MathDescTable.table.id.getQualifiedColName() + " = " + MathModelTable.table.mathRef.getQualifiedColName()
                         );
 
-                        final BigDecimal[] array = mapMmToMathModelInfo.keySet().toArray(new BigDecimal[0]);
+                        final BigDecimal[] array = mathModelContainer.keySet().toArray(new BigDecimal[0]);
                         final int MAX_LIST = 500;
                         for(int i = 0; i < array.length; i += MAX_LIST){
                             StringBuffer mmListStr = new StringBuffer();
@@ -1484,7 +1492,8 @@ public abstract class DbDriver {
                             MathModelInfo mmInfo = null;
                             while (rset.next()) {
                                 final BigDecimal mmID = rset.getBigDecimal(MathModelSimulationLinkTable.table.mathModelRef.toString());
-                                mmInfo = mapMmToMathModelInfo.get(mmID);
+                                VCInfoMathModelContainer container = mathModelContainer.get(mmID);
+                                mmInfo = container.mathModelInfo();
                                 if(mmInfo != null){
                                     if(mmInfo.getAnnotatedFunctionsStr() == null){
                                         String outputFunctionsXML =
@@ -1494,21 +1503,16 @@ public abstract class DbDriver {
                                         }
                                     }
                                     final String simName = rset.getString(aliasSimName);
-                                    if(mmInfo.getSimID(simName) == null){
+                                    if(container.mapSimNameToSimD.get(simName) == null){
                                         final BigDecimal simID = rset.getBigDecimal(aliasSimID);
                                         CommentStringTokenizer mathOverridesTokenizer = SimulationTable.getMathOverridesTokenizer(rset, dbSyntax);
                                         List<Element> mathOverrideElements = MathOverrides.parseOverrideElementsFromVCML(mathOverridesTokenizer);
-//									int scanCount=1;
-//									for(Element ele:mathOverrideElements) {
-//										if(ele.getSpec() != null) {
-//											scanCount*=ele.getSpec().getNumValues();
-//										}
-//									}
-                                        mmInfo.addSimID(simName, simID, mathOverrideElements);
+                                        container.mapSimNameToMathOverrideElements.put(simName, mathOverrideElements);
+                                        container.mapSimNameToSimD.put(simName, simID);
                                     }
                                     final int subVolumeID = rset.getInt(SubVolumeTable.table.handle.toString());
-                                    if(mmInfo.getSubVolumeName(subVolumeID) == null){
-                                        mmInfo.addSubVolume(subVolumeID, rset.getString(aliasSVName));
+                                    if(container.mapSubVolumeNameToSubVolumeID.get(subVolumeID) == null){
+                                        container.mapSubVolumeNameToSubVolumeID.put(subVolumeID, rset.getString(aliasSVName));
                                     }
                                 }
                             }
