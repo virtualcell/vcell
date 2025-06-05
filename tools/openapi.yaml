@@ -2062,19 +2062,6 @@ components:
     MathModelChildSummary:
       type: object
       properties:
-        geoName:
-          type: string
-        geoDim:
-          format: int32
-          type: integer
-        simNames:
-          type: array
-          items:
-            type: string
-        simAnnots:
-          type: array
-          items:
-            type: string
         modelType:
           $ref: '#/components/schemas/MathType'
         geometryDimension:
@@ -2097,7 +2084,7 @@ components:
           $ref: '#/components/schemas/Version'
         keyValue:
           $ref: '#/components/schemas/KeyValue'
-        childSummary:
+        modelInfo:
           $ref: '#/components/schemas/MathModelChildSummary'
         softwareVersion:
           $ref: '#/components/schemas/VCellSoftwareVersion'

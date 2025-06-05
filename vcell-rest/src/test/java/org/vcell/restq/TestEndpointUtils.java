@@ -2,6 +2,7 @@ package org.vcell.restq;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.SimpleReaction;
@@ -108,6 +109,14 @@ public class TestEndpointUtils {
         return bioModel;
     }
 
+    public static MathModel getTestMathModel() throws XmlParseException, PropertyVetoException, IOException {
+        String mathString = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestMath.vcml"));
+        MathModel mathModel = XmlHelper.XMLToMathModel(new XMLSource(mathString));
+        mathModel.setName("TestMathModel");
+        mathModel.clearVersion();
+        return mathModel;
+    }
+
     public static Publication defaultPublication(){
         Publication publication = new Publication();
         publication.setAuthors(Arrays.asList("author1", "author2"));
@@ -163,13 +172,13 @@ public class TestEndpointUtils {
         connection.prepareStatement("DELETE FROM VC_METADATA").execute();
         connection.prepareStatement("DELETE FROM VC_BIOMODELSIMCONTEXT").execute();
 
+        connection.prepareStatement("DELETE FROM VC_MATHMODELSIM").execute();
         connection.prepareStatement("DELETE FROM VC_SIMCONTEXT").execute();
         connection.prepareStatement("DELETE FROM VC_SIMULATION").execute();
 
-        connection.prepareStatement("DELETE FROM VC_MATH").execute();
-        connection.prepareStatement("DELETE FROM VC_MATHMODELSIM").execute();
         connection.prepareStatement("DELETE FROM VC_MATHMODELXML").execute();
         connection.prepareStatement("DELETE FROM VC_MATHMODEL").execute();
+        connection.prepareStatement("DELETE FROM VC_MATH").execute();
 
         connection.prepareStatement("DELETE FROM VC_GEOMETRY").execute();
         connection.prepareStatement("DELETE FROM VC_GEOMETRICREGION").execute();

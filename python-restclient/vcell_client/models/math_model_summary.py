@@ -37,11 +37,11 @@ class MathModelSummary(BaseModel):
     """ # noqa: E501
     version: Optional[Version] = None
     key_value: Optional[StrictStr] = Field(default=None, alias="keyValue")
-    child_summary: Optional[MathModelChildSummary] = Field(default=None, alias="childSummary")
+    model_info: Optional[MathModelChildSummary] = Field(default=None, alias="modelInfo")
     software_version: Optional[VCellSoftwareVersion] = Field(default=None, alias="softwareVersion")
     publication_infos: Optional[List[PublicationInfo]] = Field(default=None, alias="publicationInfos")
     annotated_functions: Optional[StrictStr] = Field(default=None, alias="annotatedFunctions")
-    __properties: ClassVar[List[str]] = ["version", "keyValue", "childSummary", "softwareVersion", "publicationInfos", "annotatedFunctions"]
+    __properties: ClassVar[List[str]] = ["version", "keyValue", "modelInfo", "softwareVersion", "publicationInfos", "annotatedFunctions"]
 
     model_config = {
         "populate_by_name": True,
@@ -82,9 +82,9 @@ class MathModelSummary(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of version
         if self.version:
             _dict['version'] = self.version.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of child_summary
-        if self.child_summary:
-            _dict['childSummary'] = self.child_summary.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of model_info
+        if self.model_info:
+            _dict['modelInfo'] = self.model_info.to_dict()
         # override the default output from pydantic by calling `to_dict()` of software_version
         if self.software_version:
             _dict['softwareVersion'] = self.software_version.to_dict()
@@ -114,7 +114,7 @@ class MathModelSummary(BaseModel):
         _obj = cls.model_validate({
             "version": Version.from_dict(obj.get("version")) if obj.get("version") is not None else None,
             "keyValue": obj.get("keyValue"),
-            "childSummary": MathModelChildSummary.from_dict(obj.get("childSummary")) if obj.get("childSummary") is not None else None,
+            "modelInfo": MathModelChildSummary.from_dict(obj.get("modelInfo")) if obj.get("modelInfo") is not None else None,
             "softwareVersion": VCellSoftwareVersion.from_dict(obj.get("softwareVersion")) if obj.get("softwareVersion") is not None else None,
             "publicationInfos": [PublicationInfo.from_dict(_item) for _item in obj.get("publicationInfos")] if obj.get("publicationInfos") is not None else None,
             "annotatedFunctions": obj.get("annotatedFunctions")

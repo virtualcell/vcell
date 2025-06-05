@@ -13,10 +13,6 @@ import { MathType } from './math-type';
 
 
 export interface MathModelChildSummary { 
-    geoName?: string;
-    geoDim?: number;
-    simNames?: Array<string>;
-    simAnnots?: Array<string>;
     modelType?: MathType;
     geometryDimension?: number;
     geometryName?: string;

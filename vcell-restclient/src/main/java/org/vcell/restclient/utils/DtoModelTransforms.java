@@ -267,14 +267,14 @@ public class DtoModelTransforms {
 
     public static MathModelChildSummary mathModelChildSummary(org.vcell.restclient.model.MathModelChildSummary dto){
         return new MathModelChildSummary(BioModelChildSummary.MathType.valueOf(dto.getModelType().getValue()),
-                dto.getGeoName(), dto.getGeoDim(), dto.getSimNames().toArray(new String[0]),
-                dto.getSimAnnots().toArray(new String[0]));
+                dto.getGeometryName(), dto.getGeometryDimension(), dto.getSimulationNames().toArray(new String[0]),
+                dto.getSimulationAnnotations().toArray(new String[0]));
     }
 
     public static MathModelInfo mathModelContextToMathModel(MathModelSummary summary){
         return new MathModelInfo(
                 versionDTOToVersion(summary.getVersion()), new KeyValue(summary.getKeyValue()),
-                mathModelChildSummary(summary.getChildSummary()), dtoToVCellSoftwareVersion(summary.getSoftwareVersion())
+                mathModelChildSummary(summary.getModelInfo()), dtoToVCellSoftwareVersion(summary.getSoftwareVersion())
         );
     }
 

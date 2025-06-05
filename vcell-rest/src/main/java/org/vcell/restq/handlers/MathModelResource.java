@@ -103,7 +103,8 @@ public class MathModelResource {
             MathModelInfo[] infos = mathModelService.getMathModelInfos(user, includePublicAndShared);
             ArrayList<MathModelSummary> summaries = new ArrayList<>();
             for (MathModelInfo info : infos) {
-                summaries.add(new MathModelSummary(info.getVersion(), info.getMathKey(), info.getMathModelChildSummary(),
+                MathModelChildSummary childSummary = info.getMathModelChildSummary();
+                summaries.add(new MathModelSummary(info.getVersion(), info.getMathKey(), childSummary,
                         info.getSoftwareVersion(), info.getPublicationInfos(), info.getAnnotatedFunctionsStr()));
             }
             return summaries;
@@ -137,7 +138,7 @@ public class MathModelResource {
     public record MathModelSummary(
         Version version,
         KeyValue keyValue,
-        MathModelChildSummary childSummary,
+        MathModelChildSummary modelInfo,
         VCellSoftwareVersion softwareVersion,
         PublicationInfo[] publicationInfos,
         String annotatedFunctions

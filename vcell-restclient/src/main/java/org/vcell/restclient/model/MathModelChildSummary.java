@@ -35,10 +35,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * MathModelChildSummary
  */
 @JsonPropertyOrder({
-  MathModelChildSummary.JSON_PROPERTY_GEO_NAME,
-  MathModelChildSummary.JSON_PROPERTY_GEO_DIM,
-  MathModelChildSummary.JSON_PROPERTY_SIM_NAMES,
-  MathModelChildSummary.JSON_PROPERTY_SIM_ANNOTS,
   MathModelChildSummary.JSON_PROPERTY_MODEL_TYPE,
   MathModelChildSummary.JSON_PROPERTY_GEOMETRY_DIMENSION,
   MathModelChildSummary.JSON_PROPERTY_GEOMETRY_NAME,
@@ -47,18 +43,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class MathModelChildSummary {
-  public static final String JSON_PROPERTY_GEO_NAME = "geoName";
-  private String geoName;
-
-  public static final String JSON_PROPERTY_GEO_DIM = "geoDim";
-  private Integer geoDim;
-
-  public static final String JSON_PROPERTY_SIM_NAMES = "simNames";
-  private List<String> simNames;
-
-  public static final String JSON_PROPERTY_SIM_ANNOTS = "simAnnots";
-  private List<String> simAnnots;
-
   public static final String JSON_PROPERTY_MODEL_TYPE = "modelType";
   private MathType modelType;
 
@@ -76,122 +60,6 @@ public class MathModelChildSummary {
 
   public MathModelChildSummary() { 
   }
-
-  public MathModelChildSummary geoName(String geoName) {
-    this.geoName = geoName;
-    return this;
-  }
-
-   /**
-   * Get geoName
-   * @return geoName
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_GEO_NAME)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public String getGeoName() {
-    return geoName;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_GEO_NAME)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setGeoName(String geoName) {
-    this.geoName = geoName;
-  }
-
-
-  public MathModelChildSummary geoDim(Integer geoDim) {
-    this.geoDim = geoDim;
-    return this;
-  }
-
-   /**
-   * Get geoDim
-   * @return geoDim
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_GEO_DIM)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public Integer getGeoDim() {
-    return geoDim;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_GEO_DIM)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setGeoDim(Integer geoDim) {
-    this.geoDim = geoDim;
-  }
-
-
-  public MathModelChildSummary simNames(List<String> simNames) {
-    this.simNames = simNames;
-    return this;
-  }
-
-  public MathModelChildSummary addSimNamesItem(String simNamesItem) {
-    if (this.simNames == null) {
-      this.simNames = new ArrayList<>();
-    }
-    this.simNames.add(simNamesItem);
-    return this;
-  }
-
-   /**
-   * Get simNames
-   * @return simNames
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIM_NAMES)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public List<String> getSimNames() {
-    return simNames;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_SIM_NAMES)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimNames(List<String> simNames) {
-    this.simNames = simNames;
-  }
-
-
-  public MathModelChildSummary simAnnots(List<String> simAnnots) {
-    this.simAnnots = simAnnots;
-    return this;
-  }
-
-  public MathModelChildSummary addSimAnnotsItem(String simAnnotsItem) {
-    if (this.simAnnots == null) {
-      this.simAnnots = new ArrayList<>();
-    }
-    this.simAnnots.add(simAnnotsItem);
-    return this;
-  }
-
-   /**
-   * Get simAnnots
-   * @return simAnnots
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIM_ANNOTS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public List<String> getSimAnnots() {
-    return simAnnots;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_SIM_ANNOTS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimAnnots(List<String> simAnnots) {
-    this.simAnnots = simAnnots;
-  }
-
 
   public MathModelChildSummary modelType(MathType modelType) {
     this.modelType = modelType;
@@ -346,11 +214,7 @@ public class MathModelChildSummary {
       return false;
     }
     MathModelChildSummary mathModelChildSummary = (MathModelChildSummary) o;
-    return Objects.equals(this.geoName, mathModelChildSummary.geoName) &&
-        Objects.equals(this.geoDim, mathModelChildSummary.geoDim) &&
-        Objects.equals(this.simNames, mathModelChildSummary.simNames) &&
-        Objects.equals(this.simAnnots, mathModelChildSummary.simAnnots) &&
-        Objects.equals(this.modelType, mathModelChildSummary.modelType) &&
+    return Objects.equals(this.modelType, mathModelChildSummary.modelType) &&
         Objects.equals(this.geometryDimension, mathModelChildSummary.geometryDimension) &&
         Objects.equals(this.geometryName, mathModelChildSummary.geometryName) &&
         Objects.equals(this.simulationAnnotations, mathModelChildSummary.simulationAnnotations) &&
@@ -359,17 +223,13 @@ public class MathModelChildSummary {
 
   @Override
   public int hashCode() {
-    return Objects.hash(geoName, geoDim, simNames, simAnnots, modelType, geometryDimension, geometryName, simulationAnnotations, simulationNames);
+    return Objects.hash(modelType, geometryDimension, geometryName, simulationAnnotations, simulationNames);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class MathModelChildSummary {\n");
-    sb.append("    geoName: ").append(toIndentedString(geoName)).append("\n");
-    sb.append("    geoDim: ").append(toIndentedString(geoDim)).append("\n");
-    sb.append("    simNames: ").append(toIndentedString(simNames)).append("\n");
-    sb.append("    simAnnots: ").append(toIndentedString(simAnnots)).append("\n");
     sb.append("    modelType: ").append(toIndentedString(modelType)).append("\n");
     sb.append("    geometryDimension: ").append(toIndentedString(geometryDimension)).append("\n");
     sb.append("    geometryName: ").append(toIndentedString(geometryName)).append("\n");
@@ -421,34 +281,6 @@ public class MathModelChildSummary {
     }
 
     StringJoiner joiner = new StringJoiner("&");
-
-    // add `geoName` to the URL query string
-    if (getGeoName() != null) {
-      joiner.add(String.format("%sgeoName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getGeoName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `geoDim` to the URL query string
-    if (getGeoDim() != null) {
-      joiner.add(String.format("%sgeoDim%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getGeoDim()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `simNames` to the URL query string
-    if (getSimNames() != null) {
-      for (int i = 0; i < getSimNames().size(); i++) {
-        joiner.add(String.format("%ssimNames%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getSimNames().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-      }
-    }
-
-    // add `simAnnots` to the URL query string
-    if (getSimAnnots() != null) {
-      for (int i = 0; i < getSimAnnots().size(); i++) {
-        joiner.add(String.format("%ssimAnnots%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getSimAnnots().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-      }
-    }
 
     // add `modelType` to the URL query string
     if (getModelType() != null) {

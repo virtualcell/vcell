@@ -2485,37 +2485,16 @@ components:
       type: string
     MathModelChildSummary:
       example:
-        geoName: geoName
         simulationAnnotations:
         - simulationAnnotations
         - simulationAnnotations
         simulationNames:
         - simulationNames
         - simulationNames
-        geoDim: 0
         geometryName: geometryName
-        geometryDimension: 6
-        simAnnots:
-        - simAnnots
-        - simAnnots
+        geometryDimension: 0
         modelType: null
-        simNames:
-        - simNames
-        - simNames
       properties:
-        geoName:
-          type: string
-        geoDim:
-          format: int32
-          type: integer
-        simNames:
-          items:
-            type: string
-          type: array
-        simAnnots:
-          items:
-            type: string
-          type: array
         modelType:
           $ref: '#/components/schemas/MathType'
         geometryDimension:
@@ -2534,24 +2513,16 @@ components:
       type: object
     MathModelSummary:
       example:
-        childSummary:
-          geoName: geoName
+        modelInfo:
           simulationAnnotations:
           - simulationAnnotations
           - simulationAnnotations
           simulationNames:
           - simulationNames
           - simulationNames
-          geoDim: 0
           geometryName: geometryName
-          geometryDimension: 6
-          simAnnots:
-          - simAnnots
-          - simAnnots
+          geometryDimension: 0
           modelType: null
-          simNames:
-          - simNames
-          - simNames
         keyValue: keyValue
         annotatedFunctions: annotatedFunctions
         version:
@@ -2621,7 +2592,7 @@ components:
           $ref: '#/components/schemas/Version'
         keyValue:
           type: string
-        childSummary:
+        modelInfo:
           $ref: '#/components/schemas/MathModelChildSummary'
         softwareVersion:
           $ref: '#/components/schemas/VCellSoftwareVersion'

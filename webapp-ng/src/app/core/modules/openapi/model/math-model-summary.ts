@@ -18,7 +18,7 @@ import { PublicationInfo } from './publication-info';
 export interface MathModelSummary { 
     version?: Version;
     keyValue?: string;
-    childSummary?: MathModelChildSummary;
+    modelInfo?: MathModelChildSummary;
     softwareVersion?: VCellSoftwareVersion;
     publicationInfos?: Array<PublicationInfo>;
     annotatedFunctions?: string;

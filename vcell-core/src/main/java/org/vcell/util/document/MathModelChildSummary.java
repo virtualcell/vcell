@@ -13,6 +13,7 @@ package org.vcell.util.document;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.TokenMangler;
@@ -25,10 +26,14 @@ import org.vcell.util.document.BioModelChildSummary.MathType;
 @SuppressWarnings("serial")
 public class MathModelChildSummary implements java.io.Serializable {
 	private final static Logger lg = LogManager.getLogger(MathModelChildSummary.class);
+	@JsonIgnore
 	private String geoName = null;
+	@JsonIgnore
 	private int geoDim = 0;
-	
+
+	@JsonIgnore
 	private String simNames[] = null;
+	@JsonIgnore
 	private String simAnnots[] = null;
 	//math model type deterministic or stochastic
 	private MathType modelType = null;

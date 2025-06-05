@@ -30,7 +30,7 @@ public class MathModelService {
 
 
     public BigString getMathModelVCML(User user, KeyValue id) throws ObjectNotFoundException, DataAccessException {
-        return databaseServer.getBioModelXML(user, id);
+        return databaseServer.getMathModelXML(user, id);
     }
 
     public BigString saveModel(User user, BigString xml, String newName, String[] simNames) throws DataAccessException {

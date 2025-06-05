@@ -40,7 +40,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({
   MathModelSummary.JSON_PROPERTY_VERSION,
   MathModelSummary.JSON_PROPERTY_KEY_VALUE,
-  MathModelSummary.JSON_PROPERTY_CHILD_SUMMARY,
+  MathModelSummary.JSON_PROPERTY_MODEL_INFO,
   MathModelSummary.JSON_PROPERTY_SOFTWARE_VERSION,
   MathModelSummary.JSON_PROPERTY_PUBLICATION_INFOS,
   MathModelSummary.JSON_PROPERTY_ANNOTATED_FUNCTIONS
@@ -53,8 +53,8 @@ public class MathModelSummary {
   public static final String JSON_PROPERTY_KEY_VALUE = "keyValue";
   private String keyValue;
 
-  public static final String JSON_PROPERTY_CHILD_SUMMARY = "childSummary";
-  private MathModelChildSummary childSummary;
+  public static final String JSON_PROPERTY_MODEL_INFO = "modelInfo";
+  private MathModelChildSummary modelInfo;
 
   public static final String JSON_PROPERTY_SOFTWARE_VERSION = "softwareVersion";
   private VCellSoftwareVersion softwareVersion;
@@ -118,28 +118,28 @@ public class MathModelSummary {
   }
 
 
-  public MathModelSummary childSummary(MathModelChildSummary childSummary) {
-    this.childSummary = childSummary;
+  public MathModelSummary modelInfo(MathModelChildSummary modelInfo) {
+    this.modelInfo = modelInfo;
     return this;
   }
 
    /**
-   * Get childSummary
-   * @return childSummary
+   * Get modelInfo
+   * @return modelInfo
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_CHILD_SUMMARY)
+  @JsonProperty(JSON_PROPERTY_MODEL_INFO)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public MathModelChildSummary getChildSummary() {
-    return childSummary;
+  public MathModelChildSummary getModelInfo() {
+    return modelInfo;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_CHILD_SUMMARY)
+  @JsonProperty(JSON_PROPERTY_MODEL_INFO)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setChildSummary(MathModelChildSummary childSummary) {
-    this.childSummary = childSummary;
+  public void setModelInfo(MathModelChildSummary modelInfo) {
+    this.modelInfo = modelInfo;
   }
 
 
@@ -240,7 +240,7 @@ public class MathModelSummary {
     MathModelSummary mathModelSummary = (MathModelSummary) o;
     return Objects.equals(this.version, mathModelSummary.version) &&
         Objects.equals(this.keyValue, mathModelSummary.keyValue) &&
-        Objects.equals(this.childSummary, mathModelSummary.childSummary) &&
+        Objects.equals(this.modelInfo, mathModelSummary.modelInfo) &&
         Objects.equals(this.softwareVersion, mathModelSummary.softwareVersion) &&
         Objects.equals(this.publicationInfos, mathModelSummary.publicationInfos) &&
         Objects.equals(this.annotatedFunctions, mathModelSummary.annotatedFunctions);
@@ -248,7 +248,7 @@ public class MathModelSummary {
 
   @Override
   public int hashCode() {
-    return Objects.hash(version, keyValue, childSummary, softwareVersion, publicationInfos, annotatedFunctions);
+    return Objects.hash(version, keyValue, modelInfo, softwareVersion, publicationInfos, annotatedFunctions);
   }
 
   @Override
@@ -257,7 +257,7 @@ public class MathModelSummary {
     sb.append("class MathModelSummary {\n");
     sb.append("    version: ").append(toIndentedString(version)).append("\n");
     sb.append("    keyValue: ").append(toIndentedString(keyValue)).append("\n");
-    sb.append("    childSummary: ").append(toIndentedString(childSummary)).append("\n");
+    sb.append("    modelInfo: ").append(toIndentedString(modelInfo)).append("\n");
     sb.append("    softwareVersion: ").append(toIndentedString(softwareVersion)).append("\n");
     sb.append("    publicationInfos: ").append(toIndentedString(publicationInfos)).append("\n");
     sb.append("    annotatedFunctions: ").append(toIndentedString(annotatedFunctions)).append("\n");
@@ -318,9 +318,9 @@ public class MathModelSummary {
       joiner.add(String.format("%skeyValue%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getKeyValue()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
-    // add `childSummary` to the URL query string
-    if (getChildSummary() != null) {
-      joiner.add(getChildSummary().toUrlQueryString(prefix + "childSummary" + suffix));
+    // add `modelInfo` to the URL query string
+    if (getModelInfo() != null) {
+      joiner.add(getModelInfo().toUrlQueryString(prefix + "modelInfo" + suffix));
     }
 
     // add `softwareVersion` to the URL query string

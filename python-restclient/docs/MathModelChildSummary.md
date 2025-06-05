@@ -4,10 +4,6 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**geo_name** | **str** |  | [optional] 
-**geo_dim** | **int** |  | [optional] 
-**sim_names** | **List[str]** |  | [optional] 
-**sim_annots** | **List[str]** |  | [optional] 
 **model_type** | [**MathType**](MathType.md) |  | [optional] 
 **geometry_dimension** | **int** |  | [optional] 
 **geometry_name** | **str** |  | [optional] 
