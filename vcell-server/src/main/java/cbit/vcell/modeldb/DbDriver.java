@@ -1434,7 +1434,7 @@ public abstract class DbDriver {
                         MathModelTable.table.versionDate.getQualifiedColName();
                 sql = new StringBuffer(MathModelTable.table.getInfoSQL(user, null, (enableSpecial ? special : null), dbSyntax));
                 sql.insert(7, Table.SQL_GLOBAL_HINT);
-                TreeMap<BigDecimal, VCInfoMathModelContainer> mathModelContainer = new TreeMap<>();
+                TreeMap<BigDecimal, VCInfoMathModelContainer> mathModelContainerMap = new TreeMap<>();
                 rset = stmt.executeQuery(sql.toString());
                 ArrayList<MathModelInfo> tempInfos = new ArrayList<MathModelInfo>();
                 Set<String> distinctV = new HashSet<String>();
@@ -1443,7 +1443,7 @@ public abstract class DbDriver {
                     if(!distinctV.contains(versionInfo.getVersion().getVersionKey().toString())){
                         tempInfos.add(versionInfo);
                         distinctV.add(versionInfo.getVersion().getVersionKey().toString());
-                        mathModelContainer.put(BigDecimal.valueOf(Long.parseLong(versionInfo.getVersion().getVersionKey().toString())),
+                        mathModelContainerMap.put(BigDecimal.valueOf(Long.parseLong(versionInfo.getVersion().getVersionKey().toString())),
                                 new VCInfoMathModelContainer(versionInfo, new TreeMap<>(), new TreeMap<>(), new TreeMap<>()));
                     }
                 }
@@ -1479,7 +1479,7 @@ public abstract class DbDriver {
                                         " AND " + MathDescTable.table.id.getQualifiedColName() + " = " + MathModelTable.table.mathRef.getQualifiedColName()
                         );
 
-                        final BigDecimal[] array = mathModelContainer.keySet().toArray(new BigDecimal[0]);
+                        final BigDecimal[] array = mathModelContainerMap.keySet().toArray(new BigDecimal[0]);
                         final int MAX_LIST = 500;
                         for(int i = 0; i < array.length; i += MAX_LIST){
                             StringBuffer mmListStr = new StringBuffer();
@@ -1492,7 +1492,7 @@ public abstract class DbDriver {
                             MathModelInfo mmInfo = null;
                             while (rset.next()) {
                                 final BigDecimal mmID = rset.getBigDecimal(MathModelSimulationLinkTable.table.mathModelRef.toString());
-                                VCInfoMathModelContainer container = mathModelContainer.get(mmID);
+                                VCInfoMathModelContainer container = mathModelContainerMap.get(mmID);
                                 mmInfo = container.mathModelInfo();
                                 if(mmInfo != null){
                                     if(mmInfo.getAnnotatedFunctionsStr() == null){
