@@ -97,6 +97,7 @@ export class MathModelResourceService implements MathModelResourceServiceInterfa
     }
 
     /**
+     * Remove specific Math Model.
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -155,7 +156,7 @@ export class MathModelResourceService implements MathModelResourceServiceInterfa
 
     /**
      * Return MathModel summaries.
-     * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester.
+     * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. Default is true.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
@@ -274,6 +275,7 @@ export class MathModelResourceService implements MathModelResourceServiceInterfa
     }
 
     /**
+     * Returns MathModel in VCML format.
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.

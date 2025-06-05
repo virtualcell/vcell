@@ -16,6 +16,8 @@ Method | HTTP request | Description
 
 
 
+Remove specific Math Model.
+
 ### Example
 
 ```python
@@ -104,7 +106,7 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.MathModelResourceApi(api_client)
-    include_public_and_shared = True # bool | Include MathModel summaries that are public and shared with the requester. (optional)
+    include_public_and_shared = True # bool | Include MathModel summaries that are public and shared with the requester. Default is true. (optional)
 
     try:
         api_response = api_instance.get_summaries(include_public_and_shared=include_public_and_shared)
@@ -120,7 +122,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **include_public_and_shared** | **bool**| Include MathModel summaries that are public and shared with the requester. | [optional] 
+ **include_public_and_shared** | **bool**| Include MathModel summaries that are public and shared with the requester. Default is true. | [optional] 
 
 ### Return type
 
@@ -216,6 +218,8 @@ No authorization required
 > str get_vcml(id)
 
 
+
+Returns MathModel in VCML format.
 
 ### Example
 

@@ -233,7 +233,7 @@ public class BioModelResourceApi {
   /**
    * Return BioModel summaries.
    * 
-   * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester. (optional)
+   * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester. Default is true. (optional)
    * @return List&lt;BioModelSummary&gt;
    * @throws ApiException if fails to make API call
    */
@@ -245,7 +245,7 @@ public class BioModelResourceApi {
   /**
    * Return BioModel summaries.
    * 
-   * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester. (optional)
+   * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester. Default is true. (optional)
    * @return ApiResponse&lt;List&lt;BioModelSummary&gt;&gt;
    * @throws ApiException if fails to make API call
    */

@@ -37,7 +37,7 @@ public class MathModelResource {
 
     @DELETE
     @Path("/{id}")
-    @Operation(operationId = "deleteMathModel")
+    @Operation(operationId = "deleteMathModel", description = "Remove specific Math Model.")
     public void deleteMathModel(@PathParam("id") String id) throws DataAccessWebException, NotAuthenticatedWebException, NotFoundWebException, PermissionWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try{
@@ -54,7 +54,7 @@ public class MathModelResource {
     @GET
     @Produces({MediaType.APPLICATION_XML})
     @Path("/{id}")
-    @Operation(operationId = "getVCML")
+    @Operation(operationId = "getVCML", description = "Returns MathModel in VCML format.")
     public String getMathModel(@PathParam("id") String id) throws DataAccessWebException, NotFoundWebException, PermissionWebException {
         User user = userRestService.getUserOrAnonymousFromIdentity(securityIdentity);
         try{
@@ -96,11 +96,11 @@ public class MathModelResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "getSummaries", description = "Return MathModel summaries.")
     public List<MathModelSummary> getMathModelSummaries(
-            @Parameter(description = "Include MathModel summaries that are public and shared with the requester.")
-            @QueryParam("includePublicAndShared") boolean includePublicAndShared) throws DataAccessWebException, ObjectNotFoundException {
+            @Parameter(required = false, description = "Include MathModel summaries that are public and shared with the requester. Default is true.")
+            @QueryParam("includePublicAndShared") Optional<Boolean> includePublicAndShared) throws DataAccessWebException, ObjectNotFoundException {
         User user = userRestService.getUserOrAnonymousFromIdentity(securityIdentity);
         try{
-            MathModelInfo[] infos = mathModelService.getMathModelInfos(user, includePublicAndShared);
+            MathModelInfo[] infos = mathModelService.getMathModelInfos(user, includePublicAndShared.orElse(true));
             ArrayList<MathModelSummary> summaries = new ArrayList<>();
             for (MathModelInfo info : infos) {
                 MathModelChildSummary childSummary = info.getMathModelChildSummary();

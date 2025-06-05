@@ -69,6 +69,7 @@ class MathModelResourceApi:
     ) -> None:
         """delete_math_model
 
+        Remove specific Math Model.
 
         :param id: (required)
         :type id: str
@@ -135,6 +136,7 @@ class MathModelResourceApi:
     ) -> ApiResponse[None]:
         """delete_math_model
 
+        Remove specific Math Model.
 
         :param id: (required)
         :type id: str
@@ -201,6 +203,7 @@ class MathModelResourceApi:
     ) -> RESTResponseType:
         """delete_math_model
 
+        Remove specific Math Model.
 
         :param id: (required)
         :type id: str
@@ -308,7 +311,7 @@ class MathModelResourceApi:
     @validate_call
     def get_summaries(
         self,
-        include_public_and_shared: Annotated[Optional[StrictBool], Field(description="Include MathModel summaries that are public and shared with the requester.")] = None,
+        include_public_and_shared: Annotated[Optional[StrictBool], Field(description="Include MathModel summaries that are public and shared with the requester. Default is true.")] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -326,7 +329,7 @@ class MathModelResourceApi:
 
         Return MathModel summaries.
 
-        :param include_public_and_shared: Include MathModel summaries that are public and shared with the requester.
+        :param include_public_and_shared: Include MathModel summaries that are public and shared with the requester. Default is true.
         :type include_public_and_shared: bool
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -377,7 +380,7 @@ class MathModelResourceApi:
     @validate_call
     def get_summaries_with_http_info(
         self,
-        include_public_and_shared: Annotated[Optional[StrictBool], Field(description="Include MathModel summaries that are public and shared with the requester.")] = None,
+        include_public_and_shared: Annotated[Optional[StrictBool], Field(description="Include MathModel summaries that are public and shared with the requester. Default is true.")] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -395,7 +398,7 @@ class MathModelResourceApi:
 
         Return MathModel summaries.
 
-        :param include_public_and_shared: Include MathModel summaries that are public and shared with the requester.
+        :param include_public_and_shared: Include MathModel summaries that are public and shared with the requester. Default is true.
         :type include_public_and_shared: bool
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -446,7 +449,7 @@ class MathModelResourceApi:
     @validate_call
     def get_summaries_without_preload_content(
         self,
-        include_public_and_shared: Annotated[Optional[StrictBool], Field(description="Include MathModel summaries that are public and shared with the requester.")] = None,
+        include_public_and_shared: Annotated[Optional[StrictBool], Field(description="Include MathModel summaries that are public and shared with the requester. Default is true.")] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -464,7 +467,7 @@ class MathModelResourceApi:
 
         Return MathModel summaries.
 
-        :param include_public_and_shared: Include MathModel summaries that are public and shared with the requester.
+        :param include_public_and_shared: Include MathModel summaries that are public and shared with the requester. Default is true.
         :type include_public_and_shared: bool
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -860,6 +863,7 @@ class MathModelResourceApi:
     ) -> str:
         """get_vcml
 
+        Returns MathModel in VCML format.
 
         :param id: (required)
         :type id: str
@@ -930,6 +934,7 @@ class MathModelResourceApi:
     ) -> ApiResponse[str]:
         """get_vcml
 
+        Returns MathModel in VCML format.
 
         :param id: (required)
         :type id: str
@@ -1000,6 +1005,7 @@ class MathModelResourceApi:
     ) -> RESTResponseType:
         """get_vcml
 
+        Returns MathModel in VCML format.
 
         :param id: (required)
         :type id: str

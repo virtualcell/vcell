@@ -90,7 +90,7 @@ public class MathModelResourceApi {
 
   /**
    * 
-   * 
+   * Remove specific Math Model.
    * @param id  (required)
    * @throws ApiException if fails to make API call
    */
@@ -100,7 +100,7 @@ public class MathModelResourceApi {
 
   /**
    * 
-   * 
+   * Remove specific Math Model.
    * @param id  (required)
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
@@ -166,7 +166,7 @@ public class MathModelResourceApi {
   /**
    * 
    * Return MathModel summaries.
-   * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. (optional)
+   * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. Default is true. (optional)
    * @return List&lt;MathModelSummary&gt;
    * @throws ApiException if fails to make API call
    */
@@ -178,7 +178,7 @@ public class MathModelResourceApi {
   /**
    * 
    * Return MathModel summaries.
-   * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. (optional)
+   * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. Default is true. (optional)
    * @return ApiResponse&lt;List&lt;MathModelSummary&gt;&gt;
    * @throws ApiException if fails to make API call
    */
@@ -319,7 +319,7 @@ public class MathModelResourceApi {
   }
   /**
    * 
-   * 
+   * Returns MathModel in VCML format.
    * @param id  (required)
    * @return String
    * @throws ApiException if fails to make API call
@@ -331,7 +331,7 @@ public class MathModelResourceApi {
 
   /**
    * 
-   * 
+   * Returns MathModel in VCML format.
    * @param id  (required)
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call

@@ -576,7 +576,7 @@ class BioModelResourceApi:
     @validate_call
     def get_bio_model_summaries(
         self,
-        include_public_and_shared: Annotated[Optional[StrictBool], Field(description="Includes BioModel summaries that are public or shared with requester.")] = None,
+        include_public_and_shared: Annotated[Optional[StrictBool], Field(description="Includes BioModel summaries that are public or shared with requester. Default is true.")] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -593,7 +593,7 @@ class BioModelResourceApi:
         """Return BioModel summaries.
 
 
-        :param include_public_and_shared: Includes BioModel summaries that are public or shared with requester.
+        :param include_public_and_shared: Includes BioModel summaries that are public or shared with requester. Default is true.
         :type include_public_and_shared: bool
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -644,7 +644,7 @@ class BioModelResourceApi:
     @validate_call
     def get_bio_model_summaries_with_http_info(
         self,
-        include_public_and_shared: Annotated[Optional[StrictBool], Field(description="Includes BioModel summaries that are public or shared with requester.")] = None,
+        include_public_and_shared: Annotated[Optional[StrictBool], Field(description="Includes BioModel summaries that are public or shared with requester. Default is true.")] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -661,7 +661,7 @@ class BioModelResourceApi:
         """Return BioModel summaries.
 
 
-        :param include_public_and_shared: Includes BioModel summaries that are public or shared with requester.
+        :param include_public_and_shared: Includes BioModel summaries that are public or shared with requester. Default is true.
         :type include_public_and_shared: bool
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -712,7 +712,7 @@ class BioModelResourceApi:
     @validate_call
     def get_bio_model_summaries_without_preload_content(
         self,
-        include_public_and_shared: Annotated[Optional[StrictBool], Field(description="Includes BioModel summaries that are public or shared with requester.")] = None,
+        include_public_and_shared: Annotated[Optional[StrictBool], Field(description="Includes BioModel summaries that are public or shared with requester. Default is true.")] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -729,7 +729,7 @@ class BioModelResourceApi:
         """Return BioModel summaries.
 
 
-        :param include_public_and_shared: Includes BioModel summaries that are public or shared with requester.
+        :param include_public_and_shared: Includes BioModel summaries that are public or shared with requester. Default is true.
         :type include_public_and_shared: bool
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request

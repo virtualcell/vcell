@@ -254,6 +254,8 @@ paths:
       - name: includePublicAndShared
         in: query
         description: Includes BioModel summaries that are public or shared with requester.
+          Default is true.
+        required: false
         schema:
           type: boolean
       responses:
@@ -924,7 +926,8 @@ paths:
       - name: includePublicAndShared
         in: query
         description: Include MathModel summaries that are public and shared with the
-          requester.
+          requester. Default is true.
+        required: false
         schema:
           type: boolean
       responses:
@@ -984,6 +987,7 @@ paths:
     get:
       tags:
       - Math Model Resource
+      description: Returns MathModel in VCML format.
       operationId: getVCML
       parameters:
       - name: id
@@ -1019,6 +1023,7 @@ paths:
     delete:
       tags:
       - Math Model Resource
+      description: Remove specific Math Model.
       operationId: deleteMathModel
       parameters:
       - name: id

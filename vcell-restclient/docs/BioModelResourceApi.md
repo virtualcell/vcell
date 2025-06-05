@@ -311,7 +311,7 @@ public class Example {
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        Boolean includePublicAndShared = true; // Boolean | Includes BioModel summaries that are public or shared with requester.
+        Boolean includePublicAndShared = true; // Boolean | Includes BioModel summaries that are public or shared with requester. Default is true.
         try {
             List<BioModelSummary> result = apiInstance.getBioModelSummaries(includePublicAndShared);
             System.out.println(result);
@@ -331,7 +331,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **includePublicAndShared** | **Boolean**| Includes BioModel summaries that are public or shared with requester. | [optional] |
+| **includePublicAndShared** | **Boolean**| Includes BioModel summaries that are public or shared with requester. Default is true. | [optional] |
 
 ### Return type
 
@@ -376,7 +376,7 @@ public class Example {
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        Boolean includePublicAndShared = true; // Boolean | Includes BioModel summaries that are public or shared with requester.
+        Boolean includePublicAndShared = true; // Boolean | Includes BioModel summaries that are public or shared with requester. Default is true.
         try {
             ApiResponse<List<BioModelSummary>> response = apiInstance.getBioModelSummariesWithHttpInfo(includePublicAndShared);
             System.out.println("Status code: " + response.getStatusCode());
@@ -398,7 +398,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **includePublicAndShared** | **Boolean**| Includes BioModel summaries that are public or shared with requester. | [optional] |
+| **includePublicAndShared** | **Boolean**| Includes BioModel summaries that are public or shared with requester. Default is true. | [optional] |
 
 ### Return type
 

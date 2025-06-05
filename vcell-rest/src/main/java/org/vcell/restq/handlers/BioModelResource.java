@@ -85,11 +85,11 @@ public class BioModelResource {
     @Operation(operationId = "getBioModelSummaries", summary = "Return BioModel summaries.")
     @Produces(MediaType.APPLICATION_JSON)
     public BioModelSummary[] getBioModelContexts(
-            @Parameter(description = "Includes BioModel summaries that are public or shared with requester.")
-            @QueryParam("includePublicAndShared") boolean includePublicAndShared) throws DataAccessWebException {
+            @Parameter(description = "Includes BioModel summaries that are public or shared with requester. Default is true.")
+            @QueryParam("includePublicAndShared") Optional<Boolean> includePublicAndShared) throws DataAccessWebException {
         try{
             User vcellUser = userRestService.getUserOrAnonymousFromIdentity(securityIdentity);
-            BioModelInfo[] infos = bioModelRestService.getBioModelInfos(vcellUser, includePublicAndShared);
+            BioModelInfo[] infos = bioModelRestService.getBioModelInfos(vcellUser, includePublicAndShared.orElse(true));
             BioModelSummary[] contexts = new BioModelSummary[infos.length];
             for (int i = 0; i < infos.length; i ++){
                 contexts[i] = new BioModelSummary(infos[i].getVersion(), infos[i].getBioModelChildSummary(), infos[i].getPublicationInfos(), infos[i].getSoftwareVersion());

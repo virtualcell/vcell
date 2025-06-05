@@ -270,6 +270,7 @@ paths:
       operationId: getBioModelSummaries
       parameters:
       - description: Includes BioModel summaries that are public or shared with requester.
+          Default is true.
         explode: true
         in: query
         name: includePublicAndShared
@@ -949,7 +950,7 @@ paths:
       operationId: getSummaries
       parameters:
       - description: Include MathModel summaries that are public and shared with the
-          requester.
+          requester. Default is true.
         explode: true
         in: query
         name: includePublicAndShared
@@ -1018,6 +1019,7 @@ paths:
       x-accepts: application/json
   /api/v1/mathModel/{id}:
     delete:
+      description: Remove specific Math Model.
       operationId: deleteMathModel
       parameters:
       - explode: false
@@ -1058,6 +1060,7 @@ paths:
       - Math Model Resource
       x-accepts: application/json
     get:
+      description: Returns MathModel in VCML format.
       operationId: getVCML
       parameters:
       - explode: false

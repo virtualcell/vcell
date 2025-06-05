@@ -27,7 +27,7 @@ export interface MathModelResourceServiceInterface {
 
     /**
      * 
-     * 
+     * Remove specific Math Model.
      * @param id 
      */
     deleteMathModel(id: string, extraHttpRequestParams?: any): Observable<{}>;
@@ -35,7 +35,7 @@ export interface MathModelResourceServiceInterface {
     /**
      * 
      * Return MathModel summaries.
-     * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester.
+     * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. Default is true.
      */
     getSummaries(includePublicAndShared?: boolean, extraHttpRequestParams?: any): Observable<Array<MathModelSummary>>;
 
@@ -48,7 +48,7 @@ export interface MathModelResourceServiceInterface {
 
     /**
      * 
-     * 
+     * Returns MathModel in VCML format.
      * @param id 
      */
     getVCML(id: string, extraHttpRequestParams?: any): Observable<string>;

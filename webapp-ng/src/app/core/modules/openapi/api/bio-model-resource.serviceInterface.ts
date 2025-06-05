@@ -43,7 +43,7 @@ export interface BioModelResourceServiceInterface {
     /**
      * Return BioModel summaries.
      * 
-     * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester.
+     * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester. Default is true.
      */
     getBioModelSummaries(includePublicAndShared?: boolean, extraHttpRequestParams?: any): Observable<Array<BioModelSummary>>;
 

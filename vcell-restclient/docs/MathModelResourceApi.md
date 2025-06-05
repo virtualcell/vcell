@@ -23,6 +23,8 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 
 
 
+Remove specific Math Model.
+
 ### Example
 
 ```java
@@ -88,6 +90,8 @@ No authorization required
 > ApiResponse<Void> deleteMathModel deleteMathModelWithHttpInfo(id)
 
 
+
+Remove specific Math Model.
 
 ### Example
 
@@ -177,7 +181,7 @@ public class Example {
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         MathModelResourceApi apiInstance = new MathModelResourceApi(defaultClient);
-        Boolean includePublicAndShared = true; // Boolean | Include MathModel summaries that are public and shared with the requester.
+        Boolean includePublicAndShared = true; // Boolean | Include MathModel summaries that are public and shared with the requester. Default is true.
         try {
             List<MathModelSummary> result = apiInstance.getSummaries(includePublicAndShared);
             System.out.println(result);
@@ -197,7 +201,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **includePublicAndShared** | **Boolean**| Include MathModel summaries that are public and shared with the requester. | [optional] |
+| **includePublicAndShared** | **Boolean**| Include MathModel summaries that are public and shared with the requester. Default is true. | [optional] |
 
 ### Return type
 
@@ -244,7 +248,7 @@ public class Example {
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
         MathModelResourceApi apiInstance = new MathModelResourceApi(defaultClient);
-        Boolean includePublicAndShared = true; // Boolean | Include MathModel summaries that are public and shared with the requester.
+        Boolean includePublicAndShared = true; // Boolean | Include MathModel summaries that are public and shared with the requester. Default is true.
         try {
             ApiResponse<List<MathModelSummary>> response = apiInstance.getSummariesWithHttpInfo(includePublicAndShared);
             System.out.println("Status code: " + response.getStatusCode());
@@ -266,7 +270,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **includePublicAndShared** | **Boolean**| Include MathModel summaries that are public and shared with the requester. | [optional] |
+| **includePublicAndShared** | **Boolean**| Include MathModel summaries that are public and shared with the requester. Default is true. | [optional] |
 
 ### Return type
 
@@ -435,6 +439,8 @@ No authorization required
 
 
 
+Returns MathModel in VCML format.
+
 ### Example
 
 ```java
@@ -500,6 +506,8 @@ No authorization required
 > ApiResponse<String> getVCML getVCMLWithHttpInfo(id)
 
 
+
+Returns MathModel in VCML format.
 
 ### Example
 

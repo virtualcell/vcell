@@ -216,7 +216,7 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
 
     /**
      * Return BioModel summaries.
-     * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester.
+     * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester. Default is true.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
