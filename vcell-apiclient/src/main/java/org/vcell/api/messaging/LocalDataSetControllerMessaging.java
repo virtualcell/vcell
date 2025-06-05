@@ -69,7 +69,7 @@ public ExternalDataIdentifier saveFieldData(FieldData fieldData) throws DataAcce
                 DtoModelTransforms.fieldDataToDTO(fieldData)
         );
     } catch (ApiException e) {
-		ExceptionHandler.onlyDataAccessException(e);
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
     }
     return new ExternalDataIdentifier(new KeyValue(results.getFieldDataKey()), new User(vCellApiClient.getCachedVCellUserName(), null), results.getFieldDataName());
 }
@@ -79,7 +79,7 @@ public cbit.vcell.field.io.FieldDataShape getFieldDataShape(KeyValue externalDat
     try {
         shape = vCellApiClient.getFieldDataApi().getShapeFromID(externalDataIdentifierKey.toString());
     } catch (ApiException e) {
-        ExceptionHandler.onlyDataAccessException(e);
+        ExceptionHandler.onlyDataAccessOrPermissionException(e);
     }
     return DtoModelTransforms.DTOToFieldDataShape(shape);
 }
@@ -91,7 +91,7 @@ public ExternalDataIdentifier analyzeAndCreateFieldData(FieldDataSpec fieldDataS
                 DtoModelTransforms.extentToDTO(fieldDataSpec.extent), DtoModelTransforms.iSizeToDTO(fieldDataSpec.iSize), fieldDataSpec.channelNames, fieldDataSpec.times, fieldDataSpec.annotation,
                 DtoModelTransforms.originToDTO(fieldDataSpec.origin));
     } catch (ApiException e) {
-        ExceptionHandler.onlyDataAccessException(e);
+        ExceptionHandler.onlyDataAccessOrPermissionException(e);
     }
     return new ExternalDataIdentifier(new KeyValue(savedResults.getFieldDataKey()), fieldDataSpec.owner, savedResults.getFieldDataName());
 }

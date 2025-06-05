@@ -10,9 +10,7 @@
 
 package org.vcell.api.messaging;
 
-import cbit.vcell.biomodel.BioModelMetaData;
 import cbit.vcell.field.FieldDataAllDBEntries;
-import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.message.server.bootstrap.client.RpcDbServerProxy;
 import cbit.vcell.message.server.bootstrap.client.RpcSender;
@@ -106,7 +104,7 @@ public void deleteBioModel(org.vcell.util.document.KeyValue key) throws DataAcce
     try {
         vCellApiClient.getBioModelApi().deleteBioModel(key.toString());
     } catch (ApiException e) {
-		ExceptionHandler.onlyDataAccessException(e);
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
 	}
 }
 
@@ -115,7 +113,7 @@ public FieldDataAllDBEntries getAllFieldDataIDs() throws DataAccessException {
     try {
         fieldDataReferences = vCellApiClient.getFieldDataApi().getAllIDs();
     } catch (ApiException e) {
-        ExceptionHandler.onlyDataAccessException(e);
+        ExceptionHandler.onlyDataAccessOrPermissionException(e);
     }
     return DtoModelTransforms.fieldDataReferencesToDBResults(fieldDataReferences);
 }
@@ -178,7 +176,7 @@ public void deleteMathModel(org.vcell.util.document.KeyValue key) throws DataAcc
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.deleteMathModel(Key="+key+")");
 		vCellApiClient.getMathModelApi().deleteMathModel(key.toString());
 	} catch (ApiException e) {
-		ExceptionHandler.onlyDataAccessException(e);
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
 		throw new RuntimeException("Expected error handler to throw an error.", e);
 	}
 }
@@ -280,7 +278,7 @@ public org.vcell.util.document.BioModelInfo getBioModelInfo(org.vcell.util.docum
 		BioModelSummary context = vCellApiClient.getBioModelApi().getBioModelSummary(bioModelKey.toString());
 		return DtoModelTransforms.bioModelContextToBioModelInfo(context);
 	} catch (ApiException e) {
-		ExceptionHandler.onlyDataAccessException(e);
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
 		throw new RuntimeException("Exception handler did not throw an exception.");
 	}
 }
@@ -297,7 +295,7 @@ public org.vcell.util.document.BioModelInfo[] getBioModelInfos(boolean bAll) thr
 		}
 		return infos;
 	} catch (ApiException e) {
-		ExceptionHandler.onlyDataAccessException(e);
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
 		throw new RuntimeException("Exception handler did not throw an exception.");
 	}
 }
@@ -312,7 +310,7 @@ public BigString getBioModelXML(KeyValue bioModelKey) throws DataAccessException
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getBioModelXML(key="+bioModelKey+")");
         return new BigString(vCellApiClient.getBioModelApi().getBioModelVCML(bioModelKey.toString()));
 	} catch (ApiException e) {
-		ExceptionHandler.onlyDataAccessException(e);
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
 		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
 }
@@ -427,12 +425,12 @@ public BigString getGeometryXML(KeyValue geometryKey) throws DataAccessException
 }
 
 
-	public MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException, RemoteProxyException {
+	public MathModelInfo getMathModelInfo(KeyValue key) throws DataAccessException, ObjectNotFoundException {
 		try {
 			MathModelSummary summary = vCellApiClient.getMathModelApi().getSummary(key.toString());
 			return DtoModelTransforms.mathModelContextToMathModel(summary);
 		} catch (ApiException e) {
-            ExceptionHandler.onlyDataAccessException(e);
+            ExceptionHandler.onlyDataAccessOrPermissionException(e);
 			throw new RuntimeException("Exception handler did not throw an exception.");
         }
     }
@@ -448,7 +446,7 @@ public BigString getGeometryXML(KeyValue geometryKey) throws DataAccessException
 		}
 		return modelInfos;
 	} catch (ApiException e) {
-		ExceptionHandler.onlyDataAccessException(e);
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
 		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
 }
@@ -844,7 +842,7 @@ public BigString saveBioModel(BigString bioModelXML, String independentSims[]) t
 				independentSims == null ? null : Arrays.asList(independentSims)
         );
     } catch (ApiException e) {
-        ExceptionHandler.onlyDataAccessException(e);
+        ExceptionHandler.onlyDataAccessOrPermissionException(e);
     }
     return new BigString(savedBioModelXML);
 }
@@ -865,7 +863,7 @@ public BigString saveBioModelAs(BigString bioModelXML, String newName, String in
 						independentSims == null ? null : Arrays.asList(independentSims)
 		);
     } catch (ApiException e) {
-        ExceptionHandler.onlyDataAccessException(e);
+        ExceptionHandler.onlyDataAccessOrPermissionException(e);
     }
     return new BigString(savedBioModelXML);
 
