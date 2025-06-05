@@ -1,0 +1,59 @@
+#!/bin/bash --login
+#SBATCH --job-name=advanced
+#SBATCH --nodes=1
+#SBATCH --ntasks=4
+#SBATCH --qos=vcell
+#SBATCH --partition=vcell
+#SBATCH -o %x.stdout
+#SBATCH -e %x.stderr
+#SBATCH --cpus-per-task=1
+#SBATCH --time=01:00:00
+
+log_file="${SLURM_JOB_NAME}.log"
+total_jobs=10  # total number of jobs to run
+timeout_duration=15s  # maximum allowed runtime for each job
+max_concurrent_jobs=$SLURM_NTASKS  # number of jobs allowed at once
+
+# clear the log file at the start
+echo "job execution log" > $log_file
+echo "------------------" >> $log_file
+
+declare -A job_pid_map  # associative array to store job index -> pid mapping
+job_pids=()  # list to track pids
+
+for i in $(seq 0 $((total_jobs - 1))); do
+    # log job start
+    echo "job $i started at $(date)" >> $log_file
+    timeout $timeout_duration srun -N 1 -n 1 -c 1 ./subscript.sh $i dynamic.langevinInput &  # run each script in parallel
+    pid=$!  # capture the job pid
+    job_pids+=($pid)  # store the pid
+    job_pid_map[$pid]=$i  # map job index to pid
+
+    # wait for a batch of ntasks before launching new ones
+    if (( (i + 1) % max_concurrent_jobs == 0 || i == total_jobs - 1 )); then
+        echo "waiting for jobs to finish at $(date)" >> $log_file
+
+        for pid in "${job_pids[@]}"; do
+            wait $pid
+            exit_code=$?  # capture the exit code of the job
+            job_index=${job_pid_map[$pid]}  # retrieve original job index
+            echo "job $job_index with pid $pid finished with exit code $exit_code at $(date)" >> $log_file
+        done
+
+        # clear job pids for the next batch
+        job_pids=()
+        job_pid_map=()
+    fi
+done
+
+echo "starting the last job at $(date)" >> $log_file
+timeout $timeout_duration srun -N 1 -n 1 -c 1 ./last.sh &  # run last script with a timeout
+last_pid=$!
+wait $last_pid  # explicitly wait for last.sh to finish
+exit_code=$?  # capture the exit code of the job
+echo "job 'last' with pid $last_pid finished with exit code $exit_code at $(date)" >> $log_file
+echo "the final job finished at $(date)" >> $log_file
+
+echo "all jobs completed at $(date)" >> $log_file
+echo "end script" >> $log_file
+

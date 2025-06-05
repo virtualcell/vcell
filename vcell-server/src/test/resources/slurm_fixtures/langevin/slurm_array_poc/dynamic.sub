@@ -1,0 +1,71 @@
+#!/bin/bash --login
+#SBATCH --job-name=dynamic
+#SBATCH --nodes=1
+#SBATCH --ntasks=4     # use 3 for fast testing
+#SBATCH --qos=vcell
+#SBATCH --partition=vcell
+#SBATCH -o %x.stdout
+#SBATCH -e %x.stderr
+#SBATCH --cpus-per-task=1
+#SBATCH --time=01:00:00
+
+log_file="${SLURM_JOB_NAME}.log"
+total_jobs=10  # total number of jobs to run (use 7 for fast testing)
+timeout_duration=15s  # maximum allowed runtime for each job
+max_concurrent_jobs=$SLURM_NTASKS  # number of jobs allowed at once
+
+# Clear the log file at the start
+echo "Job Execution Log" > $log_file
+echo "------------------" >> $log_file
+
+declare -A job_pid_map  # associative array to store job index -> PID mapping
+job_pids=()  # list to track PIDs
+running_jobs=0
+
+for i in $(seq 0 $((total_jobs - 1))); do
+    # log job start
+    echo "Job $i started at $(date)" >> $log_file
+    timeout $timeout_duration srun -N 1 -n 1 -c 1 ./subscript.sh $i dynamic.langevinInput & # run each script in parallel
+    pid=$!  # capture the job PID
+    job_pids+=($pid)  # store the PID
+    job_pid_map[$pid]=$i  # map job index to PID
+    ((running_jobs++))  # increment running job count
+
+    # wait for a finished job before launching a new one if we hit the concurrency limit
+    while (( running_jobs >= max_concurrent_jobs )); do
+        for idx in "${!job_pids[@]}"; do
+            pid="${job_pids[$idx]}"
+            if ! kill -0 "$pid" 2>/dev/null; then  # check if process is still running
+                wait "$pid"  # ensure exit status is collected
+                exit_code=$?
+                job_index=${job_pid_map[$pid]}  # retrieve original job index
+                echo "Job $job_index with PID $pid finished with exit code $exit_code at $(date)" >> $log_file
+                unset "job_pids[$idx]"  # remove PID from list
+                unset "job_pid_map[$pid]"  # remove mapping
+                ((running_jobs--))  # decrement count
+                break  # break once we free up a slot
+            fi
+        done
+        sleep 1  # allow brief pause before rechecking
+    done
+done
+
+# final wait for any remaining jobs
+for pid in "${job_pids[@]}"; do
+    wait $pid
+    exit_code=$?
+    job_index=${job_pid_map[$pid]}  # retrieve original job index
+    echo "Job $job_index with PID $pid finished with exit code $exit_code at $(date)" >> $log_file
+done
+echo "Batch jobs completed at $(date)" >> $log_file
+
+echo "Starting the last job at $(date)" >> $log_file
+timeout $timeout_duration srun -N 1 -n 1 -c 1 ./last.sh &  # run last script with a timeout
+last_pid=$!
+wait $last_pid  # explicitly wait for last.sh to finish
+exit_code=$?    # capture the exit code of the job
+echo "Job 'Last' with PID $last_pid finished with exit code $exit_code at $(date)" >> $log_file
+echo "The final job finished at $(date)" >> $log_file
+
+echo "All jobs completed at $(date)" >> $log_file
+echo "End Script" >> $log_file
