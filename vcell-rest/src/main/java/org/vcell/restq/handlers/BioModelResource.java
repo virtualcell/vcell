@@ -1,5 +1,6 @@
 package org.vcell.restq.handlers;
 
+import cbit.util.xml.XmlUtil;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -9,11 +10,9 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
-import org.eclipse.microprofile.openapi.annotations.media.Content;
-import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.jboss.resteasy.reactive.Separator;
+import org.jdom2.JDOMException;
 import org.vcell.restq.Main;
 import org.vcell.restq.errors.exceptions.*;
 import org.vcell.restq.models.BioModel;
@@ -24,6 +23,7 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -110,13 +110,17 @@ public class BioModelResource {
             vcellUser = Main.DUMMY_USER;
         }
         try {
-            return bioModelRestService.getBioModel(vcellUser, new KeyValue(bioModelID));
+            String vcml = bioModelRestService.getBioModel(vcellUser, new KeyValue(bioModelID));
+            XmlUtil.vetXMLForMaliciousEntities(vcml);
+            return vcml;
         }catch (ObjectNotFoundException e) {
             throw new NotFoundWebException(e.getMessage(), e);
         } catch (PermissionException e){
             throw new PermissionWebException(e.getMessage(), e);
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
+        } catch (IOException | JDOMException e) {
+            throw new RuntimeWebException("The BioModel you are trying to retrieve seems to be malformed. Please contact VCell support with the BioModel ID: " + bioModelID, e);
         }
     }
 
@@ -179,12 +183,13 @@ public class BioModelResource {
                        @QueryParam("simsRequiringUpdates") @Parameter(required = false, allowEmptyValue = true, description = simsRequiringUpdatesDescription) List<String> simNames) throws DataAccessWebException, UnprocessableContentWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try {
+            XmlUtil.vetXMLForMaliciousEntities(bioModelVCML);
             cbit.vcell.biomodel.BioModel savedBioModel = bioModelRestService.save(user, bioModelVCML,
                     newName.orElse(null), simNames.toArray(new String[0]));
             return XmlHelper.bioModelToXML(savedBioModel);
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
-        } catch (XmlParseException e){
+        } catch (XmlParseException | IOException | JDOMException e){
             throw new UnprocessableContentWebException(e.getMessage(), e);
         }
     }

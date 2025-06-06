@@ -25,7 +25,6 @@ import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
 import javax.xml.XMLConstants;
-import javax.xml.parsers.SAXParserFactory;
 import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -128,11 +127,27 @@ private XmlUtil() {
 	}
 
 
+	/**
+	 * Throws exception if the xml contains entities not allowed.
+	 * @param xml
+	 * @throws IOException
+	 * @throws JDOMException
+	 */
+	public static void vetXMLForMaliciousEntities(String xml) throws IOException, JDOMException {
+		SAXBuilder builder = new SAXBuilder();
+		GenericXMLErrorHandler errorHandler = new GenericXMLErrorHandler();
+
+		builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
+		builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+
+		builder.build(new StringReader(xml));
+	}
+
+
 //useful for the translators.
 	public static Document readXML(Reader reader, String schemaLocation, String parserClass, String schemaLocationPropName) throws RuntimeException {
 		
 		SAXBuilder builder = null;
-		SAXParserFactory factory = SAXParserFactory.newInstance();
 		Document sDoc = null;
 		GenericXMLErrorHandler errorHandler = new GenericXMLErrorHandler();
 		try {
@@ -178,6 +193,8 @@ private XmlUtil() {
 		Document sDoc = null;
 		GenericXMLErrorHandler errorHandler = new GenericXMLErrorHandler();
   		builder.setErrorHandler(errorHandler);
+		builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
+		builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 		try {
 	  		sDoc = builder.build(file);
 			// Element root = null;
@@ -205,6 +222,8 @@ private XmlUtil() {
 		Document sDoc = null;
 		GenericXMLErrorHandler errorHandler = new GenericXMLErrorHandler();
   		builder.setErrorHandler(errorHandler);
+		builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
+		builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 		try {
 	  		sDoc = builder.build(inputStream);
 			// Element root = null;

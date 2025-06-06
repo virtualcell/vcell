@@ -1,6 +1,7 @@
 package org.vcell.restq.handlers;
 
 
+import cbit.util.xml.XmlUtil;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -9,10 +10,8 @@ import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
-import org.vcell.restq.errors.exceptions.DataAccessWebException;
-import org.vcell.restq.errors.exceptions.NotAuthenticatedWebException;
-import org.vcell.restq.errors.exceptions.NotFoundWebException;
-import org.vcell.restq.errors.exceptions.PermissionWebException;
+import org.jdom2.JDOMException;
+import org.vcell.restq.errors.exceptions.*;
 import org.vcell.restq.services.MathModelService;
 import org.vcell.restq.services.UserRestService;
 import org.vcell.util.BigString;
@@ -21,6 +20,7 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -59,6 +59,7 @@ public class MathModelResource {
         User user = userRestService.getUserOrAnonymousFromIdentity(securityIdentity);
         try{
             BigString result = mathModelService.getMathModelVCML(user, new KeyValue(id));
+            XmlUtil.vetXMLForMaliciousEntities(result.toString());
             return result.toString();
         } catch (ObjectNotFoundException e){
             throw new NotFoundWebException(e.getMessage(), e);
@@ -66,6 +67,8 @@ public class MathModelResource {
             throw new PermissionWebException(e.getMessage(), e);
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
+        } catch (IOException | JDOMException e) {
+            throw new RuntimeWebException("The MathModel you are trying to retrieve seems to be malformed, please contact VCell support with the Math Model ID: " + id, e);
         }
     }
 
@@ -124,13 +127,16 @@ public class MathModelResource {
                        @Parameter(name = "newName", required = false, description = "Name to save new MathModel under. Leave blank if re-saving existing MathModel.")
                        @QueryParam("newName") Optional<String> newName,
                        @Parameter(name = "simNames", required = false, description = BioModelResource.simsRequiringUpdatesDescription)
-                       @QueryParam("simsRequiringUpdates") List<String> simNames) throws DataAccessWebException, NotAuthenticatedWebException {
+                       @QueryParam("simsRequiringUpdates") List<String> simNames) throws DataAccessWebException, NotAuthenticatedWebException, UnprocessableContentWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try{
+            XmlUtil.vetXMLForMaliciousEntities(mathModelVCML);
             BigString result = mathModelService.saveModel(user, new BigString(mathModelVCML), newName.orElse(null), simNames.toArray(new String[0]));
             return result.toString();
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
+        } catch (IOException | JDOMException e) {
+            throw new UnprocessableContentWebException(e.getMessage(), e);
         }
     }
 
