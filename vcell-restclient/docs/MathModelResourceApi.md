@@ -1,29 +1,29 @@
-# BioModelResourceApi
+# MathModelResourceApi
 
 All URIs are relative to *https://vcell.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**deleteBioModel**](BioModelResourceApi.md#deleteBioModel) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database. |
-| [**deleteBioModelWithHttpInfo**](BioModelResourceApi.md#deleteBioModelWithHttpInfo) | **DELETE** /api/v1/bioModel/{bioModelID} | Delete the BioModel from VCell&#39;s database. |
-| [**getBioModel**](BioModelResourceApi.md#getBioModel) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel. |
-| [**getBioModelWithHttpInfo**](BioModelResourceApi.md#getBioModelWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID} | Get BioModel. |
-| [**getBioModelSummaries**](BioModelResourceApi.md#getBioModelSummaries) | **GET** /api/v1/bioModel/summaries | Return BioModel summaries. |
-| [**getBioModelSummariesWithHttpInfo**](BioModelResourceApi.md#getBioModelSummariesWithHttpInfo) | **GET** /api/v1/bioModel/summaries | Return BioModel summaries. |
-| [**getBioModelSummary**](BioModelResourceApi.md#getBioModelSummary) | **GET** /api/v1/bioModel/{bioModelID}/summary | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself. |
-| [**getBioModelSummaryWithHttpInfo**](BioModelResourceApi.md#getBioModelSummaryWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/summary | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself. |
-| [**getBioModelVCML**](BioModelResourceApi.md#getBioModelVCML) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format. |
-| [**getBioModelVCMLWithHttpInfo**](BioModelResourceApi.md#getBioModelVCMLWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format. |
-| [**saveBioModel**](BioModelResourceApi.md#saveBioModel) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML. |
-| [**saveBioModelWithHttpInfo**](BioModelResourceApi.md#saveBioModelWithHttpInfo) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML. |
+| [**deleteMathModel**](MathModelResourceApi.md#deleteMathModel) | **DELETE** /api/v1/mathModel/{id} |  |
+| [**deleteMathModelWithHttpInfo**](MathModelResourceApi.md#deleteMathModelWithHttpInfo) | **DELETE** /api/v1/mathModel/{id} |  |
+| [**getSummaries**](MathModelResourceApi.md#getSummaries) | **GET** /api/v1/mathModel/summaries |  |
+| [**getSummariesWithHttpInfo**](MathModelResourceApi.md#getSummariesWithHttpInfo) | **GET** /api/v1/mathModel/summaries |  |
+| [**getSummary**](MathModelResourceApi.md#getSummary) | **GET** /api/v1/mathModel/summary/{id} |  |
+| [**getSummaryWithHttpInfo**](MathModelResourceApi.md#getSummaryWithHttpInfo) | **GET** /api/v1/mathModel/summary/{id} |  |
+| [**getVCML**](MathModelResourceApi.md#getVCML) | **GET** /api/v1/mathModel/{id} |  |
+| [**getVCMLWithHttpInfo**](MathModelResourceApi.md#getVCMLWithHttpInfo) | **GET** /api/v1/mathModel/{id} |  |
+| [**saveMathModel**](MathModelResourceApi.md#saveMathModel) | **POST** /api/v1/mathModel |  |
+| [**saveMathModelWithHttpInfo**](MathModelResourceApi.md#saveMathModelWithHttpInfo) | **POST** /api/v1/mathModel |  |
 
 
 
-## deleteBioModel
+## deleteMathModel
 
-> void deleteBioModel(bioModelID)
+> void deleteMathModel(id)
 
-Delete the BioModel from VCell&#39;s database.
+
+
+Remove specific Math Model.
 
 ### Example
 
@@ -33,19 +33,19 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
+import org.vcell.restclient.api.MathModelResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String bioModelID = "bioModelID_example"; // String | 
+        MathModelResourceApi apiInstance = new MathModelResourceApi(defaultClient);
+        String id = "id_example"; // String | 
         try {
-            apiInstance.deleteBioModel(bioModelID);
+            apiInstance.deleteMathModel(id);
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#deleteBioModel");
+            System.err.println("Exception when calling MathModelResourceApi#deleteMathModel");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -60,7 +60,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **bioModelID** | **String**|  | |
+| **id** | **String**|  | |
 
 ### Return type
 
@@ -82,13 +82,16 @@ No authorization required
 | **204** | No Content |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
 | **500** | Data Access Exception |  -  |
 
-## deleteBioModelWithHttpInfo
+## deleteMathModelWithHttpInfo
 
-> ApiResponse<Void> deleteBioModel deleteBioModelWithHttpInfo(bioModelID)
+> ApiResponse<Void> deleteMathModel deleteMathModelWithHttpInfo(id)
 
-Delete the BioModel from VCell&#39;s database.
+
+
+Remove specific Math Model.
 
 ### Example
 
@@ -99,21 +102,21 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
+import org.vcell.restclient.api.MathModelResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String bioModelID = "bioModelID_example"; // String | 
+        MathModelResourceApi apiInstance = new MathModelResourceApi(defaultClient);
+        String id = "id_example"; // String | 
         try {
-            ApiResponse<Void> response = apiInstance.deleteBioModelWithHttpInfo(bioModelID);
+            ApiResponse<Void> response = apiInstance.deleteMathModelWithHttpInfo(id);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#deleteBioModel");
+            System.err.println("Exception when calling MathModelResourceApi#deleteMathModel");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -128,7 +131,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **bioModelID** | **String**|  | |
+| **id** | **String**|  | |
 
 ### Return type
 
@@ -150,14 +153,17 @@ No authorization required
 | **204** | No Content |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
 | **500** | Data Access Exception |  -  |
 
 
-## getBioModel
+## getSummaries
 
-> BioModel getBioModel(bioModelID)
+> List<MathModelSummary> getSummaries(includePublicAndShared)
 
-Get BioModel.
+
+
+Return MathModel summaries.
 
 ### Example
 
@@ -167,20 +173,20 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
+import org.vcell.restclient.api.MathModelResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String bioModelID = "bioModelID_example"; // String | 
+        MathModelResourceApi apiInstance = new MathModelResourceApi(defaultClient);
+        Boolean includePublicAndShared = true; // Boolean | Include MathModel summaries that are public and shared with the requester. Default is true.
         try {
-            BioModel result = apiInstance.getBioModel(bioModelID);
+            List<MathModelSummary> result = apiInstance.getSummaries(includePublicAndShared);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getBioModel");
+            System.err.println("Exception when calling MathModelResourceApi#getSummaries");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -195,11 +201,147 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **bioModelID** | **String**|  | |
+| **includePublicAndShared** | **Boolean**| Include MathModel summaries that are public and shared with the requester. Default is true. | [optional] |
 
 ### Return type
 
-[**BioModel**](BioModel.md)
+[**List&lt;MathModelSummary&gt;**](MathModelSummary.md)
+
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **500** | Data Access Exception |  -  |
+
+## getSummariesWithHttpInfo
+
+> ApiResponse<List<MathModelSummary>> getSummaries getSummariesWithHttpInfo(includePublicAndShared)
+
+
+
+Return MathModel summaries.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.MathModelResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+
+        MathModelResourceApi apiInstance = new MathModelResourceApi(defaultClient);
+        Boolean includePublicAndShared = true; // Boolean | Include MathModel summaries that are public and shared with the requester. Default is true.
+        try {
+            ApiResponse<List<MathModelSummary>> response = apiInstance.getSummariesWithHttpInfo(includePublicAndShared);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling MathModelResourceApi#getSummaries");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **includePublicAndShared** | **Boolean**| Include MathModel summaries that are public and shared with the requester. Default is true. | [optional] |
+
+### Return type
+
+ApiResponse<[**List&lt;MathModelSummary&gt;**](MathModelSummary.md)>
+
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **500** | Data Access Exception |  -  |
+
+
+## getSummary
+
+> MathModelSummary getSummary(id)
+
+
+
+All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.MathModelResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+
+        MathModelResourceApi apiInstance = new MathModelResourceApi(defaultClient);
+        String id = "id_example"; // String | 
+        try {
+            MathModelSummary result = apiInstance.getSummary(id);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling MathModelResourceApi#getSummary");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **String**|  | |
+
+### Return type
+
+[**MathModelSummary**](MathModelSummary.md)
 
 
 ### Authorization
@@ -219,11 +361,13 @@ No authorization required
 | **404** | Not found |  -  |
 | **500** | Data Access Exception |  -  |
 
-## getBioModelWithHttpInfo
+## getSummaryWithHttpInfo
 
-> ApiResponse<BioModel> getBioModel getBioModelWithHttpInfo(bioModelID)
+> ApiResponse<MathModelSummary> getSummary getSummaryWithHttpInfo(id)
 
-Get BioModel.
+
+
+All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
 
 ### Example
 
@@ -234,22 +378,22 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
+import org.vcell.restclient.api.MathModelResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String bioModelID = "bioModelID_example"; // String | 
+        MathModelResourceApi apiInstance = new MathModelResourceApi(defaultClient);
+        String id = "id_example"; // String | 
         try {
-            ApiResponse<BioModel> response = apiInstance.getBioModelWithHttpInfo(bioModelID);
+            ApiResponse<MathModelSummary> response = apiInstance.getSummaryWithHttpInfo(id);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getBioModel");
+            System.err.println("Exception when calling MathModelResourceApi#getSummary");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -264,11 +408,11 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **bioModelID** | **String**|  | |
+| **id** | **String**|  | |
 
 ### Return type
 
-ApiResponse<[**BioModel**](BioModel.md)>
+ApiResponse<[**MathModelSummary**](MathModelSummary.md)>
 
 
 ### Authorization
@@ -289,11 +433,13 @@ No authorization required
 | **500** | Data Access Exception |  -  |
 
 
-## getBioModelSummaries
+## getVCML
 
-> List<BioModelSummary> getBioModelSummaries(includePublicAndShared)
+> String getVCML(id)
 
-Return BioModel summaries.
+
+
+Returns MathModel in VCML format.
 
 ### Example
 
@@ -303,20 +449,20 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
+import org.vcell.restclient.api.MathModelResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        Boolean includePublicAndShared = true; // Boolean | Includes BioModel summaries that are public or shared with requester. Default is true.
+        MathModelResourceApi apiInstance = new MathModelResourceApi(defaultClient);
+        String id = "id_example"; // String | 
         try {
-            List<BioModelSummary> result = apiInstance.getBioModelSummaries(includePublicAndShared);
+            String result = apiInstance.getVCML(id);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getBioModelSummaries");
+            System.err.println("Exception when calling MathModelResourceApi#getVCML");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -331,273 +477,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **includePublicAndShared** | **Boolean**| Includes BioModel summaries that are public or shared with requester. Default is true. | [optional] |
-
-### Return type
-
-[**List&lt;BioModelSummary&gt;**](BioModelSummary.md)
-
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-| **500** | Data Access Exception |  -  |
-
-## getBioModelSummariesWithHttpInfo
-
-> ApiResponse<List<BioModelSummary>> getBioModelSummaries getBioModelSummariesWithHttpInfo(includePublicAndShared)
-
-Return BioModel summaries.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.ApiResponse;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
-
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        Boolean includePublicAndShared = true; // Boolean | Includes BioModel summaries that are public or shared with requester. Default is true.
-        try {
-            ApiResponse<List<BioModelSummary>> response = apiInstance.getBioModelSummariesWithHttpInfo(includePublicAndShared);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
-        } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getBioModelSummaries");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            System.err.println("Reason: " + e.getResponseBody());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **includePublicAndShared** | **Boolean**| Includes BioModel summaries that are public or shared with requester. Default is true. | [optional] |
-
-### Return type
-
-ApiResponse<[**List&lt;BioModelSummary&gt;**](BioModelSummary.md)>
-
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-| **500** | Data Access Exception |  -  |
-
-
-## getBioModelSummary
-
-> BioModelSummary getBioModelSummary(bioModelID)
-
-All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
-
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String bioModelID = "bioModelID_example"; // String | 
-        try {
-            BioModelSummary result = apiInstance.getBioModelSummary(bioModelID);
-            System.out.println(result);
-        } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getBioModelSummary");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Reason: " + e.getResponseBody());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **bioModelID** | **String**|  | |
-
-### Return type
-
-[**BioModelSummary**](BioModelSummary.md)
-
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
-| **500** | Data Access Exception |  -  |
-
-## getBioModelSummaryWithHttpInfo
-
-> ApiResponse<BioModelSummary> getBioModelSummary getBioModelSummaryWithHttpInfo(bioModelID)
-
-All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.ApiResponse;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
-
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String bioModelID = "bioModelID_example"; // String | 
-        try {
-            ApiResponse<BioModelSummary> response = apiInstance.getBioModelSummaryWithHttpInfo(bioModelID);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
-        } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getBioModelSummary");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            System.err.println("Reason: " + e.getResponseBody());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **bioModelID** | **String**|  | |
-
-### Return type
-
-ApiResponse<[**BioModelSummary**](BioModelSummary.md)>
-
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
-- **Content-Type**: Not defined
-- **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-| **403** | Not Allowed |  -  |
-| **500** | Data Access Exception |  -  |
-
-
-## getBioModelVCML
-
-> String getBioModelVCML(bioModelID)
-
-Get the BioModel in VCML format.
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
-
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String bioModelID = "bioModelID_example"; // String | 
-        try {
-            String result = apiInstance.getBioModelVCML(bioModelID);
-            System.out.println(result);
-        } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getBioModelVCML");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Reason: " + e.getResponseBody());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **bioModelID** | **String**|  | |
+| **id** | **String**|  | |
 
 ### Return type
 
@@ -611,7 +491,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: text/xml, application/json
+- **Accept**: application/xml, application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -621,11 +501,13 @@ No authorization required
 | **404** | Not found |  -  |
 | **500** | Data Access Exception |  -  |
 
-## getBioModelVCMLWithHttpInfo
+## getVCMLWithHttpInfo
 
-> ApiResponse<String> getBioModelVCML getBioModelVCMLWithHttpInfo(bioModelID)
+> ApiResponse<String> getVCML getVCMLWithHttpInfo(id)
 
-Get the BioModel in VCML format.
+
+
+Returns MathModel in VCML format.
 
 ### Example
 
@@ -636,22 +518,22 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
+import org.vcell.restclient.api.MathModelResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String bioModelID = "bioModelID_example"; // String | 
+        MathModelResourceApi apiInstance = new MathModelResourceApi(defaultClient);
+        String id = "id_example"; // String | 
         try {
-            ApiResponse<String> response = apiInstance.getBioModelVCMLWithHttpInfo(bioModelID);
+            ApiResponse<String> response = apiInstance.getVCMLWithHttpInfo(id);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getBioModelVCML");
+            System.err.println("Exception when calling MathModelResourceApi#getVCML");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -666,7 +548,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **bioModelID** | **String**|  | |
+| **id** | **String**|  | |
 
 ### Return type
 
@@ -680,7 +562,7 @@ No authorization required
 ### HTTP request headers
 
 - **Content-Type**: Not defined
-- **Accept**: text/xml, application/json
+- **Accept**: application/xml, application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
@@ -691,11 +573,11 @@ No authorization required
 | **500** | Data Access Exception |  -  |
 
 
-## saveBioModel
+## saveMathModel
 
-> String saveBioModel(body, newName, simsRequiringUpdates)
+> String saveMathModel(body, newName, simNames)
 
-Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
+
 
 ### Example
 
@@ -706,7 +588,7 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
+import org.vcell.restclient.api.MathModelResourceApi;
 
 public class Example {
     public static void main(String[] args) {
@@ -714,15 +596,15 @@ public class Example {
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String body = "body_example"; // String | BioModelVCML which will be saved.
-        String newName = "newName_example"; // String | Name to save new BioModel under. Leave blank if re-saving existing BioModel.
-        List<String> simsRequiringUpdates = Arrays.asList(); // List<String> | The name of simulations that will be prepared for future execution.
+        MathModelResourceApi apiInstance = new MathModelResourceApi(defaultClient);
+        String body = "body_example"; // String | 
+        String newName = "newName_example"; // String | Name to save new MathModel under. Leave blank if re-saving existing MathModel.
+        List<String> simNames = Arrays.asList(); // List<String> | The name of simulations that will be prepared for future execution.
         try {
-            String result = apiInstance.saveBioModel(body, newName, simsRequiringUpdates);
+            String result = apiInstance.saveMathModel(body, newName, simNames);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#saveBioModel");
+            System.err.println("Exception when calling MathModelResourceApi#saveMathModel");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -737,9 +619,9 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **body** | **String**| BioModelVCML which will be saved. | |
-| **newName** | **String**| Name to save new BioModel under. Leave blank if re-saving existing BioModel. | [optional] |
-| **simsRequiringUpdates** | [**List&lt;String&gt;**](String.md)| The name of simulations that will be prepared for future execution. | [optional] |
+| **body** | **String**|  | |
+| **newName** | **String**| Name to save new MathModel under. Leave blank if re-saving existing MathModel. | [optional] |
+| **simNames** | [**List&lt;String&gt;**](String.md)| The name of simulations that will be prepared for future execution. | [optional] |
 
 ### Return type
 
@@ -761,14 +643,13 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
-| **422** | Unprocessable content submitted |  -  |
 | **500** | Data Access Exception |  -  |
 
-## saveBioModelWithHttpInfo
+## saveMathModelWithHttpInfo
 
-> ApiResponse<String> saveBioModel saveBioModelWithHttpInfo(body, newName, simsRequiringUpdates)
+> ApiResponse<String> saveMathModel saveMathModelWithHttpInfo(body, newName, simNames)
 
-Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
+
 
 ### Example
 
@@ -780,7 +661,7 @@ import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.BioModelResourceApi;
+import org.vcell.restclient.api.MathModelResourceApi;
 
 public class Example {
     public static void main(String[] args) {
@@ -788,17 +669,17 @@ public class Example {
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
         
 
-        BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
-        String body = "body_example"; // String | BioModelVCML which will be saved.
-        String newName = "newName_example"; // String | Name to save new BioModel under. Leave blank if re-saving existing BioModel.
-        List<String> simsRequiringUpdates = Arrays.asList(); // List<String> | The name of simulations that will be prepared for future execution.
+        MathModelResourceApi apiInstance = new MathModelResourceApi(defaultClient);
+        String body = "body_example"; // String | 
+        String newName = "newName_example"; // String | Name to save new MathModel under. Leave blank if re-saving existing MathModel.
+        List<String> simNames = Arrays.asList(); // List<String> | The name of simulations that will be prepared for future execution.
         try {
-            ApiResponse<String> response = apiInstance.saveBioModelWithHttpInfo(body, newName, simsRequiringUpdates);
+            ApiResponse<String> response = apiInstance.saveMathModelWithHttpInfo(body, newName, simNames);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#saveBioModel");
+            System.err.println("Exception when calling MathModelResourceApi#saveMathModel");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -813,9 +694,9 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **body** | **String**| BioModelVCML which will be saved. | |
-| **newName** | **String**| Name to save new BioModel under. Leave blank if re-saving existing BioModel. | [optional] |
-| **simsRequiringUpdates** | [**List&lt;String&gt;**](String.md)| The name of simulations that will be prepared for future execution. | [optional] |
+| **body** | **String**|  | |
+| **newName** | **String**| Name to save new MathModel under. Leave blank if re-saving existing MathModel. | [optional] |
+| **simNames** | [**List&lt;String&gt;**](String.md)| The name of simulations that will be prepared for future execution. | [optional] |
 
 ### Return type
 
@@ -837,6 +718,5 @@ ApiResponse<**String**>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
-| **422** | Unprocessable content submitted |  -  |
 | **500** | Data Access Exception |  -  |
 

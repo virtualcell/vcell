@@ -22,6 +22,8 @@ export * from './hello-world-message';
 export * from './htc-job-id';
 export * from './i-size';
 export * from './identity';
+export * from './math-model-child-summary';
+export * from './math-model-summary';
 export * from './math-type';
 export * from './mathmodel-ref';
 export * from './model-type';

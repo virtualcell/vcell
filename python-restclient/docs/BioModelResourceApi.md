@@ -171,7 +171,7 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.BioModelResourceApi(api_client)
-    include_public_and_shared = True # bool | Includes BioModel summaries that are public or shared with requester. (optional)
+    include_public_and_shared = True # bool | Includes BioModel summaries that are public or shared with requester. Default is true. (optional)
 
     try:
         # Return BioModel summaries.
@@ -188,7 +188,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **include_public_and_shared** | **bool**| Includes BioModel summaries that are public or shared with requester. | [optional] 
+ **include_public_and_shared** | **bool**| Includes BioModel summaries that are public or shared with requester. Default is true. | [optional] 
 
 ### Return type
 

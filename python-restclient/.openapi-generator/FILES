@@ -29,6 +29,9 @@ docs/HelloWorldMessage.md
 docs/HtcJobID.md
 docs/ISize.md
 docs/Identity.md
+docs/MathModelChildSummary.md
+docs/MathModelResourceApi.md
+docs/MathModelSummary.md
 docs/MathType.md
 docs/MathmodelRef.md
 docs/ModelType.md
@@ -70,6 +73,7 @@ vcell_client/api/admin_resource_api.py
 vcell_client/api/bio_model_resource_api.py
 vcell_client/api/field_data_resource_api.py
 vcell_client/api/hello_world_api.py
+vcell_client/api/math_model_resource_api.py
 vcell_client/api/publication_resource_api.py
 vcell_client/api/simulation_resource_api.py
 vcell_client/api/solver_resource_api.py
@@ -103,6 +107,8 @@ vcell_client/models/hello_world_message.py
 vcell_client/models/htc_job_id.py
 vcell_client/models/i_size.py
 vcell_client/models/identity.py
+vcell_client/models/math_model_child_summary.py
+vcell_client/models/math_model_summary.py
 vcell_client/models/math_type.py
 vcell_client/models/mathmodel_ref.py
 vcell_client/models/model_type.py

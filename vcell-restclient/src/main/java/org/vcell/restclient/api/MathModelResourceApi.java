@@ -17,12 +17,17 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Pair;
 
-import org.vcell.restclient.model.BioModel;
-import org.vcell.restclient.model.BioModelSummary;
+import org.vcell.restclient.model.MathModelSummary;
 import org.vcell.restclient.model.VCellHTTPError;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
@@ -47,7 +52,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
-public class BioModelResourceApi {
+public class MathModelResourceApi {
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
   private final String memberVarBaseUri;
@@ -56,11 +61,11 @@ public class BioModelResourceApi {
   private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
   private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
-  public BioModelResourceApi() {
+  public MathModelResourceApi() {
     this(new ApiClient());
   }
 
-  public BioModelResourceApi(ApiClient apiClient) {
+  public MathModelResourceApi(ApiClient apiClient) {
     memberVarHttpClient = apiClient.getHttpClient();
     memberVarObjectMapper = apiClient.getObjectMapper();
     memberVarBaseUri = apiClient.getBaseUri();
@@ -84,24 +89,24 @@ public class BioModelResourceApi {
   }
 
   /**
-   * Delete the BioModel from VCell&#39;s database.
    * 
-   * @param bioModelID  (required)
+   * Remove specific Math Model.
+   * @param id  (required)
    * @throws ApiException if fails to make API call
    */
-  public void deleteBioModel(String bioModelID) throws ApiException {
-    deleteBioModelWithHttpInfo(bioModelID);
+  public void deleteMathModel(String id) throws ApiException {
+    deleteMathModelWithHttpInfo(id);
   }
 
   /**
-   * Delete the BioModel from VCell&#39;s database.
    * 
-   * @param bioModelID  (required)
+   * Remove specific Math Model.
+   * @param id  (required)
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Void> deleteBioModelWithHttpInfo(String bioModelID) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = deleteBioModelRequestBuilder(bioModelID);
+  public ApiResponse<Void> deleteMathModelWithHttpInfo(String id) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = deleteMathModelRequestBuilder(id);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -111,7 +116,7 @@ public class BioModelResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("deleteBioModel", localVarResponse);
+          throw getApiException("deleteMathModel", localVarResponse);
         }
         return new ApiResponse<Void>(
           localVarResponse.statusCode(),
@@ -134,16 +139,16 @@ public class BioModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder deleteBioModelRequestBuilder(String bioModelID) throws ApiException {
-    // verify the required parameter 'bioModelID' is set
-    if (bioModelID == null) {
-      throw new ApiException(400, "Missing the required parameter 'bioModelID' when calling deleteBioModel");
+  private HttpRequest.Builder deleteMathModelRequestBuilder(String id) throws ApiException {
+    // verify the required parameter 'id' is set
+    if (id == null) {
+      throw new ApiException(400, "Missing the required parameter 'id' when calling deleteMathModel");
     }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/v1/bioModel/{bioModelID}"
-        .replace("{bioModelID}", ApiClient.urlEncode(bioModelID.toString()));
+    String localVarPath = "/api/v1/mathModel/{id}"
+        .replace("{id}", ApiClient.urlEncode(id.toString()));
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
@@ -159,26 +164,26 @@ public class BioModelResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * Get BioModel.
    * 
-   * @param bioModelID  (required)
-   * @return BioModel
+   * Return MathModel summaries.
+   * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. Default is true. (optional)
+   * @return List&lt;MathModelSummary&gt;
    * @throws ApiException if fails to make API call
    */
-  public BioModel getBioModel(String bioModelID) throws ApiException {
-    ApiResponse<BioModel> localVarResponse = getBioModelWithHttpInfo(bioModelID);
+  public List<MathModelSummary> getSummaries(Boolean includePublicAndShared) throws ApiException {
+    ApiResponse<List<MathModelSummary>> localVarResponse = getSummariesWithHttpInfo(includePublicAndShared);
     return localVarResponse.getData();
   }
 
   /**
-   * Get BioModel.
    * 
-   * @param bioModelID  (required)
-   * @return ApiResponse&lt;BioModel&gt;
+   * Return MathModel summaries.
+   * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. Default is true. (optional)
+   * @return ApiResponse&lt;List&lt;MathModelSummary&gt;&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<BioModel> getBioModelWithHttpInfo(String bioModelID) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getBioModelRequestBuilder(bioModelID);
+  public ApiResponse<List<MathModelSummary>> getSummariesWithHttpInfo(Boolean includePublicAndShared) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getSummariesRequestBuilder(includePublicAndShared);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -188,12 +193,12 @@ public class BioModelResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("getBioModel", localVarResponse);
+          throw getApiException("getSummaries", localVarResponse);
         }
-        return new ApiResponse<BioModel>(
+        return new ApiResponse<List<MathModelSummary>>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<BioModel>() {}) // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<List<MathModelSummary>>() {}) // closes the InputStream
         );
       } finally {
       }
@@ -206,83 +211,11 @@ public class BioModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder getBioModelRequestBuilder(String bioModelID) throws ApiException {
-    // verify the required parameter 'bioModelID' is set
-    if (bioModelID == null) {
-      throw new ApiException(400, "Missing the required parameter 'bioModelID' when calling getBioModel");
-    }
+  private HttpRequest.Builder getSummariesRequestBuilder(Boolean includePublicAndShared) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/v1/bioModel/{bioModelID}"
-        .replace("{bioModelID}", ApiClient.urlEncode(bioModelID.toString()));
-
-    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
-
-    localVarRequestBuilder.header("Accept", "application/json");
-
-    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
-    if (memberVarReadTimeout != null) {
-      localVarRequestBuilder.timeout(memberVarReadTimeout);
-    }
-    if (memberVarInterceptor != null) {
-      memberVarInterceptor.accept(localVarRequestBuilder);
-    }
-    return localVarRequestBuilder;
-  }
-  /**
-   * Return BioModel summaries.
-   * 
-   * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester. Default is true. (optional)
-   * @return List&lt;BioModelSummary&gt;
-   * @throws ApiException if fails to make API call
-   */
-  public List<BioModelSummary> getBioModelSummaries(Boolean includePublicAndShared) throws ApiException {
-    ApiResponse<List<BioModelSummary>> localVarResponse = getBioModelSummariesWithHttpInfo(includePublicAndShared);
-    return localVarResponse.getData();
-  }
-
-  /**
-   * Return BioModel summaries.
-   * 
-   * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester. Default is true. (optional)
-   * @return ApiResponse&lt;List&lt;BioModelSummary&gt;&gt;
-   * @throws ApiException if fails to make API call
-   */
-  public ApiResponse<List<BioModelSummary>> getBioModelSummariesWithHttpInfo(Boolean includePublicAndShared) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getBioModelSummariesRequestBuilder(includePublicAndShared);
-    try {
-      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
-          localVarRequestBuilder.build(),
-          HttpResponse.BodyHandlers.ofInputStream());
-      if (memberVarResponseInterceptor != null) {
-        memberVarResponseInterceptor.accept(localVarResponse);
-      }
-      try {
-        if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("getBioModelSummaries", localVarResponse);
-        }
-        return new ApiResponse<List<BioModelSummary>>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<List<BioModelSummary>>() {}) // closes the InputStream
-        );
-      } finally {
-      }
-    } catch (IOException e) {
-      throw new ApiException(e);
-    }
-    catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      throw new ApiException(e);
-    }
-  }
-
-  private HttpRequest.Builder getBioModelSummariesRequestBuilder(Boolean includePublicAndShared) throws ApiException {
-
-    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
-
-    String localVarPath = "/api/v1/bioModel/summaries";
+    String localVarPath = "/api/v1/mathModel/summaries";
 
     List<Pair> localVarQueryParams = new ArrayList<>();
     StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
@@ -313,26 +246,26 @@ public class BioModelResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
    * 
-   * @param bioModelID  (required)
-   * @return BioModelSummary
+   * All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
+   * @param id  (required)
+   * @return MathModelSummary
    * @throws ApiException if fails to make API call
    */
-  public BioModelSummary getBioModelSummary(String bioModelID) throws ApiException {
-    ApiResponse<BioModelSummary> localVarResponse = getBioModelSummaryWithHttpInfo(bioModelID);
+  public MathModelSummary getSummary(String id) throws ApiException {
+    ApiResponse<MathModelSummary> localVarResponse = getSummaryWithHttpInfo(id);
     return localVarResponse.getData();
   }
 
   /**
-   * All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
    * 
-   * @param bioModelID  (required)
-   * @return ApiResponse&lt;BioModelSummary&gt;
+   * All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
+   * @param id  (required)
+   * @return ApiResponse&lt;MathModelSummary&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<BioModelSummary> getBioModelSummaryWithHttpInfo(String bioModelID) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getBioModelSummaryRequestBuilder(bioModelID);
+  public ApiResponse<MathModelSummary> getSummaryWithHttpInfo(String id) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getSummaryRequestBuilder(id);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -342,12 +275,12 @@ public class BioModelResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("getBioModelSummary", localVarResponse);
+          throw getApiException("getSummary", localVarResponse);
         }
-        return new ApiResponse<BioModelSummary>(
+        return new ApiResponse<MathModelSummary>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<BioModelSummary>() {}) // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<MathModelSummary>() {}) // closes the InputStream
         );
       } finally {
       }
@@ -360,16 +293,16 @@ public class BioModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder getBioModelSummaryRequestBuilder(String bioModelID) throws ApiException {
-    // verify the required parameter 'bioModelID' is set
-    if (bioModelID == null) {
-      throw new ApiException(400, "Missing the required parameter 'bioModelID' when calling getBioModelSummary");
+  private HttpRequest.Builder getSummaryRequestBuilder(String id) throws ApiException {
+    // verify the required parameter 'id' is set
+    if (id == null) {
+      throw new ApiException(400, "Missing the required parameter 'id' when calling getSummary");
     }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/v1/bioModel/{bioModelID}/summary"
-        .replace("{bioModelID}", ApiClient.urlEncode(bioModelID.toString()));
+    String localVarPath = "/api/v1/mathModel/summary/{id}"
+        .replace("{id}", ApiClient.urlEncode(id.toString()));
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
@@ -385,26 +318,26 @@ public class BioModelResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * Get the BioModel in VCML format.
    * 
-   * @param bioModelID  (required)
+   * Returns MathModel in VCML format.
+   * @param id  (required)
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String getBioModelVCML(String bioModelID) throws ApiException {
-    ApiResponse<String> localVarResponse = getBioModelVCMLWithHttpInfo(bioModelID);
+  public String getVCML(String id) throws ApiException {
+    ApiResponse<String> localVarResponse = getVCMLWithHttpInfo(id);
     return localVarResponse.getData();
   }
 
   /**
-   * Get the BioModel in VCML format.
    * 
-   * @param bioModelID  (required)
+   * Returns MathModel in VCML format.
+   * @param id  (required)
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> getBioModelVCMLWithHttpInfo(String bioModelID) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getBioModelVCMLRequestBuilder(bioModelID);
+  public ApiResponse<String> getVCMLWithHttpInfo(String id) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getVCMLRequestBuilder(id);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -414,7 +347,7 @@ public class BioModelResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("getBioModelVCML", localVarResponse);
+          throw getApiException("getVCML", localVarResponse);
         }
         return new ApiResponse<String>(
           localVarResponse.statusCode(),
@@ -432,20 +365,20 @@ public class BioModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder getBioModelVCMLRequestBuilder(String bioModelID) throws ApiException {
-    // verify the required parameter 'bioModelID' is set
-    if (bioModelID == null) {
-      throw new ApiException(400, "Missing the required parameter 'bioModelID' when calling getBioModelVCML");
+  private HttpRequest.Builder getVCMLRequestBuilder(String id) throws ApiException {
+    // verify the required parameter 'id' is set
+    if (id == null) {
+      throw new ApiException(400, "Missing the required parameter 'id' when calling getVCML");
     }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/v1/bioModel/{bioModelID}/vcml_download"
-        .replace("{bioModelID}", ApiClient.urlEncode(bioModelID.toString()));
+    String localVarPath = "/api/v1/mathModel/{id}"
+        .replace("{id}", ApiClient.urlEncode(id.toString()));
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
-    localVarRequestBuilder.header("Accept", "text/xml, application/json");
+    localVarRequestBuilder.header("Accept", "application/xml, application/json");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
@@ -457,30 +390,30 @@ public class BioModelResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
    * 
-   * @param body BioModelVCML which will be saved. (required)
-   * @param newName Name to save new BioModel under. Leave blank if re-saving existing BioModel. (optional)
-   * @param simsRequiringUpdates The name of simulations that will be prepared for future execution. (optional
+   * 
+   * @param body  (required)
+   * @param newName Name to save new MathModel under. Leave blank if re-saving existing MathModel. (optional)
+   * @param simNames The name of simulations that will be prepared for future execution. (optional
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String saveBioModel(String body, String newName, List<String> simsRequiringUpdates) throws ApiException {
-    ApiResponse<String> localVarResponse = saveBioModelWithHttpInfo(body, newName, simsRequiringUpdates);
+  public String saveMathModel(String body, String newName, List<String> simNames) throws ApiException {
+    ApiResponse<String> localVarResponse = saveMathModelWithHttpInfo(body, newName, simNames);
     return localVarResponse.getData();
   }
 
   /**
-   * Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
    * 
-   * @param body BioModelVCML which will be saved. (required)
-   * @param newName Name to save new BioModel under. Leave blank if re-saving existing BioModel. (optional)
-   * @param simsRequiringUpdates The name of simulations that will be prepared for future execution. (optional
+   * 
+   * @param body  (required)
+   * @param newName Name to save new MathModel under. Leave blank if re-saving existing MathModel. (optional)
+   * @param simNames The name of simulations that will be prepared for future execution. (optional
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> saveBioModelWithHttpInfo(String body, String newName, List<String> simsRequiringUpdates) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = saveBioModelRequestBuilder(body, newName, simsRequiringUpdates);
+  public ApiResponse<String> saveMathModelWithHttpInfo(String body, String newName, List<String> simNames) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = saveMathModelRequestBuilder(body, newName, simNames);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -490,7 +423,7 @@ public class BioModelResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("saveBioModel", localVarResponse);
+          throw getApiException("saveMathModel", localVarResponse);
         }
         return new ApiResponse<String>(
           localVarResponse.statusCode(),
@@ -508,23 +441,23 @@ public class BioModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder saveBioModelRequestBuilder(String body, String newName, List<String> simsRequiringUpdates) throws ApiException {
+  private HttpRequest.Builder saveMathModelRequestBuilder(String body, String newName, List<String> simNames) throws ApiException {
     // verify the required parameter 'body' is set
     if (body == null) {
-      throw new ApiException(400, "Missing the required parameter 'body' when calling saveBioModel");
+      throw new ApiException(400, "Missing the required parameter 'body' when calling saveMathModel");
     }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/v1/bioModel";
+    String localVarPath = "/api/v1/mathModel";
 
     List<Pair> localVarQueryParams = new ArrayList<>();
     StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
     String localVarQueryParameterBaseName;
     localVarQueryParameterBaseName = "newName";
     localVarQueryParams.addAll(ApiClient.parameterToPairs("newName", newName));
-    localVarQueryParameterBaseName = "simsRequiringUpdates";
-    localVarQueryParams.addAll(ApiClient.parameterToPairs("multi", "simsRequiringUpdates", simsRequiringUpdates));
+    localVarQueryParameterBaseName = "simNames";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("multi", "simNames", simNames));
 
     if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
       StringJoiner queryJoiner = new StringJoiner("&");

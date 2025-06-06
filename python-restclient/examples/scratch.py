@@ -1,5 +1,5 @@
 
-from vcell_client import Publication, HelloWorldMessage, BioModel, FieldDataResourceApi
+from vcell_client import Publication, HelloWorldMessage, BioModel, FieldDataResourceApi, MathModelResourceApi
 from vcell_client.api.publication_resource_api import PublicationResourceApi
 from datetime import date
 import pandas as pd  # for pretty printing only
@@ -55,6 +55,7 @@ final_pubs: list[Publication] = publication_api.get_publications()
 print(f"final publications: {final_pubs}")
 
 BioModelResourceApi(api_client).save_bio_model("")
+MathModelResourceApi(api_client).get_summaries()
 
 field = FieldDataResourceApi(api_client)
 

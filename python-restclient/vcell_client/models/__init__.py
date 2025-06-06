@@ -39,6 +39,8 @@ from vcell_client.models.hello_world_message import HelloWorldMessage
 from vcell_client.models.htc_job_id import HtcJobID
 from vcell_client.models.i_size import ISize
 from vcell_client.models.identity import Identity
+from vcell_client.models.math_model_child_summary import MathModelChildSummary
+from vcell_client.models.math_model_summary import MathModelSummary
 from vcell_client.models.math_type import MathType
 from vcell_client.models.mathmodel_ref import MathmodelRef
 from vcell_client.models.model_type import ModelType

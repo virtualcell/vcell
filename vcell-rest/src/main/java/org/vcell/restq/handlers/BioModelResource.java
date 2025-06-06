@@ -35,6 +35,8 @@ public class BioModelResource {
     private final BioModelRestService bioModelRestService;
     private final UserRestService userRestService;
 
+    public static final String simsRequiringUpdatesDescription = "The name of simulations that will be prepared for future execution.";
+
     @Inject
     public BioModelResource(BioModelRestService bioModelRestService, UserRestService userRestService) {
         this.bioModelRestService = bioModelRestService;
@@ -83,11 +85,11 @@ public class BioModelResource {
     @Operation(operationId = "getBioModelSummaries", summary = "Return BioModel summaries.")
     @Produces(MediaType.APPLICATION_JSON)
     public BioModelSummary[] getBioModelContexts(
-            @Parameter(description = "Includes BioModel summaries that are public or shared with requester.")
-            @QueryParam("includePublicAndShared") boolean includePublicAndShared) throws DataAccessWebException {
+            @Parameter(description = "Includes BioModel summaries that are public or shared with requester. Default is true.")
+            @QueryParam("includePublicAndShared") Optional<Boolean> includePublicAndShared) throws DataAccessWebException {
         try{
             User vcellUser = userRestService.getUserOrAnonymousFromIdentity(securityIdentity);
-            BioModelInfo[] infos = bioModelRestService.getBioModelInfos(vcellUser, includePublicAndShared);
+            BioModelInfo[] infos = bioModelRestService.getBioModelInfos(vcellUser, includePublicAndShared.orElse(true));
             BioModelSummary[] contexts = new BioModelSummary[infos.length];
             for (int i = 0; i < infos.length; i ++){
                 contexts[i] = new BioModelSummary(infos[i].getVersion(), infos[i].getBioModelChildSummary(), infos[i].getPublicationInfos(), infos[i].getSoftwareVersion());
@@ -174,7 +176,7 @@ public class BioModelResource {
     @RolesAllowed("user")
     public String save(@RequestBody(name = "bioModelVCML", required = true, description = "BioModelVCML which will be saved.") String bioModelVCML,
                        @QueryParam("newName") @Parameter(required = false, allowEmptyValue = true, description = "Name to save new BioModel under. Leave blank if re-saving existing BioModel.") Optional<String> newName,
-                       @QueryParam("simsRequiringUpdates") @Parameter(required = false, allowEmptyValue = true, description = "The name of simulations that will be prepared for future execution.") List<String> simNames) throws DataAccessWebException, UnprocessableContentWebException, NotAuthenticatedWebException {
+                       @QueryParam("simsRequiringUpdates") @Parameter(required = false, allowEmptyValue = true, description = simsRequiringUpdatesDescription) List<String> simNames) throws DataAccessWebException, UnprocessableContentWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try {
             cbit.vcell.biomodel.BioModel savedBioModel = bioModelRestService.save(user, bioModelVCML,

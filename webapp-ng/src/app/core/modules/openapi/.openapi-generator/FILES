@@ -10,6 +10,8 @@ api/field-data-resource.service.ts
 api/field-data-resource.serviceInterface.ts
 api/hello-world.service.ts
 api/hello-world.serviceInterface.ts
+api/math-model-resource.service.ts
+api/math-model-resource.serviceInterface.ts
 api/publication-resource.service.ts
 api/publication-resource.serviceInterface.ts
 api/simulation-resource.service.ts
@@ -46,6 +48,8 @@ model/hello-world-message.ts
 model/htc-job-id.ts
 model/i-size.ts
 model/identity.ts
+model/math-model-child-summary.ts
+model/math-model-summary.ts
 model/math-type.ts
 model/mathmodel-ref.ts
 model/model-type.ts

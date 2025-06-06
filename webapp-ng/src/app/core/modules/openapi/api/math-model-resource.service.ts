@@ -19,9 +19,7 @@ import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
 
 // @ts-ignore
-import { BioModel } from '../model/bio-model';
-// @ts-ignore
-import { BioModelSummary } from '../model/bio-model-summary';
+import { MathModelSummary } from '../model/math-model-summary';
 // @ts-ignore
 import { VCellHTTPError } from '../model/v-cell-http-error';
 
@@ -29,15 +27,15 @@ import { VCellHTTPError } from '../model/v-cell-http-error';
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
 import { Configuration }                                     from '../configuration';
 import {
-    BioModelResourceServiceInterface
-} from './bio-model-resource.serviceInterface';
+    MathModelResourceServiceInterface
+} from './math-model-resource.serviceInterface';
 
 
 
 @Injectable({
   providedIn: 'root'
 })
-export class BioModelResourceService implements BioModelResourceServiceInterface {
+export class MathModelResourceService implements MathModelResourceServiceInterface {
 
     protected basePath = 'https://vcell.cam.uchc.edu';
     public defaultHeaders = new HttpHeaders();
@@ -99,17 +97,17 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
     }
 
     /**
-     * Delete the BioModel from VCell\&#39;s database.
-     * @param bioModelID 
+     * Remove specific Math Model.
+     * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public deleteBioModel(bioModelID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any>;
-    public deleteBioModel(bioModelID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<any>>;
-    public deleteBioModel(bioModelID: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<any>>;
-    public deleteBioModel(bioModelID: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
-        if (bioModelID === null || bioModelID === undefined) {
-            throw new Error('Required parameter bioModelID was null or undefined when calling deleteBioModel.');
+    public deleteMathModel(id: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any>;
+    public deleteMathModel(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<any>>;
+    public deleteMathModel(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<any>>;
+    public deleteMathModel(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling deleteMathModel.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -143,7 +141,7 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
             }
         }
 
-        let localVarPath = `/api/v1/bioModel/${this.configuration.encodeParam({name: "bioModelID", value: bioModelID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
+        let localVarPath = `/api/v1/mathModel/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
         return this.httpClient.request<any>('delete', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
@@ -157,73 +155,15 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
     }
 
     /**
-     * Get BioModel.
-     * @param bioModelID 
+     * Return MathModel summaries.
+     * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. Default is true.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getBioModel(bioModelID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<BioModel>;
-    public getBioModel(bioModelID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<BioModel>>;
-    public getBioModel(bioModelID: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<BioModel>>;
-    public getBioModel(bioModelID: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
-        if (bioModelID === null || bioModelID === undefined) {
-            throw new Error('Required parameter bioModelID was null or undefined when calling getBioModel.');
-        }
-
-        let localVarHeaders = this.defaultHeaders;
-
-        let localVarHttpHeaderAcceptSelected: string | undefined = options && options.httpHeaderAccept;
-        if (localVarHttpHeaderAcceptSelected === undefined) {
-            // to determine the Accept header
-            const httpHeaderAccepts: string[] = [
-                'application/json'
-            ];
-            localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
-        }
-        if (localVarHttpHeaderAcceptSelected !== undefined) {
-            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
-        }
-
-        let localVarHttpContext: HttpContext | undefined = options && options.context;
-        if (localVarHttpContext === undefined) {
-            localVarHttpContext = new HttpContext();
-        }
-
-
-        let responseType_: 'text' | 'json' | 'blob' = 'json';
-        if (localVarHttpHeaderAcceptSelected) {
-            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
-                responseType_ = 'text';
-            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
-                responseType_ = 'json';
-            } else {
-                responseType_ = 'blob';
-            }
-        }
-
-        let localVarPath = `/api/v1/bioModel/${this.configuration.encodeParam({name: "bioModelID", value: bioModelID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
-        return this.httpClient.request<BioModel>('get', `${this.configuration.basePath}${localVarPath}`,
-            {
-                context: localVarHttpContext,
-                responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
-                headers: localVarHeaders,
-                observe: observe,
-                reportProgress: reportProgress
-            }
-        );
-    }
-
-    /**
-     * Return BioModel summaries.
-     * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester. Default is true.
-     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
-     * @param reportProgress flag to report request and response progress.
-     */
-    public getBioModelSummaries(includePublicAndShared?: boolean, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<Array<BioModelSummary>>;
-    public getBioModelSummaries(includePublicAndShared?: boolean, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<Array<BioModelSummary>>>;
-    public getBioModelSummaries(includePublicAndShared?: boolean, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<Array<BioModelSummary>>>;
-    public getBioModelSummaries(includePublicAndShared?: boolean, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public getSummaries(includePublicAndShared?: boolean, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<Array<MathModelSummary>>;
+    public getSummaries(includePublicAndShared?: boolean, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<Array<MathModelSummary>>>;
+    public getSummaries(includePublicAndShared?: boolean, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<Array<MathModelSummary>>>;
+    public getSummaries(includePublicAndShared?: boolean, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarQueryParameters = new HttpParams({encoder: this.encoder});
         if (includePublicAndShared !== undefined && includePublicAndShared !== null) {
@@ -262,8 +202,8 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
             }
         }
 
-        let localVarPath = `/api/v1/bioModel/summaries`;
-        return this.httpClient.request<Array<BioModelSummary>>('get', `${this.configuration.basePath}${localVarPath}`,
+        let localVarPath = `/api/v1/mathModel/summaries`;
+        return this.httpClient.request<Array<MathModelSummary>>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 params: localVarQueryParameters,
@@ -277,17 +217,17 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
     }
 
     /**
-     * All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
-     * @param bioModelID 
+     * All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
+     * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getBioModelSummary(bioModelID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<BioModelSummary>;
-    public getBioModelSummary(bioModelID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<BioModelSummary>>;
-    public getBioModelSummary(bioModelID: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<BioModelSummary>>;
-    public getBioModelSummary(bioModelID: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
-        if (bioModelID === null || bioModelID === undefined) {
-            throw new Error('Required parameter bioModelID was null or undefined when calling getBioModelSummary.');
+    public getSummary(id: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<MathModelSummary>;
+    public getSummary(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<MathModelSummary>>;
+    public getSummary(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<MathModelSummary>>;
+    public getSummary(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling getSummary.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -321,8 +261,8 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
             }
         }
 
-        let localVarPath = `/api/v1/bioModel/${this.configuration.encodeParam({name: "bioModelID", value: bioModelID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/summary`;
-        return this.httpClient.request<BioModelSummary>('get', `${this.configuration.basePath}${localVarPath}`,
+        let localVarPath = `/api/v1/mathModel/summary/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
+        return this.httpClient.request<MathModelSummary>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -335,17 +275,17 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
     }
 
     /**
-     * Get the BioModel in VCML format.
-     * @param bioModelID 
+     * Returns MathModel in VCML format.
+     * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getBioModelVCML(bioModelID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/xml' | 'application/json', context?: HttpContext}): Observable<string>;
-    public getBioModelVCML(bioModelID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/xml' | 'application/json', context?: HttpContext}): Observable<HttpResponse<string>>;
-    public getBioModelVCML(bioModelID: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/xml' | 'application/json', context?: HttpContext}): Observable<HttpEvent<string>>;
-    public getBioModelVCML(bioModelID: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'text/xml' | 'application/json', context?: HttpContext}): Observable<any> {
-        if (bioModelID === null || bioModelID === undefined) {
-            throw new Error('Required parameter bioModelID was null or undefined when calling getBioModelVCML.');
+    public getVCML(id: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<string>;
+    public getVCML(id: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<HttpResponse<string>>;
+    public getVCML(id: string, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<HttpEvent<string>>;
+    public getVCML(id: string, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<any> {
+        if (id === null || id === undefined) {
+            throw new Error('Required parameter id was null or undefined when calling getVCML.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -354,7 +294,7 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
         if (localVarHttpHeaderAcceptSelected === undefined) {
             // to determine the Accept header
             const httpHeaderAccepts: string[] = [
-                'text/xml',
+                'application/xml',
                 'application/json'
             ];
             localVarHttpHeaderAcceptSelected = this.configuration.selectHeaderAccept(httpHeaderAccepts);
@@ -380,7 +320,7 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
             }
         }
 
-        let localVarPath = `/api/v1/bioModel/${this.configuration.encodeParam({name: "bioModelID", value: bioModelID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/vcml_download`;
+        let localVarPath = `/api/v1/mathModel/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
         return this.httpClient.request<string>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
@@ -394,19 +334,18 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
     }
 
     /**
-     * Save\&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
-     * @param body BioModelVCML which will be saved.
-     * @param newName Name to save new BioModel under. Leave blank if re-saving existing BioModel.
-     * @param simsRequiringUpdates The name of simulations that will be prepared for future execution.
+     * @param body 
+     * @param newName Name to save new MathModel under. Leave blank if re-saving existing MathModel.
+     * @param simNames The name of simulations that will be prepared for future execution.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public saveBioModel(body: string, newName?: string, simsRequiringUpdates?: Array<string>, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<string>;
-    public saveBioModel(body: string, newName?: string, simsRequiringUpdates?: Array<string>, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<HttpResponse<string>>;
-    public saveBioModel(body: string, newName?: string, simsRequiringUpdates?: Array<string>, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<HttpEvent<string>>;
-    public saveBioModel(body: string, newName?: string, simsRequiringUpdates?: Array<string>, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<any> {
+    public saveMathModel(body: string, newName?: string, simNames?: Array<string>, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<string>;
+    public saveMathModel(body: string, newName?: string, simNames?: Array<string>, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<HttpResponse<string>>;
+    public saveMathModel(body: string, newName?: string, simNames?: Array<string>, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<HttpEvent<string>>;
+    public saveMathModel(body: string, newName?: string, simNames?: Array<string>, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext}): Observable<any> {
         if (body === null || body === undefined) {
-            throw new Error('Required parameter body was null or undefined when calling saveBioModel.');
+            throw new Error('Required parameter body was null or undefined when calling saveMathModel.');
         }
 
         let localVarQueryParameters = new HttpParams({encoder: this.encoder});
@@ -414,10 +353,10 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
           localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
             <any>newName, 'newName');
         }
-        if (simsRequiringUpdates) {
-            simsRequiringUpdates.forEach((element) => {
+        if (simNames) {
+            simNames.forEach((element) => {
                 localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-                  <any>element, 'simsRequiringUpdates');
+                  <any>element, 'simNames');
             })
         }
 
@@ -468,7 +407,7 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
             }
         }
 
-        let localVarPath = `/api/v1/bioModel`;
+        let localVarPath = `/api/v1/mathModel`;
         return this.httpClient.request<string>('post', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,

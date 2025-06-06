@@ -1,9 +1,9 @@
 package org.vcell.api.client;
 
-import org.vcell.restclient.CustomObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.restclient.CustomObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.model.VCellHTTPError;
 import org.vcell.util.DataAccessException;
@@ -11,7 +11,8 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 
 public class ExceptionHandler {
-    
+    private static final Logger logger = LogManager.getLogger(ExceptionHandler.class);
+
     protected static Exception getProperException(ApiException e){
         int httpCode = e.getCode();
         String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
@@ -47,8 +48,9 @@ public class ExceptionHandler {
     /**
      * Throws data access or runtime exception from ApiException
      */
-    public static void onlyDataAccessException(ApiException e) throws DataAccessException, ObjectNotFoundException, PermissionException {
+    public static void onlyDataAccessOrPermissionException(ApiException e) throws DataAccessException, ObjectNotFoundException, PermissionException {
         Exception exception = getProperException(e);
+        logger.error(exception);
         if (exception instanceof ObjectNotFoundException onf) {
             throw onf;
         } if (exception instanceof DataAccessException de){

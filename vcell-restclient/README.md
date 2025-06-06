@@ -139,6 +139,16 @@ Class | Method | HTTP request | Description
 *FieldDataResourceApi* | [**saveWithHttpInfo**](docs/FieldDataResourceApi.md#saveWithHttpInfo) | **POST** /api/v1/fieldData/save | Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 *HelloWorldApi* | [**getHelloWorld**](docs/HelloWorldApi.md#getHelloWorld) | **GET** /api/v1/helloworld | Get hello world message.
 *HelloWorldApi* | [**getHelloWorldWithHttpInfo**](docs/HelloWorldApi.md#getHelloWorldWithHttpInfo) | **GET** /api/v1/helloworld | Get hello world message.
+*MathModelResourceApi* | [**deleteMathModel**](docs/MathModelResourceApi.md#deleteMathModel) | **DELETE** /api/v1/mathModel/{id} | 
+*MathModelResourceApi* | [**deleteMathModelWithHttpInfo**](docs/MathModelResourceApi.md#deleteMathModelWithHttpInfo) | **DELETE** /api/v1/mathModel/{id} | 
+*MathModelResourceApi* | [**getSummaries**](docs/MathModelResourceApi.md#getSummaries) | **GET** /api/v1/mathModel/summaries | 
+*MathModelResourceApi* | [**getSummariesWithHttpInfo**](docs/MathModelResourceApi.md#getSummariesWithHttpInfo) | **GET** /api/v1/mathModel/summaries | 
+*MathModelResourceApi* | [**getSummary**](docs/MathModelResourceApi.md#getSummary) | **GET** /api/v1/mathModel/summary/{id} | 
+*MathModelResourceApi* | [**getSummaryWithHttpInfo**](docs/MathModelResourceApi.md#getSummaryWithHttpInfo) | **GET** /api/v1/mathModel/summary/{id} | 
+*MathModelResourceApi* | [**getVCML**](docs/MathModelResourceApi.md#getVCML) | **GET** /api/v1/mathModel/{id} | 
+*MathModelResourceApi* | [**getVCMLWithHttpInfo**](docs/MathModelResourceApi.md#getVCMLWithHttpInfo) | **GET** /api/v1/mathModel/{id} | 
+*MathModelResourceApi* | [**saveMathModel**](docs/MathModelResourceApi.md#saveMathModel) | **POST** /api/v1/mathModel | 
+*MathModelResourceApi* | [**saveMathModelWithHttpInfo**](docs/MathModelResourceApi.md#saveMathModelWithHttpInfo) | **POST** /api/v1/mathModel | 
 *PublicationResourceApi* | [**createPublication**](docs/PublicationResourceApi.md#createPublication) | **POST** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**createPublicationWithHttpInfo**](docs/PublicationResourceApi.md#createPublicationWithHttpInfo) | **POST** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**deletePublication**](docs/PublicationResourceApi.md#deletePublication) | **DELETE** /api/v1/publications/{id} | Delete publication
@@ -207,6 +217,8 @@ Class | Method | HTTP request | Description
  - [HtcJobID](docs/HtcJobID.md)
  - [ISize](docs/ISize.md)
  - [Identity](docs/Identity.md)
+ - [MathModelChildSummary](docs/MathModelChildSummary.md)
+ - [MathModelSummary](docs/MathModelSummary.md)
  - [MathType](docs/MathType.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [ModelType](docs/ModelType.md)

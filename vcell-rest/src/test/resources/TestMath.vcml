@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This mathmodel was generated in VCML Version Alpha_Version_7.7.0_build_27-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="8.0.0">
+  <MathModel Name="TestMathModel">
+    <Annotation>cloned from 'Appalabhotla_Model_DiffOnly_model_2_dg3' owned by user rappala
+cloned from 'Appalabhotla_Model' owned by user boris</Annotation>
+    <Geometry Name="TestGeometry" Dimension="1">
+      <Annotation>cloned from 'TestGeometry' owned by user rappala</Annotation>
+      <Extent X="10.0" Y="10.0" Z="10.0" />
+      <Origin X="0.0" Y="0.0" Z="0.0" />
+      <SubVolume Name="subdomain0" Handle="0" Type="Analytical" KeyValue="259882413">
+        <AnalyticExpression>1.0</AnalyticExpression>
+      </SubVolume>
+      <SurfaceDescription NumSamplesX="50" NumSamplesY="1" NumSamplesZ="1" CutoffFrequency="0.3">
+        <VolumeRegion Name="subdomain00" RegionID="0" SubVolume="subdomain0" Size="10.0" Unit="um" />
+      </SurfaceDescription>
+      <Version Name="TestGeometry" KeyValue="259882409" BranchId="259882410" Archived="0" Date="28-Aug-2023 04:10:18" FromVersionable="false">
+        <Owner Name="Administrator" Identifier="2" />
+        <GroupAccess Type="1" />
+        <Annotation>cloned from 'TestGeometry' owned by user rappala</Annotation>
+      </Version>
+    </Geometry>
+    <MathDescription Name="NoName">
+      <Annotation>cloned from 'NoName' owned by user rappala
+cloned from 'NoName' owned by user boris</Annotation>
+      <Constant Name="Da">(kdepol * L / VF)</Constant>
+      <Constant Name="DF">1.0E-9</Constant>
+      <Constant Name="DF_1">1.0E-5</Constant>
+      <Constant Name="DG0">3.0</Constant>
+      <Constant Name="DGi">16.74605</Constant>
+      <Constant Name="DoDL">10.49251033</Constant>
+      <Constant Name="Fun_boundaryXp">((1.0 - gfrac) * exp(( - kdepol * L / VF)))</Constant>
+      <Constant Name="Fun_velocityX">VF</Constant>
+      <Constant Name="gfrac">0.001</Constant>
+      <Constant Name="Gun_boundaryXp">((VF * (1.0 - gfrac) * L * (1.0 - exp( - Da)) / (DoDL * Da)) + gfrac)</Constant>
+      <Constant Name="Gun_velocityX">- VG</Constant>
+      <Constant Name="kbleach">200.0</Constant>
+      <Constant Name="kdepol">0.01</Constant>
+      <Constant Name="L">10.0</Constant>
+      <Constant Name="lambda">0.3</Constant>
+      <Constant Name="t1">2.4</Constant>
+      <Constant Name="t2">2.5</Constant>
+      <Constant Name="VF">0.2</Constant>
+      <Constant Name="VG">1.0E-5</Constant>
+      <VolumeVariable Name="Fun" Domain="subdomain0" />
+      <VolumeVariable Name="Gun" Domain="subdomain0" />
+      <Function Name="bleachzone">((t &gt; t1) * (t &lt; t2))</Function>
+      <Function Name="DG" Domain="subdomain0">((DG0 * exp(( - x / L / lambda))) + (DGi * (1.0 - exp(( - x / L / lambda)))))</Function>
+      <Function Name="Fun_boundaryXm" Domain="subdomain0">(VF * (1.0 - gfrac) * Gun / gfrac)</Function>
+      <Function Name="Fun_init_uM" Domain="subdomain0">((1.0 - gfrac) * exp(( - kdepol * x / VF)))</Function>
+      <Function Name="GFP_Actin" Domain="subdomain0">(Fun + Gun)</Function>
+      <Function Name="Gun_boundaryXm" Domain="subdomain0">- (VF * (1.0 - gfrac) * Gun / gfrac)</Function>
+      <Function Name="Gun_init_uM" Domain="subdomain0">vcField('DG3_SteadyState', 'Gun', 30.0, 'Volume')</Function>
+      <Function Name="J_depol" Domain="subdomain0">(kdepol * Fun)</Function>
+      <Function Name="J_F_bleach" Domain="subdomain0">(kbleach * bleachzone * Fun)</Function>
+      <Function Name="J_G_bleach" Domain="subdomain0">(kbleach * bleachzone * Gun)</Function>
+      <CompartmentSubDomain Name="subdomain0">
+        <BoundaryType Boundary="Xm" Type="Flux" />
+        <BoundaryType Boundary="Xp" Type="Value" />
+        <BoundaryType Boundary="Ym" Type="Value" />
+        <BoundaryType Boundary="Yp" Type="Value" />
+        <BoundaryType Boundary="Zm" Type="Value" />
+        <BoundaryType Boundary="Zp" Type="Value" />
+        <PdeEquation Name="Fun" SolutionType="Unknown">
+          <Boundaries Xm="Fun_boundaryXm" Xp="Fun_boundaryXp" />
+          <Rate>( - J_depol - J_F_bleach)</Rate>
+          <Diffusion>DF_1</Diffusion>
+          <Initial>Fun_init_uM</Initial>
+          <Velocity X="Fun_velocityX" />
+        </PdeEquation>
+        <PdeEquation Name="Gun" SolutionType="Unknown">
+          <Boundaries Xm="Gun_boundaryXm" Xp="Gun_boundaryXp" />
+          <Rate>(J_depol - J_G_bleach)</Rate>
+          <Diffusion>DG</Diffusion>
+          <Initial>Gun_init_uM</Initial>
+          <Velocity X="Gun_velocityX" />
+        </PdeEquation>
+      </CompartmentSubDomain>
+      <Version Name="NoName" KeyValue="259882416" BranchId="259882417" Archived="0" Date="28-Aug-2023 04:10:18" FromVersionable="false">
+        <Owner Name="Administrator" Identifier="2" />
+        <GroupAccess Type="1" />
+        <Annotation>cloned from 'NoName' owned by user rappala
+cloned from 'NoName' owned by user boris</Annotation>
+      </Version>
+    </MathDescription>
+    <Simulation Name="Bleaching DG3">
+      <Annotation>cloned from 'Bleaching DG3' owned by user rappala
+cloned from 'Simulation0' owned by user temp</Annotation>
+      <SolverTaskDescription TaskType="Unsteady" UseSymbolicJacobian="false" Solver="Sundials Stiff PDE Solver (Variable Time Step)">
+        <TimeBound StartTime="0.0" EndTime="30.0" />
+        <TimeStep DefaultTime="0.05" MinTime="0.0" MaxTime="0.1" />
+        <ErrorTolerance Absolut="1.0E-9" Relative="1.0E-7" />
+        <OutputOptions OutputTimeStep="1.0" />
+        <SundialsSolverOptions>
+          <maxOrderAdvection>2</maxOrderAdvection>
+        </SundialsSolverOptions>
+        <NumberProcessors>1</NumberProcessors>
+      </SolverTaskDescription>
+      <MathOverrides />
+      <MeshSpecification>
+        <Size X="200000" Y="1" Z="1" />
+      </MeshSpecification>
+      <Version Name="Bleaching DG3" KeyValue="259882420" BranchId="259882421" Archived="0" Date="28-Aug-2023 04:10:18" FromVersionable="false">
+        <Owner Name="Administrator" Identifier="2" />
+        <GroupAccess Type="1" />
+        <Annotation>cloned from 'Bleaching DG3' owned by user rappala
+cloned from 'Simulation0' owned by user temp</Annotation>
+      </Version>
+    </Simulation>
+    <Version Name="TestMathModel" KeyValue="259882423" BranchId="259882424" Archived="0" Date="28-Aug-2023 04:10:18" FromVersionable="false">
+      <Owner Name="Administrator" Identifier="2" />
+      <GroupAccess Type="1" />
+      <Annotation>cloned from 'Appalabhotla_Model_DiffOnly_model_2_dg3' owned by user rappala
+cloned from 'Appalabhotla_Model' owned by user boris</Annotation>
+    </Version>
+  </MathModel>
+</vcml>

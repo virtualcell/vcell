@@ -29,6 +29,9 @@ docs/HelloWorldMessage.md
 docs/HtcJobID.md
 docs/ISize.md
 docs/Identity.md
+docs/MathModelChildSummary.md
+docs/MathModelResourceApi.md
+docs/MathModelSummary.md
 docs/MathType.md
 docs/MathmodelRef.md
 docs/ModelType.md
@@ -76,6 +79,7 @@ src/main/java/org/vcell/restclient/api/AdminResourceApi.java
 src/main/java/org/vcell/restclient/api/BioModelResourceApi.java
 src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java
 src/main/java/org/vcell/restclient/api/HelloWorldApi.java
+src/main/java/org/vcell/restclient/api/MathModelResourceApi.java
 src/main/java/org/vcell/restclient/api/PublicationResourceApi.java
 src/main/java/org/vcell/restclient/api/SimulationResourceApi.java
 src/main/java/org/vcell/restclient/api/SolverResourceApi.java
@@ -105,6 +109,8 @@ src/main/java/org/vcell/restclient/model/HelloWorldMessage.java
 src/main/java/org/vcell/restclient/model/HtcJobID.java
 src/main/java/org/vcell/restclient/model/ISize.java
 src/main/java/org/vcell/restclient/model/Identity.java
+src/main/java/org/vcell/restclient/model/MathModelChildSummary.java
+src/main/java/org/vcell/restclient/model/MathModelSummary.java
 src/main/java/org/vcell/restclient/model/MathType.java
 src/main/java/org/vcell/restclient/model/MathmodelRef.java
 src/main/java/org/vcell/restclient/model/ModelType.java
