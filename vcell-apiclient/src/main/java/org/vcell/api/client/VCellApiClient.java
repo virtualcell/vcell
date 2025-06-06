@@ -198,27 +198,6 @@ public class VCellApiClient implements AutoCloseable {
 			httpclient.close();
 		}
 	}
-	
-
-	public SimulationTaskRepresentation[] getSimTasks(SimTasksQuerySpec simTasksQuerySpec) throws IOException {
-
-		HttpGet httpget = new HttpGet(getApiUrlPrefix() + "/simtask?" + simTasksQuerySpec.getQueryString());
-		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
-
-		if (lg.isInfoEnabled()) {
-			lg.info("Executing request to retrieve simulation tasks " + httpget.getRequestLine());
-		}
-
-		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getSimTasks()", httpget), httpClientContext);
-		String simTasksJson = responseBody;
-		if (lg.isInfoEnabled()) {
-			lg.info("returned: "+toStringTruncated(simTasksJson));
-		}
-
-		Gson gson = new Gson();
-		SimulationTaskRepresentation[] simTaskReps = gson.fromJson(simTasksJson,SimulationTaskRepresentation[].class);
-		return simTaskReps;
-	}
 
 	private String getApiUrlPrefix() {
 		final String scheme = httpHost.getSchemeName();
@@ -227,26 +206,6 @@ public class VCellApiClient implements AutoCloseable {
 		}else{
 			return scheme+"://"+httpHost.getHostName()+this.pathPrefix_v0;
 		}
-	}
-
-	public BiomodelRepresentation[] getBioModels(BioModelsQuerySpec bioModelsQuerySpec) throws IOException {
-		  
-		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/biomodel?"+bioModelsQuerySpec.getQueryString());
-		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
-
-		if (lg.isInfoEnabled()) {
-			lg.info("Executing request to retrieve biomodels " + httpget.getRequestLine());
-		}
-
-		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getBioModels()", httpget), httpClientContext);
-		String bimodelsJson = responseBody;
-		if (lg.isInfoEnabled()) {
-			lg.info("returned: "+toStringTruncated(bimodelsJson));
-		}
-
-		Gson gson = new Gson();
-		BiomodelRepresentation[] biomodelReps = gson.fromJson(bimodelsJson,BiomodelRepresentation[].class);
-		return biomodelReps;
 	}
 	
 	public EventWrapper[] getEvents(long beginTimestamp) throws IOException {
@@ -267,46 +226,6 @@ public class VCellApiClient implements AutoCloseable {
 		Gson gson = new Gson();
 		EventWrapper[] eventWrappers = gson.fromJson(eventWrappersJson,EventWrapper[].class);
 		return eventWrappers;
-	}
-	
-	public BiomodelRepresentation getBioModel(String bmId) throws IOException {
-		  
-		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/biomodel/"+bmId);
-		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
-
-		if (lg.isInfoEnabled()) {
-			lg.info("Executing request to retrieve biomodel " + httpget.getRequestLine());
-		}
-
-		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getBioModel()", httpget), httpClientContext);
-		String bimodelsJson = responseBody;
-		if (lg.isInfoEnabled()) {
-			lg.info("returned: "+toStringTruncated(bimodelsJson));
-		}
-
-		Gson gson = new Gson();
-		BiomodelRepresentation biomodelRep = gson.fromJson(bimodelsJson,BiomodelRepresentation.class);
-		return biomodelRep;
-	}
-	
-	public SimulationRepresentation getSimulation(String bmId, String simKey) throws IOException {
-		  
-		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/biomodel/"+bmId+"/simulation/"+simKey);
-		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
-
-		if (lg.isInfoEnabled()) {
-			lg.info("Executing request to retrieve simulation " + httpget.getRequestLine());
-		}
-
-		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getSimulation()", httpget), httpClientContext);
-		String simulationJson = responseBody;
-		if (lg.isInfoEnabled()) {
-			lg.info("returned: "+toStringTruncated(simulationJson));
-		}
-
-		Gson gson = new Gson();
-		SimulationRepresentation simulationRepresentation = gson.fromJson(simulationJson,SimulationRepresentation.class);
-		return simulationRepresentation;
 	}
 	
 	public String getOptRunJson(String optimizationId,boolean bStop) throws IOException {
@@ -368,74 +287,6 @@ public class VCellApiClient implements AutoCloseable {
 		}
 
 		return responseUri;
-	}
-	
-	/**
-	 * from org.apache.http.impl.client.DefaultRedirectStrategy
-	 * 
-	 * @param location
-	 * @return
-	 * @throws ProtocolException
-	 */
-    private URI createLocationURI(final String location) throws ClientProtocolException {
-        try {
-            final URIBuilder b = new URIBuilder(new URI(location).normalize());
-            final String host = b.getHost();
-            if (host != null) {
-                b.setHost(host.toLowerCase(Locale.US));
-            }
-            final String path = b.getPath();
-            if (TextUtils.isEmpty(path)) {
-                b.setPath("/");
-            }
-            return b.build();
-        } catch (final URISyntaxException ex) {
-            throw new ClientProtocolException("Invalid redirect URI: " + location, ex);
-        }
-    }
-
-    public SimulationTaskRepresentation[] startSimulation(String bmId, String simKey) throws IOException {
-		  
-		HttpPost httppost = new HttpPost(getApiUrlPrefix()+"/biomodel/"+bmId+"/simulation/"+simKey+"/startSimulation");
-		httppost.addHeader("Authorization", "Bearer "+httpClientContext.getUserToken(String.class));
-
-		if (lg.isInfoEnabled()) {
-			lg.info("Executing request to retrieve simulation " + httppost.getRequestLine());
-		}
-
-		String responseBody = httpclient.execute(httppost, new VCellStringResponseHandler("startSimulation()", httppost), httpClientContext);
-		String simTaskReps = responseBody;
-		if (lg.isInfoEnabled()) {
-			lg.info("returned: "+toStringTruncated(simTaskReps));
-		}
-
-		if (responseBody.equals("simulation start failed")){
-			throw new RuntimeException("simulation start failed for SimID="+simKey+" within BioModelKey="+bmId);
-		}else{
-			Gson gson = new Gson();
-			SimulationTaskRepresentation[] simulationTaskRepresentations = gson.fromJson(simTaskReps,SimulationTaskRepresentation[].class);
-			return simulationTaskRepresentations;
-		}
-	}
-	
-	public SimulationTaskRepresentation[] stopSimulation(String bmId, String simKey) throws IOException {
-		  
-		HttpPost httppost = new HttpPost(getApiUrlPrefix()+"/biomodel/"+bmId+"/simulation/"+simKey+"/stopSimulation");
-		httppost.addHeader("Authorization", "Bearer "+httpClientContext.getUserToken(String.class));
-
-		if (lg.isInfoEnabled()) {
-			lg.info("Executing request to retrieve simulation " + httppost.getRequestLine());
-		}
-
-		String responseBody = httpclient.execute(httppost, new VCellStringResponseHandler("stopSimulation()", httppost), httpClientContext);
-		String simTaskReps = responseBody;
-		if (lg.isInfoEnabled()) {
-			lg.info("returned: "+toStringTruncated(simTaskReps));
-		}
-
-		Gson gson = new Gson();
-		SimulationTaskRepresentation[] simulationTaskRepresentations = gson.fromJson(simTaskReps,SimulationTaskRepresentation[].class);
-		return simulationTaskRepresentations;
 	}
 	
 	public void createDefaultQuarkusClient(boolean bIgnoreCertProblems){
@@ -539,130 +390,6 @@ public class VCellApiClient implements AutoCloseable {
 		httpClientContext.setUserToken(accesTokenRepresentationRecord.getToken());
 
 		return accesTokenRepresentationRecord;
-	}
-	
-	public void clearAuthentication() throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException{
-		initClient();
-		httpClientContext = HttpClientContext.create();
-	}
-
-
-	private String createdDigestPassword(String clearTextPassword) {
-		if (clearTextPassword == null || clearTextPassword.length() == 0) {
-			throw new RuntimeException("Empty password not allowed");
-		}
-		java.security.MessageDigest messageDigest = null;
-		try {
-			messageDigest = java.security.MessageDigest.getInstance("SHA-1");
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new RuntimeException("Error processing password, Couldn't get instance of MessageDigest " + e.getMessage());
-		}
-		messageDigest.reset();
-		messageDigest.update(clearTextPassword.getBytes());
-		byte[] digestedPasswordBytes = messageDigest.digest();
-		StringBuffer sb = new StringBuffer(digestedPasswordBytes.length * 2);
-		for (int i = 0; i < digestedPasswordBytes.length; i++) {
-			int v = digestedPasswordBytes[i] & 0xff;
-			if (v < 16) {
-				sb.append('0');
-			}
-			sb.append(Integer.toHexString(v));
-		}
-		return sb.toString().toUpperCase();
-	}
-
-	public UserInfo insertUserInfo(UserInfo newUserInfo) throws ClientProtocolException, IOException,IllegalArgumentException {
-		  
-		HttpPost httppost = new HttpPost(getApiUrlPrefix()+"/newuser");
-		Gson gson = new Gson();
-		String newUserInfoJSON = gson.toJson(newUserInfo);
-		StringEntity input = new StringEntity(newUserInfoJSON);
-		input.setContentType(ContentType.APPLICATION_JSON.getMimeType());
-		httppost.setEntity(input);
-		
-		if (lg.isInfoEnabled()) {
-			lg.info("Executing request to submit new user " + httppost.getRequestLine());
-		}
-
-		ResponseHandler<UserInfo> handler = new ResponseHandler<UserInfo>() {
-
-			public UserInfo handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
-				int status = response.getStatusLine().getStatusCode();
-				if (status == HttpStatus.SC_CREATED) {
-					HttpEntity entity = response.getEntity();
-					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
-						String json = reader.lines().collect(Collectors.joining());
-						UserInfo userInfo = gson.fromJson(json, UserInfo.class);
-						return userInfo;
-					}
-				} else if(status == HttpStatus.SC_FORBIDDEN){
-					HttpEntity entity = response.getEntity();
-					String message = null;
-					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
-						message = reader.lines().collect(Collectors.joining());
-					}
-					final URI uri = httppost.getURI();
-					lg.error("insertUserInfo() ("+uri+") failed: response status: " + status + "\nreason: " + message);
-					throw new IllegalArgumentException("insertUserInfo() failed: response status: " + status + "\nreason: " + message);
-				} else {
-					HttpEntity entity = response.getEntity();
-					String message = null;
-					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
-						message = reader.lines().collect(Collectors.joining());
-					}
-					final URI uri = httppost.getURI();
-					lg.error("insertUserInfo() ("+uri+") failed: response status: " + status + "\nreason: " + message);
-					throw new ClientProtocolException("insertUserInfo() failed: response status: " + status + "\nreason: " + message);
-				}
-			}
-
-		};
-		UserInfo insertedUserInfo = httpclient.execute(httppost,handler,httpClientContext);
-		if (lg.isInfoEnabled()) {
-			lg.info("returned userinfo: "+insertedUserInfo);
-		}
-
-		return insertedUserInfo;
-	}
-
-	public void sendLostPassword(String userid) throws ClientProtocolException, IOException {
-		HttpPost httppost = new HttpPost(getApiUrlPrefix()+"/lostpassword");
-		StringEntity input = new StringEntity(userid);
-		input.setContentType(ContentType.TEXT_PLAIN.getMimeType());
-		httppost.setEntity(input);
-		
-		if (lg.isInfoEnabled()) {
-			lg.info("Executing request to send lost password " + httppost.getRequestLine());
-		}
-
-		ResponseHandler<String> handler = new ResponseHandler<String>() {
-
-			public String handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
-				int status = response.getStatusLine().getStatusCode();
-				if (status == HttpStatus.SC_ACCEPTED) {
-					HttpEntity entity = response.getEntity();
-					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
-						String message = reader.lines().collect(Collectors.joining());
-						return message;
-					}
-				} else {
-					HttpEntity entity = response.getEntity();
-					String message = null;
-					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
-						message = reader.lines().collect(Collectors.joining());
-					}
-					final URI uri = httppost.getURI();
-					lg.error("sendLostPassword() ("+uri+") failed: response status: " + status + "\nreason: " + message);
-					throw new ClientProtocolException("Failed to request lost password, response status: " + status + "\nreason: " + message);
-				}
-			}
-
-		};
-		String message = httpclient.execute(httppost,handler,httpClientContext);
-		if (lg.isInfoEnabled()) {
-			lg.info("requested lost password for user "+userid+", server returned "+message);
-		}
 	}
 	
 
