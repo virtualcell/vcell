@@ -28,6 +28,7 @@ import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.errors.exceptions.DataAccessWebException;
+import org.vcell.restq.errors.exceptions.UnprocessableContentWebException;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.BioModelChildSummary;
@@ -36,6 +37,7 @@ import org.vcell.util.document.KeyValue;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
@@ -165,5 +167,18 @@ public class BioModelApiTest {
 
         Assertions.assertEquals(BioModelChildSummary.MathType.Deterministic, info.getBioModelChildSummary().getAppTypes()[0]);
         Assertions.assertEquals(new ArrayList<>(){{add("non-spatial ODE");}}, context.getSummary().getSimulationContextNames());
+    }
+
+    @Test
+    public void testBadXML() throws IOException, ApiException {
+        BioModelResourceApi bioModelResourceApi = new BioModelResourceApi(aliceAPIClient);
+        String badXML = Files.readString(TestEndpointUtils.getResourceFile("/BadXML.xml").toPath());
+        try{
+            bioModelResourceApi.saveBioModel(badXML, null, null);
+            Assertions.fail();
+        } catch (ApiException e){
+            Assertions.assertEquals(UnprocessableContentWebException.HTTP_CODE, e.getCode());
+            Assertions.assertTrue(e.getMessage().contains("DOCTYPE is disallowed"));
+        }
     }
 }

@@ -127,17 +127,34 @@ private XmlUtil() {
 	}
 
 
+	/**
+	 * Throws exception if the xml contains entities not allowed.
+	 * @param xml
+	 * @throws IOException
+	 * @throws JDOMException
+	 */
+	public static void vetXMLForMaliciousEntities(String xml) throws IOException, JDOMException {
+		SAXBuilder builder = new SAXBuilder();
+		GenericXMLErrorHandler errorHandler = new GenericXMLErrorHandler();
+
+		builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
+		builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+
+		builder.build(new StringReader(xml));
+	}
+
+
 //useful for the translators.
 	public static Document readXML(Reader reader, String schemaLocation, String parserClass, String schemaLocationPropName) throws RuntimeException {
 		
-		SAXBuilder builder = null; 
+		SAXBuilder builder = null;
 		Document sDoc = null;
 		GenericXMLErrorHandler errorHandler = new GenericXMLErrorHandler();
 		try {
 			if (schemaLocation != null && schemaLocation.length() > 0) {           //ignores the parserClass, since xerces is the only validating parser we have
 		  		builder = new SAXBuilder("org.apache.xerces.parsers.SAXParser", true);
-		  		builder.setFeature("https://xml.org/sax/features/validation", true);
-	      		builder.setFeature("https://apache.org/xml/features/validation/schema", true);
+		  		builder.setFeature("http://xml.org/sax/features/validation", true);
+	      		builder.setFeature("http://apache.org/xml/features/validation/schema", true);
 	      		builder.setErrorHandler(errorHandler);
 				builder.setProperty(schemaLocationPropName, schemaLocation);
 			} else {                                                              //ignore schemaLocationPropName
@@ -149,6 +166,7 @@ private XmlUtil() {
 				builder.setErrorHandler(errorHandler);
 			}
 			builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
+			builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 			sDoc = builder.build(reader);
 			// ----- Element root = null;
 	  		// ----- root = sDoc.getRootElement();
@@ -175,6 +193,8 @@ private XmlUtil() {
 		Document sDoc = null;
 		GenericXMLErrorHandler errorHandler = new GenericXMLErrorHandler();
   		builder.setErrorHandler(errorHandler);
+		builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
+		builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 		try {
 	  		sDoc = builder.build(file);
 			// Element root = null;
@@ -202,6 +222,8 @@ private XmlUtil() {
 		Document sDoc = null;
 		GenericXMLErrorHandler errorHandler = new GenericXMLErrorHandler();
   		builder.setErrorHandler(errorHandler);
+		builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
+		builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 		try {
 	  		sDoc = builder.build(inputStream);
 			// Element root = null;

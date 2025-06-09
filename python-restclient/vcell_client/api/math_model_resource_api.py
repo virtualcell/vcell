@@ -1179,6 +1179,7 @@ class MathModelResourceApi:
             '200': "str",
             '401': "VCellHTTPError",
             '403': None,
+            '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
         }
@@ -1257,6 +1258,7 @@ class MathModelResourceApi:
             '200': "str",
             '401': "VCellHTTPError",
             '403': None,
+            '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
         }
@@ -1335,6 +1337,7 @@ class MathModelResourceApi:
             '200': "str",
             '401': "VCellHTTPError",
             '403': None,
+            '422': "VCellHTTPError",
             '500': "VCellHTTPError"
             
         }

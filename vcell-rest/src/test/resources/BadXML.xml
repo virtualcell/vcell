@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE note [
+        <!ENTITY company SYSTEM "https://vcell.org">
+        ]>
+<note>
+    <to>VCell</to>
+    <from>Ezequiel</from>
+    <heading>Bad XML</heading>
+    <body>This XML tries to reference an external entity!</body>
+</note>
