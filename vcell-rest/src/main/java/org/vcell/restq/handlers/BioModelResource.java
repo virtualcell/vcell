@@ -186,7 +186,9 @@ public class BioModelResource {
             XmlUtil.vetXMLForMaliciousEntities(bioModelVCML);
             cbit.vcell.biomodel.BioModel savedBioModel = bioModelRestService.save(user, bioModelVCML,
                     newName.orElse(null), simNames.toArray(new String[0]));
-            return XmlHelper.bioModelToXML(savedBioModel);
+            String result = XmlHelper.bioModelToXML(savedBioModel);
+            XmlUtil.vetXMLForMaliciousEntities(result);
+            return result;
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (XmlParseException | IOException | JDOMException e){

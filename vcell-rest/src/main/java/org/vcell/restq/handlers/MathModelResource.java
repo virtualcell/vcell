@@ -132,6 +132,7 @@ public class MathModelResource {
         try{
             XmlUtil.vetXMLForMaliciousEntities(mathModelVCML);
             BigString result = mathModelService.saveModel(user, new BigString(mathModelVCML), newName.orElse(null), simNames.toArray(new String[0]));
+            XmlUtil.vetXMLForMaliciousEntities(result.toString()); // partial saves might include already saved XML
             return result.toString();
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
