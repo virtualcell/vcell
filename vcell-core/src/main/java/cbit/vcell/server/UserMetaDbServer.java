@@ -45,8 +45,6 @@ TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAc
 VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException, RemoteProxyException;
 
 
-UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP) throws DataAccessException, ObjectNotFoundException, RemoteProxyException;
-
 /**
  * Insert the method's description here.
  * Creation date: (4/29/2004 1:03:11 PM)

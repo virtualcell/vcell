@@ -80,20 +80,6 @@ public org.vcell.util.document.VCDocumentInfo curate(CurateSpec curateSpec) thro
 	}
 }
 
-public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP) throws DataAccessException, ObjectNotFoundException {
-
-	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.userRegistrationOP(...)");
-		return dbServerProxy.userRegistrationOP(userRegistrationOP);
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
-	}
-}
-
 /**
  * Insert the method's description here.
  * Creation date: (10/22/2003 10:23:06 AM)
