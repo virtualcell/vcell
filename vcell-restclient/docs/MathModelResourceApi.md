@@ -643,6 +643,7 @@ public class Example {
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
 | **500** | Data Access Exception |  -  |
 
 ## saveMathModelWithHttpInfo
@@ -718,5 +719,6 @@ ApiResponse<**String**>
 | **200** | OK |  -  |
 | **401** | Not Authorized |  -  |
 | **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
 | **500** | Data Access Exception |  -  |
 

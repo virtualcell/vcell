@@ -931,6 +931,12 @@ paths:
           description: Not Authorized
         "403":
           description: Not Allowed
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Unprocessable content submitted
         "500":
           content:
             application/json:

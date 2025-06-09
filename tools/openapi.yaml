@@ -907,6 +907,12 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
         "500":
           description: Data Access Exception
           content:
