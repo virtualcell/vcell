@@ -10,21 +10,16 @@
 
 package org.vcell.rest.rpc;
 
-import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.mathmodel.MathModelMetaData;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCRpcRequest.RpcServiceType;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.model.ReactionQuerySpec;
 import cbit.vcell.server.SimulationStatusPersistent;
-import cbit.vcell.server.UserRegistrationOP;
-import cbit.vcell.server.UserRegistrationResults;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.*;
 
-import java.util.Hashtable;
 import java.util.TreeMap;
 
 public class RpcDbServerProxy extends AbstractRpcServerProxy {
@@ -41,27 +36,10 @@ public org.vcell.util.document.VCDocumentInfo curate(CurateSpec curateSpec) thro
 	return (org.vcell.util.document.VCDocumentInfo)rpc("curate",new Object[]{userLoginInfo.getUser(),curateSpec});
 }
 
-
-public UserRegistrationResults userRegistrationOP(UserRegistrationOP userRegistrationOP) throws DataAccessException, ObjectNotFoundException {
-	return (UserRegistrationResults)rpc("userRegistrationOP",new Object[]{userLoginInfo.getUser(),userRegistrationOP});
-}
-
-
-	public void fieldDataFromSimulation(KeyValue sourceSim, int jobIndex, String newFieldDataName) {
-        throw new UnsupportedOperationException("Not implemented on RPC");
-	}
-
-	public Hashtable<String, ExternalDataIdentifier> copyModelsFieldData(String modelKey, VersionableType modelType) {
-		throw new UnsupportedOperationException("Not implemented on RPC");
-	}
-
 	public void deleteGeometry(org.vcell.util.document.KeyValue geometryKey) throws DataAccessException, ObjectNotFoundException {
 	rpc("deleteGeometry",new Object[]{userLoginInfo.getUser(), geometryKey});
 }
 
-public void deleteMathModel(org.vcell.util.document.KeyValue mathModelKey) throws DataAccessException, ObjectNotFoundException {
-	rpc("deleteMathModel",new Object[]{userLoginInfo.getUser(), mathModelKey});
-}
 
 public void deleteResultSetExport(org.vcell.util.document.KeyValue eleKey) throws DataAccessException {
 	rpc("deleteResultSetExport",new Object[]{userLoginInfo.getUser(), eleKey});
@@ -82,11 +60,6 @@ public org.vcell.util.document.ReferenceQueryResult findReferences(org.vcell.uti
 
 public org.vcell.util.document.VersionableFamily getAllReferences(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
 	return (VersionableFamily)rpc("getAllReferences",new Object[]{userLoginInfo.getUser(), vType,key});
-}
-
-
-public BigString getBioModelXML(org.vcell.util.document.KeyValue key) throws DataAccessException {
-	return (BigString)rpc("getBioModelXML",new Object[]{userLoginInfo.getUser(), key});
 }
 
 public cbit.vcell.model.DBSpecies getBoundSpecies(cbit.vcell.model.DBFormalSpecies dbfs) throws DataAccessException {
@@ -111,26 +84,6 @@ public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(boolean bAll) throws 
 
 public BigString getGeometryXML(org.vcell.util.document.KeyValue key) throws DataAccessException {
 	return (BigString)rpc("getGeometryXML",new Object[]{userLoginInfo.getUser(), key});
-}
-
-public org.vcell.util.document.MathModelInfo getMathModelInfo(org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (org.vcell.util.document.MathModelInfo)rpc("getMathModelInfo",new Object[]{userLoginInfo.getUser(),key});
-}
-
-public org.vcell.util.document.MathModelInfo[] getMathModelInfos(boolean bAll) throws DataAccessException {
-	return (org.vcell.util.document.MathModelInfo[])rpc("getMathModelInfos",new Object[]{userLoginInfo.getUser(), new Boolean(bAll)});
-}
-
-public cbit.vcell.mathmodel.MathModelMetaData getMathModelMetaData(org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (MathModelMetaData)rpc("getMathModelMetaData",new Object[]{userLoginInfo.getUser(), key});
-}
-
-public cbit.vcell.mathmodel.MathModelMetaData[] getMathModelMetaDatas(boolean bAll) throws DataAccessException {
-	return (MathModelMetaData[])rpc("getMathModelMetaDatas",new Object[]{userLoginInfo.getUser(), new Boolean(bAll)});
-}
-
-public BigString getMathModelXML(org.vcell.util.document.KeyValue key) throws DataAccessException {
-	return (BigString)rpc("getMathModelXML",new Object[]{userLoginInfo.getUser(), key});
 }
 
 public org.vcell.util.Preference[] getPreferences() throws DataAccessException {
@@ -227,28 +180,12 @@ private Object rpc(String methodName, Object[] args) throws ObjectNotFoundExcept
 	}
 }
 
-public BigString saveBioModel(BigString bioModelXML, String independentSims[]) throws DataAccessException, ObjectNotFoundException {
-	return (BigString)rpc("saveBioModel",new Object[]{userLoginInfo.getUser(), bioModelXML, independentSims});
-}
-
-public BigString saveBioModelAs(BigString bioModelXML, java.lang.String newName, String independentSims[]) throws DataAccessException, ObjectNotFoundException {
-	return (BigString)rpc("saveBioModelAs",new Object[]{userLoginInfo.getUser(), bioModelXML, newName, independentSims});
-}
-
 public BigString saveGeometry(BigString geometryXML) throws DataAccessException, ObjectNotFoundException {
 	return (BigString)rpc("saveGeometry",new Object[]{userLoginInfo.getUser(), geometryXML});
 }
 
 public BigString saveGeometryAs(BigString geometryXML, java.lang.String newName) throws DataAccessException, ObjectNotFoundException {
 	return (BigString)rpc("saveGeometryAs",new Object[]{userLoginInfo.getUser(), geometryXML, newName});
-}
-
-public BigString saveMathModel(BigString mathModelXML, String independentSims[]) throws DataAccessException, ObjectNotFoundException {
-	return (BigString)rpc("saveMathModel",new Object[]{userLoginInfo.getUser(), mathModelXML, independentSims});
-}
-
-public BigString saveMathModelAs(BigString mathModelXML, java.lang.String newName, String independentSims[]) throws DataAccessException, ObjectNotFoundException {
-	return (BigString)rpc("saveMathModelAs",new Object[]{userLoginInfo.getUser(), mathModelXML, newName, independentSims});
 }
 
 public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulationXML, boolean bForceIndependent) throws DataAccessException {

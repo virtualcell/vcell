@@ -443,17 +443,13 @@ public BigString getGeometryXML(KeyValue geometryKey) throws DataAccessException
  * @throws RemoteException 
  */
 public BigString getMathModelXML(KeyValue mathModelKey) throws DataAccessException, ObjectNotFoundException {
-
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getMathModelXML(mathModelKey="+mathModelKey+")");
-		BigString xml = dbServerProxy.getMathModelXML(mathModelKey);
-		return xml;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		String xml = vCellApiClient.getMathModelApi().getVCML(mathModelKey.toString());
+		return new BigString(xml);
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
 
 }
@@ -906,14 +902,12 @@ public BigString saveMathModel(BigString mathModelXML, String independentSims[])
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.saveMathModel()");
-		BigString savedMathModelXML = dbServerProxy.saveMathModel(mathModelXML,independentSims);
-		return savedMathModelXML;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		List<String> sims = independentSims == null ? null : Arrays.asList(independentSims);
+		String savedMathModelXML = vCellApiClient.getMathModelApi().saveMathModel(mathModelXML.toString(),null, sims);
+		return new BigString(savedMathModelXML);
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
 
 }
@@ -927,14 +921,13 @@ public BigString saveMathModelAs(BigString mathModelXML, String newName, String 
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.saveMathModel(newName="+newName+")");
-		BigString savedMathModelXML = dbServerProxy.saveMathModelAs(mathModelXML,newName, independentSims);
-		return savedMathModelXML;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		List<String> sims = independentSims == null ? null : Arrays.asList(independentSims);
+		String savedMathModelXML = vCellApiClient.getMathModelApi().saveMathModel(mathModelXML.toString(),newName,
+				sims);
+		return new BigString(savedMathModelXML);
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
 
 }
