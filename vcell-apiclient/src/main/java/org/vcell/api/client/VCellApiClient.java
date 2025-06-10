@@ -36,10 +36,7 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.CustomApiClientCode;
 import org.vcell.restclient.CustomObjectMapper;
-import org.vcell.restclient.api.BioModelResourceApi;
-import org.vcell.restclient.api.FieldDataResourceApi;
-import org.vcell.restclient.api.MathModelResourceApi;
-import org.vcell.restclient.api.UsersResourceApi;
+import org.vcell.restclient.api.*;
 import org.vcell.restclient.auth.InteractiveLogin;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
@@ -346,6 +343,8 @@ public class VCellApiClient implements AutoCloseable {
 	public MathModelResourceApi getMathModelApi(){
 		return new MathModelResourceApi(apiClient);
 	}
+
+	public GeometryResourceApi getGeometryApi(){return new GeometryResourceApi(apiClient);}
 
 	public String getVCellUserNameFromAuth0Mapping() throws ApiException {
 		try {

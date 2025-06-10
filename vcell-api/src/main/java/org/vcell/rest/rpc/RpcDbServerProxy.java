@@ -36,10 +36,6 @@ public org.vcell.util.document.VCDocumentInfo curate(CurateSpec curateSpec) thro
 	return (org.vcell.util.document.VCDocumentInfo)rpc("curate",new Object[]{userLoginInfo.getUser(),curateSpec});
 }
 
-	public void deleteGeometry(org.vcell.util.document.KeyValue geometryKey) throws DataAccessException, ObjectNotFoundException {
-	rpc("deleteGeometry",new Object[]{userLoginInfo.getUser(), geometryKey});
-}
-
 
 public void deleteResultSetExport(org.vcell.util.document.KeyValue eleKey) throws DataAccessException {
 	rpc("deleteResultSetExport",new Object[]{userLoginInfo.getUser(), eleKey});
@@ -72,18 +68,6 @@ public cbit.vcell.model.DBFormalSpecies[] getDatabaseSpecies(java.lang.String li
 
 public cbit.vcell.model.ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
 	return (cbit.vcell.model.ReactionDescription[])rpc("getDictionaryReactions",new Object[]{userLoginInfo.getUser(), reactionQuerySpec});
-}
-
-public cbit.vcell.geometry.GeometryInfo getGeometryInfo(org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (cbit.vcell.geometry.GeometryInfo)rpc("getGeometryInfo",new Object[]{userLoginInfo.getUser(),key});
-}
-
-public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(boolean bAll) throws DataAccessException {
-	return (cbit.vcell.geometry.GeometryInfo[])rpc("getGeometryInfos",new Object[]{userLoginInfo.getUser(), new Boolean(bAll)});
-}
-
-public BigString getGeometryXML(org.vcell.util.document.KeyValue key) throws DataAccessException {
-	return (BigString)rpc("getGeometryXML",new Object[]{userLoginInfo.getUser(), key});
 }
 
 public org.vcell.util.Preference[] getPreferences() throws DataAccessException {
@@ -178,14 +162,6 @@ private Object rpc(String methodName, Object[] args) throws ObjectNotFoundExcept
 		lg.error(e.getMessage(),e);
 		throw new RuntimeException(e.getMessage());
 	}
-}
-
-public BigString saveGeometry(BigString geometryXML) throws DataAccessException, ObjectNotFoundException {
-	return (BigString)rpc("saveGeometry",new Object[]{userLoginInfo.getUser(), geometryXML});
-}
-
-public BigString saveGeometryAs(BigString geometryXML, java.lang.String newName) throws DataAccessException, ObjectNotFoundException {
-	return (BigString)rpc("saveGeometryAs",new Object[]{userLoginInfo.getUser(), geometryXML, newName});
 }
 
 public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulationXML, boolean bForceIndependent) throws DataAccessException {
