@@ -1,4 +1,4 @@
-package org.vcell.restq.apiclient;
+package org.vcell.restq.apiclient.documents;
 
 import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.modeldb.DatabaseServerImpl;

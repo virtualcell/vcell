@@ -1,4 +1,4 @@
-package org.vcell.restq.apiclient;
+package org.vcell.restq.apiclient.documents;
 
 import cbit.sql.QueryHashtable;
 import cbit.vcell.biomodel.BioModel;
