@@ -14,6 +14,7 @@ export * from './field-data';
 export * from './field-data-reference';
 export * from './field-data-saved-results';
 export * from './field-data-shape';
+export * from './geometry-summary';
 export * from './group-access';
 export * from './group-access-all';
 export * from './group-access-none';

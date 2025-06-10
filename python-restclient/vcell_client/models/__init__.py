@@ -31,6 +31,7 @@ from vcell_client.models.field_data import FieldData
 from vcell_client.models.field_data_reference import FieldDataReference
 from vcell_client.models.field_data_saved_results import FieldDataSavedResults
 from vcell_client.models.field_data_shape import FieldDataShape
+from vcell_client.models.geometry_summary import GeometrySummary
 from vcell_client.models.group_access import GroupAccess
 from vcell_client.models.group_access_all import GroupAccessAll
 from vcell_client.models.group_access_none import GroupAccessNone

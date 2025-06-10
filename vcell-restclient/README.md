@@ -137,6 +137,16 @@ Class | Method | HTTP request | Description
 *FieldDataResourceApi* | [**getShapeFromIDWithHttpInfo**](docs/FieldDataResourceApi.md#getShapeFromIDWithHttpInfo) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
 *FieldDataResourceApi* | [**save**](docs/FieldDataResourceApi.md#save) | **POST** /api/v1/fieldData/save | Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 *FieldDataResourceApi* | [**saveWithHttpInfo**](docs/FieldDataResourceApi.md#saveWithHttpInfo) | **POST** /api/v1/fieldData/save | Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
+*GeometryResourceApi* | [**deleteGeometry**](docs/GeometryResourceApi.md#deleteGeometry) | **DELETE** /api/v1/geometry/{id} | 
+*GeometryResourceApi* | [**deleteGeometryWithHttpInfo**](docs/GeometryResourceApi.md#deleteGeometryWithHttpInfo) | **DELETE** /api/v1/geometry/{id} | 
+*GeometryResourceApi* | [**getGeometrySummaries**](docs/GeometryResourceApi.md#getGeometrySummaries) | **GET** /api/v1/geometry/summaries | 
+*GeometryResourceApi* | [**getGeometrySummariesWithHttpInfo**](docs/GeometryResourceApi.md#getGeometrySummariesWithHttpInfo) | **GET** /api/v1/geometry/summaries | 
+*GeometryResourceApi* | [**getGeometrySummary**](docs/GeometryResourceApi.md#getGeometrySummary) | **GET** /api/v1/geometry/summary/{id} | 
+*GeometryResourceApi* | [**getGeometrySummaryWithHttpInfo**](docs/GeometryResourceApi.md#getGeometrySummaryWithHttpInfo) | **GET** /api/v1/geometry/summary/{id} | 
+*GeometryResourceApi* | [**getGeometryVCML**](docs/GeometryResourceApi.md#getGeometryVCML) | **GET** /api/v1/geometry/{id} | 
+*GeometryResourceApi* | [**getGeometryVCMLWithHttpInfo**](docs/GeometryResourceApi.md#getGeometryVCMLWithHttpInfo) | **GET** /api/v1/geometry/{id} | 
+*GeometryResourceApi* | [**saveGeometry**](docs/GeometryResourceApi.md#saveGeometry) | **POST** /api/v1/geometry | 
+*GeometryResourceApi* | [**saveGeometryWithHttpInfo**](docs/GeometryResourceApi.md#saveGeometryWithHttpInfo) | **POST** /api/v1/geometry | 
 *HelloWorldApi* | [**getHelloWorld**](docs/HelloWorldApi.md#getHelloWorld) | **GET** /api/v1/helloworld | Get hello world message.
 *HelloWorldApi* | [**getHelloWorldWithHttpInfo**](docs/HelloWorldApi.md#getHelloWorldWithHttpInfo) | **GET** /api/v1/helloworld | Get hello world message.
 *MathModelResourceApi* | [**deleteMathModel**](docs/MathModelResourceApi.md#deleteMathModel) | **DELETE** /api/v1/mathModel/{id} | 
@@ -209,6 +219,7 @@ Class | Method | HTTP request | Description
  - [FieldDataReference](docs/FieldDataReference.md)
  - [FieldDataSavedResults](docs/FieldDataSavedResults.md)
  - [FieldDataShape](docs/FieldDataShape.md)
+ - [GeometrySummary](docs/GeometrySummary.md)
  - [GroupAccess](docs/GroupAccess.md)
  - [GroupAccessAll](docs/GroupAccessAll.md)
  - [GroupAccessNone](docs/GroupAccessNone.md)

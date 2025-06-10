@@ -20,6 +20,8 @@ docs/FieldDataReference.md
 docs/FieldDataResourceApi.md
 docs/FieldDataSavedResults.md
 docs/FieldDataShape.md
+docs/GeometryResourceApi.md
+docs/GeometrySummary.md
 docs/GroupAccess.md
 docs/GroupAccessAll.md
 docs/GroupAccessNone.md
@@ -78,6 +80,7 @@ src/main/java/org/vcell/restclient/ServerVariable.java
 src/main/java/org/vcell/restclient/api/AdminResourceApi.java
 src/main/java/org/vcell/restclient/api/BioModelResourceApi.java
 src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java
+src/main/java/org/vcell/restclient/api/GeometryResourceApi.java
 src/main/java/org/vcell/restclient/api/HelloWorldApi.java
 src/main/java/org/vcell/restclient/api/MathModelResourceApi.java
 src/main/java/org/vcell/restclient/api/PublicationResourceApi.java
@@ -101,6 +104,7 @@ src/main/java/org/vcell/restclient/model/FieldData.java
 src/main/java/org/vcell/restclient/model/FieldDataReference.java
 src/main/java/org/vcell/restclient/model/FieldDataSavedResults.java
 src/main/java/org/vcell/restclient/model/FieldDataShape.java
+src/main/java/org/vcell/restclient/model/GeometrySummary.java
 src/main/java/org/vcell/restclient/model/GroupAccess.java
 src/main/java/org/vcell/restclient/model/GroupAccessAll.java
 src/main/java/org/vcell/restclient/model/GroupAccessNone.java

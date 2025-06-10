@@ -846,6 +846,197 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/geometry:
+    post:
+      tags:
+      - Geometry Resource
+      operationId: saveGeometry
+      parameters:
+      - name: newName
+        in: query
+        description: Name to save new Geometry under. Leave blank if re-saving existing
+          Geometry.
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/xml:
+            schema:
+              type: string
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/xml:
+              schema:
+                type: string
+        "401":
+          description: Not Authorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+      security:
+      - openId:
+        - user
+  /api/v1/geometry/summaries:
+    get:
+      tags:
+      - Geometry Resource
+      description: Return Geometry summaries.
+      operationId: getGeometrySummaries
+      parameters:
+      - name: includePublicAndShared
+        in: query
+        description: Include Geometry summaries that are public and shared with the
+          requester. Default is true.
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GeometrySummary'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/geometry/summary/{id}:
+    get:
+      tags:
+      - Geometry Resource
+      description: "All of the text based information about a Geometry (dimensions,\
+        \ extent, origin, etc...), but not the actual Geometry itself."
+      operationId: getGeometrySummary
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeometrySummary'
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/geometry/{id}:
+    get:
+      tags:
+      - Geometry Resource
+      description: Returns Geometry in VCML format.
+      operationId: getGeometryVCML
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/xml:
+              schema:
+                type: string
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+    delete:
+      tags:
+      - Geometry Resource
+      description: Remove specific Geometry.
+      operationId: deleteGeometry
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Not Authorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
   /api/v1/helloworld:
     get:
       tags:
@@ -1951,6 +2142,22 @@ components:
           items:
             format: double
             type: number
+    GeometrySummary:
+      type: object
+      properties:
+        dimension:
+          format: int32
+          type: integer
+        origin:
+          $ref: '#/components/schemas/Origin'
+        extent:
+          $ref: '#/components/schemas/Extent'
+        imageRef:
+          $ref: '#/components/schemas/KeyValue'
+        version:
+          $ref: '#/components/schemas/Version'
+        softwareVersion:
+          $ref: '#/components/schemas/VCellSoftwareVersion'
     GroupAccess:
       required:
       - groupid

@@ -8,6 +8,8 @@ api/bio-model-resource.service.ts
 api/bio-model-resource.serviceInterface.ts
 api/field-data-resource.service.ts
 api/field-data-resource.serviceInterface.ts
+api/geometry-resource.service.ts
+api/geometry-resource.serviceInterface.ts
 api/hello-world.service.ts
 api/hello-world.serviceInterface.ts
 api/math-model-resource.service.ts
@@ -40,6 +42,7 @@ model/field-data-reference.ts
 model/field-data-saved-results.ts
 model/field-data-shape.ts
 model/field-data.ts
+model/geometry-summary.ts
 model/group-access-all.ts
 model/group-access-none.ts
 model/group-access-some.ts
