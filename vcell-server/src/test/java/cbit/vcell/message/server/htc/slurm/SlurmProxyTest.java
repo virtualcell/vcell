@@ -137,6 +137,11 @@ public class SlurmProxyTest {
 		return slurmProxy.createJobScriptText(JOB_NAME, commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
 	}
 
+	public String createScriptForNativeSolversBatch(String simTaskResourcePath, String[] command, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
+
+		return null;
+	}
+
 	public String createScriptForJavaSolvers(String simTaskResourcePath, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
 
 		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource(simTaskResourcePath));
@@ -253,6 +258,16 @@ public class SlurmProxyTest {
 		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/V_REL_274672135_0_0.slurm.sub");
 		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
 	}
+
+	@Test
+	public void testSimJobScriptLangevinBatch() throws IOException, XmlParseException, ExpressionException {
+
+		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_999999999_0__0.simtask.xml";
+		String JOB_NAME = "V_REL_999999999_0_0";
+
+
+	}
+
 
 	@Test
 	public void testSimJobScriptNFsim() throws IOException, XmlParseException, ExpressionException {
