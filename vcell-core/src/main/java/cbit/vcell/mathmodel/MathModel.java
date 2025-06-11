@@ -39,7 +39,7 @@ import cbit.vcell.model.VCMODL;
  * @author:
  */
 @SuppressWarnings("serial")
-public class MathModel implements VCDocument, SimulationOwner, Matchable, VetoableChangeListener, PropertyChangeListener, IssueSource, Versionable {
+public class MathModel implements VCDocument, SimulationOwner, Matchable, VetoableChangeListener, PropertyChangeListener, IssueSource, HasVersion {
     private final static Logger lg = LogManager.getLogger(MathModel.class);
 
     public static final String PROPERTY_NAME_MATH_DESCRIPTION = "mathDescription";
