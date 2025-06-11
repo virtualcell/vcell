@@ -41,6 +41,7 @@ import java.nio.file.Files;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+// TODO: Use GenericVCMLTests class for the principle tests for VCDocuments
 @QuarkusTest
 public class BioModelApiTest {
 

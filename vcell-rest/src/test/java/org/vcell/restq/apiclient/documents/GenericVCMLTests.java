@@ -4,6 +4,7 @@ import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlParseException;
 import org.junit.jupiter.api.Assertions;
 import org.vcell.restclient.ApiException;
+import org.vcell.util.document.HasVersion;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.document.Versionable;
@@ -62,11 +63,9 @@ class GenericVCMLTests {
         Assertions.assertTrue(savedModel.compareEqual(testModel));
 
         // Can't save new model under the same name if it does not have the same versionable object as the original.
-        if (savedModel instanceof Versionable){
-            ((Versionable) savedModel).clearVersion();
-        } else {
-            Assertions.fail();
-        }
+
+        ((HasVersion) savedModel).clearVersion();
+
         try{
             saveCall.call(documentToXML.apply(savedModel), "TestModel", null);
             Assertions.fail();

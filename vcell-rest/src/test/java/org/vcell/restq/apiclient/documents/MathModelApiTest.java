@@ -73,7 +73,7 @@ public class MathModelApiTest {
     @Test
     public void testMathModelSave() throws Exception {
         MathModelResourceApi mathModelResourceApi = new MathModelResourceApi(aliceAPIClient);
-        String retrievedVCML = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestMath.vcml"));
+        String retrievedVCML = TestEndpointUtils.getResourceString("/TestMath.vcml");
 
         GenericVCMLTests.genericSaveTest(retrievedVCML, XmlHelper::XMLToMathModel, XmlHelper::mathModelToXML,
                 mathModelResourceApi::saveMathModel, this::cleanMathModel);
@@ -84,7 +84,7 @@ public class MathModelApiTest {
         MathModelResourceApi mathModelResourceApi = new MathModelResourceApi(aliceAPIClient);
         MathModelResourceApi notAliceClient = new MathModelResourceApi(bobAPIClient);
 
-        String testVCML = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestMath.vcml"));
+        String testVCML = TestEndpointUtils.getResourceString("/TestMath.vcml");
         GenericVCMLTests.genericGetTest(testVCML, XmlHelper::XMLToMathModel,
                 key -> mathModelResourceApi.getVCML(key.toString()),
                 key -> mathModelResourceApi.getSummary(key.toString()),
@@ -98,7 +98,7 @@ public class MathModelApiTest {
         MathModelResourceApi mathModelResourceApi = new MathModelResourceApi(aliceAPIClient);
         MathModelResourceApi notAliceClient = new MathModelResourceApi(bobAPIClient);
 
-        String testVCML = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestMath.vcml"));
+        String testVCML = TestEndpointUtils.getResourceString("/TestMath.vcml");
 
         GenericVCMLTests.genericDeleteTest(testVCML, mathModelResourceApi::saveMathModel, XmlHelper::XMLToMathModel,
                 mathModelResourceApi::deleteMathModel, notAliceClient::deleteMathModel,
@@ -109,7 +109,7 @@ public class MathModelApiTest {
     public void getSummaryTest() throws ApiException, IOException, XmlParseException {
         MathModelResourceApi mathModelResourceApi = new MathModelResourceApi(aliceAPIClient);
 
-        String testVCML = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestMath.vcml"));
+        String testVCML = TestEndpointUtils.getResourceString("/TestMath.vcml");
         String savedModelVCML = mathModelResourceApi.saveMathModel(testVCML, "Test", null);
         MathModel savedModel = XmlHelper.XMLToMathModel(new XMLSource(savedModelVCML));
 
