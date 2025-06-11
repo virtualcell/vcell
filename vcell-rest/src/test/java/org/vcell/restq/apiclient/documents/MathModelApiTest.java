@@ -40,7 +40,6 @@ public class MathModelApiTest {
 
     private ApiClient aliceAPIClient;
     private ApiClient bobAPIClient;
-    private DatabaseServerImpl databaseServer;
 
     @BeforeAll
     public static void setupConfig(){
@@ -51,7 +50,6 @@ public class MathModelApiTest {
     public void createClients() throws ApiException, DataAccessException {
         aliceAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.alice);
         bobAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.bob);
-        databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         TestEndpointUtils.mapApiClientToAdmin(aliceAPIClient);
         TestEndpointUtils.mapApiClientToNagios(bobAPIClient);
     }
@@ -62,104 +60,49 @@ public class MathModelApiTest {
         TestEndpointUtils.clearAllBioModelEntries(agroalConnectionFactory);
     }
 
-    private void setMathModelDescriptionAndVersion(MathModel mainModel, MathModel model2) throws PropertyVetoException {
-        model2.setDescription(mainModel.getDescription());
-        model2.getMathDescription().setDescription(mainModel.getMathDescription().getDescription());
-        model2.getMathDescription().getGeometry().setDescription(mainModel.getMathDescription().getGeometry().getDescription());
-        for (int i = 0; i < model2.getSimulations().length; i++){
-            model2.getSimulations()[i].setDescription(mainModel.getSimulations()[i].getDescription());
+    private void cleanMathModel(MathModel savedModel, MathModel testModel) throws PropertyVetoException {
+        savedModel.setDescription(testModel.getDescription());
+        testModel.getMathDescription().setDescription(savedModel.getMathDescription().getDescription());
+        testModel.getMathDescription().getGeometry().setDescription(savedModel.getMathDescription().getGeometry().getDescription());
+        for (int i = 0; i < testModel.getSimulations().length; i++){
+            testModel.getSimulations()[i].setDescription(savedModel.getSimulations()[i].getDescription());
         }
-        model2.clearVersion();
-        mainModel.clearVersion();
+        testModel.setName(savedModel.getName());
     }
 
     @Test
     public void testMathModelSave() throws Exception {
         MathModelResourceApi mathModelResourceApi = new MathModelResourceApi(aliceAPIClient);
-
         String retrievedVCML = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestMath.vcml"));
-        MathModel retrievedMathModel = XmlHelper.XMLToMathModel(new XMLSource(retrievedVCML));
 
-        String savedModelVCML = mathModelResourceApi.saveMathModel(retrievedVCML, "TestMathModel", null);
-        MathModel savedMathModel = XmlHelper.XMLToMathModel(new XMLSource(savedModelVCML));
-        // Can't resave without changes
-        try{
-            mathModelResourceApi.saveMathModel(savedModelVCML, null, null);
-            Assertions.fail();
-        } catch (ApiException e) {
-            Assertions.assertEquals(500, e.getCode());
-        }
-        savedMathModel.setDescription("Changed description");
-        savedModelVCML = mathModelResourceApi.saveMathModel(XmlHelper.mathModelToXML(savedMathModel), null, null);
-        savedMathModel = XmlHelper.XMLToMathModel(new XMLSource(savedModelVCML));
-
-        setMathModelDescriptionAndVersion(savedMathModel, retrievedMathModel);
-        Assertions.assertTrue(savedMathModel.compareEqual(retrievedMathModel));
-
-        // Can't save new BioModel under the same name if it does not have the same versionable object as the original.
-        try{
-            mathModelResourceApi.saveMathModel(XmlHelper.mathModelToXML(savedMathModel), "TestMathModel", null);
-            Assertions.fail();
-        } catch (ApiException e) {
-            Assertions.assertEquals(500, e.getCode());
-        }
+        GenericVCMLTests.genericSaveTest(retrievedVCML, XmlHelper::XMLToMathModel, XmlHelper::mathModelToXML,
+                mathModelResourceApi::saveMathModel, this::cleanMathModel);
     }
 
     @Test
     public void testMathModelGet() throws Exception {
         MathModelResourceApi mathModelResourceApi = new MathModelResourceApi(aliceAPIClient);
-        try {
-            mathModelResourceApi.getSummary("44");
-            Assertions.fail();
-        } catch (ApiException e) {
-            Assertions.assertEquals(404, e.getCode());
-        }
-        try {
-            mathModelResourceApi.getVCML("44");
-            Assertions.fail();
-        } catch (ApiException e) {
-            Assertions.assertEquals(404, e.getCode());
-        }
+        MathModelResourceApi notAliceClient = new MathModelResourceApi(bobAPIClient);
 
         String testVCML = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestMath.vcml"));
-        String savedModelVCML = mathModelResourceApi.saveMathModel(testVCML, "Test", null);
-        MathModel savedModel = XmlHelper.XMLToMathModel(new XMLSource(savedModelVCML));
-        String retrievedVCML = mathModelResourceApi.getVCML(savedModel.getVersion().getVersionKey().toString());
-        Assertions.assertEquals(savedModelVCML, retrievedVCML);
-
-        try{
-            new MathModelResourceApi(bobAPIClient).getVCML(savedModel.getVersion().getVersionKey().toString());
-            Assertions.fail();
-        } catch (ApiException e) {
-            // Not found for that particular user because they don't own it
-            Assertions.assertEquals(404, e.getCode());
-        }
+        GenericVCMLTests.genericGetTest(testVCML, XmlHelper::XMLToMathModel,
+                key -> mathModelResourceApi.getVCML(key.toString()),
+                key -> mathModelResourceApi.getSummary(key.toString()),
+                key -> notAliceClient.getVCML(key.toString()),
+                key -> notAliceClient.getSummary(key.toString()),
+                mathModelResourceApi::saveMathModel);
     }
 
     @Test
-    public void deleteTest() throws ApiException, IOException, XmlParseException {
+    public void deleteTest() throws Exception {
         MathModelResourceApi mathModelResourceApi = new MathModelResourceApi(aliceAPIClient);
+        MathModelResourceApi notAliceClient = new MathModelResourceApi(bobAPIClient);
 
         String testVCML = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestMath.vcml"));
-        String savedModelVCML = mathModelResourceApi.saveMathModel(testVCML, "Test", null);
-        String saved2 = mathModelResourceApi.saveMathModel(testVCML, "Test2", null);
 
-        MathModel savedModel = XmlHelper.XMLToMathModel(new XMLSource(savedModelVCML));
-        MathModel savedModel2 = XmlHelper.XMLToMathModel(new XMLSource(saved2));
-
-        mathModelResourceApi.deleteMathModel(savedModel.getVersion().getVersionKey().toString());
-        // Can't delete twice
-        Assertions.assertThrows(ApiException.class, () -> mathModelResourceApi.deleteMathModel(savedModel.getVersion().getVersionKey().toString()));
-        try{
-            // Can't grab what's not deleted
-            mathModelResourceApi.getVCML(savedModel.getVersion().getVersionKey().toString());
-            Assertions.fail();
-        } catch (ApiException e) {
-            Assertions.assertEquals(404, e.getCode());
-        }
-
-        // Wasn't deleted so can get
-        Assertions.assertDoesNotThrow(() -> mathModelResourceApi.getVCML(savedModel2.getVersion().getVersionKey().toString()));
+        GenericVCMLTests.genericDeleteTest(testVCML, mathModelResourceApi::saveMathModel, XmlHelper::XMLToMathModel,
+                mathModelResourceApi::deleteMathModel, notAliceClient::deleteMathModel,
+                key -> mathModelResourceApi.getVCML(key.toString()));
     }
 
     @Test

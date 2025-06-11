@@ -160,6 +160,11 @@ public class TestEndpointUtils {
         return tmpFile;
     }
 
+    public static String getResourceString(String relativeResourcePath) throws IOException {
+        InputStream inputStream = Objects.requireNonNull(TestEndpointUtils.class.getResourceAsStream(relativeResourcePath));
+        return IOUtils.toString(inputStream);
+    }
+
     /**
      * Empties out all BioModel, Geometry, math, and simulation related tables
      */

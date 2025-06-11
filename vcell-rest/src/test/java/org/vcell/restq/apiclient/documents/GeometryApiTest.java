@@ -1,14 +1,12 @@
 package org.vcell.restq.apiclient.documents;
 
 import cbit.vcell.geometry.Geometry;
-import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
-import org.apache.commons.io.IOUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.*;
 import org.vcell.restclient.ApiClient;
@@ -21,7 +19,6 @@ import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
-import org.vcell.util.ISize;
 import org.vcell.util.Origin;
 
 import java.beans.PropertyVetoException;
@@ -39,7 +36,6 @@ public class GeometryApiTest {
 
     private ApiClient aliceAPIClient;
     private ApiClient bobAPIClient;
-    private DatabaseServerImpl databaseServer;
 
     @BeforeAll
     public static void setupConfig(){
@@ -50,7 +46,6 @@ public class GeometryApiTest {
     public void createClients() throws ApiException, DataAccessException {
         aliceAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.alice);
         bobAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.bob);
-        databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         TestEndpointUtils.mapApiClientToAdmin(aliceAPIClient);
         TestEndpointUtils.mapApiClientToNagios(bobAPIClient);
     }
@@ -69,24 +64,26 @@ public class GeometryApiTest {
     @Test
     public void testSave() throws Exception {
         GeometryResourceApi resourceApi = new GeometryResourceApi(aliceAPIClient);
-        String retrievedVCML = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestGeometry.vcml"));
+        String retrievedVCML = TestEndpointUtils.getResourceString("/TestGeometry.vcml");
 
-        GenericVCMLTests.genericTestSave(retrievedVCML,
-                XmlHelper::XMLToGeometry, geometry -> XmlHelper.geometryToXML((Geometry) geometry),
-                saveObject -> resourceApi.saveGeometry(saveObject.modelString(), saveObject.name()),
-                m -> cleanGeometry((Geometry) m.model1(), (Geometry) m.model2()));
+        GenericVCMLTests.genericSaveTest(retrievedVCML,
+                XmlHelper::XMLToGeometry, XmlHelper::geometryToXML,
+                (modelString, modelName, simNames) -> resourceApi.saveGeometry(modelString, modelName),
+                this::cleanGeometry);
     }
 
     @Test
     public void testGet() throws Exception {
         GeometryResourceApi resourceApi = new GeometryResourceApi(aliceAPIClient);
-        GeometryResourceApi notAlice = new GeometryResourceApi(bobAPIClient);
-        String retrievedVCML = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestGeometry.vcml"));
+        GeometryResourceApi notAliceClient = new GeometryResourceApi(bobAPIClient);
+        String retrievedVCML = TestEndpointUtils.getResourceString("/TestGeometry.vcml");
 
-        GenericVCMLTests.genericTestGet(retrievedVCML,
-                XmlHelper::XMLToGeometry, resourceApi::getGeometryVCML, resourceApi::getGeometrySummary,
-                notAlice::getGeometryVCML, notAlice::getGeometrySummary,
-                testObject -> resourceApi.saveGeometry(testObject.modelString(), testObject.name())
+        GenericVCMLTests.genericGetTest(retrievedVCML,
+                XmlHelper::XMLToGeometry, key -> resourceApi.getGeometryVCML(key.toString()),
+                key -> resourceApi.getGeometrySummary(key.toString()),
+                key -> notAliceClient.getGeometryVCML(key.toString()),
+                key -> notAliceClient.getGeometrySummary(key.toString()),
+                (modelString, modelName, simNames) -> resourceApi.saveGeometry(modelString, modelName)
         );
     }
 
@@ -94,18 +91,18 @@ public class GeometryApiTest {
     public void testDelete() throws Exception {
         GeometryResourceApi resourceApi = new GeometryResourceApi(aliceAPIClient);
         GeometryResourceApi notAlice = new GeometryResourceApi(bobAPIClient);
-        String retrievedVCML = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestGeometry.vcml"));
+        String retrievedVCML = TestEndpointUtils.getResourceString("/TestGeometry.vcml");
 
-        GenericVCMLTests.genericTestDelete(retrievedVCML,
-                saveObject -> resourceApi.saveGeometry(saveObject.modelString(), saveObject.name()),
+        GenericVCMLTests.genericDeleteTest(retrievedVCML,
+                (modelString, modelName, simNames) -> resourceApi.saveGeometry(modelString, modelName),
                 XmlHelper::XMLToGeometry, resourceApi::deleteGeometry, notAlice::deleteGeometry,
-                resourceApi::getGeometryVCML);
+                key -> resourceApi.getGeometryVCML(key.toString()));
     }
 
     @Test
     public void testGeometrySummary() throws Exception {
         GeometryResourceApi resourceApi = new GeometryResourceApi(aliceAPIClient);
-        String retrievedVCML = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestGeometry.vcml"));
+        String retrievedVCML = TestEndpointUtils.getResourceString("/TestGeometry.vcml");
 
         String savedVCML = resourceApi.saveGeometry(retrievedVCML, "TestModel");
         Geometry geometry = XmlHelper.XMLToGeometry(new XMLSource(savedVCML));

@@ -22,11 +22,8 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.IssueContext.ContextType;
+import org.vcell.util.document.*;
 import org.vcell.util.document.BioModelChildSummary.MathType;
-import org.vcell.util.document.MathModelChildSummary;
-import org.vcell.util.document.PropertyConstants;
-import org.vcell.util.document.VCDocument;
-import org.vcell.util.document.Version;
 
 import cbit.vcell.biomodel.VCellNames;
 import cbit.vcell.geometry.Geometry;
@@ -42,7 +39,7 @@ import cbit.vcell.model.VCMODL;
  * @author:
  */
 @SuppressWarnings("serial")
-public class MathModel implements VCDocument, SimulationOwner, Matchable, VetoableChangeListener, PropertyChangeListener, IssueSource {
+public class MathModel implements VCDocument, SimulationOwner, Matchable, VetoableChangeListener, PropertyChangeListener, IssueSource, Versionable {
     private final static Logger lg = LogManager.getLogger(MathModel.class);
 
     public static final String PROPERTY_NAME_MATH_DESCRIPTION = "mathDescription";
