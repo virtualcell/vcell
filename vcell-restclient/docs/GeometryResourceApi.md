@@ -439,7 +439,7 @@ No authorization required
 
 
 
-Returns Geometry in VCML format.
+Returns &lt;Geometry&gt; as root element in VCML format.
 
 ### Example
 
@@ -507,7 +507,7 @@ No authorization required
 
 
 
-Returns Geometry in VCML format.
+Returns &lt;Geometry&gt; as root element in VCML format.
 
 ### Example
 
@@ -579,6 +579,8 @@ No authorization required
 
 
 
+Save&#39;s VCML with &lt;Geometry&gt; as the root element.
+
 ### Example
 
 ```java
@@ -649,6 +651,8 @@ public class Example {
 > ApiResponse<String> saveGeometry saveGeometryWithHttpInfo(body, newName)
 
 
+
+Save&#39;s VCML with &lt;Geometry&gt; as the root element.
 
 ### Example
 

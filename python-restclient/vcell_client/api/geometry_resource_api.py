@@ -863,7 +863,7 @@ class GeometryResourceApi:
     ) -> str:
         """get_geometry_vcml
 
-        Returns Geometry in VCML format.
+        Returns <Geometry> as root element in VCML format.
 
         :param id: (required)
         :type id: str
@@ -934,7 +934,7 @@ class GeometryResourceApi:
     ) -> ApiResponse[str]:
         """get_geometry_vcml
 
-        Returns Geometry in VCML format.
+        Returns <Geometry> as root element in VCML format.
 
         :param id: (required)
         :type id: str
@@ -1005,7 +1005,7 @@ class GeometryResourceApi:
     ) -> RESTResponseType:
         """get_geometry_vcml
 
-        Returns Geometry in VCML format.
+        Returns <Geometry> as root element in VCML format.
 
         :param id: (required)
         :type id: str
@@ -1135,6 +1135,7 @@ class GeometryResourceApi:
     ) -> str:
         """save_geometry
 
+        Save's VCML with <Geometry> as the root element.
 
         :param body: (required)
         :type body: str
@@ -1210,6 +1211,7 @@ class GeometryResourceApi:
     ) -> ApiResponse[str]:
         """save_geometry
 
+        Save's VCML with <Geometry> as the root element.
 
         :param body: (required)
         :type body: str
@@ -1285,6 +1287,7 @@ class GeometryResourceApi:
     ) -> RESTResponseType:
         """save_geometry
 
+        Save's VCML with <Geometry> as the root element.
 
         :param body: (required)
         :type body: str

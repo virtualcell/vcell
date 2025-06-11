@@ -869,6 +869,7 @@ paths:
       x-accepts: application/json
   /api/v1/geometry:
     post:
+      description: Save's VCML with <Geometry> as the root element.
       operationId: saveGeometry
       parameters:
       - description: Name to save new Geometry under. Leave blank if re-saving existing
@@ -1036,7 +1037,7 @@ paths:
       - Geometry Resource
       x-accepts: application/json
     get:
-      description: Returns Geometry in VCML format.
+      description: Returns <Geometry> as root element in VCML format.
       operationId: getGeometryVCML
       parameters:
       - explode: false

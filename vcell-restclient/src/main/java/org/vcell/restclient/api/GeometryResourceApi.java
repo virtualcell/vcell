@@ -319,7 +319,7 @@ public class GeometryResourceApi {
   }
   /**
    * 
-   * Returns Geometry in VCML format.
+   * Returns &lt;Geometry&gt; as root element in VCML format.
    * @param id  (required)
    * @return String
    * @throws ApiException if fails to make API call
@@ -331,7 +331,7 @@ public class GeometryResourceApi {
 
   /**
    * 
-   * Returns Geometry in VCML format.
+   * Returns &lt;Geometry&gt; as root element in VCML format.
    * @param id  (required)
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
@@ -391,7 +391,7 @@ public class GeometryResourceApi {
   }
   /**
    * 
-   * 
+   * Save&#39;s VCML with &lt;Geometry&gt; as the root element.
    * @param body  (required)
    * @param newName Name to save new Geometry under. Leave blank if re-saving existing Geometry. (optional)
    * @return String
@@ -404,7 +404,7 @@ public class GeometryResourceApi {
 
   /**
    * 
-   * 
+   * Save&#39;s VCML with &lt;Geometry&gt; as the root element.
    * @param body  (required)
    * @param newName Name to save new Geometry under. Leave blank if re-saving existing Geometry. (optional)
    * @return ApiResponse&lt;String&gt;

@@ -850,6 +850,7 @@ paths:
     post:
       tags:
       - Geometry Resource
+      description: Save's VCML with <Geometry> as the root element.
       operationId: saveGeometry
       parameters:
       - name: newName
@@ -966,7 +967,7 @@ paths:
     get:
       tags:
       - Geometry Resource
-      description: Returns Geometry in VCML format.
+      description: Returns <Geometry> as root element in VCML format.
       operationId: getGeometryVCML
       parameters:
       - name: id

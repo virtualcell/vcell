@@ -275,7 +275,7 @@ export class GeometryResourceService implements GeometryResourceServiceInterface
     }
 
     /**
-     * Returns Geometry in VCML format.
+     * Returns &lt;Geometry&gt; as root element in VCML format.
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
@@ -334,6 +334,7 @@ export class GeometryResourceService implements GeometryResourceServiceInterface
     }
 
     /**
+     * Save\&#39;s VCML with &lt;Geometry&gt; as the root element.
      * @param body 
      * @param newName Name to save new Geometry under. Leave blank if re-saving existing Geometry.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.

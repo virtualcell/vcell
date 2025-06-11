@@ -219,7 +219,7 @@ No authorization required
 
 
 
-Returns Geometry in VCML format.
+Returns <Geometry> as root element in VCML format.
 
 ### Example
 
@@ -286,6 +286,8 @@ No authorization required
 > str save_geometry(body, new_name=new_name)
 
 
+
+Save's VCML with <Geometry> as the root element.
 
 ### Example
 

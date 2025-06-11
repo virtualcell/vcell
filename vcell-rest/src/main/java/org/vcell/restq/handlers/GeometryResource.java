@@ -56,7 +56,7 @@ public class GeometryResource {
     @GET
     @Produces({MediaType.APPLICATION_XML})
     @Path("/{id}")
-    @Operation(operationId = "getGeometryVCML", description = "Returns Geometry in VCML format.")
+    @Operation(operationId = "getGeometryVCML", description = "Returns <Geometry> as root element in VCML format.")
     public String getGeometry(@PathParam("id") String id) throws DataAccessWebException, NotFoundWebException, PermissionWebException {
         User user = userRestService.getUserOrAnonymousFromIdentity(securityIdentity);
         try{
@@ -112,7 +112,7 @@ public class GeometryResource {
     @Consumes(MediaType.APPLICATION_XML)
     @Produces(MediaType.APPLICATION_XML)
     @RolesAllowed("user")
-    @Operation(operationId = "saveGeometry")
+    @Operation(operationId = "saveGeometry", description = "Save's VCML with <Geometry> as the root element.")
     public String save(@RequestBody(name = "mathModelVCML", required = true) String mathGeometryVCML,
                        @Parameter(name = "newName", required = false, description = "Name to save new Geometry under. Leave blank if re-saving existing Geometry.")
                        @QueryParam("newName") Optional<String> newName) throws DataAccessWebException, NotAuthenticatedWebException, UnprocessableContentWebException {

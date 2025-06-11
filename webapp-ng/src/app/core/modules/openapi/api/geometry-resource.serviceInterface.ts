@@ -48,14 +48,14 @@ export interface GeometryResourceServiceInterface {
 
     /**
      * 
-     * Returns Geometry in VCML format.
+     * Returns &lt;Geometry&gt; as root element in VCML format.
      * @param id 
      */
     getGeometryVCML(id: string, extraHttpRequestParams?: any): Observable<string>;
 
     /**
      * 
-     * 
+     * Save\&#39;s VCML with &lt;Geometry&gt; as the root element.
      * @param body 
      * @param newName Name to save new Geometry under. Leave blank if re-saving existing Geometry.
      */
