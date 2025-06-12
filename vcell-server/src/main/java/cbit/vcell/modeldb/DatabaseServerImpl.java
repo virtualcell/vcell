@@ -544,7 +544,11 @@ public ReactionDescription[] getDictionaryReactions(User user, ReactionQuerySpec
  * @exception java.rmi.RemoteException The exception description.
  */
 public GeometryInfo getGeometryInfo(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return ((GeometryInfo[])getVersionInfos(user, key, VersionableType.Geometry, false, true))[0];
+	VersionInfo[] geometryInfo = getVersionInfos(user, key, VersionableType.Geometry, false, true);
+	if (geometryInfo == null || geometryInfo.length == 0) {
+		throw new ObjectNotFoundException("Geometry with key="+key+" not found");
+	}
+	return (GeometryInfo) geometryInfo[0];
 }
 
 

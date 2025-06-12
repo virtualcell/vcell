@@ -65,7 +65,7 @@ import cbit.vcell.solver.Simulation;
  */
 @SuppressWarnings("serial")
 public class BioModel implements VCDocument, Matchable, VetoableChangeListener, PropertyChangeListener,
-        Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName {
+        Identifiable, IdentifiableProvider, IssueSource, Displayable, VCellSbmlName, HasVersion {
     public static final String PROPERTY_NAME_SIMULATION_CONTEXTS = "simulationContexts";
     public final static String SIMULATION_CONTEXT_DISPLAY_NAME = "Application";
     public final static String SIMULATION_DISPLAY_NAME = "Simulation";

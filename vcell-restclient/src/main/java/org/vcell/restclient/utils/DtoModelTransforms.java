@@ -3,6 +3,7 @@ package org.vcell.restclient.utils;
 
 import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.field.io.FieldData;
+import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataIdentifier;
@@ -276,6 +277,13 @@ public class DtoModelTransforms {
                 versionDTOToVersion(summary.getVersion()), new KeyValue(summary.getKeyValue()),
                 mathModelChildSummary(summary.getModelInfo()), dtoToVCellSoftwareVersion(summary.getSoftwareVersion())
         );
+    }
+
+    public static GeometryInfo geometrySummaryToGeometryInfo(org.vcell.restclient.model.GeometrySummary summary){
+        return new GeometryInfo(DtoModelTransforms.versionDTOToVersion(summary.getVersion()),
+                summary.getDimension(), DtoModelTransforms.dtoToExtent(summary.getExtent()),
+                DtoModelTransforms.dtoToOrigin(summary.getOrigin()), new KeyValue(summary.getImageRef()),
+                DtoModelTransforms.dtoToVCellSoftwareVersion(summary.getSoftwareVersion()));
     }
 
 }

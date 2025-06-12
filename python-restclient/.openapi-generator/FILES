@@ -20,6 +20,8 @@ docs/FieldDataReference.md
 docs/FieldDataResourceApi.md
 docs/FieldDataSavedResults.md
 docs/FieldDataShape.md
+docs/GeometryResourceApi.md
+docs/GeometrySummary.md
 docs/GroupAccess.md
 docs/GroupAccessAll.md
 docs/GroupAccessNone.md
@@ -72,6 +74,7 @@ vcell_client/api/__init__.py
 vcell_client/api/admin_resource_api.py
 vcell_client/api/bio_model_resource_api.py
 vcell_client/api/field_data_resource_api.py
+vcell_client/api/geometry_resource_api.py
 vcell_client/api/hello_world_api.py
 vcell_client/api/math_model_resource_api.py
 vcell_client/api/publication_resource_api.py
@@ -99,6 +102,7 @@ vcell_client/models/field_data.py
 vcell_client/models/field_data_reference.py
 vcell_client/models/field_data_saved_results.py
 vcell_client/models/field_data_shape.py
+vcell_client/models/geometry_summary.py
 vcell_client/models/group_access.py
 vcell_client/models/group_access_all.py
 vcell_client/models/group_access_none.py

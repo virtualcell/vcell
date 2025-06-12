@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--This geometry was generated in VCML Version Rel_Version_7.7.0_build_15-->
+<vcml xmlns="http://sourceforge.net/projects/vcell/vcml" Version="Rel_Version_7.7.0_build_15">
+  <Geometry Name="TestModel" Dimension="2">
+    <Annotation>cloned from 'FRAP_geometry171328045' owned by user tutorial
+cloned from 'FRAP_geometry171328045' owned by user ACowan
+cloned from 'FRAP_geometry' owned by user Education
+cloned from 'FRAP_geometry' owned by user tutorial
+cloned from 'FRAP_geometry' owned by user susan</Annotation>
+    <Extent X="22.0" Y="22.0" Z="10.0" />
+    <Origin X="-11.0" Y="-11.0" Z="0.0" />
+    <SubVolume Name="Cyt" Handle="1" Type="Analytical" KeyValue="261945425">
+      <AnalyticExpression>(((x * x) + (y * y)) &lt; 100.0)</AnalyticExpression>
+    </SubVolume>
+    <SubVolume Name="EC" Handle="0" Type="Analytical" KeyValue="261945426">
+      <AnalyticExpression>1.0</AnalyticExpression>
+    </SubVolume>
+    <SurfaceClass Name="Cyt_EC_membrane" SubVolume1Ref="Cyt" SubVolume2Ref="EC" KeyValue="261945427" />
+    <SurfaceDescription NumSamplesX="101" NumSamplesY="101" NumSamplesZ="1" CutoffFrequency="0.3">
+      <VolumeRegion Name="EC0" RegionID="0" SubVolume="EC" Size="169.3516" Unit="um2" />
+      <VolumeRegion Name="Cyt1" RegionID="1" SubVolume="Cyt" Size="314.6484" Unit="um2" />
+      <MembraneRegion Name="membrane_EC0_Cyt1" VolumeRegion1="Cyt1" VolumeRegion2="EC0" Size="63.01392253613547" Unit="um" />
+    </SurfaceDescription>
+    <Version Name="FRAP_geometry1970985432" KeyValue="261945421" BranchId="261945422" Archived="0" Date="18-Oct-2023 07:51:26" FromVersionable="false">
+      <Owner Name="ezequiel23" Identifier="258925427" />
+      <GroupAccess Type="1" />
+      <Annotation>cloned from 'FRAP_geometry171328045' owned by user tutorial
+cloned from 'FRAP_geometry171328045' owned by user ACowan
+cloned from 'FRAP_geometry' owned by user Education
+cloned from 'FRAP_geometry' owned by user tutorial
+cloned from 'FRAP_geometry' owned by user susan</Annotation>
+    </Version>
+  </Geometry>
+</vcml>
+

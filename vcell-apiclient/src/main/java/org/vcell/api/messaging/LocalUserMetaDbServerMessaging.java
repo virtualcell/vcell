@@ -11,6 +11,7 @@
 package org.vcell.api.messaging;
 
 import cbit.vcell.field.FieldDataAllDBEntries;
+import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.message.server.bootstrap.client.RpcDbServerProxy;
 import cbit.vcell.message.server.bootstrap.client.RpcSender;
@@ -140,13 +141,10 @@ public void deleteGeometry(org.vcell.util.document.KeyValue key) throws DataAcce
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.deleteGeometry(Key="+key+")");
-		dbServerProxy.deleteGeometry(key);
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		vCellApiClient.getGeometryApi().deleteGeometry(key.toString());
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Expected error handler to throw an error.", e);
 	}
 }
 
@@ -364,13 +362,10 @@ public cbit.vcell.geometry.GeometryInfo getGeometryInfo(org.vcell.util.document.
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getGeometryInfo(key="+geoKey+")");
-		return dbServerProxy.getGeometryInfo(geoKey);
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		return DtoModelTransforms.geometrySummaryToGeometryInfo(vCellApiClient.getGeometryApi().getGeometrySummary(geoKey.toString()));
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Expected error handler to throw an error.", e);
 	}
 }
 
@@ -379,13 +374,15 @@ public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(boolean bAll) throws 
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getGeometryInfos(bAll="+bAll+")");
-		return dbServerProxy.getGeometryInfos(bAll);
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		List<GeometrySummary> summaries = vCellApiClient.getGeometryApi().getGeometrySummaries(bAll);
+		GeometryInfo[] infos = new GeometryInfo[summaries.size()];
+		for(int i = 0; i < summaries.size(); i++){
+			infos[i] = DtoModelTransforms.geometrySummaryToGeometryInfo(summaries.get(i));
+		}
+		return infos;
+	}  catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Expected error handler to throw an error.", e);
 	}
 }
 
@@ -398,14 +395,10 @@ public BigString getGeometryXML(KeyValue geometryKey) throws DataAccessException
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getGeometryXML(key="+geometryKey+")");
-		BigString geometryXML = dbServerProxy.getGeometryXML(geometryKey);
-		return geometryXML;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		return new BigString(vCellApiClient.getGeometryApi().getGeometryVCML(geometryKey.toString()));
+	}  catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Expected error handler to throw an error.", e);
 	}
 
 }
@@ -860,14 +853,10 @@ public BigString saveGeometry(BigString geometryXML) throws DataAccessException 
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.saveGeometry()");
-		BigString savedGeometryXML = dbServerProxy.saveGeometry(geometryXML);
-		return savedGeometryXML;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		return new BigString(vCellApiClient.getGeometryApi().saveGeometry(geometryXML.toString(), null));
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Expected error handler to throw an error.", e);
 	}
 
 }
@@ -881,14 +870,10 @@ public BigString saveGeometryAs(BigString geometryXML, String newName) throws Da
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.saveGeometryAs(newName="+newName+")");
-		BigString savedGeometryXML = dbServerProxy.saveGeometryAs(geometryXML,newName);
-		return savedGeometryXML;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		return new BigString(vCellApiClient.getGeometryApi().saveGeometry(geometryXML.toString(), newName));
+	}  catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Expected error handler to throw an error.", e);
 	}
 
 }

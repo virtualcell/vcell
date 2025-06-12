@@ -105,6 +105,11 @@ Class | Method | HTTP request | Description
 *FieldDataResourceApi* | [**get_all_ids**](docs/FieldDataResourceApi.md#get_all_ids) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data.
 *FieldDataResourceApi* | [**get_shape_from_id**](docs/FieldDataResourceApi.md#get_shape_from_id) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
 *FieldDataResourceApi* | [**save**](docs/FieldDataResourceApi.md#save) | **POST** /api/v1/fieldData/save | Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
+*GeometryResourceApi* | [**delete_geometry**](docs/GeometryResourceApi.md#delete_geometry) | **DELETE** /api/v1/geometry/{id} | 
+*GeometryResourceApi* | [**get_geometry_summaries**](docs/GeometryResourceApi.md#get_geometry_summaries) | **GET** /api/v1/geometry/summaries | 
+*GeometryResourceApi* | [**get_geometry_summary**](docs/GeometryResourceApi.md#get_geometry_summary) | **GET** /api/v1/geometry/summary/{id} | 
+*GeometryResourceApi* | [**get_geometry_vcml**](docs/GeometryResourceApi.md#get_geometry_vcml) | **GET** /api/v1/geometry/{id} | 
+*GeometryResourceApi* | [**save_geometry**](docs/GeometryResourceApi.md#save_geometry) | **POST** /api/v1/geometry | 
 *HelloWorldApi* | [**get_hello_world**](docs/HelloWorldApi.md#get_hello_world) | **GET** /api/v1/helloworld | Get hello world message.
 *MathModelResourceApi* | [**delete_math_model**](docs/MathModelResourceApi.md#delete_math_model) | **DELETE** /api/v1/mathModel/{id} | 
 *MathModelResourceApi* | [**get_summaries**](docs/MathModelResourceApi.md#get_summaries) | **GET** /api/v1/mathModel/summaries | 
@@ -151,6 +156,7 @@ Class | Method | HTTP request | Description
  - [FieldDataReference](docs/FieldDataReference.md)
  - [FieldDataSavedResults](docs/FieldDataSavedResults.md)
  - [FieldDataShape](docs/FieldDataShape.md)
+ - [GeometrySummary](docs/GeometrySummary.md)
  - [GroupAccess](docs/GroupAccess.md)
  - [GroupAccessAll](docs/GroupAccessAll.md)
  - [GroupAccessNone](docs/GroupAccessNone.md)
