@@ -44,9 +44,9 @@ container_env+="--env secondary_datadir_external=/share/apps/vcell7/users "
 container_env+="--env htclogdir_external=/share/apps/vcell3/htclogs "
 container_env+="--env softwareVersion=Rel_Version_7.6.0_build_28 "
 container_env+="--env serverid=REL "
-solver_docker_name=ghcr.io/virtualcell/vcell-batch:7.6.0.43
+solver_docker_name=ghcr.io/virtualcell/vcell-batch:7.6.0.43   # should be latest, like 7.7.0.27
 solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} docker://${solver_docker_name}"
-batch_docker_name=ghcr.io/virtualcell/vcell-batch:7.6.0.43
+batch_docker_name=ghcr.io/virtualcell/vcell-batch:7.6.0.43    # 7.7.0.27 or latest
 batch_container_prefix="singularity run --containall ${container_bindings} ${container_env} docker://${batch_docker_name}"
 
 
