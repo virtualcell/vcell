@@ -10,6 +10,7 @@
 
 package org.vcell.util.document;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -30,7 +31,8 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 	public enum SPECIAL_CLAIM {
 		admins/*special0*/,
 		powerUsers/*special1*/,
-		publicationEditors /*publication*/;  // users allowed to modify publications
+		publicationEditors /*publication*/,  // users allowed to modify publications
+		vcellSupport;
 
 		public static SPECIAL_CLAIM fromDatabase(String databaseString){
 			if (databaseString.equals(PREVIOUS_DATABASE_VALUE_ADMIN)){
@@ -96,6 +98,8 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 			return Arrays.asList(mySpecials).contains(SPECIAL_CLAIM.publicationEditors);
 		}
 
+		public boolean isVCellSupport() {return Arrays.asList(mySpecials).contains(SPECIAL_CLAIM.vcellSupport);}
+
 //		@Override
 //		public boolean compareEqual(Matchable obj) {
 //			// TODO Auto-generated method stub
@@ -108,6 +112,29 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 //			}
 //			return superCompare;
 //		}
+	}
+
+	/**
+	 * Builder so that the original classes claim array stays as an unmodified entity.
+	 */
+	public static class SpecialUserBuilder{
+		private final ArrayList<SPECIAL_CLAIM> claims = new ArrayList<>();
+		private final String userID;
+		private final KeyValue key;
+
+		public SpecialUserBuilder(String userID, KeyValue key) {
+			this.userID = userID;
+			this.key = key;
+		}
+
+		public SpecialUserBuilder addSpecial(SPECIAL_CLAIM special) {
+			claims.add(special);
+			return this;
+		}
+
+		public SpecialUser build() {
+			return new SpecialUser(userID,key,claims.toArray(new SPECIAL_CLAIM[]{}));
+		}
 	}
 
 	/**
