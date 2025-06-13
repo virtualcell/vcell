@@ -977,6 +977,26 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
         }
     }
 
+    public User getVCellSupportUser(boolean bEnableRetry) throws DataAccessException, java.sql.SQLException{
+
+        Object lock = new Object();
+        Connection con = conFactory.getConnection(lock);
+        try {
+            return userDB.getVCellSupportUser(con);
+        } catch(Throwable e){
+            lg.error("failure in getUser()", e);
+            if(bEnableRetry && isBadConnection(con)){
+                conFactory.failed(con, lock);
+                return getVCellSupportUser(false);
+            } else {
+                handle_DataAccessException_SQLException(e);
+                return null; // never gets here;
+            }
+        } finally {
+            conFactory.release(con, lock);
+        }
+    }
+
 
     public User getUserFromSimulationKey(KeyValue simKey, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException{
 

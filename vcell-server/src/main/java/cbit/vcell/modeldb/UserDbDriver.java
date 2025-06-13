@@ -169,11 +169,35 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 				User userFromDB = new User(userID, new KeyValue(userBD));
 				UserIdentity userIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB, "user_identity_key");
 				userIdentities.add(userIdentity);
+
+	public User getVCellSupportUser(Connection con) throws SQLException {
+		Statement stmt;
+		String sql;
+		ResultSet rset;
+		if (lg.isTraceEnabled()) {
+			lg.trace("UserDbDriver.getIdentitiesFromUser(userid=" + PropertyLoader.VCELL_SUPPORT_USERID + ")");
+		}
+		sql = 	"SELECT " + UserTable.table.userid.getUnqualifiedColName() + "," +
+				UserTable.table.id.getUnqualifiedColName() +
+				" FROM " + userTable.getTableName() +
+				" WHERE " + UserTable.table.userid.getUnqualifiedColName() + "=" + "'" + PropertyLoader.VCELL_SUPPORT_USERID + "'";
+
+		System.out.println(sql);
+		if (lg.isTraceEnabled()) {
+			lg.trace(sql);
+		}
+		stmt = con.createStatement();
+		try {
+			rset = stmt.executeQuery(sql);
+			if (rset.next()) {
+				BigDecimal userBD = rset.getBigDecimal(UserTable.table.id.getUnqualifiedColName());
+				return new User(PropertyLoader.VCELL_SUPPORT_USERID, new KeyValue(userBD));
+			} else {
+				throw new SQLException("VCell Support not found");
 			}
 		} finally {
 			stmt.close();
 		}
-		return userIdentities;
 	}
 
 	public List<UserIdentity> getUserIdentitiesFromUser(Connection con, User user) throws SQLException {
