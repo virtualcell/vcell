@@ -145,14 +145,15 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 			lg.trace("UserDbDriver.getUserIdentityFromSubjectAndIssuer(userid=" + subject + ")");
 		}
 		sql = 	"SELECT " + UserTable.table.userid.getUnqualifiedColName() + "," +
-				UserIdentityTable.userRef.getUnqualifiedColName() + "," +
-				UserIdentityTable.authSubject.getUnqualifiedColName() + "," +
-				UserIdentityTable.authIssuer.getUnqualifiedColName() + "," +
+				UserIdentityTable.userRef.getQualifiedColName() + "," +
 				UserIdentityTable.table.id.getQualifiedColName() + " as user_identity_key " + "," +
-				UserIdentityTable.insertDate.getQualifiedColName() +
+				UserIdentityTable.insertDate.getQualifiedColName() + "," +
+				SpecialUsersTable.table.special.getQualifiedColName() +
 				" FROM " + userTable.getTableName() +
 				" JOIN " + UserIdentityTable.table.getTableName() +
 				" ON " + UserIdentityTable.table.userRef.getUnqualifiedColName()+"="+userTable.id.getQualifiedColName() +
+				" LEFT JOIN " + SpecialUsersTable.table.getTableName() +
+				" ON " + SpecialUsersTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
 				" WHERE " + UserIdentityTable.authSubject.getUnqualifiedColName() + " = '" + subject + "'" +
 				" AND " + UserIdentityTable.authIssuer.getUnqualifiedColName() + " = '" + issuer + "'";
 
@@ -160,15 +161,38 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 			lg.trace(sql);
 		}
 		stmt = con.createStatement();
-		ArrayList<UserIdentity> userIdentities = new ArrayList<>();
+		ArrayList<UserIdentityBuilder> userIdentities = new ArrayList<>();
 		try {
 			rset = stmt.executeQuery(sql);
 			while (rset.next()) {
-				BigDecimal userBD = rset.getBigDecimal(UserIdentityTable.userRef.getUnqualifiedColName());
-				String userID = rset.getString(UserTable.table.userid.getUnqualifiedColName());
-				User userFromDB = new User(userID, new KeyValue(userBD));
-				UserIdentity userIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB, "user_identity_key");
-				userIdentities.add(userIdentity);
+				BigDecimal userKey = rset.getBigDecimal(UserIdentityTable.userRef.getUnqualifiedColName());
+				String claim = rset.getString(SpecialUsersTable.table.special.getUnqualifiedColName());
+
+				int lastUserAdded = userIdentities.size()-1;
+				boolean sameUser = !userIdentities.isEmpty() && userIdentities.get(lastUserAdded).getId().equals(userKey);
+				if (sameUser && claim != null){
+					userIdentities.get(lastUserAdded).getUserBuilder().addSpecial(User.SPECIAL_CLAIM.fromDatabase(claim));
+				} else{
+					String userID = rset.getString(UserTable.table.userid.getUnqualifiedColName());
+					User.SpecialUserBuilder builder = new User.SpecialUserBuilder(userID, new KeyValue(userKey));
+					if (claim != null){
+						builder.addSpecial(User.SPECIAL_CLAIM.fromDatabase(claim));
+					}
+					userIdentities.add(new UserIdentityBuilder(userKey, builder,
+							subject, issuer, UserIdentityTable.table.getUserIdentityDate(rset)));
+				}
+			}
+		} finally {
+			stmt.close();
+		}
+
+		ArrayList<UserIdentity> identities = new ArrayList<>();
+		for (UserIdentityBuilder userIdentityBuilder : userIdentities) {
+			identities.add(userIdentityBuilder.build());
+		}
+
+		return identities;
+	}
 
 	public User getVCellSupportUser(Connection con) throws SQLException {
 		Statement stmt;
