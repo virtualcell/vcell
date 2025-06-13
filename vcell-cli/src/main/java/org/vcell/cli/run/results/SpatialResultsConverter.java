@@ -25,8 +25,8 @@ import java.util.*;
 public class SpatialResultsConverter extends ResultsConverter {
     private final static Logger logger = LogManager.getLogger(SpatialResultsConverter.class);
 
-    public static Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> organizeSpatialResultsBySedmlDataGenerator(SedML sedml, Map<TaskJob, SpatialSBMLSimResults> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, MathException, IOException, ExecutionException, DataAccessException {
-        Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> spatialOrganizedResultsMap = new HashMap<>();
+    public static Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> organizeSpatialResultsBySedmlDataGenerator(SedML sedml, Map<TaskJob, SpatialSBMLSimResults> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, MathException, IOException, ExecutionException, DataAccessException {
+        Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> spatialOrganizedResultsMap = new HashMap<>();
         if (spatialResultsHash.isEmpty()) return spatialOrganizedResultsMap;
 
         for (Output output : ResultsConverter.getValidOutputs(sedml)){
@@ -52,7 +52,7 @@ public class SpatialResultsConverter extends ResultsConverter {
             }
 
             for (DataGenerator dataGen : dataGeneratorsToProcess) {
-                ValueHolder<LazySBMLSpatialDataAccessor> valueHolder = SpatialResultsConverter.getSpatialValueHolderForDataGenerator(sedml, dataGen, spatialResultsHash, taskToSimulationMap);
+                ValueHolder<LazySBMLDataAccessor> valueHolder = SpatialResultsConverter.getSpatialValueHolderForDataGenerator(sedml, dataGen, spatialResultsHash, taskToSimulationMap);
                 // if (valueHolder == null) continue; // We don't want this, we want nulls to pass through for later processing.
                 spatialOrganizedResultsMap.put(dataGen, valueHolder);
             }
@@ -61,7 +61,7 @@ public class SpatialResultsConverter extends ResultsConverter {
         return spatialOrganizedResultsMap;
     }
 
-    public static Map<Report, List<Hdf5SedmlResults>> prepareSpatialDataForHdf5(SedML sedml, Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> spatialResultsMapping,
+    public static Map<Report, List<Hdf5SedmlResults>> prepareSpatialDataForHdf5(SedML sedml, Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> spatialResultsMapping,
                                                                                    Set<DataGenerator> allValidDataGenerators, String sedmlLocation, boolean isBioSimMode) {
         Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
         if (spatialResultsMapping.isEmpty()){
@@ -99,7 +99,7 @@ public class SpatialResultsConverter extends ResultsConverter {
                 continue;
             }
 
-            List<String> shapes = new LinkedList<>();
+
             Hdf5SedmlResultsSpatial dataSourceSpatial = new Hdf5SedmlResultsSpatial();
             Hdf5SedmlResults hdf5DatasetWrapper = new Hdf5SedmlResults();
 
@@ -117,7 +117,7 @@ public class SpatialResultsConverter extends ResultsConverter {
 
             for (DataSet dataSet : refinedDataSets){
                 ValueHolder<LazySBMLDataAccessor> dataSetValuesSource = dataSetValues.get(dataSet);
-
+                List<String> shapes = new LinkedList<>();
                 dataSourceSpatial.dataItems.put(report, dataSet, new LinkedList<>());
                 dataSourceSpatial.scanBounds = dataSetValuesSource.vcSimulation.getMathOverrides().getScanBounds();
                 dataSourceSpatial.scanParameterNames = dataSetValuesSource.vcSimulation.getMathOverrides().getScannedConstantNames();
@@ -137,7 +137,11 @@ public class SpatialResultsConverter extends ResultsConverter {
                     if (!(data instanceof LazySBMLSpatialDataAccessor spatialData))
                         throw new IllegalArgumentException("Non-spatial data somehow got into spatial data!");
                     dataSourceSpatial.dataItems.get(report, dataSet).add(spatialData);
-                    shapes.add(Integer.toString(data.getFlatSize()));
+                    List<String> subShapes = new LinkedList<>();
+                    subShapes.add(Integer.toString(data.getDesiredTimes().size()));
+                    subShapes.addAll(data.getSpatialDimensions().stream().map(String::valueOf).filter((x)->!"1".equals(x)).toList());
+                    if (1 == subShapes.size()) shapes.add(subShapes.get(0));
+                    shapes.add(1 == subShapes.size() ? subShapes.get(0) : "[" + String.join(",", subShapes) + "]");
                 }
 
                 hdf5DatasetWrapper.dataSource = dataSourceSpatial; // Using upcasting
@@ -147,7 +151,8 @@ public class SpatialResultsConverter extends ResultsConverter {
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetLabels.add(dataSet.getLabel());
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName());
 
-                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes.add("(" + String.join(", ", shapes)+ ")");
+                String shapesStr = "(" + String.join(",", shapes) + ")";
+                hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes.add(shapesStr);
             }
 
             if (!results.containsKey(report)) results.put(report, new LinkedList<>());
@@ -156,11 +161,11 @@ public class SpatialResultsConverter extends ResultsConverter {
         return results;
     }
 
-    private static ValueHolder<LazySBMLSpatialDataAccessor> getSpatialValueHolderForDataGenerator(SedML sedml, DataGenerator dataGen,
+    private static ValueHolder<LazySBMLDataAccessor> getSpatialValueHolderForDataGenerator(SedML sedml, DataGenerator dataGen,
                                                                                   Map<TaskJob, SpatialSBMLSimResults> spatialResultsHash,
                                                                                   Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, ExecutionException, MathException, IOException, DataAccessException {
         if (dataGen == null) throw new IllegalArgumentException("Provided Data Generator can not be null!");
-        Map<Variable, ValueHolder<LazySBMLSpatialDataAccessor>> resultsByVariable = new HashMap<>();
+        Map<Variable, ValueHolder<LazySBMLDataAccessor>> resultsByVariable = new HashMap<>();
         int maxLengthOfData = 0;
 
         // get the list of variables associated with the data reference
@@ -204,12 +209,12 @@ public class SpatialResultsConverter extends ResultsConverter {
             if (taskJobs.isEmpty()) continue;
 
             boolean resultsAlreadyExist = topLevelTask instanceof RepeatedTask && resultsByVariable.containsKey(var);
-            ValueHolder<LazySBMLSpatialDataAccessor> individualVarResultsHolder = resultsAlreadyExist ? resultsByVariable.get(var) :
+            ValueHolder<LazySBMLDataAccessor> individualVarResultsHolder = resultsAlreadyExist ? resultsByVariable.get(var) :
                     new ValueHolder<>(taskToSimulationMap.get(topLevelTask));
             for (TaskJob taskJob : taskJobs) {
                 // Leaving intermediate variables for debugging access
                 SpatialSBMLSimResults spatialResults = spatialResultsHash.get(taskJob);
-                LazySBMLSpatialDataAccessor dataAccessor = spatialResults.getSBMLDataAccessor(vcellVarId, utcSim);
+                LazySBMLDataAccessor dataAccessor = spatialResults.getSBMLDataAccessor(vcellVarId, utcSim);
                 individualVarResultsHolder.listOfResultSets.add(dataAccessor);
                 int localMax;
                 if ((localMax = spatialResults.getMaxDataFlatLength()) > maxLengthOfData) maxLengthOfData = localMax;
