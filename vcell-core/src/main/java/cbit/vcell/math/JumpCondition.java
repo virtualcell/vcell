@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import jscl.math.function.Exp;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -213,4 +214,21 @@ public void checkValid(MathDescription mathDesc, SubDomain subDomain) throws Mat
 	expList.add(outFluxExp);
 	checkValid_Membrane(mathDesc, expList, (MembraneSubDomain)subDomain);
 }
+
+    public JumpCondition deepClone() {
+		final JumpCondition jumpCondition;
+		if (getVariable() instanceof VolVariable volVar){
+			jumpCondition = new JumpCondition(volVar);
+		}else if (getVariable() instanceof VolumeRegionVariable volRegVar){
+			jumpCondition = new JumpCondition(volRegVar);
+		}else{
+			throw new RuntimeException("JumpCondition deepClone() - unexpected variable type: " + getVariable().getClass().getName());
+		}
+		jumpCondition.setInFlux(Expression.clone(getInFluxExpression()));
+		jumpCondition.setOutFlux(Expression.clone(getOutFluxExpression()));
+		jumpCondition.setInitialExpression(Expression.clone(getInitialExpression()));
+		jumpCondition.setRateExpression(Expression.clone(getRateExpression()));
+		jumpCondition.setExactSolution(Expression.clone(getExactSolution()));
+		return jumpCondition;
+    }
 }

@@ -633,7 +633,7 @@ public class ClientRequestManager
 	public XmlTreeDiff compareApplications(BioModel bioModel, String appName1, String appName2) throws Exception {
 
 		// clone BioModel as bioModel1 and remove all but appName1
-		BioModel bioModel1 = (BioModel) BeanUtils.cloneSerializable(bioModel);
+		BioModel bioModel1 = XmlHelper.cloneBioModel(bioModel);
 		bioModel1.refreshDependencies();
 		SimulationContext[] allSimContexts1 = bioModel1.getSimulationContexts();
 		for (SimulationContext sc : allSimContexts1) {
@@ -643,7 +643,7 @@ public class ClientRequestManager
 		}
 
 		// clone BioModel as bioModel2 and remove all but appName2
-		BioModel bioModel2 = (BioModel) BeanUtils.cloneSerializable(bioModel);
+		BioModel bioModel2 = XmlHelper.cloneBioModel(bioModel);
 		bioModel2.refreshDependencies();
 		SimulationContext[] allSimContexts2 = bioModel2.getSimulationContexts();
 		for (SimulationContext sc : allSimContexts2) {
