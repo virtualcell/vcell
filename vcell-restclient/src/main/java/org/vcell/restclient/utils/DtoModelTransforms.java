@@ -8,6 +8,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataIdentifier;
 import org.vcell.restclient.model.*;
+import org.vcell.restclient.model.SpecialUser;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.document.*;
@@ -113,6 +114,13 @@ public class DtoModelTransforms {
     }
 
     public static User dtoToUser(org.vcell.restclient.model.User dto){
+        if (dto instanceof SpecialUser sp && sp.getMySpecials() != null) {
+            org.vcell.util.document.SpecialUser.SpecialUserBuilder builder = new org.vcell.util.document.SpecialUser.SpecialUserBuilder(dto.getUserName(), new KeyValue(dto.getKey()));
+            for (SPECIALCLAIM claim : sp.getMySpecials()){
+                builder.addSpecial(org.vcell.util.document.SpecialUser.SPECIAL_CLAIM.valueOf(claim.getValue()));
+            }
+            return builder.build();
+        }
         return new User(dto.getUserName(), new KeyValue(dto.getKey()));
     }
 

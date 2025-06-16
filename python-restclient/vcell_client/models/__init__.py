@@ -48,6 +48,7 @@ from vcell_client.models.model_type import ModelType
 from vcell_client.models.origin import Origin
 from vcell_client.models.publication import Publication
 from vcell_client.models.publication_info import PublicationInfo
+from vcell_client.models.specialclaim import SPECIALCLAIM
 from vcell_client.models.scheduler_status import SchedulerStatus
 from vcell_client.models.simulation_execution_status_record import SimulationExecutionStatusRecord
 from vcell_client.models.simulation_job_status_record import SimulationJobStatusRecord
@@ -56,6 +57,7 @@ from vcell_client.models.simulation_queue_entry_status_record import SimulationQ
 from vcell_client.models.simulation_queue_id import SimulationQueueID
 from vcell_client.models.simulation_status_persistent_record import SimulationStatusPersistentRecord
 from vcell_client.models.source_model import SourceModel
+from vcell_client.models.special_user import SpecialUser
 from vcell_client.models.status import Status
 from vcell_client.models.status_message import StatusMessage
 from vcell_client.models.user import User

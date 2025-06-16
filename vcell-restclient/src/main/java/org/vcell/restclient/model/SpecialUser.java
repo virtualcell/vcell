@@ -27,18 +27,21 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import org.vcell.restclient.model.SPECIALCLAIM;
+import org.vcell.restclient.model.User;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
 import org.vcell.restclient.JSON;
 /**
- * User
+ * SpecialUser
  */
 @JsonPropertyOrder({
-  User.JSON_PROPERTY_IS_SPECIAL,
-  User.JSON_PROPERTY_USER_NAME,
-  User.JSON_PROPERTY_KEY
+  SpecialUser.JSON_PROPERTY_IS_SPECIAL,
+  SpecialUser.JSON_PROPERTY_MY_SPECIALS
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 @JsonIgnoreProperties(
@@ -46,25 +49,18 @@ import org.vcell.restclient.JSON;
   allowSetters = true // allows the isSpecial to be set during deserialization
 )
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "isSpecial", visible = true)
-@JsonSubTypes({
-  @JsonSubTypes.Type(value = User.class, name = "no"),
-  @JsonSubTypes.Type(value = SpecialUser.class, name = "yes"),
-})
 
-public class User {
+public class SpecialUser extends User {
   public static final String JSON_PROPERTY_IS_SPECIAL = "isSpecial";
-  private String isSpecial = "no";
+  private String isSpecial = "yes";
 
-  public static final String JSON_PROPERTY_USER_NAME = "userName";
-  private String userName;
+  public static final String JSON_PROPERTY_MY_SPECIALS = "mySpecials";
+  private List<SPECIALCLAIM> mySpecials;
 
-  public static final String JSON_PROPERTY_KEY = "key";
-  private String key;
-
-  public User() { 
+  public SpecialUser() { 
   }
 
-  public User isSpecial(String isSpecial) {
+  public SpecialUser isSpecial(String isSpecial) {
     this.isSpecial = isSpecial;
     return this;
   }
@@ -89,58 +85,53 @@ public class User {
   }
 
 
-  public User userName(String userName) {
-    this.userName = userName;
+  public SpecialUser mySpecials(List<SPECIALCLAIM> mySpecials) {
+    this.mySpecials = mySpecials;
+    return this;
+  }
+
+  public SpecialUser addMySpecialsItem(SPECIALCLAIM mySpecialsItem) {
+    if (this.mySpecials == null) {
+      this.mySpecials = new ArrayList<>();
+    }
+    this.mySpecials.add(mySpecialsItem);
     return this;
   }
 
    /**
-   * Get userName
-   * @return userName
+   * Get mySpecials
+   * @return mySpecials
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_USER_NAME)
+  @JsonProperty(JSON_PROPERTY_MY_SPECIALS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public String getUserName() {
-    return userName;
+  public List<SPECIALCLAIM> getMySpecials() {
+    return mySpecials;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_USER_NAME)
+  @JsonProperty(JSON_PROPERTY_MY_SPECIALS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setUserName(String userName) {
-    this.userName = userName;
+  public void setMySpecials(List<SPECIALCLAIM> mySpecials) {
+    this.mySpecials = mySpecials;
   }
 
 
-  public User key(String key) {
-    this.key = key;
+  @Override
+  public SpecialUser userName(String userName) {
+    this.setUserName(userName);
     return this;
   }
 
-   /**
-   * Get key
-   * @return key
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_KEY)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public String getKey() {
-    return key;
+  @Override
+  public SpecialUser key(String key) {
+    this.setKey(key);
+    return this;
   }
-
-
-  @JsonProperty(JSON_PROPERTY_KEY)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setKey(String key) {
-    this.key = key;
-  }
-
 
   /**
-   * Return true if this User object is equal to o.
+   * Return true if this SpecialUser object is equal to o.
    */
   @Override
   public boolean equals(Object o) {
@@ -150,24 +141,24 @@ public class User {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    User user = (User) o;
-    return Objects.equals(this.isSpecial, user.isSpecial) &&
-        Objects.equals(this.userName, user.userName) &&
-        Objects.equals(this.key, user.key);
+    SpecialUser specialUser = (SpecialUser) o;
+    return Objects.equals(this.isSpecial, specialUser.isSpecial) &&
+        Objects.equals(this.mySpecials, specialUser.mySpecials) &&
+        super.equals(o);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(isSpecial, userName, key);
+    return Objects.hash(isSpecial, mySpecials, super.hashCode());
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append("class User {\n");
+    sb.append("class SpecialUser {\n");
+    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("    isSpecial: ").append(toIndentedString(isSpecial)).append("\n");
-    sb.append("    userName: ").append(toIndentedString(userName)).append("\n");
-    sb.append("    key: ").append(toIndentedString(key)).append("\n");
+    sb.append("    mySpecials: ").append(toIndentedString(mySpecials)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -235,10 +226,8 @@ public class User {
 static {
   // Initialize and register the discriminator mappings.
   Map<String, Class<?>> mappings = new HashMap<String, Class<?>>();
-  mappings.put("no", User.class);
-  mappings.put("yes", SpecialUser.class);
-  mappings.put("User", User.class);
-  JSON.registerDiscriminator(User.class, "isSpecial", mappings);
+  mappings.put("SpecialUser", SpecialUser.class);
+  JSON.registerDiscriminator(SpecialUser.class, "isSpecial", mappings);
 }
 }
 

@@ -9,11 +9,12 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { SPECIALCLAIM } from './specialclaim';
+import { User } from './user';
 
 
-export interface User { 
+export interface SpecialUser extends User { 
     isSpecial: string;
-    userName?: string;
-    key?: string;
+    mySpecials?: Array<SPECIALCLAIM>;
 }
 

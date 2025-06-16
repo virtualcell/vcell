@@ -41,6 +41,7 @@ docs/Origin.md
 docs/Publication.md
 docs/PublicationInfo.md
 docs/PublicationResourceApi.md
+docs/SPECIALCLAIM.md
 docs/SchedulerStatus.md
 docs/SimulationExecutionStatusRecord.md
 docs/SimulationJobStatusRecord.md
@@ -51,6 +52,7 @@ docs/SimulationResourceApi.md
 docs/SimulationStatusPersistentRecord.md
 docs/SolverResourceApi.md
 docs/SourceModel.md
+docs/SpecialUser.md
 docs/Status.md
 docs/StatusMessage.md
 docs/User.md
@@ -121,6 +123,7 @@ src/main/java/org/vcell/restclient/model/ModelType.java
 src/main/java/org/vcell/restclient/model/Origin.java
 src/main/java/org/vcell/restclient/model/Publication.java
 src/main/java/org/vcell/restclient/model/PublicationInfo.java
+src/main/java/org/vcell/restclient/model/SPECIALCLAIM.java
 src/main/java/org/vcell/restclient/model/SchedulerStatus.java
 src/main/java/org/vcell/restclient/model/SimulationExecutionStatusRecord.java
 src/main/java/org/vcell/restclient/model/SimulationJobStatusRecord.java
@@ -129,6 +132,7 @@ src/main/java/org/vcell/restclient/model/SimulationQueueEntryStatusRecord.java
 src/main/java/org/vcell/restclient/model/SimulationQueueID.java
 src/main/java/org/vcell/restclient/model/SimulationStatusPersistentRecord.java
 src/main/java/org/vcell/restclient/model/SourceModel.java
+src/main/java/org/vcell/restclient/model/SpecialUser.java
 src/main/java/org/vcell/restclient/model/Status.java
 src/main/java/org/vcell/restclient/model/StatusMessage.java
 src/main/java/org/vcell/restclient/model/User.java

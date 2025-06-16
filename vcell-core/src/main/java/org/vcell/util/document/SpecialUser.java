@@ -1,5 +1,9 @@
 package org.vcell.util.document;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.vcell.util.Immutable;
 import org.vcell.util.Matchable;
 
@@ -7,10 +11,14 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+
+@Schema(allOf = {User.class}, requiredProperties = {"isSpecial"}, properties = {@SchemaProperty(name = "isSpecial", defaultValue = "yes", type = SchemaType.STRING)})
 public class SpecialUser extends User implements Serializable, Matchable, Immutable {
     private final static String PREVIOUS_DATABASE_VALUE_ADMIN = "special0";
     private final static String PREVIOUS_DATABASE_VALUE_POWERUSER = "special1";
     private final static String PREVIOUS_DATABASE_VALUE_PUBLICATION = "publication";
+
+    public final String isSpecial = "yes";
 
     public enum SPECIAL_CLAIM {
         admins/*special0*/,
@@ -47,14 +55,17 @@ public class SpecialUser extends User implements Serializable, Matchable, Immuta
         return mySpecials;
     }
 
+    @JsonIgnore
     public boolean isAdmin() {
         return Arrays.asList(mySpecials).contains(SPECIAL_CLAIM.admins);
     }
 
+    @JsonIgnore
     public boolean isPublisher() {
         return Arrays.asList(mySpecials).contains(SPECIAL_CLAIM.publicationEditors);
     }
 
+    @JsonIgnore
     public boolean isVCellSupport() {
         return Arrays.asList(mySpecials).contains(SPECIAL_CLAIM.vcellSupport);
     }
