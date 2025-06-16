@@ -93,14 +93,17 @@ INSERT INTO vc_userinfo VALUES ( 2,'Administrator','1700596370260','Administrato
 INSERT INTO vc_userinfo VALUES ( 3,'vcellNagios','1700596370261','vcellNagios@example.com','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'A93453F7962799355608EC89D33D3249474E538F' );
 INSERT INTO vc_userinfo VALUES ( 4,'VCellSupport','1714152297847','VCellSupport@example.com','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'C525EF5192F5DF966D0C891224EC5412FC6FD518' );
 INSERT INTO vc_userinfo VALUES ( 140220477,'vcellguest','1700596370260','vcellguest@example.com','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'CD181552B879A2F29D10434D8ACF692B6C8126F9' );
+INSERT INTO vc_userinfo VALUES ( 5,'randomUser','1700596370260','user@example.com','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'CD181552B879A2F29D10434D8ACF692B6C8126F9' );
 INSERT INTO vc_group VALUES (5,1,0,0,1);
 INSERT INTO vc_group VALUES (6,0,0,0,0);
 INSERT INTO vc_available VALUES (7,current_timestamp,'true',NULL,NULL);
 INSERT INTO vc_apiclient VALUES (8,'defaultApiClient','85133f8d-26f7-4247-8356-d175399fc2e6','98d000d6-adff-4f8f-a00e-6c28dbd8c571');
 INSERT INTO vc_useridentity VALUES ( 9, 2,'auth0|65cb6311365d79c2fb96a005', 'https://dev-dzhx7i2db3x3kkvq.us.auth0.com/', CURRENT_TIMESTAMP);
+INSERT INTO vc_useridentity VALUES ( 10, 5,'auth0|13432432432bv2344b962345', 'https://dev-dzhx7i2db3x3kkvq.us.auth0.com/', CURRENT_TIMESTAMP);
 INSERT INTO vc_specialusers VALUES ( 10,'publicationEditors',2,NULL);
 INSERT INTO vc_specialusers VALUES ( 11,'powerUsers',2,NULL);
 INSERT INTO vc_specialusers VALUES ( 12,'admins',2,NULL);
+INSERT INTO vc_specialusers VALUES ( 13,'vcellSupport',2,NULL);
 
 INSERT INTO vc_userinfo VALUES ( 20,'dev0','1714152297847','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'C525EF5192F5DF966D0C891224EC5412FC6FD518' );
 INSERT INTO vc_useridentity VALUES ( 21, 20,'google-oauth2|107511464785168320004', 'https://dev-dzhx7i2db3x3kkvq.us.auth0.com/', CURRENT_TIMESTAMP);
@@ -108,5 +111,3 @@ INSERT INTO vc_specialusers VALUES ( 22,'publicationEditors',20,NULL);
 INSERT INTO vc_specialusers VALUES ( 23,'powerUsers',20,NULL);
 INSERT INTO vc_specialusers VALUES ( 24,'admins',20,NULL);
 INSERT INTO vc_publication VALUES ( 25,'Numerical Approach to Spatial Deterministic-Stochastic Models Arising in Cell Biology','Schaff, J.C., Gao, F., Li, Y., Novak, I.L., Slepchenko, B.M.',2016,'Schaff JC, Gao F, Li Y, Novak IL, Slepchenko BM. Numerical Approach to Spatial Deterministic-Stochastic Models Arising in Cell Biology. PLoS Comput Biol. 2016 Dec 13;12(12):e1005236. doi: 10.1371/journal.pcbi.1005236. PMID: 27959915; PMCID: PMC5154471.','27959915','10.1371/journal.pcbi.1005236',NULL,'http://www.vcell.org',NULL,CURRENT_TIMESTAMP );
-INSERT INTO vc_model VALUES ( 26,'ModelName',4,0,NULL,CURRENT_TIMESTAMP,0,NULL,27,NULL,NULL,NULL );
-INSERT INTO vc_biomodel VALUES ( 28,'BioModelName',4,0,NULL,CURRENT_TIMESTAMP,0,NULL,29,26,NULL,NULL );

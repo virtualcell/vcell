@@ -43,10 +43,12 @@ import java.util.Objects;
 
 public class TestEndpointUtils {
 
-    public static final String userAdminID = "2";
-    public static final String userNagiosID = "3";
-    public static final User vcellNagiosUser = new User("vcellNagios", new KeyValue(userNagiosID));
-    public static final User administratorUser = new User("Administrator", new KeyValue(userAdminID));
+    public static final String userAdminKey = "2";
+    public static final String userNagiosKey = "3";
+    public static final User vcellNagiosUser = new User("vcellNagios", new KeyValue(userNagiosKey));
+    public static final User administratorUser = new User("Administrator", new KeyValue(userAdminKey));
+    public static final User vcellSupportUser = new User("VCellSupport", new KeyValue("4"));
+    public static final User randomUser = new User("randomUser", new KeyValue("5"));
 
     public static final UserLoginInfoForMapping vcellNagiosUserLoginInfo = new UserLoginInfoForMapping().userID("vcellNagios").password("1700596370261");
     public static final UserLoginInfoForMapping administratorUserLoginInfo = new UserLoginInfoForMapping().userID("Administrator").password("1700596370260");
