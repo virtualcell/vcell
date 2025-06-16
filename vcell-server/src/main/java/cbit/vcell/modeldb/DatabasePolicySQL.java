@@ -15,6 +15,7 @@ import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
+import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
 
 import cbit.sql.Field;
@@ -303,6 +304,10 @@ public static String enforceOwnershipUpdate(User user, VersionTable vTable, Stri
 
 static String getVTableDirectSelectClause(VersionTable vTable,User user) {
 
+	String vcellSupportClause = "";
+	if (user instanceof SpecialUser specialUser && specialUser.isVCellSupport()){
+		vcellSupportClause = " OR " + GroupTable.table.userRef.getQualifiedColName() + " = " + PropertyLoader.getRequiredProperty(PropertyLoader.vcellSupportId);
+	}
 	String sql = 	" ( "+
 						vTable.privacy.getQualifiedColName() + " = " + GroupTable.table.groupid.getQualifiedColName() +
 						" AND " +
@@ -321,6 +326,9 @@ static String getVTableDirectSelectClause(VersionTable vTable,User user) {
 							// this user is in the access control list for this object
 							//
 							GroupTable.table.userRef.getQualifiedColName() + " = " + user.getID() +
+							//
+							//
+							vcellSupportClause +
 						" ) "+
 					" ) ";
 	return sql;
