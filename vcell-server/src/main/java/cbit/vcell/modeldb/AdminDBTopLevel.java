@@ -838,27 +838,6 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
         }
     }
 
-    public List<UserIdentity> getUserIdentitiesFromUser(User user, boolean bEnableRetry)
-            throws DataAccessException, java.sql.SQLException{
-
-        Object lock = new Object();
-        Connection con = conFactory.getConnection(lock);
-        try {
-            return userDB.getUserIdentitiesFromUser(con, user);
-        } catch(Throwable e){
-            lg.error("failure in getUserIdentitiesFromUser()", e);
-            if(bEnableRetry && isBadConnection(con)){
-                conFactory.failed(con, lock);
-                return getUserIdentitiesFromUser(user, false);
-            } else {
-                handle_DataAccessException_SQLException(e);
-                return null; // never gets here;
-            }
-        } finally {
-            conFactory.release(con, lock);
-        }
-    }
-
 
     public ApiAccessToken generateApiAccessToken(KeyValue apiClientKey, User user, Date expirationDate, boolean bEnableRetry)
             throws DataAccessException, java.sql.SQLException, ObjectNotFoundException{

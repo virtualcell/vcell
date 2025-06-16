@@ -221,7 +221,7 @@ public SpecialUser getUserFromUserid(Connection con, String userid) throws SQLEx
 		}
 	}
 
-	public List<UserIdentity> getUserIdentitiesFromUser(Connection con, User user) throws SQLException {
+	private List<UserIdentity> getUserIdentitiesFromUser(Connection con, User user) throws SQLException {
 		Statement stmt;
 		String sql;
 		ResultSet rset;

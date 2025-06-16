@@ -54,21 +54,11 @@ public class TestEndpointUtils {
     public static final UserLoginInfoForMapping administratorUserLoginInfo = new UserLoginInfoForMapping().userID("Administrator").password("1700596370260");
 
     public static void removeAllMappings(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
-        AdminDBTopLevel adminDBTopLevel = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()).getAdminDBTopLevel();
-        adminDBTopLevel.getUserIdentitiesFromUser(TestEndpointUtils.vcellNagiosUser, true).stream().forEach(userIdentity -> {
-            try {
-                adminDBTopLevel.deleteUserIdentity(userIdentity.user(), userIdentity.subject(), userIdentity.issuer(), true);
-            } catch (SQLException | DataAccessException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        adminDBTopLevel.getUserIdentitiesFromUser(TestEndpointUtils.administratorUser, true).stream().forEach(userIdentity -> {
-            try {
-                adminDBTopLevel.deleteUserIdentity(userIdentity.user(), userIdentity.subject(), userIdentity.issuer(), true);
-            } catch (SQLException | DataAccessException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        Object object = new Object();
+        Connection connection = agroalConnectionFactory.getConnection(object);
+        connection.prepareStatement("DELETE FROM VC_USERIDENTITY").execute();
+        connection.commit();
+        connection.close();
     }
 
     public static void mapApiClientToAdmin(ApiClient apiClient) throws ApiException {
