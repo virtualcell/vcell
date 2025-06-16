@@ -26,10 +26,7 @@ import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.UserInfo;
-import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.*;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
@@ -54,7 +51,7 @@ public UserDbDriver() {
 }
 
 
-public User.SpecialUser getUserFromUserid(Connection con, String userid) throws SQLException {
+public SpecialUser getUserFromUserid(Connection con, String userid) throws SQLException {
 	PreparedStatement pstmt;
 	String sql;
 	ResultSet rset;
@@ -73,7 +70,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	pstmt = con.prepareStatement(sql);
 	pstmt.setString(1, userid);
 	BigDecimal userKey = null;
-	ArrayList<User.SPECIAL_CLAIM> specials = new ArrayList<>();
+	ArrayList<SpecialUser.SPECIAL_CLAIM> specials = new ArrayList<>();
 	try {
 		rset = pstmt.executeQuery();
 		while (rset.next()) {
@@ -86,7 +83,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 			String special = rset.getString("special");
 			if(!rset.wasNull()) {
 				try {
-					specials.add(User.SPECIAL_CLAIM.fromDatabase(special));
+					specials.add(SpecialUser.SPECIAL_CLAIM.fromDatabase(special));
 				}catch(Exception e) {
 					//keep going
 					lg.error(e.getMessage(), e);
@@ -99,7 +96,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	if(userKey == null) {
 		return null;
 	}
-	return new User.SpecialUser(userid, new KeyValue(userKey),specials.toArray(new User.SPECIAL_CLAIM[0]));
+	return new SpecialUser(userid, new KeyValue(userKey),specials.toArray(new SpecialUser.SPECIAL_CLAIM[0]));
 }
 
 	public boolean removeUserIdentity(Connection con, User user, String authSubject, String authIssuer) throws SQLException {
@@ -171,12 +168,12 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 				int lastUserAdded = userIdentities.size()-1;
 				boolean sameUser = !userIdentities.isEmpty() && userIdentities.get(lastUserAdded).getId().equals(userKey);
 				if (sameUser && claim != null){
-					userIdentities.get(lastUserAdded).getUserBuilder().addSpecial(User.SPECIAL_CLAIM.fromDatabase(claim));
+					userIdentities.get(lastUserAdded).getUserBuilder().addSpecial(SpecialUser.SPECIAL_CLAIM.fromDatabase(claim));
 				} else{
 					String userID = rset.getString(UserTable.table.userid.getUnqualifiedColName());
-					User.SpecialUserBuilder builder = new User.SpecialUserBuilder(userID, new KeyValue(userKey));
+					SpecialUser.SpecialUserBuilder builder = new SpecialUser.SpecialUserBuilder(userID, new KeyValue(userKey));
 					if (claim != null){
-						builder.addSpecial(User.SPECIAL_CLAIM.fromDatabase(claim));
+						builder.addSpecial(SpecialUser.SPECIAL_CLAIM.fromDatabase(claim));
 					}
 					userIdentities.add(new UserIdentityBuilder(userKey, builder,
 							subject, issuer, UserIdentityTable.table.getUserIdentityDate(rset)));

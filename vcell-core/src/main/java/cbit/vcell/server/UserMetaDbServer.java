@@ -36,7 +36,7 @@ import java.util.TreeMap;
  */
 public interface UserMetaDbServer {
 	
-TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException;
+TreeMap<SpecialUser.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException;
 
 /**
  * Insert the method's description here.

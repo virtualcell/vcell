@@ -9,6 +9,7 @@ import java.util.TreeMap;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
@@ -54,9 +55,9 @@ public interface SimulationDatabase {
 	
 	public Set<KeyValue> getUnreferencedSimulations() throws SQLException;
 
-	public User.SpecialUser getUser(String username) throws DataAccessException, SQLException;
+	public SpecialUser getUser(String username) throws DataAccessException, SQLException;
 
-	public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException, SQLException;
+	public TreeMap<SpecialUser.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException, SQLException;
 
 	public SimulationInfo getSimulationInfo(User user, KeyValue simKey) throws ObjectNotFoundException, DataAccessException;
 

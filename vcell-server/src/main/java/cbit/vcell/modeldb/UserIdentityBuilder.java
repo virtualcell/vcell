@@ -1,5 +1,6 @@
 package cbit.vcell.modeldb;
 
+import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
 
 import java.math.BigDecimal;
@@ -10,9 +11,9 @@ public class UserIdentityBuilder {
     private final String subject;
     private final String issuer;
     private final LocalDateTime insertDate;
-    private final User.SpecialUserBuilder userBuilder;
+    private final SpecialUser.SpecialUserBuilder userBuilder;
 
-    public UserIdentityBuilder(BigDecimal id, User.SpecialUserBuilder specialUserBuilder,
+    public UserIdentityBuilder(BigDecimal id, SpecialUser.SpecialUserBuilder specialUserBuilder,
                                String subject, String issuer, LocalDateTime insertDate){
         this.id = id;
         this.subject = subject;
@@ -25,7 +26,7 @@ public class UserIdentityBuilder {
         return id;
     }
 
-    public User.SpecialUserBuilder getUserBuilder(){
+    public SpecialUser.SpecialUserBuilder getUserBuilder(){
         return userBuilder;
     }
 

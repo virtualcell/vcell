@@ -275,7 +275,7 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
     public record DbUserSimCount(String userid, KeyValue userkey, String firstname, String lastname, String email, NotifyValue notify_value, int simCount) {}
     public record DbUsersRegisteredStats(int last1Week, int last1Month, int last3Months, int last6Months, int last12Months) {}
 
-    public synchronized DbUsageSummary getUsageSummary(User.SpecialUser user) throws SQLException, DataAccessException{
+    public synchronized DbUsageSummary getUsageSummary(SpecialUser user) throws SQLException, DataAccessException{
         if (!user.isAdmin()){
             throw new PermissionException("not authorized");
         }
@@ -957,7 +957,7 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
     }
 
 
-    public User.SpecialUser getUser(String userid, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException{
+    public SpecialUser getUser(String userid, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException{
 
         Object lock = new Object();
         Connection con = conFactory.getConnection(lock);

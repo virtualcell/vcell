@@ -75,8 +75,8 @@ public abstract class DbDriver {
     }
 
     public static void publishDirectly(Connection con, KeyValue[] publishTheseBiomodels, KeyValue[] publishTheseMathmodels, User user, DatabaseSyntax databaseSyntax) throws SQLException, DataAccessException{
-        TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = getSpecialUsers(user, con, databaseSyntax);
-        TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(User.SPECIAL_CLAIM.publicationEditors);
+        TreeMap<SpecialUser.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = getSpecialUsers(user, con, databaseSyntax);
+        TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(SpecialUser.SPECIAL_CLAIM.publicationEditors);
         if(usersAllowedToModifyPublications == null || !usersAllowedToModifyPublications.containsKey(user)){
             throw new DataAccessException("User " + user.getName() + " does not have permission to publish directly");
         }
@@ -104,13 +104,13 @@ public abstract class DbDriver {
         }
     }
     
-    public static void checkRolePermission(Connection con, User user, User.SPECIAL_CLAIM claim, String permissionText, DatabaseSyntax databaseSyntax) throws SQLException,DataAccessException{
-		if (user instanceof User.SpecialUser specialUser){
+    public static void checkRolePermission(Connection con, User user, SpecialUser.SPECIAL_CLAIM claim, String permissionText, DatabaseSyntax databaseSyntax) throws SQLException,DataAccessException{
+		if (user instanceof SpecialUser specialUser){
 			if (!Arrays.asList(specialUser.getMySpecials()).contains(claim)){
 				throw new PermissionException("User "+user.getName()+" does not have permission to " + permissionText);
 			}
 		}else {
-			TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = getSpecialUsers(user, con, databaseSyntax);
+			TreeMap<SpecialUser.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = getSpecialUsers(user, con, databaseSyntax);
 			TreeMap<User, String> usersAllowedToModifyPublications = specialUsers.get(claim);
 			if (usersAllowedToModifyPublications == null || !usersAllowedToModifyPublications.containsKey(user)) {
 				throw new PermissionException("User " + user.getName() + " does not have permission to " + permissionText);
@@ -121,7 +121,7 @@ public abstract class DbDriver {
 	public static KeyValue savePublicationRep(Connection con,PublicationRep publicationRep,User user,KeyFactory keyFactory,DatabaseSyntax databaseSyntax) throws SQLException, DataAccessException{
 	
 		KeyValue pubID = null;
-		checkRolePermission(con, user, User.SPECIAL_CLAIM.publicationEditors, "edit publications", databaseSyntax);
+		checkRolePermission(con, user, SpecialUser.SPECIAL_CLAIM.publicationEditors, "edit publications", databaseSyntax);
         final String YMD_FORMAT_STRING = "yyyy-MM-dd";
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(YMD_FORMAT_STRING);
         String sql = null;
@@ -198,7 +198,7 @@ public abstract class DbDriver {
     }
     
     public static int deletePublicationRep(Connection con, KeyValue pubID, User user, DatabaseSyntax databaseSyntax) throws SQLException, DataAccessException{
-	    checkRolePermission(con, user, User.SPECIAL_CLAIM.publicationEditors, "edit publications", databaseSyntax);
+	    checkRolePermission(con, user, SpecialUser.SPECIAL_CLAIM.publicationEditors, "edit publications", databaseSyntax);
 
 	    String sql = "DELETE FROM "+PublicationTable.table.getTableName()+" WHERE ID='"+pubID+"'";
 	    if (lg.isDebugEnabled()) lg.debug(sql);
@@ -512,7 +512,7 @@ public abstract class DbDriver {
             updatedVersionFlag = VersionFlag.Archived;
         } else if(curateSpec.getCurateType() == CurateSpec.PUBLISH){
             //Must have PUBLISH rights
-            if (!(user instanceof User.SpecialUser specialUser) || !specialUser.isPublisher()) {
+            if (!(user instanceof SpecialUser specialUser) || !specialUser.isPublisher()) {
                 throw new PermissionException("Cannot curate " + vType.getTypeName() + " \"" + dbVersion.getName() + "\" (" + vKey + "), user " + user.getName() + " not granted PUBLISHING rights");
             }
             //Must be ARCHIVED and Public before PUBLISH is allowed
@@ -1221,8 +1221,8 @@ public abstract class DbDriver {
         return user;
     }
 
-    public static TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> getSpecialUsers(User user, Connection con, DatabaseSyntax dbSyntax) throws DataAccessException, java.sql.SQLException{
-        TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> result = new TreeMap<>();
+    public static TreeMap<SpecialUser.SPECIAL_CLAIM, TreeMap<User, String>> getSpecialUsers(User user, Connection con, DatabaseSyntax dbSyntax) throws DataAccessException, java.sql.SQLException{
+        TreeMap<SpecialUser.SPECIAL_CLAIM, TreeMap<User, String>> result = new TreeMap<>();
         String sql = "SELECT " +
                 SpecialUsersTable.table.userRef.getQualifiedColName() + " userref," +
                 SpecialUsersTable.table.special.getQualifiedColName() + " special," +
@@ -1234,7 +1234,7 @@ public abstract class DbDriver {
             try (ResultSet rset = stmt.executeQuery(sql);) {
                 while (rset.next()) {
                     String specialStr = rset.getString("special");
-                    User.SPECIAL_CLAIM special = User.SPECIAL_CLAIM.fromDatabase(specialStr);
+                    SpecialUser.SPECIAL_CLAIM special = SpecialUser.SPECIAL_CLAIM.fromDatabase(specialStr);
                     String userdetail = rset.getString("userdetail");
                     String userRef = rset.getString("userref");
                     String userId = rset.getString("userid");

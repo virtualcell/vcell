@@ -33,6 +33,7 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.*;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
 
 import java.rmi.RemoteException;
@@ -55,7 +56,7 @@ public LocalUserMetaDbServerMessaging(UserLoginInfo userLoginInfo, RpcSender rpc
 	this.vCellApiClient = vCellApiClient;
 }
 
-public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException{
+public TreeMap<SpecialUser.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException{
 	try {
 	return dbServerProxy.getSpecialUsers();
 	} catch (DataAccessException e) {

@@ -33,6 +33,7 @@ import org.vcell.chombo.gui.ChomboDeveloperToolsPanel;
 import org.vcell.chombo.gui.ChomboTimeBoundsPanel;
 import org.vcell.solver.nfsim.gui.NFSimSimulationOptionsPanel;
 import org.vcell.solver.smoldyn.gui.SmoldynSimulationOptionsPanel;
+import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
 import org.vcell.util.gui.CollapsiblePanel;
 import org.vcell.util.gui.DialogUtils;
@@ -1117,8 +1118,8 @@ private void refresh() {
 		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			try {
 				User loginUser = VCellClient.getInstance().getClientServerManager().getUser();
-				TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = VCellClient.getInstance().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
-				TreeMap<User, String> powerUsers = specialUsers.get(User.SPECIAL_CLAIM.powerUsers);
+				TreeMap<SpecialUser.SPECIAL_CLAIM, TreeMap<User, String>> specialUsers = VCellClient.getInstance().getClientServerManager().getUserMetaDbServer().getSpecialUsers();
+				TreeMap<User, String> powerUsers = specialUsers.get(SpecialUser.SPECIAL_CLAIM.powerUsers);
 				if(powerUsers != null && powerUsers.containsKey(loginUser)) {
 					hashTable.put(TIMEOUT_DISABLE, true);
 				}

@@ -17,11 +17,7 @@ import org.vcell.db.ConnectionFactory;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UseridIDExistsException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.UserInfo;
-import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.*;
 
 import cbit.vcell.server.AdminDatabaseServer;
 import cbit.vcell.server.SimpleJobStatusPersistent;
@@ -120,7 +116,7 @@ public SimulationJobStatusPersistent[] getSimulationJobStatus(boolean bActiveOnl
 /**
  * getUser method comment.
  */
-public User.SpecialUser getUser(String userid) throws DataAccessException {
+public SpecialUser getUser(String userid) throws DataAccessException {
 	try {
 		return adminDbTop.getUser(userid,true);
 	}catch (Throwable e){
