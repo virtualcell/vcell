@@ -77,6 +77,41 @@ CREATE TABLE vc_metadata(id bigint PRIMARY KEY,bioModelRef bigint NOT NULL REFER
 CREATE TABLE vc_simdelfromdisk(deldate varchar(20) ,userid varchar(255) NOT NULL,userkey bigint ,simid bigint ,simpref bigint ,simdate varchar(20) ,simname varchar(255) NOT NULL,status varchar(10) ,numfiles bigint ,totalsize bigint );
 CREATE TABLE vc_useridentity(id bigint PRIMARY KEY,userRef bigint NOT NULL REFERENCES vc_userinfo(id),authSubject varchar(128) NOT NULL,authIssuer varchar(128) NOT NULL,insertDate timestamp NOT NULL);
 
+CREATE TABLE vc_model_export_history (
+    id                            bigint        PRIMARY KEY,
+    job_id                        bigint        NOT NULL,
+    user_ref                      bigint        NOT NULL REFERENCES vc_userinfo(id) ON DELETE CASCADE,
+    model_ref                     bigint        REFERENCES vc_model(id) ON DELETE CASCADE,
+    export_format                 varchar(50)   NOT NULL,
+    export_date                   timestamp     NOT NULL,
+    uri                           text          NOT NULL,
+    data_id                       varchar(255)  NOT NULL,
+    simulation_name               varchar(255)  NOT NULL,
+    application_name              varchar(255)  NOT NULL,
+    biomodel_name                 varchar(255)  NOT NULL REFERENCES vc_model(name) ON DELETE CASCADE,
+    variables                     text[]        NOT NULL,
+    start_time                    numeric       NOT NULL,
+    end_time                      numeric       NOT NULL,
+--    different_parameter_values    text[]        NOT NULL  DEFAULT '{}'::text[],
+    saved_file_name               varchar(255)  DEFAULT NULL,
+    application_type              varchar(50)   NOT NULL,
+    non_spatial                   boolean       NOT NULL,
+    z_slices                      integer       NOT NULL,
+    t_slices                      integer       NOT NULL,
+    num_variables                 integer       NOT NULL,
+    insert_date                   timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE vc_model_parameter_values(
+    export_id                     bigint        PRIMARY KEY NOT NULL REFERENCES vc_model_export_history(id),
+    user_ref                      bigint        NOT NULL REFERENCES vc_userinfo(id) ON DELETE CASCADE,
+    model_ref                     bigint        REFERENCES vc_model(id) ON DELETE CASCADE,
+    parameter_name                text          NOT NULL,
+    parameter_original            numeric       NOT NULL,
+    parameter_changed             numeric       NOT NULL,
+);
+
+
 CREATE VIEW public.dual AS SELECT CAST('X' as varchar) AS dummy;
 
 CREATE SEQUENCE newSeq;
