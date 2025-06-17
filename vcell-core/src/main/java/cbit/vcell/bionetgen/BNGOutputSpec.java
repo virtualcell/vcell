@@ -49,6 +49,51 @@ public BNGOutputSpec(BNGParameter[] argParams, BNGMolecule[] argMols, BNGSpecies
 	}
 }
 
+public BNGOutputSpec deepClone() {
+	BNGParameter[] bngParamsClone = null;
+	if (bngParams != null) {
+		bngParamsClone = new BNGParameter[bngParams.length];
+		for (int i = 0; i < bngParams.length; i++) {
+			bngParamsClone[i] = bngParams[i].deepClone();
+		}
+	}
+	BNGMolecule[] bngMoleculeTypesClone = null;
+	if (bngMoleculeTypes != null){
+		bngMoleculeTypesClone = new BNGMolecule[bngMoleculeTypes.length];
+		for (int i = 0; i < bngMoleculeTypes.length; i++) {
+			bngMoleculeTypesClone[i] = bngMoleculeTypes[i].deepClone();
+		}
+	}
+	BNGSpecies[] bngSpeciesClone = null;
+	if (bngSpecies != null){
+		bngSpeciesClone = new BNGSpecies[bngSpecies.length];
+		for (int i = 0; i < bngSpecies.length; i++) {
+			bngSpeciesClone[i] = bngSpecies[i].deepClone();
+		}
+	}
+	BNGReactionRule[] bngReactionRulesClone = null;
+	if (bngReactionRules != null){
+		bngReactionRulesClone = new BNGReactionRule[bngReactionRules.length];
+		for (int i = 0; i < bngReactionRules.length; i++) {
+			bngReactionRulesClone[i] = bngReactionRules[i].deepClone();
+		}
+	}
+	BNGReaction[] bngReactionsClone = null;
+	if (bngReactions != null) {
+		bngReactionsClone = new BNGReaction[bngReactions.length];
+		for (int i = 0; i < bngReactions.length; i++) {
+			bngReactionsClone[i] = bngReactions[i].deepClone();
+		}
+	}
+	ObservableGroup[] bngObservableGroupsClone = null;
+	if (bngObservableGroups != null){
+		bngObservableGroupsClone = new ObservableGroup[bngObservableGroups.length];
+		for (int i = 0; i < bngObservableGroups.length; i++) {
+			bngObservableGroupsClone[i] = bngObservableGroups[i].deepClone();
+		}
+	}
+	return new BNGOutputSpec(bngParamsClone, bngMoleculeTypesClone, bngSpeciesClone, bngReactionRulesClone, bngReactionsClone, bngObservableGroupsClone);
+}
 public BNGMolecule[] getBNGMolecules() {
 	return	bngMoleculeTypes;
 }
