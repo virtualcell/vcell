@@ -1745,12 +1745,12 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 			}		
 			ArrayList<Structure> diagramStructures =  new ArrayList<Structure>(ReactionCartoonTool.this.getReactionCartoon().getStructureSuite().getStructures());
 			diagramStructures.remove(myStructure);
-			if(insertFlag.equals(RXContainerDropTargetInfo.INSERT_BEGINNING)){
+			if(Integer.valueOf(RXContainerDropTargetInfo.INSERT_BEGINNING).equals(insertFlag)) {
 				diagramStructures.add(0, myStructure);
-			}else if(insertFlag.equals(RXContainerDropTargetInfo.INSERT_END)){
+			}else if(Integer.valueOf(RXContainerDropTargetInfo.INSERT_END).equals(insertFlag)) {
 				diagramStructures.add(myStructure);
 			}else{
-				diagramStructures.add(diagramStructures.indexOf(selectedContainerDropTargetInfo.dropShape.getStructure()),myStructure);
+				diagramStructures.add(diagramStructures.indexOf(selectedContainerDropTargetInfo.dropShape.getStructure()), myStructure);
 			}
 			((AllStructureSuite)getReactionCartoon().getStructureSuite()).setModelStructureOrder(true);
 //			ReactionCartoonTool.this.getModel().setStructures(structures.toArray(new Structure[0]));
