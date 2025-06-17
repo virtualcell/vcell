@@ -5,7 +5,6 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.UserIdentity;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.server.UserRegistrationOP;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -72,8 +71,9 @@ public class ACLSupportTest {
         TestEndpointUtils.removeAllMappings(agroalConnectionFactory);
     }
 
+    // 1. Admin in VCellSupport group can access BioModel, 2. Random user can not access BioModel, 3. Admin can not access BioModel shared only with Random User
     @Test
-    public void testOthersAccessToVCellSupport() throws IOException, DataAccessException, XmlParseException, SQLException {
+    public void testBioModelAccess() throws IOException, DataAccessException, XmlParseException, SQLException {
         DatabaseServerImpl databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         User adminUser = databaseServer.getAdminDBTopLevel().getUserIdentitiesFromSubjectAndIssuer(adminUserOIDCSubject, adminUserOIDCIssuer, true).get(0).user();
         User randomUser = databaseServer.getAdminDBTopLevel().getUserIdentitiesFromSubjectAndIssuer(randomUserOIDCSubject, randomUserOIDCIssuer, true).get(0).user();
@@ -91,12 +91,20 @@ public class ACLSupportTest {
         // Only model admin has is the shared one, and the one saved by Nagios User
         Assertions.assertEquals(1, infos.length);
         Assertions.assertTrue(infos[0].getVersion().getVersionKey().compareEqual(savedModel.getVersion().getVersionKey()));
-        // Group access is only for VCell support
         Assertions.assertTrue( infos[0].getVersion().getGroupAccess().isMember(TestEndpointUtils.vcellSupportUser));
 
         // Should not have access to VCell support roles because random user does not have the support role
         BioModelInfo[] randomUserInfos = databaseServer.getBioModelInfos(randomUser, true);
         Assertions.assertEquals(0, randomUserInfos.length);
+
+        // Random user has BioModel that admin can't access
+        databaseServer.saveBioModel(TestEndpointUtils.randomUser, new BigString(bioModelVCML), null);
+        infos = databaseServer.getBioModelInfos(adminUser, true);
+        Assertions.assertEquals(1, infos.length);
+        Assertions.assertTrue(infos[0].getVersion().getVersionKey().compareEqual(savedModel.getVersion().getVersionKey()));
+        infos = databaseServer.getBioModelInfos(randomUser, true);
+        Assertions.assertEquals(1, infos.length);
+        Assertions.assertFalse(savedModel.getVersion().getVersionKey().compareEqual(infos[0].getVersion().getVersionKey()));
     }
 
     @Test
