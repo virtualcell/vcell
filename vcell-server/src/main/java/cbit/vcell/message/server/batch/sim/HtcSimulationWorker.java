@@ -49,6 +49,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.dependency.server.VCellServerModule;
+import org.vcell.solver.langevin.LangevinSolver;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.exe.ExecutableException;
@@ -558,22 +559,24 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Pos
 	int ncpus = simTask.getSimulation().getSolverTaskDescription().getNumProcessors(); //CBN?
 
 	Collection<PortableCommand> postProcessingCommands = new ArrayList<PortableCommand>();
-	if (realSolver instanceof AbstractCompiledSolver) {
-		AbstractCompiledSolver compiledSolver = (AbstractCompiledSolver)realSolver;
 
-		List<String> args = new ArrayList<>( 4 );
-		args.add( PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor) );
-		args.add( simTaskFilePathExternal );
-		args.add( primaryUserDirExternal.getAbsolutePath() );
-		if ( chores.isParallel()) {
+	boolean is_langevin_batch = (realSolver instanceof LangevinSolver && simTask.getSimulation().getSolverTaskDescription().getNumTrials() > 1);
+	if (realSolver instanceof AbstractCompiledSolver && !is_langevin_batch) {
+		AbstractCompiledSolver compiledSolver = (AbstractCompiledSolver) realSolver;
+
+		List<String> args = new ArrayList<>(4);
+		args.add(PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor));
+		args.add(simTaskFilePathExternal);
+		args.add(primaryUserDirExternal.getAbsolutePath());
+		if (chores.isParallel()) {
 			args.add(chores.runDirectoryExternal);
 		}
 		// compiled solver ...used to be only single executable, now we pass 2 commands to PBSUtils.submitJob that invokes SolverPreprocessor.main() and then the native executable
 		//the pre-processor command itself is neither messaging nor parallel; it's independent of the subsequent solver call
-		ExecutableCommand preprocessorCmd = new ExecutableCommand(null, false, false,args);
+		ExecutableCommand preprocessorCmd = new ExecutableCommand(null, false, false, args);
 		commandContainer.add(preprocessorCmd);
-		
-		for (ExecutableCommand ec  : compiledSolver.getCommands()) {
+
+		for (ExecutableCommand ec : compiledSolver.getCommands()) {
 			if (ec.isMessaging()) {
 				ec.addArgument("-tid");
 				ec.addArgument(simTask.getTaskID());
@@ -594,6 +597,41 @@ private HtcJobID submit2PBS(SimulationTask simTask, HtcProxy clonedHtcProxy, Pos
 //			final String logName = chores.finalDataDirectoryInternal + '/' + SimulationData.createCanonicalSimLogFileName(simKey, jobId, false);
 //			postProcessingCommands.add(new AvgStochMultiTrial(primaryUserDirInternal.getAbsolutePath(), XmlHelper.simTaskToXML(simTask)));
 //		}
+	} else if (realSolver instanceof LangevinSolver langevinSolver && is_langevin_batch){
+		List<String> args = new ArrayList<>(4);
+		args.add(PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor));
+		args.add(simTaskFilePathExternal);
+		args.add(primaryUserDirExternal.getAbsolutePath());
+		if (chores.isParallel()) {
+			args.add(chores.runDirectoryExternal);
+		}
+		// compiled solver ...used to be only single executable, now we pass 2 commands to PBSUtils.submitJob that invokes SolverPreprocessor.main() and then the native executable
+		//the pre-processor command itself is neither messaging nor parallel; it's independent of the subsequent solver call
+		ExecutableCommand preprocessorCmd = new ExecutableCommand(null, false, false, args);
+		commandContainer.add(preprocessorCmd);
+
+		for (ExecutableCommand ec : langevinSolver.getCommands()) {
+			if (ec.isMessaging()) {
+				ec.addArgument("-tid");
+				ec.addArgument(simTask.getTaskID());
+			}
+			commandContainer.add(ec);
+		}
+
+		if (chores.isCopyNeeded()) {
+			String logName = chores.finalDataDirectoryInternal + '/' + SimulationData.createCanonicalSimLogFileName(simKey, jobId, false);
+			CopySimFiles csf = new CopySimFiles(simTask.getSimulationJobID(), chores.runDirectoryInternal, chores.finalDataDirectoryInternal, logName);
+			postProcessingCommands.add(csf);
+		}
+		if (chores.isVtkUser()) {
+			VtkMeshGenerator vmg = new VtkMeshGenerator(simOwner, simKey, jobId);
+			postProcessingCommands.add(vmg);
+		}
+//		if(chores.isStochMultiTrial()) {
+//			final String logName = chores.finalDataDirectoryInternal + '/' + SimulationData.createCanonicalSimLogFileName(simKey, jobId, false);
+//			postProcessingCommands.add(new AvgStochMultiTrial(primaryUserDirInternal.getAbsolutePath(), XmlHelper.simTaskToXML(simTask)));
+//		}
+
 	} else {
 		ExecutableCommand ec = new ExecutableCommand(null, false,false,
 				PropertyLoader.getRequiredProperty(PropertyLoader.javaSimulationExecutable),

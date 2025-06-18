@@ -694,25 +694,47 @@ public class SlurmProxy extends HtcProxy {
 	}
 
 	String createJobScriptText(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) throws IOException {
-			if (LG.isDebugEnabled()) {
-				LG.debug("generating local SLURM submit script for jobName="+jobName);
-			}
-			SlurmProxy.SbatchSolverComponents sbatchSolverComponents = generateScript(jobName, commandSet, memSizeMB, postProcessingCommands, simTask);
+		if (LG.isDebugEnabled()) {
+			LG.debug("generating local SLURM submit script for jobName="+jobName);
+		}
+		SlurmProxy.SbatchSolverComponents sbatchSolverComponents = generateScript(jobName, commandSet, memSizeMB, postProcessingCommands, simTask);
 
-			StringBuilder scriptContent = new StringBuilder();
-			scriptContent.append(sbatchSolverComponents.getSingularityCommands());
-			scriptContent.append(sbatchSolverComponents.getSendFailureMsgCommands());
-			scriptContent.append(sbatchSolverComponents.getCallExitCommands());
-			scriptContent.append(sbatchSolverComponents.getPreProcessCommands());
-			scriptContent.append(sbatchSolverComponents.solverCommands);
-			scriptContent.append(sbatchSolverComponents.getExitCommands());
-			String substitutedSbatchCommands = sbatchSolverComponents.getSbatchCommands();
-			String origScriptText =  substitutedSbatchCommands+"\n\n"+
-					scriptContent.toString()+"\n\n"+
-					"#Following commands (if any) are read by JavaPostProcessor64\n"+
-					sbatchSolverComponents.postProcessCommands+"\n";
-			String scriptText = toUnixStyleText(origScriptText);
-			return scriptText;
+		StringBuilder scriptContent = new StringBuilder();
+		scriptContent.append(sbatchSolverComponents.getSingularityCommands());
+		scriptContent.append(sbatchSolverComponents.getSendFailureMsgCommands());
+		scriptContent.append(sbatchSolverComponents.getCallExitCommands());
+		scriptContent.append(sbatchSolverComponents.getPreProcessCommands());
+		scriptContent.append(sbatchSolverComponents.solverCommands);
+		scriptContent.append(sbatchSolverComponents.getExitCommands());
+		String substitutedSbatchCommands = sbatchSolverComponents.getSbatchCommands();
+		String origScriptText =  substitutedSbatchCommands+"\n\n"+
+				scriptContent.toString()+"\n\n"+
+				"#Following commands (if any) are read by JavaPostProcessor64\n"+
+				sbatchSolverComponents.postProcessCommands+"\n";
+		String scriptText = toUnixStyleText(origScriptText);
+		return scriptText;
+	}
+
+	String createBatchJobScriptText(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) throws IOException {
+		if (LG.isDebugEnabled()) {
+			LG.debug("generating local SLURM submit script for jobName="+jobName);
+		}
+		SlurmProxy.SbatchSolverComponents sbatchSolverComponents = generateScript(jobName, commandSet, memSizeMB, postProcessingCommands, simTask);
+
+		StringBuilder scriptContent = new StringBuilder();
+		scriptContent.append(sbatchSolverComponents.getSingularityCommands());
+		scriptContent.append(sbatchSolverComponents.getSendFailureMsgCommands());
+		scriptContent.append(sbatchSolverComponents.getCallExitCommands());
+		scriptContent.append(sbatchSolverComponents.getPreProcessCommands());
+		scriptContent.append(sbatchSolverComponents.solverCommands);
+		scriptContent.append(sbatchSolverComponents.getExitCommands());
+		String substitutedSbatchCommands = sbatchSolverComponents.getSbatchCommands();
+		String origScriptText =  substitutedSbatchCommands+"\n\n"+
+				scriptContent.toString()+"\n\n"+
+				"#Following commands (if any) are read by JavaPostProcessor64\n"+
+				sbatchSolverComponents.postProcessCommands+"\n";
+		String scriptText = toUnixStyleText(origScriptText);
+		return scriptText;
 	}
 
 	HtcJobID submitJobFile(File sub_file_external) throws ExecutableException {
