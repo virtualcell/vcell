@@ -12,6 +12,7 @@ package cbit.vcell.modeldb;
 import java.util.Arrays;
 import java.util.List;
 
+import cbit.sql.ServerStartUpTasks;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.db.DatabaseSyntax;
@@ -306,7 +307,7 @@ static String getVTableDirectSelectClause(VersionTable vTable,User user) {
 
 	String vcellSupportClause = "";
 	if (user instanceof SpecialUser specialUser && specialUser.isVCellSupport()){
-		vcellSupportClause = " OR " + GroupTable.table.userRef.getQualifiedColName() + " = " + PropertyLoader.getRequiredProperty(PropertyLoader.vcellSupportId);
+		vcellSupportClause = " OR " + GroupTable.table.userRef.getQualifiedColName() + " = " + ServerStartUpTasks.getVCellSupportID();
 	}
 	String sql = 	" ( "+
 						vTable.privacy.getQualifiedColName() + " = " + GroupTable.table.groupid.getQualifiedColName() +

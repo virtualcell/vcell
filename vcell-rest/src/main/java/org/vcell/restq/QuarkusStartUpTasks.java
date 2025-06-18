@@ -1,7 +1,7 @@
 package org.vcell.restq;
 
+import cbit.sql.ServerStartUpTasks;
 import cbit.vcell.modeldb.AdminDBTopLevel;
-import cbit.vcell.resource.PropertyLoader;
 import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Observes;
@@ -15,18 +15,16 @@ import org.vcell.util.document.User;
 import java.sql.SQLException;
 
 @ApplicationScoped
-public class StartUpTasks {
-    private final static Logger logger = LogManager.getLogger(StartUpTasks.class);
+public class QuarkusStartUpTasks {
+    private final static Logger logger = LogManager.getLogger(QuarkusStartUpTasks.class);
 
     @Inject
     AgroalConnectionFactory connectionFactory;
 
     public void onStartUp(@Observes StartupEvent ev) throws SQLException, DataAccessException {
         logger.info("Executing startup tasks");
-
-        AdminDBTopLevel adminDBTopLevel = new AdminDBTopLevel(connectionFactory);
-        User vcellSupport = adminDBTopLevel.getVCellSupportUser(true);
-        PropertyLoader.setProperty(PropertyLoader.vcellSupportId, vcellSupport.getID().toString());
+        ServerStartUpTasks.executeStartUpTasks(connectionFactory);
+        logger.info("Startup tasks executed successfully");
     }
 
 }

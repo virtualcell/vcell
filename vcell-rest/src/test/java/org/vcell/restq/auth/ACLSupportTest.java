@@ -1,5 +1,6 @@
 package org.vcell.restq.auth;
 
+import cbit.sql.ServerStartUpTasks;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
@@ -132,6 +133,6 @@ public class ACLSupportTest {
 
     @Test
     public void testVCellSupportIDGrabbing(){
-        Assertions.assertEquals(PropertyLoader.getRequiredProperty(PropertyLoader.vcellSupportId), "4");
+        Assertions.assertEquals(ServerStartUpTasks.getVCellSupportID(), "4");
     }
 }
