@@ -31,10 +31,8 @@ import org.vcell.util.document.*;
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Date;
-import java.util.List;
-import java.util.Random;
 
 /**
  * This type was created in VisualAge.
@@ -158,25 +156,24 @@ public SpecialUser getUserFromUserid(Connection con, String userid) throws SQLEx
 			lg.trace(sql);
 		}
 		stmt = con.createStatement();
-		ArrayList<UserIdentityBuilder> userIdentities = new ArrayList<>();
+		HashMap<BigDecimal, UserIdentityBuilder> userIdentities = new HashMap<>();
 		try {
 			rset = stmt.executeQuery(sql);
 			while (rset.next()) {
 				BigDecimal userKey = rset.getBigDecimal(UserIdentityTable.userRef.getUnqualifiedColName());
 				String claim = rset.getString(SpecialUsersTable.table.special.getUnqualifiedColName());
-
-				int lastUserAdded = userIdentities.size()-1;
-				boolean sameUser = !userIdentities.isEmpty() && userIdentities.get(lastUserAdded).getId().equals(userKey);
-				if (sameUser && claim != null){
-					userIdentities.get(lastUserAdded).getUserBuilder().addSpecial(SpecialUser.SPECIAL_CLAIM.fromDatabase(claim));
-				} else{
+				if (userIdentities.containsKey(userKey) && claim != null) {
+					userIdentities.get(userKey).getUserBuilder().addSpecial(SpecialUser.SPECIAL_CLAIM.fromDatabase(claim));
+				} else if (userIdentities.containsKey(userKey)) {
+					throw new SQLException("Duplicate VCell user identity found.");
+				} else {
 					String userID = rset.getString(UserTable.table.userid.getUnqualifiedColName());
 					SpecialUser.SpecialUserBuilder builder = new SpecialUser.SpecialUserBuilder(userID, new KeyValue(userKey));
 					if (claim != null){
 						builder.addSpecial(SpecialUser.SPECIAL_CLAIM.fromDatabase(claim));
 					}
-					userIdentities.add(new UserIdentityBuilder(userKey, builder,
-							subject, issuer, UserIdentityTable.table.getUserIdentityDate(rset)));
+					userIdentities.put(userKey, new UserIdentityBuilder(userKey, builder, subject, issuer,
+							UserIdentityTable.table.getUserIdentityDate(rset)));
 				}
 			}
 		} finally {
@@ -184,7 +181,7 @@ public SpecialUser getUserFromUserid(Connection con, String userid) throws SQLEx
 		}
 
 		ArrayList<UserIdentity> identities = new ArrayList<>();
-		for (UserIdentityBuilder userIdentityBuilder : userIdentities) {
+		for (UserIdentityBuilder userIdentityBuilder : userIdentities.values()) {
 			identities.add(userIdentityBuilder.build());
 		}
 
