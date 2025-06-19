@@ -19,9 +19,10 @@ import re  # noqa: F401
 import json
 
 
-from typing import Any, ClassVar, Dict, List, Optional, Union
+from typing import Any, ClassVar, Dict, List, Optional
 from pydantic import BaseModel, StrictStr
 from pydantic import Field
+from vcell_client.models.specialclaim import SPECIALCLAIM
 try:
     from typing import Self
 except ImportError:
@@ -31,33 +32,16 @@ class User(BaseModel):
     """
     User
     """ # noqa: E501
-    is_special: StrictStr = Field(alias="isSpecial")
     user_name: Optional[StrictStr] = Field(default=None, alias="userName")
     key: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["isSpecial", "userName", "key"]
+    my_specials: Optional[List[SPECIALCLAIM]] = Field(default=None, alias="mySpecials")
+    __properties: ClassVar[List[str]] = ["userName", "key", "mySpecials"]
 
     model_config = {
         "populate_by_name": True,
         "validate_assignment": True
     }
 
-
-    # JSON field name that stores the object type
-    __discriminator_property_name: ClassVar[List[str]] = 'isSpecial'
-
-    # discriminator mappings
-    __discriminator_value_class_map: ClassVar[Dict[str, str]] = {
-        'no': 'User','yes': 'SpecialUser'
-    }
-
-    @classmethod
-    def get_discriminator_value(cls, obj: Dict) -> str:
-        """Returns the discriminator value (object type) of the data"""
-        discriminator_value = obj[cls.__discriminator_property_name]
-        if discriminator_value:
-            return cls.__discriminator_value_class_map.get(discriminator_value)
-        else:
-            return None
 
     def to_str(self) -> str:
         """Returns the string representation of the model using alias"""
@@ -69,7 +53,7 @@ class User(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Union[Self]:
+    def from_json(cls, json_str: str) -> Self:
         """Create an instance of User from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -92,19 +76,24 @@ class User(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Union[Self]:
+    def from_dict(cls, obj: Dict) -> Self:
         """Create an instance of User from a dict"""
-        # look up the object type based on discriminator mapping
-        object_type = cls.get_discriminator_value(obj)
-        if object_type:
-            klass = globals()[object_type]
-            return klass.from_dict(obj)
-        else:
-            raise ValueError("User failed to lookup discriminator value from " +
-                             json.dumps(obj) + ". Discriminator property name: " + cls.__discriminator_property_name +
-                             ", mapping: " + json.dumps(cls.__discriminator_value_class_map))
+        if obj is None:
+            return None
 
-from vcell_client.models.special_user import SpecialUser
-# TODO: Rewrite to not use raise_errors
-User.model_rebuild(raise_errors=False)
+        if not isinstance(obj, dict):
+            return cls.model_validate(obj)
+
+        # raise errors for additional fields in the input
+        for _key in obj.keys():
+            if _key not in cls.__properties:
+                raise ValueError("Error due to additional fields (not defined in User) in the input: " + _key)
+
+        _obj = cls.model_validate({
+            "userName": obj.get("userName"),
+            "key": obj.get("key"),
+            "mySpecials": obj.get("mySpecials")
+        })
+        return _obj
+
 

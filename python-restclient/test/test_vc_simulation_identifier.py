@@ -37,15 +37,14 @@ class TestVCSimulationIdentifier(unittest.TestCase):
         model = VCSimulationIdentifier()
         if include_optional:
             return VCSimulationIdentifier(
-                simulation_key = vcell_client.models.key_value.KeyValue(
-                    value = 1.337, ),
+                simulation_key = '',
                 owner = vcell_client.models.user.User(
                     user_name = '', 
-                    key = vcell_client.models.key_value.KeyValue(
-                        value = 1.337, ), 
-                    name = '', 
-                    test_account = True, ),
-                i_d = ''
+                    key = '', 
+                    my_specials = [
+                        'admins'
+                        ], ),
+                id = ''
             )
         else:
             return VCSimulationIdentifier(

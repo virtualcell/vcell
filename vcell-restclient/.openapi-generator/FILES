@@ -52,7 +52,6 @@ docs/SimulationResourceApi.md
 docs/SimulationStatusPersistentRecord.md
 docs/SolverResourceApi.md
 docs/SourceModel.md
-docs/SpecialUser.md
 docs/Status.md
 docs/StatusMessage.md
 docs/User.md
@@ -132,7 +131,6 @@ src/main/java/org/vcell/restclient/model/SimulationQueueEntryStatusRecord.java
 src/main/java/org/vcell/restclient/model/SimulationQueueID.java
 src/main/java/org/vcell/restclient/model/SimulationStatusPersistentRecord.java
 src/main/java/org/vcell/restclient/model/SourceModel.java
-src/main/java/org/vcell/restclient/model/SpecialUser.java
 src/main/java/org/vcell/restclient/model/Status.java
 src/main/java/org/vcell/restclient/model/StatusMessage.java
 src/main/java/org/vcell/restclient/model/User.java

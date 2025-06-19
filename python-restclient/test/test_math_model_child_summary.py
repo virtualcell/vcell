@@ -37,14 +37,6 @@ class TestMathModelChildSummary(unittest.TestCase):
         model = MathModelChildSummary()
         if include_optional:
             return MathModelChildSummary(
-                geo_name = '',
-                geo_dim = 56,
-                sim_names = [
-                    ''
-                    ],
-                sim_annots = [
-                    ''
-                    ],
                 model_type = 'RuleBased',
                 geometry_dimension = 56,
                 geometry_name = '',

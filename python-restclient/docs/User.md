@@ -4,9 +4,9 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**is_special** | **str** |  | [default to 'no']
 **user_name** | **str** |  | [optional] 
 **key** | **str** |  | [optional] 
+**my_specials** | [**List[SPECIALCLAIM]**](SPECIALCLAIM.md) |  | [optional] 
 
 ## Example
 

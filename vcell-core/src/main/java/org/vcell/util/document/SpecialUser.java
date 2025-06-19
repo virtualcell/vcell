@@ -12,13 +12,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 
-@Schema(allOf = {User.class}, requiredProperties = {"isSpecial"}, properties = {@SchemaProperty(name = "isSpecial", defaultValue = "yes", type = SchemaType.STRING)})
+@Schema(implementation = User.class)
 public class SpecialUser extends User implements Serializable, Matchable, Immutable {
     private final static String PREVIOUS_DATABASE_VALUE_ADMIN = "special0";
     private final static String PREVIOUS_DATABASE_VALUE_POWERUSER = "special1";
     private final static String PREVIOUS_DATABASE_VALUE_PUBLICATION = "publication";
-
-    public final String isSpecial = "yes";
 
     public enum SPECIAL_CLAIM {
         admins/*special0*/,
@@ -43,8 +41,6 @@ public class SpecialUser extends User implements Serializable, Matchable, Immuta
             return name();
         }
     };//Must match a name 'special' column of 'vc_specialusers'// table
-
-    protected SPECIAL_CLAIM[] mySpecials;
 
     public SpecialUser(String userid, KeyValue key, SPECIAL_CLAIM[] mySpecials) {
         super(userid, key);

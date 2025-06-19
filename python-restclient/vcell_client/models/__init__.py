@@ -57,7 +57,6 @@ from vcell_client.models.simulation_queue_entry_status_record import SimulationQ
 from vcell_client.models.simulation_queue_id import SimulationQueueID
 from vcell_client.models.simulation_status_persistent_record import SimulationStatusPersistentRecord
 from vcell_client.models.source_model import SourceModel
-from vcell_client.models.special_user import SpecialUser
 from vcell_client.models.status import Status
 from vcell_client.models.status_message import StatusMessage
 from vcell_client.models.user import User

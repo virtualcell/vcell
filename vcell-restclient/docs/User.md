@@ -7,9 +7,9 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**isSpecial** | **String** |  |  |
 |**userName** | **String** |  |  [optional] |
 |**key** | **String** |  |  [optional] |
+|**mySpecials** | **List&lt;SPECIALCLAIM&gt;** |  |  [optional] |
 
 
 

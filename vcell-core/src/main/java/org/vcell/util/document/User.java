@@ -26,22 +26,13 @@ import org.vcell.util.Matchable;
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-@Schema(
-		discriminatorProperty = "isSpecial",
-		discriminatorMapping = {
-				@DiscriminatorMapping(value = "no", schema = User.class),
-				@DiscriminatorMapping(value = "yes", schema = SpecialUser.class)
-		},
-		requiredProperties = {"isSpecial"},
-		properties = {@SchemaProperty(name = "isSpecial", defaultValue = "no", type = SchemaType.STRING)}
-)
 public class User implements java.io.Serializable, Matchable, Immutable {
 	@JsonProperty
 	private String userName = null;
 	@JsonProperty
 	private KeyValue key = null;
 
-	public final String isSpecial = "no";
+	protected SpecialUser.SPECIAL_CLAIM[] mySpecials;
 
 	public static final String VCellTestAccountName = "vcelltestaccount";
 	public static final User tempUser = new User("temp",new KeyValue("123"));

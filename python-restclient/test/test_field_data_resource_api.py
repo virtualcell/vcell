@@ -27,38 +27,66 @@ class TestFieldDataResourceApi(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_analyze_field_data_file(self) -> None:
-        """Test case for analyze_field_data_file
+    def test_advanced_create(self) -> None:
+        """Test case for advanced_create
 
-        Analyze the field data from the uploaded file. Filenames must be lowercase alphanumeric, and can contain underscores.
+        Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
         """
         pass
 
-    def test_create_field_data_from_analyzed_file(self) -> None:
-        """Test case for create_field_data_from_analyzed_file
+    def test_analyze_file(self) -> None:
+        """Test case for analyze_file
 
-        Take the analyzed results of the field data, modify it to your liking, then save it on the server.
+        Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
         """
         pass
 
-    def test_delete_field_data(self) -> None:
-        """Test case for delete_field_data
+    def test_copy_models_field_data(self) -> None:
+        """Test case for copy_models_field_data
+
+        Copy all existing field data from a BioModel/MathModel that you have access to, but don't own.
+        """
+        pass
+
+    def test_create_from_file(self) -> None:
+        """Test case for create_from_file
+
+        Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
+        """
+        pass
+
+    def test_create_from_simulation(self) -> None:
+        """Test case for create_from_simulation
+
+        Create new field data from existing simulation results.
+        """
+        pass
+
+    def test_delete(self) -> None:
+        """Test case for delete
 
         Delete the selected field data.
         """
         pass
 
-    def test_get_all_field_data_ids(self) -> None:
-        """Test case for get_all_field_data_ids
+    def test_get_all_ids(self) -> None:
+        """Test case for get_all_ids
 
         Get all of the ids used to identify, and retrieve field data.
         """
         pass
 
-    def test_get_field_data_shape_from_id(self) -> None:
-        """Test case for get_field_data_shape_from_id
+    def test_get_shape_from_id(self) -> None:
+        """Test case for get_shape_from_id
 
-        Get the shape of the field data. That is it's size, origin, extent, and data identifiers.
+        Get the shape of the field data. That is it's size, origin, extent, times, and data identifiers.
+        """
+        pass
+
+    def test_save(self) -> None:
+        """Test case for save
+
+        Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
         """
         pass
 

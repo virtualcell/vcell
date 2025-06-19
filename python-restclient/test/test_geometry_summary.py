@@ -65,7 +65,10 @@ class TestGeometrySummary(unittest.TestCase):
                     name = '', 
                     owner = vcell_client.models.user.User(
                         user_name = '', 
-                        key = '', ), ),
+                        key = '', 
+                        my_specials = [
+                            'admins'
+                            ], ), ),
                 software_version = vcell_client.models.v_cell_software_version.VCellSoftwareVersion(
                     software_version_string = '', 
                     vcell_site = 'alpha', 

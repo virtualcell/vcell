@@ -8,25 +8,22 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataIdentifier;
 import org.vcell.restclient.model.*;
-import org.vcell.restclient.model.SpecialUser;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
-import org.vcell.util.document.*;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.GroupAccess;
 import org.vcell.util.document.GroupAccessAll;
 import org.vcell.util.document.GroupAccessNone;
 import org.vcell.util.document.GroupAccessSome;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.MathModelChildSummary;
 import org.vcell.util.document.PublicationInfo;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
+import org.vcell.util.document.*;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -114,14 +111,11 @@ public class DtoModelTransforms {
     }
 
     public static User dtoToUser(org.vcell.restclient.model.User dto){
-        if (dto instanceof SpecialUser sp && sp.getMySpecials() != null) {
-            org.vcell.util.document.SpecialUser.SpecialUserBuilder builder = new org.vcell.util.document.SpecialUser.SpecialUserBuilder(dto.getUserName(), new KeyValue(dto.getKey()));
-            for (SPECIALCLAIM claim : sp.getMySpecials()){
-                builder.addSpecial(org.vcell.util.document.SpecialUser.SPECIAL_CLAIM.valueOf(claim.getValue()));
-            }
-            return builder.build();
+        SpecialUser.SPECIAL_CLAIM[] claims = new SpecialUser.SPECIAL_CLAIM[] {};
+        if (dto.getMySpecials() != null) {
+            claims = dto.getMySpecials().stream().map(c -> SpecialUser.SPECIAL_CLAIM.fromDatabase(c.getValue())).toArray(SpecialUser.SPECIAL_CLAIM[]::new);
         }
-        return new User(dto.getUserName(), new KeyValue(dto.getKey()));
+        return new SpecialUser(dto.getUserName(), new KeyValue(dto.getKey()), claims);
     }
 
     public static cbit.vcell.field.io.FieldDataShape DTOToFieldDataShape(FieldDataShape dto){

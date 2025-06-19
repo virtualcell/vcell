@@ -2529,20 +2529,6 @@ components:
           type: string
         modelType:
           $ref: '#/components/schemas/ModelType'
-    SpecialUser:
-      required:
-      - isSpecial
-      type: object
-      allOf:
-      - $ref: '#/components/schemas/User'
-      properties:
-        isSpecial:
-          default: "yes"
-          type: string
-        mySpecials:
-          type: array
-          items:
-            $ref: '#/components/schemas/SPECIAL_CLAIM'
     Status:
       enum:
       - UNKNOWN
@@ -2572,22 +2558,16 @@ components:
           format: double
           type: number
     User:
-      required:
-      - isSpecial
       type: object
       properties:
-        isSpecial:
-          default: "no"
-          type: string
         userName:
           type: string
         key:
           $ref: '#/components/schemas/KeyValue'
-      discriminator:
-        propertyName: isSpecial
-        mapping:
-          "no": '#/components/schemas/User'
-          "yes": '#/components/schemas/SpecialUser'
+        mySpecials:
+          type: array
+          items:
+            $ref: '#/components/schemas/SPECIAL_CLAIM'
     UserIdentityJSONSafe:
       type: object
       properties:

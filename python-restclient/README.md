@@ -182,7 +182,6 @@ Class | Method | HTTP request | Description
  - [SimulationQueueID](docs/SimulationQueueID.md)
  - [SimulationStatusPersistentRecord](docs/SimulationStatusPersistentRecord.md)
  - [SourceModel](docs/SourceModel.md)
- - [SpecialUser](docs/SpecialUser.md)
  - [Status](docs/Status.md)
  - [StatusMessage](docs/StatusMessage.md)
  - [User](docs/User.md)

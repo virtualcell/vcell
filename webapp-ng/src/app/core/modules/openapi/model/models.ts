@@ -40,7 +40,6 @@ export * from './simulation-queue-entry-status-record';
 export * from './simulation-queue-id';
 export * from './simulation-status-persistent-record';
 export * from './source-model';
-export * from './special-user';
 export * from './status';
 export * from './status-message';
 export * from './user';
