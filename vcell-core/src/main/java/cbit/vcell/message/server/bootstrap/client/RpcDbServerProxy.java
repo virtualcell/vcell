@@ -45,10 +45,6 @@ public void deleteResultSetExport(org.vcell.util.document.KeyValue eleKey) throw
 	rpc("deleteResultSetExport",new Object[]{userLoginInfo.getUser(), eleKey});
 }
 
-public void deleteVCImage(org.vcell.util.document.KeyValue imageKey) throws DataAccessException, ObjectNotFoundException {
-	rpc("deleteVCImage",new Object[]{userLoginInfo.getUser(), imageKey});
-}
-
 public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop) throws DataAccessException {
 
 	return (cbit.vcell.numericstest.TestSuiteOPResults ) rpc("doTestSuiteOP",new Object[] {userLoginInfo.getUser(),tsop});
@@ -111,21 +107,6 @@ public cbit.vcell.model.ReactionDescription[] getUserReactionDescriptions(Reacti
 	return (cbit.vcell.model.ReactionDescription[])rpc("getUserReactionDescriptions",new Object[]{userLoginInfo.getUser(), reactionQuerySpec});
 }
 
-public cbit.image.VCImageInfo getVCImageInfo(org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (cbit.image.VCImageInfo)rpc("getVCImageInfo",new Object[]{userLoginInfo.getUser(),key});
-}
-
-public cbit.image.VCImageInfo[] getVCImageInfos(boolean bAll)
-    throws DataAccessException {
-    return (cbit.image.VCImageInfo[]) rpc(
-        "getVCImageInfos",
-        new Object[] { userLoginInfo.getUser(), new Boolean(bAll)});
-}
-
-public BigString getVCImageXML(org.vcell.util.document.KeyValue key) throws DataAccessException {
-	return (BigString)rpc("getVCImageXML",new Object[]{userLoginInfo.getUser(), key});
-}
-
 public VCInfoContainer getVCInfoContainer() throws DataAccessException {
 	return (VCInfoContainer)rpc("getVCInfoContainer",new Object[]{userLoginInfo.getUser()});
 }
@@ -179,11 +160,4 @@ public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulati
 	return (BigString)rpc("saveSimulation",new Object[]{userLoginInfo.getUser(), simulationXML, new Boolean(bForceIndependent)});
 }
 
-public BigString saveVCImage(BigString vcImageXML) throws DataAccessException, ObjectNotFoundException {
-	return (BigString)rpc("saveVCImage",new Object[]{userLoginInfo.getUser(), vcImageXML});
-}
-
-public BigString saveVCImageAs(BigString vcImageXML, java.lang.String newName) throws DataAccessException, ObjectNotFoundException {
-	return (BigString)rpc("saveVCImageAs",new Object[]{userLoginInfo.getUser(), vcImageXML, newName});
-}
 }

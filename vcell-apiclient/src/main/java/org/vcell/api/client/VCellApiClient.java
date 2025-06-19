@@ -346,6 +346,8 @@ public class VCellApiClient implements AutoCloseable {
 
 	public GeometryResourceApi getGeometryApi(){return new GeometryResourceApi(apiClient);}
 
+	public VcImageResourceApi getVcImageApi(){return new VcImageResourceApi(apiClient);}
+
 	public String getVCellUserNameFromAuth0Mapping() throws ApiException {
 		try {
 			UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
