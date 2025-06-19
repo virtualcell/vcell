@@ -20,6 +20,7 @@ docs/FieldDataReference.md
 docs/FieldDataResourceApi.md
 docs/FieldDataSavedResults.md
 docs/FieldDataShape.md
+docs/GIFImage.md
 docs/GeometryResourceApi.md
 docs/GeometrySummary.md
 docs/GroupAccess.md
@@ -59,6 +60,8 @@ docs/UserLoginInfoForMapping.md
 docs/UserRegistrationInfo.md
 docs/UsersResourceApi.md
 docs/VCDocumentType.md
+docs/VCImageResourceApi.md
+docs/VCImageSummary.md
 docs/VCSimulationIdentifier.md
 docs/VCellHTTPError.md
 docs/VCellSite.md
@@ -81,6 +84,7 @@ vcell_client/api/publication_resource_api.py
 vcell_client/api/simulation_resource_api.py
 vcell_client/api/solver_resource_api.py
 vcell_client/api/users_resource_api.py
+vcell_client/api/vc_image_resource_api.py
 vcell_client/api_client.py
 vcell_client/api_response.py
 vcell_client/configuration.py
@@ -103,6 +107,7 @@ vcell_client/models/field_data_reference.py
 vcell_client/models/field_data_saved_results.py
 vcell_client/models/field_data_shape.py
 vcell_client/models/geometry_summary.py
+vcell_client/models/gif_image.py
 vcell_client/models/group_access.py
 vcell_client/models/group_access_all.py
 vcell_client/models/group_access_none.py
@@ -139,6 +144,7 @@ vcell_client/models/v_cell_software_version.py
 vcell_client/models/variable_domain.py
 vcell_client/models/variable_type.py
 vcell_client/models/vc_document_type.py
+vcell_client/models/vc_image_summary.py
 vcell_client/models/vc_simulation_identifier.py
 vcell_client/models/version.py
 vcell_client/models/version_flag.py

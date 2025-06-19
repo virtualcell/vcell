@@ -22,6 +22,8 @@ api/solver-resource.service.ts
 api/solver-resource.serviceInterface.ts
 api/users-resource.service.ts
 api/users-resource.serviceInterface.ts
+api/vc-image-resource.service.ts
+api/vc-image-resource.serviceInterface.ts
 configuration.ts
 encoder.ts
 git_push.sh
@@ -43,6 +45,7 @@ model/field-data-saved-results.ts
 model/field-data-shape.ts
 model/field-data.ts
 model/geometry-summary.ts
+model/gif-image.ts
 model/group-access-all.ts
 model/group-access-none.ts
 model/group-access-some.ts
@@ -80,6 +83,7 @@ model/v-cell-software-version.ts
 model/variable-domain.ts
 model/variable-type.ts
 model/vc-document-type.ts
+model/vc-image-summary.ts
 model/vc-simulation-identifier.ts
 model/version-flag.ts
 model/version.ts

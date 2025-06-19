@@ -20,6 +20,7 @@ docs/FieldDataReference.md
 docs/FieldDataResourceApi.md
 docs/FieldDataSavedResults.md
 docs/FieldDataShape.md
+docs/GIFImage.md
 docs/GeometryResourceApi.md
 docs/GeometrySummary.md
 docs/GroupAccess.md
@@ -59,12 +60,14 @@ docs/UserLoginInfoForMapping.md
 docs/UserRegistrationInfo.md
 docs/UsersResourceApi.md
 docs/VCDocumentType.md
+docs/VCImageSummary.md
 docs/VCSimulationIdentifier.md
 docs/VCellHTTPError.md
 docs/VCellSite.md
 docs/VCellSoftwareVersion.md
 docs/VariableDomain.md
 docs/VariableType.md
+docs/VcImageResourceApi.md
 docs/Version.md
 docs/VersionFlag.md
 src/main/AndroidManifest.xml
@@ -87,6 +90,7 @@ src/main/java/org/vcell/restclient/api/PublicationResourceApi.java
 src/main/java/org/vcell/restclient/api/SimulationResourceApi.java
 src/main/java/org/vcell/restclient/api/SolverResourceApi.java
 src/main/java/org/vcell/restclient/api/UsersResourceApi.java
+src/main/java/org/vcell/restclient/api/VcImageResourceApi.java
 src/main/java/org/vcell/restclient/model/AbstractOpenApiSchema.java
 src/main/java/org/vcell/restclient/model/AccesTokenRepresentationRecord.java
 src/main/java/org/vcell/restclient/model/ApplicationInfo.java
@@ -104,6 +108,7 @@ src/main/java/org/vcell/restclient/model/FieldData.java
 src/main/java/org/vcell/restclient/model/FieldDataReference.java
 src/main/java/org/vcell/restclient/model/FieldDataSavedResults.java
 src/main/java/org/vcell/restclient/model/FieldDataShape.java
+src/main/java/org/vcell/restclient/model/GIFImage.java
 src/main/java/org/vcell/restclient/model/GeometrySummary.java
 src/main/java/org/vcell/restclient/model/GroupAccess.java
 src/main/java/org/vcell/restclient/model/GroupAccessAll.java
@@ -136,6 +141,7 @@ src/main/java/org/vcell/restclient/model/UserIdentityJSONSafe.java
 src/main/java/org/vcell/restclient/model/UserLoginInfoForMapping.java
 src/main/java/org/vcell/restclient/model/UserRegistrationInfo.java
 src/main/java/org/vcell/restclient/model/VCDocumentType.java
+src/main/java/org/vcell/restclient/model/VCImageSummary.java
 src/main/java/org/vcell/restclient/model/VCSimulationIdentifier.java
 src/main/java/org/vcell/restclient/model/VCellHTTPError.java
 src/main/java/org/vcell/restclient/model/VCellSite.java

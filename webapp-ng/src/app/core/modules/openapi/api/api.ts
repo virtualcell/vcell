@@ -28,4 +28,7 @@ export * from './solver-resource.serviceInterface';
 export * from './users-resource.service';
 import { UsersResourceService } from './users-resource.service';
 export * from './users-resource.serviceInterface';
-export const APIS = [AdminResourceService, BioModelResourceService, FieldDataResourceService, GeometryResourceService, HelloWorldService, MathModelResourceService, PublicationResourceService, SimulationResourceService, SolverResourceService, UsersResourceService];
+export * from './vc-image-resource.service';
+import { VCImageResourceService } from './vc-image-resource.service';
+export * from './vc-image-resource.serviceInterface';
+export const APIS = [AdminResourceService, BioModelResourceService, FieldDataResourceService, GeometryResourceService, HelloWorldService, MathModelResourceService, PublicationResourceService, SimulationResourceService, SolverResourceService, UsersResourceService, VCImageResourceService];

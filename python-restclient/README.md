@@ -136,6 +136,11 @@ Class | Method | HTTP request | Description
 *UsersResourceApi* | [**process_magic_link**](docs/UsersResourceApi.md#process_magic_link) | **GET** /api/v1/users/processMagicLink | Process the magic link and map the user
 *UsersResourceApi* | [**request_recovery_email**](docs/UsersResourceApi.md#request_recovery_email) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account.
 *UsersResourceApi* | [**unmap_user**](docs/UsersResourceApi.md#unmap_user) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
+*VCImageResourceApi* | [**delete_image_vcml**](docs/VCImageResourceApi.md#delete_image_vcml) | **DELETE** /api/v1/image/{id} | 
+*VCImageResourceApi* | [**get_image_summaries**](docs/VCImageResourceApi.md#get_image_summaries) | **GET** /api/v1/image/summaries | 
+*VCImageResourceApi* | [**get_image_summary**](docs/VCImageResourceApi.md#get_image_summary) | **GET** /api/v1/image/summary/{id} | 
+*VCImageResourceApi* | [**get_image_vcml**](docs/VCImageResourceApi.md#get_image_vcml) | **GET** /api/v1/image/{id} | 
+*VCImageResourceApi* | [**save_image_vcml**](docs/VCImageResourceApi.md#save_image_vcml) | **POST** /api/v1/image | 
 
 
 ## Documentation For Models
@@ -156,6 +161,7 @@ Class | Method | HTTP request | Description
  - [FieldDataReference](docs/FieldDataReference.md)
  - [FieldDataSavedResults](docs/FieldDataSavedResults.md)
  - [FieldDataShape](docs/FieldDataShape.md)
+ - [GIFImage](docs/GIFImage.md)
  - [GeometrySummary](docs/GeometrySummary.md)
  - [GroupAccess](docs/GroupAccess.md)
  - [GroupAccessAll](docs/GroupAccessAll.md)
@@ -188,6 +194,7 @@ Class | Method | HTTP request | Description
  - [UserLoginInfoForMapping](docs/UserLoginInfoForMapping.md)
  - [UserRegistrationInfo](docs/UserRegistrationInfo.md)
  - [VCDocumentType](docs/VCDocumentType.md)
+ - [VCImageSummary](docs/VCImageSummary.md)
  - [VCSimulationIdentifier](docs/VCSimulationIdentifier.md)
  - [VCellHTTPError](docs/VCellHTTPError.md)
  - [VCellSite](docs/VCellSite.md)

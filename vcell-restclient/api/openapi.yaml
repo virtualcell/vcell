@@ -1095,6 +1095,215 @@ paths:
       tags:
       - Hello World
       x-accepts: application/json
+  /api/v1/image:
+    post:
+      description: Save the VCML representation of an image.
+      operationId: saveImageVCML
+      parameters:
+      - description: Name to save new ImageVCML under. Leave blank if re-saving existing
+          ImageVCML.
+        explode: true
+        in: query
+        name: name
+        required: false
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+        required: true
+      responses:
+        "200":
+          content:
+            text/plain:
+              schema:
+                type: string
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authorized
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Unprocessable content submitted
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - VC Image Resource
+      x-content-type: application/json
+      x-accepts: application/json
+  /api/v1/image/summaries:
+    get:
+      description: Return Image summaries.
+      operationId: getImageSummaries
+      parameters:
+      - description: Include Image summaries that are public and shared with the requester.
+          Default is true.
+        explode: true
+        in: query
+        name: includePublicAndShared
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/VCImageSummary'
+                type: array
+          description: OK
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - VC Image Resource
+      x-accepts: application/json
+  /api/v1/image/summary/{id}:
+    get:
+      description: "All of the miscellaneous information about an Image (Extent, ISize,\
+        \ preview, etc...), but not the actual Image itself."
+      operationId: getImageSummary
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCImageSummary'
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - VC Image Resource
+      x-accepts: application/json
+  /api/v1/image/{id}:
+    delete:
+      description: Remove specific image VCML.
+      operationId: deleteImageVCML
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authorized
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - VC Image Resource
+      x-accepts: application/json
+    get:
+      description: Get specific image VCML.
+      operationId: getImageVCML
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            text/plain:
+              schema:
+                type: string
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Unprocessable content submitted
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - VC Image Resource
+      x-accepts: application/json
   /api/v1/mathModel:
     post:
       operationId: saveMathModel
@@ -2557,6 +2766,20 @@ components:
             type: number
           type: array
       type: object
+    GIFImage:
+      example:
+        size:
+          x: 2
+          "y": 4
+          z: 7
+        gifEncodedData: ""
+      properties:
+        gifEncodedData:
+          format: binary
+          type: string
+        size:
+          $ref: '#/components/schemas/ISize'
+      type: object
     GeometrySummary:
       example:
         extent:
@@ -3360,6 +3583,63 @@ components:
       - GEOMETRY_DOC
       - EXTERNALFILE_DOC
       type: string
+    VCImageSummary:
+      example:
+        extent:
+          x: 7.061401241503109
+          "y": 9.301444243932576
+          z: 3.616076749251911
+        preview:
+          size:
+            x: 2
+            "y": 4
+            z: 7
+          gifEncodedData: ""
+        size:
+          x: 2
+          "y": 4
+          z: 7
+        version:
+          date: 2000-01-23T04:56:07.000+00:00
+          owner:
+            userName: userName
+            key: key
+          branchID: 0.8008281904610115
+          flag:
+            archived: true
+            current: true
+            intValue: 1
+            versionFlag: 6
+            published: true
+          groupAccess:
+            groupid: 5.962133916683182
+            description: description
+          name: name
+          annot: annot
+          branchPointRefKey: branchPointRefKey
+          versionKey: versionKey
+        softwareVersion:
+          vcellSite: null
+          patchVersion: 4
+          buildInt: 7
+          description: description
+          majorVersion: 3
+          minorVersion: 2
+          buildNumber: buildNumber
+          softwareVersionString: softwareVersionString
+          versionNumber: versionNumber
+      properties:
+        size:
+          $ref: '#/components/schemas/ISize'
+        extent:
+          $ref: '#/components/schemas/Extent'
+        version:
+          $ref: '#/components/schemas/Version'
+        preview:
+          $ref: '#/components/schemas/GIFImage'
+        softwareVersion:
+          $ref: '#/components/schemas/VCellSoftwareVersion'
+      type: object
     VCSimulationIdentifier:
       example:
         owner:
