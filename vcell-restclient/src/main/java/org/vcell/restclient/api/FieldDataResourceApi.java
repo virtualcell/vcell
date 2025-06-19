@@ -12,6 +12,7 @@
 
 package org.vcell.restclient.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
@@ -99,7 +100,7 @@ public class FieldDataResourceApi {
 
   /**
    * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
-   * 
+   *
    * @param _file  (optional)
    * @param fileName  (optional)
    * @param extent  (optional)
@@ -118,7 +119,7 @@ public class FieldDataResourceApi {
 
   /**
    * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
-   * 
+   *
    * @param _file  (optional)
    * @param fileName  (optional)
    * @param extent  (optional)
@@ -174,8 +175,13 @@ public class FieldDataResourceApi {
     multiPartBuilder.addBinaryBody("file", _file);
     hasFiles = true;
     multiPartBuilder.addTextBody("fileName", fileName.toString());
-    multiPartBuilder.addTextBody("extent", extent.toString());
-    multiPartBuilder.addTextBody("iSize", iSize.toString());
+      try {
+          multiPartBuilder.addTextBody("extent", memberVarObjectMapper.writeValueAsString(extent));
+          multiPartBuilder.addTextBody("iSize", memberVarObjectMapper.writeValueAsString(iSize));
+          multiPartBuilder.addTextBody("origin", memberVarObjectMapper.writeValueAsString(origin));
+      } catch (JsonProcessingException e) {
+          throw new RuntimeException(e);
+      }
     for (int i=0; i < channelNames.size(); i++) {
         multiPartBuilder.addTextBody("channelNames", channelNames.get(i).toString());
     }
@@ -183,7 +189,6 @@ public class FieldDataResourceApi {
         multiPartBuilder.addTextBody("times", times.get(i).toString());
     }
     multiPartBuilder.addTextBody("annotation", annotation.toString());
-    multiPartBuilder.addTextBody("origin", origin.toString());
     HttpEntity entity = multiPartBuilder.build();
     HttpRequest.BodyPublisher formDataPublisher;
     if (hasFiles) {
