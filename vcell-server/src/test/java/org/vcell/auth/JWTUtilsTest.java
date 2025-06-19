@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
 
 import java.io.IOException;
@@ -97,7 +98,7 @@ public class JWTUtilsTest {
         RsaJsonWebKey rsaJsonWebKey = JWTUtils.createNewJsonWebKey("k1");
         JWTUtils.setRsaJsonWebKey(rsaJsonWebKey);
 
-        User user = new User.SpecialUser("testuser", new KeyValue("12345"), new User.SPECIAL_CLAIM[0]);
+        User user = new SpecialUser("testuser", new KeyValue("12345"), new SpecialUser.SPECIAL_CLAIM[0]);
 
 
         NumericDate expirationDate = NumericDate.now();
@@ -122,7 +123,7 @@ public class JWTUtilsTest {
     public void testJWTWithStoredKeys() throws JoseException, MalformedClaimException {
         // test with keys stored in files
         JWTUtils.setRsaJsonWebKey(null);
-        User user = new User.SpecialUser("testuser", new KeyValue("12345"), new User.SPECIAL_CLAIM[0]);
+        User user = new SpecialUser("testuser", new KeyValue("12345"), new SpecialUser.SPECIAL_CLAIM[0]);
 
         NumericDate expirationDate = NumericDate.now();
         expirationDate.addSeconds(1);

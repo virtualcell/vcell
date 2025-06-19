@@ -97,7 +97,7 @@ public class SimDataVerifier {
 			throws DataAccessException, SQLException {
 
 		if (singleUsername != null){
-			User.SpecialUser user = adminDbTopLevel.getUser(singleUsername, true);
+			SpecialUser user = adminDbTopLevel.getUser(singleUsername, true);
 			if (user == null){
 				throw new RuntimeException("failed to find user "+singleUsername);
 			}

@@ -38,10 +38,10 @@ class TestUser(unittest.TestCase):
         if include_optional:
             return User(
                 user_name = '',
-                key = vcell_client.models.key_value.KeyValue(
-                    value = 1.337, ),
-                name = '',
-                test_account = True
+                key = '',
+                my_specials = [
+                    'admins'
+                    ]
             )
         else:
             return User(

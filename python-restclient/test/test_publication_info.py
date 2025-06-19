@@ -37,10 +37,8 @@ class TestPublicationInfo(unittest.TestCase):
         model = PublicationInfo()
         if include_optional:
             return PublicationInfo(
-                publication_key = vcell_client.models.key_value.KeyValue(
-                    value = 1.337, ),
-                version_key = vcell_client.models.key_value.KeyValue(
-                    value = 1.337, ),
+                publication_key = '',
+                version_key = '',
                 title = '',
                 authors = [
                     ''
@@ -53,10 +51,11 @@ class TestPublicationInfo(unittest.TestCase):
                 vc_document_type = 'BIOMODEL_DOC',
                 user = vcell_client.models.user.User(
                     user_name = '', 
-                    key = vcell_client.models.key_value.KeyValue(
-                        value = 1.337, ), ),
-                the_hash_code = 56,
-                pub_date = 'Thu Mar 10 00:00:00 UTC 2022'
+                    key = '', 
+                    my_specials = [
+                        'admins'
+                        ], ),
+                the_hash_code = 56
             )
         else:
             return PublicationInfo(

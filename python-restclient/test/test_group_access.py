@@ -42,6 +42,7 @@ class TestGroupAccess(unittest.TestCase):
             )
         else:
             return GroupAccess(
+                groupid = 1.337,
         )
         """
 

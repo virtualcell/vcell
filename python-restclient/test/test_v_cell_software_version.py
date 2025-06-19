@@ -45,7 +45,6 @@ class TestVCellSoftwareVersion(unittest.TestCase):
                 minor_version = 56,
                 patch_version = 56,
                 build_int = 56,
-                site = 'alpha',
                 description = ''
             )
         else:

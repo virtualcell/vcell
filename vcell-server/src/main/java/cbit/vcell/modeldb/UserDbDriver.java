@@ -26,18 +26,13 @@ import org.vcell.db.KeyFactory;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.UserInfo;
-import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.*;
 
 import java.math.BigDecimal;
 import java.security.SecureRandom;
 import java.sql.*;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.Date;
-import java.util.List;
-import java.util.Random;
 
 /**
  * This type was created in VisualAge.
@@ -54,7 +49,7 @@ public UserDbDriver() {
 }
 
 
-public User.SpecialUser getUserFromUserid(Connection con, String userid) throws SQLException {
+public SpecialUser getUserFromUserid(Connection con, String userid) throws SQLException {
 	PreparedStatement pstmt;
 	String sql;
 	ResultSet rset;
@@ -73,7 +68,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	pstmt = con.prepareStatement(sql);
 	pstmt.setString(1, userid);
 	BigDecimal userKey = null;
-	ArrayList<User.SPECIAL_CLAIM> specials = new ArrayList<>();
+	ArrayList<SpecialUser.SPECIAL_CLAIM> specials = new ArrayList<>();
 	try {
 		rset = pstmt.executeQuery();
 		while (rset.next()) {
@@ -86,7 +81,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 			String special = rset.getString("special");
 			if(!rset.wasNull()) {
 				try {
-					specials.add(User.SPECIAL_CLAIM.fromDatabase(special));
+					specials.add(SpecialUser.SPECIAL_CLAIM.fromDatabase(special));
 				}catch(Exception e) {
 					//keep going
 					lg.error(e.getMessage(), e);
@@ -99,7 +94,7 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 	if(userKey == null) {
 		return null;
 	}
-	return new User.SpecialUser(userid, new KeyValue(userKey),specials.toArray(new User.SPECIAL_CLAIM[0]));
+	return new SpecialUser(userid, new KeyValue(userKey),specials.toArray(new SpecialUser.SPECIAL_CLAIM[0]));
 }
 
 	public boolean removeUserIdentity(Connection con, User user, String authSubject, String authIssuer) throws SQLException {
@@ -145,14 +140,15 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 			lg.trace("UserDbDriver.getUserIdentityFromSubjectAndIssuer(userid=" + subject + ")");
 		}
 		sql = 	"SELECT " + UserTable.table.userid.getUnqualifiedColName() + "," +
-				UserIdentityTable.userRef.getUnqualifiedColName() + "," +
-				UserIdentityTable.authSubject.getUnqualifiedColName() + "," +
-				UserIdentityTable.authIssuer.getUnqualifiedColName() + "," +
+				UserIdentityTable.userRef.getQualifiedColName() + "," +
 				UserIdentityTable.table.id.getQualifiedColName() + " as user_identity_key " + "," +
-				UserIdentityTable.insertDate.getQualifiedColName() +
+				UserIdentityTable.insertDate.getQualifiedColName() + "," +
+				SpecialUsersTable.table.special.getQualifiedColName() +
 				" FROM " + userTable.getTableName() +
 				" JOIN " + UserIdentityTable.table.getTableName() +
 				" ON " + UserIdentityTable.table.userRef.getUnqualifiedColName()+"="+userTable.id.getQualifiedColName() +
+				" LEFT JOIN " + SpecialUsersTable.table.getTableName() +
+				" ON " + SpecialUsersTable.table.userRef.getQualifiedColName()+"="+userTable.id.getQualifiedColName() +
 				" WHERE " + UserIdentityTable.authSubject.getUnqualifiedColName() + " = '" + subject + "'" +
 				" AND " + UserIdentityTable.authIssuer.getUnqualifiedColName() + " = '" + issuer + "'";
 
@@ -160,23 +156,69 @@ public User.SpecialUser getUserFromUserid(Connection con, String userid) throws 
 			lg.trace(sql);
 		}
 		stmt = con.createStatement();
-		ArrayList<UserIdentity> userIdentities = new ArrayList<>();
+		HashMap<BigDecimal, UserIdentityBuilder> userIdentities = new HashMap<>();
 		try {
 			rset = stmt.executeQuery(sql);
 			while (rset.next()) {
-				BigDecimal userBD = rset.getBigDecimal(UserIdentityTable.userRef.getUnqualifiedColName());
-				String userID = rset.getString(UserTable.table.userid.getUnqualifiedColName());
-				User userFromDB = new User(userID, new KeyValue(userBD));
-				UserIdentity userIdentity = UserIdentityTable.table.getUserIdentity(rset, userFromDB, "user_identity_key");
-				userIdentities.add(userIdentity);
+				BigDecimal userKey = rset.getBigDecimal(UserIdentityTable.userRef.getUnqualifiedColName());
+				String claim = rset.getString(SpecialUsersTable.table.special.getUnqualifiedColName());
+				if (userIdentities.containsKey(userKey) && claim != null) {
+					userIdentities.get(userKey).getUserBuilder().addSpecial(SpecialUser.SPECIAL_CLAIM.fromDatabase(claim));
+				} else if (userIdentities.containsKey(userKey)) {
+					throw new SQLException("Duplicate VCell user identity found.");
+				} else {
+					String userID = rset.getString(UserTable.table.userid.getUnqualifiedColName());
+					SpecialUser.SpecialUserBuilder builder = new SpecialUser.SpecialUserBuilder(userID, new KeyValue(userKey));
+					if (claim != null){
+						builder.addSpecial(SpecialUser.SPECIAL_CLAIM.fromDatabase(claim));
+					}
+					userIdentities.put(userKey, new UserIdentityBuilder(userKey, builder, subject, issuer,
+							UserIdentityTable.table.getUserIdentityDate(rset)));
+				}
 			}
 		} finally {
 			stmt.close();
 		}
-		return userIdentities;
+
+		ArrayList<UserIdentity> identities = new ArrayList<>();
+		for (UserIdentityBuilder userIdentityBuilder : userIdentities.values()) {
+			identities.add(userIdentityBuilder.build());
+		}
+
+		return identities;
 	}
 
-	public List<UserIdentity> getUserIdentitiesFromUser(Connection con, User user) throws SQLException {
+	public User getVCellSupportUser(Connection con) throws SQLException {
+		Statement stmt;
+		String sql;
+		ResultSet rset;
+		if (lg.isTraceEnabled()) {
+			lg.trace("UserDbDriver.getIdentitiesFromUser(userid=" + PropertyLoader.VCELL_SUPPORT_USERID + ")");
+		}
+		sql = 	"SELECT " + UserTable.table.userid.getUnqualifiedColName() + "," +
+				UserTable.table.id.getUnqualifiedColName() +
+				" FROM " + userTable.getTableName() +
+				" WHERE " + UserTable.table.userid.getUnqualifiedColName() + "=" + "'" + PropertyLoader.VCELL_SUPPORT_USERID + "'";
+
+		System.out.println(sql);
+		if (lg.isTraceEnabled()) {
+			lg.trace(sql);
+		}
+		stmt = con.createStatement();
+		try {
+			rset = stmt.executeQuery(sql);
+			if (rset.next()) {
+				BigDecimal userBD = rset.getBigDecimal(UserTable.table.id.getUnqualifiedColName());
+				return new User(PropertyLoader.VCELL_SUPPORT_USERID, new KeyValue(userBD));
+			} else {
+				throw new SQLException("VCell Support not found");
+			}
+		} finally {
+			stmt.close();
+		}
+	}
+
+	private List<UserIdentity> getUserIdentitiesFromUser(Connection con, User user) throws SQLException {
 		Statement stmt;
 		String sql;
 		ResultSet rset;

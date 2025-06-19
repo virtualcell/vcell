@@ -6,6 +6,7 @@ import jakarta.inject.Inject;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.errors.exceptions.PermissionWebException;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
 
 import java.sql.SQLException;
@@ -25,7 +26,7 @@ public class AdminRestService {
     }
 
     public String getUsageSummaryHtml(User vcUser) throws DataAccessException, SQLException, PermissionWebException {
-        User.SpecialUser specialUser = adminDBTopLevel.getUser(vcUser.getName(), true);
+        SpecialUser specialUser = adminDBTopLevel.getUser(vcUser.getName(), true);
         if (specialUser.isAdmin()){
             return adminDBTopLevel.getBasicStatistics();
         }else{

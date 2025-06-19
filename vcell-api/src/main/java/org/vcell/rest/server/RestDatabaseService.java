@@ -73,8 +73,8 @@ public class RestDatabaseService {
 
 	}
 
-	public User.SPECIAL_CLAIM[] getSpecialClaims(User user) throws DataAccessException {
-		User.SpecialUser userWithClaims = localAdminDbServer.getUser(user.getName());
+	public SpecialUser.SPECIAL_CLAIM[] getSpecialClaims(User user) throws DataAccessException {
+		SpecialUser userWithClaims = localAdminDbServer.getUser(user.getName());
 		return userWithClaims.getMySpecials();
 	}
 
@@ -112,7 +112,7 @@ public class RestDatabaseService {
 		return databaseServerImpl.getAdminDBTopLevel().getBasicStatistics();
 	}
 
-	public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers(User user) throws DataAccessException{
+	public TreeMap<SpecialUser.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers(User user) throws DataAccessException{
 		return databaseServerImpl.getSpecialUsers(user);
 	}
 

@@ -41,6 +41,7 @@ docs/Origin.md
 docs/Publication.md
 docs/PublicationInfo.md
 docs/PublicationResourceApi.md
+docs/SPECIALCLAIM.md
 docs/SchedulerStatus.md
 docs/SimulationExecutionStatusRecord.md
 docs/SimulationJobStatusRecord.md
@@ -127,6 +128,7 @@ vcell_client/models/simulation_queue_entry_status_record.py
 vcell_client/models/simulation_queue_id.py
 vcell_client/models/simulation_status_persistent_record.py
 vcell_client/models/source_model.py
+vcell_client/models/specialclaim.py
 vcell_client/models/status.py
 vcell_client/models/status_message.py
 vcell_client/models/user.py

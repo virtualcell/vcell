@@ -13,14 +13,12 @@ package cbit.vcell.modeldb;
 import cbit.sql.Field;
 import cbit.sql.Field.SQLDataType;
 import cbit.sql.Table;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 /**
  * This type was created in VisualAge.
@@ -64,5 +62,14 @@ public class UserIdentityTable extends Table {
         LocalDateTime insertDate =    LocalDateTime.of(DBDate.toLocalDate(), DBTime.toLocalTime());
 
         return new UserIdentity(id, user, subject, issuer, insertDate);
+    }
+
+    public LocalDateTime getUserIdentityDate(ResultSet rset) throws SQLException {
+        //
+        // Format Date
+        //
+        java.sql.Date DBDate = rset.getDate(insertDate.getUnqualifiedColName());
+        java.sql.Time DBTime = rset.getTime(insertDate.getUnqualifiedColName());
+        return LocalDateTime.of(DBDate.toLocalDate(), DBTime.toLocalTime());
     }
 }

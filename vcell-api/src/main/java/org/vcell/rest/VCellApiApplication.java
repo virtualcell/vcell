@@ -35,6 +35,7 @@ import org.vcell.rest.server.*;
 import org.vcell.rest.users.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
 
 import java.io.File;
@@ -396,7 +397,7 @@ public class VCellApiApplication extends WadlApplication {
 		return this.adminService;
 	}
 
-	public User.SPECIAL_CLAIM[] getSpecialClaims(ApiAccessToken apiAccessToken) throws DataAccessException {
+	public SpecialUser.SPECIAL_CLAIM[] getSpecialClaims(ApiAccessToken apiAccessToken) throws DataAccessException {
 		User user = apiAccessToken.getUser();
 		return restDatabaseService.getSpecialClaims(user);
 	}
