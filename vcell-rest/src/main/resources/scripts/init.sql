@@ -92,7 +92,6 @@ CREATE TABLE vc_model_export_history (
     variables                     text[]        NOT NULL,
     start_time                    numeric       NOT NULL,
     end_time                      numeric       NOT NULL,
---    different_parameter_values    text[]        NOT NULL  DEFAULT '{}'::text[],
     saved_file_name               varchar(255)  NOT NULL,
     application_type              varchar(50)   NOT NULL,
     non_spatial                   boolean       NOT NULL,
