@@ -15,8 +15,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.*;
 import java.util.Collection;
 import java.util.zip.DataFormatException;
 import java.util.zip.ZipEntry;
@@ -348,5 +350,8 @@ private static ExportEvent makeRemoteN5File(String fileFormat, String fileName, 
 		throw new DataFormatException("Export Server could not produce valid data !");
 	}
 }
+
+}
+
 
 }
