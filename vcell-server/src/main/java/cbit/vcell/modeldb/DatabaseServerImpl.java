@@ -873,7 +873,11 @@ public ReactionDescription[] getUserReactionDescriptions(User user, ReactionQuer
  * @exception java.rmi.RemoteException The exception description.
  */
 public VCImageInfo getVCImageInfo(User user, KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return ((VCImageInfo[])getVersionInfos(user, key, VersionableType.VCImage, false, true))[0];
+	VCImageInfo[] infos = ((VCImageInfo[])getVersionInfos(user, key, VersionableType.VCImage, false, true));
+	if (infos.length == 0){
+		throw new ObjectNotFoundException(VCImageInfo.class.getName());
+	}
+	return infos[0];
 }
 
 
