@@ -28,6 +28,7 @@ from vcell_client.api.publication_resource_api import PublicationResourceApi
 from vcell_client.api.simulation_resource_api import SimulationResourceApi
 from vcell_client.api.solver_resource_api import SolverResourceApi
 from vcell_client.api.users_resource_api import UsersResourceApi
+from vcell_client.api.vc_image_resource_api import VCImageResourceApi
 
 # import ApiClient
 from vcell_client.api_response import ApiResponse
@@ -57,6 +58,7 @@ from vcell_client.models.field_data import FieldData
 from vcell_client.models.field_data_reference import FieldDataReference
 from vcell_client.models.field_data_saved_results import FieldDataSavedResults
 from vcell_client.models.field_data_shape import FieldDataShape
+from vcell_client.models.gif_image import GIFImage
 from vcell_client.models.geometry_summary import GeometrySummary
 from vcell_client.models.group_access import GroupAccess
 from vcell_client.models.group_access_all import GroupAccessAll
@@ -90,6 +92,7 @@ from vcell_client.models.user_identity_json_safe import UserIdentityJSONSafe
 from vcell_client.models.user_login_info_for_mapping import UserLoginInfoForMapping
 from vcell_client.models.user_registration_info import UserRegistrationInfo
 from vcell_client.models.vc_document_type import VCDocumentType
+from vcell_client.models.vc_image_summary import VCImageSummary
 from vcell_client.models.vc_simulation_identifier import VCSimulationIdentifier
 from vcell_client.models.v_cell_http_error import VCellHTTPError
 from vcell_client.models.v_cell_site import VCellSite

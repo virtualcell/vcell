@@ -11,4 +11,5 @@ from vcell_client.api.publication_resource_api import PublicationResourceApi
 from vcell_client.api.simulation_resource_api import SimulationResourceApi
 from vcell_client.api.solver_resource_api import SolverResourceApi
 from vcell_client.api.users_resource_api import UsersResourceApi
+from vcell_client.api.vc_image_resource_api import VCImageResourceApi
 

@@ -10,6 +10,8 @@
 
 package org.vcell.api.messaging;
 
+import cbit.image.GifParsingException;
+import cbit.image.VCImageInfo;
 import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
@@ -25,6 +27,7 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.ExceptionHandler;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.restclient.ApiException;
+import org.vcell.restclient.api.VcImageResourceApi;
 import org.vcell.restclient.model.*;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.util.BigString;
@@ -36,6 +39,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -194,15 +198,12 @@ public void deleteResultSetExport(org.vcell.util.document.KeyValue eleKey) throw
  */
 public void deleteVCImage(org.vcell.util.document.KeyValue key) throws DataAccessException {
 
+	VcImageResourceApi vcImageResourceApi = vCellApiClient.getVcImageApi();
 	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.deleteVCImage(Key="+key+")");
-		dbServerProxy.deleteVCImage(key);
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		vcImageResourceApi.deleteImageVCML(key.toString());
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
 }
 
@@ -619,30 +620,26 @@ public cbit.vcell.model.ReactionDescription[] getUserReactionDescriptions(Reacti
 
 public cbit.image.VCImageInfo getVCImageInfo(org.vcell.util.document.KeyValue imgKey) throws DataAccessException, ObjectNotFoundException {
 
+	VcImageResourceApi vcImageResourceApi = vCellApiClient.getVcImageApi();
 	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getVCImageInfo(key="+imgKey+")");
-		return dbServerProxy.getVCImageInfo(imgKey);
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		VCImageSummary summary = vcImageResourceApi.getImageSummary(imgKey.toString());
+		return DtoModelTransforms.imageSummaryToVCImageInfo(summary);
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
 }
 
 
 public cbit.image.VCImageInfo[] getVCImageInfos(boolean bAll) throws DataAccessException {
 
+	VcImageResourceApi vcImageResourceApi = vCellApiClient.getVcImageApi();
 	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getVCImageInfos(bAll="+bAll+")");
-		return dbServerProxy.getVCImageInfos(bAll);
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		List<VCImageSummary> summaries = vcImageResourceApi.getImageSummaries(bAll);
+		return summaries.stream().map(DtoModelTransforms::imageSummaryToVCImageInfo).toArray(VCImageInfo[]::new);
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
 }
 
@@ -652,19 +649,13 @@ public cbit.image.VCImageInfo[] getVCImageInfos(boolean bAll) throws DataAccessE
  * @throws RemoteException 
  */
 public BigString getVCImageXML(KeyValue imageKey) throws DataAccessException, ObjectNotFoundException {
-
+	VcImageResourceApi vcImageResourceApi = vCellApiClient.getVcImageApi();
 	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getSimulationXML(imageKey="+imageKey+")");
-		BigString xml = dbServerProxy.getVCImageXML(imageKey);
-		return xml;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		return new BigString(vcImageResourceApi.getImageVCML(imageKey.toString()));
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
-
 }
 
 
@@ -942,16 +933,12 @@ public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulati
  */
 public BigString saveVCImage(BigString vcImageXML) throws DataAccessException {
 
+	VcImageResourceApi vcImageResourceApi = vCellApiClient.getVcImageApi();
 	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.saveVCImage()");
-		BigString savedVCImageXML = dbServerProxy.saveVCImage(vcImageXML);
-		return savedVCImageXML;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		return new BigString(vcImageResourceApi.saveImageVCML(vcImageXML.toString(), null));
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
 
 }
@@ -962,19 +949,14 @@ public BigString saveVCImage(BigString vcImageXML) throws DataAccessException {
  * @throws RemoteException 
  */
 public BigString saveVCImageAs(BigString vcImageXML, String newName) throws DataAccessException {
-
+	VcImageResourceApi vcImageResourceApi = vCellApiClient.getVcImageApi();
 	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.saveVCImage(newName="+newName+")");
-		BigString savedVCImageXML = dbServerProxy.saveVCImageAs(vcImageXML,newName);
-		return savedVCImageXML;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.saveVCImage(newName=" + newName + ")");
+        return new BigString(vcImageResourceApi.saveImageVCML(vcImageXML.toString(), newName));
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
-
 }
 
 }

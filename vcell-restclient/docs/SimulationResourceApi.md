@@ -81,7 +81,7 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
+| **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
 
@@ -156,7 +156,7 @@ ApiResponse<[**SimulationStatusPersistentRecord**](SimulationStatusPersistentRec
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
+| **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
 
@@ -225,7 +225,7 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
+| **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
 
@@ -296,7 +296,7 @@ ApiResponse<[**List&lt;StatusMessage&gt;**](StatusMessage.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
+| **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
 
@@ -365,7 +365,7 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
+| **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
 
@@ -436,7 +436,7 @@ ApiResponse<[**List&lt;StatusMessage&gt;**](StatusMessage.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
+| **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
 

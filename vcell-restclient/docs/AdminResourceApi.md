@@ -69,7 +69,7 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | The PDF report |  -  |
-| **401** | Not Authorized |  -  |
+| **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
 
@@ -136,7 +136,7 @@ ApiResponse<[**File**](File.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | The PDF report |  -  |
-| **401** | Not Authorized |  -  |
+| **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
 

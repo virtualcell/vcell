@@ -43,7 +43,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimulationStatusPersistentRecord'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -85,7 +85,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/StatusMessage'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -127,7 +127,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/StatusMessage'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -162,7 +162,7 @@ paths:
                 format: binary
                 type: string
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -222,7 +222,7 @@ paths:
               schema:
                 type: string
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -325,7 +325,7 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -427,7 +427,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/FieldDataReference'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -507,7 +507,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataSavedResults'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -557,7 +557,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldData'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -601,7 +601,7 @@ paths:
                 additionalProperties:
                   $ref: '#/components/schemas/ExternalDataIdentifier'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -656,7 +656,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataSavedResults'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -701,7 +701,7 @@ paths:
         "201":
           description: Created
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -737,7 +737,7 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -777,7 +777,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataSavedResults'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -820,7 +820,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataShape'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -874,7 +874,7 @@ paths:
               schema:
                 type: string
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1015,7 +1015,7 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1057,6 +1057,199 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/image:
+    post:
+      tags:
+      - VC Image Resource
+      description: Save the VCML representation of an image.
+      operationId: saveImageVCML
+      parameters:
+      - name: name
+        in: query
+        description: Name to save new ImageVCML under. Leave blank if re-saving existing
+          ImageVCML.
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/image/summaries:
+    get:
+      tags:
+      - VC Image Resource
+      description: Return Image summaries.
+      operationId: getImageSummaries
+      parameters:
+      - name: includePublicAndShared
+        in: query
+        description: Include Image summaries that are public and shared with the requester.
+          Default is true.
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VCImageSummary'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/image/summary/{id}:
+    get:
+      tags:
+      - VC Image Resource
+      description: "All of the miscellaneous information about an Image (Extent, ISize,\
+        \ preview, etc...), but not the actual Image itself."
+      operationId: getImageSummary
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCImageSummary'
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/image/{id}:
+    get:
+      tags:
+      - VC Image Resource
+      description: Get specific image VCML.
+      operationId: getImageVCML
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+    delete:
+      tags:
+      - VC Image Resource
+      description: Remove specific image VCML.
+      operationId: deleteImageVCML
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
   /api/v1/mathModel:
     post:
       tags:
@@ -1092,7 +1285,7 @@ paths:
               schema:
                 type: string
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1233,7 +1426,7 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1295,7 +1488,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Publication'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1334,7 +1527,7 @@ paths:
                 format: int64
                 type: integer
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1396,7 +1589,7 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1504,7 +1697,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1582,7 +1775,7 @@ paths:
               schema:
                 type: boolean
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1616,7 +1809,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1666,7 +1859,7 @@ paths:
         "200":
           description: "Successful, returning the identity"
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1701,7 +1894,7 @@ paths:
         "400":
           description: Invalid or expired magic link
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1733,7 +1926,7 @@ paths:
         "400":
           description: unable to process request
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1775,7 +1968,7 @@ paths:
               schema:
                 type: boolean
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -2143,6 +2336,14 @@ components:
           items:
             format: double
             type: number
+    GIFImage:
+      type: object
+      properties:
+        gifEncodedData:
+          format: binary
+          type: string
+        size:
+          $ref: '#/components/schemas/ISize'
     GeometrySummary:
       type: object
       properties:
@@ -2608,6 +2809,19 @@ components:
       - GEOMETRY_DOC
       - EXTERNALFILE_DOC
       type: string
+    VCImageSummary:
+      type: object
+      properties:
+        size:
+          $ref: '#/components/schemas/ISize'
+        extent:
+          $ref: '#/components/schemas/Extent'
+        version:
+          $ref: '#/components/schemas/Version'
+        preview:
+          $ref: '#/components/schemas/GIFImage'
+        softwareVersion:
+          $ref: '#/components/schemas/VCellSoftwareVersion'
     VCSimulationIdentifier:
       type: object
       properties:

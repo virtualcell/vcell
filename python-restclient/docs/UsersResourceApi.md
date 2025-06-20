@@ -209,7 +209,7 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**401** | Not Authorized |  -  |
+**401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
 **500** | Data Access Exception |  -  |
 
@@ -277,7 +277,7 @@ This endpoint does not need any parameter.
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Successful, returning the identity |  -  |
-**401** | Not Authorized |  -  |
+**401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
 **409** | Conflict with server state. |  -  |
 **500** | Data Access Exception |  -  |
@@ -409,7 +409,7 @@ void (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Successful, returning the identity |  -  |
-**401** | Not Authorized |  -  |
+**401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
 **409** | VCell Identity not mapped, userid already exists |  -  |
 **500** | Data Access Exception |  -  |
@@ -482,7 +482,7 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**401** | Not Authorized |  -  |
+**401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
 **500** | Data Access Exception |  -  |
 
@@ -548,7 +548,7 @@ No authorization required
 |-------------|-------------|------------------|
 **200** | User mapped successfully |  -  |
 **400** | Invalid or expired magic link |  -  |
-**401** | Not Authorized |  -  |
+**401** | Not Authenticated |  -  |
 **500** | Data Access Exception |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
@@ -619,7 +619,7 @@ void (empty response body)
 |-------------|-------------|------------------|
 **200** | magic link sent in email if appropriate |  -  |
 **400** | unable to process request |  -  |
-**401** | Not Authorized |  -  |
+**401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
 **404** | Not found |  -  |
 **500** | Data Access Exception |  -  |
@@ -691,7 +691,7 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
-**401** | Not Authorized |  -  |
+**401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
 **500** | Data Access Exception |  -  |
 

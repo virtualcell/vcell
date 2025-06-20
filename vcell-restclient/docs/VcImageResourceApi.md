@@ -1,27 +1,29 @@
-# PublicationResourceApi
+# VcImageResourceApi
 
 All URIs are relative to *https://vcell.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
-| [**createPublication**](PublicationResourceApi.md#createPublication) | **POST** /api/v1/publications | Create publication |
-| [**createPublicationWithHttpInfo**](PublicationResourceApi.md#createPublicationWithHttpInfo) | **POST** /api/v1/publications | Create publication |
-| [**deletePublication**](PublicationResourceApi.md#deletePublication) | **DELETE** /api/v1/publications/{id} | Delete publication |
-| [**deletePublicationWithHttpInfo**](PublicationResourceApi.md#deletePublicationWithHttpInfo) | **DELETE** /api/v1/publications/{id} | Delete publication |
-| [**getPublicationById**](PublicationResourceApi.md#getPublicationById) | **GET** /api/v1/publications/{id} | Get publication by ID |
-| [**getPublicationByIdWithHttpInfo**](PublicationResourceApi.md#getPublicationByIdWithHttpInfo) | **GET** /api/v1/publications/{id} | Get publication by ID |
-| [**getPublications**](PublicationResourceApi.md#getPublications) | **GET** /api/v1/publications | Get all publications |
-| [**getPublicationsWithHttpInfo**](PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/v1/publications | Get all publications |
-| [**updatePublication**](PublicationResourceApi.md#updatePublication) | **PUT** /api/v1/publications | Update publication |
-| [**updatePublicationWithHttpInfo**](PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/v1/publications | Update publication |
+| [**deleteImageVCML**](VcImageResourceApi.md#deleteImageVCML) | **DELETE** /api/v1/image/{id} |  |
+| [**deleteImageVCMLWithHttpInfo**](VcImageResourceApi.md#deleteImageVCMLWithHttpInfo) | **DELETE** /api/v1/image/{id} |  |
+| [**getImageSummaries**](VcImageResourceApi.md#getImageSummaries) | **GET** /api/v1/image/summaries |  |
+| [**getImageSummariesWithHttpInfo**](VcImageResourceApi.md#getImageSummariesWithHttpInfo) | **GET** /api/v1/image/summaries |  |
+| [**getImageSummary**](VcImageResourceApi.md#getImageSummary) | **GET** /api/v1/image/summary/{id} |  |
+| [**getImageSummaryWithHttpInfo**](VcImageResourceApi.md#getImageSummaryWithHttpInfo) | **GET** /api/v1/image/summary/{id} |  |
+| [**getImageVCML**](VcImageResourceApi.md#getImageVCML) | **GET** /api/v1/image/{id} |  |
+| [**getImageVCMLWithHttpInfo**](VcImageResourceApi.md#getImageVCMLWithHttpInfo) | **GET** /api/v1/image/{id} |  |
+| [**saveImageVCML**](VcImageResourceApi.md#saveImageVCML) | **POST** /api/v1/image |  |
+| [**saveImageVCMLWithHttpInfo**](VcImageResourceApi.md#saveImageVCMLWithHttpInfo) | **POST** /api/v1/image |  |
 
 
 
-## createPublication
+## deleteImageVCML
 
-> Long createPublication(publication)
+> void deleteImageVCML(id)
 
-Create publication
+
+
+Remove specific image VCML.
 
 ### Example
 
@@ -30,23 +32,20 @@ Create publication
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.PublicationResourceApi;
+import org.vcell.restclient.api.VcImageResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
-        
 
-        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
-        Publication publication = new Publication(); // Publication | 
+        VcImageResourceApi apiInstance = new VcImageResourceApi(defaultClient);
+        String id = "id_example"; // String | 
         try {
-            Long result = apiInstance.createPublication(publication);
-            System.out.println(result);
+            apiInstance.deleteImageVCML(id);
         } catch (ApiException e) {
-            System.err.println("Exception when calling PublicationResourceApi#createPublication");
+            System.err.println("Exception when calling VcImageResourceApi#deleteImageVCML");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -61,146 +60,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **publication** | [**Publication**](Publication.md)|  | [optional] |
-
-### Return type
-
-**Long**
-
-
-### Authorization
-
-[openId](../README.md#openId)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-| **401** | Not Authenticated |  -  |
-| **403** | Not Allowed |  -  |
-| **500** | Data Access Exception |  -  |
-
-## createPublicationWithHttpInfo
-
-> ApiResponse<Long> createPublication createPublicationWithHttpInfo(publication)
-
-Create publication
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.ApiResponse;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.PublicationResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
-        
-
-        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
-        Publication publication = new Publication(); // Publication | 
-        try {
-            ApiResponse<Long> response = apiInstance.createPublicationWithHttpInfo(publication);
-            System.out.println("Status code: " + response.getStatusCode());
-            System.out.println("Response headers: " + response.getHeaders());
-            System.out.println("Response body: " + response.getData());
-        } catch (ApiException e) {
-            System.err.println("Exception when calling PublicationResourceApi#createPublication");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            System.err.println("Reason: " + e.getResponseBody());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **publication** | [**Publication**](Publication.md)|  | [optional] |
-
-### Return type
-
-ApiResponse<**Long**>
-
-
-### Authorization
-
-[openId](../README.md#openId)
-
-### HTTP request headers
-
-- **Content-Type**: application/json
-- **Accept**: application/json
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-| **200** | OK |  -  |
-| **401** | Not Authenticated |  -  |
-| **403** | Not Allowed |  -  |
-| **500** | Data Access Exception |  -  |
-
-
-## deletePublication
-
-> void deletePublication(id)
-
-Delete publication
-
-### Example
-
-```java
-// Import classes:
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
-import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
-import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.PublicationResourceApi;
-
-public class Example {
-    public static void main(String[] args) {
-        ApiClient defaultClient = Configuration.getDefaultApiClient();
-        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
-        
-
-        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
-        Long id = 56L; // Long | 
-        try {
-            apiInstance.deletePublication(id);
-        } catch (ApiException e) {
-            System.err.println("Exception when calling PublicationResourceApi#deletePublication");
-            System.err.println("Status code: " + e.getCode());
-            System.err.println("Reason: " + e.getResponseBody());
-            System.err.println("Response headers: " + e.getResponseHeaders());
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-### Parameters
-
-
-| Name | Type | Description  | Notes |
-|------------- | ------------- | ------------- | -------------|
-| **id** | **Long**|  | |
+| **id** | **String**|  | |
 
 ### Return type
 
@@ -209,7 +69,7 @@ null (empty response body)
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
@@ -225,11 +85,13 @@ null (empty response body)
 | **404** | Not found |  -  |
 | **500** | Data Access Exception |  -  |
 
-## deletePublicationWithHttpInfo
+## deleteImageVCMLWithHttpInfo
 
-> ApiResponse<Void> deletePublication deletePublicationWithHttpInfo(id)
+> ApiResponse<Void> deleteImageVCML deleteImageVCMLWithHttpInfo(id)
 
-Delete publication
+
+
+Remove specific image VCML.
 
 ### Example
 
@@ -239,24 +101,22 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.PublicationResourceApi;
+import org.vcell.restclient.api.VcImageResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
-        
 
-        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
-        Long id = 56L; // Long | 
+        VcImageResourceApi apiInstance = new VcImageResourceApi(defaultClient);
+        String id = "id_example"; // String | 
         try {
-            ApiResponse<Void> response = apiInstance.deletePublicationWithHttpInfo(id);
+            ApiResponse<Void> response = apiInstance.deleteImageVCMLWithHttpInfo(id);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
         } catch (ApiException e) {
-            System.err.println("Exception when calling PublicationResourceApi#deletePublication");
+            System.err.println("Exception when calling VcImageResourceApi#deleteImageVCML");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -271,7 +131,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | **Long**|  | |
+| **id** | **String**|  | |
 
 ### Return type
 
@@ -280,7 +140,7 @@ ApiResponse<Void>
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
@@ -297,11 +157,13 @@ ApiResponse<Void>
 | **500** | Data Access Exception |  -  |
 
 
-## getPublicationById
+## getImageSummaries
 
-> Publication getPublicationById(id)
+> List<VCImageSummary> getImageSummaries(includePublicAndShared)
 
-Get publication by ID
+
+
+Return Image summaries.
 
 ### Example
 
@@ -311,20 +173,20 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.PublicationResourceApi;
+import org.vcell.restclient.api.VcImageResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
-        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
-        Long id = 56L; // Long | 
+        VcImageResourceApi apiInstance = new VcImageResourceApi(defaultClient);
+        Boolean includePublicAndShared = true; // Boolean | Include Image summaries that are public and shared with the requester. Default is true.
         try {
-            Publication result = apiInstance.getPublicationById(id);
+            List<VCImageSummary> result = apiInstance.getImageSummaries(includePublicAndShared);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling PublicationResourceApi#getPublicationById");
+            System.err.println("Exception when calling VcImageResourceApi#getImageSummaries");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -339,11 +201,11 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | **Long**|  | |
+| **includePublicAndShared** | **Boolean**| Include Image summaries that are public and shared with the requester. Default is true. | [optional] |
 
 ### Return type
 
-[**Publication**](Publication.md)
+[**List&lt;VCImageSummary&gt;**](VCImageSummary.md)
 
 
 ### Authorization
@@ -361,11 +223,13 @@ No authorization required
 | **200** | OK |  -  |
 | **500** | Data Access Exception |  -  |
 
-## getPublicationByIdWithHttpInfo
+## getImageSummariesWithHttpInfo
 
-> ApiResponse<Publication> getPublicationById getPublicationByIdWithHttpInfo(id)
+> ApiResponse<List<VCImageSummary>> getImageSummaries getImageSummariesWithHttpInfo(includePublicAndShared)
 
-Get publication by ID
+
+
+Return Image summaries.
 
 ### Example
 
@@ -376,22 +240,22 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.PublicationResourceApi;
+import org.vcell.restclient.api.VcImageResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
-        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
-        Long id = 56L; // Long | 
+        VcImageResourceApi apiInstance = new VcImageResourceApi(defaultClient);
+        Boolean includePublicAndShared = true; // Boolean | Include Image summaries that are public and shared with the requester. Default is true.
         try {
-            ApiResponse<Publication> response = apiInstance.getPublicationByIdWithHttpInfo(id);
+            ApiResponse<List<VCImageSummary>> response = apiInstance.getImageSummariesWithHttpInfo(includePublicAndShared);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling PublicationResourceApi#getPublicationById");
+            System.err.println("Exception when calling VcImageResourceApi#getImageSummaries");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -406,11 +270,11 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **id** | **Long**|  | |
+| **includePublicAndShared** | **Boolean**| Include Image summaries that are public and shared with the requester. Default is true. | [optional] |
 
 ### Return type
 
-ApiResponse<[**Publication**](Publication.md)>
+ApiResponse<[**List&lt;VCImageSummary&gt;**](VCImageSummary.md)>
 
 
 ### Authorization
@@ -429,11 +293,13 @@ No authorization required
 | **500** | Data Access Exception |  -  |
 
 
-## getPublications
+## getImageSummary
 
-> List<Publication> getPublications()
+> VCImageSummary getImageSummary(id)
 
-Get all publications
+
+
+All of the miscellaneous information about an Image (Extent, ISize, preview, etc...), but not the actual Image itself.
 
 ### Example
 
@@ -443,19 +309,20 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.PublicationResourceApi;
+import org.vcell.restclient.api.VcImageResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
-        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
+        VcImageResourceApi apiInstance = new VcImageResourceApi(defaultClient);
+        String id = "id_example"; // String | 
         try {
-            List<Publication> result = apiInstance.getPublications();
+            VCImageSummary result = apiInstance.getImageSummary(id);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling PublicationResourceApi#getPublications");
+            System.err.println("Exception when calling VcImageResourceApi#getImageSummary");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -467,11 +334,14 @@ public class Example {
 
 ### Parameters
 
-This endpoint does not need any parameter.
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **String**|  | |
 
 ### Return type
 
-[**List&lt;Publication&gt;**](Publication.md)
+[**VCImageSummary**](VCImageSummary.md)
 
 
 ### Authorization
@@ -487,13 +357,17 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
 | **500** | Data Access Exception |  -  |
 
-## getPublicationsWithHttpInfo
+## getImageSummaryWithHttpInfo
 
-> ApiResponse<List<Publication>> getPublications getPublicationsWithHttpInfo()
+> ApiResponse<VCImageSummary> getImageSummary getImageSummaryWithHttpInfo(id)
 
-Get all publications
+
+
+All of the miscellaneous information about an Image (Extent, ISize, preview, etc...), but not the actual Image itself.
 
 ### Example
 
@@ -504,21 +378,22 @@ import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.PublicationResourceApi;
+import org.vcell.restclient.api.VcImageResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
 
-        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
+        VcImageResourceApi apiInstance = new VcImageResourceApi(defaultClient);
+        String id = "id_example"; // String | 
         try {
-            ApiResponse<List<Publication>> response = apiInstance.getPublicationsWithHttpInfo();
+            ApiResponse<VCImageSummary> response = apiInstance.getImageSummaryWithHttpInfo(id);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling PublicationResourceApi#getPublications");
+            System.err.println("Exception when calling VcImageResourceApi#getImageSummary");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -530,11 +405,14 @@ public class Example {
 
 ### Parameters
 
-This endpoint does not need any parameter.
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **String**|  | |
 
 ### Return type
 
-ApiResponse<[**List&lt;Publication&gt;**](Publication.md)>
+ApiResponse<[**VCImageSummary**](VCImageSummary.md)>
 
 
 ### Authorization
@@ -550,14 +428,18 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
 | **500** | Data Access Exception |  -  |
 
 
-## updatePublication
+## getImageVCML
 
-> Publication updatePublication(publication)
+> String getImageVCML(id)
 
-Update publication
+
+
+Get specific image VCML.
 
 ### Example
 
@@ -566,23 +448,21 @@ Update publication
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.PublicationResourceApi;
+import org.vcell.restclient.api.VcImageResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
-        
 
-        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
-        Publication publication = new Publication(); // Publication | 
+        VcImageResourceApi apiInstance = new VcImageResourceApi(defaultClient);
+        String id = "id_example"; // String | 
         try {
-            Publication result = apiInstance.updatePublication(publication);
+            String result = apiInstance.getImageVCML(id);
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling PublicationResourceApi#updatePublication");
+            System.err.println("Exception when calling VcImageResourceApi#getImageVCML");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -597,35 +477,181 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **publication** | [**Publication**](Publication.md)|  | [optional] |
+| **id** | **String**|  | |
 
 ### Return type
 
-[**Publication**](Publication.md)
+**String**
 
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: text/plain, application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
+| **422** | Unprocessable content submitted |  -  |
+| **500** | Data Access Exception |  -  |
+
+## getImageVCMLWithHttpInfo
+
+> ApiResponse<String> getImageVCML getImageVCMLWithHttpInfo(id)
+
+
+
+Get specific image VCML.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.VcImageResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+
+        VcImageResourceApi apiInstance = new VcImageResourceApi(defaultClient);
+        String id = "id_example"; // String | 
+        try {
+            ApiResponse<String> response = apiInstance.getImageVCMLWithHttpInfo(id);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling VcImageResourceApi#getImageVCML");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **String**|  | |
+
+### Return type
+
+ApiResponse<**String**>
+
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: text/plain, application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
+| **422** | Unprocessable content submitted |  -  |
+| **500** | Data Access Exception |  -  |
+
+
+## saveImageVCML
+
+> String saveImageVCML(body, name)
+
+
+
+Save the VCML representation of an image.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.VcImageResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+
+        VcImageResourceApi apiInstance = new VcImageResourceApi(defaultClient);
+        String body = "body_example"; // String | 
+        String name = "name_example"; // String | Name to save new ImageVCML under. Leave blank if re-saving existing ImageVCML.
+        try {
+            String result = apiInstance.saveImageVCML(body, name);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling VcImageResourceApi#saveImageVCML");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **body** | **String**|  | |
+| **name** | **String**| Name to save new ImageVCML under. Leave blank if re-saving existing ImageVCML. | [optional] |
+
+### Return type
+
+**String**
+
+
+### Authorization
+
+No authorization required
 
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json
+- **Accept**: text/plain, application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
 | **401** | Not Authenticated |  -  |
-| **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
 | **500** | Data Access Exception |  -  |
 
-## updatePublicationWithHttpInfo
+## saveImageVCMLWithHttpInfo
 
-> ApiResponse<Publication> updatePublication updatePublicationWithHttpInfo(publication)
+> ApiResponse<String> saveImageVCML saveImageVCMLWithHttpInfo(body, name)
 
-Update publication
+
+
+Save the VCML representation of an image.
 
 ### Example
 
@@ -635,25 +661,24 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Configuration;
-import org.vcell.restclient.auth.*;
 import org.vcell.restclient.models.*;
-import org.vcell.restclient.api.PublicationResourceApi;
+import org.vcell.restclient.api.VcImageResourceApi;
 
 public class Example {
     public static void main(String[] args) {
         ApiClient defaultClient = Configuration.getDefaultApiClient();
         defaultClient.setBasePath("https://vcell.cam.uchc.edu");
-        
 
-        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
-        Publication publication = new Publication(); // Publication | 
+        VcImageResourceApi apiInstance = new VcImageResourceApi(defaultClient);
+        String body = "body_example"; // String | 
+        String name = "name_example"; // String | Name to save new ImageVCML under. Leave blank if re-saving existing ImageVCML.
         try {
-            ApiResponse<Publication> response = apiInstance.updatePublicationWithHttpInfo(publication);
+            ApiResponse<String> response = apiInstance.saveImageVCMLWithHttpInfo(body, name);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling PublicationResourceApi#updatePublication");
+            System.err.println("Exception when calling VcImageResourceApi#saveImageVCML");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -668,27 +693,28 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **publication** | [**Publication**](Publication.md)|  | [optional] |
+| **body** | **String**|  | |
+| **name** | **String**| Name to save new ImageVCML under. Leave blank if re-saving existing ImageVCML. | [optional] |
 
 ### Return type
 
-ApiResponse<[**Publication**](Publication.md)>
+ApiResponse<**String**>
 
 
 ### Authorization
 
-[openId](../README.md#openId)
+No authorization required
 
 ### HTTP request headers
 
 - **Content-Type**: application/json
-- **Accept**: application/json
+- **Accept**: text/plain, application/json
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
 | **401** | Not Authenticated |  -  |
-| **403** | Not Allowed |  -  |
+| **422** | Unprocessable content submitted |  -  |
 | **500** | Data Access Exception |  -  |
 

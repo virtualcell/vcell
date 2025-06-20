@@ -199,6 +199,16 @@ Class | Method | HTTP request | Description
 *UsersResourceApi* | [**requestRecoveryEmailWithHttpInfo**](docs/UsersResourceApi.md#requestRecoveryEmailWithHttpInfo) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account.
 *UsersResourceApi* | [**unmapUser**](docs/UsersResourceApi.md#unmapUser) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
 *UsersResourceApi* | [**unmapUserWithHttpInfo**](docs/UsersResourceApi.md#unmapUserWithHttpInfo) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
+*VcImageResourceApi* | [**deleteImageVCML**](docs/VcImageResourceApi.md#deleteImageVCML) | **DELETE** /api/v1/image/{id} | 
+*VcImageResourceApi* | [**deleteImageVCMLWithHttpInfo**](docs/VcImageResourceApi.md#deleteImageVCMLWithHttpInfo) | **DELETE** /api/v1/image/{id} | 
+*VcImageResourceApi* | [**getImageSummaries**](docs/VcImageResourceApi.md#getImageSummaries) | **GET** /api/v1/image/summaries | 
+*VcImageResourceApi* | [**getImageSummariesWithHttpInfo**](docs/VcImageResourceApi.md#getImageSummariesWithHttpInfo) | **GET** /api/v1/image/summaries | 
+*VcImageResourceApi* | [**getImageSummary**](docs/VcImageResourceApi.md#getImageSummary) | **GET** /api/v1/image/summary/{id} | 
+*VcImageResourceApi* | [**getImageSummaryWithHttpInfo**](docs/VcImageResourceApi.md#getImageSummaryWithHttpInfo) | **GET** /api/v1/image/summary/{id} | 
+*VcImageResourceApi* | [**getImageVCML**](docs/VcImageResourceApi.md#getImageVCML) | **GET** /api/v1/image/{id} | 
+*VcImageResourceApi* | [**getImageVCMLWithHttpInfo**](docs/VcImageResourceApi.md#getImageVCMLWithHttpInfo) | **GET** /api/v1/image/{id} | 
+*VcImageResourceApi* | [**saveImageVCML**](docs/VcImageResourceApi.md#saveImageVCML) | **POST** /api/v1/image | 
+*VcImageResourceApi* | [**saveImageVCMLWithHttpInfo**](docs/VcImageResourceApi.md#saveImageVCMLWithHttpInfo) | **POST** /api/v1/image | 
 
 
 ## Documentation for Models
@@ -219,6 +229,7 @@ Class | Method | HTTP request | Description
  - [FieldDataReference](docs/FieldDataReference.md)
  - [FieldDataSavedResults](docs/FieldDataSavedResults.md)
  - [FieldDataShape](docs/FieldDataShape.md)
+ - [GIFImage](docs/GIFImage.md)
  - [GeometrySummary](docs/GeometrySummary.md)
  - [GroupAccess](docs/GroupAccess.md)
  - [GroupAccessAll](docs/GroupAccessAll.md)
@@ -252,6 +263,7 @@ Class | Method | HTTP request | Description
  - [UserLoginInfoForMapping](docs/UserLoginInfoForMapping.md)
  - [UserRegistrationInfo](docs/UserRegistrationInfo.md)
  - [VCDocumentType](docs/VCDocumentType.md)
+ - [VCImageSummary](docs/VCImageSummary.md)
  - [VCSimulationIdentifier](docs/VCSimulationIdentifier.md)
  - [VCellHTTPError](docs/VCellHTTPError.md)
  - [VCellSite](docs/VCellSite.md)

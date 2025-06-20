@@ -1,6 +1,9 @@
 package org.vcell.restclient.utils;
 
 
+import cbit.image.GIFImage;
+import cbit.image.GifParsingException;
+import cbit.image.VCImageInfo;
 import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.field.io.FieldData;
 import cbit.vcell.geometry.GeometryInfo;
@@ -23,6 +26,10 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.*;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.nio.file.Files;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -286,6 +293,17 @@ public class DtoModelTransforms {
                 summary.getDimension(), DtoModelTransforms.dtoToExtent(summary.getExtent()),
                 DtoModelTransforms.dtoToOrigin(summary.getOrigin()), new KeyValue(summary.getImageRef()),
                 DtoModelTransforms.dtoToVCellSoftwareVersion(summary.getSoftwareVersion()));
+    }
+
+    public static VCImageInfo imageSummaryToVCImageInfo(org.vcell.restclient.model.VCImageSummary summary) {
+        try {
+            return new VCImageInfo(DtoModelTransforms.versionDTOToVersion(summary.getVersion()),
+                    DtoModelTransforms.dtoToISize(summary.getSize()), DtoModelTransforms.dtoToExtent(summary.getExtent()),
+                    new GIFImage(Files.readAllBytes(summary.getPreview().getGifEncodedData().toPath())),
+                    DtoModelTransforms.dtoToVCellSoftwareVersion(summary.getSoftwareVersion()));
+        } catch (GifParsingException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
