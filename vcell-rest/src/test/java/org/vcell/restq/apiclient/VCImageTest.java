@@ -53,10 +53,6 @@ public class VCImageTest {
         TestEndpointUtils.clearAllBioModelEntries(agroalConnectionFactory);
     }
 
-    private void cleanMathModel(MathModel savedModel, MathModel testModel) throws PropertyVetoException {
-
-    }
-
     @Test
     public void testSave() throws Exception {
         VcImageResourceApi vcImageResourceApi = new VcImageResourceApi(aliceAPIClient);
