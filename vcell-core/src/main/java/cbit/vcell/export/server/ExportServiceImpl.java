@@ -15,8 +15,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.sql.*;
 import java.util.Collection;
 import java.util.zip.DataFormatException;
 import java.util.zip.ZipEntry;
@@ -60,6 +62,49 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 	return makeRemoteFile(outputContext,user, dataServerImpl, exportSpecs, eventController, JobRequest.createExportJobRequest(user).getExportJobID());
 }
 
+
+/**
+ * Insert the method's description here.
+ * Creation date: (4/1/2001 11:20:45 AM)
+ * @deprecated
+ */
+protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, String format, String location,ExportSpecs exportSpecs) {
+	User user = null;
+	Object object = jobRequestIDs.get(new Long(jobID));
+	if (object != null) {
+		user = (User)object;
+	}
+	TimeSpecs timeSpecs = (exportSpecs!=null)?exportSpecs.getTimeSpecs():(null);
+	VariableSpecs varSpecs = (exportSpecs!=null)?exportSpecs.getVariableSpecs():(null);
+	final KeyValue dataKey;
+	if (vcdID instanceof VCSimulationDataIdentifier) {
+		dataKey = ((VCSimulationDataIdentifier)vcdID).getSimulationKey();
+	}else if (vcdID instanceof ExternalDataIdentifier) {
+		dataKey = ((ExternalDataIdentifier)vcdID).getSimulationKey();
+	}else {
+		throw new RuntimeException("unexpected VCDataIdentifier");
+	}
+	ExportEvent event = new ExportEvent(
+			this, jobID, user, vcdID.getID(), dataKey, ExportEvent.EXPORT_COMPLETE, 
+			format, location, null, timeSpecs, varSpecs);
+    event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
+
+	assert exportSpecs != null;
+	event.setHumanReadableExportData(exportSpecs.getHumanReadableExportData());
+	assert user != null;
+
+
+exportToDb(
+			jobID,
+			Long.parseLong(user.getID().toString()),
+			Long.parseLong(vcdID.getOwner().getID().toString()),
+			format,
+			new Timestamp(System.currentTimeMillis()),
+			location,
+			exportSpecs
+	);
+	fireExportEvent(event);
+	return event;
 public ExportEvent makeRemoteFile(OutputContext outputContext, User user, DataServerImpl dataServer, ExportSpecs exportSpecs, boolean zip, ClientTaskStatusSupport clientTaskStatusSupport)throws DataAccessException {
 		return makeRemoteFile(outputContext, user, dataServer, exportSpecs, eventController, zip, clientTaskStatusSupport, JobRequest.createExportJobRequest(user).getExportJobID());
 }
@@ -348,5 +393,97 @@ private static ExportEvent makeRemoteN5File(String fileFormat, String fileName, 
 		throw new DataFormatException("Export Server could not produce valid data !");
 	}
 }
+
+}
+
+private void exportToDb(long   jobID,
+						long   userRef,
+						long   modelRef,
+						String exportFormat,
+						Timestamp exportDate,
+						String uri,
+						ExportSpecs exportSpecs) {
+	Connection conn      = null;
+	PreparedStatement ps = null;
+	PreparedStatement psParam = null;
+	ResultSet rsSeq      = null;
+	try {
+		conn = DriverManager.getConnection("DB_URL", "quarkus", "quarkus");
+
+		// 1) history ID already passed in (jobID), skip sequence
+
+		// 2) Insert into vc_model_export_history
+		String hsql =
+				"INSERT INTO vc_model_export_history (" +
+						"id, job_id, user_ref, model_ref, export_format, export_date, uri," +
+						"data_id, simulation_name, application_name, biomodel_name, variables," +
+						"start_time, end_time, saved_file_name, application_type, non_spatial," +
+						"z_slices, t_slices, num_variables" +
+						") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+		ps = conn.prepareStatement(hsql);
+
+		HumanReadableExportData meta = exportSpecs.getHumanReadableExportData();
+		TimeSpecs       ts   = exportSpecs.getTimeSpecs();
+		String[]        vars = exportSpecs.getVariableSpecs().getVariableNames();
+
+		String timeRange = ts.toString();
+		String[] time_parts   = timeRange.split("/");
+		BigDecimal startTime = new BigDecimal(time_parts[0]);
+		BigDecimal endTime   = new BigDecimal(time_parts[1]);
+
+		//ps.setLong       (1, historyId);
+		ps.setLong       (2, jobID);        // job_id == id
+		ps.setLong       (3, userRef);
+		ps.setLong       (4, modelRef);
+		ps.setString     (5, exportFormat);
+		ps.setTimestamp  (6, exportDate);
+		ps.setString     (7, uri);
+		ps.setString     (8, exportSpecs.getVCDataIdentifier().getID());
+		ps.setString     (9, meta.simulationName);
+		ps.setString     (10, meta.applicationName);
+		ps.setString     (11, meta.biomodelName);
+		ps.setArray      (12, conn.createArrayOf("text", vars));
+		ps.setBigDecimal (13, startTime);
+		ps.setBigDecimal (14, endTime);
+		ps.setString     (15, meta.serverSavedFileName);
+		ps.setString     (16, meta.applicationType);
+		ps.setBoolean    (17, meta.nonSpatial);
+		ps.setInt        (18, meta.zSlices);
+		ps.setInt        (19, meta.tSlices);
+		ps.setInt        (20, meta.numChannels);
+		ps.executeUpdate();
+
+		// 3) parameter values
+		String psql =
+				"INSERT INTO vc_model_parameter_values (" +
+						"export_id, user_ref, model_ref, parameter_name," +
+						"parameter_original, parameter_changed" +
+						") VALUES (?,?,?,?,?,?)";
+		psParam = conn.prepareStatement(psql);
+		for (String entry : meta.differentParameterValues) {
+			String[] parts = entry.split(":");
+			if (parts.length == 3) {
+				//psParam.setLong       (1, historyId);
+				psParam.setLong       (2, userRef);
+				psParam.setLong       (3, modelRef);
+				psParam.setString     (4, parts[0]);
+				psParam.setBigDecimal (5, new BigDecimal(parts[1]));
+				psParam.setBigDecimal (6, new BigDecimal(parts[2]));
+				psParam.addBatch();
+			}
+		}
+		psParam.executeBatch();
+	}
+	catch(SQLException e){
+		lg.error("Error persisting export",e);
+	}
+	finally {
+		try{ if(rsSeq  !=null) rsSeq.close();  }catch(Exception ign){}
+		try{ if(psParam !=null) psParam.close(); }catch(Exception ign){}
+		try{ if(ps     !=null) ps.close();   }catch(Exception ign){}
+		try{ if(conn   !=null) conn.close();  }catch(Exception ign){}
+	}
+}
+
 
 }
