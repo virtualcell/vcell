@@ -80,15 +80,15 @@ CREATE TABLE vc_useridentity(id bigint PRIMARY KEY,userRef bigint NOT NULL REFER
 CREATE TABLE vc_model_export_history (
     id                            bigint        PRIMARY KEY,
     job_id                        bigint        NOT NULL,
-    user_ref                      bigint        REFERENCES vc_userinfo(id) ON DELETE CASCADE,
-    model_ref                     bigint        REFERENCES vc_model(id) ON DELETE CASCADE,
+    user_ref                      bigint        NOT NULL REFERENCES vc_userinfo(id) ON DELETE CASCADE,
+    model_ref                     bigint        NOT NULL REFERENCES vc_model(id) ON DELETE CASCADE,
     export_format                 varchar(50)   NOT NULL,
     export_date                   timestamp     NOT NULL,
     uri                           text          NOT NULL,
     data_id                       varchar(255)  NOT NULL,
     simulation_name               varchar(255)  NOT NULL,
     application_name              varchar(255)  NOT NULL,
-    biomodel_name                 varchar(255)  REFERENCES vc_model(name) ON DELETE CASCADE,
+    biomodel_name                 varchar(255)  NOT NULL,
     variables                     text[]        NOT NULL,
     start_time                    numeric       NOT NULL,
     end_time                      numeric       NOT NULL,
@@ -98,12 +98,11 @@ CREATE TABLE vc_model_export_history (
     non_spatial                   boolean       NOT NULL,
     z_slices                      integer       NOT NULL DEFAULT 0,
     t_slices                      integer       NOT NULL DEFAULT 0,
-    num_variables                 integer       NOT NULL DEFAULT 0,
-    insert_date                   timestamp     NOT NULL DEFAULT CURRENT_TIMESTAMP
+    num_variables                 integer       NOT NULL DEFAULT 0
 );
 
 CREATE TABLE vc_model_parameter_values(
-    export_id                     bigint        PRIMARY KEY REFERENCES vc_model_export_history(id),
+    id                            bigint        PRIMARY KEY REFERENCES vc_model_export_history(id),
     user_ref                      bigint        REFERENCES vc_userinfo(id) ON DELETE CASCADE,
     model_ref                     bigint        REFERENCES vc_model(id) ON DELETE CASCADE,
     parameter_name                text          NOT NULL,
@@ -122,6 +121,9 @@ CREATE INDEX geom_extentref ON vc_geometry(extentRef);
 CREATE INDEX geom_imageref ON vc_geometry(imageRef);
 CREATE INDEX mathdesc_geomref ON vc_math(geometryRef);
 CREATE INDEX simcstat_simcref ON vc_simcontextstat(simContextRef);
+CREATE INDEX idx_export_history_model_ref ON vc_model_export_history(model_ref);
+CREATE INDEX idx_param_values_id ON vc_model_parameter_values(id);
+
 
 INSERT INTO vc_userinfo VALUES ( 0,'void','1700596370242','void@example.com','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'B9BDD75BC5382CA83D5AB82172A98D869555899C' );
 INSERT INTO vc_userinfo VALUES ( 2,'Administrator','1700596370260','Administrator@example.com','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'CD181552B879A2F29D10434D8ACF692B6C8126F9' );
