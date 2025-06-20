@@ -1351,4 +1351,12 @@ public BigString saveVCImageAs(User user, BigString vcImageXML, java.lang.String
 	}
 }
 
+public void addExportHistory(User user, String exportHistory) throws DataAccessException {
+    try {
+        dbTop.insertExportHistory(user, exportHistory, true);
+    } catch (SQLException e) {
+        throw new DataAccessException(e);
+    }
+}
+
 }
