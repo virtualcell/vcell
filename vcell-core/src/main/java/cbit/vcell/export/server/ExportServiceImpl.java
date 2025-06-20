@@ -107,7 +107,7 @@ protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, St
 	assert user != null;
 
 
-exportToDb(
+exportToDB(
 			jobID,
 			Long.parseLong(user.getID().toString()),
 			Long.parseLong(vcdID.getOwner().getID().toString()),
@@ -516,7 +516,7 @@ public synchronized void removeExportListener(ExportListener listener) {
 	listenerList.remove(ExportListener.class, listener);
 }
 
-private void exportToDb(long   jobID,
+private void exportToDB(long   jobID,
 						long   userRef,
 						long   modelRef,
 						String exportFormat,
@@ -527,20 +527,19 @@ private void exportToDb(long   jobID,
 	PreparedStatement ps = null;
 	PreparedStatement psParam = null;
 	ResultSet rsSeq      = null;
+	boolean passed;
 	try {
 		conn = DriverManager.getConnection("DB_URL", "quarkus", "quarkus");
 
-		// 1) history ID already passed in (jobID), skip sequence
 
-		// 2) Insert into vc_model_export_history
-		String hsql =
+		String vcmExpHiSQL =		// SQL statement for inserting into vc_model_export_history table in VCell server
 				"INSERT INTO vc_model_export_history (" +
 						"id, job_id, user_ref, model_ref, export_format, export_date, uri," +
 						"data_id, simulation_name, application_name, biomodel_name, variables," +
 						"start_time, end_time, saved_file_name, application_type, non_spatial," +
 						"z_slices, t_slices, num_variables" +
 						") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-		ps = conn.prepareStatement(hsql);
+		ps = conn.prepareStatement(vcmExpHiSQL);
 
 		HumanReadableExportData meta = exportSpecs.getHumanReadableExportData();
 		TimeSpecs       ts   = exportSpecs.getTimeSpecs();
@@ -551,8 +550,8 @@ private void exportToDb(long   jobID,
 		BigDecimal startTime = new BigDecimal(time_parts[0]);
 		BigDecimal endTime   = new BigDecimal(time_parts[1]);
 
-		//ps.setLong       (1, historyId);
-		ps.setLong       (2, jobID);        // job_id == id
+
+		ps.setLong       (2, jobID);
 		ps.setLong       (3, userRef);
 		ps.setLong       (4, modelRef);
 		ps.setString     (5, exportFormat);
@@ -573,13 +572,15 @@ private void exportToDb(long   jobID,
 		ps.setInt        (20, meta.numChannels);
 		ps.executeUpdate();
 
-		// 3) parameter values
-		String psql =
+
+		String vcmExpHisPVSQL =		// SQL statement for inserting into vc_model_parameter_value table in VCell server
 				"INSERT INTO vc_model_parameter_values (" +
 						"export_id, user_ref, model_ref, parameter_name," +
 						"parameter_original, parameter_changed" +
 						") VALUES (?,?,?,?,?,?)";
-		psParam = conn.prepareStatement(psql);
+		psParam = conn.prepareStatement(vcmExpHisPVSQL);
+
+
 		for (String entry : meta.differentParameterValues) {
 			String[] parts = entry.split(":");
 			if (parts.length == 3) {
@@ -595,7 +596,7 @@ private void exportToDb(long   jobID,
 		psParam.executeBatch();
 	}
 	catch(SQLException e){
-		lg.error("Error persisting export",e);
+		lg.error("Error exporting to database",e);
 	}
 	finally {
 		try{ if(rsSeq  !=null) rsSeq.close();  }catch(Exception ign){}
