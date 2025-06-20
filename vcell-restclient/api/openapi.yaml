@@ -51,7 +51,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -96,7 +96,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -141,7 +141,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -177,7 +177,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -241,7 +241,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "422":
@@ -316,7 +316,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -464,7 +464,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -529,7 +529,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "422":
@@ -573,7 +573,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "422":
@@ -621,7 +621,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -673,7 +673,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "422":
@@ -713,7 +713,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -753,7 +753,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -793,7 +793,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "422":
@@ -840,7 +840,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -899,7 +899,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "422":
@@ -1014,7 +1014,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -1127,7 +1127,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "422":
           content:
             application/json:
@@ -1237,7 +1237,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -1345,7 +1345,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "422":
@@ -1460,7 +1460,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -1563,7 +1563,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -1603,7 +1603,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -1644,7 +1644,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -1767,7 +1767,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "500":
@@ -1851,7 +1851,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -1887,7 +1887,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "409":
@@ -1939,7 +1939,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "409":
@@ -1979,7 +1979,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "500":
           content:
             application/json:
@@ -2018,7 +2018,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "404":
@@ -2063,7 +2063,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -3652,6 +3652,9 @@ components:
         version:
           date: 2000-01-23T04:56:07.000+00:00
           owner:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           branchID: 0.8008281904610115

@@ -43,7 +43,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimulationStatusPersistentRecord'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -85,7 +85,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/StatusMessage'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -127,7 +127,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/StatusMessage'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -162,7 +162,7 @@ paths:
                 format: binary
                 type: string
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -222,7 +222,7 @@ paths:
               schema:
                 type: string
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -325,7 +325,7 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -427,7 +427,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/FieldDataReference'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -507,7 +507,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataSavedResults'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -557,7 +557,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldData'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -601,7 +601,7 @@ paths:
                 additionalProperties:
                   $ref: '#/components/schemas/ExternalDataIdentifier'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -656,7 +656,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataSavedResults'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -701,7 +701,7 @@ paths:
         "201":
           description: Created
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -737,7 +737,7 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -777,7 +777,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataSavedResults'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -820,7 +820,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataShape'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -874,7 +874,7 @@ paths:
               schema:
                 type: string
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1015,7 +1015,7 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1085,7 +1085,7 @@ paths:
               schema:
                 type: string
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1227,7 +1227,7 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1285,7 +1285,7 @@ paths:
               schema:
                 type: string
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1426,7 +1426,7 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1488,7 +1488,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Publication'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1527,7 +1527,7 @@ paths:
                 format: int64
                 type: integer
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1589,7 +1589,7 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1697,7 +1697,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1775,7 +1775,7 @@ paths:
               schema:
                 type: boolean
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1809,7 +1809,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1859,7 +1859,7 @@ paths:
         "200":
           description: "Successful, returning the identity"
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1894,7 +1894,7 @@ paths:
         "400":
           description: Invalid or expired magic link
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1926,7 +1926,7 @@ paths:
         "400":
           description: unable to process request
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1968,7 +1968,7 @@ paths:
               schema:
                 type: boolean
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:

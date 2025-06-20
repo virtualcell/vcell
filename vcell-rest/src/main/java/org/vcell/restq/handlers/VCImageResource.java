@@ -63,10 +63,8 @@ public class VCImageResource {
             throw new NotFoundWebException(e.getMessage(), e);
         } catch (PermissionException e){
             throw new PermissionWebException(e.getMessage(), e);
-        } catch (DataAccessException e) {
+        } catch (DataAccessException | IOException | JDOMException e) {
             throw new DataAccessWebException(e.getMessage(), e);
-        }  catch (IOException | JDOMException e) {
-            throw new UnprocessableContentWebException(e.getMessage(), e);
         }
     }
 
