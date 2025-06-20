@@ -313,7 +313,6 @@ public class ExportSpecs implements Serializable {
 
 
 private void saveExportToDatabase(
-		//long iD,
 		ExportEvent exportEvent,
 		ExportSpecs exportSpecs,
 		long userRef,
