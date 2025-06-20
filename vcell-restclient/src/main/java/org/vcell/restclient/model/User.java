@@ -24,7 +24,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import org.vcell.restclient.model.SPECIALCLAIM;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -33,7 +36,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  */
 @JsonPropertyOrder({
   User.JSON_PROPERTY_USER_NAME,
-  User.JSON_PROPERTY_KEY
+  User.JSON_PROPERTY_KEY,
+  User.JSON_PROPERTY_MY_SPECIALS
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class User {
@@ -42,6 +46,9 @@ public class User {
 
   public static final String JSON_PROPERTY_KEY = "key";
   private String key;
+
+  public static final String JSON_PROPERTY_MY_SPECIALS = "mySpecials";
+  private List<SPECIALCLAIM> mySpecials;
 
   public User() { 
   }
@@ -96,6 +103,39 @@ public class User {
   }
 
 
+  public User mySpecials(List<SPECIALCLAIM> mySpecials) {
+    this.mySpecials = mySpecials;
+    return this;
+  }
+
+  public User addMySpecialsItem(SPECIALCLAIM mySpecialsItem) {
+    if (this.mySpecials == null) {
+      this.mySpecials = new ArrayList<>();
+    }
+    this.mySpecials.add(mySpecialsItem);
+    return this;
+  }
+
+   /**
+   * Get mySpecials
+   * @return mySpecials
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_MY_SPECIALS)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public List<SPECIALCLAIM> getMySpecials() {
+    return mySpecials;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_MY_SPECIALS)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setMySpecials(List<SPECIALCLAIM> mySpecials) {
+    this.mySpecials = mySpecials;
+  }
+
+
   /**
    * Return true if this User object is equal to o.
    */
@@ -109,12 +149,13 @@ public class User {
     }
     User user = (User) o;
     return Objects.equals(this.userName, user.userName) &&
-        Objects.equals(this.key, user.key);
+        Objects.equals(this.key, user.key) &&
+        Objects.equals(this.mySpecials, user.mySpecials);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(userName, key);
+    return Objects.hash(userName, key, mySpecials);
   }
 
   @Override
@@ -123,6 +164,7 @@ public class User {
     sb.append("class User {\n");
     sb.append("    userName: ").append(toIndentedString(userName)).append("\n");
     sb.append("    key: ").append(toIndentedString(key)).append("\n");
+    sb.append("    mySpecials: ").append(toIndentedString(mySpecials)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -178,6 +220,17 @@ public class User {
     // add `key` to the URL query string
     if (getKey() != null) {
       joiner.add(String.format("%skey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
+
+    // add `mySpecials` to the URL query string
+    if (getMySpecials() != null) {
+      for (int i = 0; i < getMySpecials().size(); i++) {
+        if (getMySpecials().get(i) != null) {
+          joiner.add(String.format("%smySpecials%s%s=%s", prefix, suffix,
+              "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+              URLEncoder.encode(String.valueOf(getMySpecials().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+        }
+      }
     }
 
     return joiner.toString();

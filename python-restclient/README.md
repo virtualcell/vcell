@@ -179,6 +179,7 @@ Class | Method | HTTP request | Description
  - [Origin](docs/Origin.md)
  - [Publication](docs/Publication.md)
  - [PublicationInfo](docs/PublicationInfo.md)
+ - [SPECIALCLAIM](docs/SPECIALCLAIM.md)
  - [SchedulerStatus](docs/SchedulerStatus.md)
  - [SimulationExecutionStatusRecord](docs/SimulationExecutionStatusRecord.md)
  - [SimulationJobStatusRecord](docs/SimulationJobStatusRecord.md)

@@ -37,31 +37,11 @@ class TestVersion(unittest.TestCase):
         model = Version()
         if include_optional:
             return Version(
-                version_key = vcell_client.models.key_value.KeyValue(
-                    value = 1.337, ),
-                version_name = '',
-                version_owner = vcell_client.models.user.User(
-                    user_name = '', 
-                    key = vcell_client.models.key_value.KeyValue(
-                        value = 1.337, ), ),
-                version_group_access = vcell_client.models.group_access.GroupAccess(
-                    groupid = 1.337, 
-                    description = '', ),
-                version_branch_point_ref = vcell_client.models.key_value.KeyValue(
-                    value = 1.337, ),
-                version_branch_id = 1.337,
-                version_date = 'Thu Mar 10 00:00:00 UTC 2022',
-                version_flag = vcell_client.models.version_flag.VersionFlag(
-                    int_value = 56, 
-                    archived = True, 
-                    current = True, 
-                    published = True, ),
-                version_annot = '',
+                version_key = '',
                 annot = '',
                 branch_id = 1.337,
-                branch_point_ref_key = vcell_client.models.key_value.KeyValue(
-                    value = 1.337, ),
-                var_date = 'Thu Mar 10 00:00:00 UTC 2022',
+                branch_point_ref_key = '',
+                var_date = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 flag = vcell_client.models.version_flag.VersionFlag(
                     version_flag = 56, 
                     int_value = 56, 
@@ -74,8 +54,10 @@ class TestVersion(unittest.TestCase):
                 name = '',
                 owner = vcell_client.models.user.User(
                     user_name = '', 
-                    key = vcell_client.models.key_value.KeyValue(
-                        value = 1.337, ), )
+                    key = '', 
+                    my_specials = [
+                        'admins'
+                        ], )
             )
         else:
             return Version(

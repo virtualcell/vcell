@@ -37,21 +37,18 @@ class TestExternalDataIdentifier(unittest.TestCase):
         model = ExternalDataIdentifier()
         if include_optional:
             return ExternalDataIdentifier(
-                key = vcell_client.models.key_value.KeyValue(
-                    value = 1.337, ),
+                key = '',
                 owner = vcell_client.models.user.User(
                     user_name = '', 
-                    key = vcell_client.models.key_value.KeyValue(
-                        value = 1.337, ), 
-                    name = '', 
-                    test_account = True, ),
+                    key = '', 
+                    my_specials = [
+                        'admins'
+                        ], ),
                 name = '',
                 job_index = 56,
-                simulation_key = vcell_client.models.key_value.KeyValue(
-                    value = 1.337, ),
+                simulation_key = '',
                 parameter_scan_type = True,
-                data_key = vcell_client.models.key_value.KeyValue(
-                    value = 1.337, )
+                data_key = ''
             )
         else:
             return ExternalDataIdentifier(

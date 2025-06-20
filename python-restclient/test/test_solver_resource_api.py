@@ -27,8 +27,15 @@ class TestSolverResourceApi(unittest.TestCase):
     def tearDown(self) -> None:
         pass
 
-    def test_get_fv_solver_input(self) -> None:
-        """Test case for get_fv_solver_input
+    def test_get_fv_solver_input_from_sbml(self) -> None:
+        """Test case for get_fv_solver_input_from_sbml
+
+        Retrieve finite volume input from SBML spatial model.
+        """
+        pass
+
+    def test_get_fv_solver_input_from_vcml(self) -> None:
+        """Test case for get_fv_solver_input_from_vcml
 
         Retrieve finite volume input from SBML spatial model.
         """

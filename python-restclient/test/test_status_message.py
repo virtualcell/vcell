@@ -40,15 +40,14 @@ class TestStatusMessage(unittest.TestCase):
                 job_status = vcell_client.models.simulation_job_status_record.SimulationJobStatusRecord(
                     field_time_data_stamp = '2022-03-10T16:15:50Z', 
                     field_vc_sim_id = vcell_client.models.vc_simulation_identifier.VCSimulationIdentifier(
-                        simulation_key = vcell_client.models.key_value.KeyValue(
-                            value = 1.337, ), 
+                        simulation_key = '', 
                         owner = vcell_client.models.user.User(
                             user_name = '', 
-                            key = vcell_client.models.key_value.KeyValue(
-                                value = 1.337, ), 
-                            name = '', 
-                            test_account = True, ), 
-                        i_d = '', ), 
+                            key = '', 
+                            my_specials = [
+                                'admins'
+                                ], ), 
+                        id = '', ), 
                     field_submit_date = '2022-03-10T16:15:50Z', 
                     field_scheduler_status = 'WAITING', 
                     field_simulation_message = vcell_client.models.simulation_message.SimulationMessage(

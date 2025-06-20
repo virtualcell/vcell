@@ -2630,6 +2630,13 @@ components:
         theHashCode:
           format: int32
           type: integer
+    SPECIAL_CLAIM:
+      enum:
+      - admins
+      - powerUsers
+      - publicationEditors
+      - vcellSupport
+      type: string
     SchedulerStatus:
       enum:
       - WAITING
@@ -2758,6 +2765,10 @@ components:
           type: string
         key:
           $ref: '#/components/schemas/KeyValue'
+        mySpecials:
+          type: array
+          items:
+            $ref: '#/components/schemas/SPECIAL_CLAIM'
     UserIdentityJSONSafe:
       type: object
       properties:

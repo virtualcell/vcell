@@ -2346,6 +2346,9 @@ components:
           publicationKey: publicationKey
           pubmedid: pubmedid
           user:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           url: url
@@ -2362,6 +2365,9 @@ components:
           publicationKey: publicationKey
           pubmedid: pubmedid
           user:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           url: url
@@ -2374,6 +2380,9 @@ components:
         version:
           date: 2000-01-23T04:56:07.000+00:00
           owner:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           branchID: 0.8008281904610115
@@ -2558,6 +2567,9 @@ components:
     ExternalDataIdentifier:
       example:
         owner:
+          mySpecials:
+          - null
+          - null
           userName: userName
           key: key
         dataKey: dataKey
@@ -2666,6 +2678,9 @@ components:
         annotation: annotation
         fieldDataID:
           owner:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           dataKey: dataKey
@@ -2795,6 +2810,9 @@ components:
         version:
           date: 2000-01-23T04:56:07.000+00:00
           owner:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           branchID: 0.8008281904610115
@@ -3024,6 +3042,9 @@ components:
         version:
           date: 2000-01-23T04:56:07.000+00:00
           owner:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           branchID: 0.8008281904610115
@@ -3058,6 +3079,9 @@ components:
           publicationKey: publicationKey
           pubmedid: pubmedid
           user:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           url: url
@@ -3074,6 +3098,9 @@ components:
           publicationKey: publicationKey
           pubmedid: pubmedid
           user:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           url: url
@@ -3242,6 +3269,9 @@ components:
         publicationKey: publicationKey
         pubmedid: pubmedid
         user:
+          mySpecials:
+          - null
+          - null
           userName: userName
           key: key
         url: url
@@ -3282,6 +3312,13 @@ components:
           format: int32
           type: integer
       type: object
+    SPECIAL_CLAIM:
+      enum:
+      - admins
+      - powerUsers
+      - publicationEditors
+      - vcellSupport
+      type: string
     SchedulerStatus:
       enum:
       - WAITING
@@ -3347,6 +3384,9 @@ components:
             jobNumber: 0
         fieldVCSimID:
           owner:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           simulationKey: simulationKey
@@ -3491,6 +3531,9 @@ components:
               jobNumber: 0
           fieldVCSimID:
             owner:
+              mySpecials:
+              - null
+              - null
               userName: userName
               key: key
             simulationKey: simulationKey
@@ -3520,6 +3563,9 @@ components:
       type: object
     User:
       example:
+        mySpecials:
+        - null
+        - null
         userName: userName
         key: key
       properties:
@@ -3527,6 +3573,10 @@ components:
           type: string
         key:
           type: string
+        mySpecials:
+          items:
+            $ref: '#/components/schemas/SPECIAL_CLAIM'
+          type: array
       type: object
     UserIdentityJSONSafe:
       example:
@@ -3643,6 +3693,9 @@ components:
     VCSimulationIdentifier:
       example:
         owner:
+          mySpecials:
+          - null
+          - null
           userName: userName
           key: key
         simulationKey: simulationKey
@@ -3751,6 +3804,9 @@ components:
       example:
         date: 2000-01-23T04:56:07.000+00:00
         owner:
+          mySpecials:
+          - null
+          - null
           userName: userName
           key: key
         branchID: 0.8008281904610115

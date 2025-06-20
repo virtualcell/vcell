@@ -58,7 +58,7 @@ class TestPublicationResourceApi(unittest.TestCase):
     def test_update_publication(self) -> None:
         """Test case for update_publication
 
-        Create publication
+        Update publication
         """
         pass
 

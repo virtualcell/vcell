@@ -71,6 +71,7 @@ model/simulation-queue-entry-status-record.ts
 model/simulation-queue-id.ts
 model/simulation-status-persistent-record.ts
 model/source-model.ts
+model/specialclaim.ts
 model/status-message.ts
 model/status.ts
 model/user-identity-json-safe.ts

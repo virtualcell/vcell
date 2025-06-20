@@ -28,8 +28,8 @@ public RpcDbServerProxy(UserLoginInfo userLoginInfo, VCMessageSession vcMessageS
 	super(userLoginInfo, vcMessageSession, VCellQueue.DbRequestQueue);
 }
 
-public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException{
-	return (TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>>)rpc("getSpecialUsers",new Object[0]);
+public TreeMap<SpecialUser.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException{
+	return (TreeMap<SpecialUser.SPECIAL_CLAIM,TreeMap<User,String>>)rpc("getSpecialUsers",new Object[0]);
 }
 
 public org.vcell.util.document.VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException {

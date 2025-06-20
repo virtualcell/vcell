@@ -55,17 +55,12 @@ class TestMathModelSummary(unittest.TestCase):
                     name = '', 
                     owner = vcell_client.models.user.User(
                         user_name = '', 
-                        key = '', ), ),
+                        key = '', 
+                        my_specials = [
+                            'admins'
+                            ], ), ),
                 key_value = '',
-                child_summary = vcell_client.models.math_model_child_summary.MathModelChildSummary(
-                    geo_name = '', 
-                    geo_dim = 56, 
-                    sim_names = [
-                        ''
-                        ], 
-                    sim_annots = [
-                        ''
-                        ], 
+                model_info = vcell_client.models.math_model_child_summary.MathModelChildSummary(
                     model_type = 'RuleBased', 
                     geometry_dimension = 56, 
                     geometry_name = '', 
@@ -101,7 +96,10 @@ class TestMathModelSummary(unittest.TestCase):
                         vc_document_type = 'BIOMODEL_DOC', 
                         user = vcell_client.models.user.User(
                             user_name = '', 
-                            key = '', ), 
+                            key = '', 
+                            my_specials = [
+                                'admins'
+                                ], ), 
                         the_hash_code = 56, )
                     ],
                 annotated_functions = ''

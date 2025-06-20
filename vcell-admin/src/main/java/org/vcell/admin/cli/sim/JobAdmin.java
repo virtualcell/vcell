@@ -22,6 +22,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 import org.vcell.util.exe.ExecutableException;
@@ -86,11 +87,11 @@ public class JobAdmin {
 
     public User[] getQuotaExemptUsers() throws SQLException, DataAccessException {
         ArrayList<User> adminUserList = new ArrayList<User>();
-        TreeMap<User.SPECIAL_CLAIM, TreeMap<User,String>> specialUsers = simulationDatabase.getSpecialUsers();
-        final Iterator<User.SPECIAL_CLAIM> iterator = specialUsers.keySet().iterator();
+        TreeMap<SpecialUser.SPECIAL_CLAIM, TreeMap<User,String>> specialUsers = simulationDatabase.getSpecialUsers();
+        final Iterator<SpecialUser.SPECIAL_CLAIM> iterator = specialUsers.keySet().iterator();
         while(iterator.hasNext()) {
-            final User.SPECIAL_CLAIM next = iterator.next();
-            if(next == User.SPECIAL_CLAIM.admins) {//Admin Users
+            final SpecialUser.SPECIAL_CLAIM next = iterator.next();
+            if(next == SpecialUser.SPECIAL_CLAIM.admins) {//Admin Users
                 final Iterator<User> iter = specialUsers.get(next).keySet().iterator();
                 while(iter.hasNext()) {
                     adminUserList.add(iter.next());

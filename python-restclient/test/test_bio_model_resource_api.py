@@ -34,17 +34,38 @@ class TestBioModelResourceApi(unittest.TestCase):
         """
         pass
 
-    def test_get_biomodel_by_id(self) -> None:
-        """Test case for get_biomodel_by_id
+    def test_get_bio_model(self) -> None:
+        """Test case for get_bio_model
 
-        Get BioModel information in JSON format by ID.
+        Get BioModel.
         """
         pass
 
-    def test_upload_bio_model(self) -> None:
-        """Test case for upload_bio_model
+    def test_get_bio_model_summaries(self) -> None:
+        """Test case for get_bio_model_summaries
 
-        Upload the BioModel to VCell database. Returns BioModel ID.
+        Return BioModel summaries.
+        """
+        pass
+
+    def test_get_bio_model_summary(self) -> None:
+        """Test case for get_bio_model_summary
+
+        All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
+        """
+        pass
+
+    def test_get_bio_model_vcml(self) -> None:
+        """Test case for get_bio_model_vcml
+
+        Get the BioModel in VCML format.
+        """
+        pass
+
+    def test_save_bio_model(self) -> None:
+        """Test case for save_bio_model
+
+        Save's the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
         """
         pass
 

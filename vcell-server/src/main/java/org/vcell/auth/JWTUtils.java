@@ -17,6 +17,7 @@ import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
 import org.jose4j.lang.JoseException;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
 
 import java.io.IOException;
@@ -206,8 +207,8 @@ public class JWTUtils {
         claims.setIssuedAtToNow();  // when the token was issued/created (now)
         claims.setNotBeforeMinutesInThePast(2); // time before which the token is not yet valid (2 minutes ago)
         claims.setSubject(user.toSubject()); // the subject/principal is whom the token is about
-        if (user instanceof User.SpecialUser){
-            User.SPECIAL_CLAIM[] specialClaims = ((User.SpecialUser)user).getMySpecials();
+        if (user instanceof SpecialUser){
+            SpecialUser.SPECIAL_CLAIM[] specialClaims = ((SpecialUser)user).getMySpecials();
             if (specialClaims != null && specialClaims.length>0){
                 List<String> groups = Arrays.stream(specialClaims).map(specialClaim -> specialClaim.name()).collect(Collectors.toList());
                 claims.setStringListClaim("groups", groups); // multi-valued claims will end up as a JSON array

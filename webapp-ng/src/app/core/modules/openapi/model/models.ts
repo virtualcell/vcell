@@ -32,6 +32,7 @@ export * from './model-type';
 export * from './origin';
 export * from './publication';
 export * from './publication-info';
+export * from './specialclaim';
 export * from './scheduler-status';
 export * from './simulation-execution-status-record';
 export * from './simulation-job-status-record';

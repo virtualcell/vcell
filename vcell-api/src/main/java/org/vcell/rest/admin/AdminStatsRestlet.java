@@ -14,6 +14,7 @@ import org.restlet.data.Status;
 import org.vcell.rest.VCellApiApplication;
 import org.vcell.rest.rpc.RpcRestlet;
 import org.vcell.rest.server.RestDatabaseService;
+import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
 
 import java.util.Arrays;
@@ -47,8 +48,8 @@ public class AdminStatsRestlet extends Restlet {
                     return;
                 }
                 User user = application.getVCellUser(req.getChallengeResponse(), VCellApiApplication.AuthenticationPolicy.prohibitInvalidCredentials);
-                User.SPECIAL_CLAIM[] mySpecials = application.getSpecialClaims(token);
-                if (mySpecials==null || !Arrays.stream(mySpecials).anyMatch(s -> (s == User.SPECIAL_CLAIM.admins))) {
+                SpecialUser.SPECIAL_CLAIM[] mySpecials = application.getSpecialClaims(token);
+                if (mySpecials==null || !Arrays.stream(mySpecials).anyMatch(s -> (s == SpecialUser.SPECIAL_CLAIM.admins))) {
                     response.setStatus(Status.CLIENT_ERROR_UNAUTHORIZED);
                     response.setEntity("<h2>account '"+user.getName()+"' has insufficient privilege</h2>" +
                             "<h2> click <a href=\""+logoutUrl+"\"> here </a> to log out</h2>",

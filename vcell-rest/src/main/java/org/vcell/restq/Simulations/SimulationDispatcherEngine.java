@@ -3,9 +3,7 @@ package org.vcell.restq.Simulations;
 import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.message.VCMessageSession;
 import cbit.vcell.message.VCMessagingException;
-import org.vcell.restq.Simulations.StatusMessage;
 import cbit.vcell.message.server.dispatcher.SimulationDatabase;
-import org.vcell.restq.Simulations.SimulationStateMachine;
 import cbit.vcell.server.SimulationJobStatus;
 import cbit.vcell.server.UpdateSynchronizationException;
 import cbit.vcell.solver.Simulation;
@@ -16,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
@@ -60,8 +59,8 @@ public class SimulationDispatcherEngine {
     public ArrayList<StatusMessage> onStartRequest(VCSimulationIdentifier vcSimID, User user, int simulationScanCount, SimulationDatabase simulationDatabase, VCMessageSession session, VCMessageSession dispatcherQueueSession) throws VCMessagingException, DataAccessException, SQLException {
         KeyValue simKey = vcSimID.getSimulationKey();
 
-        User.SpecialUser myUser = simulationDatabase.getUser(user.getName());
-        boolean isAdmin = Arrays.asList(myUser.getMySpecials()).contains(User.SPECIAL_CLAIM.admins);
+        SpecialUser myUser = simulationDatabase.getUser(user.getName());
+        boolean isAdmin = Arrays.asList(myUser.getMySpecials()).contains(SpecialUser.SPECIAL_CLAIM.admins);
 
         SimulationInfo simulationInfo = null;
         SimulationJobStatus simJobStatus = null;
