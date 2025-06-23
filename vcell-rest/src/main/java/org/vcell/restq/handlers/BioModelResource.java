@@ -1,6 +1,8 @@
 package org.vcell.restq.handlers;
 
+import cbit.image.VCImageInfo;
 import cbit.util.xml.XmlUtil;
+import cbit.vcell.geometry.GeometryInfo;
 import cbit.vcell.modeldb.BioModelRep;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
@@ -24,6 +26,7 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.document.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -193,6 +196,53 @@ public class BioModelResource {
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (XmlParseException | IOException | JDOMException e){
             throw new UnprocessableContentWebException(e.getMessage(), e);
+        }
+    }
+
+    @Path("/infoContainers")
+    @GET
+    @Operation(operationId = "getInfoContainers", description = "All of the summary objects for this particular user.")
+    public VCellInfoContainer getInfoContainers() throws DataAccessWebException {
+        User user = userRestService.getUserOrAnonymousFromIdentity(securityIdentity);
+        try{
+            VCInfoContainer container = bioModelRestService.getVCInfoContainer(user);
+            return VCellInfoContainer.infoContainerToDTO(container);
+        } catch (DataAccessException e) {
+            throw new DataAccessWebException(e.getMessage(), e);
+        }
+    }
+
+    public record VCellInfoContainer(
+            ArrayList<VCImageResource.VCImageSummary> imageInfos,
+            ArrayList<GeometryResource.GeometrySummary> geometryInfo,
+            ArrayList<MathModelResource.MathModelSummary> mathModelInfos,
+            ArrayList<BioModelSummary> bioModelInfos
+    ){
+        public static VCellInfoContainer infoContainerToDTO(VCInfoContainer vcInfoContainer) {
+            ArrayList<VCImageResource.VCImageSummary> imageInfos = new ArrayList<>();
+            for (VCImageInfo info : vcInfoContainer.getVCImageInfos()){
+                imageInfos.add(new VCImageResource.VCImageSummary(info.getISize(),
+                        info.getExtent(), info.getVersion(), info.getBrowseGif(), info.getSoftwareVersion()));
+            }
+            ArrayList<GeometryResource.GeometrySummary> geometryInfos = new ArrayList<>();
+            for (GeometryInfo info : vcInfoContainer.getGeometryInfos()){
+                geometryInfos.add(new GeometryResource.GeometrySummary(info.getDimension(), info.getOrigin(), info.getExtent(),
+                        info.getImageRef(), info.getVersion(), info.getSoftwareVersion()));
+            }
+            ArrayList<MathModelResource.MathModelSummary> mathModelInfos = new ArrayList<>();
+            for (MathModelInfo info : vcInfoContainer.getMathModelInfos()){
+                mathModelInfos.add(new MathModelResource.MathModelSummary(info.getVersion(), info.getMathKey(),
+                        info.getMathModelChildSummary(), info.getSoftwareVersion(), info.getPublicationInfos(),
+                        info.getAnnotatedFunctionsStr()));
+            }
+            ArrayList<BioModelSummary> bioModelInfos = new ArrayList<>();
+            for (BioModelInfo info : vcInfoContainer.getBioModelInfos()){
+                bioModelInfos.add(new BioModelSummary(info.getVersion(), info.getBioModelChildSummary(),
+                        info.getPublicationInfos(), info.getSoftwareVersion()));
+            }
+            return new VCellInfoContainer(
+                imageInfos, geometryInfos, mathModelInfos, bioModelInfos
+            );
         }
     }
 
