@@ -1,40 +1,36 @@
 #!/bin/bash
-#SBATCH --job-name=VREL999999999                  # Name of the job
-#SBATCH --output=/htclogs/V_REL_999999999.log     # Path for the job output log
-#SBATCH --ntasks=1                                # Number of tasks
-#SBATCH --cpus-per-task=4                         # Number of CPU cores per task
-#SBATCH --mem=8G                                  # Memory allocation
-#SBATCH --time=01:00:00                           # Time limit for the job
+#SBATCH --job-name=VREL999999999
+#SBATCH --output=/home/vasilescu/vcell-batch-job/logs/submit_vcell_batch.log
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=8G
+#SBATCH --time=01:00:00
 
-# Slurm batch script for running a Virtual Cell simulation
-# inside an Apptainer (Singularity) container.
-# This job performs three main steps:
-#   1. Preprocess the simulation XML using JavaPreprocessor64
-#   2. Run the simulation using langevin_x64 solver
-#   3. Postprocess the results using JavaPostprocessor64
-# All steps are executed inside the vcell-batch.sif container.
+# ---------------------------------------------------------------
+# Slurm batch script for running a VCell simulation inside Apptainer
+# Directory structure and file paths adapted to /vcell-batch-job/
+# ---------------------------------------------------------------
 
-# Load modules if required by HPC environment (not needed in WSL/local testing)
-# module load apptainer
+# Define paths relative to organized project structure
+BASE_DIR=/home/vasilescu/vcell-batch-job
+CONTAINER_IMAGE=$BASE_DIR/container/vcell-batch_7.7.0.28.sif
+INPUT_DIR=$BASE_DIR/input
+OUTPUT_DIR=$BASE_DIR/output
+LOG_DIR=$BASE_DIR/logs
+SIMXML=$INPUT_DIR/SimID_999999999_0__0.simtask.xml
 
-# Set container image path and simulation data directory
-CONTAINER=/home/vasilescu/vcell/vcell-batch.sif
-DATADIR=/simdata/vasilescu
-SIMXML=$DATADIR/SimID_999999999_0_.simtask.xml
+# Step 1: Preprocess
+apptainer exec --bind $INPUT_DIR:$INPUT_DIR --bind $OUTPUT_DIR:$OUTPUT_DIR $CONTAINER_IMAGE \
+  JavaPreprocessor64 $SIMXML $OUTPUT_DIR
 
-# Step 1: Preprocess the simulation XML
-# This generates input files needed by the solver
-apptainer run --bind $DATADIR:$DATADIR $CONTAINER JavaPreprocessor64 $SIMXML $DATADIR
+# Step 2: Run simulation
+apptainer exec --bind $INPUT_DIR:$INPUT_DIR --bind $OUTPUT_DIR:$OUTPUT_DIR $CONTAINER_IMAGE \
+  langevin_x64 simulate \
+  $INPUT_DIR/SimID_999999999_0_.langevinInput \
+  0 \
+  --output-log=$OUTPUT_DIR/SimID_999999999_0__0.log \
+  --vc-print-status
 
-# Step 2: Run the actual simulation using the Langevin solver
-# The simulation input file is generated from the preprocessing step
-apptainer run --bind $DATADIR:$DATADIR $CONTAINER langevin_x64 simulate \
-    $DATADIR/SimID_999999999_0_.langevinInput \
-    0 \
-    --output-log=$DATADIR/SimID_999999999_0_.log \
-    --vc-print-status
-
-# Step 3: Postprocess results and generate final output artifacts
-# This includes combining and storing results for further analysis
-apptainer run --bind $DATADIR:$DATADIR $CONTAINER JavaPostprocessor64 \
-    999999999 vasilescu 17 0 0 10 /htclogs/V_REL_999999999_0_0.slurm.sub
+# Step 3: Postprocess
+apptainer exec --bind $OUTPUT_DIR:$OUTPUT_DIR $CONTAINER_IMAGE \
+  JavaPostprocessor64 999999999 vasilescu 17 0 0 10 $SLURM_JOB_SCRIPT
