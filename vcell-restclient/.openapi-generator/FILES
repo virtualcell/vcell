@@ -89,6 +89,7 @@ docs/VCDocumentType.md
 docs/VCImageSummary.md
 docs/VCSimulationIdentifier.md
 docs/VCellHTTPError.md
+docs/VCellInfoContainer.md
 docs/VCellSite.md
 docs/VCellSoftwareVersion.md
 docs/VariableDomain.md
@@ -198,6 +199,7 @@ src/main/java/org/vcell/restclient/model/VCDocumentType.java
 src/main/java/org/vcell/restclient/model/VCImageSummary.java
 src/main/java/org/vcell/restclient/model/VCSimulationIdentifier.java
 src/main/java/org/vcell/restclient/model/VCellHTTPError.java
+src/main/java/org/vcell/restclient/model/VCellInfoContainer.java
 src/main/java/org/vcell/restclient/model/VCellSite.java
 src/main/java/org/vcell/restclient/model/VCellSoftwareVersion.java
 src/main/java/org/vcell/restclient/model/VariableDomain.java
@@ -206,3 +208,4 @@ src/main/java/org/vcell/restclient/model/VariableSpecs.java
 src/main/java/org/vcell/restclient/model/VariableType.java
 src/main/java/org/vcell/restclient/model/Version.java
 src/main/java/org/vcell/restclient/model/VersionFlag.java
+src/test/java/org/vcell/restclient/model/VCellInfoContainerTest.java

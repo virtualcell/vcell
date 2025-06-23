@@ -120,6 +120,7 @@ from vcell_client.models.vc_document_type import VCDocumentType
 from vcell_client.models.vc_image_summary import VCImageSummary
 from vcell_client.models.vc_simulation_identifier import VCSimulationIdentifier
 from vcell_client.models.v_cell_http_error import VCellHTTPError
+from vcell_client.models.v_cell_info_container import VCellInfoContainer
 from vcell_client.models.v_cell_site import VCellSite
 from vcell_client.models.v_cell_software_version import VCellSoftwareVersion
 from vcell_client.models.variable_domain import VariableDomain

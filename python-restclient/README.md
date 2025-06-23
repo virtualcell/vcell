@@ -95,6 +95,7 @@ Class | Method | HTTP request | Description
 *BioModelResourceApi* | [**get_bio_model_summaries**](docs/BioModelResourceApi.md#get_bio_model_summaries) | **GET** /api/v1/bioModel/summaries | Return BioModel summaries.
 *BioModelResourceApi* | [**get_bio_model_summary**](docs/BioModelResourceApi.md#get_bio_model_summary) | **GET** /api/v1/bioModel/{bioModelID}/summary | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
 *BioModelResourceApi* | [**get_bio_model_vcml**](docs/BioModelResourceApi.md#get_bio_model_vcml) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
+*BioModelResourceApi* | [**get_info_containers**](docs/BioModelResourceApi.md#get_info_containers) | **GET** /api/v1/bioModel/infoContainers | 
 *BioModelResourceApi* | [**save_bio_model**](docs/BioModelResourceApi.md#save_bio_model) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 *ExportResourceApi* | [**export_n5**](docs/ExportResourceApi.md#export_n5) | **POST** /api/v1/export/N5 | 
 *ExportResourceApi* | [**export_status**](docs/ExportResourceApi.md#export_status) | **GET** /api/v1/export/status | 
@@ -224,6 +225,7 @@ Class | Method | HTTP request | Description
  - [VCImageSummary](docs/VCImageSummary.md)
  - [VCSimulationIdentifier](docs/VCSimulationIdentifier.md)
  - [VCellHTTPError](docs/VCellHTTPError.md)
+ - [VCellInfoContainer](docs/VCellInfoContainer.md)
  - [VCellSite](docs/VCellSite.md)
  - [VCellSoftwareVersion](docs/VCellSoftwareVersion.md)
  - [VariableDomain](docs/VariableDomain.md)
