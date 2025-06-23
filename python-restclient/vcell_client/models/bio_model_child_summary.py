@@ -33,19 +33,15 @@ class BioModelChildSummary(BaseModel):
     """
     BioModelChildSummary
     """ # noqa: E501
-    sc_names: Optional[List[StrictStr]] = Field(default=None, alias="scNames")
-    sc_annots: Optional[List[StrictStr]] = Field(default=None, alias="scAnnots")
-    geo_names: Optional[List[StrictStr]] = Field(default=None, alias="geoNames")
-    geo_dims: Optional[List[StrictInt]] = Field(default=None, alias="geoDims")
     app_types: Optional[List[MathType]] = Field(default=None, alias="appTypes")
-    sim_names: Optional[List[List[StrictStr]]] = Field(default=None, alias="simNames")
-    sim_annots: Optional[List[List[StrictStr]]] = Field(default=None, alias="simAnnots")
     geometry_dimensions: Optional[List[StrictInt]] = Field(default=None, alias="geometryDimensions")
     geometry_names: Optional[List[StrictStr]] = Field(default=None, alias="geometryNames")
     simulation_context_annotations: Optional[List[StrictStr]] = Field(default=None, alias="simulationContextAnnotations")
     simulation_context_names: Optional[List[StrictStr]] = Field(default=None, alias="simulationContextNames")
+    all_simulation_names: Optional[List[List[StrictStr]]] = Field(default=None, alias="allSimulationNames")
+    all_simulation_annots: Optional[List[List[StrictStr]]] = Field(default=None, alias="allSimulationAnnots")
     application_info: Optional[List[ApplicationInfo]] = Field(default=None, alias="applicationInfo")
-    __properties: ClassVar[List[str]] = ["scNames", "scAnnots", "geoNames", "geoDims", "appTypes", "simNames", "simAnnots", "geometryDimensions", "geometryNames", "simulationContextAnnotations", "simulationContextNames", "applicationInfo"]
+    __properties: ClassVar[List[str]] = ["appTypes", "geometryDimensions", "geometryNames", "simulationContextAnnotations", "simulationContextNames", "allSimulationNames", "allSimulationAnnots", "applicationInfo"]
 
     model_config = {
         "populate_by_name": True,
@@ -107,17 +103,13 @@ class BioModelChildSummary(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in BioModelChildSummary) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "scNames": obj.get("scNames"),
-            "scAnnots": obj.get("scAnnots"),
-            "geoNames": obj.get("geoNames"),
-            "geoDims": obj.get("geoDims"),
             "appTypes": obj.get("appTypes"),
-            "simNames": obj.get("simNames"),
-            "simAnnots": obj.get("simAnnots"),
             "geometryDimensions": obj.get("geometryDimensions"),
             "geometryNames": obj.get("geometryNames"),
             "simulationContextAnnotations": obj.get("simulationContextAnnotations"),
             "simulationContextNames": obj.get("simulationContextNames"),
+            "allSimulationNames": obj.get("allSimulationNames"),
+            "allSimulationAnnots": obj.get("allSimulationAnnots"),
             "applicationInfo": [ApplicationInfo.from_dict(_item) for _item in obj.get("applicationInfo")] if obj.get("applicationInfo") is not None else None
         })
         return _obj

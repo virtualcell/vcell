@@ -31,12 +31,11 @@ class VersionFlag(BaseModel):
     """
     VersionFlag
     """ # noqa: E501
-    version_flag: Optional[StrictInt] = Field(default=None, alias="versionFlag")
     int_value: Optional[StrictInt] = Field(default=None, alias="intValue")
     archived: Optional[StrictBool] = None
     current: Optional[StrictBool] = None
     published: Optional[StrictBool] = None
-    __properties: ClassVar[List[str]] = ["versionFlag", "intValue", "archived", "current", "published"]
+    __properties: ClassVar[List[str]] = ["intValue", "archived", "current", "published"]
 
     model_config = {
         "populate_by_name": True,
@@ -91,7 +90,6 @@ class VersionFlag(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in VersionFlag) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "versionFlag": obj.get("versionFlag"),
             "intValue": obj.get("intValue"),
             "archived": obj.get("archived"),
             "current": obj.get("current"),

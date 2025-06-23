@@ -95,7 +95,7 @@ Class | Method | HTTP request | Description
 *BioModelResourceApi* | [**get_bio_model_summaries**](docs/BioModelResourceApi.md#get_bio_model_summaries) | **GET** /api/v1/bioModel/summaries | Return BioModel summaries.
 *BioModelResourceApi* | [**get_bio_model_summary**](docs/BioModelResourceApi.md#get_bio_model_summary) | **GET** /api/v1/bioModel/{bioModelID}/summary | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
 *BioModelResourceApi* | [**get_bio_model_vcml**](docs/BioModelResourceApi.md#get_bio_model_vcml) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
-*BioModelResourceApi* | [**get_info_containers**](docs/BioModelResourceApi.md#get_info_containers) | **GET** /api/v1/bioModel/infoContainers | 
+*BioModelResourceApi* | [**get_summaries_container**](docs/BioModelResourceApi.md#get_summaries_container) | **GET** /api/v1/bioModel/summariesContainer | 
 *BioModelResourceApi* | [**save_bio_model**](docs/BioModelResourceApi.md#save_bio_model) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 *FieldDataResourceApi* | [**advanced_create**](docs/FieldDataResourceApi.md#advanced_create) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 *FieldDataResourceApi* | [**analyze_file**](docs/FieldDataResourceApi.md#analyze_file) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
@@ -199,9 +199,9 @@ Class | Method | HTTP request | Description
  - [VCImageSummary](docs/VCImageSummary.md)
  - [VCSimulationIdentifier](docs/VCSimulationIdentifier.md)
  - [VCellHTTPError](docs/VCellHTTPError.md)
- - [VCellInfoContainer](docs/VCellInfoContainer.md)
  - [VCellSite](docs/VCellSite.md)
  - [VCellSoftwareVersion](docs/VCellSoftwareVersion.md)
+ - [VCellSummaryContainer](docs/VCellSummaryContainer.md)
  - [VariableDomain](docs/VariableDomain.md)
  - [VariableType](docs/VariableType.md)
  - [Version](docs/Version.md)
