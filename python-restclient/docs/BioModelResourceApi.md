@@ -9,7 +9,7 @@ Method | HTTP request | Description
 [**get_bio_model_summaries**](BioModelResourceApi.md#get_bio_model_summaries) | **GET** /api/v1/bioModel/summaries | Return BioModel summaries.
 [**get_bio_model_summary**](BioModelResourceApi.md#get_bio_model_summary) | **GET** /api/v1/bioModel/{bioModelID}/summary | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
 [**get_bio_model_vcml**](BioModelResourceApi.md#get_bio_model_vcml) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
-[**get_info_containers**](BioModelResourceApi.md#get_info_containers) | **GET** /api/v1/bioModel/infoContainers | 
+[**get_summaries_container**](BioModelResourceApi.md#get_summaries_container) | **GET** /api/v1/bioModel/summariesContainer | 
 [**save_bio_model**](BioModelResourceApi.md#save_bio_model) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 
 
@@ -346,8 +346,8 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **get_info_containers**
-> VCellInfoContainer get_info_containers()
+# **get_summaries_container**
+> VCellSummaryContainer get_summaries_container()
 
 
 
@@ -359,7 +359,7 @@ All of the summary objects for this particular user.
 import time
 import os
 import vcell_client
-from vcell_client.models.v_cell_info_container import VCellInfoContainer
+from vcell_client.models.v_cell_summary_container import VCellSummaryContainer
 from vcell_client.rest import ApiException
 from pprint import pprint
 
@@ -376,11 +376,11 @@ with vcell_client.ApiClient(configuration) as api_client:
     api_instance = vcell_client.BioModelResourceApi(api_client)
 
     try:
-        api_response = api_instance.get_info_containers()
-        print("The response of BioModelResourceApi->get_info_containers:\n")
+        api_response = api_instance.get_summaries_container()
+        print("The response of BioModelResourceApi->get_summaries_container:\n")
         pprint(api_response)
     except Exception as e:
-        print("Exception when calling BioModelResourceApi->get_info_containers: %s\n" % e)
+        print("Exception when calling BioModelResourceApi->get_summaries_container: %s\n" % e)
 ```
 
 
@@ -390,7 +390,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**VCellInfoContainer**](VCellInfoContainer.md)
+[**VCellSummaryContainer**](VCellSummaryContainer.md)
 
 ### Authorization
 

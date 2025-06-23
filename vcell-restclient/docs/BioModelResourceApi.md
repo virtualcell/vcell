@@ -14,8 +14,8 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 | [**getBioModelSummaryWithHttpInfo**](BioModelResourceApi.md#getBioModelSummaryWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/summary | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself. |
 | [**getBioModelVCML**](BioModelResourceApi.md#getBioModelVCML) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format. |
 | [**getBioModelVCMLWithHttpInfo**](BioModelResourceApi.md#getBioModelVCMLWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format. |
-| [**getInfoContainers**](BioModelResourceApi.md#getInfoContainers) | **GET** /api/v1/bioModel/infoContainers |  |
-| [**getInfoContainersWithHttpInfo**](BioModelResourceApi.md#getInfoContainersWithHttpInfo) | **GET** /api/v1/bioModel/infoContainers |  |
+| [**getSummariesContainer**](BioModelResourceApi.md#getSummariesContainer) | **GET** /api/v1/bioModel/summariesContainer |  |
+| [**getSummariesContainerWithHttpInfo**](BioModelResourceApi.md#getSummariesContainerWithHttpInfo) | **GET** /api/v1/bioModel/summariesContainer |  |
 | [**saveBioModel**](BioModelResourceApi.md#saveBioModel) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML. |
 | [**saveBioModelWithHttpInfo**](BioModelResourceApi.md#saveBioModelWithHttpInfo) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML. |
 
@@ -693,9 +693,9 @@ No authorization required
 | **500** | Data Access Exception |  -  |
 
 
-## getInfoContainers
+## getSummariesContainer
 
-> VCellInfoContainer getInfoContainers()
+> VCellSummaryContainer getSummariesContainer()
 
 
 
@@ -718,10 +718,10 @@ public class Example {
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         try {
-            VCellInfoContainer result = apiInstance.getInfoContainers();
+            VCellSummaryContainer result = apiInstance.getSummariesContainer();
             System.out.println(result);
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getInfoContainers");
+            System.err.println("Exception when calling BioModelResourceApi#getSummariesContainer");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Reason: " + e.getResponseBody());
             System.err.println("Response headers: " + e.getResponseHeaders());
@@ -737,7 +737,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-[**VCellInfoContainer**](VCellInfoContainer.md)
+[**VCellSummaryContainer**](VCellSummaryContainer.md)
 
 
 ### Authorization
@@ -755,9 +755,9 @@ No authorization required
 | **200** | OK |  -  |
 | **500** | Data Access Exception |  -  |
 
-## getInfoContainersWithHttpInfo
+## getSummariesContainerWithHttpInfo
 
-> ApiResponse<VCellInfoContainer> getInfoContainers getInfoContainersWithHttpInfo()
+> ApiResponse<VCellSummaryContainer> getSummariesContainer getSummariesContainerWithHttpInfo()
 
 
 
@@ -781,12 +781,12 @@ public class Example {
 
         BioModelResourceApi apiInstance = new BioModelResourceApi(defaultClient);
         try {
-            ApiResponse<VCellInfoContainer> response = apiInstance.getInfoContainersWithHttpInfo();
+            ApiResponse<VCellSummaryContainer> response = apiInstance.getSummariesContainerWithHttpInfo();
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
         } catch (ApiException e) {
-            System.err.println("Exception when calling BioModelResourceApi#getInfoContainers");
+            System.err.println("Exception when calling BioModelResourceApi#getSummariesContainer");
             System.err.println("Status code: " + e.getCode());
             System.err.println("Response headers: " + e.getResponseHeaders());
             System.err.println("Reason: " + e.getResponseBody());
@@ -802,7 +802,7 @@ This endpoint does not need any parameter.
 
 ### Return type
 
-ApiResponse<[**VCellInfoContainer**](VCellInfoContainer.md)>
+ApiResponse<[**VCellSummaryContainer**](VCellSummaryContainer.md)>
 
 
 ### Authorization

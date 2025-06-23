@@ -32,7 +32,7 @@ from typing import List, Optional
 
 from vcell_client.models.bio_model import BioModel
 from vcell_client.models.bio_model_summary import BioModelSummary
-from vcell_client.models.v_cell_info_container import VCellInfoContainer
+from vcell_client.models.v_cell_summary_container import VCellSummaryContainer
 
 from vcell_client.api_client import ApiClient
 from vcell_client.api_response import ApiResponse
@@ -1370,7 +1370,7 @@ class BioModelResourceApi:
 
 
     @validate_call
-    def get_info_containers(
+    def get_summaries_container(
         self,
         _request_timeout: Union[
             None,
@@ -1384,8 +1384,8 @@ class BioModelResourceApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> VCellInfoContainer:
-        """get_info_containers
+    ) -> VCellSummaryContainer:
+        """get_summaries_container
 
         All of the summary objects for this particular user.
 
@@ -1411,7 +1411,7 @@ class BioModelResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._get_info_containers_serialize(
+        _param = self._get_summaries_container_serialize(
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1419,7 +1419,7 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "VCellInfoContainer",
+            '200': "VCellSummaryContainer",
             '500': "VCellHTTPError"
             
         }
@@ -1435,7 +1435,7 @@ class BioModelResourceApi:
 
 
     @validate_call
-    def get_info_containers_with_http_info(
+    def get_summaries_container_with_http_info(
         self,
         _request_timeout: Union[
             None,
@@ -1449,8 +1449,8 @@ class BioModelResourceApi:
         _content_type: Optional[StrictStr] = None,
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
-    ) -> ApiResponse[VCellInfoContainer]:
-        """get_info_containers
+    ) -> ApiResponse[VCellSummaryContainer]:
+        """get_summaries_container
 
         All of the summary objects for this particular user.
 
@@ -1476,7 +1476,7 @@ class BioModelResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._get_info_containers_serialize(
+        _param = self._get_summaries_container_serialize(
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1484,7 +1484,7 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "VCellInfoContainer",
+            '200': "VCellSummaryContainer",
             '500': "VCellHTTPError"
             
         }
@@ -1500,7 +1500,7 @@ class BioModelResourceApi:
 
 
     @validate_call
-    def get_info_containers_without_preload_content(
+    def get_summaries_container_without_preload_content(
         self,
         _request_timeout: Union[
             None,
@@ -1515,7 +1515,7 @@ class BioModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """get_info_containers
+        """get_summaries_container
 
         All of the summary objects for this particular user.
 
@@ -1541,7 +1541,7 @@ class BioModelResourceApi:
         :return: Returns the result object.
         """ # noqa: E501
 
-        _param = self._get_info_containers_serialize(
+        _param = self._get_summaries_container_serialize(
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -1549,7 +1549,7 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "VCellInfoContainer",
+            '200': "VCellSummaryContainer",
             '500': "VCellHTTPError"
             
         }
@@ -1560,7 +1560,7 @@ class BioModelResourceApi:
         return response_data.response
 
 
-    def _get_info_containers_serialize(
+    def _get_summaries_container_serialize(
         self,
         _request_auth,
         _content_type,
@@ -1602,7 +1602,7 @@ class BioModelResourceApi:
 
         return self.api_client.param_serialize(
             method='GET',
-            resource_path='/api/v1/bioModel/infoContainers',
+            resource_path='/api/v1/bioModel/summariesContainer',
             path_params=_path_params,
             query_params=_query_params,
             header_params=_header_params,

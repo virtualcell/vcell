@@ -199,48 +199,57 @@ public class BioModelResource {
         }
     }
 
-    @Path("/infoContainers")
+    @Path("/summariesContainer")
     @GET
-    @Operation(operationId = "getInfoContainers", description = "All of the summary objects for this particular user.")
-    public VCellInfoContainer getInfoContainers() throws DataAccessWebException {
+    @Operation(operationId = "getSummariesContainer", description = "All of the summary objects for this particular user.")
+    public VCellSummaryContainer getInfoContainers() throws DataAccessWebException {
         User user = userRestService.getUserOrAnonymousFromIdentity(securityIdentity);
         try{
             VCInfoContainer container = bioModelRestService.getVCInfoContainer(user);
-            return VCellInfoContainer.infoContainerToDTO(container);
+            return VCellSummaryContainer.infoContainerToDTO(container);
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
         }
     }
 
-    public record VCellInfoContainer(
-            ArrayList<VCImageResource.VCImageSummary> imageInfos,
-            ArrayList<GeometryResource.GeometrySummary> geometryInfo,
-            ArrayList<MathModelResource.MathModelSummary> mathModelInfos,
-            ArrayList<BioModelSummary> bioModelInfos
+    public record VCellSummaryContainer(
+            ArrayList<VCImageResource.VCImageSummary> imageSummaries,
+            ArrayList<GeometryResource.GeometrySummary> geometrySummaries,
+            ArrayList<MathModelResource.MathModelSummary> mathModelSummaries,
+            ArrayList<BioModelSummary> bioModelSummaries
     ){
-        public static VCellInfoContainer infoContainerToDTO(VCInfoContainer vcInfoContainer) {
+        public static VCellSummaryContainer infoContainerToDTO(VCInfoContainer vcInfoContainer) {
             ArrayList<VCImageResource.VCImageSummary> imageInfos = new ArrayList<>();
-            for (VCImageInfo info : vcInfoContainer.getVCImageInfos()){
-                imageInfos.add(new VCImageResource.VCImageSummary(info.getISize(),
-                        info.getExtent(), info.getVersion(), info.getBrowseGif(), info.getSoftwareVersion()));
-            }
             ArrayList<GeometryResource.GeometrySummary> geometryInfos = new ArrayList<>();
-            for (GeometryInfo info : vcInfoContainer.getGeometryInfos()){
-                geometryInfos.add(new GeometryResource.GeometrySummary(info.getDimension(), info.getOrigin(), info.getExtent(),
-                        info.getImageRef(), info.getVersion(), info.getSoftwareVersion()));
-            }
             ArrayList<MathModelResource.MathModelSummary> mathModelInfos = new ArrayList<>();
-            for (MathModelInfo info : vcInfoContainer.getMathModelInfos()){
-                mathModelInfos.add(new MathModelResource.MathModelSummary(info.getVersion(), info.getMathKey(),
-                        info.getMathModelChildSummary(), info.getSoftwareVersion(), info.getPublicationInfos(),
-                        info.getAnnotatedFunctionsStr()));
-            }
             ArrayList<BioModelSummary> bioModelInfos = new ArrayList<>();
-            for (BioModelInfo info : vcInfoContainer.getBioModelInfos()){
-                bioModelInfos.add(new BioModelSummary(info.getVersion(), info.getBioModelChildSummary(),
-                        info.getPublicationInfos(), info.getSoftwareVersion()));
+
+            if (vcInfoContainer.getVCImageInfos() != null) {
+                for (VCImageInfo info : vcInfoContainer.getVCImageInfos()){
+                    imageInfos.add(new VCImageResource.VCImageSummary(info.getISize(),
+                            info.getExtent(), info.getVersion(), info.getBrowseGif(), info.getSoftwareVersion()));
+                }
             }
-            return new VCellInfoContainer(
+            if (vcInfoContainer.getGeometryInfos() != null) {
+                for (GeometryInfo info : vcInfoContainer.getGeometryInfos()){
+                    geometryInfos.add(new GeometryResource.GeometrySummary(info.getDimension(), info.getOrigin(), info.getExtent(),
+                            info.getImageRef(), info.getVersion(), info.getSoftwareVersion()));
+                }
+            }
+            if (vcInfoContainer.getMathModelInfos() != null) {
+                for (MathModelInfo info : vcInfoContainer.getMathModelInfos()){
+                    mathModelInfos.add(new MathModelResource.MathModelSummary(info.getVersion(), info.getMathKey(),
+                            info.getMathModelChildSummary(), info.getSoftwareVersion(), info.getPublicationInfos(),
+                            info.getAnnotatedFunctionsStr()));
+                }
+            }
+            if (vcInfoContainer.getBioModelInfos() != null) {
+                for (BioModelInfo info : vcInfoContainer.getBioModelInfos()){
+                    bioModelInfos.add(new BioModelSummary(info.getVersion(), info.getBioModelChildSummary(),
+                            info.getPublicationInfos(), info.getSoftwareVersion()));
+                }
+            }
+            return new VCellSummaryContainer(
                 imageInfos, geometryInfos, mathModelInfos, bioModelInfos
             );
         }

@@ -25,7 +25,7 @@ import { BioModelSummary } from '../model/bio-model-summary';
 // @ts-ignore
 import { VCellHTTPError } from '../model/v-cell-http-error';
 // @ts-ignore
-import { VCellInfoContainer } from '../model/v-cell-info-container';
+import { VCellSummaryContainer } from '../model/v-cell-summary-container';
 
 // @ts-ignore
 import { BASE_PATH, COLLECTION_FORMATS }                     from '../variables';
@@ -400,10 +400,10 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public getInfoContainers(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<VCellInfoContainer>;
-    public getInfoContainers(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<VCellInfoContainer>>;
-    public getInfoContainers(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<VCellInfoContainer>>;
-    public getInfoContainers(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public getSummariesContainer(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<VCellSummaryContainer>;
+    public getSummariesContainer(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<VCellSummaryContainer>>;
+    public getSummariesContainer(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<VCellSummaryContainer>>;
+    public getSummariesContainer(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -436,8 +436,8 @@ export class BioModelResourceService implements BioModelResourceServiceInterface
             }
         }
 
-        let localVarPath = `/api/v1/bioModel/infoContainers`;
-        return this.httpClient.request<VCellInfoContainer>('get', `${this.configuration.basePath}${localVarPath}`,
+        let localVarPath = `/api/v1/bioModel/summariesContainer`;
+        return this.httpClient.request<VCellSummaryContainer>('get', `${this.configuration.basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,

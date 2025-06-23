@@ -20,7 +20,7 @@ import org.vcell.restclient.Pair;
 import org.vcell.restclient.model.BioModel;
 import org.vcell.restclient.model.BioModelSummary;
 import org.vcell.restclient.model.VCellHTTPError;
-import org.vcell.restclient.model.VCellInfoContainer;
+import org.vcell.restclient.model.VCellSummaryContainer;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -460,22 +460,22 @@ public class BioModelResourceApi {
   /**
    * 
    * All of the summary objects for this particular user.
-   * @return VCellInfoContainer
+   * @return VCellSummaryContainer
    * @throws ApiException if fails to make API call
    */
-  public VCellInfoContainer getInfoContainers() throws ApiException {
-    ApiResponse<VCellInfoContainer> localVarResponse = getInfoContainersWithHttpInfo();
+  public VCellSummaryContainer getSummariesContainer() throws ApiException {
+    ApiResponse<VCellSummaryContainer> localVarResponse = getSummariesContainerWithHttpInfo();
     return localVarResponse.getData();
   }
 
   /**
    * 
    * All of the summary objects for this particular user.
-   * @return ApiResponse&lt;VCellInfoContainer&gt;
+   * @return ApiResponse&lt;VCellSummaryContainer&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<VCellInfoContainer> getInfoContainersWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getInfoContainersRequestBuilder();
+  public ApiResponse<VCellSummaryContainer> getSummariesContainerWithHttpInfo() throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getSummariesContainerRequestBuilder();
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -485,12 +485,12 @@ public class BioModelResourceApi {
       }
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
-          throw getApiException("getInfoContainers", localVarResponse);
+          throw getApiException("getSummariesContainer", localVarResponse);
         }
-        return new ApiResponse<VCellInfoContainer>(
+        return new ApiResponse<VCellSummaryContainer>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<VCellInfoContainer>() {}) // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<VCellSummaryContainer>() {}) // closes the InputStream
         );
       } finally {
       }
@@ -503,11 +503,11 @@ public class BioModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder getInfoContainersRequestBuilder() throws ApiException {
+  private HttpRequest.Builder getSummariesContainerRequestBuilder() throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
-    String localVarPath = "/api/v1/bioModel/infoContainers";
+    String localVarPath = "/api/v1/bioModel/summariesContainer";
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
