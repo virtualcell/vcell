@@ -1,0 +1,40 @@
+#!/bin/bash
+#SBATCH --job-name=VREL999999999                  # Name of the job
+#SBATCH --output=/htclogs/V_REL_999999999.log     # Path for the job output log
+#SBATCH --ntasks=1                                # Number of tasks
+#SBATCH --cpus-per-task=4                         # Number of CPU cores per task
+#SBATCH --mem=8G                                  # Memory allocation
+#SBATCH --time=01:00:00                           # Time limit for the job
+
+# Slurm batch script for running a Virtual Cell simulation
+# inside an Apptainer (Singularity) container.
+# This job performs three main steps:
+#   1. Preprocess the simulation XML using JavaPreprocessor64
+#   2. Run the simulation using langevin_x64 solver
+#   3. Postprocess the results using JavaPostprocessor64
+# All steps are executed inside the vcell-batch.sif container.
+
+# Load modules if required by HPC environment (not needed in WSL/local testing)
+# module load apptainer
+
+# Set container image path and simulation data directory
+CONTAINER=/home/vasilescu/vcell/vcell-batch.sif
+DATADIR=/simdata/vasilescu
+SIMXML=$DATADIR/SimID_999999999_0_.simtask.xml
+
+# Step 1: Preprocess the simulation XML
+# This generates input files needed by the solver
+apptainer run --bind $DATADIR:$DATADIR $CONTAINER JavaPreprocessor64 $SIMXML $DATADIR
+
+# Step 2: Run the actual simulation using the Langevin solver
+# The simulation input file is generated from the preprocessing step
+apptainer run --bind $DATADIR:$DATADIR $CONTAINER langevin_x64 simulate \
+    $DATADIR/SimID_999999999_0_.langevinInput \
+    0 \
+    --output-log=$DATADIR/SimID_999999999_0_.log \
+    --vc-print-status
+
+# Step 3: Postprocess results and generate final output artifacts
+# This includes combining and storing results for further analysis
+apptainer run --bind $DATADIR:$DATADIR $CONTAINER JavaPostprocessor64 \
+    999999999 vasilescu 17 0 0 10 /htclogs/V_REL_999999999_0_0.slurm.sub
