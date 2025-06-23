@@ -117,6 +117,8 @@ Class | Method | HTTP request | Description
 *BioModelResourceApi* | [**getBioModelSummaryWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelSummaryWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/summary | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
 *BioModelResourceApi* | [**getBioModelVCML**](docs/BioModelResourceApi.md#getBioModelVCML) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
 *BioModelResourceApi* | [**getBioModelVCMLWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelVCMLWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
+*BioModelResourceApi* | [**getInfoContainers**](docs/BioModelResourceApi.md#getInfoContainers) | **GET** /api/v1/bioModel/infoContainers | 
+*BioModelResourceApi* | [**getInfoContainersWithHttpInfo**](docs/BioModelResourceApi.md#getInfoContainersWithHttpInfo) | **GET** /api/v1/bioModel/infoContainers | 
 *BioModelResourceApi* | [**saveBioModel**](docs/BioModelResourceApi.md#saveBioModel) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 *BioModelResourceApi* | [**saveBioModelWithHttpInfo**](docs/BioModelResourceApi.md#saveBioModelWithHttpInfo) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 *FieldDataResourceApi* | [**advancedCreate**](docs/FieldDataResourceApi.md#advancedCreate) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
@@ -266,6 +268,7 @@ Class | Method | HTTP request | Description
  - [VCImageSummary](docs/VCImageSummary.md)
  - [VCSimulationIdentifier](docs/VCSimulationIdentifier.md)
  - [VCellHTTPError](docs/VCellHTTPError.md)
+ - [VCellInfoContainer](docs/VCellInfoContainer.md)
  - [VCellSite](docs/VCellSite.md)
  - [VCellSoftwareVersion](docs/VCellSoftwareVersion.md)
  - [VariableDomain](docs/VariableDomain.md)

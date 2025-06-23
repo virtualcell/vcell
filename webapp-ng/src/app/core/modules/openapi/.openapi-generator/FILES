@@ -79,6 +79,7 @@ model/user-login-info-for-mapping.ts
 model/user-registration-info.ts
 model/user.ts
 model/v-cell-http-error.ts
+model/v-cell-info-container.ts
 model/v-cell-site.ts
 model/v-cell-software-version.ts
 model/variable-domain.ts

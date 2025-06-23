@@ -65,6 +65,7 @@ docs/VCImageResourceApi.md
 docs/VCImageSummary.md
 docs/VCSimulationIdentifier.md
 docs/VCellHTTPError.md
+docs/VCellInfoContainer.md
 docs/VCellSite.md
 docs/VCellSoftwareVersion.md
 docs/VariableDomain.md
@@ -72,6 +73,7 @@ docs/VariableType.md
 docs/Version.md
 docs/VersionFlag.md
 test/__init__.py
+test/test_v_cell_info_container.py
 tox.ini
 vcell_client/__init__.py
 vcell_client/api/__init__.py
@@ -141,6 +143,7 @@ vcell_client/models/user_identity_json_safe.py
 vcell_client/models/user_login_info_for_mapping.py
 vcell_client/models/user_registration_info.py
 vcell_client/models/v_cell_http_error.py
+vcell_client/models/v_cell_info_container.py
 vcell_client/models/v_cell_site.py
 vcell_client/models/v_cell_software_version.py
 vcell_client/models/variable_domain.py
