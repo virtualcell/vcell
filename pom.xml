@@ -230,6 +230,12 @@
 			<name>Custom JSBML artifact repository</name>
 			<url>https://jitpack.io</url>
 		</repository>
+
+		<repository>
+			<id>terracotta</id>
+			<name>Terracotta</name>
+			<url>https://repo.terracotta.org/maven2/</url>
+		</repository>
 	</repositories>
 
 	<dependencyManagement>
