@@ -125,8 +125,13 @@
 			</exclusions>
 		</dependency>
 		<dependency>
-			<groupId>javax.media.jai</groupId>
-			<artifactId>com.springsource.javax.media.jai.core</artifactId>
+			<groupId>javax.media</groupId>
+			<artifactId>jai_core</artifactId>
+			<version>${jai-core.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.media</groupId>
+			<artifactId>jai-codec</artifactId>
 			<version>${jai-core.version}</version>
 		</dependency>
 		<dependency>
