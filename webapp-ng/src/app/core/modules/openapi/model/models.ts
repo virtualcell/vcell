@@ -75,6 +75,7 @@ export * from './vc-document-type';
 export * from './vc-image-summary';
 export * from './vc-simulation-identifier';
 export * from './v-cell-http-error';
+export * from './v-cell-info-container';
 export * from './v-cell-site';
 export * from './v-cell-software-version';
 export * from './variable-domain';

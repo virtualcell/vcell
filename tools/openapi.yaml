@@ -244,6 +244,25 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/bioModel/infoContainers:
+    get:
+      tags:
+      - Bio Model Resource
+      description: All of the summary objects for this particular user.
+      operationId: getInfoContainers
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellInfoContainer'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
   /api/v1/bioModel/summaries:
     get:
       tags:
@@ -3391,6 +3410,25 @@ components:
           type: string
         message:
           type: string
+    VCellInfoContainer:
+      type: object
+      properties:
+        imageInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/VCImageSummary'
+        geometryInfo:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeometrySummary'
+        mathModelInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/MathModelSummary'
+        bioModelInfos:
+          type: array
+          items:
+            $ref: '#/components/schemas/BioModelSummary'
     VCellSite:
       enum:
       - alpha

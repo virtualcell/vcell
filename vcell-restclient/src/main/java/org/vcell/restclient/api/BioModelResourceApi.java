@@ -20,6 +20,7 @@ import org.vcell.restclient.Pair;
 import org.vcell.restclient.model.BioModel;
 import org.vcell.restclient.model.BioModelSummary;
 import org.vcell.restclient.model.VCellHTTPError;
+import org.vcell.restclient.model.VCellInfoContainer;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -446,6 +447,71 @@ public class BioModelResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "text/xml, application/json");
+
+    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * 
+   * All of the summary objects for this particular user.
+   * @return VCellInfoContainer
+   * @throws ApiException if fails to make API call
+   */
+  public VCellInfoContainer getInfoContainers() throws ApiException {
+    ApiResponse<VCellInfoContainer> localVarResponse = getInfoContainersWithHttpInfo();
+    return localVarResponse.getData();
+  }
+
+  /**
+   * 
+   * All of the summary objects for this particular user.
+   * @return ApiResponse&lt;VCellInfoContainer&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<VCellInfoContainer> getInfoContainersWithHttpInfo() throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getInfoContainersRequestBuilder();
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("getInfoContainers", localVarResponse);
+        }
+        return new ApiResponse<VCellInfoContainer>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<VCellInfoContainer>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder getInfoContainersRequestBuilder() throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/bioModel/infoContainers";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+
+    localVarRequestBuilder.header("Accept", "application/json");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
