@@ -32,7 +32,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * VersionFlag
  */
 @JsonPropertyOrder({
-  VersionFlag.JSON_PROPERTY_VERSION_FLAG,
   VersionFlag.JSON_PROPERTY_INT_VALUE,
   VersionFlag.JSON_PROPERTY_ARCHIVED,
   VersionFlag.JSON_PROPERTY_CURRENT,
@@ -40,9 +39,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class VersionFlag {
-  public static final String JSON_PROPERTY_VERSION_FLAG = "versionFlag";
-  private Integer versionFlag;
-
   public static final String JSON_PROPERTY_INT_VALUE = "intValue";
   private Integer intValue;
 
@@ -57,31 +53,6 @@ public class VersionFlag {
 
   public VersionFlag() { 
   }
-
-  public VersionFlag versionFlag(Integer versionFlag) {
-    this.versionFlag = versionFlag;
-    return this;
-  }
-
-   /**
-   * Get versionFlag
-   * @return versionFlag
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public Integer getVersionFlag() {
-    return versionFlag;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersionFlag(Integer versionFlag) {
-    this.versionFlag = versionFlag;
-  }
-
 
   public VersionFlag intValue(Integer intValue) {
     this.intValue = intValue;
@@ -195,8 +166,7 @@ public class VersionFlag {
       return false;
     }
     VersionFlag versionFlag = (VersionFlag) o;
-    return Objects.equals(this.versionFlag, versionFlag.versionFlag) &&
-        Objects.equals(this.intValue, versionFlag.intValue) &&
+    return Objects.equals(this.intValue, versionFlag.intValue) &&
         Objects.equals(this.archived, versionFlag.archived) &&
         Objects.equals(this.current, versionFlag.current) &&
         Objects.equals(this.published, versionFlag.published);
@@ -204,14 +174,13 @@ public class VersionFlag {
 
   @Override
   public int hashCode() {
-    return Objects.hash(versionFlag, intValue, archived, current, published);
+    return Objects.hash(intValue, archived, current, published);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class VersionFlag {\n");
-    sb.append("    versionFlag: ").append(toIndentedString(versionFlag)).append("\n");
     sb.append("    intValue: ").append(toIndentedString(intValue)).append("\n");
     sb.append("    archived: ").append(toIndentedString(archived)).append("\n");
     sb.append("    current: ").append(toIndentedString(current)).append("\n");
@@ -262,11 +231,6 @@ public class VersionFlag {
     }
 
     StringJoiner joiner = new StringJoiner("&");
-
-    // add `versionFlag` to the URL query string
-    if (getVersionFlag() != null) {
-      joiner.add(String.format("%sversionFlag%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getVersionFlag()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
 
     // add `intValue` to the URL query string
     if (getIntValue() != null) {

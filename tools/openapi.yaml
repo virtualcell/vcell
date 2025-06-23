@@ -244,25 +244,6 @@ paths:
       security:
       - openId:
         - user
-  /api/v1/bioModel/infoContainers:
-    get:
-      tags:
-      - Bio Model Resource
-      description: All of the summary objects for this particular user.
-      operationId: getInfoContainers
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellInfoContainer'
-        "500":
-          description: Data Access Exception
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
   /api/v1/bioModel/summaries:
     get:
       tags:
@@ -286,6 +267,25 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/BioModelSummary'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/bioModel/summariesContainer:
+    get:
+      tags:
+      - Bio Model Resource
+      description: All of the summary objects for this particular user.
+      operationId: getSummariesContainer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellSummaryContainer'
         "500":
           description: Data Access Exception
           content:
@@ -2214,39 +2214,10 @@ components:
     BioModelChildSummary:
       type: object
       properties:
-        scNames:
-          type: array
-          items:
-            type: string
-        scAnnots:
-          type: array
-          items:
-            type: string
-        geoNames:
-          type: array
-          items:
-            type: string
-        geoDims:
-          type: array
-          items:
-            format: int32
-            type: integer
         appTypes:
           type: array
           items:
             $ref: '#/components/schemas/MathType'
-        simNames:
-          type: array
-          items:
-            type: array
-            items:
-              type: string
-        simAnnots:
-          type: array
-          items:
-            type: array
-            items:
-              type: string
         geometryDimensions:
           type: array
           items:
@@ -2264,6 +2235,18 @@ components:
           type: array
           items:
             type: string
+        allSimulationNames:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+        allSimulationAnnots:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
         applicationInfo:
           type: array
           items:
@@ -3410,25 +3393,6 @@ components:
           type: string
         message:
           type: string
-    VCellInfoContainer:
-      type: object
-      properties:
-        imageInfos:
-          type: array
-          items:
-            $ref: '#/components/schemas/VCImageSummary'
-        geometryInfo:
-          type: array
-          items:
-            $ref: '#/components/schemas/GeometrySummary'
-        mathModelInfos:
-          type: array
-          items:
-            $ref: '#/components/schemas/MathModelSummary'
-        bioModelInfos:
-          type: array
-          items:
-            $ref: '#/components/schemas/BioModelSummary'
     VCellSite:
       enum:
       - alpha
@@ -3462,6 +3426,25 @@ components:
           type: integer
         description:
           type: string
+    VCellSummaryContainer:
+      type: object
+      properties:
+        imageSummaries:
+          type: array
+          items:
+            $ref: '#/components/schemas/VCImageSummary'
+        geometrySummaries:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeometrySummary'
+        mathModelSummaries:
+          type: array
+          items:
+            $ref: '#/components/schemas/MathModelSummary'
+        bioModelSummaries:
+          type: array
+          items:
+            $ref: '#/components/schemas/BioModelSummary'
     VariableDomain:
       enum:
       - VARIABLEDOMAIN_POSTPROCESSING
@@ -3535,9 +3518,6 @@ components:
     VersionFlag:
       type: object
       properties:
-        versionFlag:
-          format: int32
-          type: integer
         intValue:
           format: int32
           type: integer
