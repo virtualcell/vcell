@@ -111,22 +111,6 @@ public VCInfoContainer getVCInfoContainer() throws DataAccessException {
 	return (VCInfoContainer)rpc("getVCInfoContainer",new Object[]{userLoginInfo.getUser()});
 }
 
-public org.vcell.util.document.VersionInfo groupAddUser(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key, java.lang.String addUserToGroup, boolean isHidden) throws DataAccessException, ObjectNotFoundException {
-	return (org.vcell.util.document.VersionInfo)rpc("groupAddUser",new Object[]{userLoginInfo.getUser(), vType,key,addUserToGroup,new Boolean(isHidden)});
-}
-
-public org.vcell.util.document.VersionInfo groupRemoveUser(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key, java.lang.String userRemoveFromGroup, boolean isHiddenFromOwner) throws DataAccessException, ObjectNotFoundException {
-	return (org.vcell.util.document.VersionInfo)rpc("groupRemoveUser",new Object[]{userLoginInfo.getUser(), vType,key,userRemoveFromGroup,new Boolean(isHiddenFromOwner)});
-}
-
-public org.vcell.util.document.VersionInfo groupSetPrivate(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (org.vcell.util.document.VersionInfo)rpc("groupSetPrivate",new Object[]{userLoginInfo.getUser(), vType,key});
-}
-
-public org.vcell.util.document.VersionInfo groupSetPublic(org.vcell.util.document.VersionableType vType, org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (org.vcell.util.document.VersionInfo)rpc("groupSetPublic",new Object[]{userLoginInfo.getUser(), vType,key});
-}
-
 public void replacePreferences(org.vcell.util.Preference[] preferences) throws DataAccessException {
 	rpc("replacePreferences",new Object[]{userLoginInfo.getUser(), preferences});
 }
