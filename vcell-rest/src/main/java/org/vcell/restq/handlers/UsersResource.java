@@ -15,6 +15,7 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
 import org.eclipse.microprofile.jwt.JsonWebToken;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.jboss.resteasy.reactive.NoCache;
@@ -26,10 +27,10 @@ import org.vcell.restq.auth.CustomSecurityIdentityAugmentor;
 import org.vcell.restq.services.UserRestService;
 import org.vcell.restq.errors.exceptions.*;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.UseridIDExistsException;
-import org.vcell.util.document.User;
-import org.vcell.util.document.UserInfo;
+import org.vcell.util.document.*;
 
 import java.math.BigDecimal;
 import java.net.URI;
@@ -290,6 +291,67 @@ public class UsersResource {
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
             throw new RuntimeWebException(e.getMessage(), e);
+        }
+    }
+
+    @POST
+    @Path("/group")
+    @RolesAllowed("user")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "addUserToGroup", description = "Share a versionable (BioModel, MathModel, Geometry, Image, etc...) with a user through a group.")
+    public VersionInfo groupAddUser(@RequestBody VersionableType versionableType,
+                                    @QueryParam("key") KeyValue versionableKey,
+                                    @QueryParam("username") String userNameToAdd,
+                                    @QueryParam("isHidden") boolean isHidden) throws DataAccessWebException, NotAuthenticatedWebException, NotFoundWebException {
+        User user = userRestService.getUserFromIdentity(securityIdentity);
+        try{
+            return userRestService.groupAddUser(user, versionableType, versionableKey, userNameToAdd, isHidden);
+        } catch (ObjectNotFoundException e){
+            throw new NotFoundWebException(e.getMessage(), e);
+        } catch (DataAccessException e) {
+            throw new DataAccessWebException(e.getMessage(), e);
+        }
+    }
+
+    @DELETE
+    @Path("/group")
+    @RolesAllowed("user")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "removeUserFromGroup", description = "Remove user with username from existing group.")
+    public VersionInfo groupRemoveUser(@RequestBody VersionableType versionableType,
+                                       @QueryParam("key") KeyValue versionableKey,
+                                       @QueryParam("username") String userNameToRemove,
+                                       @QueryParam("isHidden") boolean isHidden) throws DataAccessWebException, NotAuthenticatedWebException, NotFoundWebException {
+        User user = userRestService.getUserFromIdentity(securityIdentity);
+        try{
+            return userRestService.groupRemoveUser(user, versionableType, versionableKey, userNameToRemove, isHidden);
+        } catch (ObjectNotFoundException e){
+            throw new NotFoundWebException(e.getMessage(), e);
+        } catch (DataAccessException e) {
+            throw new DataAccessWebException(e.getMessage(), e);
+        }
+    }
+
+    @PATCH
+    @Path("/group")
+    @RolesAllowed("user")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(operationId = "updateGroupVisibility", description = "Update groups visibility based on the boolean provided.")
+    public VersionInfo changeGroupVisibility(@RequestBody VersionableType versionableType,
+                                             @QueryParam("key") KeyValue versionableKey,
+                                             @QueryParam("isPublic") boolean isPublic) throws DataAccessWebException, NotAuthenticatedWebException, NotFoundWebException {
+        User user = userRestService.getUserFromIdentity(securityIdentity);
+        try{
+            if (isPublic){
+                return userRestService.groupSetPublic(user, versionableType, versionableKey);
+            }
+            return userRestService.groupSetPrivate(user, versionableType, versionableKey);
+        } catch (ObjectNotFoundException e){
+            throw new NotFoundWebException(e.getMessage(), e);
+        } catch (DataAccessException e) {
+            throw new DataAccessWebException(e.getMessage(), e);
         }
     }
     

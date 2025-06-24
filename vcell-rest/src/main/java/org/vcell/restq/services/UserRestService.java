@@ -1,9 +1,6 @@
 package org.vcell.restq.services;
 
-import cbit.vcell.modeldb.AdminDBTopLevel;
-import cbit.vcell.modeldb.ApiAccessToken;
-import cbit.vcell.modeldb.ApiClient;
-import cbit.vcell.modeldb.UserIdentity;
+import cbit.vcell.modeldb.*;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -17,10 +14,7 @@ import org.vcell.restq.handlers.UsersResource;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.UseridIDExistsException;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.UserInfo;
-import org.vcell.util.document.UserLoginInfo;
+import org.vcell.util.document.*;
 
 import java.sql.SQLException;
 import java.util.Date;
@@ -31,13 +25,15 @@ import java.util.UUID;
 public class UserRestService {
 
     private final AdminDBTopLevel adminDBTopLevel;
+    private final DatabaseServerImpl databaseServer;
     public final static String DEFAULT_CLIENTID = "85133f8d-26f7-4247-8356-d175399fc2e6";
 
     @Inject
     public UserRestService(AgroalConnectionFactory agroalConnectionFactory) {
         try {
             adminDBTopLevel = new AdminDBTopLevel(agroalConnectionFactory);
-        } catch (SQLException e) {
+            databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
+        } catch (SQLException | DataAccessException e) {
             throw new RuntimeWebException("database error during initialization", e);
         }
     }
@@ -290,4 +286,22 @@ public class UserRestService {
             throw new RuntimeWebException("Database Error" ,e);
         }
     }
+
+
+    public VersionInfo groupAddUser(User user, VersionableType vType, KeyValue key, String usernameToAdd, boolean isHidden) throws DataAccessException {
+        return databaseServer.groupAddUser(user, vType, key, usernameToAdd, isHidden);
+    }
+
+    public VersionInfo groupRemoveUser(User user, VersionableType vType, KeyValue key, String usernameToRemove, boolean isHiddenFromOwner) throws DataAccessException {
+        return databaseServer.groupRemoveUser(user, vType, key, usernameToRemove, isHiddenFromOwner);
+    }
+
+    public VersionInfo groupSetPrivate(User user, VersionableType vType, KeyValue key) throws DataAccessException {
+        return databaseServer.groupSetPrivate(user, vType, key);
+    }
+
+    public VersionInfo groupSetPublic(User user, VersionableType vType, KeyValue key) throws DataAccessException {
+        return databaseServer.groupSetPublic(user, vType, key);
+    }
+
 }
