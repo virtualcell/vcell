@@ -71,6 +71,8 @@ docs/VariableDomain.md
 docs/VariableType.md
 docs/Version.md
 docs/VersionFlag.md
+docs/VersionInfo.md
+docs/VersionableType.md
 test/__init__.py
 tox.ini
 vcell_client/__init__.py
@@ -150,5 +152,7 @@ vcell_client/models/vc_image_summary.py
 vcell_client/models/vc_simulation_identifier.py
 vcell_client/models/version.py
 vcell_client/models/version_flag.py
+vcell_client/models/version_info.py
+vcell_client/models/versionable_type.py
 vcell_client/py.typed
 vcell_client/rest.py

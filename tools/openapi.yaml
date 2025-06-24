@@ -1737,6 +1737,163 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/users/group:
+    post:
+      tags:
+      - Users Resource
+      description: "Share a versionable (BioModel, MathModel, Geometry, Image, etc...)\
+        \ with a user through a group."
+      operationId: addUserToGroup
+      parameters:
+      - name: isHidden
+        in: query
+        schema:
+          type: boolean
+      - name: key
+        in: query
+        schema:
+          $ref: '#/components/schemas/KeyValue'
+      - name: username
+        in: query
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionableType'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionInfo'
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+      security:
+      - openId:
+        - user
+    delete:
+      tags:
+      - Users Resource
+      description: Remove user with username from existing group.
+      operationId: removeUserFromGroup
+      parameters:
+      - name: isHidden
+        in: query
+        schema:
+          type: boolean
+      - name: key
+        in: query
+        schema:
+          $ref: '#/components/schemas/KeyValue'
+      - name: username
+        in: query
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionableType'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionInfo'
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+      security:
+      - openId:
+        - user
+    patch:
+      tags:
+      - Users Resource
+      description: Update groups visibility based on the boolean provided.
+      operationId: updateGroupVisibility
+      parameters:
+      - name: isPublic
+        in: query
+        schema:
+          type: boolean
+      - name: key
+        in: query
+        schema:
+          $ref: '#/components/schemas/KeyValue'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionableType'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionInfo'
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+      security:
+      - openId:
+        - user
   /api/v1/users/guestBearerToken:
     post:
       tags:
@@ -2941,6 +3098,20 @@ components:
           type: boolean
         published:
           type: boolean
+    VersionInfo:
+      type: object
+      properties:
+        version:
+          $ref: '#/components/schemas/Version'
+        versionType:
+          $ref: '#/components/schemas/VersionableType'
+        softwareVersion:
+          $ref: '#/components/schemas/VCellSoftwareVersion'
+    VersionableType:
+      type: object
+      properties:
+        typeName:
+          type: string
   securitySchemes:
     openId:
       type: openIdConnect

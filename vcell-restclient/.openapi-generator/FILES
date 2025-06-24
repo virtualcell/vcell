@@ -71,6 +71,8 @@ docs/VariableType.md
 docs/VcImageResourceApi.md
 docs/Version.md
 docs/VersionFlag.md
+docs/VersionInfo.md
+docs/VersionableType.md
 src/main/AndroidManifest.xml
 src/main/java/org/vcell/restclient/ApiClient.java
 src/main/java/org/vcell/restclient/ApiException.java
@@ -152,3 +154,5 @@ src/main/java/org/vcell/restclient/model/VariableDomain.java
 src/main/java/org/vcell/restclient/model/VariableType.java
 src/main/java/org/vcell/restclient/model/Version.java
 src/main/java/org/vcell/restclient/model/VersionFlag.java
+src/main/java/org/vcell/restclient/model/VersionInfo.java
+src/main/java/org/vcell/restclient/model/VersionableType.java

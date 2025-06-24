@@ -87,6 +87,8 @@ model/vc-document-type.ts
 model/vc-image-summary.ts
 model/vc-simulation-identifier.ts
 model/version-flag.ts
+model/version-info.ts
 model/version.ts
+model/versionable-type.ts
 param.ts
 variables.ts

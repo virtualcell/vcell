@@ -74,3 +74,5 @@ from vcell_client.models.variable_domain import VariableDomain
 from vcell_client.models.variable_type import VariableType
 from vcell_client.models.version import Version
 from vcell_client.models.version_flag import VersionFlag
+from vcell_client.models.version_info import VersionInfo
+from vcell_client.models.versionable_type import VersionableType

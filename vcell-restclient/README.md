@@ -179,6 +179,8 @@ Class | Method | HTTP request | Description
 *SolverResourceApi* | [**getFVSolverInputFromSBMLWithHttpInfo**](docs/SolverResourceApi.md#getFVSolverInputFromSBMLWithHttpInfo) | **POST** /api/v1/solver/getFVSolverInput | Retrieve finite volume input from SBML spatial model.
 *SolverResourceApi* | [**getFVSolverInputFromVCML**](docs/SolverResourceApi.md#getFVSolverInputFromVCML) | **POST** /api/v1/solver/getFVSolverInputFromVCML | Retrieve finite volume input from SBML spatial model.
 *SolverResourceApi* | [**getFVSolverInputFromVCMLWithHttpInfo**](docs/SolverResourceApi.md#getFVSolverInputFromVCMLWithHttpInfo) | **POST** /api/v1/solver/getFVSolverInputFromVCML | Retrieve finite volume input from SBML spatial model.
+*UsersResourceApi* | [**addUserToGroup**](docs/UsersResourceApi.md#addUserToGroup) | **POST** /api/v1/users/group | 
+*UsersResourceApi* | [**addUserToGroupWithHttpInfo**](docs/UsersResourceApi.md#addUserToGroupWithHttpInfo) | **POST** /api/v1/users/group | 
 *UsersResourceApi* | [**forgotLegacyPassword**](docs/UsersResourceApi.md#forgotLegacyPassword) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
 *UsersResourceApi* | [**forgotLegacyPasswordWithHttpInfo**](docs/UsersResourceApi.md#forgotLegacyPasswordWithHttpInfo) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
 *UsersResourceApi* | [**getGuestLegacyApiToken**](docs/UsersResourceApi.md#getGuestLegacyApiToken) | **POST** /api/v1/users/guestBearerToken | Method to get legacy tokens for guest users
@@ -195,10 +197,14 @@ Class | Method | HTTP request | Description
 *UsersResourceApi* | [**mapUserWithHttpInfo**](docs/UsersResourceApi.md#mapUserWithHttpInfo) | **POST** /api/v1/users/mapUser | map vcell user
 *UsersResourceApi* | [**processMagicLink**](docs/UsersResourceApi.md#processMagicLink) | **GET** /api/v1/users/processMagicLink | Process the magic link and map the user
 *UsersResourceApi* | [**processMagicLinkWithHttpInfo**](docs/UsersResourceApi.md#processMagicLinkWithHttpInfo) | **GET** /api/v1/users/processMagicLink | Process the magic link and map the user
+*UsersResourceApi* | [**removeUserFromGroup**](docs/UsersResourceApi.md#removeUserFromGroup) | **DELETE** /api/v1/users/group | 
+*UsersResourceApi* | [**removeUserFromGroupWithHttpInfo**](docs/UsersResourceApi.md#removeUserFromGroupWithHttpInfo) | **DELETE** /api/v1/users/group | 
 *UsersResourceApi* | [**requestRecoveryEmail**](docs/UsersResourceApi.md#requestRecoveryEmail) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account.
 *UsersResourceApi* | [**requestRecoveryEmailWithHttpInfo**](docs/UsersResourceApi.md#requestRecoveryEmailWithHttpInfo) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account.
 *UsersResourceApi* | [**unmapUser**](docs/UsersResourceApi.md#unmapUser) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
 *UsersResourceApi* | [**unmapUserWithHttpInfo**](docs/UsersResourceApi.md#unmapUserWithHttpInfo) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
+*UsersResourceApi* | [**updateGroupVisibility**](docs/UsersResourceApi.md#updateGroupVisibility) | **PATCH** /api/v1/users/group | 
+*UsersResourceApi* | [**updateGroupVisibilityWithHttpInfo**](docs/UsersResourceApi.md#updateGroupVisibilityWithHttpInfo) | **PATCH** /api/v1/users/group | 
 *VcImageResourceApi* | [**deleteImageVCML**](docs/VcImageResourceApi.md#deleteImageVCML) | **DELETE** /api/v1/image/{id} | 
 *VcImageResourceApi* | [**deleteImageVCMLWithHttpInfo**](docs/VcImageResourceApi.md#deleteImageVCMLWithHttpInfo) | **DELETE** /api/v1/image/{id} | 
 *VcImageResourceApi* | [**getImageSummaries**](docs/VcImageResourceApi.md#getImageSummaries) | **GET** /api/v1/image/summaries | 
@@ -272,6 +278,8 @@ Class | Method | HTTP request | Description
  - [VariableType](docs/VariableType.md)
  - [Version](docs/Version.md)
  - [VersionFlag](docs/VersionFlag.md)
+ - [VersionInfo](docs/VersionInfo.md)
+ - [VersionableType](docs/VersionableType.md)
 
 
 <a id="documentation-for-authorization"></a>

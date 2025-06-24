@@ -57,3 +57,5 @@ export * from './variable-domain';
 export * from './variable-type';
 export * from './version';
 export * from './version-flag';
+export * from './version-info';
+export * from './versionable-type';

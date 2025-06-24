@@ -126,6 +126,7 @@ Class | Method | HTTP request | Description
 *SimulationResourceApi* | [**stop_simulation**](docs/SimulationResourceApi.md#stop_simulation) | **POST** /api/v1/Simulation/{simID}/stopSimulation | Stop a simulation.
 *SolverResourceApi* | [**get_fv_solver_input_from_sbml**](docs/SolverResourceApi.md#get_fv_solver_input_from_sbml) | **POST** /api/v1/solver/getFVSolverInput | Retrieve finite volume input from SBML spatial model.
 *SolverResourceApi* | [**get_fv_solver_input_from_vcml**](docs/SolverResourceApi.md#get_fv_solver_input_from_vcml) | **POST** /api/v1/solver/getFVSolverInputFromVCML | Retrieve finite volume input from SBML spatial model.
+*UsersResourceApi* | [**add_user_to_group**](docs/UsersResourceApi.md#add_user_to_group) | **POST** /api/v1/users/group | 
 *UsersResourceApi* | [**forgot_legacy_password**](docs/UsersResourceApi.md#forgot_legacy_password) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
 *UsersResourceApi* | [**get_guest_legacy_api_token**](docs/UsersResourceApi.md#get_guest_legacy_api_token) | **POST** /api/v1/users/guestBearerToken | Method to get legacy tokens for guest users
 *UsersResourceApi* | [**get_legacy_api_token**](docs/UsersResourceApi.md#get_legacy_api_token) | **POST** /api/v1/users/bearerToken | Get token for legacy API
@@ -134,8 +135,10 @@ Class | Method | HTTP request | Description
 *UsersResourceApi* | [**map_new_user**](docs/UsersResourceApi.md#map_new_user) | **POST** /api/v1/users/newUser | create vcell user
 *UsersResourceApi* | [**map_user**](docs/UsersResourceApi.md#map_user) | **POST** /api/v1/users/mapUser | map vcell user
 *UsersResourceApi* | [**process_magic_link**](docs/UsersResourceApi.md#process_magic_link) | **GET** /api/v1/users/processMagicLink | Process the magic link and map the user
+*UsersResourceApi* | [**remove_user_from_group**](docs/UsersResourceApi.md#remove_user_from_group) | **DELETE** /api/v1/users/group | 
 *UsersResourceApi* | [**request_recovery_email**](docs/UsersResourceApi.md#request_recovery_email) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account.
 *UsersResourceApi* | [**unmap_user**](docs/UsersResourceApi.md#unmap_user) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
+*UsersResourceApi* | [**update_group_visibility**](docs/UsersResourceApi.md#update_group_visibility) | **PATCH** /api/v1/users/group | 
 *VCImageResourceApi* | [**delete_image_vcml**](docs/VCImageResourceApi.md#delete_image_vcml) | **DELETE** /api/v1/image/{id} | 
 *VCImageResourceApi* | [**get_image_summaries**](docs/VCImageResourceApi.md#get_image_summaries) | **GET** /api/v1/image/summaries | 
 *VCImageResourceApi* | [**get_image_summary**](docs/VCImageResourceApi.md#get_image_summary) | **GET** /api/v1/image/summary/{id} | 
@@ -204,6 +207,8 @@ Class | Method | HTTP request | Description
  - [VariableType](docs/VariableType.md)
  - [Version](docs/Version.md)
  - [VersionFlag](docs/VersionFlag.md)
+ - [VersionInfo](docs/VersionInfo.md)
+ - [VersionableType](docs/VersionableType.md)
 
 
 <a id="documentation-for-authorization"></a>

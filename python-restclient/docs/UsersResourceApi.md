@@ -4,6 +4,7 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
+[**add_user_to_group**](UsersResourceApi.md#add_user_to_group) | **POST** /api/v1/users/group | 
 [**forgot_legacy_password**](UsersResourceApi.md#forgot_legacy_password) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
 [**get_guest_legacy_api_token**](UsersResourceApi.md#get_guest_legacy_api_token) | **POST** /api/v1/users/guestBearerToken | Method to get legacy tokens for guest users
 [**get_legacy_api_token**](UsersResourceApi.md#get_legacy_api_token) | **POST** /api/v1/users/bearerToken | Get token for legacy API
@@ -12,9 +13,92 @@ Method | HTTP request | Description
 [**map_new_user**](UsersResourceApi.md#map_new_user) | **POST** /api/v1/users/newUser | create vcell user
 [**map_user**](UsersResourceApi.md#map_user) | **POST** /api/v1/users/mapUser | map vcell user
 [**process_magic_link**](UsersResourceApi.md#process_magic_link) | **GET** /api/v1/users/processMagicLink | Process the magic link and map the user
+[**remove_user_from_group**](UsersResourceApi.md#remove_user_from_group) | **DELETE** /api/v1/users/group | 
 [**request_recovery_email**](UsersResourceApi.md#request_recovery_email) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account.
 [**unmap_user**](UsersResourceApi.md#unmap_user) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
+[**update_group_visibility**](UsersResourceApi.md#update_group_visibility) | **PATCH** /api/v1/users/group | 
 
+
+# **add_user_to_group**
+> VersionInfo add_user_to_group(is_hidden=is_hidden, key=key, username=username, versionable_type=versionable_type)
+
+
+
+Share a versionable (BioModel, MathModel, Geometry, Image, etc...) with a user through a group.
+
+### Example
+
+```python
+import time
+import os
+import vcell_client
+from vcell_client.models.version_info import VersionInfo
+from vcell_client.models.versionable_type import VersionableType
+from vcell_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://vcell.cam.uchc.edu
+# See configuration.py for a list of all supported configuration parameters.
+configuration = vcell_client.Configuration(
+    host = "https://vcell.cam.uchc.edu"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Enter a context with an instance of the API client
+with vcell_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = vcell_client.UsersResourceApi(api_client)
+    is_hidden = True # bool |  (optional)
+    key = 'key_example' # str |  (optional)
+    username = 'username_example' # str |  (optional)
+    versionable_type = vcell_client.VersionableType() # VersionableType |  (optional)
+
+    try:
+        api_response = api_instance.add_user_to_group(is_hidden=is_hidden, key=key, username=username, versionable_type=versionable_type)
+        print("The response of UsersResourceApi->add_user_to_group:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling UsersResourceApi->add_user_to_group: %s\n" % e)
+```
+
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **is_hidden** | **bool**|  | [optional] 
+ **key** | **str**|  | [optional] 
+ **username** | **str**|  | [optional] 
+ **versionable_type** | [**VersionableType**](VersionableType.md)|  | [optional] 
+
+### Return type
+
+[**VersionInfo**](VersionInfo.md)
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+**401** | Not Authenticated |  -  |
+**403** | Not Allowed |  -  |
+**404** | Not found |  -  |
+**500** | Data Access Exception |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **forgot_legacy_password**
 > forgot_legacy_password(user_id=user_id)
@@ -553,6 +637,87 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **remove_user_from_group**
+> VersionInfo remove_user_from_group(is_hidden=is_hidden, key=key, username=username, versionable_type=versionable_type)
+
+
+
+Remove user with username from existing group.
+
+### Example
+
+```python
+import time
+import os
+import vcell_client
+from vcell_client.models.version_info import VersionInfo
+from vcell_client.models.versionable_type import VersionableType
+from vcell_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://vcell.cam.uchc.edu
+# See configuration.py for a list of all supported configuration parameters.
+configuration = vcell_client.Configuration(
+    host = "https://vcell.cam.uchc.edu"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Enter a context with an instance of the API client
+with vcell_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = vcell_client.UsersResourceApi(api_client)
+    is_hidden = True # bool |  (optional)
+    key = 'key_example' # str |  (optional)
+    username = 'username_example' # str |  (optional)
+    versionable_type = vcell_client.VersionableType() # VersionableType |  (optional)
+
+    try:
+        api_response = api_instance.remove_user_from_group(is_hidden=is_hidden, key=key, username=username, versionable_type=versionable_type)
+        print("The response of UsersResourceApi->remove_user_from_group:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling UsersResourceApi->remove_user_from_group: %s\n" % e)
+```
+
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **is_hidden** | **bool**|  | [optional] 
+ **key** | **str**|  | [optional] 
+ **username** | **str**|  | [optional] 
+ **versionable_type** | [**VersionableType**](VersionableType.md)|  | [optional] 
+
+### Return type
+
+[**VersionInfo**](VersionInfo.md)
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+**401** | Not Authenticated |  -  |
+**403** | Not Allowed |  -  |
+**404** | Not found |  -  |
+**500** | Data Access Exception |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **request_recovery_email**
 > request_recovery_email(email=email, user_id=user_id)
 
@@ -693,6 +858,85 @@ Name | Type | Description  | Notes
 **200** | OK |  -  |
 **401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
+**500** | Data Access Exception |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **update_group_visibility**
+> VersionInfo update_group_visibility(is_public=is_public, key=key, versionable_type=versionable_type)
+
+
+
+Update groups visibility based on the boolean provided.
+
+### Example
+
+```python
+import time
+import os
+import vcell_client
+from vcell_client.models.version_info import VersionInfo
+from vcell_client.models.versionable_type import VersionableType
+from vcell_client.rest import ApiException
+from pprint import pprint
+
+# Defining the host is optional and defaults to https://vcell.cam.uchc.edu
+# See configuration.py for a list of all supported configuration parameters.
+configuration = vcell_client.Configuration(
+    host = "https://vcell.cam.uchc.edu"
+)
+
+# The client must configure the authentication and authorization parameters
+# in accordance with the API server security policy.
+# Examples for each auth method are provided below, use the example that
+# satisfies your auth use case.
+
+# Enter a context with an instance of the API client
+with vcell_client.ApiClient(configuration) as api_client:
+    # Create an instance of the API class
+    api_instance = vcell_client.UsersResourceApi(api_client)
+    is_public = True # bool |  (optional)
+    key = 'key_example' # str |  (optional)
+    versionable_type = vcell_client.VersionableType() # VersionableType |  (optional)
+
+    try:
+        api_response = api_instance.update_group_visibility(is_public=is_public, key=key, versionable_type=versionable_type)
+        print("The response of UsersResourceApi->update_group_visibility:\n")
+        pprint(api_response)
+    except Exception as e:
+        print("Exception when calling UsersResourceApi->update_group_visibility: %s\n" % e)
+```
+
+
+
+### Parameters
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **is_public** | **bool**|  | [optional] 
+ **key** | **str**|  | [optional] 
+ **versionable_type** | [**VersionableType**](VersionableType.md)|  | [optional] 
+
+### Return type
+
+[**VersionInfo**](VersionInfo.md)
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+**200** | OK |  -  |
+**401** | Not Authenticated |  -  |
+**403** | Not Allowed |  -  |
+**404** | Not found |  -  |
 **500** | Data Access Exception |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

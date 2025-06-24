@@ -4,6 +4,8 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 
 | Method | HTTP request | Description |
 |------------- | ------------- | -------------|
+| [**addUserToGroup**](UsersResourceApi.md#addUserToGroup) | **POST** /api/v1/users/group |  |
+| [**addUserToGroupWithHttpInfo**](UsersResourceApi.md#addUserToGroupWithHttpInfo) | **POST** /api/v1/users/group |  |
 | [**forgotLegacyPassword**](UsersResourceApi.md#forgotLegacyPassword) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it. |
 | [**forgotLegacyPasswordWithHttpInfo**](UsersResourceApi.md#forgotLegacyPasswordWithHttpInfo) | **POST** /api/v1/users/forgotLegacyPassword | The end user has forgotten the legacy password they used for VCell, so they will be emailed it. |
 | [**getGuestLegacyApiToken**](UsersResourceApi.md#getGuestLegacyApiToken) | **POST** /api/v1/users/guestBearerToken | Method to get legacy tokens for guest users |
@@ -20,11 +22,173 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 | [**mapUserWithHttpInfo**](UsersResourceApi.md#mapUserWithHttpInfo) | **POST** /api/v1/users/mapUser | map vcell user |
 | [**processMagicLink**](UsersResourceApi.md#processMagicLink) | **GET** /api/v1/users/processMagicLink | Process the magic link and map the user |
 | [**processMagicLinkWithHttpInfo**](UsersResourceApi.md#processMagicLinkWithHttpInfo) | **GET** /api/v1/users/processMagicLink | Process the magic link and map the user |
+| [**removeUserFromGroup**](UsersResourceApi.md#removeUserFromGroup) | **DELETE** /api/v1/users/group |  |
+| [**removeUserFromGroupWithHttpInfo**](UsersResourceApi.md#removeUserFromGroupWithHttpInfo) | **DELETE** /api/v1/users/group |  |
 | [**requestRecoveryEmail**](UsersResourceApi.md#requestRecoveryEmail) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account. |
 | [**requestRecoveryEmailWithHttpInfo**](UsersResourceApi.md#requestRecoveryEmailWithHttpInfo) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account. |
 | [**unmapUser**](UsersResourceApi.md#unmapUser) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping |
 | [**unmapUserWithHttpInfo**](UsersResourceApi.md#unmapUserWithHttpInfo) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping |
+| [**updateGroupVisibility**](UsersResourceApi.md#updateGroupVisibility) | **PATCH** /api/v1/users/group |  |
+| [**updateGroupVisibilityWithHttpInfo**](UsersResourceApi.md#updateGroupVisibilityWithHttpInfo) | **PATCH** /api/v1/users/group |  |
 
+
+
+## addUserToGroup
+
+> VersionInfo addUserToGroup(isHidden, key, username, versionableType)
+
+
+
+Share a versionable (BioModel, MathModel, Geometry, Image, etc...) with a user through a group.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+        
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        Boolean isHidden = true; // Boolean | 
+        String key = "key_example"; // String | 
+        String username = "username_example"; // String | 
+        VersionableType versionableType = new VersionableType(); // VersionableType | 
+        try {
+            VersionInfo result = apiInstance.addUserToGroup(isHidden, key, username, versionableType);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#addUserToGroup");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **isHidden** | **Boolean**|  | [optional] |
+| **key** | **String**|  | [optional] |
+| **username** | **String**|  | [optional] |
+| **versionableType** | [**VersionableType**](VersionableType.md)|  | [optional] |
+
+### Return type
+
+[**VersionInfo**](VersionInfo.md)
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **401** | Not Authenticated |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
+| **500** | Data Access Exception |  -  |
+
+## addUserToGroupWithHttpInfo
+
+> ApiResponse<VersionInfo> addUserToGroup addUserToGroupWithHttpInfo(isHidden, key, username, versionableType)
+
+
+
+Share a versionable (BioModel, MathModel, Geometry, Image, etc...) with a user through a group.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+        
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        Boolean isHidden = true; // Boolean | 
+        String key = "key_example"; // String | 
+        String username = "username_example"; // String | 
+        VersionableType versionableType = new VersionableType(); // VersionableType | 
+        try {
+            ApiResponse<VersionInfo> response = apiInstance.addUserToGroupWithHttpInfo(isHidden, key, username, versionableType);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#addUserToGroup");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **isHidden** | **Boolean**|  | [optional] |
+| **key** | **String**|  | [optional] |
+| **username** | **String**|  | [optional] |
+| **versionableType** | [**VersionableType**](VersionableType.md)|  | [optional] |
+
+### Return type
+
+ApiResponse<[**VersionInfo**](VersionInfo.md)>
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **401** | Not Authenticated |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
+| **500** | Data Access Exception |  -  |
 
 
 ## forgotLegacyPassword
@@ -1091,6 +1255,164 @@ No authorization required
 | **500** | Data Access Exception |  -  |
 
 
+## removeUserFromGroup
+
+> VersionInfo removeUserFromGroup(isHidden, key, username, versionableType)
+
+
+
+Remove user with username from existing group.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+        
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        Boolean isHidden = true; // Boolean | 
+        String key = "key_example"; // String | 
+        String username = "username_example"; // String | 
+        VersionableType versionableType = new VersionableType(); // VersionableType | 
+        try {
+            VersionInfo result = apiInstance.removeUserFromGroup(isHidden, key, username, versionableType);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#removeUserFromGroup");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **isHidden** | **Boolean**|  | [optional] |
+| **key** | **String**|  | [optional] |
+| **username** | **String**|  | [optional] |
+| **versionableType** | [**VersionableType**](VersionableType.md)|  | [optional] |
+
+### Return type
+
+[**VersionInfo**](VersionInfo.md)
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **401** | Not Authenticated |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
+| **500** | Data Access Exception |  -  |
+
+## removeUserFromGroupWithHttpInfo
+
+> ApiResponse<VersionInfo> removeUserFromGroup removeUserFromGroupWithHttpInfo(isHidden, key, username, versionableType)
+
+
+
+Remove user with username from existing group.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+        
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        Boolean isHidden = true; // Boolean | 
+        String key = "key_example"; // String | 
+        String username = "username_example"; // String | 
+        VersionableType versionableType = new VersionableType(); // VersionableType | 
+        try {
+            ApiResponse<VersionInfo> response = apiInstance.removeUserFromGroupWithHttpInfo(isHidden, key, username, versionableType);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#removeUserFromGroup");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **isHidden** | **Boolean**|  | [optional] |
+| **key** | **String**|  | [optional] |
+| **username** | **String**|  | [optional] |
+| **versionableType** | [**VersionableType**](VersionableType.md)|  | [optional] |
+
+### Return type
+
+ApiResponse<[**VersionInfo**](VersionInfo.md)>
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **401** | Not Authenticated |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
+| **500** | Data Access Exception |  -  |
+
+
 ## requestRecoveryEmail
 
 > void requestRecoveryEmail(email, userID)
@@ -1374,5 +1696,159 @@ ApiResponse<**Boolean**>
 | **200** | OK |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
+
+
+## updateGroupVisibility
+
+> VersionInfo updateGroupVisibility(isPublic, key, versionableType)
+
+
+
+Update groups visibility based on the boolean provided.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+        
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        Boolean isPublic = true; // Boolean | 
+        String key = "key_example"; // String | 
+        VersionableType versionableType = new VersionableType(); // VersionableType | 
+        try {
+            VersionInfo result = apiInstance.updateGroupVisibility(isPublic, key, versionableType);
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#updateGroupVisibility");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **isPublic** | **Boolean**|  | [optional] |
+| **key** | **String**|  | [optional] |
+| **versionableType** | [**VersionableType**](VersionableType.md)|  | [optional] |
+
+### Return type
+
+[**VersionInfo**](VersionInfo.md)
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **401** | Not Authenticated |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
+| **500** | Data Access Exception |  -  |
+
+## updateGroupVisibilityWithHttpInfo
+
+> ApiResponse<VersionInfo> updateGroupVisibility updateGroupVisibilityWithHttpInfo(isPublic, key, versionableType)
+
+
+
+Update groups visibility based on the boolean provided.
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.UsersResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+        
+
+        UsersResourceApi apiInstance = new UsersResourceApi(defaultClient);
+        Boolean isPublic = true; // Boolean | 
+        String key = "key_example"; // String | 
+        VersionableType versionableType = new VersionableType(); // VersionableType | 
+        try {
+            ApiResponse<VersionInfo> response = apiInstance.updateGroupVisibilityWithHttpInfo(isPublic, key, versionableType);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling UsersResourceApi#updateGroupVisibility");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **isPublic** | **Boolean**|  | [optional] |
+| **key** | **String**|  | [optional] |
+| **versionableType** | [**VersionableType**](VersionableType.md)|  | [optional] |
+
+### Return type
+
+ApiResponse<[**VersionInfo**](VersionInfo.md)>
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **401** | Not Authenticated |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
 | **500** | Data Access Exception |  -  |
 

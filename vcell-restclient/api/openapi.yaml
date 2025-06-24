@@ -1811,6 +1811,193 @@ paths:
       tags:
       - Users Resource
       x-accepts: application/json
+  /api/v1/users/group:
+    delete:
+      description: Remove user with username from existing group.
+      operationId: removeUserFromGroup
+      parameters:
+      - explode: true
+        in: query
+        name: isHidden
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - explode: true
+        in: query
+        name: key
+        required: false
+        schema:
+          $ref: '#/components/schemas/KeyValue'
+        style: form
+      - explode: true
+        in: query
+        name: username
+        required: false
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionableType'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionInfo'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      tags:
+      - Users Resource
+      x-content-type: application/json
+      x-accepts: application/json
+    patch:
+      description: Update groups visibility based on the boolean provided.
+      operationId: updateGroupVisibility
+      parameters:
+      - explode: true
+        in: query
+        name: isPublic
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - explode: true
+        in: query
+        name: key
+        required: false
+        schema:
+          $ref: '#/components/schemas/KeyValue'
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionableType'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionInfo'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      tags:
+      - Users Resource
+      x-content-type: application/json
+      x-accepts: application/json
+    post:
+      description: "Share a versionable (BioModel, MathModel, Geometry, Image, etc...)\
+        \ with a user through a group."
+      operationId: addUserToGroup
+      parameters:
+      - explode: true
+        in: query
+        name: isHidden
+        required: false
+        schema:
+          type: boolean
+        style: form
+      - explode: true
+        in: query
+        name: key
+        required: false
+        schema:
+          $ref: '#/components/schemas/KeyValue'
+        style: form
+      - explode: true
+        in: query
+        name: username
+        required: false
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionableType'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VersionInfo'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      tags:
+      - Users Resource
+      x-content-type: application/json
+      x-accepts: application/json
   /api/v1/users/guestBearerToken:
     post:
       operationId: getGuestLegacyApiToken
@@ -3867,6 +4054,57 @@ components:
           type: boolean
         published:
           type: boolean
+      type: object
+    VersionInfo:
+      example:
+        versionType:
+          typeName: typeName
+        version:
+          date: 2000-01-23T04:56:07.000+00:00
+          owner:
+            mySpecials:
+            - null
+            - null
+            userName: userName
+            key: key
+          branchID: 0.8008281904610115
+          flag:
+            archived: true
+            current: true
+            intValue: 1
+            versionFlag: 6
+            published: true
+          groupAccess:
+            groupid: 5.962133916683182
+            description: description
+          name: name
+          annot: annot
+          branchPointRefKey: branchPointRefKey
+          versionKey: versionKey
+        softwareVersion:
+          vcellSite: null
+          patchVersion: 4
+          buildInt: 7
+          description: description
+          majorVersion: 3
+          minorVersion: 2
+          buildNumber: buildNumber
+          softwareVersionString: softwareVersionString
+          versionNumber: versionNumber
+      properties:
+        version:
+          $ref: '#/components/schemas/Version'
+        versionType:
+          $ref: '#/components/schemas/VersionableType'
+        softwareVersion:
+          $ref: '#/components/schemas/VCellSoftwareVersion'
+      type: object
+    VersionableType:
+      example:
+        typeName: typeName
+      properties:
+        typeName:
+          type: string
       type: object
     advancedCreate_request:
       properties:

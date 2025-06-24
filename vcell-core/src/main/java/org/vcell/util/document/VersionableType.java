@@ -10,14 +10,20 @@
 
 package org.vcell.util.document;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
 public class VersionableType implements java.io.Serializable {
+	@JsonIgnore
 	private int vType;
+	@JsonIgnore
 	private String name;
+	@JsonIgnore
 	private Class<?> vClass;
+	@JsonIgnore
 	private boolean bTopLevel;
 
 	private static final String VCImageName = "VCImage";
@@ -70,6 +76,7 @@ public boolean equals(Object obj) {
  * This method was created in VisualAge.
  * @return int
  */
+@JsonIgnore
 public int getCode() {
 	return vType;
 }
@@ -78,6 +85,7 @@ public int getCode() {
  * Creation date: (1/24/01 9:01:08 AM)
  * @return boolean
  */
+@JsonIgnore
 public boolean getIsTopLevel() {
 	return bTopLevel;
 }
@@ -112,6 +120,7 @@ public static VersionableType getTypeFromName(String name){
  * This method was created in VisualAge.
  * @return java.lang.Class
  */
+@JsonIgnore
 public Class<?> getVersionClass() {
 	return vClass;
 }

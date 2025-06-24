@@ -11,6 +11,7 @@ import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataIdentifier;
 import org.vcell.restclient.model.*;
+import org.vcell.restclient.model.VersionableType;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.document.BioModelChildSummary;
@@ -26,9 +27,9 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.document.Version;
 import org.vcell.util.document.VersionFlag;
 import org.vcell.util.document.*;
+import org.vcell.util.document.VersionInfo;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.nio.file.Files;
 
 import java.util.*;
@@ -74,7 +75,7 @@ public class DtoModelTransforms {
     }
 
     public static DataIdentifier dtoToDataIdentifier(org.vcell.restclient.model.DataIdentifier dto){
-        return new DataIdentifier(dto.getName(), dtoToVariableType(dto.getVariableType()),
+        return new DataIdentifier(dto.getName(), dtoToVersionableType(dto.getVariableType()),
                 dto.getDomain() == null ? null : dtoToDomain(dto.getDomain()),
                 dto.getbFunction() == null ? false : dto.getbFunction(), dto.getDisplayName());
     }
@@ -88,7 +89,7 @@ public class DtoModelTransforms {
         return dto;
     }
 
-    public static VariableType dtoToVariableType(org.vcell.restclient.model.VariableType dto) {
+    public static VariableType dtoToVersionableType(org.vcell.restclient.model.VariableType dto) {
         return VariableType.getVariableTypeFromInteger(dto.getType());
     }
 
@@ -304,6 +305,33 @@ public class DtoModelTransforms {
         } catch (GifParsingException | IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static org.vcell.util.document.VersionableType dtoToVersionableType(VersionableType dto){
+        return org.vcell.util.document.VersionableType.getTypeFromName(dto.getTypeName());
+    }
+
+    public static VersionableType versionableTypeToDTO(org.vcell.util.document.VersionableType versionableType){
+        return new VersionableType().typeName(versionableType.getTypeName());
+    }
+
+    public static VersionInfo dtoToVersionInfo(org.vcell.restclient.model.VersionInfo info){
+        return new VersionInfo() {
+            @Override
+            public Version getVersion() {
+                return DtoModelTransforms.versionDTOToVersion(info.getVersion());
+            }
+
+            @Override
+            public org.vcell.util.document.VersionableType getVersionType() {
+                return DtoModelTransforms.dtoToVersionableType(info.getVersionType());
+            }
+
+            @Override
+            public VCellSoftwareVersion getSoftwareVersion() {
+                return DtoModelTransforms.dtoToVCellSoftwareVersion(info.getSoftwareVersion());
+            }
+        };
     }
 
 }

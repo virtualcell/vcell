@@ -23,6 +23,8 @@ import org.vcell.restclient.model.UserIdentityJSONSafe;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
 import org.vcell.restclient.model.UserRegistrationInfo;
 import org.vcell.restclient.model.VCellHTTPError;
+import org.vcell.restclient.model.VersionInfo;
+import org.vcell.restclient.model.VersionableType;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -92,6 +94,104 @@ public class UsersResourceApi {
     return operationId + " call failed with: " + statusCode + " - " + body;
   }
 
+  /**
+   * 
+   * Share a versionable (BioModel, MathModel, Geometry, Image, etc...) with a user through a group.
+   * @param isHidden  (optional)
+   * @param key  (optional)
+   * @param username  (optional)
+   * @param versionableType  (optional)
+   * @return VersionInfo
+   * @throws ApiException if fails to make API call
+   */
+  public VersionInfo addUserToGroup(Boolean isHidden, String key, String username, VersionableType versionableType) throws ApiException {
+    ApiResponse<VersionInfo> localVarResponse = addUserToGroupWithHttpInfo(isHidden, key, username, versionableType);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * 
+   * Share a versionable (BioModel, MathModel, Geometry, Image, etc...) with a user through a group.
+   * @param isHidden  (optional)
+   * @param key  (optional)
+   * @param username  (optional)
+   * @param versionableType  (optional)
+   * @return ApiResponse&lt;VersionInfo&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<VersionInfo> addUserToGroupWithHttpInfo(Boolean isHidden, String key, String username, VersionableType versionableType) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = addUserToGroupRequestBuilder(isHidden, key, username, versionableType);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("addUserToGroup", localVarResponse);
+        }
+        return new ApiResponse<VersionInfo>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<VersionInfo>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder addUserToGroupRequestBuilder(Boolean isHidden, String key, String username, VersionableType versionableType) throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/users/group";
+
+    List<Pair> localVarQueryParams = new ArrayList<>();
+    StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
+    String localVarQueryParameterBaseName;
+    localVarQueryParameterBaseName = "isHidden";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("isHidden", isHidden));
+    localVarQueryParameterBaseName = "key";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("key", key));
+    localVarQueryParameterBaseName = "username";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("username", username));
+
+    if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
+      StringJoiner queryJoiner = new StringJoiner("&");
+      localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
+      if (localVarQueryStringJoiner.length() != 0) {
+        queryJoiner.add(localVarQueryStringJoiner.toString());
+      }
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath + '?' + queryJoiner.toString()));
+    } else {
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    }
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(versionableType);
+      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
   /**
    * The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
    * 
@@ -672,6 +772,104 @@ public class UsersResourceApi {
     return localVarRequestBuilder;
   }
   /**
+   * 
+   * Remove user with username from existing group.
+   * @param isHidden  (optional)
+   * @param key  (optional)
+   * @param username  (optional)
+   * @param versionableType  (optional)
+   * @return VersionInfo
+   * @throws ApiException if fails to make API call
+   */
+  public VersionInfo removeUserFromGroup(Boolean isHidden, String key, String username, VersionableType versionableType) throws ApiException {
+    ApiResponse<VersionInfo> localVarResponse = removeUserFromGroupWithHttpInfo(isHidden, key, username, versionableType);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * 
+   * Remove user with username from existing group.
+   * @param isHidden  (optional)
+   * @param key  (optional)
+   * @param username  (optional)
+   * @param versionableType  (optional)
+   * @return ApiResponse&lt;VersionInfo&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<VersionInfo> removeUserFromGroupWithHttpInfo(Boolean isHidden, String key, String username, VersionableType versionableType) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = removeUserFromGroupRequestBuilder(isHidden, key, username, versionableType);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("removeUserFromGroup", localVarResponse);
+        }
+        return new ApiResponse<VersionInfo>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<VersionInfo>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder removeUserFromGroupRequestBuilder(Boolean isHidden, String key, String username, VersionableType versionableType) throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/users/group";
+
+    List<Pair> localVarQueryParams = new ArrayList<>();
+    StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
+    String localVarQueryParameterBaseName;
+    localVarQueryParameterBaseName = "isHidden";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("isHidden", isHidden));
+    localVarQueryParameterBaseName = "key";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("key", key));
+    localVarQueryParameterBaseName = "username";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("username", username));
+
+    if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
+      StringJoiner queryJoiner = new StringJoiner("&");
+      localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
+      if (localVarQueryStringJoiner.length() != 0) {
+        queryJoiner.add(localVarQueryStringJoiner.toString());
+      }
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath + '?' + queryJoiner.toString()));
+    } else {
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    }
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(versionableType);
+      localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
    * request a recovery email to link a VCell account.
    * 
    * @param email  (optional)
@@ -824,6 +1022,100 @@ public class UsersResourceApi {
     localVarRequestBuilder.header("Accept", "application/json");
 
     localVarRequestBuilder.method("PUT", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * 
+   * Update groups visibility based on the boolean provided.
+   * @param isPublic  (optional)
+   * @param key  (optional)
+   * @param versionableType  (optional)
+   * @return VersionInfo
+   * @throws ApiException if fails to make API call
+   */
+  public VersionInfo updateGroupVisibility(Boolean isPublic, String key, VersionableType versionableType) throws ApiException {
+    ApiResponse<VersionInfo> localVarResponse = updateGroupVisibilityWithHttpInfo(isPublic, key, versionableType);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * 
+   * Update groups visibility based on the boolean provided.
+   * @param isPublic  (optional)
+   * @param key  (optional)
+   * @param versionableType  (optional)
+   * @return ApiResponse&lt;VersionInfo&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<VersionInfo> updateGroupVisibilityWithHttpInfo(Boolean isPublic, String key, VersionableType versionableType) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = updateGroupVisibilityRequestBuilder(isPublic, key, versionableType);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("updateGroupVisibility", localVarResponse);
+        }
+        return new ApiResponse<VersionInfo>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<VersionInfo>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder updateGroupVisibilityRequestBuilder(Boolean isPublic, String key, VersionableType versionableType) throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/users/group";
+
+    List<Pair> localVarQueryParams = new ArrayList<>();
+    StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
+    String localVarQueryParameterBaseName;
+    localVarQueryParameterBaseName = "isPublic";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("isPublic", isPublic));
+    localVarQueryParameterBaseName = "key";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("key", key));
+
+    if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
+      StringJoiner queryJoiner = new StringJoiner("&");
+      localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
+      if (localVarQueryStringJoiner.length() != 0) {
+        queryJoiner.add(localVarQueryStringJoiner.toString());
+      }
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath + '?' + queryJoiner.toString()));
+    } else {
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    }
+
+    localVarRequestBuilder.header("Content-Type", "application/json");
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(versionableType);
+      localVarRequestBuilder.method("PATCH", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }

@@ -316,7 +316,6 @@ public class UsersResource {
     @DELETE
     @Path("/group")
     @RolesAllowed("user")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "removeUserFromGroup", description = "Remove user with username from existing group.")
     public VersionInfo groupRemoveUser(@RequestBody VersionableType versionableType,
@@ -336,7 +335,6 @@ public class UsersResource {
     @PATCH
     @Path("/group")
     @RolesAllowed("user")
-    @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "updateGroupVisibility", description = "Update groups visibility based on the boolean provided.")
     public VersionInfo changeGroupVisibility(@RequestBody VersionableType versionableType,

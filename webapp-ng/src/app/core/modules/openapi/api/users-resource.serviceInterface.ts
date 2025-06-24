@@ -19,6 +19,8 @@ import { UserIdentityJSONSafe } from '../model/models';
 import { UserLoginInfoForMapping } from '../model/models';
 import { UserRegistrationInfo } from '../model/models';
 import { VCellHTTPError } from '../model/models';
+import { VersionInfo } from '../model/models';
+import { VersionableType } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';
@@ -28,6 +30,16 @@ import { Configuration }                                     from '../configurat
 export interface UsersResourceServiceInterface {
     defaultHeaders: HttpHeaders;
     configuration: Configuration;
+
+    /**
+     * 
+     * Share a versionable (BioModel, MathModel, Geometry, Image, etc...) with a user through a group.
+     * @param isHidden 
+     * @param key 
+     * @param username 
+     * @param versionableType 
+     */
+    addUserToGroup(isHidden?: boolean, key?: string, username?: string, versionableType?: VersionableType, extraHttpRequestParams?: any): Observable<VersionInfo>;
 
     /**
      * The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
@@ -82,6 +94,16 @@ export interface UsersResourceServiceInterface {
     processMagicLink(magic?: string, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
+     * 
+     * Remove user with username from existing group.
+     * @param isHidden 
+     * @param key 
+     * @param username 
+     * @param versionableType 
+     */
+    removeUserFromGroup(isHidden?: boolean, key?: string, username?: string, versionableType?: VersionableType, extraHttpRequestParams?: any): Observable<VersionInfo>;
+
+    /**
      * request a recovery email to link a VCell account.
      * 
      * @param email 
@@ -95,5 +117,14 @@ export interface UsersResourceServiceInterface {
      * @param userName 
      */
     unmapUser(userName: string, extraHttpRequestParams?: any): Observable<boolean>;
+
+    /**
+     * 
+     * Update groups visibility based on the boolean provided.
+     * @param isPublic 
+     * @param key 
+     * @param versionableType 
+     */
+    updateGroupVisibility(isPublic?: boolean, key?: string, versionableType?: VersionableType, extraHttpRequestParams?: any): Observable<VersionInfo>;
 
 }
