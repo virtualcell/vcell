@@ -38,6 +38,8 @@ import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VersionInfo;
+import org.vcell.util.document.VersionableType;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
@@ -691,14 +693,11 @@ public org.vcell.util.document.VersionInfo groupAddUser(org.vcell.util.document.
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.groupAddUser(vType="+vType.getTypeName()+", Key="+key+", userToAdd="+addUserToGroup+", isHidden="+isHidden+")");
-		VersionInfo newVersionInfo = dbServerProxy.groupAddUser(vType,key,addUserToGroup,isHidden);
-		return newVersionInfo;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+        return DtoModelTransforms.dtoToVersionInfo(vCellApiClient.getUsersApi().addUserToGroup(isHidden,
+				key.toString(),addUserToGroup, DtoModelTransforms.versionableTypeToDTO(vType)));
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
 }
 
@@ -714,14 +713,13 @@ public org.vcell.util.document.VersionInfo groupRemoveUser(org.vcell.util.docume
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.groupRemoveUser(vType="+vType.getTypeName()+", Key="+key+", userRemoveFromGroup="+userRemoveFromGroup+")");
-		VersionInfo newVersionInfo = dbServerProxy.groupRemoveUser(vType,key,userRemoveFromGroup,isHiddenFromOwner);
-		return newVersionInfo;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+        return DtoModelTransforms.dtoToVersionInfo(
+				vCellApiClient.getUsersApi().removeUserFromGroup(isHiddenFromOwner,key.toString(),
+						userRemoveFromGroup, DtoModelTransforms.versionableTypeToDTO(vType))
+		);
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
 }
 
@@ -737,14 +735,13 @@ public org.vcell.util.document.VersionInfo groupSetPrivate(org.vcell.util.docume
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.groupSetPrivate(vType="+vType.getTypeName()+", Key="+key+")");
-		VersionInfo newVersionInfo = dbServerProxy.groupSetPrivate(vType,key);
-		return newVersionInfo;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+        return DtoModelTransforms.dtoToVersionInfo(
+				vCellApiClient.getUsersApi().updateGroupVisibility(false, key.toString(),
+						DtoModelTransforms.versionableTypeToDTO(vType))
+		);
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
 }
 
@@ -760,14 +757,13 @@ public org.vcell.util.document.VersionInfo groupSetPublic(org.vcell.util.documen
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.groupSetPublic(vType="+vType.getTypeName()+", Key="+key+")");
-		VersionInfo newVersionInfo = dbServerProxy.groupSetPublic(vType,key);
-		return newVersionInfo;
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		return DtoModelTransforms.dtoToVersionInfo(
+				vCellApiClient.getUsersApi().updateGroupVisibility(true, key.toString(),
+						DtoModelTransforms.versionableTypeToDTO(vType))
+		);
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
 }
 
