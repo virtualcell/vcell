@@ -2255,4 +2255,27 @@ public SimulationRep getSimulationRep(KeyValue simKey, boolean bEnableRetry) thr
 	}
 }
 
+	public void insertExportHistory(User user, String exportHistoryValues, boolean bEnableRetry) throws SQLException, DataAccessException {
+		Object lock = new Object();
+		Connection con = conFactory.getConnection(lock);
+		try {
+//			exportHistoryDB.addExportHistory(con, user, exportHistoryValues);
+		} catch (Throwable e) {
+			lg.error(e.getMessage(),e);
+			try {
+				con.rollback();
+			}catch (Throwable rbe){
+				lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
+			}
+			if (bEnableRetry && isBadConnection(con)) {
+				conFactory.failed(con,lock);
+				insertExportHistory(user, exportHistoryValues, false);
+			}else{
+				handle_DataAccessException_SQLException(e);
+			}
+		}finally{
+			conFactory.release(con,lock);
+		}
+	}
+
 }
