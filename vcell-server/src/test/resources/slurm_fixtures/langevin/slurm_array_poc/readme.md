@@ -1,6 +1,7 @@
 # vcell-batch-job
 
-This project supports the execution of Virtual Cell (VCell) simulations inside a containerized environment using Apptainer (formerly Singularity) on a Linux system hosted via WSL on Windows 10. This setup is tailored for automated, Slurm-based job submissions with structured input/output handling.
+
+This project supports the execution of Virtual Cell (VCell) simulations inside a containerized environment using Apptainer (formerly Singularity) on a Linux system hosted via WSL on Windows 10. This setup does not support slurm.
 
 ---
 
@@ -30,11 +31,7 @@ This project supports the execution of Virtual Cell (VCell) simulations inside a
    ```powershell
    vasilescu@oci:~$
    ```
-This path maps to your Windows network drive:
-   ```powershell
-   Z:\  ⇔  /home/vasilescu
-   ```
-If the Z: drive is mapped as a network drive, it won't actually be the same location. \
+
 To maintain visibility between File Explorer and Ubuntu's /home/vasilescu, paste \
 this in the File Explorer address bar.
 ```powershell
@@ -63,7 +60,6 @@ sudo apt install ./apptainer_${VERSION}_amd64.deb
 
 ### 4. Project directory structure
 
-Root directory: Z:\vcell-batch-job ⇔ /home/vasilescu/vcell-batch-job
 ```powershell
 vcell-batch-job/
 ├── archive/       # Archived or versioned Slurm scripts
@@ -86,9 +82,22 @@ Set environment variables for GitHub Container Registry access:
 export APPTAINER_DOCKER_USERNAME=<your_github_username>
 export APPTAINER_DOCKER_PASSWORD=<your_github_personal_access_token>
 ```
+You'll need a  ghcr login token
+
 Pull the desired container image:
 ```powershell
 apptainer pull vcell-batch-7.7.0.27.sif docker://ghcr.io/virtualcell/vcell-batch:7.7.0.27
 ```
+
 > All container images are saved under **container/** using versioned filenames
 > (e.g., vcell-batch-7.7.0.27.sif, vcell-batch-7.7.0.28.sif)
+
+
+### 6 On a HPC node - using slurm
+
+We assume that everything is installed properly, like above. \
+Root directory:
+> Z:\vcell-batch-job ⇔ /home/vasilescu/vcell-batch-job
+
+BASE_DIR=$HOME/vcell-batch-job
+mkdir -p $BASE_DIR/{input,output,logs,scripts,container}
