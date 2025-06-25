@@ -89,7 +89,7 @@ Pull the desired container image:
 apptainer pull vcell-batch-7.7.0.27.sif docker://ghcr.io/virtualcell/vcell-batch:7.7.0.27
 ```
 
-> All container images are saved under **container/** using versioned filenames
+> All container images are saved under **container/** using versioned filenames \
 > (e.g., vcell-batch-7.7.0.27.sif, vcell-batch-7.7.0.28.sif)
 
 
@@ -97,7 +97,15 @@ apptainer pull vcell-batch-7.7.0.27.sif docker://ghcr.io/virtualcell/vcell-batch
 
 We assume that everything is installed properly, like above. \
 Root directory:
-> Z:\vcell-batch-job ⇔ /home/vasilescu/vcell-batch-job
-
+> Z: ⇔ /home/FCAM/vasilescu
+```powershell
 BASE_DIR=$HOME/vcell-batch-job
 mkdir -p $BASE_DIR/{input,output,logs,scripts,container}
+```
+
+Frequently used, from BASE_DIR
+```powershell
+sed -i 's/\r$//' ./scripts/submit_vcell_batch.slurm.sub
+sbatch ./scripts/submit_vcell_batch.slurm.sub
+tail -f ./logs/submit_vcell_batch.log
+```

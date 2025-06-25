@@ -1,36 +1,45 @@
 #!/bin/bash
 #SBATCH --job-name=VREL999999999
-#SBATCH --output=/home/vasilescu/vcell-batch-job/logs/submit_vcell_batch.log
+#SBATCH --output=/home/FCAM/vasilescu/vcell-batch-job/logs/submit_vcell_batch.log
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=8G
 #SBATCH --time=01:00:00
+#SBATCH --partition=vcell
+#SBATCH --qos=vcell
 
-# ---------------------------------------------------------------
-# Slurm batch script for running a VCell simulation inside Apptainer
-# Directory structure and file paths adapted to /vcell-batch-job/
-# ---------------------------------------------------------------
-
-# Define paths relative to organized project structure
-BASE_DIR=/home/vasilescu/vcell-batch-job
+BASE_DIR=/home/FCAM/vasilescu/vcell-batch-job
 CONTAINER_IMAGE=$BASE_DIR/container/vcell-batch_7.7.0.28.sif
 INPUT_DIR=$BASE_DIR/input
 OUTPUT_DIR=$BASE_DIR/output
 LOG_DIR=$BASE_DIR/logs
 SIMXML=$INPUT_DIR/SimID_999999999_0__0.simtask.xml
 
-# Step 1: Preprocess
-apptainer exec --bind $INPUT_DIR:$INPUT_DIR --bind $OUTPUT_DIR:$OUTPUT_DIR $CONTAINER_IMAGE \
+echo "=== [$(date)] === SLURM job started on node $(hostname)"
+sleep 15
+
+echo "[Preprocess] Running JavaPreprocessor64..."
+singularity exec \
+  --bind $INPUT_DIR:$INPUT_DIR \
+  --bind $OUTPUT_DIR:$OUTPUT_DIR \
+  $CONTAINER_IMAGE \
   JavaPreprocessor64 $SIMXML $OUTPUT_DIR
 
-# Step 2: Run simulation
-apptainer exec --bind $INPUT_DIR:$INPUT_DIR --bind $OUTPUT_DIR:$OUTPUT_DIR $CONTAINER_IMAGE \
+echo "[Simulate] Running langevin_x64..."
+singularity exec \
+  --bind $INPUT_DIR:$INPUT_DIR \
+  --bind $OUTPUT_DIR:$OUTPUT_DIR \
+  $CONTAINER_IMAGE \
   langevin_x64 simulate \
-  $INPUT_DIR/SimID_999999999_0_.langevinInput \
-  0 \
-  --output-log=$OUTPUT_DIR/SimID_999999999_0__0.log \
-  --vc-print-status
+    $INPUT_DIR/SimID_999999999_0_.langevinInput \
+    0 \
+    --output-log=$OUTPUT_DIR/SimID_999999999_0__0.log \
+    --vc-print-status
 
-# Step 3: Postprocess
-apptainer exec --bind $OUTPUT_DIR:$OUTPUT_DIR $CONTAINER_IMAGE \
+echo "[Postprocess] Running JavaPostprocessor64..."
+singularity exec \
+  --bind $OUTPUT_DIR:$OUTPUT_DIR \
+  $CONTAINER_IMAGE \
   JavaPostprocessor64 999999999 vasilescu 17 0 0 10 $SLURM_JOB_SCRIPT
+
+echo "=== [$(date)] === SLURM job completed"
