@@ -85,6 +85,7 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private StopAtSpatiallyUniformPanel stopAtSpatiallyUniformPanel = null;
 	private DataProcessingInstructionPanel dataProcessingInstructionPanel = null;
 	private JCheckBox serialParameterScanCheckBox = null;
+	private CollapsiblePanel steadyStateCollapsiblePanel;
 	private CollapsiblePanel sensitivityAnalysisCollapsiblePanel;
 	private JCheckBox performSensitivityAnalysisCheckBox;
 	private JButton sensitivityAnalysisHelpButton;
@@ -93,6 +94,12 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 	private MovingBoundarySolverOptionsPanel movingBoundarySolverOptionsPanel;
 	private JCheckBox timeoutDisabledCheckBox = null;
 	private JButton timeoutDisabledHelpButton = null;
+	JTextField resolutionTextField = null;
+	JTextField maxNewtonIterationsTextField = null;
+	JTextField maxForwardDurationTextField = null;
+	JTextField derivationFactorTextField = null;
+	JComboBox<String> stopCriteriaComboBox = null;
+	private JButton steadyStateHelpButton = null;
 	private JCheckBox borderExtrapolationDisabledChkBox;
 	private GridBagConstraints gbc_1;
 
@@ -115,6 +122,13 @@ public class SolverTaskDescriptionAdvancedPanel extends javax.swing.JPanel {
 						+ "However, we are allowing our power users to bypass this rule and allow very long simulations "
 						+ "to run indefinitely.\nIf you need to run such a simulation, please contact us at vcell_support@uchc.edu "
 						+ "to be added to the power user list.", "Disable forced timeout for very long Simulations", JOptionPane.PLAIN_MESSAGE, null);
+			} else if(e.getSource() == steadyStateHelpButton) {
+				JDialog dialog = new JDialog();
+				dialog.setAlwaysOnTop(true);
+				JOptionPane.showMessageDialog(dialog,
+						"Distance – stops when the change in concentrations per solver iteration is smaller than the Resolution specified\n" +
+								"Rate – stops when each RHS of the ODEs is smaller than the specified Resolution",
+						"Steady State Stop Criteria", JOptionPane.PLAIN_MESSAGE, null);
 			}
 		}
 
@@ -242,6 +256,11 @@ private void managePanels() {
 		if(sensitivityAnalysisCollapsiblePanel != null) {
 			sensitivityAnalysisCollapsiblePanel.setVisible(!getSolverTaskDescription().getSimulation().getMathDescription().isSpatial() && !getSolverTaskDescription().getSimulation().getMathDescription().isNonSpatialStoch());
 		}
+	}
+	if(this.getSolverTaskDescription().getSolverDescription() == SolverDescription.CVODE) {
+		getSteadyStatePanel().setVisible(true);
+	} else {
+		getSteadyStatePanel().setVisible(false);
 	}
 }
 
@@ -659,6 +678,7 @@ private void initConnections() throws java.lang.Exception {
 	timeoutDisabledCheckBox.addItemListener(ivjEventHandler);
 	borderExtrapolationDisabledChkBox.addItemListener(ivjEventHandler);
 	timeoutDisabledHelpButton.addActionListener(ivjEventHandler);
+	steadyStateHelpButton.addActionListener(ivjEventHandler);
 	sensitivityAnalysisComboBox.addActionListener(ivjEventHandler);
 	performSensitivityAnalysisCheckBox.addActionListener(ivjEventHandler);
 	sensitivityAnalysisHelpButton.addActionListener(ivjEventHandler);
@@ -775,6 +795,82 @@ private CollapsiblePanel getGeneralOptionsPanel() {
 	return generalOptionsPanel;
 }
 
+	private CollapsiblePanel getSteadyStatePanel() {
+		if (steadyStateCollapsiblePanel == null) {
+			resolutionTextField = new JTextField();
+			maxNewtonIterationsTextField = new JTextField();
+			maxForwardDurationTextField = new JTextField();
+			derivationFactorTextField = new JTextField();
+			stopCriteriaComboBox = new JComboBox<>(new String[] {
+					"Distance only",
+					"Rate only",
+					"Distance OR Rate",
+					"Distance AND Rate"
+			});
+			steadyStateHelpButton = new JButton("<html><b>&nbsp;&nbsp;?&nbsp;&nbsp;</b></html>");
+			Font font = steadyStateHelpButton.getFont().deriveFont(Font.BOLD);
+			Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
+			steadyStateHelpButton.setFont(font);
+			steadyStateHelpButton.setBorder(border);
+
+			Dimension fieldSize = new Dimension(120, resolutionTextField.getPreferredSize().height);
+			resolutionTextField.setPreferredSize(fieldSize);
+			derivationFactorTextField.setPreferredSize(fieldSize);
+			maxNewtonIterationsTextField.setPreferredSize(fieldSize);
+			maxForwardDurationTextField.setPreferredSize(fieldSize);
+			resolutionTextField.setMinimumSize(fieldSize);
+			derivationFactorTextField.setMinimumSize(fieldSize);
+			maxNewtonIterationsTextField.setMinimumSize(fieldSize);
+			maxForwardDurationTextField.setMinimumSize(fieldSize);
+
+			steadyStateCollapsiblePanel = new CollapsiblePanel("Steady State", false);
+			JPanel contentPanel = steadyStateCollapsiblePanel.getContentPanel();
+			contentPanel.setLayout(new GridBagLayout());
+
+			GridBagConstraints gbc = new GridBagConstraints();
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			gbc.insets = new Insets(4, 4, 4, 4);
+			gbc.anchor = GridBagConstraints.WEST;
+
+			gbc.gridy = 0;		// first row
+			gbc.gridx = 0;
+			contentPanel.add(new JLabel("Resolution:"), gbc);
+			gbc.gridx = 1;
+			contentPanel.add(resolutionTextField, gbc);
+
+			gbc.gridx = 3;
+			contentPanel.add(new JLabel("Max Newton Iterations:"), gbc);
+			gbc.gridx = 4;
+			contentPanel.add(maxNewtonIterationsTextField, gbc);
+
+			gbc.gridy = 1;		// second row
+			gbc.gridx = 0;
+			contentPanel.add(new JLabel("Derivation Factor:"), gbc);
+			gbc.gridx = 1;
+			contentPanel.add(derivationFactorTextField, gbc);
+
+			gbc.gridx = 3;
+			contentPanel.add(new JLabel("Max Forward Duration:"), gbc);
+			gbc.gridx = 4;
+			contentPanel.add(maxForwardDurationTextField, gbc);
+
+			gbc.gridy = 2;		// third row
+			gbc.gridx = 0;
+			contentPanel.add(new JLabel("Stop Criteria:"), gbc);
+			gbc.gridx = 1;
+			contentPanel.add(stopCriteriaComboBox, gbc);
+			gbc.gridx = 2;
+			contentPanel.add(steadyStateHelpButton, gbc);
+
+			gbc.gridx = 5;
+			gbc.weightx = 1.0;
+			gbc.fill = GridBagConstraints.HORIZONTAL;
+			contentPanel.add(new JLabel(), gbc);
+
+		}
+		return steadyStateCollapsiblePanel;
+	}
+
 private CollapsiblePanel getSensitivityAnalysisPanel() {
 	if (sensitivityAnalysisCollapsiblePanel == null) {
 		sensitivityAnalysisComboBox = new javax.swing.JComboBox();
@@ -856,6 +952,15 @@ private void initialize() {
 		gbc1.weightx = 1.0;
 		gbc1.insets = new java.awt.Insets(3, 4, 3, 4);
 		add(getGeneralAndDeverloperToolsPanel(), gbc1);
+
+		gridy ++;
+		GridBagConstraints gbc2 = new java.awt.GridBagConstraints();
+		gbc2.gridx = 0;
+		gbc2.gridy = gridy;
+		gbc2.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gbc2.weightx = 1.0;
+		gbc2.insets = new java.awt.Insets(4, 4, 4, 4);
+		add(getSteadyStatePanel(), gbc2);
 
 		gridy ++;
 		GridBagConstraints gbc = new java.awt.GridBagConstraints();
