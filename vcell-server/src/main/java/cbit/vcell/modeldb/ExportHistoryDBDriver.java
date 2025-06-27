@@ -1,9 +1,8 @@
 package cbit.vcell.modeldb;
 
-import cbit.vcell.export.server.ExportFormat;
-import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.export.server.HumanReadableExportData;
-import cbit.vcell.export.server.TimeSpecs;
+import cbit.vcell.export.server.*;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
@@ -12,9 +11,12 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ExportHistoryDBDriver{
     public static final ExportHistoryTable exportHistoryTable = ExportHistoryTable.table;
@@ -60,10 +62,10 @@ public class ExportHistoryDBDriver{
 
         String timeRange = ts.toString();
         String[] time_parts = timeRange.split("/");
-        BigDecimal startTime = new BigDecimal(time_parts[0]);
-        BigDecimal endTime = new BigDecimal(time_parts[1]);
+        BigDecimal startTime = new BigDecimal(ts.getBeginTimeIndex());
+        BigDecimal endTime = new BigDecimal(ts.getEndTimeIndex());
 
-
+        ps.setLong(1, 1);   //change once key values issue resolved
         ps.setLong(2, jobID);
         ps.setLong(3, Long.parseLong(user.getID().toString()));
         ps.setLong(4, modelRef);
@@ -98,7 +100,7 @@ public class ExportHistoryDBDriver{
         for (String entry : meta.differentParameterValues) {
             String[] parts = entry.split(":");
             if (parts.length == 3) {
-                //psParam.setLong       (1, historyId);
+                ps2.setLong       (1, 1);   //change once key values issue resolved
                 ps2.setLong(2, Long.parseLong(user.getID().toString()));
                 ps2.setLong(3, modelRef);
                 ps2.setString(4, parts[0]);
@@ -111,12 +113,103 @@ public class ExportHistoryDBDriver{
 
     }
 
+    public void deleteExportHistory(Connection conn, ExportSpecs exportSpecs) throws SQLException {
+
+        String selectSQL = "SELECT id FROM vc_model_export_history WHERE data_id = ?";
+        try (PreparedStatement psSel = conn.prepareStatement(selectSQL)) {
+            psSel.setString(1, exportSpecs.getVCDataIdentifier().getID());
+            try (ResultSet rs = psSel.executeQuery()) {
+                while (rs.next()) {
+                    long historyId = rs.getLong(1);
+
+                    try (PreparedStatement psDelParams = conn.prepareStatement(
+                            "DELETE FROM vc_model_parameter_values WHERE export_id = ?")) {
+                        psDelParams.setLong(1, historyId);
+                        psDelParams.executeUpdate();
+                    }
+
+                    try (PreparedStatement psDelHist = conn.prepareStatement(
+                            "DELETE FROM vc_model_export_history WHERE id = ?")) {
+                        psDelHist.setLong(1, historyId);
+                        psDelHist.executeUpdate();
+                    }
+                }
+            }
+        }
+    }
+
+    public ResultSet getExportHistoryForUser(Connection conn, User user) throws SQLException {
+        String sql = "SELECT * FROM vc_model_export_history WHERE user_ref = ?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setLong(1, Long.parseLong(user.getID().toString()));
+        return ps.executeQuery();
+    }
+
+
     public static void main(String[] args) throws SQLException, PermissionException, DataAccessException {
         try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "quarkus", "quarkus")){
             ExportHistoryDBDriver dbDriver = new ExportHistoryDBDriver(null, null);
-            ExportSpecs exportSpecs = new ExportSpecs(null, null, null, null, null, null,
-                    null, null);
-            dbDriver.addExportHistory(connection, new User("Administrator", new KeyValue("2")), 1, 2, ExportFormat.N5, null, null, exportSpecs);
+
+            GeometrySpecs testGeometrySpecs = new GeometrySpecs(null, 100, 100, 1);
+            TimeSpecs testTimeSpecs = new TimeSpecs(0, 1, new double[]{1, 1}, 1);
+            String[] testVarNames = new String[]{"A", "B"};
+            VariableSpecs testVariableSpecs = new VariableSpecs(testVarNames, 1);
+
+            KeyValue simKey = new KeyValue("12345");
+
+
+            User owner   = new User("Administrator", new KeyValue("2"));
+
+
+            VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
+
+            VCDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID,456);
+            String dataID = vcdID.getID();
+
+            FormatSpecificSpecs testFormatSpecificSpecs = new FormatSpecificSpecs() {
+                @Override
+                public boolean equals(Object obj) {
+
+                    return this == obj;
+                }
+                @Override
+                public String toString() {
+                    return "DummyFormatSpecificSpecs";
+                }
+            };
+
+
+
+            HumanReadableExportData meta = new HumanReadableExportData(
+                    "MySimulation",
+                    "MyApp",
+                    "MyBioModel",
+                    new ArrayList<>(),
+                    "test",
+                    "result.n5",
+                    false,
+                    new HashMap<>()
+            );
+
+            Timestamp testExportDate = new Timestamp(System.currentTimeMillis());
+
+            ExportSpecs exportSpecs = new ExportSpecs(vcdID, ExportFormat.N5, testVariableSpecs, testTimeSpecs, testGeometrySpecs, testFormatSpecificSpecs,
+                    "testsim", "testname");
+            exportSpecs.setExportMetaData(meta);
+
+            dbDriver.addExportHistory(connection, new User("Administrator", new KeyValue("2")), 1, 2, ExportFormat.N5, testExportDate, "https://vcell.cam.uchc.edu/n5Data/paulricky/5456fb59b530a19.n5?dataSetName\\u003d3681309072", exportSpecs);
+
+            System.out.println("=== Test get before deletion ===");
+            try (ResultSet rs = dbDriver.getExportHistoryForUser(connection, owner)) {
+                while (rs.next()) {
+                    System.out.println("id=" + rs.getLong("id")
+                            + ", data_id=" + rs.getString("data_id")
+                            + ", export_format=" + rs.getString("export_format"));
+                }
+            }
+            dbDriver.deleteExportHistory(connection, exportSpecs);
+
+
         } catch (SQLException e){
             System.err.println("SQLException: " + e.getMessage());
         }
