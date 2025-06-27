@@ -41,8 +41,9 @@ public class SimulationListTableModel extends VCellSortTableModel<Simulation> im
 	private final static int COLUMN_SOLVER = 3;
 	private final static int COLUMN_STATUS = 4;
 	private final static int COLUMN_RESULTS = 5;
-	
-	private static final String[] columnNames = new String[] {"Name", "End Time", "Output Option", "Solver", "Running Status", "Results"};
+	private final static int COLUMN_STEADY_STATE = 6;
+
+	private static final String[] columnNames = new String[] {"Name", "End Time", "Output Option", "Solver", "Running Status", "Results", "Steady State"};
 	private SimulationWorkspace simulationWorkspace = null;
 
 
@@ -115,7 +116,13 @@ public Object getValueAt(int row, int column) {
 				} 
 				case COLUMN_RESULTS: {
 					return getSimulationWorkspace().getSimulationStatus(simulation).getHasData() ? "yes" : "no";
-				} 
+				}
+				case COLUMN_STEADY_STATE: {
+					if (simulation.getSolverTaskDescription().getSolverDescription() == SolverDescription.CVODE) {
+						SolverTaskDescription std = simulation.getSolverTaskDescription();
+						return(std.getSteadyState());
+					}
+				}
 			}
 		}
 	} catch(Exception e){
@@ -141,6 +148,12 @@ public boolean isCellEditable(int rowIndex, int columnIndex) {
 			return !simulation.getSolverTaskDescription().getSolverDescription().isChomboSolver();
 		case COLUMN_OUTPUT:
 			return true;
+		case COLUMN_STEADY_STATE:
+			if (simulation.getSolverTaskDescription().getSolverDescription() == SolverDescription.CVODE) {
+				return true;
+			} else {
+				return false;
+			}
 		default: {
 			return false;
 		}
@@ -316,6 +329,16 @@ public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 					}
 				}
 				break;
+			case COLUMN_STEADY_STATE:
+				if (simulation.getSolverTaskDescription().getSolverDescription() == SolverDescription.CVODE) {
+					if (aValue instanceof Boolean) {
+						boolean bEnabled = ((Boolean) aValue).booleanValue();
+						SolverTaskDescription std = simulation.getSolverTaskDescription();
+						std.setSteadyState(bEnabled);
+						fireTableRowsUpdated(rowIndex, rowIndex);
+					}
+				}
+				break;
 		}
 	} catch (Exception ex) {
 		ex.printStackTrace(System.out);
@@ -345,6 +368,8 @@ public Class<?> getColumnClass(int columnIndex) {
 		return OutputTimeSpec.class;
 	case COLUMN_SOLVER:
 		return SolverDescription.class;
+		case COLUMN_STEADY_STATE:
+			return Boolean.class;
 	default:
 		return String.class;
 	}
