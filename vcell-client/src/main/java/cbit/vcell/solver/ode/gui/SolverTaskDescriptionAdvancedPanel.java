@@ -249,16 +249,18 @@ private void connPtoP1SetTarget() {
 	}
 }
 private void managePanels() {
-	if(this.getSolverTaskDescription().getSimulation().getMathDescription().isRuleBased()) {
+	SolverTaskDescription std = this.getSolverTaskDescription();
+	if(std.getSimulation().getMathDescription().isRuleBased()) {
 		if(sensitivityAnalysisCollapsiblePanel != null) sensitivityAnalysisCollapsiblePanel.setVisible(false);
 		if(nfsimSimulationOptionsPanel != null) nfsimSimulationOptionsPanel.expand(true);
 	} else {
 		if(sensitivityAnalysisCollapsiblePanel != null) {
-			sensitivityAnalysisCollapsiblePanel.setVisible(!getSolverTaskDescription().getSimulation().getMathDescription().isSpatial() && !getSolverTaskDescription().getSimulation().getMathDescription().isNonSpatialStoch());
+			sensitivityAnalysisCollapsiblePanel.setVisible(!std.getSimulation().getMathDescription().isSpatial() && !std.getSimulation().getMathDescription().isNonSpatialStoch());
 		}
 	}
-	if(this.getSolverTaskDescription().getSolverDescription() == SolverDescription.CVODE) {
+	if(std.getSolverDescription() == SolverDescription.CVODE && std.getSteadyState() == true) {
 		getSteadyStatePanel().setVisible(true);
+		getSteadyStatePanel().expand(true);
 	} else {
 		getSteadyStatePanel().setVisible(false);
 	}
