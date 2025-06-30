@@ -23,6 +23,7 @@ import java.util.zip.DataFormatException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import cbit.rmi.event.ExportStatusEventCreator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.ClientTaskStatusSupport;
@@ -46,7 +47,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 /**
  * This type was created in VisualAge.
  */
-public class ExportServiceImpl implements ExportConstants, ExportService {
+public class ExportServiceImpl implements ExportService, ExportStatusEventCreator {
 	public static final Logger lg = LogManager.getLogger(ExportServiceImpl.class);
 	
 	private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
@@ -79,7 +80,7 @@ public synchronized void addExportListener(ExportListener listener) {
  * Creation date: (4/1/2001 11:20:45 AM)
  * @deprecated
  */
-protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, String format, String location,ExportSpecs exportSpecs) {
+public ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, String format, String location,ExportSpecs exportSpecs) {
 	User user = null;
 	Object object = jobRequestIDs.get(new Long(jobID));
 	if (object != null) {
@@ -104,7 +105,7 @@ protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, St
 }
 
 
-protected void fireExportAssembling(long jobID, VCDataIdentifier vcdID, String format) {
+public void fireExportAssembling(long jobID, VCDataIdentifier vcdID, String format) {
 	User user = null;
 	Object object = jobRequestIDs.get(new Long(jobID));
 	if (object != null) {
@@ -120,7 +121,7 @@ protected void fireExportAssembling(long jobID, VCDataIdentifier vcdID, String f
  * Creation date: (11/17/2000 11:43:22 AM)
  * @param event cbit.rmi.event.ExportEvent
  */
-protected void fireExportEvent(ExportEvent event) {
+public void fireExportEvent(ExportEvent event) {
 	// Guaranteed to return a non-null array
 	Object[] listeners = listenerList.getListenerList();
 	// Reset the source to allow proper wiring
@@ -140,7 +141,7 @@ protected void fireExportEvent(ExportEvent event) {
  * Creation date: (4/1/2001 11:20:45 AM)
  * @deprecated
  */
-protected void fireExportFailed(long jobID, VCDataIdentifier vcdID, String format, String message) {
+public void fireExportFailed(long jobID, VCDataIdentifier vcdID, String format, String message) {
 	User user = null;
 	Object object = jobRequestIDs.get(new Long(jobID));
 	if (object != null) {
@@ -157,7 +158,7 @@ protected void fireExportFailed(long jobID, VCDataIdentifier vcdID, String forma
  * @param exportSpecs cbit.vcell.export.server.ExportSpecs
  * @param progress double
  */
-protected void fireExportProgress(long jobID, VCDataIdentifier vcdID, String format, double progress) {
+public void fireExportProgress(long jobID, VCDataIdentifier vcdID, String format, double progress) {
 	User user = null;
 	Object object = jobRequestIDs.get(new Long(jobID));
 	if (object != null) {
@@ -173,7 +174,7 @@ protected void fireExportProgress(long jobID, VCDataIdentifier vcdID, String for
  * Creation date: (4/1/2001 11:20:45 AM)
  * @deprecated
  */
-protected void fireExportStarted(long jobID, VCDataIdentifier vcdID, String format) {
+public void fireExportStarted(long jobID, VCDataIdentifier vcdID, String format) {
 	User user = null;
 	Object object = jobRequestIDs.get(new Long(jobID));
 	if (object != null) {
