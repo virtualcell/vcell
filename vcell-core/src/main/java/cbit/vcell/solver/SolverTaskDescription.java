@@ -101,6 +101,15 @@ public class SolverTaskDescription implements Matchable, java.beans.PropertyChan
         return numTrials;
     }
 
+    // TODO: if this flag already exist, use that
+    private boolean bSteadyState = false;
+    public void setSteadyState(boolean bSteadyState) {
+        this.bSteadyState = bSteadyState;
+    }
+    public boolean getSteadyState() {
+        return bSteadyState;
+    }
+
     private int fieldTaskType = TASK_UNSTEADY;
     private Constant fieldSensitivityParameter = null;
     private Simulation fieldSimulation = null;
