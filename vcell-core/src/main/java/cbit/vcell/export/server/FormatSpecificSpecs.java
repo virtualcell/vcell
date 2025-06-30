@@ -157,12 +157,13 @@ public abstract class FormatSpecificSpecs implements Serializable {
 			return dim;
 		}
 
-		public static Dimension getMirrorDimension(int mirroringType,int originalWidth,int originalHeight){
+		@JsonIgnore
+		public static Dimension getMirrorDimension(ExportSpecss.MirroringMethod mirroringType,int originalWidth,int originalHeight){
 			Dimension mirrorDim = new Dimension(originalWidth,originalHeight);
-			if ((mirroringType == ExportConstants.MIRROR_LEFT) || (mirroringType == ExportConstants.MIRROR_RIGHT)){
+			if ((mirroringType == ExportSpecss.MirroringMethod.MIRROR_LEFT) || (mirroringType == ExportSpecss.MirroringMethod.MIRROR_RIGHT)){
 				mirrorDim.width = 2 * originalWidth;
 			}
-			if ((mirroringType == ExportConstants.MIRROR_TOP) || (mirroringType == ExportConstants.MIRROR_BOTTOM)){
+			if ((mirroringType == ExportSpecss.MirroringMethod.MIRROR_TOP) || (mirroringType == ExportSpecss.MirroringMethod.MIRROR_BOTTOM)){
 				mirrorDim.height = 2 * originalHeight;
 			}
 			return mirrorDim;

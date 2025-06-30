@@ -20,8 +20,8 @@ import cbit.image.DisplayPreferences;
 public class ImageSpecs extends FormatSpecificSpecs implements Serializable {
 	private DisplayPreferences[] displayPreferences;
 	private ExportFormat format;
-	private int compression;
-	private int mirroringType;
+	private ExportSpecss.CompressionFormats compression;
+	private ExportSpecss.MirroringMethod mirroringType;
 	private double duration;
 	private int loopingMode;
 	private int volVarMembrOutlineThickness;
@@ -31,7 +31,8 @@ public class ImageSpecs extends FormatSpecificSpecs implements Serializable {
 	private float compressionQuality;
 	private boolean bOverlay;
 	private int particleMode;
-/**
+
+	/**
  * Insert the method's description here.
  * Creation date: (3/1/2001 12:13:46 PM)
  * @param displayPreferences cbit.vcell.simdata.gui.DisplayPreferences[]
@@ -42,7 +43,7 @@ public class ImageSpecs extends FormatSpecificSpecs implements Serializable {
  * @param loopingMode int
  */
 public ImageSpecs(DisplayPreferences[] displayPreferences, ExportFormat mediaType,
-		int compression, int mirroringType,
+		ExportSpecss.CompressionFormats compression, ExportSpecss.MirroringMethod mirroringType,
 		double duration, int loopingMode, int volVarMembrOutlineThickness,
 		int imageScaling,int membraneScaling,int meshMode,float compressionQuality,boolean bOverlay,int particleMode) {
 	this.displayPreferences = displayPreferences;
@@ -104,7 +105,7 @@ public boolean equals(java.lang.Object object) {
  * This method was created in VisualAge.
  * @return int
  */
-public int getCompression() {
+public ExportSpecss.CompressionFormats getCompression() {
 	return compression;
 }
 /**
@@ -140,7 +141,7 @@ public int getLoopingMode() {
  * This method was created in VisualAge.
  * @return int
  */
-public int getMirroringType() {
+public ExportSpecss.MirroringMethod getMirroringType() {
 	return mirroringType;
 }
 /**

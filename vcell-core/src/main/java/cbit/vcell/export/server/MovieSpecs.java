@@ -22,7 +22,7 @@ public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
 	private boolean overlayMode;
 	private DisplayPreferences[] displayPreferences;
 	private ExportFormat encodingFormat;
-	private int mirroringType;
+	private ExportSpecss.MirroringMethod mirroringType;
 	private int volVarMembrOutlineThickness;
 	private int imageScaling;
 	private int membraneScaling;
@@ -42,7 +42,7 @@ public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
  * @param mirroring int
  */
 public MovieSpecs(double duration, boolean overlayMode, DisplayPreferences[] displayPreferences, ExportFormat format,
-		int mirroringType, int volVarMembrOutlineThickness,
+		ExportSpecss.MirroringMethod mirroringType, int volVarMembrOutlineThickness,
 		int imageScaling,int membraneScaling,int meshMode,int compressionType,float compressionQuality,boolean bQTVR,int particleMode) {
 	this.duration = duration;
 	this.overlayMode = overlayMode;
@@ -130,7 +130,7 @@ public ExportFormat getEncodingFormat() {
  * This method was created in VisualAge.
  * @return int
  */
-public int getMirroringType() {
+public ExportSpecss.MirroringMethod getMirroringType() {
 	return mirroringType;
 }
 /**

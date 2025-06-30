@@ -177,12 +177,12 @@ public class N5ExporterTest {
         OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
 
 
-        VariableSpecs variableSpecs = new VariableSpecs(variables.stream().map(di -> di.getName()).toList(), Integer.parseInt(modelID));
-        GeometrySpecs geometrySpecs = new GeometrySpecs(new SpatialSelection[0], 0, 0, 0);
-        N5Specs n5Specs = new N5Specs(ExportConstants.DataType.PDE_VARIABLE_DATA, ExportFormat.N5, compressionLevel, modelID);
+        VariableSpecs variableSpecs = new VariableSpecs(variables.stream().map(di -> di.getName()).toList(), ExportSpecss.VariableMode.VARIABLE_MULTI);
+        GeometrySpecs geometrySpecs = new GeometrySpecs(new SpatialSelection[0], 0, 0, ExportSpecss.GeometryMode.GEOMETRY_SELECTIONS);
+        N5Specs n5Specs = new N5Specs(ExportSpecss.ExportableDataType.PDE_VARIABLE_DATA, ExportFormat.N5, compressionLevel, modelID);
 
         double[] allTimes = dataServer.getDataSetTimes(testUser,n5Exporter.getVcDataID());
-        TimeSpecs timeSpecs = new TimeSpecs(startTimeIndex, endTimeIndex, allTimes, variableSpecs.getModeID());
+        TimeSpecs timeSpecs = new TimeSpecs(startTimeIndex, endTimeIndex, allTimes, ExportSpecss.TimeMode.TIME_RANGE);
         ExportSpecs exportSpecs = new ExportSpecs(n5Exporter.getVcDataID(), ExportFormat.N5, variableSpecs, timeSpecs, geometrySpecs, n5Specs, "", "");
         HashMap<Integer, String> dummyMaskInfo = new HashMap<>(){{put(0, "Dummy"); put(1, "Test");}};
         exportSpecs.setExportMetaData(new HumanReadableExportData("", "", "", new ArrayList<>(), "", "", false, dummyMaskInfo));

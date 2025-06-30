@@ -28,7 +28,7 @@ import java.util.HashMap;
 @SuppressWarnings("serial")
 public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	private final ExportFormat format;
-	private final ExportConstants.DataType dataType;
+	private final ExportSpecss.ExportableDataType dataType;
 	private final CompressionLevel compression;
 
 	public final String dataSetName;
@@ -45,7 +45,7 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 /**
  * TextSpecs constructor comment.
  */
-	public N5Specs(ExportConstants.DataType dataType, ExportFormat format, CompressionLevel compressionLevel, String dataSetName) {
+	public N5Specs(ExportSpecss.ExportableDataType dataType, ExportFormat format, CompressionLevel compressionLevel, String dataSetName) {
 		this.format = format;
 		this.dataType = dataType;
 		this.compression = compressionLevel;
@@ -55,7 +55,7 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	 * This method was created in VisualAge.
 	 * @return int
 	 */
-	public ExportConstants.DataType getDataType() {
+	public ExportSpecss.ExportableDataType getDataType() {
 		return dataType;
 	}
 	/**

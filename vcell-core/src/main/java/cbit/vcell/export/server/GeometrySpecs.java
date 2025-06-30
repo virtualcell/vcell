@@ -29,10 +29,9 @@ public class GeometrySpecs implements Serializable {
 
     private byte[][] serializedSelections = null;
     private transient SpatialSelection[] spatialSelections = null;
-    private int axis;
-    private String slicePlane;
-    private int sliceNumber;
-    private int modeID;
+    private final int axis;
+    private final int sliceNumber;
+    private final ExportSpecss.GeometryMode modeID;
 
     /**
      * This method was created in VisualAge.
@@ -40,9 +39,9 @@ public class GeometrySpecs implements Serializable {
      * @param selections  cbit.vcell.simdata.gui.SpatialSelection[]
      * @param axis        int
      * @param sliceNumber int
-     * @param modeID      int
+     * @param geometryMode      GeometryMode
      */
-    public GeometrySpecs(SpatialSelection[] selections, int axis, int sliceNumber, int modeID){
+    public GeometrySpecs(SpatialSelection[] selections, int axis, int sliceNumber, ExportSpecss.GeometryMode geometryMode){
         if(selections != null){
             try {
                 serializedSelections = new byte[selections.length][];
@@ -55,7 +54,7 @@ public class GeometrySpecs implements Serializable {
         }
         this.axis = axis;
         this.sliceNumber = sliceNumber;
-        this.modeID = modeID;
+        this.modeID = geometryMode;
     }
 
 
@@ -72,7 +71,7 @@ public class GeometrySpecs implements Serializable {
             if(
                     axis == geometrySpecs.getAxis() &&
                             sliceNumber == geometrySpecs.getSliceNumber() &&
-                            modeID == geometrySpecs.getModeID()
+                            modeID == geometrySpecs.getMode()
             ){
                 SpatialSelection[] otherSelections = geometrySpecs.getSelections();
                 if(serializedSelections == null && otherSelections == null){
@@ -131,13 +130,7 @@ public class GeometrySpecs implements Serializable {
         return curves;
     }
 
-
-    /**
-     * This method was created in VisualAge.
-     *
-     * @return int
-     */
-    public int getModeID(){
+    public ExportSpecss.GeometryMode getMode(){
         return modeID;
     }
 
@@ -149,11 +142,11 @@ public class GeometrySpecs implements Serializable {
      * @return cbit.vcell.geometry.CoordinateIndex[]
      */
     public int[] getPointIndexes(){
-        switch(getModeID()){
-            case ExportConstants.GEOMETRY_SLICE:{
+        switch(getMode()){
+            case GEOMETRY_SLICE:{
                 throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for modeID = GEOMTRY_SLICE");
             }
-            case ExportConstants.GEOMETRY_SELECTIONS:{
+            case GEOMETRY_SELECTIONS:{
                 int count = getPointCount();
                 int[] points = new int[count];
                 count = 0;
@@ -166,17 +159,17 @@ public class GeometrySpecs implements Serializable {
                 return points;
             }
             default:{
-                throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for unknown modeID = " + getModeID());
+                throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for unknown modeID = " + getMode());
             }
         }
     }
 
     public int getPointCount(){
-        switch(getModeID()){
-            case ExportConstants.GEOMETRY_SLICE:{
+        switch(getMode()){
+            case GEOMETRY_SLICE:{
                 throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for modeID = GEOMTRY_SLICE");
             }
-            case ExportConstants.GEOMETRY_SELECTIONS:{
+            case GEOMETRY_SELECTIONS:{
                 int count = 0;
                 for(int i = 0; i < getSelections().length; i++){
                     if(isSinglePoint(getSelections()[i])){
@@ -186,17 +179,17 @@ public class GeometrySpecs implements Serializable {
                 return count;
             }
             default:{
-                throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for unknown modeID = " + getModeID());
+                throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for unknown modeID = " + getMode());
             }
         }
     }
 
     public SpatialSelection[] getPointSpatialSelections(){
-        switch(getModeID()){
-            case ExportConstants.GEOMETRY_SLICE:{
+        switch(getMode()){
+            case GEOMETRY_SLICE:{
                 throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for modeID = GEOMTRY_SLICE");
             }
-            case ExportConstants.GEOMETRY_SELECTIONS:{
+            case GEOMETRY_SELECTIONS:{
                 int count = 0;
                 for(int i = 0; i < getSelections().length; i++){
                     if(isSinglePoint(getSelections()[i])){
@@ -214,7 +207,7 @@ public class GeometrySpecs implements Serializable {
                 return pointSpatialSelections;
             }
             default:{
-                throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for unknown modeID = " + getModeID());
+                throw new RuntimeException("GeometrySpecs.getPoints() shouldn't be called for unknown modeID = " + getMode());
             }
         }
 
