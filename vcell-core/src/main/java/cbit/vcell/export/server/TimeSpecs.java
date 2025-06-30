@@ -18,11 +18,11 @@ public class TimeSpecs implements Serializable {
 	private int beginTimeIndex;
 	private int endTimeIndex;
 	private double[] allTimes;
-	private int modeID;
+	private ExportSpecss.TimeMode modeID;
 /**
  * TimeSpecs constructor comment.
  */
-public TimeSpecs(int beginTimeIndex, int endTimeIndex, double[] allTimes, int modeID) {
+public TimeSpecs(int beginTimeIndex, int endTimeIndex, double[] allTimes, ExportSpecss.TimeMode modeID) {
 	this.beginTimeIndex = beginTimeIndex;
 	this.endTimeIndex = endTimeIndex;
 	this.allTimes = allTimes;
@@ -40,7 +40,7 @@ public boolean equals(Object object) {
 		if (
 			beginTimeIndex == timeSpecs.getBeginTimeIndex() &&
 			endTimeIndex == timeSpecs.getEndTimeIndex() &&
-			modeID == timeSpecs.getModeID() &&
+			modeID == timeSpecs.getMode() &&
 			allTimes.length == timeSpecs.getAllTimes().length
 		) {
 			for (int i = 0; i < allTimes.length; i++){
@@ -74,13 +74,11 @@ public int getBeginTimeIndex() {
 public int getEndTimeIndex() {
 	return endTimeIndex;
 }
-/**
- * This method was created in VisualAge.
- * @return int
- */
-public int getModeID() {
+
+public ExportSpecss.TimeMode getMode(){
 	return modeID;
 }
+
 /**
  * Insert the method's description here.
  * Creation date: (4/2/2001 4:33:23 PM)

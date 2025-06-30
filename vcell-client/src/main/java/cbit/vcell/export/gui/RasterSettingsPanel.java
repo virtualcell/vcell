@@ -10,12 +10,12 @@
 
 package cbit.vcell.export.gui;
 
-import cbit.vcell.export.server.ExportConstants;
+import cbit.vcell.export.server.ExportSpecss;
 import cbit.vcell.export.server.RasterSpecs;
 /**
  * This type was created in VisualAge.
  */
-public class RasterSettingsPanel extends javax.swing.JPanel implements ExportConstants, java.awt.event.ActionListener {
+public class RasterSettingsPanel extends javax.swing.JPanel implements java.awt.event.ActionListener {
 	private javax.swing.JButton ivjJButtonOK = null;
 	private javax.swing.ButtonGroup ivjButtonGroup1 = null;
 	private javax.swing.JLabel ivjJLabelDataType = null;
@@ -420,10 +420,10 @@ private javax.swing.JRadioButton getJRadioButtonSingle() {
  */
 public RasterSpecs getRasterSpecs() {
 	// nrrd raster format
-	int format = -1;
-	if (getJRadioButtonSingle().isSelected()) {format = NRRD_SINGLE;}
-	if (getJRadioButtonByTime().isSelected()) {format = NRRD_BY_TIME;}
-	if (getJRadioButtonByVariable().isSelected()) {format = NRRD_BY_VARIABLE;}
+	ExportSpecss.RasterFormats format = null;
+	if (getJRadioButtonSingle().isSelected()) {format = ExportSpecss.RasterFormats.NRRD_SINGLE;}
+	if (getJRadioButtonByTime().isSelected()) {format = ExportSpecss.RasterFormats.NRRD_BY_TIME;}
+	if (getJRadioButtonByVariable().isSelected()) {format = ExportSpecss.RasterFormats.NRRD_BY_VARIABLE;}
 	return new RasterSpecs(format, getJCheckBoxSeparateHeader().isSelected());
 }
 /**

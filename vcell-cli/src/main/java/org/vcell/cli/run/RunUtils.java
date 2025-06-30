@@ -28,6 +28,8 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static cbit.vcell.export.server.ExportSpecss.VariableMode.VARIABLE_MULTI;
+
 /**
  * Static class with a series of runtime utilities. Needs to be properly docummented still
  */
@@ -438,18 +440,18 @@ public class RunUtils {
 
         PDEDataContext pdeDataContext = new ServerPDEDataContext(outputContext, user, dataServerImpl, vcId);
         List<String> variableNames = RunUtils.getListOfVariableNames(pdeDataContext.getDataIdentifiers());
-        VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportConstants.VARIABLE_MULTI);
+        VariableSpecs variableSpecs = new VariableSpecs(variableNames, VARIABLE_MULTI);
 
         double[] dataSetTimes = dsControllerImpl.getDataSetTimes(vcId);
-        TimeSpecs timeSpecs = new TimeSpecs(0,dataSetTimes.length-1, dataSetTimes, ExportConstants.TIME_RANGE);
-        GeometrySpecs geometrySpecs = new GeometrySpecs(null, 2, 0, ExportConstants.GEOMETRY_FULL);
+        TimeSpecs timeSpecs = new TimeSpecs(0,dataSetTimes.length-1, dataSetTimes, ExportSpecss.TimeMode.TIME_RANGE);
+        GeometrySpecs geometrySpecs = new GeometrySpecs(null, 2, 0, ExportSpecss.GeometryMode.GEOMETRY_FULL);
 
         // String simulationName,VCSimulationIdentifier vcSimulationIdentifier,ExportParamScanInfo exportParamScanInfo
         ExportSpecs.ExportParamScanInfo exportParamScanInfo = ExportSpecs.getParamScanInfo(vcellSim,jobIndex);
         ExportSpecs.SimNameSimDataID snsdi= new ExportSpecs.SimNameSimDataID(vcellSim.getName(), vcSimID, exportParamScanInfo);
         ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = { snsdi };
 
-        FormatSpecificSpecs formatSpecificSpecs = new ASCIISpecs(simNameSimDataIDs, ExportConstants.DataType.PDE_VARIABLE_DATA,
+        FormatSpecificSpecs formatSpecificSpecs = new ASCIISpecs(simNameSimDataIDs, ExportSpecss.ExportableDataType.PDE_VARIABLE_DATA,
                 ExportFormat.CSV, ASCIISpecs.CsvRoiLayout.var_time_val, true, false);
 
         return new ExportSpecs(vcId, ExportFormat.HDF5, variableSpecs, timeSpecs, geometrySpecs,

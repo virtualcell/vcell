@@ -38,6 +38,7 @@ import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import cbit.vcell.export.server.*;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Range;
 import org.vcell.util.gui.DialogUtils;
@@ -45,12 +46,6 @@ import org.vcell.util.gui.DialogUtils;
 import cbit.image.DisplayAdapterService;
 import cbit.image.DisplayPreferences;
 import cbit.image.ImagePaneModel;
-import cbit.vcell.export.server.ExportConstants;
-import cbit.vcell.export.server.ExportFormat;
-import cbit.vcell.export.server.FormatSpecificSpecs;
-import cbit.vcell.export.server.ImageSpecs;
-import cbit.vcell.export.server.MovieSpecs;
-import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.solvers.CartesianMesh;
 
 @SuppressWarnings("serial")
@@ -450,7 +445,7 @@ public class MediaSettingsPanel extends JPanel {
 					meshMode = (scalingCombobox.getSelectedItem().equals(MESH_MODE_TEXT)?ImagePaneModel.MESH_MODE:ImagePaneModel.NORMAL_MODE);
 					imageScale = (meshMode == ImagePaneModel.MESH_MODE?viewZoom:Integer.valueOf((String)scalingCombobox.getSelectedItem()));
 					imageDim = FormatSpecificSpecs.getImageDimension(meshMode, imageScale, mesh, normalAxis);
-					imageDim = FormatSpecificSpecs.getMirrorDimension(mirrorComboBox.getSelectedIndex(), imageDim.width, imageDim.height);
+					imageDim = FormatSpecificSpecs.getMirrorDimension(ExportSpecss.MirroringMethod.getMirroringMethod(mirrorComboBox.getSelectedIndex()), imageDim.width, imageDim.height);
 					imageDim.height = (bSeparate?imageDim.height:imageDim.height*variableNames.length);
 				}
 				String finalFileDescription = null;
@@ -774,7 +769,7 @@ public class MediaSettingsPanel extends JPanel {
 				bOverLay,
 				displayPreferences,
 				(encodeFormatGIF.isSelected()?ExportFormat.GIF:ExportFormat.FORMAT_JPEG),
-				mirrorComboBox.getSelectedIndex(),
+				ExportSpecss.MirroringMethod.getMirroringMethod(mirrorComboBox.getSelectedIndex()),
 				volVarMembrOutlineThickness,
 				imageScaling,
 				membrScaling,
@@ -788,8 +783,8 @@ public class MediaSettingsPanel extends JPanel {
 			return new ImageSpecs(
 					displayPreferences,
 					mediaType,
-					(encodeFormatGIF.isSelected()?ExportConstants.COMPRESSED_GIF_DEFAULT:ExportConstants.COMPRESSED_JPEG_DEFAULT),
-					mirrorComboBox.getSelectedIndex(),
+					(encodeFormatGIF.isSelected()? ExportSpecss.CompressionFormats.COMPRESSED_GIF_DEFAULT:ExportSpecss.CompressionFormats.COMPRESSED_JPEG_DEFAULT),
+					ExportSpecss.MirroringMethod.getMirroringMethod(mirrorComboBox.getSelectedIndex()),
 					duration,
 					0/*Infinite*/,
 					volVarMembrOutlineThickness, 

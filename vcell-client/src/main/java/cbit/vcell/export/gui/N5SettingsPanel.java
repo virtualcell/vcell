@@ -5,15 +5,12 @@ import cbit.vcell.export.server.*;
 import javax.swing.*;
 import java.awt.*;
 
-public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstants, java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
+public class N5SettingsPanel extends javax.swing.JPanel implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
     private javax.swing.JButton ivjJButtonOK = null;
     private javax.swing.JLabel ivjJLabelDataType = null;
     private javax.swing.JRadioButton ivjJRadioButtonParticles = null;
     private javax.swing.JRadioButton ivjJRadioButtonVariables = null;
     protected transient cbit.vcell.export.gui.ASCIISettingsPanelListener fieldASCIISettingsPanelListenerEventMulticaster = null;
-    private javax.swing.JCheckBox ivjJCheckBoxSwitch = null;
-    private javax.swing.JLabel ivjJLabelAdditional = null;
-    private ExportConstants.DataType fieldExportDataType;
     private javax.swing.JButton ivjCancelJButton = null;
     private javax.swing.JPanel mainPanel = null;
     private ExportSpecs.SimulationSelector simulationSelector;
@@ -267,7 +264,7 @@ public class N5SettingsPanel extends javax.swing.JPanel implements ExportConstan
         int[] paramScanIndexes = simulationSelector == null ? null : simulationSelector.getselectedParamScanIndexes();
         String dataSetName = getJTextFieldDataSetName().getText();
 
-        return new N5Specs(DataType.PDE_VARIABLE_DATA, ExportFormat.N5, N5Specs.CompressionLevel.GZIP, dataSetName);
+        return new N5Specs(ExportSpecss.ExportableDataType.PDE_VARIABLE_DATA, ExportFormat.N5, N5Specs.CompressionLevel.GZIP, dataSetName);
     }
 
     private JLabel lblSeeVcellHelp;

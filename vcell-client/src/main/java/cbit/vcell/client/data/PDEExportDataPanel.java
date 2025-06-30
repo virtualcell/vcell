@@ -52,7 +52,7 @@ import java.util.*;
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class PDEExportDataPanel extends JPanel implements ExportConstants {
+public class PDEExportDataPanel extends JPanel {
 	private JRadioButton bothVarRadioButton;
 	private JLabel defineExportDataLabel;
 	private JLabel selectVariablesLabel;
@@ -502,11 +502,11 @@ private void connPtoP3SetTarget() {
 /**
  * Comment
  */
-public int dataType() {
+public ExportSpecss.SimulationDataType dataType() {
 	if (getPdeDataContext().hasParticleData()) {
-		return PDE_SIMULATION_WITH_PARTICLES;
+		return ExportSpecss.SimulationDataType.PDE_SIMULATION_WITH_PARTICLES;
 	} else {
-		return PDE_SIMULATION_NO_PARTICLES;
+		return ExportSpecss.SimulationDataType.PDE_SIMULATION_NO_PARTICLES;
 	}
 }
 
@@ -634,13 +634,13 @@ private ExportSpecs getExportSpecs() {
 	for (int i = 0; i < variableSelections.length; i++){
 		variableNames[i] = (String)variableSelections[i];
 	}
-	VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportConstants.VARIABLE_MULTI);
-	TimeSpecs timeSpecs = new TimeSpecs(getJSlider1().getValue(), getJSlider2().getValue(), getPdeDataContext().getTimePoints(), ExportConstants.TIME_RANGE);
-	int geoMode = ExportConstants.GEOMETRY_SELECTIONS;
+	VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportSpecss.VariableMode.VARIABLE_MULTI);
+	TimeSpecs timeSpecs = new TimeSpecs(getJSlider1().getValue(), getJSlider2().getValue(), getPdeDataContext().getTimePoints(), ExportSpecss.TimeMode.TIME_RANGE);
+	ExportSpecss.GeometryMode geoMode = ExportSpecss.GeometryMode.GEOMETRY_SELECTIONS;
 	if (getJRadioButtonSlice().isSelected()) {
-		geoMode = ExportConstants.GEOMETRY_SLICE;
+		geoMode = ExportSpecss.GeometryMode.GEOMETRY_SLICE;
 	} else if (getJRadioButtonFull().isSelected()) {
-		geoMode = ExportConstants.GEOMETRY_FULL;
+		geoMode = ExportSpecss.GeometryMode.GEOMETRY_FULL;
 	}
 	Object[] selectionsArr = getROISelections().getSelectedValuesList().toArray();
 	SpatialSelection[] selections = new SpatialSelection[selectionsArr.length];
@@ -2077,7 +2077,7 @@ private void startExport() {
 		PopupGenerator.showErrorDialog(this, "To export selections, you must select at least one item from the ROI selection list");
 	}
 
-	getExportSettings1().setTimeSpecs(new TimeSpecs(getJSlider1().getValue(), getJSlider2().getValue(), getPdeDataContext().getTimePoints(), ExportConstants.TIME_RANGE));
+	getExportSettings1().setTimeSpecs(new TimeSpecs(getJSlider1().getValue(), getJSlider2().getValue(), getPdeDataContext().getTimePoints(), ExportSpecss.TimeMode.TIME_RANGE));
 	getExportSettings1().setDisplayPreferences(displayPreferences,Arrays.asList(variableSelections).toArray(new String[0]),viewZoom);
 	getExportSettings1().setSliceCount(FormatSpecificSpecs.getSliceCount(getJRadioButtonFull().isSelected(), getNormalAxis(), getPdeDataContext().getCartesianMesh()));
 	getExportSettings1().setImageSizeCalculationInfo(getPdeDataContext().getCartesianMesh(),getNormalAxis());

@@ -3,6 +3,7 @@ package org.vcell.api.types.utils;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
+import cbit.vcell.export.server.ExportSpecss;
 import cbit.vcell.export.server.HumanReadableExportData;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
@@ -98,22 +99,23 @@ public class DTOOldAPI {
 
     public static ExportTimeSpecs exportTimeSpecsToJsonRep(TimeSpecs timeSpecs) {
         ExportTimeSpecs rep = new ExportTimeSpecs(timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(),
-                timeSpecs.getAllTimes(), timeSpecs.getModeID());
+                timeSpecs.getAllTimes(), timeSpecs.getMode().intValue);
         return rep;
     }
     public static TimeSpecs timeSpecsFromJsonRep(ExportTimeSpecs rep) {
-        TimeSpecs timeSpecs = new TimeSpecs(rep.beginTimeIndex, rep.endTimeIndex, rep.allTimes, rep.modeID);
+        TimeSpecs timeSpecs = new TimeSpecs(rep.beginTimeIndex, rep.endTimeIndex, rep.allTimes,
+                ExportSpecss.TimeMode.getTimeMode(rep.modeID));
         return timeSpecs;
     }
 
 
     public static ExportVariableSpecs variableSpecsToJsonRep(VariableSpecs variableSpecs) {
-        ExportVariableSpecs rep = new ExportVariableSpecs(variableSpecs.getVariableNames(), variableSpecs.getModeID());
+        ExportVariableSpecs rep = new ExportVariableSpecs(variableSpecs.getVariableNames(), variableSpecs.getMode().intValue);
         return rep;
     }
 
     public static VariableSpecs variableSpecsFromJsonRep(ExportVariableSpecs rep) {
-        VariableSpecs variableSpecs = new VariableSpecs(rep.variableNames, rep.modeID);
+        VariableSpecs variableSpecs = new VariableSpecs(rep.variableNames, ExportSpecss.VariableMode.getVariableMode(rep.modeID));
         return variableSpecs;
     }
 

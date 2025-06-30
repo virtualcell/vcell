@@ -19,16 +19,14 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 
-import cbit.vcell.export.server.ASCIISpecs;
-import cbit.vcell.export.server.ExportConstants;
-import cbit.vcell.export.server.ExportFormat;
-import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.*;
+
 import javax.swing.JLabel;
 /**
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class ASCIISettingsPanel extends javax.swing.JPanel implements ExportConstants, java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
+public class ASCIISettingsPanel extends javax.swing.JPanel implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener, javax.swing.event.ChangeListener {
 	private javax.swing.JButton ivjJButtonOK = null;
 	private javax.swing.ButtonGroup ivjButtonGroup1 = null;
 	private javax.swing.JLabel ivjJLabelDataType = null;
@@ -38,8 +36,8 @@ public class ASCIISettingsPanel extends javax.swing.JPanel implements ExportCons
 	private javax.swing.JCheckBox ivjJCheckBoxSwitch = null;
 	private javax.swing.JLabel ivjJLabelAdditional = null;
 	private boolean fieldSwitchRowsColumns = false;
-	private int fieldSimDataType = 0;
-	private DataType fieldExportDataType;
+	private ExportSpecss.SimulationDataType fieldSimDataType = null;
+	private ExportSpecss.ExportableDataType fieldExportDataType;
 	private javax.swing.JButton ivjCancelJButton = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
 /**
@@ -295,7 +293,7 @@ private javax.swing.JButton getCancelJButton() {
  * @return The exportDataType property value.
  * @see #setExportDataType
  */
-private ExportConstants.DataType getExportDataType() {
+private ExportSpecss.ExportableDataType getExportDataType() {
 	return fieldExportDataType;
 }
 /**
@@ -466,7 +464,7 @@ private javax.swing.JRadioButton getJRadioButtonVariables() {
  * @return The simDataType property value.
  * @see #setSimDataType
  */
-private int getSimDataType() {
+private ExportSpecss.SimulationDataType getSimDataType() {
 	return fieldSimDataType;
 }
 /**
@@ -641,8 +639,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * @param odeVariableData The new value for the property.
  * @see #getExportDataType
  */
-private void setExportDataType(DataType odeVariableData) {
-	DataType oldValue = fieldExportDataType;
+private void setExportDataType(ExportSpecss.ExportableDataType odeVariableData) {
+	ExportSpecss.ExportableDataType oldValue = fieldExportDataType;
 	fieldExportDataType = odeVariableData;
 	firePropertyChange("exportDataType", oldValue, odeVariableData);
 }
@@ -651,10 +649,10 @@ private void setExportDataType(DataType odeVariableData) {
  * @param simDataType The new value for the property.
  * @see #getSimDataType
  */
-public void setSimDataType(int simDataType) {
-	int oldValue = fieldSimDataType;
+public void setSimDataType(ExportSpecss.SimulationDataType simDataType) {
+	ExportSpecss.SimulationDataType oldValue = fieldSimDataType;
 	fieldSimDataType = simDataType;
-	firePropertyChange("simDataType", Integer.valueOf(oldValue), Integer.valueOf(simDataType));
+	firePropertyChange("simDataType", oldValue, simDataType);
 }
 /**
  * Sets the switchRowsColumns property (boolean) value.
@@ -688,22 +686,22 @@ public void stateChanged(javax.swing.event.ChangeEvent e) {
 /**
  * Comment
  */
-private void updateChoices(int dataType) {
+private void updateChoices(ExportSpecss.SimulationDataType dataType) {
 	switch (dataType) {
 		case ODE_SIMULATION:
 			getJRadioButtonParticles().setEnabled(false);
 			getJRadioButtonVariables().setSelected(true);
-			setExportDataType(ExportConstants.DataType.ODE_VARIABLE_DATA);
+			setExportDataType(ExportSpecss.ExportableDataType.ODE_VARIABLE_DATA);
 			break;
 		case PDE_SIMULATION_NO_PARTICLES:
 			getJRadioButtonParticles().setEnabled(false);
 			getJRadioButtonVariables().setSelected(true);
-			setExportDataType(ExportConstants.DataType.PDE_VARIABLE_DATA);
+			setExportDataType(ExportSpecss.ExportableDataType.PDE_VARIABLE_DATA);
 			break;
 		case PDE_SIMULATION_WITH_PARTICLES:
 			getJRadioButtonParticles().setEnabled(true);
 			getJRadioButtonParticles().setSelected(true);
-			setExportDataType(ExportConstants.DataType.PDE_PARTICLE_DATA);
+			setExportDataType(ExportSpecss.ExportableDataType.PDE_PARTICLE_DATA);
 			break;
 	}
 	return;
@@ -712,8 +710,8 @@ private void updateChoices(int dataType) {
  * Comment
  */
 private void updateExportDataType() {
-	if (getJRadioButtonVariables().isSelected()) setExportDataType(ExportConstants.DataType.PDE_VARIABLE_DATA);
-	if (getJRadioButtonParticles().isSelected()) setExportDataType(ExportConstants.DataType.PDE_PARTICLE_DATA);
+	if (getJRadioButtonVariables().isSelected()) setExportDataType(ExportSpecss.ExportableDataType.PDE_VARIABLE_DATA);
+	if (getJRadioButtonParticles().isSelected()) setExportDataType(ExportSpecss.ExportableDataType.PDE_PARTICLE_DATA);
 	return;
 }
 
