@@ -35,15 +35,16 @@ public class ExportHistoryDBDriver{
 
     }
 
+    public record ExportHistory(
+            long   jobID,
+            long   modelRef,
+            ExportFormat exportFormat,
+            Timestamp exportDate,
+            String uri,
+            ExportSpecs exportSpecs
+    ){ }
 
-    public void addExportHistory(Connection conn,
-                                 User user,
-                                 long   jobID,
-                                 long   modelRef,
-                                 ExportFormat exportFormat,
-                                 Timestamp exportDate,
-                                 String uri,
-                                 ExportSpecs exportSpecs)
+    public void addExportHistory(Connection conn, User user, ExportHistory exportHistory)
             throws SQLException, DependencyException, PermissionException, DataAccessException, ObjectNotFoundException {
 
         String vcmExpHiSQL =        // SQL statement for inserting into vc_model_export_history table in VCell server
@@ -54,7 +55,8 @@ public class ExportHistoryDBDriver{
                         "z_slices, t_slices, num_variables" +
                         ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-
+        ExportSpecs exportSpecs = exportHistory.exportSpecs;
+        long modelRef = exportHistory.modelRef;
         PreparedStatement ps = conn.prepareStatement(vcmExpHiSQL);
         HumanReadableExportData meta = exportSpecs.getHumanReadableExportData();
         TimeSpecs ts = exportSpecs.getTimeSpecs();
@@ -66,12 +68,12 @@ public class ExportHistoryDBDriver{
         BigDecimal endTime = new BigDecimal(ts.getEndTimeIndex());
 
         ps.setLong(1, 1);   //change once key values issue resolved
-        ps.setLong(2, jobID);
+        ps.setLong(2, exportHistory.jobID);
         ps.setLong(3, Long.parseLong(user.getID().toString()));
         ps.setLong(4, modelRef);
-        ps.setString(5, exportFormat.toString());
-        ps.setTimestamp(6, exportDate);
-        ps.setString(7, uri);
+        ps.setString(5, exportHistory.exportFormat.toString());
+        ps.setTimestamp(6, exportHistory.exportDate);
+        ps.setString(7, exportHistory.uri);
         ps.setString(8, exportSpecs.getVCDataIdentifier().getID());
         ps.setString(9, meta.simulationName);
         ps.setString(10, meta.applicationName);
