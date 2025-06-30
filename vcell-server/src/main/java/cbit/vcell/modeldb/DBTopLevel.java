@@ -2255,11 +2255,11 @@ public SimulationRep getSimulationRep(KeyValue simKey, boolean bEnableRetry) thr
 	}
 }
 
-	public void insertExportHistory(User user, String exportHistoryValues, boolean bEnableRetry) throws SQLException, DataAccessException {
+	public void insertExportHistory(User user, ExportHistoryDBDriver.ExportHistory exportHistoryValues, boolean bEnableRetry) throws SQLException, DataAccessException {
 		Object lock = new Object();
 		Connection con = conFactory.getConnection(lock);
 		try {
-//			exportHistoryDB.addExportHistory(con, user, exportHistoryValues);
+			exportHistoryDB.addExportHistory(con, user, exportHistoryValues);
 		} catch (Throwable e) {
 			lg.error(e.getMessage(),e);
 			try {
