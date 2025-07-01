@@ -94,6 +94,11 @@ apptainer pull vcell-batch-7.7.0.27.sif docker://ghcr.io/virtualcell/vcell-batch
 
 
 ### 6 On a HPC node - using slurm
+Login to a HPC node
+```powershell
+ssh vasilescu@login.hpc.cam.uchc.edu
+ssh vasilescu@mantis-040
+```
 
 We assume that everything is installed properly, like above. \
 Root directory:
@@ -108,4 +113,18 @@ Frequently used, from BASE_DIR
 sed -i 's/\r$//' ./scripts/submit_vcell_batch.slurm.sub
 sbatch ./scripts/submit_vcell_batch.slurm.sub
 tail -f ./logs/submit_vcell_batch.log
+```
+
+Github Repository - configuration stuff
+```powershell
+https://github.com/virtualcell/vcell-fluxcd/
+https://github.com/virtualcell/vcell-fluxcd/blob/main/kustomize/config/prod/
+submit.env        # all definitions for slurm, docker, dirs
+```
+Logs - on linux machines, ex mantis-040
+```powershell
+/share/apps/vcell3/htclogs
+
+> less V_REL_292453752_0_0.slurm.sub   # shows top of the script (the definitions) \
+> ls -ot V_REL* | head                 # shows a few of the most recent release sims
 ```
