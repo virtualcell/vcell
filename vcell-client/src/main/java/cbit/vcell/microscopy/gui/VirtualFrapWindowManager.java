@@ -150,7 +150,7 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 		try {
 			ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
 			DataServerImpl dataServerImpl = new DataServerImpl(localWorkSpace.getDataSetControllerImpl(),exportServiceImpl);
-			exportServiceImpl.addExportListener(new ExportListener() {
+			exportServiceImpl.getEventCreator().addExportListener(new ExportListener() {
 				public void exportMessage(ExportEvent event) {
 					System.out.println(event.toString());
 				}
@@ -170,7 +170,7 @@ public class VirtualFrapWindowManager implements DataViewerManager {
 		
 		ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
 		DataServerImpl dataServerImpl = new DataServerImpl(localWorkSpace.getDataSetControllerImpl(),exportServiceImpl);
-		exportServiceImpl.addExportListener(new ExportListener() {
+		exportServiceImpl.getEventCreator().addExportListener(new ExportListener() {
 			public void exportMessage(ExportEvent event) {
 				System.out.println(event.toString());
 			}

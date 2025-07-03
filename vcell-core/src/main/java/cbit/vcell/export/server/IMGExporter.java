@@ -81,17 +81,8 @@ public static void main(String [] args) throws Exception{
 	VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(new KeyValue(SimulationKey), user);
 	VCSimulationDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID, 0);
 	
-	class PrintingExportServiceImpl extends ExportServiceImpl {
-		public PrintingExportServiceImpl(){
-			super();
-		}
-		@Override
-		public void fireExportEvent(ExportEvent event) {
-			super.fireExportEvent(event);
-			System.out.println("Event type="+event.getEventTypeID()+" JobID="+event.getJobID()+" progress="+event.getProgress());
-		}
-	}
-	ExportServiceImpl exportServiceImpl = new PrintingExportServiceImpl();
+
+	ExportServiceImpl exportServiceImpl = new ExportServiceImpl();
 	Cachetable cachetable = new Cachetable(10*Cachetable.minute,1000000L);
 	File primaryDir = new File(primaryDirStr);
 	DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cachetable,primaryDir,null);

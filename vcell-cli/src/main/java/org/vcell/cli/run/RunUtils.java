@@ -411,7 +411,7 @@ public class RunUtils {
         Collection<ExportOutput > exportOutputs;
 
         FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
-        ASCIIExporter asciiExporter = new ASCIIExporter(exportServiceImpl);
+        ASCIIExporter asciiExporter = new ASCIIExporter(exportServiceImpl.getEventCreator());
         JobRequest jobRequest = JobRequest.createExportJobRequest(vcId.getOwner());
 
         try {
