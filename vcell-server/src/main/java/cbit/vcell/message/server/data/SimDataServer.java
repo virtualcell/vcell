@@ -73,7 +73,7 @@ public SimDataServer() throws Exception {
 
 	dataSetControllerImpl.addDataJobListener(this);
 	// add export listener
-	exportServiceImpl.addExportListener(this);
+	exportServiceImpl.getEventCreator().addExportListener(this);
 }
 
 public void init(SimDataServiceType serviceType) throws Exception {

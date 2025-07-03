@@ -200,7 +200,8 @@ public class N5ExporterTest {
         VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(simModel.simID), testUser);
 
         vcDataID = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);
-        n5Exporter = new N5Exporter(exportService, testUser, dataServer, vcDataID);
+        OldExportEventCreator oldExportEventCreator = new OldExportEventCreator();
+        n5Exporter = new N5Exporter(oldExportEventCreator, testUser, dataServer, vcDataID);
         dataIdentifiers = new ArrayList<>(Arrays.asList(dataServer.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), testUser, vcDataID)));
 
         modelMesh = dataServer.getMesh(testUser, vcDataID);
