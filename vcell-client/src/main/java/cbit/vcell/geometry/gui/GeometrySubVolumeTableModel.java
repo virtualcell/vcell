@@ -111,7 +111,7 @@ public Object getValueAt(int row, int col) {
 							autoCompleteSymbolFilter);
 				}
 				if (subVolume instanceof CSGObject){
-					return "Constructed Solid Geometry";
+					return "Constructive Solid Geometry";
 				} 
 				return null;
 			}
