@@ -405,7 +405,7 @@ GeometrySelectionInfo selectGeometry(boolean bShowCurrentGeomChoice,String dialo
 			{"Image based (import from file, zip or directory)"},
 			{"Mesh based (import from STL file)"},
 			{"New Blank Image Canvas"},
-			{"Constructed Solid Geometry (3D)"},
+			{"Constructive Solid Geometry (3D)"},
 //			{"Import from Fiji/Imagej"},
 //			{"Import from Blender"}
 			};

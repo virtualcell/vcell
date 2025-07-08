@@ -3685,7 +3685,7 @@ public class SBMLImporter {
                 && distanceMapSampledFieldGeometry == null
                 && csGeometry == null){
             throw new SBMLImportException(
-                    "VCell supports only Analytic, Image based (segmentd or distance map) or Constructed Solid Geometry at this time.");
+                    "VCell supports only Analytic, Image based (segmentd or distance map) or Constructive Solid Geometry at this time.");
         }
         final GeometryDefinition selectedGeometryDefinition;
         if(csGeometry != null){

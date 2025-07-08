@@ -120,7 +120,7 @@ public class CSGObjectPropertiesPanel extends DocumentEditorSubPanel {
 		BioModelNode rootNode;
 		
 		CSGObjectTreeModel() {
-			super(new BioModelNode("Constructed Solid Geometry",true),true);
+			super(new BioModelNode("Constructive Solid Geometry",true),true);
 			rootNode = (BioModelNode)root;
 		}
 		
