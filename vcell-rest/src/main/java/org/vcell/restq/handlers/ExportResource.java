@@ -1,5 +1,6 @@
 package org.vcell.restq.handlers;
 
+import cbit.vcell.modeldb.ExportHistoryDBDriver;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.*;
 import cbit.vcell.math.Variable;
