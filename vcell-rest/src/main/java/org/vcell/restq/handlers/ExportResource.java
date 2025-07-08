@@ -1,5 +1,6 @@
 package org.vcell.restq.handlers;
 
+import cbit.vcell.modeldb.ExportHistoryDBDriver;
 import io.quarkus.security.identity.SecurityIdentity;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -28,7 +29,7 @@ public class ExportResource {
     @POST
     @RolesAllowed("user")
     @Operation(operationId = "addExportHistory", description = "Adds provided export information to a users export history.")
-    public void addExportHistory(ExportHistory history) throws DataAccessWebException, NotAuthenticatedWebException {
+    public void addExportHistory(ExportHistoryDBDriver.ExportHistory history) throws DataAccessWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try{
             exportService.addExportHistory(user, history);
@@ -41,7 +42,7 @@ public class ExportResource {
     @GET
     @RolesAllowed("user")
     @Operation(operationId = "getExportHistory")
-    public ExportHistory getExportHistory() throws DataAccessWebException, NotAuthenticatedWebException {
+    public ExportHistoryDBDriver.ExportHistory getExportHistory() throws DataAccessWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try {
             return exportService.getExportHistory(user);
@@ -49,10 +50,4 @@ public class ExportResource {
             throw new DataAccessWebException(e.getMessage(), e);
         }
     }
-
-
-    public record ExportHistory(
-            String exportHistory
-    ){ }
-
 }

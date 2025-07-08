@@ -15,6 +15,7 @@ import cbit.sql.InsertHashtable;
 import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.field.FieldDataExternalDataIDEntry;
 import cbit.vcell.field.io.CopyFieldDataResult;
