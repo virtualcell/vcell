@@ -67,11 +67,18 @@ public class ExportHistoryDBDriver{
         BigDecimal startTime = new BigDecimal(ts.getBeginTimeIndex());
         BigDecimal endTime = new BigDecimal(ts.getEndTimeIndex());
 
-        ps.setLong(1, 1);   //change once key values issue resolved
+        long historyId;
+        try ( Statement seqStmt = conn.createStatement();
+              ResultSet rs = seqStmt.executeQuery("SELECT nextval('newSeq')") ) {
+            rs.next();
+            historyId = rs.getLong(1);
+        }
+
+        ps.setLong(1, historyId);   //change once key values issue resolved
         ps.setLong(2, exportHistory.jobID);
         ps.setLong(3, Long.parseLong(user.getID().toString()));
         ps.setLong(4, modelRef);
-        ps.setString(5, exportHistory.exportFormat.toString());
+        ps.setString(5, exportHistory.exportFormat.name());
         ps.setTimestamp(6, exportHistory.exportDate);
         ps.setString(7, exportHistory.uri);
         ps.setString(8, exportSpecs.getVCDataIdentifier().getID());
@@ -102,7 +109,7 @@ public class ExportHistoryDBDriver{
         for (String entry : meta.differentParameterValues) {
             String[] parts = entry.split(":");
             if (parts.length == 3) {
-                ps2.setLong       (1, 1);   //change once key values issue resolved
+                ps2.setLong       (1, historyId);   //change once key values issue resolved
                 ps2.setLong(2, Long.parseLong(user.getID().toString()));
                 ps2.setLong(3, modelRef);
                 ps2.setString(4, parts[0]);
@@ -125,7 +132,7 @@ public class ExportHistoryDBDriver{
                     long historyId = rs.getLong(1);
 
                     try (PreparedStatement psDelParams = conn.prepareStatement(
-                            "DELETE FROM vc_model_parameter_values WHERE export_id = ?")) {
+                            "DELETE FROM vc_model_parameter_values WHERE id = ?")) {
                         psDelParams.setLong(1, historyId);
                         psDelParams.executeUpdate();
                     }
@@ -149,73 +156,66 @@ public class ExportHistoryDBDriver{
 
 
     public static void main(String[] args) throws SQLException, PermissionException, DataAccessException {
-        try (Connection connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/postgres", "quarkus", "quarkus")){
+        try (Connection connection = DriverManager.getConnection(
+                "jdbc:postgresql://localhost:5432/postgres", "quarkus", "quarkus")) {
+
             ExportHistoryDBDriver dbDriver = new ExportHistoryDBDriver(null, null);
+
 
             GeometrySpecs testGeometrySpecs = new GeometrySpecs(null, 100, 100, 1);
             TimeSpecs testTimeSpecs = new TimeSpecs(0, 1, new double[]{1, 1}, 1);
             String[] testVarNames = new String[]{"A", "B"};
             VariableSpecs testVariableSpecs = new VariableSpecs(testVarNames, 1);
-
             KeyValue simKey = new KeyValue("12345");
-
-
-            User owner   = new User("Administrator", new KeyValue("2"));
-
-
-            VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, owner);
-
-            VCDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID,456);
-            String dataID = vcdID.getID();
-
+            User user = new User("Administrator", new KeyValue("2"));
+            VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(simKey, user);
+            VCDataIdentifier vcdID = new VCSimulationDataIdentifier(vcSimID, 456);
             FormatSpecificSpecs testFormatSpecificSpecs = new FormatSpecificSpecs() {
-                @Override
-                public boolean equals(Object obj) {
-
-                    return this == obj;
-                }
-                @Override
-                public String toString() {
-                    return "DummyFormatSpecificSpecs";
-                }
+                @Override public boolean equals(Object obj) { return this == obj; }
+                @Override public String toString() { return "DummyFormatSpecificSpecs"; }
             };
-
-
-
             HumanReadableExportData meta = new HumanReadableExportData(
-                    "MySimulation",
-                    "MyApp",
-                    "MyBioModel",
-                    new ArrayList<>(),
-                    "test",
-                    "result.n5",
-                    false,
-                    new HashMap<>()
+                    "MySimulation","MyApp","MyBioModel",
+                    new ArrayList<>(), "result.n5","N5", false, new HashMap<>()
             );
-
             Timestamp testExportDate = new Timestamp(System.currentTimeMillis());
-
-            ExportSpecs exportSpecs = new ExportSpecs(vcdID, ExportFormat.N5, testVariableSpecs, testTimeSpecs, testGeometrySpecs, testFormatSpecificSpecs,
-                    "testsim", "testname");
+            ExportSpecs exportSpecs = new ExportSpecs(
+                    vcdID, ExportFormat.N5, testVariableSpecs, testTimeSpecs,
+                    testGeometrySpecs, testFormatSpecificSpecs, "testsim","testname"
+            );
             exportSpecs.setExportMetaData(meta);
 
-            dbDriver.addExportHistory(connection, new User("Administrator", new KeyValue("2")), 1, 2, ExportFormat.N5, testExportDate, "https://vcell.cam.uchc.edu/n5Data/paulricky/5456fb59b530a19.n5?dataSetName\\u003d3681309072", exportSpecs);
+
+            ExportHistoryDBDriver.ExportHistory history = new ExportHistoryDBDriver.ExportHistory(
+                    /*jobID=*/ 1,
+                    /*modelRef=*/ 2,
+                    /*format=*/ ExportFormat.N5,
+                    /*date=*/ testExportDate,
+                    /*uri=*/ "https://vcell.cam.uchc.edu/n5Data/paulricky/5456fb59b530a19.n5?dataSetName=3681309072",
+                    /*specs=*/ exportSpecs
+            );
+
+
+            dbDriver.addExportHistory(connection, user, history);
 
             System.out.println("=== Test get before deletion ===");
-            try (ResultSet rs = dbDriver.getExportHistoryForUser(connection, owner)) {
+            try (ResultSet rs = dbDriver.getExportHistoryForUser(connection, user)) {
                 while (rs.next()) {
-                    System.out.println("id=" + rs.getLong("id")
-                            + ", data_id=" + rs.getString("data_id")
-                            + ", export_format=" + rs.getString("export_format"));
+                    System.out.println(
+                            "id=" + rs.getLong("id")
+                                    + ", data_id=" + rs.getString("data_id")
+                                    + ", export_format=" + rs.getString("export_format")
+                    );
                 }
             }
+
+
             dbDriver.deleteExportHistory(connection, exportSpecs);
 
-
-        } catch (SQLException e){
+        } catch (SQLException e) {
             System.err.println("SQLException: " + e.getMessage());
         }
-
     }
+
 
 }
