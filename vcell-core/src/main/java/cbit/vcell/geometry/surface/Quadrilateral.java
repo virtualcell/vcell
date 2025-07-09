@@ -26,6 +26,10 @@ public Quadrilateral(Node[] nodes, int argVolIndexNeighbor1, int argVolIndexNeig
 	volIndexNeighbor1 = argVolIndexNeighbor1;
 	volIndexNeighbor2 = argVolIndexNeighbor2;
 }
+
+public Quadrilateral deepClone() {
+    return new Quadrilateral(getNodes().clone(), volIndexNeighbor1, volIndexNeighbor2);
+}
 /**
  * Quadrilateral constructor comment.
  */
