@@ -193,7 +193,7 @@ protected void executeProcess(int[] expectedReturnCodes) throws org.vcell.util.e
 		}
 	} catch (Exception e) {
 		String processName = (command != null && command.length > 0) ? '"' +command[0] + '"' : "<unknown>";
-		logger.error(String.format("Command %s ecountered a problem: ", processName)+": "+e.getMessage(), e);
+		logger.error(String.format("Command %s encountered a problem: ", processName)+": "+e.getMessage(), e);
 		if (getStatus().isError()) {
 			// process failed and we relay the exception thrown on error status finish above
 			throw new ExecutableException(e.getMessage() + "\n\n(" + getCommand() + ")", e);

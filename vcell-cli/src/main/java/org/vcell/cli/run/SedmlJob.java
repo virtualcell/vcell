@@ -17,6 +17,7 @@ import org.vcell.cli.run.results.*;
 import org.vcell.cli.run.plotting.PlottingDataExtractor;
 import org.vcell.cli.run.plotting.ChartCouldNotBeProducedException;
 import org.vcell.cli.run.plotting.Results2DLinePlot;
+import org.vcell.sbml.vcell.lazy.LazySBMLDataAccessor;
 import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
 import org.vcell.sbml.vcell.lazy.LazySBMLSpatialDataAccessor;
 import org.vcell.sedml.log.BiosimulationLog;
@@ -25,6 +26,7 @@ import org.vcell.trace.Tracer;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.Pair;
+import org.vcell.util.Triplet;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -47,9 +49,9 @@ public class SedmlJob {
     private final String[] SEDML_NAME_SPLIT;
     private final StringBuilder LOG_OMEX_MESSAGE;
     private final SedmlStatistics DOC_STATISTICS; // We keep this in object memory for debugging
-    private final File MASTER_OMEX_ARCHIVE, PLOTS_DIRECTORY, OUTPUT_DIRECTORY_FOR_CURRENT_SEDML;
+    private final File MASTER_OMEX_ARCHIVE, OUTPUT_DIRECTORY_FOR_CURRENT_SEDML;
     private final CLIRecordable CLI_RECORDER;
-    private boolean somethingFailed, hasScans, hasOverrides;
+    private boolean somethingFailed;
     private String logDocumentMessage, logDocumentError;
     private SedML sedml;
 
@@ -60,25 +62,24 @@ public class SedmlJob {
      * Constructor to provide all needed info for a SedML processing job.
      * 
      * @param sedmlLocation location of the sedml document with the model to process
-     * @param omexHandler object to deal with omex archive related utilities
+     * @param sedmlSpecificOutput location of where sedml-specific processing output goes
      * @param masterOmexArchive the archive containing the sedml file
      * @param resultsDirPath path to where the results should be placed
-     * @param sedmlPath2d3dString path to where 2D and 3D plots are stored
      * @param cliRecorder recorder object used for CLI applications
      * @param bKeepTempFiles whether temp files shouldn't be deleted, or should.
      * @param bExactMatchOnly enforces a KISAO match, with no substitution
      * @param bSmallMeshOverride whether to use small meshes or standard meshes.
      * @param logOmexMessage a string-builder to contain progress updates of omex execution
      */
-    public SedmlJob(String sedmlLocation, OmexHandler omexHandler, File masterOmexArchive,
-                    String resultsDirPath, String sedmlPath2d3dString, CLIRecordable cliRecorder,
+    public SedmlJob(String sedmlLocation, String sedmlSpecificOutput, File masterOmexArchive,
+                    String resultsDirPath, CLIRecordable cliRecorder,
                     boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride,
                     StringBuilder logOmexMessage){
         final String SAFE_WINDOWS_FILE_SEPARATOR = "\\\\";
         final String SAFE_UNIX_FILE_SEPARATOR = "/";
         this.MASTER_OMEX_ARCHIVE = masterOmexArchive;
         this.SEDML_LOCATION = sedmlLocation;
-        this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML = new File(omexHandler.getOutputPathFromSedml(sedmlLocation));
+        this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML = new File(sedmlSpecificOutput);
         this.SEDML_NAME_SPLIT = this.SEDML_LOCATION.split(OperatingSystemInfo.getInstance().isWindows() ?
                 SAFE_WINDOWS_FILE_SEPARATOR : SAFE_UNIX_FILE_SEPARATOR, -2);
         this.SEDML_NAME = this.SEDML_NAME_SPLIT[this.SEDML_NAME_SPLIT.length - 1];
@@ -86,7 +87,6 @@ public class SedmlJob {
         this.BIOMODEL_BASE_NAME = FileUtils.getBaseName(masterOmexArchive.getName());
         this.RESULTS_DIRECTORY_PATH = resultsDirPath;
         this.LOG_OMEX_MESSAGE = logOmexMessage;
-        this.PLOTS_DIRECTORY = new File(sedmlPath2d3dString);
         this.CLI_RECORDER = cliRecorder;
         this.SHOULD_KEEP_TEMP_FILES = bKeepTempFiles;
         this.ACCEPT_EXACT_MATCH_ONLY = bExactMatchOnly;
@@ -157,7 +157,7 @@ public class SedmlJob {
         // Check for overrides
         for(Model m : this.sedml.getModels()) {
             if (m.getListOfChanges().isEmpty()) continue;
-            this.DOC_STATISTICS.setHasOverrides(this.hasOverrides = true);
+            this.DOC_STATISTICS.setHasOverrides(true);
             break;
         }
 
@@ -166,7 +166,7 @@ public class SedmlJob {
             if (!(at instanceof RepeatedTask rt)) continue;
             List<SetValue> changes = rt.getChanges();
             if(changes == null || changes.isEmpty()) continue;
-            this.DOC_STATISTICS.setHasScans(this.hasScans = true);
+            this.DOC_STATISTICS.setHasScans(true);
             break;
         }
 
@@ -211,22 +211,25 @@ public class SedmlJob {
         ExternalDocInfo externalDocInfo = new ExternalDocInfo(this.MASTER_OMEX_ARCHIVE, true);
         Span span = null;
 
-        String str = "Building solvers and starting simulation of all tasks... ";
+        logger.info("SedML Parsing complete.");
+        RunUtils.drawBreakLine("-", 100);
+        String str = "Queuing all tasks for simulation... ";
         logger.info(str);
         this.logDocumentMessage += str;
-        RunUtils.drawBreakLine("-", 100);
         try {
             span = Tracer.startSpan(Span.ContextType.SIMULATIONS_RUN, "runSimulations", null);
-            Map<AbstractTask, BiosimulationLog.Status> taskResults =  solverHandler.simulateAllTasks(externalDocInfo, this.sedml, this.CLI_RECORDER,
+            Map<AbstractTask, Triplet<BiosimulationLog.Status, Double, Exception >> taskResults =  solverHandler.simulateAllTasks(externalDocInfo, this.sedml, this.CLI_RECORDER,
                     this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML, this.RESULTS_DIRECTORY_PATH,
-                    this.SEDML_LOCATION, this.SHOULD_KEEP_TEMP_FILES,
-                    this.ACCEPT_EXACT_MATCH_ONLY, this.SHOULD_OVERRIDE_FOR_SMALL_MESH);
+                    this.SEDML_LOCATION, this.ACCEPT_EXACT_MATCH_ONLY, this.SHOULD_OVERRIDE_FOR_SMALL_MESH);
             int numSimulationsUnsuccessful = 0;
+            logger.info("Finished all solver executions for {}", this.SEDML_NAME);
             StringBuilder executionSummary = new StringBuilder("Summary of Task Results\n");
             for (AbstractTask sedmlTask : taskResults.keySet()){
                 String sedmlTaskName = (sedmlTask.getName() == null || sedmlTask.getName().isBlank()) ? sedmlTask.getId() : sedmlTask.getName() + " (" + sedmlTask.getId() + ")" ;
-                executionSummary.append("\t> ").append(sedmlTaskName).append("::").append(taskResults.get(sedmlTask).name()).append("\n");
-                if (!taskResults.get(sedmlTask).equals(BiosimulationLog.Status.SUCCEEDED)) numSimulationsUnsuccessful++;
+                executionSummary.append("\t> ").append(sedmlTaskName).append("::").append(taskResults.get(sedmlTask).one.name()).append("\n");
+                if (!taskResults.get(sedmlTask).one.equals(BiosimulationLog.Status.SUCCEEDED)){
+                    logger.error("Unsuccessful run #{} detected: Status :: {}\n", ++numSimulationsUnsuccessful, taskResults.get(sedmlTask).one, taskResults.get(sedmlTask).three);
+                }
             }
             logger.info(executionSummary.toString());
             if (numSimulationsUnsuccessful > 0) throw new ExecutionException(numSimulationsUnsuccessful + " simulation" + (numSimulationsUnsuccessful == 1 ? "s" : "") + " were unsuccessful.");
@@ -260,11 +263,11 @@ public class SedmlJob {
         try {
             span = Tracer.startSpan(Span.ContextType.PROCESSING_SIMULATION_OUTPUTS, "processOutputs", null);
             /////////////////////////////////////////////////////
-            Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults =
+            Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> organizedNonSpatialResults =
                     NonSpatialResultsConverter.organizeNonSpatialResultsBySedmlDataGenerator(
                             this.sedml, solverHandler.nonSpatialResults, solverHandler.taskToTempSimulationMap);
 
-            Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> organizedSpatialResults =
+            Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> organizedSpatialResults =
                     SpatialResultsConverter.organizeSpatialResultsBySedmlDataGenerator(
                         this.sedml, solverHandler.spatialResults, solverHandler.taskToTempSimulationMap);
 
@@ -282,10 +285,8 @@ public class SedmlJob {
             this.logDocumentError += e.getMessage();
             try {
                 this.reportProblem(e);
-                org.apache.commons.io.FileUtils.deleteDirectory(this.PLOTS_DIRECTORY);    // removing temp path generated from python
             } catch (IOException ioe){
-                throw new RuntimeException(String.format("Encountered IOException while trying to delete '%s':{%s}",
-                        this.PLOTS_DIRECTORY.getName(), e.getMessage()), ioe);
+                throw new RuntimeException("Encountered IOException while trying to report problem", ioe);
             }
             throw new ExecutionException("error while processing outputs: " + e.getMessage(), e);
         } finally {
@@ -312,10 +313,10 @@ public class SedmlJob {
         this.logDocumentError += e.getMessage();
         try{
             this.reportProblem(e);
-            org.apache.commons.io.FileUtils.deleteDirectory(this.PLOTS_DIRECTORY);    // removing temp path generated from python
         } catch (IOException ioe){
-            Tracer.failure(ioe, "Deletion of " + this.PLOTS_DIRECTORY.getName() + " failed");
-            logger.warn("Deletion of " + this.PLOTS_DIRECTORY.getName() + " failed", ioe);
+            String failureMessage = "Encountered IOException while trying to declare failed result";
+            Tracer.failure(ioe, failureMessage);
+            logger.warn(failureMessage, ioe);
         }
         logger.warn(this.logDocumentError);
         return false;
@@ -325,7 +326,6 @@ public class SedmlJob {
         // archiving result files
         if (logger.isDebugEnabled()) logger.info("Archiving result files");
         RunUtils.zipResFiles(new File(this.RESULTS_DIRECTORY_PATH));
-        org.apache.commons.io.FileUtils.deleteDirectory(this.PLOTS_DIRECTORY);    // removing sedml dir which stages results.
 
         // Declare success!
         BiosimulationLog biosimLog = BiosimulationLog.instance();
@@ -335,7 +335,7 @@ public class SedmlJob {
         return true;
     }
 
-    private void generateCSV(Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults) {
+    private void generateCSV(Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> organizedNonSpatialResults) {
         Map<String, File> csvReports;
         this.logDocumentMessage += "Generating CSV file... ";
         logger.info("Generating CSV file... ");
@@ -352,7 +352,7 @@ public class SedmlJob {
         }
     }
 
-    private void generatePlots(Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults) throws ExecutionException {
+    private void generatePlots(Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> organizedNonSpatialResults) throws ExecutionException {
         logger.info("Generating Plots... ");
         // We assume if no exception is returned that the plots pass
         PlottingDataExtractor plotExtractor = new PlottingDataExtractor(this.sedml, this.SEDML_NAME);
@@ -369,7 +369,7 @@ public class SedmlJob {
         }
     }
 
-    private void indexHDF5Data(Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults, Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> organizedSpatialResults, SolverHandler solverHandler, HDF5ExecutionResults masterHdf5File) {
+    private void indexHDF5Data(Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> organizedNonSpatialResults, Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> organizedSpatialResults, SolverHandler solverHandler, HDF5ExecutionResults masterHdf5File) {
         this.logDocumentMessage += "Indexing HDF5 data... ";
         logger.info("Indexing HDF5 data... ");
 
