@@ -57,25 +57,25 @@ public ExportServiceImpl() {
 
 
 public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs)throws DataAccessException {
-	return makeRemoteFile(outputContext,user, dataServerImpl, exportSpecs, eventCreator);
+	return makeRemoteFile(outputContext,user, dataServerImpl, exportSpecs, eventCreator, JobRequest.createExportJobRequest(user).getExportJobID());
 }
 
 public ExportEvent makeRemoteFile(OutputContext outputContext, User user, DataServerImpl dataServer, ExportSpecs exportSpecs, boolean zip, ClientTaskStatusSupport clientTaskStatusSupport)throws DataAccessException {
-		return makeRemoteFile(outputContext, user, dataServer, exportSpecs, eventCreator, zip, clientTaskStatusSupport);
+		return makeRemoteFile(outputContext, user, dataServer, exportSpecs, eventCreator, zip, clientTaskStatusSupport, JobRequest.createExportJobRequest(user).getExportJobID());
 }
 
-public static ExportEvent makeRemoteFile(OutputContext outputContext, User user, DataServerImpl dataServer, ExportSpecs exportSpecs, ExportStatusEventCreator eventCreator) throws DataAccessException{
-	return makeRemoteFile(outputContext, user, dataServer, exportSpecs, eventCreator, true, null);
+public static ExportEvent makeRemoteFile(OutputContext outputContext, User user, DataServerImpl dataServer, ExportSpecs exportSpecs, ExportStatusEventCreator eventCreator, long jobRequestID) throws DataAccessException{
+	return makeRemoteFile(outputContext, user, dataServer, exportSpecs, eventCreator, true, null, jobRequestID);
 }
 
-public static ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, ExportStatusEventCreator eventCreator, boolean bSaveAsZip, ClientTaskStatusSupport clientTaskStatusSupport) throws DataAccessException {
+private static ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, ExportStatusEventCreator eventCreator, boolean bSaveAsZip, ClientTaskStatusSupport clientTaskStatusSupport, long jobRequestID) throws DataAccessException {
 	// if export completes successfully, we return the generated event for logging
 	if (user == null) {
 		throw new DataAccessException("ERROR: user is null");
 	}
-	JobRequest newExportJob = JobRequest.createExportJobRequest(user);
+	JobRequest newExportJob = JobRequest.createExportJobRequest(user, jobRequestID);
 	if (eventCreator instanceof OldExportEventCreator evc){
-		evc.putJobRequest(new Long(newExportJob.getExportJobID()), user);
+		evc.putJobRequest(newExportJob.getExportJobID(), user);
 	}
 	if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): " + newExportJob + ", " + exportSpecs);
 	String fileFormat = null;
