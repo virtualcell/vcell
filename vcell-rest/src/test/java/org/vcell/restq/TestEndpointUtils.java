@@ -10,6 +10,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.xml.XMLSource;
@@ -187,5 +188,28 @@ public class TestEndpointUtils {
 
         connection.commit();
         new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()).cleanupDatabase();
+    }
+
+
+    private final static String previousExportBaseDir =  PropertyLoader.getProperty(PropertyLoader.exportBaseDirInternalProperty, System.getProperty("java.io.tmpdir"));
+    private final static String previousSimDir = PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty, System.getProperty("java.io.tmpdir"));
+    private final static String previousN5Path = PropertyLoader.getProperty(PropertyLoader.n5DataDir, System.getProperty("java.io.tmpdir"));
+    private final static String previousExportURL = PropertyLoader.getProperty(PropertyLoader.exportBaseURLProperty, "http://localhost:8080/exports");
+    private final static String previousS3BaseURL = PropertyLoader.getProperty(PropertyLoader.exportBaseURLProperty, "http://localhost:8080/s3");
+
+    public static void setSystemProperties(String simDir, String exportBaseDir){
+        PropertyLoader.setProperty(PropertyLoader.primarySimDataDirInternalProperty, simDir);
+        PropertyLoader.setProperty(PropertyLoader.exportBaseDirInternalProperty, exportBaseDir);
+        PropertyLoader.setProperty(PropertyLoader.exportBaseURLProperty, previousExportURL);
+        PropertyLoader.setProperty(PropertyLoader.n5DataDir, exportBaseDir);
+        PropertyLoader.setProperty(PropertyLoader.s3ExportBaseURLProperty, previousS3BaseURL);
+    }
+
+    public static void restoreSystemProperties(){
+        PropertyLoader.setProperty(PropertyLoader.primarySimDataDirInternalProperty, previousSimDir);
+        PropertyLoader.setProperty(PropertyLoader.exportBaseDirInternalProperty, previousExportBaseDir);
+        PropertyLoader.setProperty(PropertyLoader.n5DataDir, previousN5Path);
+        PropertyLoader.setProperty(PropertyLoader.exportBaseURLProperty, previousExportURL);
+        PropertyLoader.setProperty(PropertyLoader.s3ExportBaseURLProperty, previousS3BaseURL);
     }
 }
