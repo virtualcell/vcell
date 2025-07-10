@@ -14,6 +14,8 @@ import java.util.Arrays;
 
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
@@ -174,6 +176,23 @@ public class ExportSpecs implements Serializable {
 		this.formatSpecificSpecs = formatSpecificSpecs;
 		this.simulatioName = simulationName;
 		this.contextName = contextName;
+	}
+
+	@JsonCreator
+	public ExportSpecs(@JsonProperty("vcdataIdentifier") VCDataIdentifier vcdataIdentifier, @JsonProperty("format") ExportFormat format,
+					   @JsonProperty("variableSpecs") VariableSpecs variableSpecs, @JsonProperty("timeSpecs") TimeSpecs timeSpecs,
+					   @JsonProperty("geometrySpecs") GeometrySpecs geometrySpecs, @JsonProperty("formatSpecificSpecs") FormatSpecificSpecs formatSpecificSpecs,
+					   @JsonProperty("simulationName") String simulationName, @JsonProperty("contextName") String contextName,
+					   @JsonProperty("humanReadableExportData") HumanReadableExportData humanReadableExportData) {
+		this.vcDataIdentifier = vcdataIdentifier;
+		this.format = format;
+		this.variableSpecs = variableSpecs;
+		this.timeSpecs = timeSpecs;
+		this.geometrySpecs = geometrySpecs;
+		this.formatSpecificSpecs = formatSpecificSpecs;
+		this.simulatioName = simulationName;
+		this.contextName = contextName;
+		this.humanReadableExportData = humanReadableExportData;
 	}
 
 	public String getContextName(){
