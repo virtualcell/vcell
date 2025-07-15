@@ -128,3 +128,33 @@ Logs - on linux machines, ex mantis-040
 > less V_REL_292453752_0_0.slurm.sub   # shows top of the script (the definitions) \
 > ls -ot V_REL* | head                 # shows a few of the most recent release sims
 ```
+
+### 7 Data to use for development (in the TEMP/slurm-test-inputs directory)
+
+#### KEEP subdir
+Complex springsalad model with a transition and a binding reaction \
+Duration about 10 minutes \
+Results of 8 manual runs, slightly different results due to stochasticity \
+Should be used to test the advanced statistics logic in the solver
+
+#### proof-of-concept subdir
+slurm script to run X trials, Y at a time
+
+#### simdata-keep subdir
+very fast springsalad model with one binding reaction \
+
+its content is replicated in repository files:
+> SimID_999999999_0_.langevinInput \
+> SimID_999999999_0__0.simtask.xml
+
+here we also have the full results of one run
+
+##### Important note about the xml file
+variables of interest for multiple runs under slurm, in containers, are:
+```powershell
+<LangevinSimulationOptions>
+   ....
+   <NumOfParallelRuns>8</NumOfParallelRuns>
+   <NumBatchTrials>20</NumBatchTrials>
+</LangevinSimulationOptions>
+```
