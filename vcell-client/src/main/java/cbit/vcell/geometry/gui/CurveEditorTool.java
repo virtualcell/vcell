@@ -297,7 +297,7 @@ public void mouseDragged(MouseEvent event) {
 	}
 	CurveSelectionInfo csi = getCurveRenderer().getSelection();
 	if (csi != null) {
-		if (csi.getType() == CurveSelectionInfo.TYPE_SEGMENT || csi.getType() == CurveSelectionInfo.TYPE_U) {
+		if (csi.getType() == CurveSelectionInfo.CurveSelectionType.SEGMENT.intValue || csi.getType() == CurveSelectionInfo.CurveSelectionType.U.intValue) {
 			//extend the selection
 			CurveSelectionInfo csiExtended = getCurveRenderer().extend(getWorldCoordinateValue(event.getPoint()));
 			if (csiExtended != null) {
@@ -535,18 +535,18 @@ private boolean move(double xDelta, double yDelta,CurveSelectionInfo csi,int nor
 			break;
 		}
 	}
-	if(!bAllSame && (csi.getType()== CurveSelectionInfo.TYPE_CURVE)){
+	if(!bAllSame && (csi.getType()== CurveSelectionInfo.CurveSelectionType.CURVE.intValue)){
 		return false;
 	}
 	//
 	//Set new Controlpoints
 	//
 	for(int i=0;i < cpc.getControlPointCount();i+= 1){
-		if (csi.getType() == CurveSelectionInfo.TYPE_CONTROL_POINT ) {
+		if (csi.getType() == CurveSelectionInfo.CurveSelectionType.CONTROL_POINT.intValue ) {
 			if(csi.getControlPoint() == i){
 				cpc.setControlPoint(i,newCPArr[i]);
 			}
-		} else if(csi.getType()== CurveSelectionInfo.TYPE_CURVE){
+		} else if(csi.getType()== CurveSelectionInfo.CurveSelectionType.CURVE.intValue){
 			cpc.setControlPoint(i,newCPArr[i]);
 		}
 	}

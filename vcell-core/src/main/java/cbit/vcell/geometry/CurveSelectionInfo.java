@@ -19,10 +19,14 @@ public class CurveSelectionInfo implements java.io.Serializable, org.vcell.util.
 	//
 	public static final int NONE_SELECTED = -1;
 	//
-	public static final int TYPE_CURVE = 0;
-	public static final int TYPE_CONTROL_POINT = 1;
-	public static final int TYPE_SEGMENT = 2;
-	public static final int TYPE_U = 3;
+
+	public enum CurveSelectionType{
+		CURVE(0), CONTROL_POINT(1), SEGMENT(2), U(3), NONE(-1);
+		public final int intValue;
+		CurveSelectionType(int intValue){
+			this.intValue = intValue;
+		}
+	}
 
 	private static final String TYPE_LABEL[] = { "curve","controlPoint","segment","u" };
 	//
@@ -42,7 +46,7 @@ public CurveSelectionInfo(Curve curve) {
 	//curve Selection
 	super();
 	setCurve(curve);
-	setType(TYPE_CURVE);
+	setType(CurveSelectionType.CURVE.intValue);
 }
 /**
  * CurveSelectionInfo constructor comment.
@@ -50,7 +54,7 @@ public CurveSelectionInfo(Curve curve) {
 public CurveSelectionInfo(Curve curve, int type, double index) {
 	//Segment or ControlPoint selection
 	super();
-	if (type == TYPE_CONTROL_POINT) {
+	if (type == CurveSelectionType.CONTROL_POINT.intValue) {
 		if (!(curve instanceof ControlPointCurve)) {
 			throw new IllegalArgumentException("TYPE_CONTROL_POINT must have ControlPointCurve");
 		}
@@ -58,18 +62,18 @@ public CurveSelectionInfo(Curve curve, int type, double index) {
 			throw new IllegalArgumentException("index out of range for ControlPointCurve");
 		}
 		setControlPoint((int) index);
-	} else if (type == TYPE_SEGMENT) {
+	} else if (type == CurveSelectionType.SEGMENT.intValue) {
 		if (index < 0 || index >= curve.getSegmentCount()) {
 			throw new IllegalArgumentException("Segment index out of range for Curve");
 		}
 		setSegment((int) index);
-	} else if (type == TYPE_U) {
+	} else if (type == CurveSelectionType.U.intValue) {
 		if (index < 0 || index > 1) {
 			throw new IllegalArgumentException("U must be between 0 and 1");
 		}
 		setU(index);
 	} else {
-		throw new IllegalArgumentException("type must be either TYPE_CONTROL_POINT or TYPE_SEGMENT or TYPE_U");
+		throw new IllegalArgumentException("type must be either CurveSelectionType.CONTROL_POINT or CurveSelectionType.SEGMENT or CurveSelectionType.U");
 	}
 
 	setCurve(curve);
@@ -82,7 +86,7 @@ public CurveSelectionInfo(Curve curve,int argBeginSegment,int argEndSegment,bool
 	//curve Selection
 	super();
 	setCurve(curve);
-	setType(TYPE_SEGMENT);
+	setType(CurveSelectionType.SEGMENT.intValue);
 	this.fieldSegment = argBeginSegment;
 	if(argBeginSegment != argEndSegment){
 		this.fieldSegmentExtended = argEndSegment;
@@ -147,8 +151,8 @@ public Curve getCurve() {
  * @param selectionU double
  */
 public double getCurveUfromSelectionU(double selectionU) {
-	if (getType() != TYPE_SEGMENT){
-		throw new RuntimeException("CurveSelectionInfo.getCurveUfromSelectionU(), cannot call when type!=TYPE_SEGMENT");
+	if (getType() != CurveSelectionType.SEGMENT.intValue){
+		throw new RuntimeException("CurveSelectionInfo.getCurveUfromSelectionU(), cannot call when type!=CurveSelectionType.SEGMENT");
 	}
 	
 	int beginSeg = getSegment();
