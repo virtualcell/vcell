@@ -25,8 +25,6 @@ import java.sql.SQLException;
 public class QuarkusStartUpTasks {
     private final static Logger logger = LogManager.getLogger(QuarkusStartUpTasks.class);
 
-    public static final String internalMQBeanIdentifier = "internal";
-
     @Inject
     AgroalConnectionFactory connectionFactory;
 
@@ -36,14 +34,5 @@ public class QuarkusStartUpTasks {
         logger.info("Startup tasks executed successfully");
     }
 
-    @Produces
-    @ApplicationScoped
-    @Identifier(internalMQBeanIdentifier)
-    private QueueConnection getInternalQueueConnectionFactory() throws JMSException {
-        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory("tcp://localhost:61616");
-        QueueConnection connection = connectionFactory.createQueueConnection("admin", "admin");
-        connection.start();
-        return connection;
-    }
 
 }

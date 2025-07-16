@@ -1,46 +1,45 @@
 package org.vcell.restq.services.Exports;
 
 import cbit.rmi.event.ExportEvent;
-import cbit.vcell.export.server.*;
+import cbit.vcell.export.server.JobRequest;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.simdata.DataServerImpl;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.OutputContext;
+import cbit.vcell.modeldb.SimulationRep;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.smallrye.common.annotation.Blocking;
-import io.smallrye.common.annotation.Identifier;
 import io.smallrye.mutiny.Multi;
-import io.vertx.core.Vertx;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
-import org.vcell.restq.QuarkusStartUpTasks;
 import org.vcell.restq.db.AgroalConnectionFactory;
+import org.vcell.restq.errors.exceptions.RuntimeWebException;
 import org.vcell.restq.handlers.ExportResource;
+import org.vcell.restq.services.SimulationRestService;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import javax.jms.JMSException;
-import javax.jms.QueueConnection;
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.sql.SQLException;
 
 @ApplicationScoped
 public class ExportService {
     private final DatabaseServerImpl databaseServer;
-    private final DataServerImpl dataServer;
-
-//    @Inject
-//    @Identifier(QuarkusStartUpTasks.internalMQBeanIdentifier)
-//    QueueConnection internalQueueConnection;
 
     @Inject
     ExportStatusCreator exportStatusCreator;
+
+    @Inject
+    SimulationRestService simulationRestService;
 
     @Inject
     ObjectMapper jsonMapper;
@@ -55,10 +54,6 @@ public class ExportService {
     public ExportService(AgroalConnectionFactory connectionFactory, ExportStatusCreator exportStatusCreator) throws DataAccessException, FileNotFoundException {
         this.databaseServer = new DatabaseServerImpl(connectionFactory, connectionFactory.getKeyFactory());
         this.exportStatusCreator = exportStatusCreator;
-        String primarySimDataDir = PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty, "/simdata");
-        String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, "/simdata");
-        this.dataServer = new DataServerImpl(new DataSetControllerImpl(null, new File(primarySimDataDir), new File(secondarySimDataDir)),
-                new ExportServiceImpl());
     }
 
     public ExportResource.ExportHistory getExportHistory(User user) throws DataAccessException {
@@ -78,15 +73,28 @@ public class ExportService {
         return exportStatusCreator.getUsersExportStatus(user, jobID);
     }
 
-    public void startExportJob(User user, OutputContext outputContext, ExportSpecs exportSpecs, long jobID) throws JMSException, JsonProcessingException {
-        try {
-            if (Thread.currentThread().getName().contains("event-loop")){
-                throw new RuntimeException("EXPORTS ARE USING THE EVENT LOOP.");
-            }
-            ExportServiceImpl.makeRemoteFile(outputContext, user, dataServer, exportSpecs, exportStatusCreator, jobID);
-        } catch (DataAccessException e) {
-            throw new RuntimeException(e);
-        }
+    public ExportEvent getMostRecentExportStatus(User user, long jobID) throws ObjectNotFoundException {
+        return exportStatusCreator.getMostRecentExportStatus(user, jobID);
+    }
+
+    public ExportResource.ExportJob createExportJobFromRequest(User user, ExportResource.ExportRequest request) throws SQLException, DataAccessException {
+        SimulationRep simulationRep = simulationRestService.getSimulationRep(new KeyValue(request.simulationID()));
+        VCSimulationIdentifier simulationIdentifier = new VCSimulationIdentifier(simulationRep.getKey(), simulationRep.getOwner());
+        VCSimulationDataIdentifier dataIdentifier = new VCSimulationDataIdentifier(simulationIdentifier, request.simulationJob());
+        JobRequest newExportJob = JobRequest.createExportJobRequest(user);
+        long exportID = newExportJob.getExportJobID();
+        AnnotatedFunction[] annotatedFunctions = request.outputContext().stream().map(
+                dto -> {
+                    try {
+                        return new AnnotatedFunction(dto.functionName(), new Expression(dto.functionExpression()), dto.domain(), dto.error(),
+                                dto.functionType(), dto.category());
+                    } catch (ExpressionException e) {
+                        throw new RuntimeWebException(e.getMessage(), e);
+                    }
+                }
+        ).toArray(AnnotatedFunction[]::new);
+        return new ExportResource.ExportJob(exportID, user, annotatedFunctions, dataIdentifier, request.exportFormat(),
+                request.variableSpecs(), request.timeSpecs(), request.geometrySpecs(), request.formatSpecificSpecs(), request.subVolume(), request.simulationName(), request.contextName());
     }
 
 }
