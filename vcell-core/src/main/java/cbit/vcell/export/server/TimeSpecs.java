@@ -10,6 +10,10 @@
 
 package cbit.vcell.export.server;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serializable;
 /**
  * This type was created in VisualAge.
@@ -18,11 +22,14 @@ public class TimeSpecs implements Serializable {
 	private int beginTimeIndex;
 	private int endTimeIndex;
 	private double[] allTimes;
+	@JsonIgnore
 	private ExportSpecss.TimeMode modeID;
 /**
  * TimeSpecs constructor comment.
  */
-public TimeSpecs(int beginTimeIndex, int endTimeIndex, double[] allTimes, ExportSpecss.TimeMode modeID) {
+@JsonCreator
+public TimeSpecs(@JsonProperty("beginTimeIndex") int beginTimeIndex, @JsonProperty("endTimeIndex") int endTimeIndex,
+				 @JsonProperty("allTimes") double[] allTimes, @JsonProperty("mode") ExportSpecss.TimeMode modeID) {
 	this.beginTimeIndex = beginTimeIndex;
 	this.endTimeIndex = endTimeIndex;
 	this.allTimes = allTimes;

@@ -10,6 +10,10 @@
 
 package cbit.vcell.export.server;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serializable;
 import java.util.List;
 /**
@@ -17,6 +21,7 @@ import java.util.List;
  */
 public class VariableSpecs implements Serializable {
 	private final String[] variableNames;
+	@JsonIgnore
 	private final ExportSpecss.VariableMode modeID;
 
 public VariableSpecs(String[] variableNames, ExportSpecss.VariableMode modeID) {
@@ -24,7 +29,8 @@ public VariableSpecs(String[] variableNames, ExportSpecss.VariableMode modeID) {
 	this.modeID = modeID;
 }
 
-public VariableSpecs (List<String> variableNames, ExportSpecss.VariableMode modeID){
+@JsonCreator
+public VariableSpecs (@JsonProperty("variableNames") List<String> variableNames, @JsonProperty("mode") ExportSpecss.VariableMode modeID){
 	this(variableNames.toArray(new String[0]), modeID);
 }
 

@@ -13,6 +13,8 @@ package cbit.vcell.export.server;
 import java.io.IOException;
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -27,6 +29,7 @@ import org.vcell.util.CompressionUtils;
 public class GeometrySpecs implements Serializable {
     private final static Logger lg = LogManager.getLogger(GeometrySpecs.class);
 
+    @JsonIgnore
     private byte[][] serializedSelections = null;
     private transient SpatialSelection[] spatialSelections = null;
     private final int axis;
@@ -41,6 +44,8 @@ public class GeometrySpecs implements Serializable {
      * @param sliceNumber int
      * @param geometryMode      GeometryMode
      */
+
+    @JsonCreator
     public GeometrySpecs(SpatialSelection[] selections, int axis, int sliceNumber, ExportSpecss.GeometryMode geometryMode){
         if(selections != null){
             try {
@@ -102,6 +107,7 @@ public class GeometrySpecs implements Serializable {
      *
      * @return int
      */
+    @JsonIgnore
     public int getAxis(){
         return axis;
     }
@@ -112,6 +118,7 @@ public class GeometrySpecs implements Serializable {
      *
      * @return cbit.vcell.simdata.gui.SpatialSelection[]
      */
+    @JsonIgnore
     public SpatialSelection[] getCurves(){
         int count = 0;
         for(int i = 0; getSelections() != null && i < getSelections().length; i++){
@@ -130,6 +137,7 @@ public class GeometrySpecs implements Serializable {
         return curves;
     }
 
+    @JsonIgnore
     public ExportSpecss.GeometryMode getMode(){
         return modeID;
     }
@@ -141,6 +149,7 @@ public class GeometrySpecs implements Serializable {
      *
      * @return cbit.vcell.geometry.CoordinateIndex[]
      */
+    @JsonIgnore
     public int[] getPointIndexes(){
         switch(getMode()){
             case GEOMETRY_SLICE:{
@@ -164,6 +173,7 @@ public class GeometrySpecs implements Serializable {
         }
     }
 
+    @JsonIgnore
     public int getPointCount(){
         switch(getMode()){
             case GEOMETRY_SLICE:{
@@ -184,6 +194,7 @@ public class GeometrySpecs implements Serializable {
         }
     }
 
+    @JsonIgnore
     public SpatialSelection[] getPointSpatialSelections(){
         switch(getMode()){
             case GEOMETRY_SLICE:{
@@ -245,6 +256,7 @@ public class GeometrySpecs implements Serializable {
      *
      * @return int
      */
+    @JsonIgnore
     public int getSliceNumber(){
         return sliceNumber;
     }
