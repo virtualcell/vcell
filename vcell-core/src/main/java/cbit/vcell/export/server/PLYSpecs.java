@@ -8,6 +8,7 @@ public class PLYSpecs extends FormatSpecificSpecs {
 	private boolean bIncludeTextures = false;
 	private DisplayPreferences[] displayPreferences;
 	public PLYSpecs(boolean bIncludeTextures,DisplayPreferences[] displayPreferences){
+		super("PLYSpecs");
 		this.bIncludeTextures = bIncludeTextures;
 		this.displayPreferences = displayPreferences;
 	}

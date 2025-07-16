@@ -44,6 +44,7 @@ public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
 public MovieSpecs(double duration, boolean overlayMode, DisplayPreferences[] displayPreferences, ExportFormat format,
 		ExportSpecss.MirroringMethod mirroringType, int volVarMembrOutlineThickness,
 		int imageScaling,int membraneScaling,int meshMode,int compressionType,float compressionQuality,boolean bQTVR,int particleMode) {
+	super("MovieSpecs");
 	this.duration = duration;
 	this.overlayMode = overlayMode;
 	this.displayPreferences = displayPreferences;

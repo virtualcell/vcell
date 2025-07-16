@@ -31,6 +31,7 @@ public class ASCIISpecs extends FormatSpecificSpecs implements Serializable {
  */
 public ASCIISpecs(ExportSpecs.SimNameSimDataID[] simNameSimDataIDs, ExportSpecss.ExportableDataType dataType, ExportFormat format,
 				   int[] exportMultipleParamScans, CsvRoiLayout csvLayout, boolean isHDF5, boolean switchRowsColumns) {
+	super("ASCIISpecs");
 	this.format = format;
 	this.dataType = dataType;
 	this.switchRowsColumns = switchRowsColumns;
