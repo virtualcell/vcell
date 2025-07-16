@@ -54,10 +54,10 @@ container_env+="--env mongodbport_internal=mongo-port-not-set "
 container_env+="--env mongodb_database=test "
 
 # Set container prefixes for solvers and batch processing
-solver_docker_name=ghcr.io/virtualcell/vcell-batch:7.7.0.27
+solver_docker_name=ghcr.io/virtualcell/vcell-batch:7.7.0.30
 solver_container_prefix="srun -N 1 -n 1 -c 1 singularity run --containall ${container_bindings} ${container_env} docker://${solver_docker_name}"
 
-batch_docker_name=ghcr.io/virtualcell/vcell-batch:7.7.0.27
+batch_docker_name=ghcr.io/virtualcell/vcell-batch:7.7.0.30
 batch_container_prefix="srun -N 1 -n 1 -c 1 singularity run --containall ${container_bindings} ${container_env} docker://${batch_docker_name}"
 
 # Exit processor function to handle failures gracefully

@@ -77,12 +77,22 @@ cp vcell-batch_*.sif vcell-batch-job/container/
 
 ### 5. Container pulling and versioning.
 
+I need to run apptainer from within the Ubuntu shell on the local machine
+since it is not available on mantis. \
+Remember the special file directory is different than the one on Windows, paste 
+the following in the File Explorer address bar:
+> \\wsl$\Ubuntu\home\vasilescu\vcell-batch-job
+
 Set environment variables for GitHub Container Registry access:
 ```powershell
 export APPTAINER_DOCKER_USERNAME=<your_github_username>
 export APPTAINER_DOCKER_PASSWORD=<your_github_personal_access_token>
 ```
 You'll need a  ghcr login token
+```powershell
+On my machine, they are stored in 
+Z:/.ssh/ghcr_login_token
+```
 
 Pull the desired container image:
 ```powershell
@@ -111,8 +121,23 @@ mkdir -p $BASE_DIR/{input,output,logs,scripts,container}
 Frequently used, from BASE_DIR
 ```powershell
 sed -i 's/\r$//' ./scripts/submit_vcell_batch.slurm.sub
-sbatch ./scripts/submit_vcell_batch.slurm.sub
 tail -f ./logs/submit_vcell_batch.log
+singularity exec ./container/vcell-batch_7.7.0.28.sif java --version    # java version
+singularity shell ./container/vcell-batch_7.7.0.28.sif                  # enter singularity
+```
+#### Initialize directory structure
+```powershell
+./populate_vcell_batch.sh
+```
+
+#### Running the solver inside the container
+```powershell
+singularity exec ./container/vcell-batch_7.7.0.28.sif langevin_x64 --version
+```
+
+#### Launching a slurm script
+```powershell
+sbatch ./scripts/submit_vcell_batch.slurm.sub
 ```
 
 Github Repository - configuration stuff

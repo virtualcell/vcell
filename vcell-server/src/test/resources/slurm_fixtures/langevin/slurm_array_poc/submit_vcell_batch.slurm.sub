@@ -9,7 +9,7 @@
 #SBATCH --qos=vcell
 
 BASE_DIR=/home/FCAM/vasilescu/vcell-batch-job
-CONTAINER_IMAGE=$BASE_DIR/container/vcell-batch_7.7.0.28.sif
+CONTAINER_IMAGE=$BASE_DIR/container/vcell-batch_7.7.0.30.sif
 INPUT_DIR=$BASE_DIR/input
 OUTPUT_DIR=$BASE_DIR/output
 LOG_DIR=$BASE_DIR/logs
@@ -33,6 +33,36 @@ singularity exec \
   langevin_x64 simulate \
     $INPUT_DIR/SimID_999999999_0_.langevinInput \
     0 \
+    --output-log=$OUTPUT_DIR/SimID_999999999_0__0.log \
+    --vc-print-status
+
+singularity exec \
+  --bind $INPUT_DIR:$INPUT_DIR \
+  --bind $OUTPUT_DIR:$OUTPUT_DIR \
+  $CONTAINER_IMAGE \
+  langevin_x64 simulate \
+    $INPUT_DIR/SimID_999999999_0_.langevinInput \
+    1 \
+    --output-log=$OUTPUT_DIR/SimID_999999999_0__0.log \
+    --vc-print-status
+
+singularity exec \./..............
+  --bind $INPUT_DIR:$INPUT_DIR \
+  --bind $OUTPUT_DIR:$OUTPUT_DIR \
+  $CONTAINER_IMAGE \
+  langevin_x64 simulate \
+    $INPUT_DIR/SimID_999999999_0_.langevinInput \
+    2 \
+    --output-log=$OUTPUT_DIR/SimID_999999999_0__0.log \
+    --vc-print-status
+
+singularity exec \
+  --bind $INPUT_DIR:$INPUT_DIR \
+  --bind $OUTPUT_DIR:$OUTPUT_DIR \
+  $CONTAINER_IMAGE \
+  langevin_x64 simulate \
+    $INPUT_DIR/SimID_999999999_0_.langevinInput \
+    3 \
     --output-log=$OUTPUT_DIR/SimID_999999999_0__0.log \
     --vc-print-status
 
