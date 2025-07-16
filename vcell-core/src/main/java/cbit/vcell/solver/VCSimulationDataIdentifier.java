@@ -10,14 +10,22 @@
 
 package cbit.vcell.solver;
 
+import cbit.vcell.export.server.FormatSpecificSpecs;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.SimResampleInfoProvider;
+import org.vcell.util.document.VCDataIdentifier;
 
 /**
  * Insert the type's description here.
  * Creation date: (8/24/2004 10:55:36 AM)
  * @author: Jim Schaff
  */
+@Schema(allOf = VCDataIdentifier.class, requiredProperties = {"type"}, properties = {@SchemaProperty(name = "type", defaultValue = "VCSimulationDataIdentifier", type = SchemaType.STRING)})
 public class VCSimulationDataIdentifier
 	implements
 		java.io.Serializable,
@@ -26,11 +34,13 @@ public class VCSimulationDataIdentifier
 
 	private VCSimulationIdentifier vcSimID = null;
 	private int jobIndex = -1;
+	private final String type = "VCSimulationDataIdentifier";
 
 /**
  * VCSimulationIdentifier constructor comment.
  */
-public VCSimulationDataIdentifier(VCSimulationIdentifier vcSimID, int jobIndex) {
+@JsonCreator
+public VCSimulationDataIdentifier(@JsonProperty("vcSimID") VCSimulationIdentifier vcSimID, @JsonProperty("jobIndex") int jobIndex) {
 	this.vcSimID = vcSimID;
 	this.jobIndex = jobIndex;
 }

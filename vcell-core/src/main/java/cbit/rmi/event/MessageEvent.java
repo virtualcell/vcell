@@ -9,6 +9,7 @@
  */
 
 package cbit.rmi.event;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.vcell.util.document.User;
 
 /**
@@ -17,7 +18,9 @@ import org.vcell.util.document.User;
  * @author: IIM
  */
 public abstract class MessageEvent extends java.util.EventObject {
+	@JsonIgnore
 	private MessageSource messageSource = null;
+	@JsonIgnore
 	private MessageData messageData = null;
 		
 	public final static int EXPORT_PROGRESS = 1004;
@@ -102,6 +105,7 @@ public abstract boolean isSupercededBy(MessageEvent messageEvent);
  * Creation date: (1/10/2001 11:18:44 AM)
  * @param newSource java.lang.Object
  */
+@JsonIgnore
 public void setSource(Object newSource) {
 	source = newSource;
 }
