@@ -120,7 +120,7 @@ protected SpatialSelection(CurveSelectionInfo argCurveSelectionInfo, VariableTyp
 	if (argCurveSelectionInfo==null || argMesh==null || argVarType==null){
 		throw new IllegalArgumentException("null argument");
 	}
-	if (argCurveSelectionInfo.getType()==CurveSelectionInfo.TYPE_CURVE && !argCurveSelectionInfo.getCurve().isValid()){
+	if (argCurveSelectionInfo.getType()==CurveSelectionInfo.CurveSelectionType.CURVE.intValue && !argCurveSelectionInfo.getCurve().isValid()){
 		throw new IllegalArgumentException("curve is invalid");
 	}
 	
@@ -280,12 +280,12 @@ public String toString() {
 	cbit.vcell.geometry.Curve curve = this.curveSelectionInfo.getCurve();
 	if (isPoint()){
 		return "Point="+curve.hashCode()+" ["+((cbit.vcell.geometry.SinglePoint)curve).getBeginningCoordinate()+"]";
-	}else if(this.curveSelectionInfo.getType() == CurveSelectionInfo.TYPE_CURVE ||
-			 this.curveSelectionInfo.getType() == CurveSelectionInfo.TYPE_CONTROL_POINT){
+	}else if(this.curveSelectionInfo.getType() == CurveSelectionInfo.CurveSelectionType.CURVE.intValue ||
+			 this.curveSelectionInfo.getType() == CurveSelectionInfo.CurveSelectionType.CONTROL_POINT.intValue){
 		return "Curve="+curve.hashCode()+" ["+curve.getBeginningCoordinate()+" to "+curve.getEndingCoordinate()+"]";
-	}else if(this.curveSelectionInfo.getType() == CurveSelectionInfo.TYPE_SEGMENT){
+	}else if(this.curveSelectionInfo.getType() == CurveSelectionInfo.CurveSelectionType.SEGMENT.intValue){
 		return "Curve="+curve.hashCode()+" Segments ["+this.curveSelectionInfo.getSegmentCount()+"]";
-	}else if(this.curveSelectionInfo.getType() == CurveSelectionInfo.TYPE_U){
+	}else if(this.curveSelectionInfo.getType() == CurveSelectionInfo.CurveSelectionType.U.intValue){
 		return "Curve="+curve.hashCode()+" U ["+this.curveSelectionInfo.getU()+" to "+this.curveSelectionInfo.getUExtended()+"]";
 	}else{
 		return "Curve="+curve.hashCode();
