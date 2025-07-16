@@ -11,14 +11,20 @@
 package cbit.vcell.export.server;
 
 import cbit.vcell.math.MathException;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.Gson;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.janelia.saalfeldlab.n5.*;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.GroupAccess;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 
@@ -26,9 +32,11 @@ import java.util.HashMap;
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
+@Schema(allOf = FormatSpecificSpecs.class, requiredProperties = {"format"})
 public class N5Specs extends FormatSpecificSpecs implements Serializable {
-	private final ExportFormat format;
+	private final ExportFormat formatType;
 	private final ExportSpecss.ExportableDataType dataType;
+	@JsonIgnore
 	private final CompressionLevel compression;
 
 	public final String dataSetName;
@@ -45,12 +53,25 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 /**
  * TextSpecs constructor comment.
  */
-	public N5Specs(ExportSpecss.ExportableDataType dataType, ExportFormat format, CompressionLevel compressionLevel, String dataSetName) {
-		this.format = format;
+	public N5Specs(ExportSpecss.ExportableDataType dataType, ExportFormat format,
+				   CompressionLevel compressionLevel, String dataSetName) {
+		super("N5");
+		this.formatType = format;
 		this.dataType = dataType;
 		this.compression = compressionLevel;
 		this.dataSetName = dataSetName;
 	}
+
+	@JsonCreator
+	public N5Specs(@JsonProperty("dataType") ExportSpecss.ExportableDataType dataType, @JsonProperty("format") ExportFormat format,
+				   @JsonProperty("dataSetName") String dataSetName){
+		super("N5");
+		this.formatType = format;
+		this.dataType = dataType;
+		this.dataSetName = dataSetName;
+		this.compression = CompressionLevel.BZIP;
+	}
+
 	/**
 	 * This method was created in VisualAge.
 	 * @return int
@@ -62,8 +83,8 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	 * This method was created in VisualAge.
 	 * @return int
 	 */
-	public ExportFormat getFormat() {
-		return format;
+	public ExportFormat getFormatType() {
+		return formatType;
 	}
 
 	public Compression getCompression(){
@@ -90,7 +111,7 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	 * @return java.lang.String
 	 */
 	public String toString() {
-		return "N5Specs: [compression: " + format + ", chunking: " + dataType + ", switchRowsColumns: " + "]";
+		return "N5Specs: [compression: " + formatType + ", chunking: " + dataType + ", switchRowsColumns: " + "]";
 	}
 
 	public static void writeImageJMetaData(long jobID,long[] dimensions, int[] blockSize, Compression compression, N5FSWriter n5FSWriter, String datasetName, int numChannels, int zSlices,

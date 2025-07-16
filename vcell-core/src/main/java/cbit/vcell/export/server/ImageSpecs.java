@@ -46,6 +46,7 @@ public ImageSpecs(DisplayPreferences[] displayPreferences, ExportFormat mediaTyp
 		ExportSpecss.CompressionFormats compression, ExportSpecss.MirroringMethod mirroringType,
 		double duration, int loopingMode, int volVarMembrOutlineThickness,
 		int imageScaling,int membraneScaling,int meshMode,float compressionQuality,boolean bOverlay,int particleMode) {
+	super("ImageSpecs");
 	this.displayPreferences = displayPreferences;
 	this.format = mediaType;
 	this.compression = compression;

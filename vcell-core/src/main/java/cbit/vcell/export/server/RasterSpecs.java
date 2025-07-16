@@ -26,6 +26,7 @@ public class RasterSpecs extends FormatSpecificSpecs implements Serializable {
  * @param separateHeader boolean
  */
 public RasterSpecs(ExportSpecss.RasterFormats format, boolean separateHeader) {
+	super("RasterSpecs");
 	this.format = format;
 	this.separateHeader = separateHeader;
 }
