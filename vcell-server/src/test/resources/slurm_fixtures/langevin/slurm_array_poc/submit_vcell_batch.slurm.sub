@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --job-name=VREL999999999
 #SBATCH --output=/home/FCAM/vasilescu/vcell-batch-job/logs/submit_vcell_batch.log
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
+#SBATCH --ntasks=4              # how many tasks to run in parallel
+#SBATCH --cpus-per-task=2
 #SBATCH --mem=8G
 #SBATCH --time=01:00:00
 #SBATCH --partition=vcell
@@ -34,7 +34,8 @@ singularity exec \
     $INPUT_DIR/SimID_999999999_0_.langevinInput \
     0 \
     --output-log=$OUTPUT_DIR/SimID_999999999_0__0.log \
-    --vc-print-status
+    --vc-print-status &
+pid0=$!
 
 singularity exec \
   --bind $INPUT_DIR:$INPUT_DIR \
@@ -43,18 +44,9 @@ singularity exec \
   langevin_x64 simulate \
     $INPUT_DIR/SimID_999999999_0_.langevinInput \
     1 \
-    --output-log=$OUTPUT_DIR/SimID_999999999_0__0.log \
-    --vc-print-status
-
-singularity exec \./..............
-  --bind $INPUT_DIR:$INPUT_DIR \
-  --bind $OUTPUT_DIR:$OUTPUT_DIR \
-  $CONTAINER_IMAGE \
-  langevin_x64 simulate \
-    $INPUT_DIR/SimID_999999999_0_.langevinInput \
-    2 \
-    --output-log=$OUTPUT_DIR/SimID_999999999_0__0.log \
-    --vc-print-status
+    --output-log=$OUTPUT_DIR/SimID_999999999_0__1.log \
+    --vc-print-status &
+pid1=$!
 
 singularity exec \
   --bind $INPUT_DIR:$INPUT_DIR \
@@ -62,9 +54,14 @@ singularity exec \
   $CONTAINER_IMAGE \
   langevin_x64 simulate \
     $INPUT_DIR/SimID_999999999_0_.langevinInput \
-    3 \
-    --output-log=$OUTPUT_DIR/SimID_999999999_0__0.log \
-    --vc-print-status
+    2 \
+    --output-log=$OUTPUT_DIR/SimID_999999999_0__2.log \
+    --vc-print-status &
+pid2=$!
+
+wait $pid0
+wait $pid1
+wait $pid2
 
 echo "[Postprocess] Running JavaPostprocessor64..."
 singularity exec \
