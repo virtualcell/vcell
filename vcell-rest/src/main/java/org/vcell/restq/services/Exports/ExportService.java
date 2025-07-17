@@ -30,6 +30,7 @@ import org.vcell.util.document.User;
 import javax.jms.JMSException;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
+import java.util.Set;
 
 @ApplicationScoped
 public class ExportService {
@@ -73,8 +74,8 @@ public class ExportService {
         return exportStatusCreator.getUsersExportStatus(user, jobID);
     }
 
-    public ExportEvent getMostRecentExportStatus(User user, long jobID) throws ObjectNotFoundException {
-        return exportStatusCreator.getMostRecentExportStatus(user, jobID);
+    public Set<ExportEvent> getMostRecentExportStatus(User user) throws ObjectNotFoundException {
+        return exportStatusCreator.getMostRecentExportStatus(user);
     }
 
     public ExportResource.ExportJob createExportJobFromRequest(User user, ExportResource.ExportRequest request) throws SQLException, DataAccessException {

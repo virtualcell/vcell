@@ -44,6 +44,7 @@ import javax.jms.JMSException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
 @Path("/api/v1/exports")
 public class ExportResource {
@@ -56,9 +57,6 @@ public class ExportResource {
     ExportService exportService;
     @Inject
     SimulationRestService simulationRestService;
-
-    @Context
-    HttpServerRequest request;
 
     @Path("/history")
     @GET
@@ -86,15 +84,15 @@ public class ExportResource {
         }
     }
 
-    @Path("/{exportJobID}/status")
+    @Path("/status")
     @GET
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "exportStatus")
-    public ExportEvent pollExportStatus(@PathParam("exportJobID") long exportJobID) throws DataAccessWebException, NotAuthenticatedWebException {
+    public Set<ExportEvent> pollExportStatus() throws DataAccessWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try{
-            return exportService.getMostRecentExportStatus(user, exportJobID);
+            return exportService.getMostRecentExportStatus(user);
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
         }
