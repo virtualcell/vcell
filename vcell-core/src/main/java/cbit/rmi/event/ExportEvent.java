@@ -17,6 +17,8 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
+import java.util.Objects;
+
 /**
  * This is the event class to support the cbit.vcell.desktop.controls.ExportListener interface.
  */
@@ -44,8 +46,8 @@ public class ExportEvent extends MessageEvent {
 			format,location,argProgress,timeSpecs,variableSpecs);
 	}
 	
-	public ExportEvent(Object source, long jobID, User user, 
-		String dataIdString, KeyValue dataKey, int argEventType, 
+	public ExportEvent(Object source, long jobID, User user,
+		String dataIdString, KeyValue dataKey, int argEventType,
 		String format, String location, Double argProgress,
 		TimeSpecs timeSpecs, VariableSpecs variableSpecs) {
 	super(source, new MessageSource(source, dataIdString), new MessageData(argProgress));
@@ -179,10 +181,19 @@ public String toString() {
 		+ dataIdString;
 }
 
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof ExportEvent ex){
+			return ex.getJobID() == getJobID() && ex.getUser().compareEqual(getUser());
+		}
+		return false;
+	}
 
+	public int hashCode(){
+		return Objects.hash(getJobID(), getUser().getName());
+	}
 
-
-public void setHumanReadableExportData(HumanReadableExportData humanReadableExportData){
+	public void setHumanReadableExportData(HumanReadableExportData humanReadableExportData){
 	this.humanReadableExportData = humanReadableExportData;
 }
 

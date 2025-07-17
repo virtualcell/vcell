@@ -8,7 +8,6 @@ import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.helpers.MultiEmitterProcessor;
 import jakarta.enterprise.context.ApplicationScoped;
 import org.vcell.util.ObjectNotFoundException;
@@ -17,14 +16,18 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
-import java.util.Hashtable;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @ApplicationScoped
 public class ExportStatusCreator implements ExportStatusEventCreator {
     private final ConcurrentHashMap<Long, User> jobRequestToUser = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, MultiEmitterProcessor<ExportEvent>> listeners = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<String, ExportEvent> mostRecentExportEvents = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<User, Set<ExportEvent>> mostRecentExportEvents = new ConcurrentHashMap<>(); // TODO: Clean out this set
+
 
     protected ExportSpecs exportExists(ExportSpecs exportSpecs) {
         // Call DB for export history and check if it exists. Store in cache if it exists for future requests.
@@ -35,9 +38,6 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
         User user = jobRequestToUser.get(jobID);
         String key = entryKey(user, jobID);
 
-        if (!listeners.containsKey(key)) {
-            throw new RuntimeException("Did not find entry for user " + user.getName() + " and job id " + jobID);
-        }
         TimeSpecs timeSpecs = (exportSpecs!=null)?exportSpecs.getTimeSpecs():(null);
         VariableSpecs varSpecs = (exportSpecs!=null)?exportSpecs.getVariableSpecs():(null);
         final KeyValue dataKey;
@@ -52,12 +52,20 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
                 this, jobID, user, vcdID.getID(), dataKey, ExportEvent.EXPORT_COMPLETE,
                 format, location, null, timeSpecs, varSpecs);
         event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
-
         event.setHumanReadableExportData(exportSpecs.getHumanReadableExportData());
-        listeners.get(key).onNext(event);
-        listeners.get(key).complete();
-        mostRecentExportEvents.put(key, event);
-        removeServerExportListener(user, jobID);
+
+
+        synchronized (this){
+            if (!listeners.containsKey(key)) {
+                throw new RuntimeException("Did not find entry for user " + user.getName() + " and job id " + jobID);
+            }
+            listeners.get(key).onNext(event);
+            listeners.get(key).complete();
+            replaceSetEntry(user, event);
+            removeServerExportListener(user, jobID);
+            jobRequestToUser.remove(jobID);
+        }
+
         return event;
     }
 
@@ -73,12 +81,11 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
         return listeners.get(key).toMulti();
     }
 
-    public synchronized ExportEvent getMostRecentExportStatus (User user, long exportJobID) throws ObjectNotFoundException {
-        String key = entryKey(user, exportJobID);
-        if (!mostRecentExportEvents.containsKey(key)) {
-            throw new ObjectNotFoundException("Did not find entry for user " + user.getName() + " and job id " + exportJobID);
+    public synchronized Set<ExportEvent> getMostRecentExportStatus (User user) throws ObjectNotFoundException {
+        if (!mostRecentExportEvents.containsKey(user)) {
+            throw new ObjectNotFoundException("Did not find entry for user " + user.getName());
         }
-        return mostRecentExportEvents.get(key);
+        return mostRecentExportEvents.get(user);
     }
 
     public synchronized void addServerExportListener(User user, long exportJobID){
@@ -89,7 +96,10 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
         ExportEvent event = new ExportEvent(
                 this, exportJobID, user, "", null, ExportEvent.EXPORT_ASSEMBLING,
                 "", "", 0.0, null, null);
-        mostRecentExportEvents.put(key, event);
+        if (!mostRecentExportEvents.containsKey(user)) {
+            mostRecentExportEvents.put(user, new HashSet<>());
+        }
+        mostRecentExportEvents.get(user).add(event);
     }
 
     public void fireExportAssembling(long jobID, VCDataIdentifier vcdID, String format) {
@@ -98,17 +108,17 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
         fireExportEvent(event);
     }
 
-    public void fireExportEvent(ExportEvent event) {
+    public synchronized void fireExportEvent(ExportEvent event) {
         String key = entryKey(event.getUser(), event.getJobID());
         if (!listeners.containsKey(key)){
             throw new RuntimeException("Did not find entry for user " + event.getUser().getName() + " and job id " + event.getJobID());
         }
         MultiEmitterProcessor<ExportEvent> listener = listeners.get(event.getUser().getName() + event.getJobID());
         listener.onNext(event);
-        mostRecentExportEvents.put(key, event);
+        replaceSetEntry(event.getUser(), event);
     }
 
-    public void fireExportFailed(long jobID, VCDataIdentifier vcdID, String format, String message) {
+    public synchronized void fireExportFailed(long jobID, VCDataIdentifier vcdID, String format, String message) {
         User user = jobRequestToUser.get(jobID);
         String key = entryKey(user, jobID);
         if (!listeners.containsKey(key)) {
@@ -117,8 +127,10 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
         ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_FAILURE, format, message, null, null, null);
         listeners.get(key).onNext(event);
         listeners.get(key).complete();
-        mostRecentExportEvents.put(key, event);
+
+        replaceSetEntry(user, event);
         removeServerExportListener(user, jobID);
+        jobRequestToUser.remove(jobID);
     }
 
     public void fireExportProgress(long jobID, VCDataIdentifier vcdID, String format, double progress) {
@@ -135,11 +147,16 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
         fireExportEvent(event);
     }
 
-    public synchronized void removeServerExportListener(User user, long exportJobID){
+    public void removeServerExportListener(User user, long exportJobID){
         listeners.remove(user.getName() + exportJobID);
     }
 
     private String entryKey(User user, long jobID){
         return user.getName() + jobID;
+    }
+
+    private void replaceSetEntry(User user, ExportEvent newEvent){
+        mostRecentExportEvents.get(user).remove(newEvent);
+        mostRecentExportEvents.get(user).add(newEvent);
     }
 }
