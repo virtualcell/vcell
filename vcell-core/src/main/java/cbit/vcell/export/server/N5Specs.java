@@ -32,7 +32,7 @@ import java.util.HashMap;
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-@Schema(allOf = FormatSpecificSpecs.class, requiredProperties = {"format"})
+@Schema(allOf = FormatSpecificSpecs.class, requiredProperties = {"specClass"})
 public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	private final ExportFormat formatType;
 	private final ExportSpecss.ExportableDataType dataType;

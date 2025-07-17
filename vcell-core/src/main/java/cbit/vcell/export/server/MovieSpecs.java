@@ -13,10 +13,13 @@ package cbit.vcell.export.server;
 import java.io.Serializable;
 
 import cbit.image.DisplayPreferences;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 /**
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
+@Schema(allOf = FormatSpecificSpecs.class, requiredProperties = {"specClass"})
 public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
 	private double duration;
 	private boolean overlayMode;

@@ -69,7 +69,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.export.server.SimNameSimDataID;
 import cbit.vcell.solver.*;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.*;
@@ -118,7 +118,6 @@ import cbit.vcell.export.gloworm.quicktime.MediaTrack;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaChunk;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
 import cbit.vcell.export.gui.ExportMonitorPanel;
-import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.FileDataContainerManager;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.geometry.Curve;
@@ -440,7 +439,7 @@ public class PDEDataViewer extends DataViewer implements DataJobListenerHolder {
 					getPDEDataContextPanel1().setPdeDataContext(getPdeDataContext());
 					getPDEExportPanel1().setSimulation(getSimulation());
 					getPDEExportPanel1().setPdeDataContext(getPdeDataContext(),
-							(getSimulation()==null?null:new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), null)));
+							(getSimulation()==null?null:new SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), null)));
 					CartesianMesh cartesianMesh = (getPdeDataContext() != null?getPdeDataContext().getCartesianMesh():null);
 					if (cartesianMesh != null && cartesianMesh.getGeometryDimension() == 3
 							&& cartesianMesh.getNumMembraneElements() > 0){
@@ -2261,7 +2260,7 @@ public static boolean isParameterScan(PDEDataContext oldValue,PDEDataContext new
 	return(oldSimKey != null && newSimKey != null && oldSimKey.equals(newSimKey));
 }
 
-public void setSimNameSimDataID(ExportSpecs.SimNameSimDataID simNameSimDataID){
+public void setSimNameSimDataID(SimNameSimDataID simNameSimDataID){
 	getPDEExportPanel1().setPdeDataContext(getPdeDataContext(),simNameSimDataID);
 }
 /**

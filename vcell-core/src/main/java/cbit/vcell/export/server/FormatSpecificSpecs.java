@@ -58,7 +58,7 @@ import org.vcell.util.document.GroupAccessSome;
 	)
 @JsonTypeInfo(
 		use = JsonTypeInfo.Id.NAME,
-		property = "format",  // Discriminator field
+		property = "specClass",  // Discriminator field
 		visible = true
 )
 @JsonSubTypes({@JsonSubTypes.Type(value = N5Specs.class, name = "N5"), @JsonSubTypes.Type(value = ASCIISpecs.class, name = "ASCIISpecs"),
@@ -73,10 +73,10 @@ public abstract class FormatSpecificSpecs implements Serializable {
 	
 	public final static int CODEC_NONE = 0;
 	public final static int CODEC_JPEG = 1;
-	public String format;
+	public String specClass;
 
-	public FormatSpecificSpecs(String format) {
-		this.format = format;
+	public FormatSpecificSpecs(String specClass) {
+		this.specClass = specClass;
 	}
 
 	@JsonIgnore

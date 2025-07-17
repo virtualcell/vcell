@@ -1,9 +1,11 @@
 package cbit.vcell.export.server;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.vcell.util.Compare;
 
 import cbit.image.DisplayPreferences;
 
+@Schema(allOf = FormatSpecificSpecs.class, requiredProperties = {"specClass"})
 public class PLYSpecs extends FormatSpecificSpecs {
 	private boolean bIncludeTextures = false;
 	private DisplayPreferences[] displayPreferences;

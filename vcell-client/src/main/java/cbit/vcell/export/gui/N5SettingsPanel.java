@@ -260,7 +260,7 @@ public class N5SettingsPanel extends javax.swing.JPanel implements java.awt.even
     }
 
     public N5Specs getN5Specs(){
-        ExportSpecs.SimNameSimDataID[] simDataID = simulationSelector == null ? null : simulationSelector.getSelectedSimDataInfo();
+        SimNameSimDataID[] simDataID = simulationSelector == null ? null : simulationSelector.getSelectedSimDataInfo();
         int[] paramScanIndexes = simulationSelector == null ? null : simulationSelector.getselectedParamScanIndexes();
         String dataSetName = getJTextFieldDataSetName().getText();
 
