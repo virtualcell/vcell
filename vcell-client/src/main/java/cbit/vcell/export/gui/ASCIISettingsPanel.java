@@ -240,7 +240,7 @@ protected void fireJButtonOKAction_actionPerformed(java.util.EventObject newEven
  * @return The asciiSpecs property value.
  */
 public ASCIISpecs getAsciiSpecs() {
-	ExportSpecs.SimNameSimDataID[] simDataID = simulationSelector == null ? null : simulationSelector.getSelectedSimDataInfo();
+	SimNameSimDataID[] simDataID = simulationSelector == null ? null : simulationSelector.getSelectedSimDataInfo();
 	int[] paramScanIndexes = simulationSelector == null ? null : simulationSelector.getselectedParamScanIndexes();
 	ASCIISpecs.CsvRoiLayout roiLayout = isCSVExport && getTimeSimVarChkBox().isSelected() ?
 			ASCIISpecs.CsvRoiLayout.time_sim_var: ASCIISpecs.CsvRoiLayout.var_time_val;

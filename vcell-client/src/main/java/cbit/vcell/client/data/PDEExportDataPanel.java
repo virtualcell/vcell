@@ -21,8 +21,7 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.*;
-import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
-import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.export.server.SimNameSimDataID;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
@@ -704,7 +703,7 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 	
 	ExportSpecs.SimulationSelector simulationSelector =
 		new ExportSpecs.SimulationSelector(){
-			private ExportSpecs.SimNameSimDataID[] multiSimNameSimDataIDs;
+			private SimNameSimDataID[] multiSimNameSimDataIDs;
 //			private ExportSpecs.ExportParamScanInfo exportParamScanInfo;
 			private int[] selectedParamScanIndexes;
 			private Simulation[] simulations;
@@ -725,7 +724,7 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 //					}
 //				}
 				if(multiSimNameSimDataIDs == null){
-					return new ExportSpecs.SimNameSimDataID[] {currentSimNameSimDataID};
+					return new SimNameSimDataID[] {currentSimNameSimDataID};
 				}
 				return multiSimNameSimDataIDs;
 			}
@@ -746,13 +745,13 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 							new String[] {"Simulation","Mesh x,y,z","NumTimePoints","EndTime","Output Descr."},
 							rowData, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 					if (choices != null) {
-						multiSimNameSimDataIDs = new ExportSpecs.SimNameSimDataID[choices.length];
+						multiSimNameSimDataIDs = new SimNameSimDataID[choices.length];
 						for (int i = 0; i < choices.length; i++) {
 							multiSimNameSimDataIDs[i] =
-								new ExportSpecs.SimNameSimDataID(
+								new SimNameSimDataID(
 									simulations[choices[i]].getName(),
 									simulations[choices[i]].getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),
-									ExportSpecs.getParamScanInfo(simulations[choices[i]], (currentSimNameSimDataID==null?0:currentSimNameSimDataID.getDefaultJobIndex()))
+									ExportParamScanInfo.getParamScanInfo(simulations[choices[i]], (currentSimNameSimDataID==null?0:currentSimNameSimDataID.getDefaultJobIndex()))
 								);
 						}
 					}
@@ -1888,8 +1887,8 @@ public void setNormalAxis(int normalAxis) {
  * @param pdeDataContext The new value for the property.
  * @see #getPdeDataContext
  */
-private ExportSpecs.SimNameSimDataID currentSimNameSimDataID;
-public void setPdeDataContext(PDEDataContext pdeDataContext,ExportSpecs.SimNameSimDataID currentSimNameSimDataID) {
+private SimNameSimDataID currentSimNameSimDataID;
+public void setPdeDataContext(PDEDataContext pdeDataContext, SimNameSimDataID currentSimNameSimDataID) {
 	//currentSimNameSimDataID 2 states
 	//1.  with ExportSpecs.ExportParamScanInfo
 	//2.  without ExportSpecs.ExportParamScanInfo

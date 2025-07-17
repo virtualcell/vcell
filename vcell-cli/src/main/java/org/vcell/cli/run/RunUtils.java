@@ -447,9 +447,9 @@ public class RunUtils {
         GeometrySpecs geometrySpecs = new GeometrySpecs(null, 2, 0, ExportSpecss.GeometryMode.GEOMETRY_FULL);
 
         // String simulationName,VCSimulationIdentifier vcSimulationIdentifier,ExportParamScanInfo exportParamScanInfo
-        ExportSpecs.ExportParamScanInfo exportParamScanInfo = ExportSpecs.getParamScanInfo(vcellSim,jobIndex);
-        ExportSpecs.SimNameSimDataID snsdi= new ExportSpecs.SimNameSimDataID(vcellSim.getName(), vcSimID, exportParamScanInfo);
-        ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = { snsdi };
+        ExportParamScanInfo exportParamScanInfo = ExportParamScanInfo.getParamScanInfo(vcellSim,jobIndex);
+        SimNameSimDataID snsdi= new SimNameSimDataID(vcellSim.getName(), vcSimID, exportParamScanInfo);
+        SimNameSimDataID[] simNameSimDataIDs = { snsdi };
 
         FormatSpecificSpecs formatSpecificSpecs = new ASCIISpecs(simNameSimDataIDs, ExportSpecss.ExportableDataType.PDE_VARIABLE_DATA,
                 ExportFormat.CSV, ASCIISpecs.CsvRoiLayout.var_time_val, true, false);

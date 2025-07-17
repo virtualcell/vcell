@@ -11,10 +11,13 @@
 package cbit.vcell.export.server;
 
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import java.io.Serializable;
 /**
  * This type was created in VisualAge.
  */
+@Schema(allOf = FormatSpecificSpecs.class, requiredProperties = {"specClass"})
 public class RasterSpecs extends FormatSpecificSpecs implements Serializable {
 	private ExportSpecss.RasterFormats format;
 	private boolean separateHeader;

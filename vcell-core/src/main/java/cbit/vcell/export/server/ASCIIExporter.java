@@ -424,7 +424,7 @@ public class ASCIIExporter {
     private ExportOutput sofyaFormat(OutputContext outputContext, long jobID, User user, DataServerImpl dataServerImpl,
                                      final VCDataIdentifier orig_vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs,
                                      GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs, String contextName, FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException{
-        ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
+        SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
         CartesianMesh mesh = dataServerImpl.getMesh(user, orig_vcdID);//use mesh to calulate indexes
         final int SIM_COUNT = simNameSimDataIDs.length;
         final int PARAMSCAN_COUNT = (asciiSpecs.getExportMultipleParamScans() != null ? asciiSpecs.getExportMultipleParamScans().length : 1);
@@ -556,7 +556,7 @@ public class ASCIIExporter {
         if (!MacosArm64) {
             NativeLib.HDF5.load();
         }
-        ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
+        SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
         Vector<ExportOutput[]> exportOutputV = new Vector<ExportOutput[]>();
         double progressCounter = 0;
         final int SIM_COUNT = simNameSimDataIDs.length;
