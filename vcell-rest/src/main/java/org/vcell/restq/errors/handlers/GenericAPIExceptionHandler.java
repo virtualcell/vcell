@@ -1,5 +1,6 @@
 package org.vcell.restq.errors.handlers;
 
+import cbit.vcell.clientdb.ServerRejectedSaveException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.ws.rs.Produces;
@@ -45,7 +46,17 @@ public abstract class GenericAPIExceptionHandler {
             if (e.getCause() != null){
                 errorType = e.getCause().getClass().getSimpleName();
             }
-            return new VCellHTTPError(errorType, e.getMessage());
+            Throwable currentCause = e;
+            String message = e.getMessage();
+            while (currentCause != null){
+                if (currentCause.getClass().equals(ServerRejectedSaveException.class)){
+                    errorType = ServerRejectedSaveException.class.getSimpleName();
+                    message = currentCause.getMessage();
+                    break;
+                }
+                currentCause = currentCause.getCause();
+            }
+            return new VCellHTTPError(errorType, message);
         }
     }
 }
