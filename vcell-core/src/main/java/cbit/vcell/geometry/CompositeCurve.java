@@ -10,18 +10,20 @@
 
 package cbit.vcell.geometry;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.vcell.util.Coordinate;
 
 /**
  * This type was created in VisualAge.
  */
+@Schema(allOf = {Curve.class}, requiredProperties = {"type"})
 public class CompositeCurve extends Curve {
 	java.util.Vector fieldCurves = new java.util.Vector ();
 /**
  * CompositeCurve constructor comment.
  */
 public CompositeCurve() {
-	super();
+	super("CompositeCurve");
 }
 /**
  * This method was created in VisualAge.

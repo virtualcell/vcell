@@ -11,11 +11,14 @@
 package cbit.vcell.simdata;
 
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/18/2001 2:39:54 PM)
  * @author: Frank Morgan
  */
+@Schema(allOf = {SpatialSelection.class})
 public class SpatialSelectionContour extends SpatialSelection {
 	private int[] fieldSampledDataIndexes = null;
 /**
@@ -27,7 +30,7 @@ public class SpatialSelectionContour extends SpatialSelection {
  * @param selectionKind int
  */
 public SpatialSelectionContour(cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo, cbit.vcell.math.VariableType argVarType, cbit.vcell.solvers.CartesianMesh argMesh, int[] sampledDataIndexes) {
-	super(argCurveSelectionInfo, argVarType, argMesh);
+	super(argCurveSelectionInfo, argVarType, argMesh, "Contour");
 	if (argVarType.equals(cbit.vcell.math.VariableType.CONTOUR)){
 		fieldSampledDataIndexes = sampledDataIndexes;
 	}else if (argVarType.equals(cbit.vcell.math.VariableType.CONTOUR_REGION)){
