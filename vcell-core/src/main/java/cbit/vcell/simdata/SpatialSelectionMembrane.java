@@ -10,12 +10,18 @@
 
 package cbit.vcell.simdata;
 
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.vcell.util.Coordinate;
+import org.vcell.util.document.GroupAccess;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/18/2001 2:39:54 PM)
  * @author: Frank Morgan
  */
+@Schema(allOf = {SpatialSelection.class})
 public class SpatialSelectionMembrane extends SpatialSelection {
 	private int[] fieldSampledDataIndexes = null;
 	private cbit.vcell.geometry.SampledCurve selectionSource = null;
@@ -33,7 +39,7 @@ public SpatialSelectionMembrane(
     cbit.vcell.solvers.CartesianMesh argMesh,
     int[] sampledDataIndexes,
     cbit.vcell.geometry.SampledCurve argSelectionSource) {
-    super(argCurveSelectionInfo, argVarType, argMesh);
+    super(argCurveSelectionInfo, argVarType, argMesh, "Membrane");
 
     selectionSource = argSelectionSource;
     if (argVarType.equals(cbit.vcell.math.VariableType.MEMBRANE)) {

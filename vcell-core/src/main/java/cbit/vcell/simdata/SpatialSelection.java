@@ -9,6 +9,9 @@
  */
 
 package cbit.vcell.simdata;
+import cbit.vcell.export.server.*;
+import org.eclipse.microprofile.openapi.annotations.media.DiscriminatorMapping;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.vcell.util.Coordinate;
 
 import cbit.vcell.geometry.CurveSelectionInfo;
@@ -19,14 +22,24 @@ import cbit.vcell.solvers.CartesianMesh;
  * Creation date: (2/26/2001 3:48:34 PM)
  * @author: Jim Schaff
  */
+@Schema(
+		discriminatorMapping = {
+				@DiscriminatorMapping(value = "Membrane", schema = SpatialSelectionMembrane.class),
+				@DiscriminatorMapping(value = "Contour", schema = SpatialSelectionContour.class),
+				@DiscriminatorMapping(value = "Volume", schema = SpatialSelectionVolume.class)
+		},
+		discriminatorProperty = "type",
+		requiredProperties = {"type"}
+)
 public abstract class SpatialSelection implements java.io.Serializable, org.vcell.util.Matchable {
 	
 	private CurveSelectionInfo curveSelectionInfo = null;
 	transient private CartesianMesh mesh = null;
 	private VariableType varType = null;
+	public final String type;
 
 	//
-	public class SSHelper {
+	public static class SSHelper {
 
 		VariableType varType;
 		Coordinate[]	meshCoords;
@@ -116,7 +129,7 @@ public abstract class SpatialSelection implements java.io.Serializable, org.vcel
 /**
  * SpatialSelection constructor comment.
  */
-protected SpatialSelection(CurveSelectionInfo argCurveSelectionInfo, VariableType argVarType, CartesianMesh argMesh){
+protected SpatialSelection(CurveSelectionInfo argCurveSelectionInfo, VariableType argVarType, CartesianMesh argMesh, String type){
 	if (argCurveSelectionInfo==null || argMesh==null || argVarType==null){
 		throw new IllegalArgumentException("null argument");
 	}
@@ -127,6 +140,7 @@ protected SpatialSelection(CurveSelectionInfo argCurveSelectionInfo, VariableTyp
 	this.curveSelectionInfo = argCurveSelectionInfo;
 	this.mesh = argMesh;
 	this.varType = argVarType;
+	this.type = type;
 }
 
 

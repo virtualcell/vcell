@@ -13,6 +13,7 @@ package cbit.vcell.simdata;
 import java.util.Arrays;
 import java.util.Vector;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 
@@ -25,10 +26,11 @@ import cbit.vcell.math.VariableType;
  * Creation date: (7/18/2001 2:39:21 PM)
  * @author: Frank Morgan
  */
+@Schema(allOf = {SpatialSelection.class})
 public class SpatialSelectionVolume extends SpatialSelection {
 
 public SpatialSelectionVolume(cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo, cbit.vcell.math.VariableType argVarType, cbit.vcell.solvers.CartesianMesh argMesh) {
-	super(argCurveSelectionInfo, argVarType, argMesh);
+	super(argCurveSelectionInfo, argVarType, argMesh, "Volume");
 }
 
 private boolean areTouching(org.vcell.util.CoordinateIndex ci1, org.vcell.util.CoordinateIndex ci2) {

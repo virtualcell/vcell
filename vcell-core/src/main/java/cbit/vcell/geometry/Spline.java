@@ -10,22 +10,24 @@
 
 package cbit.vcell.geometry;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.vcell.util.Coordinate;
 
 /**
  * This type was created in VisualAge.
  */
+@Schema(allOf = {ControlPointCurve.class}, requiredProperties = {"type"})
 public class Spline extends ControlPointCurve {
 /**
  * Insert the method's description here.
  * Creation date: (7/19/00 12:55:31 PM)
  */
-public Spline() {}
+public Spline() {super("Spline");}
 /**
  * Spline constructor comment.
  */
 public Spline(Coordinate[] argControlPoints) {
-	super(argControlPoints);
+	super(argControlPoints, "Spline");
 }
 /**
  * Insert the method's description here.
