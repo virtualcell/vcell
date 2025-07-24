@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Tag("Fast")
 public class LangevinPostProcessorTest {
 
-    // the .IDA files are in vcell-core/src/test/java  /cbit/vcell/simdata
+    // the .IDA files are in vcell-core/src/test/resources  /cbit/vcell/simdata
     static File ida_0_File;
     static File ida_1_File;
     static File ida_2_File;
