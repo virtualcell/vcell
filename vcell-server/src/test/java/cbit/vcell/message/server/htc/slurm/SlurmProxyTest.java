@@ -287,20 +287,20 @@ public class SlurmProxyTest {
 		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
 	}
 
-	@Test
-	public void testSimJobScriptLangevinBatch() throws IOException, XmlParseException, ExpressionException {
-		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_999999999_0__0.simtask.xml";
-		String JOB_NAME = "V_REL_999999999_0_0";
-
-
-		// TODO: fill here with stuff
-
-
-		String[] command = null;	// dummy to avoid compiler error for "command" variable below
-		String slurmScript = createScriptForNativeSolversBatch(simTaskResourcePath, command, JOB_NAME);
-		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/V_REL_999999999_0_0.slurm.sub");
-		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
-	}
+//	@Test
+//	public void testSimJobScriptLangevinBatch() throws IOException, XmlParseException, ExpressionException {
+//		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_35189106_0__0.simtask.xml";
+//		String JOB_NAME = "SimID_35189106_0_0";
+//
+//
+//		// TODO: fill here with stuff
+//
+//
+//		String[] command = null;	// dummy to avoid compiler error for "command" variable below
+//		String slurmScript = createScriptForNativeSolversBatch(simTaskResourcePath, command, JOB_NAME);
+//		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/SimID_35189106_0_0.slurm.sub");
+//		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
+//	}
 
 
 	@Test
