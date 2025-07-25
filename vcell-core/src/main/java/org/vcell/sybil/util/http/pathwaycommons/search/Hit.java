@@ -20,6 +20,7 @@ import java.util.Vector;
 import org.sbpax.util.StringUtil;
 import org.vcell.sybil.util.xml.DOMUtil;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 public class Hit {
 	
@@ -31,6 +32,21 @@ public class Hit {
 	protected List<Pathway> pathways;
 	
 	public Hit(Element element) {
+
+		String uri = getText(element, "uri");
+		String name = getText(element, "name");
+		String source = getText(element, "dataSource");
+		String organismId = getText(element, "organism");
+		String participants = getText(element, "numParticipants");
+		String processes = getText(element, "numProcesses");
+
+		System.out.println("Pathway: " + name);
+		System.out.println("    URI: " + uri);
+		System.out.println("    Source: " + source);
+		System.out.println("    Organism: " + (organismId != null ? organismId : "[unspecified]"));
+		System.out.println("    Participants: " + participants + " | Processes: " + processes);
+		System.out.println();
+
 		primaryID = element.getAttribute("primary_id");
 		names = DOMUtil.childContents(element, "name");
 		descriptions = DOMUtil.childContents(element, "description");
@@ -44,13 +60,24 @@ public class Hit {
 		excerpts = DOMUtil.childContents(element, "excerpt");
 		excerpts = cleanUp(excerpts); // wei's code: Clean up the <B> and <b> letters in the text of the response tree
 		Element organismElement = DOMUtil.firstChildElement(element, "organism");
-		if(organismElement != null) { organism = new Organism(organismElement); }
-		Element pathwayListElement = DOMUtil.firstChildElement(element, "pathway_list");
-		pathways = new Vector<Pathway>();
-		if(pathwayListElement != null) {
-			List<Element> pathwayElements = DOMUtil.childElements(pathwayListElement, "pathway");
-			for(Element pathwayElement : pathwayElements) { pathways.add(new Pathway(pathwayElement)); }
+//		if(organismElement != null) { organism = new Organism(organismElement); }
+
+		NodeList responses = element.getElementsByTagName("pathway");
+		if (responses.getLength() == 0) {
+			throw new IllegalStateException("No <pathway> element found in <searchHit>.");
 		}
+		pathways = new Vector<Pathway>();
+		for (int i = 0; i < responses.getLength(); i++) {
+			Element hit = (Element) responses.item(i);
+			String orgName = "unknown";
+			if(organismId.equals("http://bioregistry.io/ncbitaxon:9606")) {
+				orgName = "Homo Sapiens";
+			}
+			organism = new Organism(organismId, orgName, orgName);
+			DataSource ds = new DataSource(source, source);
+			pathways.add(new Pathway(uri, name, organism, ds));
+		}
+
 	}
 	
 	public String primaryID() { return primaryID; }
@@ -63,7 +90,12 @@ public class Hit {
 	public List<String> excerpts() { return excerpts; }
 	public Organism organism() { return organism; }
 	public List<Pathway> pathways() { return pathways; }
-	
+
+	public static String getText(Element parent, String tagName) {
+		NodeList list = parent.getElementsByTagName(tagName);
+		return (list.getLength() > 0) ? list.item(0).getTextContent() : null;
+	}
+
 	@Override
 	public String toString() {
 		return "[Hit: \n" + 

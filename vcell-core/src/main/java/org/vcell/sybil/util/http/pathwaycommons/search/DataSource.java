@@ -25,6 +25,10 @@ public class DataSource {
 		primaryId = element.getAttribute("primary_id");
 		name = DOMUtil.firstChildContent(element, "name");
 	}
+	public DataSource(String primaryId, String name) {
+		this.primaryId = primaryId;
+		this.name = name;
+	}
 
 	public String primaryId() { return primaryId; }
 	public String name() { return name; }

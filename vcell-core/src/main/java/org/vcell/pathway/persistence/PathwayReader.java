@@ -326,6 +326,9 @@ public class PathwayReader {
 		}
 		if (childElement.getName().equals("DATA-SOURCE")){
 			Element dataSourceElement = childElement.getChild("dataSource",bp);
+			if(dataSourceElement == null) {
+				return false;
+			}
 			entity.getDataSource().add(addObjectProvenance(dataSourceElement));
 			return true;
 		}else if (childElement.getName().equals("SHORT-NAME")){
@@ -337,7 +340,7 @@ public class PathwayReader {
 		}else if (childElement.getName().equals("XREF")){
 			entity.getxRef().add(addObjectXref(childElement));
 			return true;
-		}else if (childElement.getName().equals("EVIDENCE")){
+		}else if (childElement.getName().equals("EVIDENCE")) {
 			entity.getEvidence().add(addObjectEvidence(childElement));
 			return true;
 		}else{
@@ -2287,6 +2290,7 @@ public class PathwayReader {
 		for (Object child : element.getChildren()){
 			if (child instanceof Element){
 				Element childElement = (Element)child;
+				System.out.println(childElement.getName());
 				if (!addContentPathway(pathway, element, childElement)){
 					showUnexpected(childElement, pathway);
 				}
