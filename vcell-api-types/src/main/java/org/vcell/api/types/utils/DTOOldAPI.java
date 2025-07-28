@@ -69,7 +69,7 @@ public class DTOOldAPI {
         }
         ExportEvent event = new ExportEvent(
                 eventSource, rep.jobid, user,
-                rep.dataIdString, new KeyValue(rep.dataKey), rep.eventType,
+                rep.dataIdString, new KeyValue(rep.dataKey), ExportSpecss.ExportProgressType.getExportProgressType(rep.eventType),
                 rep.format, rep.location, rep.progress,
                 timeSpecs, variableSpecs);
         event.setHumanReadableExportData(humanReadableExportData1);

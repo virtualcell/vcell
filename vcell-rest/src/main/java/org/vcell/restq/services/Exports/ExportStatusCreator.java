@@ -4,6 +4,7 @@ import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
 import cbit.rmi.event.ExportStatusEventCreator;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.ExportSpecss;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -49,7 +50,7 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
             throw new RuntimeException("unexpected VCDataIdentifier");
         }
         ExportEvent event = new ExportEvent(
-                this, jobID, user, vcdID.getID(), dataKey, ExportEvent.EXPORT_COMPLETE,
+                this, jobID, user, vcdID.getID(), dataKey, ExportSpecss.ExportProgressType.EXPORT_COMPLETE,
                 format, location, null, timeSpecs, varSpecs);
         event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
         event.setHumanReadableExportData(exportSpecs.getHumanReadableExportData());
@@ -94,7 +95,7 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
         listeners.put(key, emitter);
         jobRequestToUser.put(exportJobID, user);
         ExportEvent event = new ExportEvent(
-                this, exportJobID, user, "", null, ExportEvent.EXPORT_ASSEMBLING,
+                this, exportJobID, user, "", null, ExportSpecss.ExportProgressType.EXPORT_ASSEMBLING,
                 "", "", 0.0, null, null);
         if (!mostRecentExportEvents.containsKey(user)) {
             mostRecentExportEvents.put(user, new HashSet<>());
@@ -104,7 +105,7 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
 
     public void fireExportAssembling(long jobID, VCDataIdentifier vcdID, String format) {
         User user = jobRequestToUser.get(jobID);
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_ASSEMBLING, format, null, null, null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportSpecss.ExportProgressType.EXPORT_ASSEMBLING, format, null, null, null, null);
         fireExportEvent(event);
     }
 
@@ -124,7 +125,7 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
         if (!listeners.containsKey(key)) {
             throw new RuntimeException("Did not find entry for user " + user.getName() + " and job id " + jobID);
         }
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_FAILURE, format, message, null, null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportSpecss.ExportProgressType.EXPORT_FAILURE, format, message, null, null, null);
         listeners.get(key).onNext(event);
         listeners.get(key).complete();
 
@@ -136,14 +137,14 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
     public void fireExportProgress(long jobID, VCDataIdentifier vcdID, String format, double progress) {
         User user = jobRequestToUser.get(jobID);
 
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_PROGRESS, format, null, progress, null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportSpecss.ExportProgressType.EXPORT_PROGRESS, format, null, progress, null, null);
         fireExportEvent(event);
     }
 
     public void fireExportStarted(long jobID, VCDataIdentifier vcdID, String format) {
         User user = jobRequestToUser.get(jobID);
 
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_START, format, null, null, null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportSpecss.ExportProgressType.EXPORT_START, format, null, null, null, null);
         fireExportEvent(event);
     }
 

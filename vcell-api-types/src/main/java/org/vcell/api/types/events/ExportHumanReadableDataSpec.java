@@ -2,6 +2,7 @@ package org.vcell.api.types.events;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class ExportHumanReadableDataSpec {
     public final String bioModelName;
@@ -11,14 +12,14 @@ public class ExportHumanReadableDataSpec {
     public String serverSavedFileName;
     public String applicationType;
     public boolean nonSpatial;
-    public HashMap<Integer, String> subVolume;
+    public Map<Integer, String> subVolume;
     public int zSlices;
     public int tSlices;
     public int numChannels;
 
     public ExportHumanReadableDataSpec(String bioModelName, String applicationName, String simulationName,
                                        ArrayList<String> differentParameterValues,
-                                       String serverSavedFileName, String applicationType, boolean nonSpatial, HashMap<Integer, String> subVolume,
+                                       String serverSavedFileName, String applicationType, boolean nonSpatial, Map<Integer, String> subVolume,
                                        int zSlices, int tSlices, int numChannels){
         this.bioModelName = bioModelName;
         this.applicationName = applicationName;

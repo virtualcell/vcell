@@ -665,13 +665,19 @@ private ExportSpecs getExportSpecs() {
         }
 	}
 
-	String serverSavedFileName = getExportSettings1().getFormatSpecificSpecs() instanceof N5Specs ? ((N5Specs) getExportSettings1().getFormatSpecificSpecs()).dataSetName : "";
 
 	boolean nonSpatial = sc.getGeometry().getDimension() == 0;
 	HashMap<Integer, String> subVolumes = new HashMap<>();
 	for(SubVolume subVolume: sc.getGeometry().getGeometrySpec().getSubVolumes()){
 		subVolumes.put(subVolume.getHandle(), subVolume.getName());
 	}
+
+	String serverSavedFileName = "";
+	if (getExportSettings1().getFormatSpecificSpecs() instanceof N5Specs n5Specs){
+		serverSavedFileName = n5Specs.dataSetName;
+		n5Specs.subVolumeMapping = subVolumes;
+	}
+
 	HumanReadableExportData humanReadableExportData = new HumanReadableExportData(getSimulation().getName(), sc.getName(), sc.getBioModel().getName(),
 			differentParameterValues, serverSavedFileName, sc.getApplicationType().name(), nonSpatial, subVolumes);
 	GeometrySpecs geometrySpecs = new GeometrySpecs(selections, getNormalAxis(), getSlice(), geoMode);

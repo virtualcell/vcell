@@ -113,6 +113,30 @@ public abstract class ExportSpecss {
         }
     }
 
+    public enum ExportProgressType {
+        EXPORT_START(1008),
+        EXPORT_COMPLETE(1007),
+        EXPORT_FAILURE(1006),
+        EXPORT_ASSEMBLING(1005),
+        EXPORT_PROGRESS(1004);
+
+        public static ExportProgressType getExportProgressType(int i) {
+            switch (i) {
+                case 1008: return EXPORT_START;
+                case 1007: return EXPORT_COMPLETE;
+                case 1006: return EXPORT_FAILURE;
+                case 1005: return EXPORT_ASSEMBLING;
+                case 1004: return EXPORT_PROGRESS;
+            }
+            throw new IllegalArgumentException("Unknown ExportProgressType int value: " + i);
+        }
+
+        public final int intValue;
+        ExportProgressType(int i){
+            intValue = i;
+        }
+    }
+
     public enum MirroringMethod {
         NO_MIRRORING(0),
         MIRROR_LEFT(1),

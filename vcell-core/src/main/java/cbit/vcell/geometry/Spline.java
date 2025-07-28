@@ -10,13 +10,15 @@
 
 package cbit.vcell.geometry;
 
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.vcell.util.Coordinate;
 
 /**
  * This type was created in VisualAge.
  */
-@Schema(allOf = {ControlPointCurve.class}, requiredProperties = {"type"})
+@Schema(allOf = {ControlPointCurve.class}, requiredProperties = {"type"}, properties = {@SchemaProperty(name = "type", type = SchemaType.STRING, defaultValue = "Spline")})
 public class Spline extends ControlPointCurve {
 /**
  * Insert the method's description here.

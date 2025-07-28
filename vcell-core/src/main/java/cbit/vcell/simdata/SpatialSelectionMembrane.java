@@ -10,6 +10,8 @@
 
 package cbit.vcell.simdata;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
@@ -21,9 +23,10 @@ import org.vcell.util.document.GroupAccess;
  * Creation date: (7/18/2001 2:39:54 PM)
  * @author: Frank Morgan
  */
-@Schema(allOf = {SpatialSelection.class})
+@Schema(allOf = {SpatialSelection.class}, requiredProperties = "type", properties = {@SchemaProperty(name = "type", defaultValue = "Membrane", type = SchemaType.STRING)})
 public class SpatialSelectionMembrane extends SpatialSelection {
 	private int[] fieldSampledDataIndexes = null;
+	@JsonProperty(value = "selectionSource")
 	private cbit.vcell.geometry.SampledCurve selectionSource = null;
 /**
  * SpatialSelectionGeometry constructor comment.
@@ -62,6 +65,7 @@ public SpatialSelectionMembrane(
  * @return int
  * @param u double
  */
+@JsonIgnore
 public int getIndex(double selectionU) {
 	int index = -1;
 
@@ -78,6 +82,7 @@ public int getIndex(double selectionU) {
  * Creation date: (7/18/01 5:59:31 PM)
  * @return int[]
  */
+@JsonIgnore
 public SSHelper getIndexSamples() {
 
 	int[] membraneSegmentSelectionIndexes = getCurveSelectionInfo().getSegmentsInSelectionOrder();
@@ -160,6 +165,7 @@ public SSHelper getIndexSamples() {
  * Creation date: (7/18/2001 3:29:48 PM)
  * @return double
  */
+@JsonIgnore
 public double getLengthInMicrons() {
 	double[] segmentLengths = getSegmentLengths();
 	double length = 0.0;
@@ -173,6 +179,7 @@ public double getLengthInMicrons() {
  * Creation date: (7/14/2004 2:54:03 PM)
  * @return double[]
  */
+@JsonIgnore
 public double[] getSegmentLengths() {
 	int[] membraneSegmentSelectionIndexes = getCurveSelectionInfo().getSegmentsInSelectionOrder();
 	double[] segmentLengths = new double[membraneSegmentSelectionIndexes.length];
@@ -181,7 +188,12 @@ public double[] getSegmentLengths() {
 	}
 	return segmentLengths;
 }
-/**
+
+	public int[] getFieldSampledDataIndexes() {
+		return fieldSampledDataIndexes;
+	}
+
+	/**
  * Insert the method's description here.
  * Creation date: (10/23/2004 12:11:37 PM)
  * @return cbit.vcell.geometry.SampledCurve

@@ -12,8 +12,10 @@ package cbit.vcell.geometry;
 
 import java.util.Vector;
 
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.DiscriminatorMapping;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.vcell.util.Coordinate;
 
 /**
@@ -29,7 +31,8 @@ import org.vcell.util.Coordinate;
 				@DiscriminatorMapping(value = "SampledCurve", schema = SampledCurve.class)
 		},
 		discriminatorProperty = "type",
-		requiredProperties = {"type"}
+		requiredProperties = {"type"},
+		properties = {@SchemaProperty(name = "type", type = SchemaType.STRING, defaultValue = "ControlPointCurve")}
 )
 public abstract class ControlPointCurve extends Curve {
 	private Vector<Coordinate> controlPoints = new Vector<Coordinate>(); 

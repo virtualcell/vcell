@@ -10,6 +10,8 @@
 
 package cbit.vcell.geometry;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/15/00 1:10:11 PM)
@@ -125,6 +127,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  * @return The controlPoint property value.
  * @see #setControlPoint
  */
+@JsonIgnore
 public int getControlPoint() {
 	return fieldControlPoint;
 }
@@ -133,6 +136,7 @@ public int getControlPoint() {
  * @return The controlPointExtended property value.
  * @see #setControlPointExtended
  */
+@JsonIgnore
 public int getControlPointExtended() {
 	return fieldControlPointExtended;
 }
@@ -141,6 +145,7 @@ public int getControlPointExtended() {
  * @return The curve property value.
  * @see #setCurve
  */
+@JsonIgnore
 public Curve getCurve() {
 	return fieldCurve;
 }
@@ -150,6 +155,7 @@ public Curve getCurve() {
  * @return double
  * @param selectionU double
  */
+@JsonIgnore
 public double getCurveUfromSelectionU(double selectionU) {
 	if (getType() != CurveSelectionType.SEGMENT.intValue){
 		throw new RuntimeException("CurveSelectionInfo.getCurveUfromSelectionU(), cannot call when type!=CurveSelectionType.SEGMENT");
@@ -220,6 +226,7 @@ public double getCurveUfromSelectionU(double selectionU) {
  * @return The directionNegative property value.
  * @see #setDirectionNegative
  */
+@JsonIgnore
 public boolean getDirectionNegative() {
 	return fieldDirectionNegative;
 }
@@ -228,6 +235,7 @@ public boolean getDirectionNegative() {
  * @return The segment property value.
  * @see #setSegment
  */
+@JsonIgnore
 public int getSegment() {
 	return fieldSegment;
 }
@@ -236,6 +244,7 @@ public int getSegment() {
  * Creation date: (7/18/01 5:49:24 PM)
  * @return int
  */
+@JsonIgnore
 public int getSegmentCount() {
 	int beginSeg = getSegment();
 	int endSeg = getSegmentExtended();
@@ -292,6 +301,7 @@ public int getSegmentCount() {
  * @return The segmentExtended property value.
  * @see #setSegmentExtended
  */
+@JsonIgnore
 public int getSegmentExtended() {
 	return fieldSegmentExtended;
 }
@@ -300,6 +310,7 @@ public int getSegmentExtended() {
  * @return The segment property value.
  * @see #setSegment
  */
+@JsonIgnore
 public int[] getSegmentsInSelectionOrder() {
 
 	if(getSegmentCount() <= 0){
@@ -374,6 +385,7 @@ public int[] getSegmentsInSelectionOrder() {
  * @return The type property value.
  * @see #setType
  */
+@JsonIgnore
 public int getType() {
 	return fieldType;
 }
@@ -382,6 +394,7 @@ public int getType() {
  * @return The u property value.
  * @see #setU
  */
+@JsonIgnore
 public double getU() {
 	return fieldU;
 }
@@ -390,6 +403,7 @@ public double getU() {
  * @return The uExtended property value.
  * @see #setUExtended
  */
+@JsonIgnore
 public double getUExtended() {
 	return fieldUExtended;
 }
@@ -456,6 +470,7 @@ public boolean isSegmentSelected(int soi) {
  * @param controlPoint The new value for the property.
  * @see #getControlPoint
  */
+@JsonIgnore
 private void setControlPoint(int controlPoint) {
 	fieldControlPoint = controlPoint;
 }
@@ -464,6 +479,7 @@ private void setControlPoint(int controlPoint) {
  * @param curve The new value for the property.
  * @see #getCurve
  */
+@JsonIgnore
 private void setCurve(Curve curve) {
 	Curve oldValue = fieldCurve;
 	fieldCurve = curve;
@@ -474,6 +490,7 @@ private void setCurve(Curve curve) {
  * @param directionNegative The new value for the property.
  * @see #getDirectionNegative
  */
+@JsonIgnore
 private void setDirectionNegative(boolean directionNegative) {
 	fieldDirectionNegative = directionNegative;
 }
@@ -482,6 +499,7 @@ private void setDirectionNegative(boolean directionNegative) {
  * @param segment The new value for the property.
  * @see #getSegment
  */
+@JsonIgnore
 private void setSegment(int segment) {
 	fieldSegment = segment;
 }
@@ -490,6 +508,7 @@ private void setSegment(int segment) {
  * @param segmentExtended The new value for the property.
  * @see #getSegmentExtended
  */
+@JsonIgnore
 public void setSegmentExtended(int segmentExtended) {
 	if (getSegment() == NONE_SELECTED) {
 		setSegment(segmentExtended);
@@ -516,6 +535,7 @@ public void setSegmentExtended(int segmentExtended) {
  * @param type The new value for the property.
  * @see #getType
  */
+@JsonIgnore
 private void setType(int type) {
 	int oldValue = fieldType;
 	fieldType = type;
@@ -526,6 +546,7 @@ private void setType(int type) {
  * @param u The new value for the property.
  * @see #getU
  */
+@JsonIgnore
 private void setU(double u) {
 	fieldU = u;
 }
@@ -534,6 +555,7 @@ private void setU(double u) {
  * @param uExtended The new value for the property.
  * @see #getUExtended
  */
+@JsonIgnore
 public void setUExtended(double uExtended) {
 	if (getU() == NONE_SELECTED) {
 		setU(uExtended);

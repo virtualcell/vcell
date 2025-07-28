@@ -13,7 +13,10 @@ package cbit.vcell.simdata;
 import java.util.Arrays;
 import java.util.Vector;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.vcell.util.Coordinate;
 import org.vcell.util.CoordinateIndex;
 
@@ -26,7 +29,7 @@ import cbit.vcell.math.VariableType;
  * Creation date: (7/18/2001 2:39:21 PM)
  * @author: Frank Morgan
  */
-@Schema(allOf = {SpatialSelection.class})
+@Schema(allOf = {SpatialSelection.class}, properties = {@SchemaProperty(name = "type", defaultValue = "Volume", type = SchemaType.STRING)})
 public class SpatialSelectionVolume extends SpatialSelection {
 
 public SpatialSelectionVolume(cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo, cbit.vcell.math.VariableType argVarType, cbit.vcell.solvers.CartesianMesh argMesh) {
@@ -86,6 +89,7 @@ private CoordinateIndex getCoordinateIndexFromWC(Coordinate wc) {
 	return getMesh().getCoordinateIndexFromFractionalIndex(fi);
 }
 
+@JsonIgnore
 public int getIndex(double u) {
 
 	return getConvertedIndexFromU(u);
@@ -211,6 +215,7 @@ public SSHelper getIndexSamples(double begin,double end) {
  * Creation date: (2/28/2001 2:29:30 AM)
  * @return double
  */
+@JsonIgnore
 public double getLengthInMicrons() {
 
 	return getIndexSamples(0.0,1.0).getWorldCoordinateTotalLength();

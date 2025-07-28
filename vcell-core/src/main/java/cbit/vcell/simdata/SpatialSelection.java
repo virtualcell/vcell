@@ -10,6 +10,7 @@
 
 package cbit.vcell.simdata;
 import cbit.vcell.export.server.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.eclipse.microprofile.openapi.annotations.media.DiscriminatorMapping;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.vcell.util.Coordinate;
@@ -183,6 +184,7 @@ public cbit.vcell.geometry.CurveSelectionInfo getCurveSelectionInfo() {
  * @return int
  * @param u double
  */
+@JsonIgnore
 public abstract int getIndex(double u);
 
 
@@ -191,6 +193,7 @@ public abstract int getIndex(double u);
  * Creation date: (7/18/2001 3:14:22 PM)
  * @return double
  */
+@JsonIgnore
 public abstract double getLengthInMicrons();
 
 
@@ -199,6 +202,7 @@ public abstract double getLengthInMicrons();
  * Creation date: (4/2/2001 1:54:58 PM)
  * @return cbit.vcell.solvers.CartesianMesh
  */
+@JsonIgnore
 public cbit.vcell.solvers.CartesianMesh getMesh() {
 	return mesh;
 }

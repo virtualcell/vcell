@@ -11,14 +11,17 @@
 package cbit.vcell.simdata;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 
 /**
  * Insert the type's description here.
  * Creation date: (7/18/2001 2:39:54 PM)
  * @author: Frank Morgan
  */
-@Schema(allOf = {SpatialSelection.class})
+@Schema(allOf = {SpatialSelection.class}, properties = {@SchemaProperty(name = "type", defaultValue = "Contour", type = SchemaType.STRING)})
 public class SpatialSelectionContour extends SpatialSelection {
 	private int[] fieldSampledDataIndexes = null;
 /**
@@ -48,6 +51,7 @@ public SpatialSelectionContour(cbit.vcell.geometry.CurveSelectionInfo argCurveSe
  * @return int
  * @param u double
  */
+@JsonIgnore
 public int getIndex(double selectionU) {
 	int index = -1;
 
@@ -132,6 +136,7 @@ public int[] getIndexSamples() {
  * Creation date: (7/18/2001 3:29:48 PM)
  * @return double
  */
+@JsonIgnore
 public double getLengthInMicrons() {
 	return getCurveSelectionInfo().getCurve().getSpatialLength();
 }
