@@ -15,10 +15,6 @@ import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.User;
 
-import javax.jms.Connection;
-import javax.jms.JMSException;
-import javax.jms.MessageProducer;
-import javax.jms.QueueConnection;
 import java.sql.SQLException;
 
 @ApplicationScoped

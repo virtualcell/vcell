@@ -1,6 +1,8 @@
 package org.vcell.restq.services.Exports;
 
 import cbit.rmi.event.ExportEvent;
+import cbit.vcell.export.server.ExportFormat;
+import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.JobRequest;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.SimulationRep;
@@ -27,7 +29,6 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import javax.jms.JMSException;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.util.Set;
@@ -65,7 +66,7 @@ public class ExportService {
         databaseServer.addExportHistory(user, history.exportHistory());
     }
 
-    public void addExportJobToQueue(ExportResource.ExportJob exportJob) throws JMSException, JsonProcessingException {
+    public void addExportJobToQueue(ExportResource.ExportJob exportJob) throws JsonProcessingException {
         exportStatusCreator.addServerExportListener(exportJob.user(), exportJob.id());
         exportJobEmitter.send(jsonMapper.writeValueAsString(exportJob));
     }
@@ -78,24 +79,27 @@ public class ExportService {
         return exportStatusCreator.getMostRecentExportStatus(user);
     }
 
-    public ExportResource.ExportJob createExportJobFromRequest(User user, ExportResource.ExportRequest request) throws SQLException, DataAccessException {
-        SimulationRep simulationRep = simulationRestService.getSimulationRep(new KeyValue(request.simulationID()));
+    public ExportResource.ExportJob createExportJobFromRequest(User user, ExportResource.StandardExportInfo request, FormatSpecificSpecs formatSpecificSpecs, ExportFormat format) throws DataAccessException, SQLException {
+        SimulationRep simulationRep = simulationRestService.getSimulationRep(new KeyValue(request.simulationKey()));
         VCSimulationIdentifier simulationIdentifier = new VCSimulationIdentifier(simulationRep.getKey(), simulationRep.getOwner());
         VCSimulationDataIdentifier dataIdentifier = new VCSimulationDataIdentifier(simulationIdentifier, request.simulationJob());
         JobRequest newExportJob = JobRequest.createExportJobRequest(user);
         long exportID = newExportJob.getExportJobID();
-        AnnotatedFunction[] annotatedFunctions = request.outputContext().stream().map(
-                dto -> {
-                    try {
-                        return new AnnotatedFunction(dto.functionName(), new Expression(dto.functionExpression()), dto.domain(), dto.error(),
-                                dto.functionType(), dto.category());
-                    } catch (ExpressionException e) {
-                        throw new RuntimeWebException(e.getMessage(), e);
+        AnnotatedFunction[] annotatedFunctions = {};
+        if (request.outputContext() != null){
+            annotatedFunctions = request.outputContext().stream().map(
+                    dto -> {
+                        try {
+                            return new AnnotatedFunction(dto.functionName(), new Expression(dto.functionExpression()), dto.domain(), dto.error(),
+                                    dto.functionType(), dto.category());
+                        } catch (ExpressionException e) {
+                            throw new RuntimeWebException(e.getMessage(), e);
+                        }
                     }
-                }
-        ).toArray(AnnotatedFunction[]::new);
-        return new ExportResource.ExportJob(exportID, user, annotatedFunctions, dataIdentifier, request.exportFormat(),
-                request.variableSpecs(), request.timeSpecs(), request.geometrySpecs(), request.formatSpecificSpecs(), request.subVolume(), request.simulationName(), request.contextName());
+            ).toArray(AnnotatedFunction[]::new);
+        }
+        return new ExportResource.ExportJob(exportID, user, annotatedFunctions, dataIdentifier, format,
+                request.variableSpecs(), request.timeSpecs(), request.geometrySpecs(), formatSpecificSpecs, request.simulationName(), request.contextName());
     }
 
 }
