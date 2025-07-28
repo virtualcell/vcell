@@ -9,11 +9,14 @@
  */
 
 package org.vcell.api.server;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
@@ -23,6 +26,9 @@ import cbit.vcell.client.server.SimStatusEvent;
 import cbit.vcell.client.server.SimStatusListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.api.client.ExceptionHandler;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.util.DataAccessException;
 
 import cbit.rmi.event.DataJobEvent;
@@ -40,6 +46,7 @@ import cbit.rmi.event.VCellMessageEventListener;
 import cbit.vcell.resource.VCellExecutorService;
 import cbit.vcell.server.VCellConnection;
 import edu.uchc.connjur.wb.ExecutionTrace;
+import org.vcell.util.ObjectNotFoundException;
 
 /**
  * {@link AsynchMessageManager} polls from {@link VCellConnection} to get remote messages. Remote Messages include the following:
@@ -132,6 +139,16 @@ private void poll( )  {
 	    	}
 		    pollTime = BASE_POLL_SECONDS;
 	    	queuedEvents = clientServerManager.getMessageEvents();
+			try{
+				Set<org.vcell.restclient.model.ExportEvent> setOfExports = clientServerManager.getVCellApiClient().getExportApi().exportStatus();
+				List<ExportEvent> exportEvents = setOfExports.stream().map(DtoModelTransforms::dtoToExportEvent).toList();
+				queuedEvents = Stream.concat(exportEvents.stream(), Stream.of(queuedEvents)).toArray(MessageEvent[]::new);
+			} catch (ApiException ex){
+				boolean isObjectNotFoundException = ex.getCode() == 404;
+				if (!isObjectNotFoundException){
+					throw ExceptionHandler.getProperException(ex);
+				}
+			}
 		}
     	if (report) {
 		    end = System.currentTimeMillis();

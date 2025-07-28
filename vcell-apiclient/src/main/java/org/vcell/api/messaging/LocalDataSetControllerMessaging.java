@@ -13,6 +13,8 @@ package org.vcell.api.messaging;
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.ExportSpecss;
+import cbit.vcell.export.server.N5Specs;
 import cbit.vcell.field.io.FieldData;
 import cbit.vcell.field.io.FieldDataSpec;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
@@ -302,14 +304,25 @@ public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputCo
  */
 public ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs exportSpecs) throws DataAccessException, RemoteProxyException {
 	if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.makeRemoteFile(vcdID=" + exportSpecs.getVCDataIdentifier() + ")");
-	try {
-		return dataServerProxy.makeRemoteFile(outputContext,exportSpecs);
-	} catch (DataAccessException e){
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e){
-		lg.error(e.getMessage(),e);
-		throw new RuntimeException(e.getMessage());
+	if (exportSpecs.getFormatSpecificSpecs() instanceof N5Specs){
+		// N5 export is handled by the N5ExportService
+		try {
+			long jobID = vCellApiClient.getExportApi().exportN5(DtoModelTransforms.n5ExportRequestFromExportSpecs(exportSpecs));
+            return new ExportEvent(this, jobID, null, exportSpecs.getVCDataIdentifier(), ExportSpecss.ExportProgressType.EXPORT_START, exportSpecs.getFormat().toString(), "", 0.0, exportSpecs.getTimeSpecs(), exportSpecs.getVariableSpecs());
+		}  catch (ApiException e) {
+			ExceptionHandler.onlyDataAccessOrPermissionException(e);
+			throw new RuntimeException("Error should not reach here: " + e.getMessage(), e);
+		}
+	} else {
+		try {
+			return dataServerProxy.makeRemoteFile(outputContext,exportSpecs);
+		} catch (DataAccessException e){
+			lg.error(e.getMessage(),e);
+			throw e;
+		} catch (Throwable e){
+			lg.error(e.getMessage(),e);
+			throw new RuntimeException(e.getMessage());
+		}
 	}
 }
 
