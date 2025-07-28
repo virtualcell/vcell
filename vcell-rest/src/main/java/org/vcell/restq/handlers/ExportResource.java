@@ -1,52 +1,35 @@
 package org.vcell.restq.handlers;
 
-import cbit.image.VCImage;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.*;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.modeldb.SimulationRep;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.quarkus.security.identity.SecurityIdentity;
-import io.quarkus.vertx.http.Compressed;
 import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.http.HttpServerRequest;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
-import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.jboss.resteasy.reactive.RestStreamElementType;
-import org.vcell.restq.errors.exceptions.DataAccessWebException;
-import org.vcell.restq.errors.exceptions.NotAuthenticatedWebException;
-import org.vcell.restq.errors.exceptions.NotFoundWebException;
-import org.vcell.restq.errors.exceptions.RuntimeWebException;
+import org.vcell.restq.errors.exceptions.*;
 import org.vcell.restq.services.Exports.ExportService;
 import org.vcell.restq.services.SimulationRestService;
 import org.vcell.restq.services.UserRestService;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
-import javax.jms.JMSException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
-@Path("/api/v1/exports")
+@Path("/api/v1/export")
 public class ExportResource {
 
     @Inject
@@ -61,7 +44,7 @@ public class ExportResource {
     @Path("/history")
     @GET
     @RolesAllowed("user")
-    @Operation(operationId = "getExportHistory")
+    @Operation(operationId = "getExportHistory", hidden = true)
     public ExportHistory getExportHistory() throws DataAccessWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try {
@@ -74,7 +57,7 @@ public class ExportResource {
     @Path("/history")
     @DELETE
     @RolesAllowed("user")
-    @Operation(operationId = "deleteExportHistory")
+    @Operation(operationId = "deleteExportHistory", hidden = true)
     public ExportHistory deleteExportHistoryEntry() throws DataAccessWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try {
@@ -88,13 +71,13 @@ public class ExportResource {
     @GET
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(operationId = "exportStatus")
-    public Set<ExportEvent> pollExportStatus() throws DataAccessWebException, NotAuthenticatedWebException {
+    @Operation(operationId = "exportStatus", description = "Get the status of your most recent export jobs.")
+    public Set<ExportEvent> pollExportStatus() throws DataAccessWebException, NotAuthenticatedWebException, NotFoundWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try{
             return exportService.getMostRecentExportStatus(user);
-        } catch (DataAccessException e) {
-            throw new DataAccessWebException(e.getMessage(), e);
+        } catch (ObjectNotFoundException e) {
+            throw new NotFoundWebException(e.getMessage(), e);
         }
     }
 
@@ -113,20 +96,26 @@ public class ExportResource {
         }
     }
 
-    @Path("")
+
+    @Path("/N5")
     @POST
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    @Operation(operationId = "export")
-    public long createExport(ExportRequest er) throws DataAccessWebException, NotAuthenticatedWebException {
+    @Operation(operationId = "exportN5", description = "Create an N5 (ImageJ compatible) export. The request must contain the standard export information, exportable data type, dataset name, and sub-volume specifications.")
+    public long createN5Export(N5ExportRequest er) throws DataAccessWebException, NotAuthenticatedWebException, UnprocessableContentWebException, BadRequestWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try{
-            ExportJob exportJob = exportService.createExportJobFromRequest(user, er);
+            N5Specs n5Specs = new N5Specs(er.exportableDataType(), ExportFormat.N5, er.datasetName, er.subVolume);
+            ExportJob exportJob = exportService.createExportJobFromRequest(user, er.standardExportInformation, n5Specs, ExportFormat.N5);
             exportService.addExportJobToQueue(exportJob);
             return exportJob.id();
-        } catch (JMSException | JsonProcessingException | DataAccessException | SQLException e) {
-            throw new RuntimeWebException(e.getMessage(), e);
+        } catch ( JsonProcessingException e) {
+            throw new UnprocessableContentWebException(e.getMessage(), e);
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
+        } catch (SQLException e){
+            throw new BadRequestWebException(e.getMessage(), e);
         }
     }
 
