@@ -27,6 +27,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.Publication;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
 import org.vcell.restq.db.AgroalConnectionFactory;
+import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -188,6 +189,20 @@ public class TestEndpointUtils {
 
         connection.commit();
         new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()).cleanupDatabase();
+        connection.close();
+    }
+
+    public static void insertAdminsSimulation(DatabaseServerImpl databaseServer, AgroalConnectionFactory connectionFactory) throws IOException, DataAccessException, SQLException {
+        InputStream xmlFile = TestEndpointUtils.class.getResourceAsStream("/simdata/Administrator/SimID_597714292_0__0.simtask.xml");
+        assert xmlFile != null;
+        String readXML = new String(xmlFile.readAllBytes());
+        xmlFile.close();
+        databaseServer.saveSimulation(administratorUser, new BigString(readXML), false);
+        Object object = new Object();
+        Connection connection = connectionFactory.getConnection(object);
+        connection.prepareStatement("UPDATE vc_simulation SET id = 597714292 WHERE name = 'FRAP'").executeUpdate();
+        connection.commit();
+        connection.close();
     }
 
 
