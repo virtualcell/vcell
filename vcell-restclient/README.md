@@ -119,6 +119,10 @@ Class | Method | HTTP request | Description
 *BioModelResourceApi* | [**getBioModelVCMLWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelVCMLWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
 *BioModelResourceApi* | [**saveBioModel**](docs/BioModelResourceApi.md#saveBioModel) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 *BioModelResourceApi* | [**saveBioModelWithHttpInfo**](docs/BioModelResourceApi.md#saveBioModelWithHttpInfo) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
+*ExportResourceApi* | [**exportN5**](docs/ExportResourceApi.md#exportN5) | **POST** /api/v1/export/N5 | 
+*ExportResourceApi* | [**exportN5WithHttpInfo**](docs/ExportResourceApi.md#exportN5WithHttpInfo) | **POST** /api/v1/export/N5 | 
+*ExportResourceApi* | [**exportStatus**](docs/ExportResourceApi.md#exportStatus) | **GET** /api/v1/export/status | 
+*ExportResourceApi* | [**exportStatusWithHttpInfo**](docs/ExportResourceApi.md#exportStatusWithHttpInfo) | **GET** /api/v1/export/status | 
 *FieldDataResourceApi* | [**advancedCreate**](docs/FieldDataResourceApi.md#advancedCreate) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 *FieldDataResourceApi* | [**advancedCreateWithHttpInfo**](docs/FieldDataResourceApi.md#advancedCreateWithHttpInfo) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 *FieldDataResourceApi* | [**analyzeFile**](docs/FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
@@ -214,22 +218,35 @@ Class | Method | HTTP request | Description
 ## Documentation for Models
 
  - [AccesTokenRepresentationRecord](docs/AccesTokenRepresentationRecord.md)
+ - [AnalyticCurve](docs/AnalyticCurve.md)
+ - [AnnotatedFunctionDTO](docs/AnnotatedFunctionDTO.md)
  - [ApplicationInfo](docs/ApplicationInfo.md)
  - [BatchSystemType](docs/BatchSystemType.md)
  - [BioModel](docs/BioModel.md)
  - [BioModelChildSummary](docs/BioModelChildSummary.md)
  - [BioModelSummary](docs/BioModelSummary.md)
  - [BiomodelRef](docs/BiomodelRef.md)
+ - [CompositeCurve](docs/CompositeCurve.md)
+ - [ControlPointCurve](docs/ControlPointCurve.md)
+ - [Coordinate](docs/Coordinate.md)
+ - [Curve](docs/Curve.md)
+ - [CurveSelectionInfo](docs/CurveSelectionInfo.md)
  - [DataIdentifier](docs/DataIdentifier.md)
  - [DetailedState](docs/DetailedState.md)
  - [Domain](docs/Domain.md)
+ - [ExportEvent](docs/ExportEvent.md)
+ - [ExportProgressType](docs/ExportProgressType.md)
+ - [ExportableDataType](docs/ExportableDataType.md)
  - [Extent](docs/Extent.md)
  - [ExternalDataIdentifier](docs/ExternalDataIdentifier.md)
  - [FieldData](docs/FieldData.md)
  - [FieldDataReference](docs/FieldDataReference.md)
  - [FieldDataSavedResults](docs/FieldDataSavedResults.md)
  - [FieldDataShape](docs/FieldDataShape.md)
+ - [FunctionCategory](docs/FunctionCategory.md)
  - [GIFImage](docs/GIFImage.md)
+ - [GeometryMode](docs/GeometryMode.md)
+ - [GeometrySpecDTO](docs/GeometrySpecDTO.md)
  - [GeometrySummary](docs/GeometrySummary.md)
  - [GroupAccess](docs/GroupAccess.md)
  - [GroupAccessAll](docs/GroupAccessAll.md)
@@ -237,6 +254,7 @@ Class | Method | HTTP request | Description
  - [GroupAccessSome](docs/GroupAccessSome.md)
  - [HelloWorldMessage](docs/HelloWorldMessage.md)
  - [HtcJobID](docs/HtcJobID.md)
+ - [HumanReadableExportData](docs/HumanReadableExportData.md)
  - [ISize](docs/ISize.md)
  - [Identity](docs/Identity.md)
  - [MathModelChildSummary](docs/MathModelChildSummary.md)
@@ -244,10 +262,12 @@ Class | Method | HTTP request | Description
  - [MathType](docs/MathType.md)
  - [MathmodelRef](docs/MathmodelRef.md)
  - [ModelType](docs/ModelType.md)
+ - [N5ExportRequest](docs/N5ExportRequest.md)
  - [Origin](docs/Origin.md)
  - [Publication](docs/Publication.md)
  - [PublicationInfo](docs/PublicationInfo.md)
  - [SPECIALCLAIM](docs/SPECIALCLAIM.md)
+ - [SampledCurve](docs/SampledCurve.md)
  - [SchedulerStatus](docs/SchedulerStatus.md)
  - [SimulationExecutionStatusRecord](docs/SimulationExecutionStatusRecord.md)
  - [SimulationJobStatusRecord](docs/SimulationJobStatusRecord.md)
@@ -256,8 +276,16 @@ Class | Method | HTTP request | Description
  - [SimulationQueueID](docs/SimulationQueueID.md)
  - [SimulationStatusPersistentRecord](docs/SimulationStatusPersistentRecord.md)
  - [SourceModel](docs/SourceModel.md)
+ - [SpatialSelection](docs/SpatialSelection.md)
+ - [SpatialSelectionContour](docs/SpatialSelectionContour.md)
+ - [SpatialSelectionMembrane](docs/SpatialSelectionMembrane.md)
+ - [SpatialSelectionVolume](docs/SpatialSelectionVolume.md)
+ - [Spline](docs/Spline.md)
+ - [StandardExportInfo](docs/StandardExportInfo.md)
  - [Status](docs/Status.md)
  - [StatusMessage](docs/StatusMessage.md)
+ - [TimeMode](docs/TimeMode.md)
+ - [TimeSpecs](docs/TimeSpecs.md)
  - [User](docs/User.md)
  - [UserIdentityJSONSafe](docs/UserIdentityJSONSafe.md)
  - [UserLoginInfoForMapping](docs/UserLoginInfoForMapping.md)
@@ -269,6 +297,8 @@ Class | Method | HTTP request | Description
  - [VCellSite](docs/VCellSite.md)
  - [VCellSoftwareVersion](docs/VCellSoftwareVersion.md)
  - [VariableDomain](docs/VariableDomain.md)
+ - [VariableMode](docs/VariableMode.md)
+ - [VariableSpecs](docs/VariableSpecs.md)
  - [VariableType](docs/VariableType.md)
  - [Version](docs/Version.md)
  - [VersionFlag](docs/VersionFlag.md)

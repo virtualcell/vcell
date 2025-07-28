@@ -447,6 +447,98 @@ paths:
       tags:
       - Bio Model Resource
       x-accepts: application/json
+  /api/v1/export/N5:
+    post:
+      description: "Create an N5 (ImageJ compatible) export. The request must contain\
+        \ the standard export information, exportable data type, dataset name, and\
+        \ sub-volume specifications."
+      operationId: exportN5
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/N5ExportRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                format: int64
+                type: integer
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Bad Request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          description: Not Allowed
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Unprocessable content submitted
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      tags:
+      - Export Resource
+      x-content-type: application/json
+      x-accepts: application/json
+  /api/v1/export/status:
+    get:
+      description: Get the status of your most recent export jobs.
+      operationId: exportStatus
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ExportEvent'
+                type: array
+                uniqueItems: true
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      tags:
+      - Export Resource
+      x-accepts: application/json
   /api/v1/fieldData/IDs:
     get:
       operationId: getAllIDs
@@ -2106,6 +2198,66 @@ components:
         userKey:
           type: string
       type: object
+    AnalyticCurve:
+      allOf:
+      - $ref: '#/components/schemas/Curve'
+      properties:
+        type:
+          default: AnalyticCurve
+          type: string
+        expX:
+          type: string
+        expY:
+          type: string
+        expZ:
+          type: string
+        offset:
+          $ref: '#/components/schemas/Coordinate'
+        analyticOffset:
+          $ref: '#/components/schemas/Coordinate'
+        defaultNumSamples:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        valid:
+          type: boolean
+      required:
+      - type
+      type: object
+    AnnotatedFunctionDTO:
+      example:
+        functionName: functionName
+        domain:
+          name: name
+        functionType:
+          defaultUnits: defaultUnits
+          name: name
+          typeName: typeName
+          defaultLabel: defaultLabel
+          units: units
+          label: label
+          type: 0
+          variableDomain: null
+          legacyWarn: true
+        error: error
+        category: null
+        functionExpression: functionExpression
+      properties:
+        functionName:
+          type: string
+        functionExpression:
+          type: string
+        error:
+          type: string
+        domain:
+          $ref: '#/components/schemas/Domain'
+        functionType:
+          $ref: '#/components/schemas/VariableType'
+        category:
+          $ref: '#/components/schemas/FunctionCategory'
+      type: object
     Application:
       type: object
     ApplicationInfo:
@@ -2443,6 +2595,195 @@ components:
           format: int32
           type: integer
       type: object
+    CompositeCurve:
+      allOf:
+      - $ref: '#/components/schemas/Curve'
+      properties:
+        type:
+          default: CompositeCurve
+          type: string
+        fieldCurves:
+          items: {}
+          type: array
+        curveCount:
+          format: int32
+          type: integer
+        defaultNumSamples:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        valid:
+          type: boolean
+      required:
+      - type
+      type: object
+    ControlPointCurve:
+      allOf:
+      - $ref: '#/components/schemas/Curve'
+      discriminator:
+        mapping:
+          Spline: '#/components/schemas/Spline'
+          SampledCurve: '#/components/schemas/SampledCurve'
+        propertyName: type
+      properties:
+        type:
+          default: ControlPointCurve
+          type: string
+        controlPoints:
+          items:
+            $ref: '#/components/schemas/Coordinate'
+          type: array
+        controlPointCount:
+          format: int32
+          type: integer
+        controlPointsVector:
+          items:
+            $ref: '#/components/schemas/Coordinate'
+          type: array
+        maxControlPoints:
+          format: int32
+          type: integer
+        minControlPoints:
+          format: int32
+          type: integer
+        controlPointAddable:
+          type: boolean
+        valid:
+          type: boolean
+      required:
+      - type
+      type: object
+    Coordinate:
+      example:
+        x: 1.4658129805029452
+        "y": 5.962133916683182
+        z: 5.637376656633329
+      properties:
+        x:
+          format: double
+          type: number
+        "y":
+          format: double
+          type: number
+        z:
+          format: double
+          type: number
+      type: object
+    Curve:
+      discriminator:
+        mapping:
+          AnalyticCurve: '#/components/schemas/AnalyticCurve'
+          CompositeCurve: '#/components/schemas/CompositeCurve'
+          ControlPointCurve: '#/components/schemas/ControlPointCurve'
+        propertyName: type
+      example:
+        spatialLength: 3.616076749251911
+        valid: true
+        bClosed: true
+        endingCoordinate:
+          x: 1.4658129805029452
+          "y": 5.962133916683182
+          z: 5.637376656633329
+        description: description
+        beginningCoordinate:
+          x: 1.4658129805029452
+          "y": 5.962133916683182
+          z: 5.637376656633329
+        numSamplePoints: 7
+        closed: true
+        type: type
+        defaultNumSamples: 2
+        segmentCount: 9
+      properties:
+        bClosed:
+          type: boolean
+        description:
+          type: string
+        type:
+          type: string
+        beginningCoordinate:
+          $ref: '#/components/schemas/Coordinate'
+        defaultNumSamples:
+          format: int32
+          type: integer
+        endingCoordinate:
+          $ref: '#/components/schemas/Coordinate'
+        numSamplePoints:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        spatialLength:
+          format: double
+          type: number
+        closed:
+          type: boolean
+        valid:
+          type: boolean
+      required:
+      - type
+      type: object
+    CurveSelectionInfo:
+      example:
+        fieldControlPoint: 4
+        fieldCurve:
+          spatialLength: 3.616076749251911
+          valid: true
+          bClosed: true
+          endingCoordinate:
+            x: 1.4658129805029452
+            "y": 5.962133916683182
+            z: 5.637376656633329
+          description: description
+          beginningCoordinate:
+            x: 1.4658129805029452
+            "y": 5.962133916683182
+            z: 5.637376656633329
+          numSamplePoints: 7
+          closed: true
+          type: type
+          defaultNumSamples: 2
+          segmentCount: 9
+        fieldControlPointExtended: 1
+        fieldDirectionNegative: true
+        fieldSegment: 7
+        fieldUExtended: 1.0246457001441578
+        fieldType: 2
+        crossing: true
+        fieldU: 1.2315135367772556
+        fieldSegmentExtended: 6
+      properties:
+        fieldCurve:
+          $ref: '#/components/schemas/Curve'
+        fieldType:
+          format: int32
+          type: integer
+        fieldControlPoint:
+          format: int32
+          type: integer
+        fieldSegment:
+          format: int32
+          type: integer
+        fieldU:
+          format: double
+          type: number
+        fieldUExtended:
+          format: double
+          type: number
+        fieldControlPointExtended:
+          format: int32
+          type: integer
+        fieldSegmentExtended:
+          format: int32
+          type: integer
+        fieldDirectionNegative:
+          type: boolean
+        crossing:
+          type: boolean
+      type: object
     DataIdentifier:
       example:
         variableType:
@@ -2542,6 +2883,90 @@ components:
         name:
           type: string
       type: object
+    ExportEvent:
+      example:
+        dataKey: dataKey
+        jobID: 6
+        variableSpecs:
+          mode: null
+          variableNames:
+          - variableNames
+          - variableNames
+        dataIdString: dataIdString
+        format: format
+        humanReadableData:
+          numChannels: 5
+          applicationType: applicationType
+          differentParameterValues:
+          - differentParameterValues
+          - differentParameterValues
+          serverSavedFileName: serverSavedFileName
+          subVolume:
+            key: subVolume
+          zSlices: 1
+          simulationName: simulationName
+          biomodelName: biomodelName
+          nonSpatial: true
+          tSlices: 5
+          applicationName: applicationName
+        progress: 0.8008281904610115
+        location: location
+        eventType: null
+        user:
+          mySpecials:
+          - null
+          - null
+          userName: userName
+          key: key
+        timeSpecs:
+          mode: null
+          endTimeIndex: 9
+          beginTimeIndex: 5
+          allTimes:
+          - 9.369310271410669
+          - 9.369310271410669
+      properties:
+        eventType:
+          $ref: '#/components/schemas/ExportProgressType'
+        progress:
+          format: double
+          type: number
+        format:
+          type: string
+        location:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+        jobID:
+          format: int64
+          type: integer
+        dataKey:
+          type: string
+        dataIdString:
+          type: string
+        timeSpecs:
+          $ref: '#/components/schemas/TimeSpecs'
+        variableSpecs:
+          $ref: '#/components/schemas/VariableSpecs'
+        humanReadableData:
+          $ref: '#/components/schemas/HumanReadableExportData'
+      type: object
+    ExportProgressType:
+      enum:
+      - EXPORT_START
+      - EXPORT_COMPLETE
+      - EXPORT_FAILURE
+      - EXPORT_ASSEMBLING
+      - EXPORT_PROGRESS
+      type: string
+    ExportableDataType:
+      enum:
+      - ODE_VARIABLE_DATA
+      - PDE_VARIABLE_DATA
+      - PDE_PARTICLE_DATA
+      type: string
+    Expression:
+      type: string
     Extent:
       example:
         x: 7.061401241503109
@@ -2719,8 +3144,8 @@ components:
           "y": 9.301444243932576
           z: 3.616076749251911
         times:
-        - 6.027456183070403
-        - 6.027456183070403
+        - 0.8008281904610115
+        - 0.8008281904610115
         origin:
           x: 5.962133916683182
           "y": 5.637376656633329
@@ -2781,6 +3206,13 @@ components:
             type: number
           type: array
       type: object
+    FunctionCategory:
+      enum:
+      - PREDEFINED
+      - OLDUSERDEFINED
+      - OUTPUTFUNCTION
+      - POSTPROCESSFUNCTION
+      type: string
     GIFImage:
       example:
         size:
@@ -2794,6 +3226,136 @@ components:
           type: string
         size:
           $ref: '#/components/schemas/ISize'
+      type: object
+    GeometryMode:
+      enum:
+      - GEOMETRY_SELECTIONS
+      - GEOMETRY_SLICE
+      - GEOMETRY_FULL
+      type: string
+    GeometrySpecDTO:
+      example:
+        selections:
+        - variableType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          varType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          smallestMeshCellDimensionLength: 7.457744773683766
+          closed: true
+          type: type
+          point: true
+          curveSelectionInfo:
+            fieldControlPoint: 4
+            fieldCurve:
+              spatialLength: 3.616076749251911
+              valid: true
+              bClosed: true
+              endingCoordinate:
+                x: 1.4658129805029452
+                "y": 5.962133916683182
+                z: 5.637376656633329
+              description: description
+              beginningCoordinate:
+                x: 1.4658129805029452
+                "y": 5.962133916683182
+                z: 5.637376656633329
+              numSamplePoints: 7
+              closed: true
+              type: type
+              defaultNumSamples: 2
+              segmentCount: 9
+            fieldControlPointExtended: 1
+            fieldDirectionNegative: true
+            fieldSegment: 7
+            fieldUExtended: 1.0246457001441578
+            fieldType: 2
+            crossing: true
+            fieldU: 1.2315135367772556
+            fieldSegmentExtended: 6
+        - variableType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          varType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          smallestMeshCellDimensionLength: 7.457744773683766
+          closed: true
+          type: type
+          point: true
+          curveSelectionInfo:
+            fieldControlPoint: 4
+            fieldCurve:
+              spatialLength: 3.616076749251911
+              valid: true
+              bClosed: true
+              endingCoordinate:
+                x: 1.4658129805029452
+                "y": 5.962133916683182
+                z: 5.637376656633329
+              description: description
+              beginningCoordinate:
+                x: 1.4658129805029452
+                "y": 5.962133916683182
+                z: 5.637376656633329
+              numSamplePoints: 7
+              closed: true
+              type: type
+              defaultNumSamples: 2
+              segmentCount: 9
+            fieldControlPointExtended: 1
+            fieldDirectionNegative: true
+            fieldSegment: 7
+            fieldUExtended: 1.0246457001441578
+            fieldType: 2
+            crossing: true
+            fieldU: 1.2315135367772556
+            fieldSegmentExtended: 6
+        sliceNumber: 4
+        geometryMode: null
+        axis: 1
+      properties:
+        selections:
+          items:
+            $ref: '#/components/schemas/SpatialSelection'
+          type: array
+        axis:
+          format: int32
+          type: integer
+        sliceNumber:
+          format: int32
+          type: integer
+        geometryMode:
+          $ref: '#/components/schemas/GeometryMode'
       type: object
     GeometrySummary:
       example:
@@ -2946,6 +3508,53 @@ components:
           type: string
         batchSystemType:
           $ref: '#/components/schemas/BatchSystemType'
+      type: object
+    HumanReadableExportData:
+      example:
+        numChannels: 5
+        applicationType: applicationType
+        differentParameterValues:
+        - differentParameterValues
+        - differentParameterValues
+        serverSavedFileName: serverSavedFileName
+        subVolume:
+          key: subVolume
+        zSlices: 1
+        simulationName: simulationName
+        biomodelName: biomodelName
+        nonSpatial: true
+        tSlices: 5
+        applicationName: applicationName
+      properties:
+        simulationName:
+          type: string
+        biomodelName:
+          type: string
+        applicationName:
+          type: string
+        differentParameterValues:
+          items:
+            type: string
+          type: array
+        applicationType:
+          type: string
+        serverSavedFileName:
+          type: string
+        nonSpatial:
+          type: boolean
+        subVolume:
+          additionalProperties:
+            type: string
+          type: object
+        zSlices:
+          format: int32
+          type: integer
+        tSlices:
+          format: int32
+          type: integer
+        numChannels:
+          format: int32
+          type: integer
       type: object
     ISize:
       example:
@@ -3161,6 +3770,183 @@ components:
       - BIOMODEL
       - MATHMODEL
       type: string
+    N5ExportRequest:
+      example:
+        subVolume:
+          key: subVolume
+        exportableDataType: null
+        datasetName: datasetName
+        standardExportInformation:
+          contextName: contextName
+          simulationKey: simulationKey
+          variableSpecs:
+            mode: null
+            variableNames:
+            - variableNames
+            - variableNames
+          simulationName: simulationName
+          geometrySpecs:
+            selections:
+            - variableType:
+                defaultUnits: defaultUnits
+                name: name
+                typeName: typeName
+                defaultLabel: defaultLabel
+                units: units
+                label: label
+                type: 0
+                variableDomain: null
+                legacyWarn: true
+              varType:
+                defaultUnits: defaultUnits
+                name: name
+                typeName: typeName
+                defaultLabel: defaultLabel
+                units: units
+                label: label
+                type: 0
+                variableDomain: null
+                legacyWarn: true
+              smallestMeshCellDimensionLength: 7.457744773683766
+              closed: true
+              type: type
+              point: true
+              curveSelectionInfo:
+                fieldControlPoint: 4
+                fieldCurve:
+                  spatialLength: 3.616076749251911
+                  valid: true
+                  bClosed: true
+                  endingCoordinate:
+                    x: 1.4658129805029452
+                    "y": 5.962133916683182
+                    z: 5.637376656633329
+                  description: description
+                  beginningCoordinate:
+                    x: 1.4658129805029452
+                    "y": 5.962133916683182
+                    z: 5.637376656633329
+                  numSamplePoints: 7
+                  closed: true
+                  type: type
+                  defaultNumSamples: 2
+                  segmentCount: 9
+                fieldControlPointExtended: 1
+                fieldDirectionNegative: true
+                fieldSegment: 7
+                fieldUExtended: 1.0246457001441578
+                fieldType: 2
+                crossing: true
+                fieldU: 1.2315135367772556
+                fieldSegmentExtended: 6
+            - variableType:
+                defaultUnits: defaultUnits
+                name: name
+                typeName: typeName
+                defaultLabel: defaultLabel
+                units: units
+                label: label
+                type: 0
+                variableDomain: null
+                legacyWarn: true
+              varType:
+                defaultUnits: defaultUnits
+                name: name
+                typeName: typeName
+                defaultLabel: defaultLabel
+                units: units
+                label: label
+                type: 0
+                variableDomain: null
+                legacyWarn: true
+              smallestMeshCellDimensionLength: 7.457744773683766
+              closed: true
+              type: type
+              point: true
+              curveSelectionInfo:
+                fieldControlPoint: 4
+                fieldCurve:
+                  spatialLength: 3.616076749251911
+                  valid: true
+                  bClosed: true
+                  endingCoordinate:
+                    x: 1.4658129805029452
+                    "y": 5.962133916683182
+                    z: 5.637376656633329
+                  description: description
+                  beginningCoordinate:
+                    x: 1.4658129805029452
+                    "y": 5.962133916683182
+                    z: 5.637376656633329
+                  numSamplePoints: 7
+                  closed: true
+                  type: type
+                  defaultNumSamples: 2
+                  segmentCount: 9
+                fieldControlPointExtended: 1
+                fieldDirectionNegative: true
+                fieldSegment: 7
+                fieldUExtended: 1.0246457001441578
+                fieldType: 2
+                crossing: true
+                fieldU: 1.2315135367772556
+                fieldSegmentExtended: 6
+            sliceNumber: 4
+            geometryMode: null
+            axis: 1
+          outputContext:
+          - functionName: functionName
+            domain:
+              name: name
+            functionType:
+              defaultUnits: defaultUnits
+              name: name
+              typeName: typeName
+              defaultLabel: defaultLabel
+              units: units
+              label: label
+              type: 0
+              variableDomain: null
+              legacyWarn: true
+            error: error
+            category: null
+            functionExpression: functionExpression
+          - functionName: functionName
+            domain:
+              name: name
+            functionType:
+              defaultUnits: defaultUnits
+              name: name
+              typeName: typeName
+              defaultLabel: defaultLabel
+              units: units
+              label: label
+              type: 0
+              variableDomain: null
+              legacyWarn: true
+            error: error
+            category: null
+            functionExpression: functionExpression
+          simulationJob: 6
+          timeSpecs:
+            mode: null
+            endTimeIndex: 9
+            beginTimeIndex: 5
+            allTimes:
+            - 9.369310271410669
+            - 9.369310271410669
+      properties:
+        standardExportInformation:
+          $ref: '#/components/schemas/StandardExportInfo'
+        subVolume:
+          additionalProperties:
+            type: string
+          type: object
+        exportableDataType:
+          $ref: '#/components/schemas/ExportableDataType'
+        datasetName:
+          type: string
+      type: object
     Origin:
       example:
         x: 5.962133916683182
@@ -3319,6 +4105,31 @@ components:
       - publicationEditors
       - vcellSupport
       type: string
+    SampledCurve:
+      allOf:
+      - $ref: '#/components/schemas/ControlPointCurve'
+      properties:
+        type:
+          default: SampledCurve
+          type: string
+        defaultNumSamples:
+          format: int32
+          type: integer
+        maxControlPoints:
+          format: int32
+          type: integer
+        minControlPoints:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        spatialLength:
+          format: double
+          type: number
+      required:
+      - type
+      type: object
     SchedulerStatus:
       enum:
       - WAITING
@@ -3491,6 +4302,338 @@ components:
         modelType:
           $ref: '#/components/schemas/ModelType'
       type: object
+    SpatialSelection:
+      discriminator:
+        mapping:
+          Membrane: '#/components/schemas/SpatialSelectionMembrane'
+          Contour: '#/components/schemas/SpatialSelectionContour'
+          Volume: '#/components/schemas/SpatialSelectionVolume'
+        propertyName: type
+      example:
+        variableType:
+          defaultUnits: defaultUnits
+          name: name
+          typeName: typeName
+          defaultLabel: defaultLabel
+          units: units
+          label: label
+          type: 0
+          variableDomain: null
+          legacyWarn: true
+        varType:
+          defaultUnits: defaultUnits
+          name: name
+          typeName: typeName
+          defaultLabel: defaultLabel
+          units: units
+          label: label
+          type: 0
+          variableDomain: null
+          legacyWarn: true
+        smallestMeshCellDimensionLength: 7.457744773683766
+        closed: true
+        type: type
+        point: true
+        curveSelectionInfo:
+          fieldControlPoint: 4
+          fieldCurve:
+            spatialLength: 3.616076749251911
+            valid: true
+            bClosed: true
+            endingCoordinate:
+              x: 1.4658129805029452
+              "y": 5.962133916683182
+              z: 5.637376656633329
+            description: description
+            beginningCoordinate:
+              x: 1.4658129805029452
+              "y": 5.962133916683182
+              z: 5.637376656633329
+            numSamplePoints: 7
+            closed: true
+            type: type
+            defaultNumSamples: 2
+            segmentCount: 9
+          fieldControlPointExtended: 1
+          fieldDirectionNegative: true
+          fieldSegment: 7
+          fieldUExtended: 1.0246457001441578
+          fieldType: 2
+          crossing: true
+          fieldU: 1.2315135367772556
+          fieldSegmentExtended: 6
+      properties:
+        curveSelectionInfo:
+          $ref: '#/components/schemas/CurveSelectionInfo'
+        varType:
+          $ref: '#/components/schemas/VariableType'
+        type:
+          type: string
+        smallestMeshCellDimensionLength:
+          format: double
+          type: number
+        variableType:
+          $ref: '#/components/schemas/VariableType'
+        closed:
+          type: boolean
+        point:
+          type: boolean
+      required:
+      - type
+      type: object
+    SpatialSelectionContour:
+      allOf:
+      - $ref: '#/components/schemas/SpatialSelection'
+      properties:
+        type:
+          default: Contour
+          type: string
+        fieldSampledDataIndexes:
+          items:
+            format: int32
+            type: integer
+          type: array
+        indexSamples:
+          items:
+            format: int32
+            type: integer
+          type: array
+        sampledDataIndexes:
+          items:
+            format: int32
+            type: integer
+          type: array
+      type: object
+    SpatialSelectionMembrane:
+      allOf:
+      - $ref: '#/components/schemas/SpatialSelection'
+      properties:
+        type:
+          default: Membrane
+          type: string
+        fieldSampledDataIndexes:
+          items:
+            format: int32
+            type: integer
+          type: array
+        selectionSource:
+          $ref: '#/components/schemas/SampledCurve'
+      required:
+      - type
+      type: object
+    SpatialSelectionVolume:
+      allOf:
+      - $ref: '#/components/schemas/SpatialSelection'
+      properties:
+        type:
+          default: Volume
+          type: string
+        symmetric:
+          type: boolean
+      type: object
+    Spline:
+      allOf:
+      - $ref: '#/components/schemas/ControlPointCurve'
+      properties:
+        type:
+          default: Spline
+          type: string
+        defaultNumSamples:
+          format: int32
+          type: integer
+        maxControlPoints:
+          format: int32
+          type: integer
+        minControlPoints:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+      required:
+      - type
+      type: object
+    StandardExportInfo:
+      example:
+        contextName: contextName
+        simulationKey: simulationKey
+        variableSpecs:
+          mode: null
+          variableNames:
+          - variableNames
+          - variableNames
+        simulationName: simulationName
+        geometrySpecs:
+          selections:
+          - variableType:
+              defaultUnits: defaultUnits
+              name: name
+              typeName: typeName
+              defaultLabel: defaultLabel
+              units: units
+              label: label
+              type: 0
+              variableDomain: null
+              legacyWarn: true
+            varType:
+              defaultUnits: defaultUnits
+              name: name
+              typeName: typeName
+              defaultLabel: defaultLabel
+              units: units
+              label: label
+              type: 0
+              variableDomain: null
+              legacyWarn: true
+            smallestMeshCellDimensionLength: 7.457744773683766
+            closed: true
+            type: type
+            point: true
+            curveSelectionInfo:
+              fieldControlPoint: 4
+              fieldCurve:
+                spatialLength: 3.616076749251911
+                valid: true
+                bClosed: true
+                endingCoordinate:
+                  x: 1.4658129805029452
+                  "y": 5.962133916683182
+                  z: 5.637376656633329
+                description: description
+                beginningCoordinate:
+                  x: 1.4658129805029452
+                  "y": 5.962133916683182
+                  z: 5.637376656633329
+                numSamplePoints: 7
+                closed: true
+                type: type
+                defaultNumSamples: 2
+                segmentCount: 9
+              fieldControlPointExtended: 1
+              fieldDirectionNegative: true
+              fieldSegment: 7
+              fieldUExtended: 1.0246457001441578
+              fieldType: 2
+              crossing: true
+              fieldU: 1.2315135367772556
+              fieldSegmentExtended: 6
+          - variableType:
+              defaultUnits: defaultUnits
+              name: name
+              typeName: typeName
+              defaultLabel: defaultLabel
+              units: units
+              label: label
+              type: 0
+              variableDomain: null
+              legacyWarn: true
+            varType:
+              defaultUnits: defaultUnits
+              name: name
+              typeName: typeName
+              defaultLabel: defaultLabel
+              units: units
+              label: label
+              type: 0
+              variableDomain: null
+              legacyWarn: true
+            smallestMeshCellDimensionLength: 7.457744773683766
+            closed: true
+            type: type
+            point: true
+            curveSelectionInfo:
+              fieldControlPoint: 4
+              fieldCurve:
+                spatialLength: 3.616076749251911
+                valid: true
+                bClosed: true
+                endingCoordinate:
+                  x: 1.4658129805029452
+                  "y": 5.962133916683182
+                  z: 5.637376656633329
+                description: description
+                beginningCoordinate:
+                  x: 1.4658129805029452
+                  "y": 5.962133916683182
+                  z: 5.637376656633329
+                numSamplePoints: 7
+                closed: true
+                type: type
+                defaultNumSamples: 2
+                segmentCount: 9
+              fieldControlPointExtended: 1
+              fieldDirectionNegative: true
+              fieldSegment: 7
+              fieldUExtended: 1.0246457001441578
+              fieldType: 2
+              crossing: true
+              fieldU: 1.2315135367772556
+              fieldSegmentExtended: 6
+          sliceNumber: 4
+          geometryMode: null
+          axis: 1
+        outputContext:
+        - functionName: functionName
+          domain:
+            name: name
+          functionType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          error: error
+          category: null
+          functionExpression: functionExpression
+        - functionName: functionName
+          domain:
+            name: name
+          functionType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          error: error
+          category: null
+          functionExpression: functionExpression
+        simulationJob: 6
+        timeSpecs:
+          mode: null
+          endTimeIndex: 9
+          beginTimeIndex: 5
+          allTimes:
+          - 9.369310271410669
+          - 9.369310271410669
+      properties:
+        outputContext:
+          items:
+            $ref: '#/components/schemas/AnnotatedFunctionDTO'
+          type: array
+        contextName:
+          type: string
+        simulationName:
+          type: string
+        simulationKey:
+          type: string
+        simulationJob:
+          format: int32
+          type: integer
+        geometrySpecs:
+          $ref: '#/components/schemas/GeometrySpecDTO'
+        timeSpecs:
+          $ref: '#/components/schemas/TimeSpecs'
+        variableSpecs:
+          $ref: '#/components/schemas/VariableSpecs'
+      type: object
     Status:
       enum:
       - UNKNOWN
@@ -3560,6 +4703,34 @@ components:
         timepoint:
           format: double
           type: number
+      type: object
+    TimeMode:
+      enum:
+      - TIME_POINT
+      - TIME_RANGE
+      type: string
+    TimeSpecs:
+      example:
+        mode: null
+        endTimeIndex: 9
+        beginTimeIndex: 5
+        allTimes:
+        - 9.369310271410669
+        - 9.369310271410669
+      properties:
+        beginTimeIndex:
+          format: int32
+          type: integer
+        endTimeIndex:
+          format: int32
+          type: integer
+        allTimes:
+          items:
+            format: double
+            type: number
+          type: array
+        mode:
+          $ref: '#/components/schemas/TimeMode'
       type: object
     User:
       example:
@@ -3771,6 +4942,26 @@ components:
       - VARIABLEDOMAIN_NONSPATIAL
       - VARIABLEDOMAIN_POINT
       type: string
+    VariableMode:
+      enum:
+      - VARIABLE_ONE
+      - VARIABLE_MULTI
+      - VARIABLE_ALL
+      type: string
+    VariableSpecs:
+      example:
+        mode: null
+        variableNames:
+        - variableNames
+        - variableNames
+      properties:
+        variableNames:
+          items:
+            type: string
+          type: array
+        mode:
+          $ref: '#/components/schemas/VariableMode'
+      type: object
     VariableType:
       example:
         defaultUnits: defaultUnits
