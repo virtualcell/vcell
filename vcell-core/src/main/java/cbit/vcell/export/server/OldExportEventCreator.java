@@ -42,7 +42,7 @@ public class OldExportEventCreator implements ExportStatusEventCreator {
             throw new RuntimeException("unexpected VCDataIdentifier");
         }
         ExportEvent event = new ExportEvent(
-                this, jobID, user, vcdID.getID(), dataKey, ExportEvent.EXPORT_COMPLETE,
+                this, jobID, user, vcdID.getID(), dataKey, ExportSpecss.ExportProgressType.EXPORT_COMPLETE,
                 format, location, null, timeSpecs, varSpecs);
         event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
         fireExportEvent(event);
@@ -56,7 +56,7 @@ public class OldExportEventCreator implements ExportStatusEventCreator {
         if (object != null) {
             user = (User)object;
         }
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_ASSEMBLING, format, null, null, null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportSpecss.ExportProgressType.EXPORT_ASSEMBLING, format, null, null, null, null);
         fireExportEvent(event);
     }
 
@@ -80,7 +80,7 @@ public class OldExportEventCreator implements ExportStatusEventCreator {
         if (object != null) {
             user = (User)object;
         }
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_FAILURE, format, message, null, null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportSpecss.ExportProgressType.EXPORT_FAILURE, format, message, null, null, null);
         fireExportEvent(event);
     }
 
@@ -90,7 +90,7 @@ public class OldExportEventCreator implements ExportStatusEventCreator {
         if (object != null) {
             user = (User)object;
         }
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_PROGRESS, format, null, new Double(progress), null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportSpecss.ExportProgressType.EXPORT_PROGRESS, format, null, new Double(progress), null, null);
         fireExportEvent(event);
     }
 
@@ -101,7 +101,7 @@ public class OldExportEventCreator implements ExportStatusEventCreator {
         if (object != null) {
             user = (User)object;
         }
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_START, format, null, null, null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportSpecss.ExportProgressType.EXPORT_START, format, null, null, null, null);
         fireExportEvent(event);
     }
 

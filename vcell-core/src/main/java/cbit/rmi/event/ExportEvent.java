@@ -10,9 +10,12 @@
 
 package cbit.rmi.event;
 
+import cbit.vcell.export.server.ExportSpecss;
 import cbit.vcell.export.server.HumanReadableExportData;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
@@ -23,21 +26,32 @@ import java.util.Objects;
  * This is the event class to support the cbit.vcell.desktop.controls.ExportListener interface.
  */
 public class ExportEvent extends MessageEvent {
-	private final int eventType;
+	@JsonProperty(value = "eventType")
+	private final ExportSpecss.ExportProgressType eventType;
+	@JsonProperty(value = "progress")
 	private final Double progress;
+	@JsonProperty(value = "format")
 	private final String format;
+	@JsonProperty(value = "location")
 	private final String location;
+	@JsonProperty(value = "user")
 	private final User user;
+	@JsonProperty(value = "jobID")
 	private final long jobID;
+	@JsonProperty(value = "dataKey")
 	private final KeyValue dataKey;
+	@JsonProperty(value = "dataIdString")
 	private final String dataIdString;
+	@JsonProperty(value = "timeSpecs")
 	private final TimeSpecs timeSpecs;
+	@JsonProperty(value = "variableSpecs")
 	private final VariableSpecs variableSpecs;
 
+	@JsonIgnore
 	private HumanReadableExportData humanReadableExportData = null;
 	
 	public ExportEvent(Object source, long jobID, User user, 
-			VCDataIdentifier vcDataId, int argEventType, 
+			VCDataIdentifier vcDataId, ExportSpecss.ExportProgressType argEventType,
 			String format, String location, Double argProgress,
 			TimeSpecs timeSpecs, VariableSpecs variableSpecs) {
 
@@ -47,7 +61,7 @@ public class ExportEvent extends MessageEvent {
 	}
 	
 	public ExportEvent(Object source, long jobID, User user,
-		String dataIdString, KeyValue dataKey, int argEventType,
+		String dataIdString, KeyValue dataKey, ExportSpecss.ExportProgressType argEventType,
 		String format, String location, Double argProgress,
 		TimeSpecs timeSpecs, VariableSpecs variableSpecs) {
 	super(source, new MessageSource(source, dataIdString), new MessageData(argProgress));
@@ -69,7 +83,12 @@ public class ExportEvent extends MessageEvent {
  * Creation date: (1/4/01 1:24:16 PM)
  * @return int
  */
+@JsonIgnore
 public int getEventTypeID() {
+	return eventType.intValue;
+}
+
+public ExportSpecss.ExportProgressType getEventType() {
 	return eventType;
 }
 
@@ -127,7 +146,6 @@ public KeyValue getDataKey() {
 	return dataKey;
 }
 
-
 public String getDataIdString() {
 	return dataIdString;
 }
@@ -144,7 +162,7 @@ public boolean isSupercededBy(MessageEvent messageEvent) {
 	if (messageEvent instanceof ExportEvent){
 		ExportEvent exportEvent = (ExportEvent)messageEvent;
 		
-		if (eventType == EXPORT_PROGRESS && exportEvent.eventType == EXPORT_PROGRESS){
+		if (eventType == ExportSpecss.ExportProgressType.EXPORT_PROGRESS && exportEvent.eventType == ExportSpecss.ExportProgressType.EXPORT_PROGRESS){
 			if (getProgress() < exportEvent.getProgress()){
 				return true;
 			}

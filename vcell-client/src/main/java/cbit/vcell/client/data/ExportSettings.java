@@ -33,7 +33,7 @@ public class ExportSettings implements ASCIISettingsPanelListener, RasterSetting
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ExportFormat fieldSelectedFormat;
 	private cbit.vcell.export.server.FormatSpecificSpecs fieldFormatSpecificSpecs = null;
-	private ExportSpecss.SimulationDataType fieldSimDataType = null;
+	private ExportSpecss.SimulationDataType fieldSimDataType = ExportSpecss.SimulationDataType.NO_DATA_AVAILABLE;
 	private JPanel ivjJDialogContentPane = null;
 	private JDialog ivjJDialogASCIISettings = null;
 	private JDialog ivjJDialogMediaSettings = null;

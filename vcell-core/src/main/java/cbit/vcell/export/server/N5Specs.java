@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This type was created in VisualAge.
@@ -36,6 +37,7 @@ import java.util.HashMap;
 public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	private final ExportFormat formatType;
 	private final ExportSpecss.ExportableDataType dataType;
+	public Map<Integer, String> subVolumeMapping;
 	@JsonIgnore
 	private final CompressionLevel compression;
 
@@ -60,18 +62,23 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 		this.dataType = dataType;
 		this.compression = compressionLevel;
 		this.dataSetName = dataSetName;
+		this.subVolumeMapping = null; // it gets set within the HumanReadableExportData
 	}
 
 	@JsonCreator
 	public N5Specs(@JsonProperty("dataType") ExportSpecss.ExportableDataType dataType, @JsonProperty("format") ExportFormat format,
-				   @JsonProperty("dataSetName") String dataSetName){
+				   @JsonProperty("dataSetName") String dataSetName, @JsonProperty("subVolumeMapping") Map<Integer, String> subVolumeMapping) {
 		super("N5");
 		this.formatType = format;
 		this.dataType = dataType;
 		this.dataSetName = dataSetName;
 		this.compression = CompressionLevel.BZIP;
+		this.subVolumeMapping = subVolumeMapping;
 	}
 
+	public Map<Integer, String> getSubVolumeMapping() {
+		return subVolumeMapping;
+	}
 	/**
 	 * This method was created in VisualAge.
 	 * @return int
@@ -115,7 +122,7 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	}
 
 	public static void writeImageJMetaData(long jobID,long[] dimensions, int[] blockSize, Compression compression, N5FSWriter n5FSWriter, String datasetName, int numChannels, int zSlices,
-										   int timeLength, HashMap<Integer, String> maskMapping, double pixelHeight,
+										   int timeLength, Map<Integer, String> maskMapping, double pixelHeight,
 										   double pixelWidth, double pixelDepth, String unit, HashMap<Integer, Object> channelInfo) throws MathException, DataAccessException {
 		try {
 			HashMap<String, String> compresssionMap = new HashMap<>(){{put("type", compression.getType().toLowerCase());}};
@@ -135,14 +142,14 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 
 	record ImageJMetaData(long[] dimensions ,int[] blockSize, HashMap<String, String> compression, String dataType, String name, double fps, double frameInterval, double pixelWidth,
 						  double pixelHeight, double pixelDepth, double xOrigin, double yOrigin, double zOrigin, int numChannels, int numSlices, int numFrames,
-						  int type, String unit, HashMap<Integer, String> maskMapping, HashMap<Integer, Object> channelInfo){
+						  int type, String unit, Map<Integer, String> maskMapping, HashMap<Integer, Object> channelInfo){
 
 		// https://github.com/saalfeldlab/n5
 		//https://imagej.nih.gov/ij/developer/api/ij/ij/ImagePlus.html#getType() Grayscale with float types
 		//https://imagej.nih.gov/ij/developer/api/ij/ij/measure/Calibration.html#getUnit()
 
 		public static ImageJMetaData generateDefaultRecord(long[] dimensions ,int[] blockSize, HashMap<String, String> compression, String dataSetName, int numChannels,
-														   int numSlices, int numFrames, HashMap<Integer, String> maskMapping, double pixelHeight, double pixelWidth,
+														   int numSlices, int numFrames, Map<Integer, String> maskMapping, double pixelHeight, double pixelWidth,
 														   double pixelDepth, String unit, HashMap<Integer, Object> channelInfo){
 			return  new ImageJMetaData(dimensions, blockSize, compression, DataType.FLOAT64.name().toLowerCase() ,dataSetName, 0.0, 0.0,
 					pixelWidth, pixelHeight, pixelDepth, 0.0, 0.0, 0.0, numChannels, numSlices, numFrames, 2, unit, maskMapping, channelInfo);

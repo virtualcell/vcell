@@ -119,15 +119,18 @@ public class ExportResource {
         }
     }
 
+    public record N5ExportRequest(
+            StandardExportInfo standardExportInformation,
+            Map<Integer, String> subVolume,
+            ExportSpecss.ExportableDataType exportableDataType,
+            String datasetName
+    ){ }
 
-    public record ExportRequest(
-            ArrayList<AnnotatedFunctionDTO> outputContext, ExportFormat exportFormat,
-            String simulationID, int simulationJob,
-            FormatSpecificSpecs formatSpecificSpecs,
+    public record StandardExportInfo(
+            ArrayList<AnnotatedFunctionDTO> outputContext, String contextName,
+            String simulationName, String simulationKey, int simulationJob,
             GeometrySpecDTO geometrySpecs,
-            TimeSpecs timeSpecs, VariableSpecs variableSpecs,
-            HashMap<Integer, String> subVolume,
-            String simulationName, String contextName
+            TimeSpecs timeSpecs, VariableSpecs variableSpecs
     ){ }
 
     public record AnnotatedFunctionDTO(
@@ -151,7 +154,6 @@ public class ExportResource {
             ExportFormat format,
             VariableSpecs variableSpecs, TimeSpecs timeSpecs,
             GeometrySpecDTO geometrySpecs, FormatSpecificSpecs formatSpecificSpecs,
-            HashMap<Integer, String> subVolume,
             String simulationName,String contextName
     ){ }
 

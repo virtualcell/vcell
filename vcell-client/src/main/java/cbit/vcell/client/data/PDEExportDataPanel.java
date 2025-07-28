@@ -664,7 +664,6 @@ private ExportSpecs getExportSpecs() {
         }
 	}
 
-	String serverSavedFileName = getExportSettings1().getFormatSpecificSpecs() instanceof N5Specs ? ((N5Specs) getExportSettings1().getFormatSpecificSpecs()).dataSetName : "";
 
 	SimulationOwner simulationOwner = getSimulation().getSimulationOwner();
 	boolean nonSpatial = simulationOwner.getGeometry().getDimension() == 0;
@@ -672,6 +671,15 @@ private ExportSpecs getExportSpecs() {
 	for(SubVolume subVolume: simulationOwner.getGeometry().getGeometrySpec().getSubVolumes()){
 		subVolumes.put(subVolume.getHandle(), subVolume.getName());
 	}
+
+	String serverSavedFileName = "";
+	if (getExportSettings1().getFormatSpecificSpecs() instanceof N5Specs n5Specs){
+		serverSavedFileName = n5Specs.dataSetName;
+		n5Specs.subVolumeMapping = subVolumes;
+	}
+
+	HumanReadableExportData humanReadableExportData = new HumanReadableExportData(getSimulation().getName(), sc.getName(), sc.getBioModel().getName(),
+			differentParameterValues, serverSavedFileName, sc.getApplicationType().name(), nonSpatial, subVolumes);
 	GeometrySpecs geometrySpecs = new GeometrySpecs(selections, getNormalAxis(), getSlice(), geoMode);
 
 	HumanReadableExportData humanReadableExportData;
