@@ -91,6 +91,12 @@
 			<groupId>org.vcell</groupId>
 			<artifactId>vcell-util</artifactId>
 			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>biz.aQute.bnd</groupId>
+					<artifactId>biz.aQute.bnd.annotation</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/jdom/jdom -->
 		<dependency>
@@ -114,6 +120,11 @@
 					<artifactId>xml-apis</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.microprofile.openapi</groupId>
+			<artifactId>microprofile-openapi-api</artifactId>
+			<version>${microprofile-openapi.version}</version>
 		</dependency>
 	</dependencies>
 </project>
