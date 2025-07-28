@@ -411,6 +411,95 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/export/N5:
+    post:
+      tags:
+      - Export Resource
+      description: "Create an N5 (ImageJ compatible) export. The request must contain\
+        \ the standard export information, exportable data type, dataset name, and\
+        \ sub-volume specifications."
+      operationId: exportN5
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/N5ExportRequest'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                format: int64
+                type: integer
+        "400":
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+      security:
+      - openId:
+        - user
+  /api/v1/export/status:
+    get:
+      tags:
+      - Export Resource
+      description: Get the status of your most recent export jobs.
+      operationId: exportStatus
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                uniqueItems: true
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExportEvent'
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+      security:
+      - openId:
+        - user
   /api/v1/fieldData/IDs:
     get:
       tags:
@@ -2005,6 +2094,49 @@ components:
           type: string
         userKey:
           type: string
+    AnalyticCurve:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/Curve'
+      properties:
+        type:
+          default: AnalyticCurve
+          type: string
+        expX:
+          $ref: '#/components/schemas/Expression'
+        expY:
+          $ref: '#/components/schemas/Expression'
+        expZ:
+          $ref: '#/components/schemas/Expression'
+        offset:
+          $ref: '#/components/schemas/Coordinate'
+        analyticOffset:
+          $ref: '#/components/schemas/Coordinate'
+        defaultNumSamples:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        valid:
+          type: boolean
+    AnnotatedFunctionDTO:
+      type: object
+      properties:
+        functionName:
+          type: string
+        functionExpression:
+          type: string
+        error:
+          type: string
+        domain:
+          $ref: '#/components/schemas/Domain'
+        functionType:
+          $ref: '#/components/schemas/VariableType'
+        category:
+          $ref: '#/components/schemas/FunctionCategory'
     Application:
       type: object
     ApplicationInfo:
@@ -2146,6 +2278,145 @@ components:
         versionFlag:
           format: int32
           type: integer
+    CompositeCurve:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/Curve'
+      properties:
+        type:
+          default: CompositeCurve
+          type: string
+        fieldCurves:
+          type: array
+          items: {}
+        curveCount:
+          format: int32
+          type: integer
+        defaultNumSamples:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        valid:
+          type: boolean
+    ControlPointCurve:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/Curve'
+      properties:
+        type:
+          default: ControlPointCurve
+          type: string
+        controlPoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coordinate'
+        controlPointCount:
+          format: int32
+          type: integer
+        controlPointsVector:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coordinate'
+        maxControlPoints:
+          format: int32
+          type: integer
+        minControlPoints:
+          format: int32
+          type: integer
+        controlPointAddable:
+          type: boolean
+        valid:
+          type: boolean
+      discriminator:
+        propertyName: type
+        mapping:
+          Spline: '#/components/schemas/Spline'
+          SampledCurve: '#/components/schemas/SampledCurve'
+    Coordinate:
+      type: object
+      properties:
+        x:
+          format: double
+          type: number
+        "y":
+          format: double
+          type: number
+        z:
+          format: double
+          type: number
+    Curve:
+      required:
+      - type
+      type: object
+      properties:
+        bClosed:
+          type: boolean
+        description:
+          type: string
+        type:
+          type: string
+        beginningCoordinate:
+          $ref: '#/components/schemas/Coordinate'
+        defaultNumSamples:
+          format: int32
+          type: integer
+        endingCoordinate:
+          $ref: '#/components/schemas/Coordinate'
+        numSamplePoints:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        spatialLength:
+          format: double
+          type: number
+        closed:
+          type: boolean
+        valid:
+          type: boolean
+      discriminator:
+        propertyName: type
+        mapping:
+          AnalyticCurve: '#/components/schemas/AnalyticCurve'
+          CompositeCurve: '#/components/schemas/CompositeCurve'
+          ControlPointCurve: '#/components/schemas/ControlPointCurve'
+    CurveSelectionInfo:
+      type: object
+      properties:
+        fieldCurve:
+          $ref: '#/components/schemas/Curve'
+        fieldType:
+          format: int32
+          type: integer
+        fieldControlPoint:
+          format: int32
+          type: integer
+        fieldSegment:
+          format: int32
+          type: integer
+        fieldU:
+          format: double
+          type: number
+        fieldUExtended:
+          format: double
+          type: number
+        fieldControlPointExtended:
+          format: int32
+          type: integer
+        fieldSegmentExtended:
+          format: int32
+          type: integer
+        fieldDirectionNegative:
+          type: boolean
+        crossing:
+          type: boolean
     DataIdentifier:
       type: object
       properties:
@@ -2225,6 +2496,49 @@ components:
       properties:
         name:
           type: string
+    ExportEvent:
+      type: object
+      properties:
+        eventType:
+          $ref: '#/components/schemas/ExportProgressType'
+        progress:
+          format: double
+          type: number
+        format:
+          type: string
+        location:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+        jobID:
+          format: int64
+          type: integer
+        dataKey:
+          $ref: '#/components/schemas/KeyValue'
+        dataIdString:
+          type: string
+        timeSpecs:
+          $ref: '#/components/schemas/TimeSpecs'
+        variableSpecs:
+          $ref: '#/components/schemas/VariableSpecs'
+        humanReadableData:
+          $ref: '#/components/schemas/HumanReadableExportData'
+    ExportProgressType:
+      enum:
+      - EXPORT_START
+      - EXPORT_COMPLETE
+      - EXPORT_FAILURE
+      - EXPORT_ASSEMBLING
+      - EXPORT_PROGRESS
+      type: string
+    ExportableDataType:
+      enum:
+      - ODE_VARIABLE_DATA
+      - PDE_VARIABLE_DATA
+      - PDE_PARTICLE_DATA
+      type: string
+    Expression:
+      type: string
     Extent:
       type: object
       properties:
@@ -2336,6 +2650,13 @@ components:
           items:
             format: double
             type: number
+    FunctionCategory:
+      enum:
+      - PREDEFINED
+      - OLDUSERDEFINED
+      - OUTPUTFUNCTION
+      - POSTPROCESSFUNCTION
+      type: string
     GIFImage:
       type: object
       properties:
@@ -2344,6 +2665,27 @@ components:
           type: string
         size:
           $ref: '#/components/schemas/ISize'
+    GeometryMode:
+      enum:
+      - GEOMETRY_SELECTIONS
+      - GEOMETRY_SLICE
+      - GEOMETRY_FULL
+      type: string
+    GeometrySpecDTO:
+      type: object
+      properties:
+        selections:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpatialSelection'
+        axis:
+          format: int32
+          type: integer
+        sliceNumber:
+          format: int32
+          type: integer
+        geometryMode:
+          $ref: '#/components/schemas/GeometryMode'
     GeometrySummary:
       type: object
       properties:
@@ -2444,6 +2786,38 @@ components:
           type: string
         batchSystemType:
           $ref: '#/components/schemas/BatchSystemType'
+    HumanReadableExportData:
+      type: object
+      properties:
+        simulationName:
+          type: string
+        biomodelName:
+          type: string
+        applicationName:
+          type: string
+        differentParameterValues:
+          type: array
+          items:
+            type: string
+        applicationType:
+          type: string
+        serverSavedFileName:
+          type: string
+        nonSpatial:
+          type: boolean
+        subVolume:
+          type: object
+          additionalProperties:
+            type: string
+        zSlices:
+          format: int32
+          type: integer
+        tSlices:
+          format: int32
+          type: integer
+        numChannels:
+          format: int32
+          type: integer
     ISize:
       type: object
       properties:
@@ -2543,6 +2917,19 @@ components:
       - BIOMODEL
       - MATHMODEL
       type: string
+    N5ExportRequest:
+      type: object
+      properties:
+        standardExportInformation:
+          $ref: '#/components/schemas/StandardExportInfo'
+        subVolume:
+          type: object
+          additionalProperties:
+            type: string
+        exportableDataType:
+          $ref: '#/components/schemas/ExportableDataType'
+        datasetName:
+          type: string
     Origin:
       type: object
       properties:
@@ -2637,6 +3024,31 @@ components:
       - publicationEditors
       - vcellSupport
       type: string
+    SampledCurve:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/ControlPointCurve'
+      properties:
+        type:
+          default: SampledCurve
+          type: string
+        defaultNumSamples:
+          format: int32
+          type: integer
+        maxControlPoints:
+          format: int32
+          type: integer
+        minControlPoints:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        spatialLength:
+          format: double
+          type: number
     SchedulerStatus:
       enum:
       - WAITING
@@ -2730,6 +3142,126 @@ components:
           type: string
         modelType:
           $ref: '#/components/schemas/ModelType'
+    SpatialSelection:
+      required:
+      - type
+      type: object
+      properties:
+        curveSelectionInfo:
+          $ref: '#/components/schemas/CurveSelectionInfo'
+        varType:
+          $ref: '#/components/schemas/VariableType'
+        type:
+          type: string
+        smallestMeshCellDimensionLength:
+          format: double
+          type: number
+        variableType:
+          $ref: '#/components/schemas/VariableType'
+        closed:
+          type: boolean
+        point:
+          type: boolean
+      discriminator:
+        propertyName: type
+        mapping:
+          Membrane: '#/components/schemas/SpatialSelectionMembrane'
+          Contour: '#/components/schemas/SpatialSelectionContour'
+          Volume: '#/components/schemas/SpatialSelectionVolume'
+    SpatialSelectionContour:
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/SpatialSelection'
+      properties:
+        type:
+          default: Contour
+          type: string
+        fieldSampledDataIndexes:
+          type: array
+          items:
+            format: int32
+            type: integer
+        indexSamples:
+          type: array
+          items:
+            format: int32
+            type: integer
+        sampledDataIndexes:
+          type: array
+          items:
+            format: int32
+            type: integer
+    SpatialSelectionMembrane:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/SpatialSelection'
+      properties:
+        type:
+          default: Membrane
+          type: string
+        fieldSampledDataIndexes:
+          type: array
+          items:
+            format: int32
+            type: integer
+        selectionSource:
+          $ref: '#/components/schemas/SampledCurve'
+    SpatialSelectionVolume:
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/SpatialSelection'
+      properties:
+        type:
+          default: Volume
+          type: string
+        symmetric:
+          type: boolean
+    Spline:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/ControlPointCurve'
+      properties:
+        type:
+          default: Spline
+          type: string
+        defaultNumSamples:
+          format: int32
+          type: integer
+        maxControlPoints:
+          format: int32
+          type: integer
+        minControlPoints:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+    StandardExportInfo:
+      type: object
+      properties:
+        outputContext:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnnotatedFunctionDTO'
+        contextName:
+          type: string
+        simulationName:
+          type: string
+        simulationKey:
+          type: string
+        simulationJob:
+          format: int32
+          type: integer
+        geometrySpecs:
+          $ref: '#/components/schemas/GeometrySpecDTO'
+        timeSpecs:
+          $ref: '#/components/schemas/TimeSpecs'
+        variableSpecs:
+          $ref: '#/components/schemas/VariableSpecs'
     Status:
       enum:
       - UNKNOWN
@@ -2758,6 +3290,27 @@ components:
         timepoint:
           format: double
           type: number
+    TimeMode:
+      enum:
+      - TIME_POINT
+      - TIME_RANGE
+      type: string
+    TimeSpecs:
+      type: object
+      properties:
+        beginTimeIndex:
+          format: int32
+          type: integer
+        endTimeIndex:
+          format: int32
+          type: integer
+        allTimes:
+          type: array
+          items:
+            format: double
+            type: number
+        mode:
+          $ref: '#/components/schemas/TimeMode'
     User:
       type: object
       properties:
@@ -2881,6 +3434,21 @@ components:
       - VARIABLEDOMAIN_NONSPATIAL
       - VARIABLEDOMAIN_POINT
       type: string
+    VariableMode:
+      enum:
+      - VARIABLE_ONE
+      - VARIABLE_MULTI
+      - VARIABLE_ALL
+      type: string
+    VariableSpecs:
+      type: object
+      properties:
+        variableNames:
+          type: array
+          items:
+            type: string
+        mode:
+          $ref: '#/components/schemas/VariableMode'
     VariableType:
       type: object
       properties:
