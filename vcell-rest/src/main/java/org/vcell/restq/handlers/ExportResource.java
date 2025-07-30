@@ -10,11 +10,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.quarkus.security.identity.SecurityIdentity;
 import io.smallrye.mutiny.Multi;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.jboss.resteasy.reactive.RestStreamElementType;
+import org.vcell.restq.activemq.ExportMQInterface;
+import org.vcell.restq.activemq.ExportRequestListenerMQ;
 import org.vcell.restq.errors.exceptions.*;
 import org.vcell.restq.services.Exports.ExportService;
 import org.vcell.restq.services.SimulationRestService;
@@ -27,6 +30,7 @@ import org.vcell.util.document.VCDataIdentifier;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 @Path("/api/v1/export")
@@ -38,6 +42,8 @@ public class ExportResource {
     UserRestService userRestService;
     @Inject
     ExportService exportService;
+    @Inject
+    Instance<ExportMQInterface> exportRequestListenerMQ;
     @Inject
     SimulationRestService simulationRestService;
 
@@ -108,7 +114,7 @@ public class ExportResource {
         try{
             N5Specs n5Specs = new N5Specs(er.exportableDataType(), ExportFormat.N5, er.datasetName, er.subVolume);
             ExportJob exportJob = exportService.createExportJobFromRequest(user, er.standardExportInformation, n5Specs, ExportFormat.N5);
-            exportService.addExportJobToQueue(exportJob);
+            exportRequestListenerMQ.get().addExportJobToQueue(exportJob);
             return exportJob.id();
         } catch ( JsonProcessingException e) {
             throw new UnprocessableContentWebException(e.getMessage(), e);
