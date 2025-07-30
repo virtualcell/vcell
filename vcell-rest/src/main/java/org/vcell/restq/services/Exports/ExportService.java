@@ -13,6 +13,7 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.arc.properties.IfBuildProperty;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -20,6 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
+import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.errors.exceptions.RuntimeWebException;
 import org.vcell.restq.handlers.ExportResource;
@@ -46,9 +48,7 @@ public class ExportService {
     @Inject
     ObjectMapper jsonMapper;
 
-    @Inject
-    @Channel("export-request")
-    Emitter<String> exportJobEmitter;
+
 
     private final static Logger lg = LogManager.getLogger(ExportService.class);
 
@@ -64,11 +64,6 @@ public class ExportService {
 
     public void addExportHistory(User user, ExportResource.ExportHistory history) throws DataAccessException {
         databaseServer.addExportHistory(user, history.exportHistory());
-    }
-
-    public void addExportJobToQueue(ExportResource.ExportJob exportJob) throws JsonProcessingException {
-        exportStatusCreator.addServerExportListener(exportJob.user(), exportJob.id());
-        exportJobEmitter.send(jsonMapper.writeValueAsString(exportJob));
     }
 
     public Multi<ExportEvent> getExportStatuses(User user, long jobID) throws ObjectNotFoundException {

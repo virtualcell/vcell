@@ -102,10 +102,22 @@ build_api() {
 build_rest() {
 	echo "building $repo/vcell-rest:$tag"
 	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../vcell-rest/src/main/docker/Dockerfile.jvm --tag $repo/vcell-rest:$tag ../../vcell-rest"
+	mvn clean install -DskipTests -Dvcell.exporter=false -f ../../vcell-rest/pom.xml
 	$SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../vcell-rest/src/main/docker/Dockerfile.jvm --tag $repo/vcell-rest:$tag ../../vcell-rest
 	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
 	if [ "$skip_push" == "false" ]; then
 		$SUDO_CMD docker push $repo/vcell-rest:$tag
+	fi
+}
+
+build_exporter() {
+	echo "building $repo/vcell-rest:$tag"
+	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../vcell-rest/src/main/docker/Dockerfile.jvm --tag $repo/vcell-exporter:$tag ../../vcell-rest"
+	mvn clean install -DskipTests -Dvcell.exporter=true -f ../../vcell-rest/pom.xml
+	$SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../vcell-rest/src/main/docker/Dockerfile.jvm --tag $repo/vcell-exporter:$tag ../../vcell-rest
+	if [[ $? -ne 0 ]]; then echo "docker buildx build --platform=linux/amd64 failed"; exit 1; fi
+	if [ "$skip_push" == "false" ]; then
+		$SUDO_CMD docker push $repo/vcell-exporter:$tag
 	fi
 }
 
@@ -251,6 +263,7 @@ case $target in
 		;;
 	rest)
 		build_rest
+		build_exporter
 		exit $?
 		;;
 	webapp)

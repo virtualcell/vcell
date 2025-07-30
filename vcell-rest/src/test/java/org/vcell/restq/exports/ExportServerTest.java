@@ -12,10 +12,12 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.helpers.BlockingIterable;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.jms.JMSException;
 import org.junit.jupiter.api.*;
 import org.vcell.restq.TestEndpointUtils;
+import org.vcell.restq.activemq.ExportMQInterface;
 import org.vcell.restq.activemq.ExportRequestListenerMQ;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
@@ -41,7 +43,7 @@ public class ExportServerTest {
     AgroalConnectionFactory agroalConnectionFactory;
 
     @Inject
-    ExportRequestListenerMQ requestListenerMQ;
+    Instance<ExportMQInterface> requestListenerMQ;
     @Inject
     ExportStatusCreator statusCreator;
     @Inject
@@ -133,7 +135,7 @@ public class ExportServerTest {
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
             ExportResource.ExportJob exportJob = new ExportResource.ExportJob(badJobID, TestEndpointUtils.administratorUser,
                     new AnnotatedFunction[]{}, exportSpecs.getVCDataIdentifier(), null, null, null, null, null,"TestSim", null);
-            CompletableFuture<Void> job = requestListenerMQ.startJob(exportJob);
+            CompletableFuture<Void> job = requestListenerMQ.get().startJob(exportJob);
             job.exceptionally(ex -> {
                 Assertions.assertEquals(NullPointerException.class, ex.getCause().getCause().getCause().getClass());
                 return null;
@@ -152,8 +154,9 @@ public class ExportServerTest {
         ExportResource.ExportJob exportJob = exportService.createExportJobFromRequest(TestEndpointUtils.administratorUser, getValidExportRequest(0, 3).standardExportInformation(),
                 new N5Specs(ExportSpecss.ExportableDataType.PDE_VARIABLE_DATA, ExportFormat.N5, "TestDataset", dummyMaskInfo), ExportFormat.N5);
         statusCreator.addServerExportListener(TestEndpointUtils.administratorUser, exportJob.id());
-        requestListenerMQ.setThreadWaitTimeUnit(TimeUnit.MILLISECONDS);
-        CompletableFuture<Void> job = requestListenerMQ.startJob(exportJob);
+
+        ((ExportRequestListenerMQ) requestListenerMQ.get()).setThreadWaitTimeUnit(TimeUnit.MILLISECONDS);
+        CompletableFuture<Void> job = requestListenerMQ.get().startJob(exportJob);
         try{
             job.join();
             Assertions.fail();
@@ -161,7 +164,7 @@ public class ExportServerTest {
             Assertions.assertEquals(TimeoutException.class, e.getCause().getCause().getClass());
         }
         Assertions.assertTrue(job.isCompletedExceptionally());
-        requestListenerMQ.setThreadWaitTimeUnit(TimeUnit.MINUTES);
+        ((ExportRequestListenerMQ) requestListenerMQ.get()).setThreadWaitTimeUnit(TimeUnit.MINUTES);
     }
 
 

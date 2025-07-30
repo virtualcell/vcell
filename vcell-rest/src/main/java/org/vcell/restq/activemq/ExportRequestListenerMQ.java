@@ -5,12 +5,19 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.OutputContext;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.arc.DefaultBean;
+import io.quarkus.arc.lookup.LookupIfProperty;
+import io.quarkus.arc.properties.IfBuildProperty;
+import io.smallrye.mutiny.Uni;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.vcell.restq.db.AgroalConnectionFactory;
@@ -27,8 +34,31 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
+
+
 @ApplicationScoped
-public class ExportRequestListenerMQ {
+@IfBuildProperty(name = "vcell.exporter", stringValue = "false")
+class DummyExportRequestListenerMQ implements ExportMQInterface {
+
+    @Override
+    public void addExportJobToQueue(ExportResource.ExportJob exportJob) throws JsonProcessingException {
+        throw new IllegalCallerException("ExportRequestListenerMQ is not enabled, cannot consume export request");
+    }
+
+    @Override
+    public CompletionStage<Void> consumeExportRequest(Message<String> message) {
+        throw new IllegalCallerException("ExportRequestListenerMQ is not enabled, cannot consume export request");
+    }
+
+    @Override
+    public CompletableFuture<Void> startJob(ExportResource.ExportJob exportJob) {
+        throw new IllegalCallerException("ExportRequestListenerMQ is not enabled, cannot consume export request");
+    }
+}
+
+@ApplicationScoped
+@IfBuildProperty(name = "vcell.exporter", stringValue = "true")
+public class ExportRequestListenerMQ implements ExportMQInterface {
     private static final Logger logger = LogManager.getLogger(ExportRequestListenerMQ.class);
     private final ExportResource.ExportJob[] acceptedJobs = new ExportResource.ExportJob[100];
     private final ExecutorService threadPoolExecutor = Executors.newFixedThreadPool(10);
@@ -45,6 +75,10 @@ public class ExportRequestListenerMQ {
     @Inject
     AgroalConnectionFactory connectionFactory;
 
+    @Inject
+    @Channel("export-request")
+    Emitter<String> exportJobEmitter;
+
     @PostConstruct
     void init() throws FileNotFoundException {
         String primarySimDataDir = PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty, "/simdata");
@@ -53,10 +87,16 @@ public class ExportRequestListenerMQ {
                 new ExportServiceImpl());
     }
 
+    public void addExportJobToQueue(ExportResource.ExportJob exportJob) throws JsonProcessingException {
+        logger.debug("Export job added to queue: {} for user: {}", exportJob.id(), exportJob.user().getName());
+        exportStatusCreator.addServerExportListener(exportJob.user(), exportJob.id());
+        exportJobEmitter.send(mapper.writeValueAsString(exportJob));
+    }
 
     @Incoming("processed-export-request")
     public CompletionStage<Void> consumeExportRequest(Message<String> message) {
         try {
+            logger.debug("Received export request: {}", message.getPayload());
             String exportJobJSON = message.getPayload();
             ExportResource.ExportJob exportJob = mapper.readValue(exportJobJSON, ExportResource.ExportJob.class);
             startJob(exportJob);
