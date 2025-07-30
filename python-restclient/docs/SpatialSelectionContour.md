@@ -4,7 +4,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | **str** |  | [optional] [default to 'Contour']
+**type** | **str** |  | [default to 'Contour']
 **field_sampled_data_indexes** | **List[int]** |  | [optional] 
 **index_samples** | **List[int]** |  | [optional] 
 **sampled_data_indexes** | **List[int]** |  | [optional] 

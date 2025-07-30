@@ -21,7 +21,7 @@ import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
  * Creation date: (7/18/2001 2:39:54 PM)
  * @author: Frank Morgan
  */
-@Schema(allOf = {SpatialSelection.class}, properties = {@SchemaProperty(name = "type", defaultValue = "Contour", type = SchemaType.STRING)})
+@Schema(allOf = {SpatialSelection.class}, requiredProperties = "type", properties = {@SchemaProperty(name = "type", defaultValue = "Contour", type = SchemaType.STRING)})
 public class SpatialSelectionContour extends SpatialSelection {
 	private int[] fieldSampledDataIndexes = null;
 /**

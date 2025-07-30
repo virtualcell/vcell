@@ -15,7 +15,7 @@ import { CurveSelectionInfo } from './curve-selection-info';
 
 
 export interface SpatialSelectionContour extends SpatialSelection { 
-    type?: string;
+    type: string;
     fieldSampledDataIndexes?: Array<number>;
     indexSamples?: Array<number>;
     sampledDataIndexes?: Array<number>;

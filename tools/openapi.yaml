@@ -3169,6 +3169,8 @@ components:
           Contour: '#/components/schemas/SpatialSelectionContour'
           Volume: '#/components/schemas/SpatialSelectionVolume'
     SpatialSelectionContour:
+      required:
+      - type
       type: object
       allOf:
       - $ref: '#/components/schemas/SpatialSelection'
@@ -3209,6 +3211,8 @@ components:
         selectionSource:
           $ref: '#/components/schemas/SampledCurve'
     SpatialSelectionVolume:
+      required:
+      - type
       type: object
       allOf:
       - $ref: '#/components/schemas/SpatialSelection'

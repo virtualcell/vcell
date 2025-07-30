@@ -7,7 +7,7 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**type** | **String** |  |  [optional] |
+|**type** | **String** |  |  |
 |**fieldSampledDataIndexes** | **List&lt;Integer&gt;** |  |  [optional] |
 |**indexSamples** | **List&lt;Integer&gt;** |  |  [optional] |
 |**sampledDataIndexes** | **List&lt;Integer&gt;** |  |  [optional] |

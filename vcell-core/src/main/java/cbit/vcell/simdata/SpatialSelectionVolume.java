@@ -29,7 +29,7 @@ import cbit.vcell.math.VariableType;
  * Creation date: (7/18/2001 2:39:21 PM)
  * @author: Frank Morgan
  */
-@Schema(allOf = {SpatialSelection.class}, properties = {@SchemaProperty(name = "type", defaultValue = "Volume", type = SchemaType.STRING)})
+@Schema(allOf = {SpatialSelection.class}, requiredProperties = "type", properties = {@SchemaProperty(name = "type", defaultValue = "Volume", type = SchemaType.STRING)})
 public class SpatialSelectionVolume extends SpatialSelection {
 
 public SpatialSelectionVolume(cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo, cbit.vcell.math.VariableType argVarType, cbit.vcell.solvers.CartesianMesh argMesh) {

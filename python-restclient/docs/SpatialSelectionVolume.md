@@ -4,7 +4,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | **str** |  | [optional] [default to 'Volume']
+**type** | **str** |  | [default to 'Volume']
 **symmetric** | **bool** |  | [optional] 
 
 ## Example

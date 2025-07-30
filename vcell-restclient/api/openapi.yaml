@@ -4403,6 +4403,8 @@ components:
             format: int32
             type: integer
           type: array
+      required:
+      - type
       type: object
     SpatialSelectionMembrane:
       allOf:
@@ -4430,6 +4432,8 @@ components:
           type: string
         symmetric:
           type: boolean
+      required:
+      - type
       type: object
     Spline:
       allOf:

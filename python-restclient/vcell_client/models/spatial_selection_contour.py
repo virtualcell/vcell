@@ -34,7 +34,7 @@ class SpatialSelectionContour(SpatialSelection):
     """
     SpatialSelectionContour
     """ # noqa: E501
-    type: Optional[StrictStr] = 'Contour'
+    type: StrictStr
     field_sampled_data_indexes: Optional[List[StrictInt]] = Field(default=None, alias="fieldSampledDataIndexes")
     index_samples: Optional[List[StrictInt]] = Field(default=None, alias="indexSamples")
     sampled_data_indexes: Optional[List[StrictInt]] = Field(default=None, alias="sampledDataIndexes")
