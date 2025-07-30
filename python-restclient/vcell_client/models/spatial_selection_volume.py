@@ -33,7 +33,7 @@ class SpatialSelectionVolume(SpatialSelection):
     """
     SpatialSelectionVolume
     """ # noqa: E501
-    type: Optional[StrictStr] = 'Volume'
+    type: StrictStr
     symmetric: Optional[StrictBool] = None
     __properties: ClassVar[List[str]] = ["curveSelectionInfo", "varType", "type", "smallestMeshCellDimensionLength", "variableType", "closed", "point"]
 

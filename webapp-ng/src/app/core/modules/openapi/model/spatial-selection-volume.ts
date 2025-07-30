@@ -15,7 +15,7 @@ import { CurveSelectionInfo } from './curve-selection-info';
 
 
 export interface SpatialSelectionVolume extends SpatialSelection { 
-    type?: string;
+    type: string;
     symmetric?: boolean;
 }
 
