@@ -3196,6 +3196,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						boolean bRuleBased = true;
 						SimulationContext ruleBasedSimContext = bioModel.addNewSimulationContext("temp NFSim app",
 								SimulationContext.Application.RULE_BASED_STOCHASTIC);
+						ruleBasedSimContext.setUsingConcentration(bngUnitSystem.isConcentration(), false);
 						List<SimulationContext> appList = new ArrayList<SimulationContext>();
 						appList.add(ruleBasedSimContext);
 
