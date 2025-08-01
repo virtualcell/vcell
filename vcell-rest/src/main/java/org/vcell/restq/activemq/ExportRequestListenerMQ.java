@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.arc.DefaultBean;
 import io.quarkus.arc.lookup.LookupIfProperty;
 import io.quarkus.arc.properties.IfBuildProperty;
+import io.smallrye.common.annotation.Blocking;
+import io.smallrye.common.annotation.NonBlocking;
 import io.smallrye.mutiny.Uni;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -46,12 +48,12 @@ class DummyExportRequestListenerMQ implements ExportMQInterface {
     }
 
     @Override
-    public CompletionStage<Void> consumeExportRequest(Message<String> message) {
+    public Uni<Void> consumeExportRequest(Message<String> message) {
         throw new IllegalCallerException("ExportRequestListenerMQ is not enabled, cannot consume export request");
     }
 
     @Override
-    public CompletableFuture<Void> startJob(ExportResource.ExportJob exportJob) {
+    public CompletableFuture<Void> startJob(Message<String> exportJob) {
         throw new IllegalCallerException("ExportRequestListenerMQ is not enabled, cannot consume export request");
     }
 }
@@ -60,9 +62,7 @@ class DummyExportRequestListenerMQ implements ExportMQInterface {
 @IfBuildProperty(name = "vcell.exporter", stringValue = "true")
 public class ExportRequestListenerMQ implements ExportMQInterface {
     private static final Logger logger = LogManager.getLogger(ExportRequestListenerMQ.class);
-    private final ExportResource.ExportJob[] acceptedJobs = new ExportResource.ExportJob[100];
     private final ExecutorService threadPoolExecutor = Executors.newFixedThreadPool(10);
-    private final ScheduledExecutorService canceller = Executors.newSingleThreadScheduledExecutor();
     private DataServerImpl dataServer;
     private TimeUnit waitUnit = TimeUnit.MINUTES;
 
@@ -94,20 +94,22 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
     }
 
     @Incoming("processed-export-request")
-    public CompletionStage<Void> consumeExportRequest(Message<String> message) {
+    public Uni<Void> consumeExportRequest(Message<String> message) {
         try {
             logger.debug("Received export request: {}", message.getPayload());
-            String exportJobJSON = message.getPayload();
-            ExportResource.ExportJob exportJob = mapper.readValue(exportJobJSON, ExportResource.ExportJob.class);
-            startJob(exportJob);
-            return message.ack();
+            return Uni.createFrom().completionStage(startJob(message)).onFailure().recoverWithUni(() -> {
+                logger.error("Failed to process export request: {}", message.getPayload());
+                return Uni.createFrom().completionStage(message.nack(new RuntimeException("Failed to process export request")));
+            });
         } catch (Exception e) {
             logger.error(e);
-            return message.nack(e);
+            return Uni.createFrom().completionStage(message.nack(e));
         }
     }
 
-    public CompletableFuture<Void> startJob(ExportResource.ExportJob exportJob) {
+    public CompletableFuture<Void> startJob(Message<String> message) throws JsonProcessingException {
+        String exportJobJSON = message.getPayload();
+        ExportResource.ExportJob exportJob = mapper.readValue(exportJobJSON, ExportResource.ExportJob.class);
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
                 try {
                     ExportSpecs exportSpecs = getExportSpecs(exportJob);
@@ -116,13 +118,14 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
                     throw new RuntimeException(e);
                 }
         }, threadPoolExecutor)
+                .thenRun(message::ack)
                 .orTimeout(15, waitUnit)
                 .exceptionally(ex -> {
+                    logger.error("Error thrown when trying to start export job", ex);
                     exportStatusCreator.fireExportFailed(exportJob.id(), exportJob.vcdID(),
                             exportJob.format() == null ? null : exportJob.format().toString(), ex.getMessage());
-                    logger.error("Error thrown when trying to start export job", ex);
-                    throw new RuntimeException(ex);
-                });
+                    return null;
+        });
         return future;
     }
 
