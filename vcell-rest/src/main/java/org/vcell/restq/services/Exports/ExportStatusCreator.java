@@ -36,8 +36,6 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
     }
 
     public ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, String format, String location, ExportSpecs exportSpecs) {
-        User user = jobRequestToUser.get(jobID);
-        String key = entryKey(user, jobID);
 
         TimeSpecs timeSpecs = (exportSpecs!=null)?exportSpecs.getTimeSpecs():(null);
         VariableSpecs varSpecs = (exportSpecs!=null)?exportSpecs.getVariableSpecs():(null);
@@ -49,14 +47,18 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
         }else {
             throw new RuntimeException("unexpected VCDataIdentifier");
         }
-        ExportEvent event = new ExportEvent(
-                this, jobID, user, vcdID.getID(), dataKey, ExportSpecss.ExportProgressType.EXPORT_COMPLETE,
-                format, location, null, timeSpecs, varSpecs);
-        event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
-        event.setHumanReadableExportData(exportSpecs.getHumanReadableExportData());
 
-
+        ExportEvent event = null;
         synchronized (this){
+            User user = jobRequestToUser.get(jobID);
+            String key = entryKey(user, jobID);
+
+             event = new ExportEvent(
+                    this, jobID, user, vcdID.getID(), dataKey, ExportSpecss.ExportProgressType.EXPORT_COMPLETE,
+                    format, location, null, timeSpecs, varSpecs);
+            event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
+            event.setHumanReadableExportData(exportSpecs.getHumanReadableExportData());
+
             if (!listeners.containsKey(key)) {
                 throw new RuntimeException("Did not find entry for user " + user.getName() + " and job id " + jobID);
             }
@@ -103,7 +105,7 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
         mostRecentExportEvents.get(user).add(event);
     }
 
-    public void fireExportAssembling(long jobID, VCDataIdentifier vcdID, String format) {
+    public synchronized void fireExportAssembling(long jobID, VCDataIdentifier vcdID, String format) {
         User user = jobRequestToUser.get(jobID);
         ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportSpecss.ExportProgressType.EXPORT_ASSEMBLING, format, null, null, null, null);
         fireExportEvent(event);
@@ -134,21 +136,21 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
         jobRequestToUser.remove(jobID);
     }
 
-    public void fireExportProgress(long jobID, VCDataIdentifier vcdID, String format, double progress) {
+    public synchronized void fireExportProgress(long jobID, VCDataIdentifier vcdID, String format, double progress) {
         User user = jobRequestToUser.get(jobID);
 
         ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportSpecss.ExportProgressType.EXPORT_PROGRESS, format, null, progress, null, null);
         fireExportEvent(event);
     }
 
-    public void fireExportStarted(long jobID, VCDataIdentifier vcdID, String format) {
+    public synchronized void fireExportStarted(long jobID, VCDataIdentifier vcdID, String format) {
         User user = jobRequestToUser.get(jobID);
 
         ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportSpecss.ExportProgressType.EXPORT_START, format, null, null, null, null);
         fireExportEvent(event);
     }
 
-    public void removeServerExportListener(User user, long exportJobID){
+    public synchronized void removeServerExportListener(User user, long exportJobID){
         listeners.remove(user.getName() + exportJobID);
     }
 
@@ -156,7 +158,7 @@ public class ExportStatusCreator implements ExportStatusEventCreator {
         return user.getName() + jobID;
     }
 
-    private void replaceSetEntry(User user, ExportEvent newEvent){
+    private synchronized void replaceSetEntry(User user, ExportEvent newEvent){
         mostRecentExportEvents.get(user).remove(newEvent);
         mostRecentExportEvents.get(user).add(newEvent);
     }
