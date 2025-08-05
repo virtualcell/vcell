@@ -37,7 +37,7 @@ class TestSpatialSelectionMembrane(unittest.TestCase):
         model = SpatialSelectionMembrane()
         if include_optional:
             return SpatialSelectionMembrane(
-                type = None,
+                type = 'Membrane',
                 field_sampled_data_indexes = [
                     56
                     ],
@@ -51,7 +51,7 @@ class TestSpatialSelectionMembrane(unittest.TestCase):
             )
         else:
             return SpatialSelectionMembrane(
-                type = None,
+                type = 'Membrane',
         )
         """
 

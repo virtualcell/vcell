@@ -16,7 +16,6 @@
 
 # import models into model package
 from vcell_client.models.acces_token_representation_record import AccesTokenRepresentationRecord
-from vcell_client.models.analytic_curve import AnalyticCurve
 from vcell_client.models.annotated_function_dto import AnnotatedFunctionDTO
 from vcell_client.models.application_info import ApplicationInfo
 from vcell_client.models.batch_system_type import BatchSystemType
@@ -24,8 +23,6 @@ from vcell_client.models.bio_model import BioModel
 from vcell_client.models.bio_model_child_summary import BioModelChildSummary
 from vcell_client.models.bio_model_summary import BioModelSummary
 from vcell_client.models.biomodel_ref import BiomodelRef
-from vcell_client.models.composite_curve import CompositeCurve
-from vcell_client.models.control_point_curve import ControlPointCurve
 from vcell_client.models.coordinate import Coordinate
 from vcell_client.models.curve import Curve
 from vcell_client.models.curve_selection_info import CurveSelectionInfo
@@ -100,3 +97,6 @@ from vcell_client.models.variable_specs import VariableSpecs
 from vcell_client.models.variable_type import VariableType
 from vcell_client.models.version import Version
 from vcell_client.models.version_flag import VersionFlag
+from vcell_client.models.analytic_curve import AnalyticCurve
+from vcell_client.models.composite_curve import CompositeCurve
+from vcell_client.models.control_point_curve import ControlPointCurve

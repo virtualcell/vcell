@@ -37,7 +37,7 @@ class TestSpatialSelectionContour(unittest.TestCase):
         model = SpatialSelectionContour()
         if include_optional:
             return SpatialSelectionContour(
-                type = None,
+                type = 'Contour',
                 field_sampled_data_indexes = [
                     56
                     ],
@@ -50,6 +50,7 @@ class TestSpatialSelectionContour(unittest.TestCase):
             )
         else:
             return SpatialSelectionContour(
+                type = 'Contour',
         )
         """
 
