@@ -37,11 +37,12 @@ class TestSpatialSelectionVolume(unittest.TestCase):
         model = SpatialSelectionVolume()
         if include_optional:
             return SpatialSelectionVolume(
-                type = None,
+                type = 'Volume',
                 symmetric = True
             )
         else:
             return SpatialSelectionVolume(
+                type = 'Volume',
         )
         """
 
