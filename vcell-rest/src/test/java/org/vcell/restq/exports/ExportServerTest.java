@@ -9,12 +9,15 @@ import cbit.vcell.simdata.*;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusTest;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.helpers.BlockingIterable;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import jakarta.jms.JMSException;
+import org.eclipse.microprofile.reactive.messaging.Message;
 import org.junit.jupiter.api.*;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.activemq.ExportMQInterface;
@@ -48,6 +51,8 @@ public class ExportServerTest {
     ExportStatusCreator statusCreator;
     @Inject
     ExportService exportService;
+    @Inject
+    ObjectMapper mapper;
 
     private DataServerImpl dataServer;
     private final String simulationID = "597714292";
@@ -133,14 +138,17 @@ public class ExportServerTest {
                 new GeometrySpecs(new SpatialSelection[]{}, 1, 1, ExportSpecss.GeometryMode.GEOMETRY_SLICE), null, "TestSim", null);
         Multi<ExportEvent> status = createExportListener(badExportSpecs, badJobID);
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-            ExportResource.ExportJob exportJob = new ExportResource.ExportJob(badJobID, TestEndpointUtils.administratorUser,
-                    new AnnotatedFunction[]{}, exportSpecs.getVCDataIdentifier(), null, null, null, null, null,"TestSim", null);
-            CompletableFuture<Void> job = requestListenerMQ.get().startJob(exportJob);
-            job.exceptionally(ex -> {
-                Assertions.assertEquals(NullPointerException.class, ex.getCause().getCause().getCause().getClass());
-                return null;
-            }).join();
-            Assertions.assertTrue(job.isCompletedExceptionally());
+            VCSimulationDataIdentifier vcSimulationDataIdentifier = (VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier();
+            ExportRequestListenerMQ.ExportJob exportJob = new ExportRequestListenerMQ.ExportJob(badJobID, TestEndpointUtils.administratorUser,
+                    new AnnotatedFunction[]{}, vcSimulationDataIdentifier.getVcSimID(), vcSimulationDataIdentifier.getJobIndex(), null, null, null, null, null,"TestSim", null);
+            CompletableFuture<Void> job = null;
+            try {
+                job = requestListenerMQ.get().startJob(Message.of(mapper.writeValueAsString(exportJob)));
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            job.join();
+            Assertions.assertTrue(job.isDone());
         });
         BlockingIterable<ExportEvent> blockingIterable = status.subscribe().asIterable();
         for (ExportEvent exportEvent : blockingIterable) {
@@ -151,17 +159,17 @@ public class ExportServerTest {
 
     @Test
     public void testLongRunningThread() throws Exception {
-        ExportResource.ExportJob exportJob = exportService.createExportJobFromRequest(TestEndpointUtils.administratorUser, getValidExportRequest(0, 3).standardExportInformation(),
+        ExportRequestListenerMQ.ExportJob exportJob = exportService.createExportJobFromRequest(TestEndpointUtils.administratorUser, getValidExportRequest(0, 3).standardExportInformation(),
                 new N5Specs(ExportSpecss.ExportableDataType.PDE_VARIABLE_DATA, ExportFormat.N5, "TestDataset", dummyMaskInfo), ExportFormat.N5);
         statusCreator.addServerExportListener(TestEndpointUtils.administratorUser, exportJob.id());
 
         ((ExportRequestListenerMQ) requestListenerMQ.get()).setThreadWaitTimeUnit(TimeUnit.MILLISECONDS);
-        CompletableFuture<Void> job = requestListenerMQ.get().startJob(exportJob);
+        CompletableFuture<Void> job = ((ExportRequestListenerMQ) requestListenerMQ.get()).startJob(Message.of(mapper.writeValueAsString(exportJob)), false);
         try{
             job.join();
             Assertions.fail();
         } catch (CompletionException e) {
-            Assertions.assertEquals(TimeoutException.class, e.getCause().getCause().getClass());
+            Assertions.assertEquals(TimeoutException.class, e.getCause().getClass());
         }
         Assertions.assertTrue(job.isCompletedExceptionally());
         ((ExportRequestListenerMQ) requestListenerMQ.get()).setThreadWaitTimeUnit(TimeUnit.MINUTES);
@@ -215,8 +223,10 @@ public class ExportServerTest {
         exportSpecs.setExportMetaData(new HumanReadableExportData("", "", "", new ArrayList<>(), "", "", false, dummyMaskInfo));
         ExportResource.GeometrySpecDTO geometrySpecDTO = new ExportResource.GeometrySpecDTO(exportSpecs.getGeometrySpecs().getSelections(),
                 exportSpecs.getGeometrySpecs().getAxis(), exportSpecs.getGeometrySpecs().getSliceNumber(), exportSpecs.getGeometrySpecs().getMode());
-        ExportResource.ExportJob exportJob = new ExportResource.ExportJob(jobID, TestEndpointUtils.administratorUser,
-                new AnnotatedFunction[]{}, exportSpecs.getVCDataIdentifier(), exportSpecs.getFormat(), exportSpecs.getVariableSpecs(), exportSpecs.getTimeSpecs(),
+
+        VCSimulationDataIdentifier vcSimulationDataIdentifier = (VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier();
+        ExportRequestListenerMQ.ExportJob exportJob = new ExportRequestListenerMQ.ExportJob(jobID, TestEndpointUtils.administratorUser,
+                new AnnotatedFunction[]{}, vcSimulationDataIdentifier.getVcSimID(), vcSimulationDataIdentifier.getJobIndex(), exportSpecs.getFormat(), exportSpecs.getVariableSpecs(), exportSpecs.getTimeSpecs(),
                 geometrySpecDTO, exportSpecs.getFormatSpecificSpecs(), exportSpecs.getSimulationName(), exportSpecs.getContextName());
         statusCreator.addServerExportListener(TestEndpointUtils.administratorUser, exportJob.id());
 

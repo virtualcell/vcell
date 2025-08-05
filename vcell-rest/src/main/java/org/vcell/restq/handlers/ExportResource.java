@@ -25,12 +25,10 @@ import org.vcell.restq.services.UserRestService;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 @Path("/api/v1/export")
@@ -113,7 +111,7 @@ public class ExportResource {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try{
             N5Specs n5Specs = new N5Specs(er.exportableDataType(), ExportFormat.N5, er.datasetName, er.subVolume);
-            ExportJob exportJob = exportService.createExportJobFromRequest(user, er.standardExportInformation, n5Specs, ExportFormat.N5);
+            ExportRequestListenerMQ.ExportJob exportJob = exportService.createExportJobFromRequest(user, er.standardExportInformation, n5Specs, ExportFormat.N5);
             exportRequestListenerMQ.get().addExportJobToQueue(exportJob);
             return exportJob.id();
         } catch ( JsonProcessingException e) {
@@ -150,17 +148,6 @@ public class ExportResource {
 
     public record ExportHistory(
             String exportHistory
-    ){ }
-
-    public record ExportJob(
-            long id,
-            User user,
-            AnnotatedFunction[] outputContext,
-            VCDataIdentifier vcdID,
-            ExportFormat format,
-            VariableSpecs variableSpecs, TimeSpecs timeSpecs,
-            GeometrySpecDTO geometrySpecs, FormatSpecificSpecs formatSpecificSpecs,
-            String simulationName,String contextName
     ){ }
 
     public record GeometrySpecDTO(
