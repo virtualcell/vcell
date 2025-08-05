@@ -11,17 +11,13 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.quarkus.arc.properties.IfBuildProperty;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.eclipse.microprofile.reactive.messaging.Channel;
-import org.eclipse.microprofile.reactive.messaging.Emitter;
-import org.eclipse.microprofile.reactive.messaging.Outgoing;
+import org.vcell.restq.activemq.ExportRequestListenerMQ;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.errors.exceptions.RuntimeWebException;
 import org.vcell.restq.handlers.ExportResource;
@@ -74,10 +70,9 @@ public class ExportService {
         return exportStatusCreator.getMostRecentExportStatus(user);
     }
 
-    public ExportResource.ExportJob createExportJobFromRequest(User user, ExportResource.StandardExportInfo request, FormatSpecificSpecs formatSpecificSpecs, ExportFormat format) throws DataAccessException, SQLException {
+    public ExportRequestListenerMQ.ExportJob createExportJobFromRequest(User user, ExportResource.StandardExportInfo request, FormatSpecificSpecs formatSpecificSpecs, ExportFormat format) throws DataAccessException, SQLException {
         SimulationRep simulationRep = simulationRestService.getSimulationRep(new KeyValue(request.simulationKey()));
         VCSimulationIdentifier simulationIdentifier = new VCSimulationIdentifier(simulationRep.getKey(), simulationRep.getOwner());
-        VCSimulationDataIdentifier dataIdentifier = new VCSimulationDataIdentifier(simulationIdentifier, request.simulationJob());
         JobRequest newExportJob = JobRequest.createExportJobRequest(user);
         long exportID = newExportJob.getExportJobID();
         AnnotatedFunction[] annotatedFunctions = {};
@@ -93,7 +88,7 @@ public class ExportService {
                     }
             ).toArray(AnnotatedFunction[]::new);
         }
-        return new ExportResource.ExportJob(exportID, user, annotatedFunctions, dataIdentifier, format,
+        return new ExportRequestListenerMQ.ExportJob(exportID, user, annotatedFunctions, simulationIdentifier, request.simulationJob(), format,
                 request.variableSpecs(), request.timeSpecs(), request.geometrySpecs(), formatSpecificSpecs, request.simulationName(), request.contextName());
     }
 

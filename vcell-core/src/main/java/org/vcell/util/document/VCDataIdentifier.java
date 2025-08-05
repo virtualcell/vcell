@@ -29,16 +29,12 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 @Schema( // Including One of destroys inheritance, and instead generates a factory class
         discriminatorMapping = {
                 @DiscriminatorMapping(value = "VCSimulationDataIdentifier", schema = VCSimulationDataIdentifier.class),
+                @DiscriminatorMapping(value = "MergedDataInfo", schema = MergedDataInfo.class),
+                @DiscriminatorMapping(value = "VCSimulationDataIdentifierOldStyle", schema = VCSimulationDataIdentifierOldStyle.class)
         },
-        discriminatorProperty = "type",
-        oneOf = {VCSimulationDataIdentifier.class, ExternalDataIdentifier.class, MergedDataInfo.class, VCSimulationDataIdentifierOldStyle.class}
+        discriminatorProperty = "vcDataIdentifierType",
+        oneOf = {VCSimulationDataIdentifier.class, MergedDataInfo.class, VCSimulationDataIdentifierOldStyle.class}
 )
-@JsonTypeInfo(
-        use = JsonTypeInfo.Id.NAME,
-        property = "type",  // Discriminator field
-        visible = true
-)
-@JsonSubTypes({@JsonSubTypes.Type(value = VCSimulationDataIdentifier.class, name = "VCSimulationDataIdentifier")})
 public interface VCDataIdentifier {
 /**
  * Insert the method's description here.

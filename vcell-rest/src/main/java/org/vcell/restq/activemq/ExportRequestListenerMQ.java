@@ -5,13 +5,12 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.simdata.OutputContext;
+import cbit.vcell.solver.AnnotatedFunction;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.solver.VCSimulationIdentifier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.quarkus.arc.DefaultBean;
-import io.quarkus.arc.lookup.LookupIfProperty;
 import io.quarkus.arc.properties.IfBuildProperty;
-import io.smallrye.common.annotation.Blocking;
-import io.smallrye.common.annotation.NonBlocking;
 import io.smallrye.mutiny.Uni;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -27,12 +26,14 @@ import org.vcell.restq.handlers.ExportResource;
 import org.vcell.restq.services.Exports.ExportService;
 import org.vcell.restq.services.Exports.ExportStatusCreator;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.ExternalDataIdentifier;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -43,7 +44,7 @@ import java.util.concurrent.*;
 class DummyExportRequestListenerMQ implements ExportMQInterface {
 
     @Override
-    public void addExportJobToQueue(ExportResource.ExportJob exportJob) throws JsonProcessingException {
+    public void addExportJobToQueue(ExportRequestListenerMQ.ExportJob exportJob) throws JsonProcessingException {
         throw new IllegalCallerException("ExportRequestListenerMQ is not enabled, cannot consume export request");
     }
 
@@ -87,7 +88,7 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
                 new ExportServiceImpl());
     }
 
-    public void addExportJobToQueue(ExportResource.ExportJob exportJob) throws JsonProcessingException {
+    public void addExportJobToQueue(ExportJob exportJob) throws JsonProcessingException {
         logger.debug("Export job added to queue: {} for user: {}", exportJob.id(), exportJob.user().getName());
         exportStatusCreator.addServerExportListener(exportJob.user(), exportJob.id());
         exportJobEmitter.send(mapper.writeValueAsString(exportJob));
@@ -108,35 +109,42 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
     }
 
     public CompletableFuture<Void> startJob(Message<String> message) throws JsonProcessingException {
+        return startJob(message, true);
+    }
+
+    public CompletableFuture<Void> startJob(Message<String> message, boolean handleFailure) throws JsonProcessingException {
         String exportJobJSON = message.getPayload();
-        ExportResource.ExportJob exportJob = mapper.readValue(exportJobJSON, ExportResource.ExportJob.class);
+        ExportJob exportJob = mapper.readValue(exportJobJSON, ExportJob.class);
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-                try {
-                    ExportSpecs exportSpecs = getExportSpecs(exportJob);
-                    ExportServiceImpl.makeRemoteFile(new OutputContext(exportJob.outputContext()), exportJob.user(), dataServer, exportSpecs, exportStatusCreator, exportJob.id());
-                } catch (SQLException | DataAccessException e) {
-                    throw new RuntimeException(e);
-                }
-        }, threadPoolExecutor)
+                    try {
+                        ExportSpecs exportSpecs = getExportSpecs(exportJob);
+                        ExportServiceImpl.makeRemoteFile(new OutputContext(exportJob.outputContext()), exportJob.user(), dataServer, exportSpecs, exportStatusCreator, exportJob.id());
+                    } catch (SQLException | DataAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                }, threadPoolExecutor)
                 .thenRun(message::ack)
-                .orTimeout(15, waitUnit)
-                .exceptionally(ex -> {
-                    logger.error("Error thrown when trying to start export job", ex);
-                    exportStatusCreator.fireExportFailed(exportJob.id(), exportJob.vcdID(),
-                            exportJob.format() == null ? null : exportJob.format().toString(), ex.getMessage());
-                    return null;
-        });
+                .orTimeout(15, waitUnit);
+
+        if (handleFailure){
+            future = future.exceptionally(ex -> {
+                logger.error("Error thrown when trying to start export job", ex);
+                exportStatusCreator.fireExportFailed(exportJob.id(),  new VCSimulationDataIdentifier(exportJob.simulationIdentifier(), exportJob.simulationJob()),
+                        exportJob.format() == null ? null : exportJob.format().toString(), ex.getMessage());
+                return null;
+            });
+        }
         return future;
     }
 
-    private ExportSpecs getExportSpecs(ExportResource.ExportJob exportJob) throws SQLException, DataAccessException {
+    private ExportSpecs getExportSpecs(ExportJob exportJob) throws SQLException, DataAccessException {
         GeometrySpecs geometrySpecs = new GeometrySpecs(exportJob.geometrySpecs().selections(), exportJob.geometrySpecs().axis(),
                 exportJob.geometrySpecs().sliceNumber(), exportJob.geometrySpecs().geometryMode());
         Map<Integer, String> subVolume = exportJob.formatSpecificSpecs() instanceof N5Specs n5ExportRequest ?
                 n5ExportRequest.getSubVolumeMapping() : null;
         HumanReadableExportData humanReadableExportData = new HumanReadableExportData(null,
                 null, null, null, null, null, false, subVolume);
-        return new ExportSpecs(exportJob.vcdID(), exportJob.format(), exportJob.variableSpecs(), exportJob.timeSpecs(),
+        return new ExportSpecs(new VCSimulationDataIdentifier(exportJob.simulationIdentifier(), exportJob.simulationJob()), exportJob.format(), exportJob.variableSpecs(), exportJob.timeSpecs(),
                 geometrySpecs, exportJob.formatSpecificSpecs(), exportJob.simulationName(), exportJob.contextName(), humanReadableExportData);
     }
 
@@ -144,4 +152,15 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
         waitUnit = timeUnit;
     }
 
+    public record ExportJob(
+            long id,
+            User user,
+            AnnotatedFunction[] outputContext,
+            VCSimulationIdentifier simulationIdentifier,
+            int simulationJob,
+            ExportFormat format,
+            VariableSpecs variableSpecs, TimeSpecs timeSpecs,
+            ExportResource.GeometrySpecDTO geometrySpecs, FormatSpecificSpecs formatSpecificSpecs,
+            String simulationName, String contextName
+    ){ }
 }
