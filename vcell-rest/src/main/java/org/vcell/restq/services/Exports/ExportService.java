@@ -33,8 +33,6 @@ import java.util.Set;
 
 @ApplicationScoped
 public class ExportService {
-    private final DatabaseServerImpl databaseServer;
-
     @Inject
     ExportStatusCreator exportStatusCreator;
 
@@ -44,22 +42,13 @@ public class ExportService {
     @Inject
     ObjectMapper jsonMapper;
 
-
-
-    private final static Logger lg = LogManager.getLogger(ExportService.class);
-
     @Inject
-    public ExportService(AgroalConnectionFactory connectionFactory, ExportStatusCreator exportStatusCreator) throws DataAccessException, FileNotFoundException {
-        this.databaseServer = new DatabaseServerImpl(connectionFactory, connectionFactory.getKeyFactory());
+    public ExportService(ExportStatusCreator exportStatusCreator) throws DataAccessException, FileNotFoundException {
         this.exportStatusCreator = exportStatusCreator;
     }
 
     public ExportResource.ExportHistory getExportHistory(User user) throws DataAccessException {
         return new ExportResource.ExportHistory("Hello");
-    }
-
-    public void addExportHistory(User user, ExportResource.ExportHistory history) throws DataAccessException {
-        databaseServer.addExportHistory(user, history.exportHistory());
     }
 
     public Multi<ExportEvent> getExportStatuses(User user, long jobID) throws ObjectNotFoundException {
