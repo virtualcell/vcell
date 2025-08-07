@@ -10,7 +10,7 @@
 
 package cbit.vcell.export.server;
 
-import cbit.rmi.event.ExportStatusEventCreator;
+import cbit.rmi.event.ExportEventController;
 import cbit.vcell.export.MeshToImage;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.model.ModelUnitSystem;
@@ -44,7 +44,7 @@ import java.util.HashMap;
 public class N5Exporter {
 	private final static Logger lg = LogManager.getLogger(N5Exporter.class);
 
-	private ExportStatusEventCreator exportServiceImpl = null;
+	private ExportEventController exportServiceImpl = null;
 
 	private DataServerImpl dataServer;
 
@@ -65,7 +65,7 @@ public class N5Exporter {
 	));
 
 
-	public N5Exporter(ExportStatusEventCreator exportServiceImpl, User user, DataServerImpl dataServer, VCSimulationDataIdentifier vcSimulationDataIdentifier) {
+	public N5Exporter(ExportEventController exportServiceImpl, User user, DataServerImpl dataServer, VCSimulationDataIdentifier vcSimulationDataIdentifier) {
 		this.exportServiceImpl = exportServiceImpl;
 		this.user = user;
 		this.dataServer = dataServer;

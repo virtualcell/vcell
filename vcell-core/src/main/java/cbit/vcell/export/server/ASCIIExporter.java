@@ -10,7 +10,7 @@
 
 package cbit.vcell.export.server;
 
-import cbit.rmi.event.ExportStatusEventCreator;
+import cbit.rmi.event.ExportEventController;
 import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.math.VariableType;
@@ -44,7 +44,7 @@ import java.util.*;
 public class ASCIIExporter {
     private final static Logger lg = LogManager.getLogger(ASCIIExporter.class);
 
-    private ExportStatusEventCreator exportServiceImpl = null;
+    private ExportEventController exportServiceImpl = null;
 
     /**
      * Insert the method's description here.
@@ -52,7 +52,7 @@ public class ASCIIExporter {
      *
      * @param exportServiceImpl cbit.vcell.export.server.ExportServiceImpl
      */
-    public ASCIIExporter(ExportStatusEventCreator exportServiceImpl){
+    public ASCIIExporter(ExportEventController exportServiceImpl){
         this.exportServiceImpl = exportServiceImpl;
     }
 
@@ -185,7 +185,7 @@ public class ASCIIExporter {
         SimulationDescription simulationDescription = new SimulationDescription(outputContext, user, dataServerImpl, vcdID, true, null);
         fileDataContainerManager.append(exportOutput.getFileDataContainerID(), simulationDescription.getHeader(dataType));
         fileDataContainerManager.append(exportOutput.getFileDataContainerID(), getODEDataValues(jobID, user, dataServerImpl, vcdID, variableSpecs.getVariableNames(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns(), fileDataContainerManager));
-        dataID += variableSpecs.getMode() == ExportSpecss.VariableMode.VARIABLE_ONE ? variableSpecs.getVariableNames()[0] : "ManyVars";
+        dataID += variableSpecs.getMode() == ExportEnums.VariableMode.VARIABLE_ONE ? variableSpecs.getVariableNames()[0] : "ManyVars";
         return Arrays.asList(exportOutput);
     }
 
@@ -429,7 +429,7 @@ public class ASCIIExporter {
         final int SIM_COUNT = simNameSimDataIDs.length;
         final int PARAMSCAN_COUNT = (asciiSpecs.getExportMultipleParamScans() != null ? asciiSpecs.getExportMultipleParamScans().length : 1);
         final int TIME_COUNT = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex() + 1;
-        if(PARAMSCAN_COUNT > 1 || geometrySpecs.getMode() != ExportSpecss.GeometryMode.GEOMETRY_SELECTIONS/* || geometrySpecs.getCurves().length != 0*/){
+        if(PARAMSCAN_COUNT > 1 || geometrySpecs.getMode() != ExportEnums.GeometryMode.GEOMETRY_SELECTIONS/* || geometrySpecs.getCurves().length != 0*/){
             throw new DataAccessException("Alternate csv format cannot have parameter scans and must be 'point selection' type");
         }
         final long MESSAGE_LIMIT = 5000;//millisecodns
@@ -736,7 +736,7 @@ public class ASCIIExporter {
                             case GEOMETRY_SLICE:
                             case GEOMETRY_FULL:{
                                 int sliceNumber = geometrySpecs.getSliceNumber();
-                                if(geometrySpecs.getMode() == ExportSpecss.GeometryMode.GEOMETRY_FULL){
+                                if(geometrySpecs.getMode() == ExportEnums.GeometryMode.GEOMETRY_FULL){
                                     sliceNumber = -1;
                                 }
                                 String dataID = "_Slice_" + Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()) + "_" + sliceNumber + "_";

@@ -26,7 +26,7 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserInfo;
 import org.vcell.util.document.UserLoginInfo;
-import org.vcell.api.types.utils.DTOOldAPI;
+import org.vcell.api.types.utils.DTOModelTransformerV0;
 
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -230,7 +230,7 @@ public class HealthService {
 							if (eventWrapper.eventType == EventWrapper.EventType.SimJob) {
 								SimulationJobStatusEventRepresentation simJobStatusEventRep =
 										gson.fromJson(eventWrapper.eventJSON, SimulationJobStatusEventRepresentation.class);
-								SimulationJobStatusEvent jobEvent = DTOOldAPI.simulationJobStatusEventFromJsonRep(this, simJobStatusEventRep);
+								SimulationJobStatusEvent jobEvent = DTOModelTransformerV0.simulationJobStatusEventFromJsonRep(this, simJobStatusEventRep);
 								SimulationJobStatus jobStatus = jobEvent.getJobStatus();
 								VCSimulationIdentifier eventSimId = jobStatus.getVCSimulationIdentifier();
 								if (eventSimId.getOwner().equals(userLoginInfo.getUser()) && eventSimId.getSimulationKey().equals(sim.getKey())) {

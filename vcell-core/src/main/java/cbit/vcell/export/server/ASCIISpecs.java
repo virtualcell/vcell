@@ -23,7 +23,7 @@ public class ASCIISpecs extends FormatSpecificSpecs implements Serializable {
 	public static enum CsvRoiLayout {var_time_val,time_sim_var}
 	private boolean switchRowsColumns;
 	private ExportFormat format;
-	private ExportSpecss.ExportableDataType dataType;
+	private ExportEnums.ExportableDataType dataType;
 	private SimNameSimDataID[] simNameSimDataIDs;
 	private int[] exportMultipleParamScans;
 	private CsvRoiLayout csvLayout;
@@ -31,8 +31,8 @@ public class ASCIISpecs extends FormatSpecificSpecs implements Serializable {
 /**
  * TextSpecs constructor comment.
  */
-public ASCIISpecs(SimNameSimDataID[] simNameSimDataIDs, ExportSpecss.ExportableDataType dataType, ExportFormat format,
-				  int[] exportMultipleParamScans, CsvRoiLayout csvLayout, boolean isHDF5, boolean switchRowsColumns) {
+public ASCIISpecs(SimNameSimDataID[] simNameSimDataIDs, ExportEnums.ExportableDataType dataType, ExportFormat format,
+                  int[] exportMultipleParamScans, CsvRoiLayout csvLayout, boolean isHDF5, boolean switchRowsColumns) {
 	super("ASCIISpecs");
 	this.format = format;
 	this.dataType = dataType;
@@ -43,8 +43,8 @@ public ASCIISpecs(SimNameSimDataID[] simNameSimDataIDs, ExportSpecss.ExportableD
 	this.isHDF5 = isHDF5;
 }
 
-public ASCIISpecs(SimNameSimDataID[] simNameSimDataIDs, ExportSpecss.ExportableDataType dataType, ExportFormat format,
-				  CsvRoiLayout csvLayout, boolean isHDF5, boolean switchRowsColumns){
+public ASCIISpecs(SimNameSimDataID[] simNameSimDataIDs, ExportEnums.ExportableDataType dataType, ExportFormat format,
+                  CsvRoiLayout csvLayout, boolean isHDF5, boolean switchRowsColumns){
 	this(simNameSimDataIDs, dataType, format, null, csvLayout, isHDF5, switchRowsColumns);
 }
 
@@ -86,7 +86,7 @@ public SimNameSimDataID[] getSimNameSimDataIDs(){
  * This method was created in VisualAge.
  * @return int
  */
-public ExportSpecss.ExportableDataType getDataType() {
+public ExportEnums.ExportableDataType getDataType() {
 	return dataType;
 }
 /**

@@ -15,12 +15,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.Gson;
-import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
-import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.janelia.saalfeldlab.n5.*;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.GroupAccess;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -36,7 +33,7 @@ import java.util.Map;
 @Schema(allOf = FormatSpecificSpecs.class, requiredProperties = {"specClass"})
 public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	private final ExportFormat formatType;
-	private final ExportSpecss.ExportableDataType dataType;
+	private final ExportEnums.ExportableDataType dataType;
 	public Map<Integer, String> subVolumeMapping;
 	@JsonIgnore
 	private final CompressionLevel compression;
@@ -55,8 +52,8 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 /**
  * TextSpecs constructor comment.
  */
-	public N5Specs(ExportSpecss.ExportableDataType dataType, ExportFormat format,
-				   CompressionLevel compressionLevel, String dataSetName) {
+	public N5Specs(ExportEnums.ExportableDataType dataType, ExportFormat format,
+                   CompressionLevel compressionLevel, String dataSetName) {
 		super("N5");
 		this.formatType = format;
 		this.dataType = dataType;
@@ -66,8 +63,8 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	}
 
 	@JsonCreator
-	public N5Specs(@JsonProperty("dataType") ExportSpecss.ExportableDataType dataType, @JsonProperty("format") ExportFormat format,
-				   @JsonProperty("dataSetName") String dataSetName, @JsonProperty("subVolumeMapping") Map<Integer, String> subVolumeMapping) {
+	public N5Specs(@JsonProperty("dataType") ExportEnums.ExportableDataType dataType, @JsonProperty("format") ExportFormat format,
+                   @JsonProperty("dataSetName") String dataSetName, @JsonProperty("subVolumeMapping") Map<Integer, String> subVolumeMapping) {
 		super("N5");
 		this.formatType = format;
 		this.dataType = dataType;
@@ -83,7 +80,7 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	 * This method was created in VisualAge.
 	 * @return int
 	 */
-	public ExportSpecss.ExportableDataType getDataType() {
+	public ExportEnums.ExportableDataType getDataType() {
 		return dataType;
 	}
 	/**

@@ -22,7 +22,7 @@ import java.util.zip.DataFormatException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import cbit.rmi.event.ExportStatusEventCreator;
+import cbit.rmi.event.ExportEventController;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.ClientTaskStatusSupport;
@@ -45,10 +45,10 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 public class ExportServiceImpl implements ExportService {
 	public static final Logger lg = LogManager.getLogger(ExportServiceImpl.class);
 	
-	private final OldExportEventCreator eventCreator = new OldExportEventCreator();
+	private final ClientExportEventController eventController = new ClientExportEventController();
 
-	public ExportStatusEventCreator getEventCreator() {
-		return eventCreator;
+	public ExportEventController getEventController() {
+		return eventController;
 	}
 
 
@@ -57,24 +57,24 @@ public ExportServiceImpl() {
 
 
 public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs)throws DataAccessException {
-	return makeRemoteFile(outputContext,user, dataServerImpl, exportSpecs, eventCreator, JobRequest.createExportJobRequest(user).getExportJobID());
+	return makeRemoteFile(outputContext,user, dataServerImpl, exportSpecs, eventController, JobRequest.createExportJobRequest(user).getExportJobID());
 }
 
 public ExportEvent makeRemoteFile(OutputContext outputContext, User user, DataServerImpl dataServer, ExportSpecs exportSpecs, boolean zip, ClientTaskStatusSupport clientTaskStatusSupport)throws DataAccessException {
-		return makeRemoteFile(outputContext, user, dataServer, exportSpecs, eventCreator, zip, clientTaskStatusSupport, JobRequest.createExportJobRequest(user).getExportJobID());
+		return makeRemoteFile(outputContext, user, dataServer, exportSpecs, eventController, zip, clientTaskStatusSupport, JobRequest.createExportJobRequest(user).getExportJobID());
 }
 
-public static ExportEvent makeRemoteFile(OutputContext outputContext, User user, DataServerImpl dataServer, ExportSpecs exportSpecs, ExportStatusEventCreator eventCreator, long jobRequestID) throws DataAccessException{
+public static ExportEvent makeRemoteFile(OutputContext outputContext, User user, DataServerImpl dataServer, ExportSpecs exportSpecs, ExportEventController eventCreator, long jobRequestID) throws DataAccessException{
 	return makeRemoteFile(outputContext, user, dataServer, exportSpecs, eventCreator, true, null, jobRequestID);
 }
 
-private static ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, ExportStatusEventCreator eventCreator, boolean bSaveAsZip, ClientTaskStatusSupport clientTaskStatusSupport, long jobRequestID) throws DataAccessException {
+private static ExportEvent makeRemoteFile(OutputContext outputContext, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, ExportEventController eventCreator, boolean bSaveAsZip, ClientTaskStatusSupport clientTaskStatusSupport, long jobRequestID) throws DataAccessException {
 	// if export completes successfully, we return the generated event for logging
 	if (user == null) {
 		throw new DataAccessException("ERROR: user is null");
 	}
 	JobRequest newExportJob = JobRequest.createExportJobRequest(user, jobRequestID);
-	if (eventCreator instanceof OldExportEventCreator evc){
+	if (eventCreator instanceof ClientExportEventController evc){
 		evc.putJobRequest(newExportJob.getExportJobID(), user);
 	}
 	if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): " + newExportJob + ", " + exportSpecs);
@@ -192,7 +192,7 @@ private static ExportEvent makeRemoteFile(OutputContext outputContext,User user,
 private static ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL,
 								   NrrdInfo[] nrrdInfos, ExportSpecs exportSpecs, JobRequest newExportJob,
 								   FileDataContainerManager fileDataContainerManager,
-								   ExportStatusEventCreator eventCreator) throws DataFormatException, IOException, MalformedURLException {
+								   ExportEventController eventCreator) throws DataFormatException, IOException, MalformedURLException {
 			boolean exportValid = true;
 
 	// check outputs and package into zip file
@@ -242,7 +242,7 @@ private static ExportEvent saveResultsToRemoteFile(String fileFormat, String exp
 												   String exportBaseURL, ExportOutput[] exportOutputs,
 												   ExportSpecs exportSpecs, JobRequest newExportJob,
 												   FileDataContainerManager fileDataContainerManager,
-												   ExportStatusEventCreator eventCreator) throws DataFormatException, IOException, MalformedURLException {
+												   ExportEventController eventCreator) throws DataFormatException, IOException, MalformedURLException {
 			boolean exportValid = true;
 			eventCreator.fireExportAssembling(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat);
 
@@ -285,7 +285,7 @@ private static ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exp
 												   String exportBaseURL, ExportOutput[] exportOutputs,
 												   ExportSpecs exportSpecs, JobRequest newExportJob,
 												   FileDataContainerManager fileDataContainerManager,
-												   ExportStatusEventCreator eventCreator) throws DataFormatException, IOException, MalformedURLException
+												   ExportEventController eventCreator) throws DataFormatException, IOException, MalformedURLException
 {
 	boolean exportValid = true;
 	String fileNames = "";
@@ -335,7 +335,7 @@ private static ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exp
 
 private static ExportEvent makeRemoteN5File(String fileFormat, String fileName, ExportOutput exportOutput,
 											ExportSpecs exportSpecs, JobRequest newExportJob, String pathSuffix,
-											ExportStatusEventCreator eventCreator) throws DataFormatException, IOException{
+											ExportEventController eventCreator) throws DataFormatException, IOException{
 	if (exportOutput.isValid()) {
 		String url = PropertyLoader.getRequiredProperty(PropertyLoader.s3ExportBaseURLProperty);
 		url += "/" + pathSuffix;

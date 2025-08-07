@@ -12,7 +12,7 @@ package org.vcell.api.messaging;
 
 import cbit.rmi.event.*;
 import org.vcell.api.types.events.*;
-import org.vcell.api.types.utils.DTOOldAPI;
+import org.vcell.api.types.utils.DTOModelTransformerV0;
 import cbit.vcell.message.VCRpcRequest;
 import cbit.vcell.message.VCellQueue;
 import cbit.vcell.message.server.bootstrap.client.RpcSender;
@@ -134,19 +134,19 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 				case SimJob:{
 					SimulationJobStatusEventRepresentation simJobStatusEventRep =
 							gson.fromJson(eventWrapper.eventJSON, SimulationJobStatusEventRepresentation.class);
-					SimulationJobStatusEvent simJobStatusEvent = DTOOldAPI.simulationJobStatusEventFromJsonRep(this, simJobStatusEventRep);
+					SimulationJobStatusEvent simJobStatusEvent = DTOModelTransformerV0.simulationJobStatusEventFromJsonRep(this, simJobStatusEventRep);
 					messageEvents.add(simJobStatusEvent);
 					break;
 				}
 				case ExportEvent:{
 					ExportEventRepresentation exportEventRep = gson.fromJson(eventWrapper.eventJSON, ExportEventRepresentation.class);
-					ExportEvent exportEvent = DTOOldAPI.exportEventFromJsonRep(this, exportEventRep);
+					ExportEvent exportEvent = DTOModelTransformerV0.exportEventFromJsonRep(this, exportEventRep);
 					messageEvents.add(exportEvent);
 					break;
 				}
 				case DataJob:{
 					DataJobEventRepresentation dataJobEventRep = gson.fromJson(eventWrapper.eventJSON, DataJobEventRepresentation.class);
-					DataJobEvent dataJobEvent = DTOOldAPI.dataJobEventFromJsonRep(this, dataJobEventRep);
+					DataJobEvent dataJobEvent = DTOModelTransformerV0.dataJobEventFromJsonRep(this, dataJobEventRep);
 					messageEvents.add(dataJobEvent);
 					break;
 				}

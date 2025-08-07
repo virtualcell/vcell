@@ -21,7 +21,7 @@ public class ExportUtils {
  * @return int[]
  * @param pixels int[]
  */
-public static int[] extendMirrorPixels(int[] pixels, int width, int height, ExportSpecss.MirroringMethod mode) throws DataFormatException {
+public static int[] extendMirrorPixels(int[] pixels, int width, int height, ExportEnums.MirroringMethod mode) throws DataFormatException {
 	if (pixels.length != width * height) throw new DataFormatException("Pixel number incompatible with given width, height");
 	int[] mirroredPixels;
 	switch (mode) {

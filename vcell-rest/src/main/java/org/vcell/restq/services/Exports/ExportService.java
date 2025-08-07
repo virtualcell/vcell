@@ -4,21 +4,16 @@ import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.JobRequest;
-import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.SimulationRep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.AnnotatedFunction;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.vcell.restq.activemq.ExportRequestListenerMQ;
-import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.errors.exceptions.RuntimeWebException;
 import org.vcell.restq.handlers.ExportResource;
 import org.vcell.restq.services.SimulationRestService;
@@ -34,7 +29,7 @@ import java.util.Set;
 @ApplicationScoped
 public class ExportService {
     @Inject
-    ExportStatusCreator exportStatusCreator;
+    ServerExportEventController exportStatusCreator;
 
     @Inject
     SimulationRestService simulationRestService;
@@ -43,7 +38,7 @@ public class ExportService {
     ObjectMapper jsonMapper;
 
     @Inject
-    public ExportService(ExportStatusCreator exportStatusCreator) throws DataAccessException, FileNotFoundException {
+    public ExportService(ServerExportEventController exportStatusCreator) throws DataAccessException, FileNotFoundException {
         this.exportStatusCreator = exportStatusCreator;
     }
 

@@ -26,7 +26,7 @@ import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.handlers.ExportResource;
 import org.vcell.restq.services.Exports.ExportService;
-import org.vcell.restq.services.Exports.ExportStatusCreator;
+import org.vcell.restq.services.Exports.ServerExportEventController;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
@@ -48,7 +48,7 @@ public class ExportServerTest {
     @Inject
     Instance<ExportMQInterface> requestListenerMQ;
     @Inject
-    ExportStatusCreator statusCreator;
+    ServerExportEventController statusCreator;
     @Inject
     ExportService exportService;
     @Inject
@@ -104,20 +104,20 @@ public class ExportServerTest {
             switch (i){
                 case 0:
                     Assertions.assertNull(exportEvent.getProgress());
-                    Assertions.assertEquals(ExportSpecss.ExportProgressType.EXPORT_START, exportEvent.getEventType());
+                    Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_START, exportEvent.getEventType());
                     break;
                 case 1:
                     Assertions.assertEquals(.25,exportEvent.getProgress());
-                    Assertions.assertEquals(ExportSpecss.ExportProgressType.EXPORT_PROGRESS, exportEvent.getEventType());
+                    Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_PROGRESS, exportEvent.getEventType());
                     break;
                 case 2:
                     Assertions.assertEquals(.8125,exportEvent.getProgress());
-                    Assertions.assertEquals(ExportSpecss.ExportProgressType.EXPORT_PROGRESS, exportEvent.getEventType());
+                    Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_PROGRESS, exportEvent.getEventType());
                     Assertions.assertNull(exportEvent.getLocation());
                     break;
                 case 3:
                     Assertions.assertNull(exportEvent.getProgress());
-                    Assertions.assertEquals(ExportSpecss.ExportProgressType.EXPORT_COMPLETE, exportEvent.getEventType());
+                    Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_COMPLETE, exportEvent.getEventType());
                     Assertions.assertNotNull(exportEvent.getLocation());
                     break;
                 default:
@@ -135,7 +135,7 @@ public class ExportServerTest {
         ExportSpecs exportSpecs = getValidExportSpec(0, 1);
         long badJobID = 2;
         ExportSpecs badExportSpecs = new ExportSpecs(exportSpecs.getVCDataIdentifier(), null, null, null,
-                new GeometrySpecs(new SpatialSelection[]{}, 1, 1, ExportSpecss.GeometryMode.GEOMETRY_SLICE), null, "TestSim", null);
+                new GeometrySpecs(new SpatialSelection[]{}, 1, 1, ExportEnums.GeometryMode.GEOMETRY_SLICE), null, "TestSim", null);
         Multi<ExportEvent> status = createExportListener(badExportSpecs, badJobID);
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
             VCSimulationDataIdentifier vcSimulationDataIdentifier = (VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier();
@@ -152,7 +152,7 @@ public class ExportServerTest {
         });
         BlockingIterable<ExportEvent> blockingIterable = status.subscribe().asIterable();
         for (ExportEvent exportEvent : blockingIterable) {
-            Assertions.assertEquals(ExportSpecss.ExportProgressType.EXPORT_FAILURE, exportEvent.getEventType());
+            Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_FAILURE, exportEvent.getEventType());
         }
         future.join();
     }
@@ -160,7 +160,7 @@ public class ExportServerTest {
     @Test
     public void testLongRunningThread() throws Exception {
         ExportRequestListenerMQ.ExportJob exportJob = exportService.createExportJobFromRequest(TestEndpointUtils.administratorUser, getValidExportRequest(0, 3).standardExportInformation(),
-                new N5Specs(ExportSpecss.ExportableDataType.PDE_VARIABLE_DATA, ExportFormat.N5, "TestDataset", dummyMaskInfo), ExportFormat.N5);
+                new N5Specs(ExportEnums.ExportableDataType.PDE_VARIABLE_DATA, ExportFormat.N5, "TestDataset", dummyMaskInfo), ExportFormat.N5);
         statusCreator.addServerExportListener(TestEndpointUtils.administratorUser, exportJob.id());
 
         ((ExportRequestListenerMQ) requestListenerMQ.get()).setThreadWaitTimeUnit(TimeUnit.MILLISECONDS);
@@ -182,16 +182,16 @@ public class ExportServerTest {
         DataIdentifier[] dataIdentifier = dataServer.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), TestEndpointUtils.administratorUser, simulationDataIdentifier);
         DataIdentifier volumetricDataID = getOneDIWithSpecificType(VariableType.VOLUME, dataIdentifier);
 
-        VariableSpecs variableSpecs = new VariableSpecs(new ArrayList<>(){{add(volumetricDataID.getName());}}, ExportSpecss.VariableMode.VARIABLE_ONE);
-        ExportResource.GeometrySpecDTO geometrySpecs = new ExportResource.GeometrySpecDTO(new SpatialSelection[0], 0, 0, ExportSpecss.GeometryMode.GEOMETRY_SELECTIONS);
+        VariableSpecs variableSpecs = new VariableSpecs(new ArrayList<>(){{add(volumetricDataID.getName());}}, ExportEnums.VariableMode.VARIABLE_ONE);
+        ExportResource.GeometrySpecDTO geometrySpecs = new ExportResource.GeometrySpecDTO(new SpatialSelection[0], 0, 0, ExportEnums.GeometryMode.GEOMETRY_SELECTIONS);
 
         double[] allTimes = dataServer.getDataSetTimes(TestEndpointUtils.administratorUser, simulationDataIdentifier);
-        TimeSpecs timeSpecs = new TimeSpecs(startTimeIndex, endTimeIndex, allTimes, ExportSpecss.TimeMode.TIME_RANGE);
+        TimeSpecs timeSpecs = new TimeSpecs(startTimeIndex, endTimeIndex, allTimes, ExportEnums.TimeMode.TIME_RANGE);
         HashMap<Integer, String> dummyMaskInfo = new HashMap<>(){{put(0, "Dummy"); put(1, "Test");}};
 
         ExportResource.StandardExportInfo request = new ExportResource.StandardExportInfo(new ArrayList<>(){},"", "TestSim", simulationID, 0,
                 geometrySpecs, timeSpecs, variableSpecs);
-        return new ExportResource.N5ExportRequest(request, dummyMaskInfo, ExportSpecss.ExportableDataType.PDE_VARIABLE_DATA, "TestDataset");
+        return new ExportResource.N5ExportRequest(request, dummyMaskInfo, ExportEnums.ExportableDataType.PDE_VARIABLE_DATA, "TestDataset");
     }
 
     private ExportSpecs getValidExportSpec(int startTimeIndex, int endTimeIndex) throws Exception {

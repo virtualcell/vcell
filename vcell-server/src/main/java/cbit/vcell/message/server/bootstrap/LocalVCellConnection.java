@@ -82,7 +82,7 @@ public LocalVCellConnection(UserLoginInfo userLoginInfo, SimulationDatabase simu
 	
 	this.exportServiceImpl = exportServiceImpl;
 	this.dataSetControllerImpl = dataSetControllerImpl;
-	this.exportServiceImpl.getEventCreator().addExportListener(this);
+	this.exportServiceImpl.getEventController().addExportListener(this);
 	this.dataSetControllerImpl.addDataJobListener(this);
 
 	performanceMonitoringFacility = new PerformanceMonitoringFacility(this.userLoginInfo.getUser());	

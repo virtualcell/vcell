@@ -2,7 +2,7 @@ package cbit.vcell.export.server;
 
 import org.vcell.util.document.VCDataIdentifier;
 
-public abstract class ExportSpecss {
+public abstract class ExportEnums {
 
     public record ExportRequest(
             VCDataIdentifier dataIdentifier,

@@ -445,7 +445,7 @@ public class MediaSettingsPanel extends JPanel {
 					meshMode = (scalingCombobox.getSelectedItem().equals(MESH_MODE_TEXT)?ImagePaneModel.MESH_MODE:ImagePaneModel.NORMAL_MODE);
 					imageScale = (meshMode == ImagePaneModel.MESH_MODE?viewZoom:Integer.valueOf((String)scalingCombobox.getSelectedItem()));
 					imageDim = FormatSpecificSpecs.getImageDimension(meshMode, imageScale, mesh, normalAxis);
-					imageDim = FormatSpecificSpecs.getMirrorDimension(ExportSpecss.MirroringMethod.getMirroringMethod(mirrorComboBox.getSelectedIndex()), imageDim.width, imageDim.height);
+					imageDim = FormatSpecificSpecs.getMirrorDimension(ExportEnums.MirroringMethod.getMirroringMethod(mirrorComboBox.getSelectedIndex()), imageDim.width, imageDim.height);
 					imageDim.height = (bSeparate?imageDim.height:imageDim.height*variableNames.length);
 				}
 				String finalFileDescription = null;
@@ -769,7 +769,7 @@ public class MediaSettingsPanel extends JPanel {
 				bOverLay,
 				displayPreferences,
 				(encodeFormatGIF.isSelected()?ExportFormat.GIF:ExportFormat.FORMAT_JPEG),
-				ExportSpecss.MirroringMethod.getMirroringMethod(mirrorComboBox.getSelectedIndex()),
+				ExportEnums.MirroringMethod.getMirroringMethod(mirrorComboBox.getSelectedIndex()),
 				volVarMembrOutlineThickness,
 				imageScaling,
 				membrScaling,
@@ -783,8 +783,8 @@ public class MediaSettingsPanel extends JPanel {
 			return new ImageSpecs(
 					displayPreferences,
 					mediaType,
-					(encodeFormatGIF.isSelected()? ExportSpecss.CompressionFormats.COMPRESSED_GIF_DEFAULT:ExportSpecss.CompressionFormats.COMPRESSED_JPEG_DEFAULT),
-					ExportSpecss.MirroringMethod.getMirroringMethod(mirrorComboBox.getSelectedIndex()),
+					(encodeFormatGIF.isSelected()? ExportEnums.CompressionFormats.COMPRESSED_GIF_DEFAULT: ExportEnums.CompressionFormats.COMPRESSED_JPEG_DEFAULT),
+					ExportEnums.MirroringMethod.getMirroringMethod(mirrorComboBox.getSelectedIndex()),
 					duration,
 					0/*Infinite*/,
 					volVarMembrOutlineThickness, 

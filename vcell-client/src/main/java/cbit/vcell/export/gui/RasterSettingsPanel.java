@@ -10,7 +10,7 @@
 
 package cbit.vcell.export.gui;
 
-import cbit.vcell.export.server.ExportSpecss;
+import cbit.vcell.export.server.ExportEnums;
 import cbit.vcell.export.server.RasterSpecs;
 /**
  * This type was created in VisualAge.
@@ -420,10 +420,10 @@ private javax.swing.JRadioButton getJRadioButtonSingle() {
  */
 public RasterSpecs getRasterSpecs() {
 	// nrrd raster format
-	ExportSpecss.RasterFormats format = null;
-	if (getJRadioButtonSingle().isSelected()) {format = ExportSpecss.RasterFormats.NRRD_SINGLE;}
-	if (getJRadioButtonByTime().isSelected()) {format = ExportSpecss.RasterFormats.NRRD_BY_TIME;}
-	if (getJRadioButtonByVariable().isSelected()) {format = ExportSpecss.RasterFormats.NRRD_BY_VARIABLE;}
+	ExportEnums.RasterFormats format = null;
+	if (getJRadioButtonSingle().isSelected()) {format = ExportEnums.RasterFormats.NRRD_SINGLE;}
+	if (getJRadioButtonByTime().isSelected()) {format = ExportEnums.RasterFormats.NRRD_BY_TIME;}
+	if (getJRadioButtonByVariable().isSelected()) {format = ExportEnums.RasterFormats.NRRD_BY_VARIABLE;}
 	return new RasterSpecs(format, getJCheckBoxSeparateHeader().isSelected());
 }
 /**
