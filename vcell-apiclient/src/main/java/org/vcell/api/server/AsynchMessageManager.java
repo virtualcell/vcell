@@ -144,10 +144,7 @@ private void poll( )  {
 				List<ExportEvent> exportEvents = setOfExports.stream().map(DtoModelTransforms::dtoToExportEvent).toList();
 				queuedEvents = Stream.concat(exportEvents.stream(), Stream.of(queuedEvents)).toArray(MessageEvent[]::new);
 			} catch (ApiException ex){
-				boolean isObjectNotFoundException = ex.getCode() == 404;
-				if (!isObjectNotFoundException){
-					throw ExceptionHandler.getProperException(ex);
-				}
+				throw ExceptionHandler.getProperException(ex);
 			}
 		}
     	if (report) {

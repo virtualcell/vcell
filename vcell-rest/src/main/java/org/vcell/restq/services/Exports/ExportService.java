@@ -50,7 +50,7 @@ public class ExportService {
         return exportStatusCreator.getUsersExportStatus(user, jobID);
     }
 
-    public Set<ExportEvent> getMostRecentExportStatus(User user) throws ObjectNotFoundException {
+    public Set<ExportEvent> getMostRecentExportStatus(User user) {
         return exportStatusCreator.getMostRecentExportStatus(user);
     }
 
