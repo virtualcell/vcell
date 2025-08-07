@@ -17,7 +17,6 @@ import javax.swing.table.AbstractTableModel;
 
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.ExportStatus;
-import cbit.vcell.export.server.ExportSpecss.ExportProgressType;
 
 /**
  * Insert the type's description here.

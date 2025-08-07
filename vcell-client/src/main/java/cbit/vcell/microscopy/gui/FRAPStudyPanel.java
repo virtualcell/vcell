@@ -127,7 +127,7 @@ import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.SimulationSymbolTable;
 
-import static cbit.vcell.export.server.ExportSpecss.VariableMode.VARIABLE_MULTI;
+import static cbit.vcell.export.server.ExportEnums.VariableMode.VARIABLE_MULTI;
 
 @SuppressWarnings("serial")
 public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
@@ -1367,8 +1367,8 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 						
 //				int endTimeIndex = (int)Math.round(sim.getSolverTaskDescription().getTimeBounds().getEndingTime()/((UniformOutputTimeSpec)sim.getSolverTaskDescription().getOutputTimeSpec()).getOutputTimeStep());
 				int endTimeIndex = getFRAPSimDataViewerPanel().getOriginalDataViewer().getPdeDataContext().getTimePoints().length - 1;
-				TimeSpecs timeSpecs = new TimeSpecs(0, endTimeIndex, pdeDataContext.getTimePoints(), ExportSpecss.TimeMode.TIME_RANGE);
-				ExportSpecss.GeometryMode geoMode = ExportSpecss.GeometryMode.GEOMETRY_SLICE;
+				TimeSpecs timeSpecs = new TimeSpecs(0, endTimeIndex, pdeDataContext.getTimePoints(), ExportEnums.TimeMode.TIME_RANGE);
+				ExportEnums.GeometryMode geoMode = ExportEnums.GeometryMode.GEOMETRY_SLICE;
 				GeometrySpecs geometrySpecs = new GeometrySpecs(null, Coordinate.Z_AXIS, 0, geoMode);
 				
 				double duration = 10000; //10s
@@ -1383,7 +1383,7 @@ public class FRAPStudyPanel extends JPanel implements PropertyChangeListener{
 												 true,
 												 displayPref,
 												 ExportFormat.QUICKTIME,
-												 ExportSpecss.MirroringMethod.NO_MIRRORING,
+												 ExportEnums.MirroringMethod.NO_MIRRORING,
 												 volVarMemOutlineThickness,
 												 imageScale,
 												 membraneScale,

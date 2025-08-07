@@ -3,7 +3,7 @@ package cbit.rmi.event;
 import cbit.vcell.export.server.ExportSpecs;
 import org.vcell.util.document.VCDataIdentifier;
 
-public interface ExportStatusEventCreator {
+public interface ExportEventController {
     ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, String format, String location, ExportSpecs exportSpecs);
 
     void addExportListener(ExportListener listener);

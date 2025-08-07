@@ -19,7 +19,7 @@ import com.google.gson.Gson;
 
 import cbit.vcell.server.SimpleJobStatusQuerySpec;
 import cbit.vcell.server.SimulationJobStatus;
-import org.vcell.api.types.utils.DTOOldAPI;
+import org.vcell.api.types.utils.DTOModelTransformerV0;
 
 public final class AdminJobsRestlet extends Restlet {
 	private final static Logger lg = LogManager.getLogger(AdminJobsRestlet.class);
@@ -105,7 +105,7 @@ public final class AdminJobsRestlet extends Restlet {
 				SimulationJobStatus[] jobStatusArray = adminService.query(querySpec);
 				SimpleJobStatusRepresentation[] reps = new SimpleJobStatusRepresentation[jobStatusArray.length];
 				for (int i=0;i<jobStatusArray.length;i++) {
-					reps[i] = DTOOldAPI.fromSimpleJobStatus(jobStatusArray[i]);
+					reps[i] = DTOModelTransformerV0.fromSimpleJobStatus(jobStatusArray[i]);
 				}
 				String jobStatusArrayJson = gson.toJson(reps);
 				response.setStatus(Status.SUCCESS_OK);

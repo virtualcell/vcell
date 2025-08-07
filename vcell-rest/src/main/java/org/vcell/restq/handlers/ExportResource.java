@@ -126,7 +126,7 @@ public class ExportResource {
     public record N5ExportRequest(
             StandardExportInfo standardExportInformation,
             Map<Integer, String> subVolume,
-            ExportSpecss.ExportableDataType exportableDataType,
+            ExportEnums.ExportableDataType exportableDataType,
             String datasetName
     ){ }
 
@@ -151,6 +151,6 @@ public class ExportResource {
     ){ }
 
     public record GeometrySpecDTO(
-            SpatialSelection[] selections, int axis, int sliceNumber, ExportSpecss.GeometryMode geometryMode
+            SpatialSelection[] selections, int axis, int sliceNumber, ExportEnums.GeometryMode geometryMode
     ){ }
 }

@@ -24,7 +24,6 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
-import cbit.vcell.solver.VCSimulationDataIdentifier;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -37,9 +36,6 @@ import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSampleJPEG;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSampleRaw;
 import cbit.vcell.solvers.CartesianMesh;
-import org.vcell.util.document.GroupAccessAll;
-import org.vcell.util.document.GroupAccessNone;
-import org.vcell.util.document.GroupAccessSome;
 
 /**
  * Dummy parent class.
@@ -198,12 +194,12 @@ public abstract class FormatSpecificSpecs implements Serializable {
 		}
 
 		@JsonIgnore
-		public static Dimension getMirrorDimension(ExportSpecss.MirroringMethod mirroringType,int originalWidth,int originalHeight){
+		public static Dimension getMirrorDimension(ExportEnums.MirroringMethod mirroringType, int originalWidth, int originalHeight){
 			Dimension mirrorDim = new Dimension(originalWidth,originalHeight);
-			if ((mirroringType == ExportSpecss.MirroringMethod.MIRROR_LEFT) || (mirroringType == ExportSpecss.MirroringMethod.MIRROR_RIGHT)){
+			if ((mirroringType == ExportEnums.MirroringMethod.MIRROR_LEFT) || (mirroringType == ExportEnums.MirroringMethod.MIRROR_RIGHT)){
 				mirrorDim.width = 2 * originalWidth;
 			}
-			if ((mirroringType == ExportSpecss.MirroringMethod.MIRROR_TOP) || (mirroringType == ExportSpecss.MirroringMethod.MIRROR_BOTTOM)){
+			if ((mirroringType == ExportEnums.MirroringMethod.MIRROR_TOP) || (mirroringType == ExportEnums.MirroringMethod.MIRROR_BOTTOM)){
 				mirrorDim.height = 2 * originalHeight;
 			}
 			return mirrorDim;

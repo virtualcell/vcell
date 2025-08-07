@@ -3,7 +3,7 @@ package org.vcell.api.types.utils;
 import cbit.rmi.event.DataJobEvent;
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.SimulationJobStatusEvent;
-import cbit.vcell.export.server.ExportSpecss;
+import cbit.vcell.export.server.ExportEnums;
 import cbit.vcell.export.server.HumanReadableExportData;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
@@ -26,7 +26,7 @@ import java.util.Date;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
-public class DTOOldAPI {
+public class DTOModelTransformerV0 {
     public static DataJobEventRepresentation dataJobRepToJsonRep(DataJobEvent dataJobEvent) {
         int eventType = dataJobEvent.getEventTypeID();
         Double progress = dataJobEvent.getProgress();
@@ -69,7 +69,7 @@ public class DTOOldAPI {
         }
         ExportEvent event = new ExportEvent(
                 eventSource, rep.jobid, user,
-                rep.dataIdString, new KeyValue(rep.dataKey), ExportSpecss.ExportProgressType.getExportProgressType(rep.eventType),
+                rep.dataIdString, new KeyValue(rep.dataKey), ExportEnums.ExportProgressType.getExportProgressType(rep.eventType),
                 rep.format, rep.location, rep.progress,
                 timeSpecs, variableSpecs);
         event.setHumanReadableExportData(humanReadableExportData1);
@@ -104,7 +104,7 @@ public class DTOOldAPI {
     }
     public static TimeSpecs timeSpecsFromJsonRep(ExportTimeSpecs rep) {
         TimeSpecs timeSpecs = new TimeSpecs(rep.beginTimeIndex, rep.endTimeIndex, rep.allTimes,
-                ExportSpecss.TimeMode.getTimeMode(rep.modeID));
+                ExportEnums.TimeMode.getTimeMode(rep.modeID));
         return timeSpecs;
     }
 
@@ -115,7 +115,7 @@ public class DTOOldAPI {
     }
 
     public static VariableSpecs variableSpecsFromJsonRep(ExportVariableSpecs rep) {
-        VariableSpecs variableSpecs = new VariableSpecs(rep.variableNames, ExportSpecss.VariableMode.getVariableMode(rep.modeID));
+        VariableSpecs variableSpecs = new VariableSpecs(rep.variableNames, ExportEnums.VariableMode.getVariableMode(rep.modeID));
         return variableSpecs;
     }
 

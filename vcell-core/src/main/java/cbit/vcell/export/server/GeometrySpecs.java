@@ -34,7 +34,7 @@ public class GeometrySpecs implements Serializable {
     private transient SpatialSelection[] spatialSelections = null;
     private final int axis;
     private final int sliceNumber;
-    private final ExportSpecss.GeometryMode modeID;
+    private final ExportEnums.GeometryMode modeID;
 
     /**
      * This method was created in VisualAge.
@@ -46,7 +46,7 @@ public class GeometrySpecs implements Serializable {
      */
 
     @JsonCreator
-    public GeometrySpecs(SpatialSelection[] selections, int axis, int sliceNumber, ExportSpecss.GeometryMode geometryMode){
+    public GeometrySpecs(SpatialSelection[] selections, int axis, int sliceNumber, ExportEnums.GeometryMode geometryMode){
         if(selections != null){
             try {
                 serializedSelections = new byte[selections.length][];
@@ -138,7 +138,7 @@ public class GeometrySpecs implements Serializable {
     }
 
     @JsonIgnore
-    public ExportSpecss.GeometryMode getMode(){
+    public ExportEnums.GeometryMode getMode(){
         return modeID;
     }
 

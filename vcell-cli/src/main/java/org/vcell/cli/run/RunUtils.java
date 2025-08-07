@@ -28,7 +28,7 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import static cbit.vcell.export.server.ExportSpecss.VariableMode.VARIABLE_MULTI;
+import static cbit.vcell.export.server.ExportEnums.VariableMode.VARIABLE_MULTI;
 
 /**
  * Static class with a series of runtime utilities. Needs to be properly docummented still
@@ -411,7 +411,7 @@ public class RunUtils {
         Collection<ExportOutput > exportOutputs;
 
         FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
-        ASCIIExporter asciiExporter = new ASCIIExporter(exportServiceImpl.getEventCreator());
+        ASCIIExporter asciiExporter = new ASCIIExporter(exportServiceImpl.getEventController());
         JobRequest jobRequest = JobRequest.createExportJobRequest(vcId.getOwner());
 
         try {
@@ -443,15 +443,15 @@ public class RunUtils {
         VariableSpecs variableSpecs = new VariableSpecs(variableNames, VARIABLE_MULTI);
 
         double[] dataSetTimes = dsControllerImpl.getDataSetTimes(vcId);
-        TimeSpecs timeSpecs = new TimeSpecs(0,dataSetTimes.length-1, dataSetTimes, ExportSpecss.TimeMode.TIME_RANGE);
-        GeometrySpecs geometrySpecs = new GeometrySpecs(null, 2, 0, ExportSpecss.GeometryMode.GEOMETRY_FULL);
+        TimeSpecs timeSpecs = new TimeSpecs(0,dataSetTimes.length-1, dataSetTimes, ExportEnums.TimeMode.TIME_RANGE);
+        GeometrySpecs geometrySpecs = new GeometrySpecs(null, 2, 0, ExportEnums.GeometryMode.GEOMETRY_FULL);
 
         // String simulationName,VCSimulationIdentifier vcSimulationIdentifier,ExportParamScanInfo exportParamScanInfo
         ExportParamScanInfo exportParamScanInfo = ExportParamScanInfo.getParamScanInfo(vcellSim,jobIndex);
         SimNameSimDataID snsdi= new SimNameSimDataID(vcellSim.getName(), vcSimID, exportParamScanInfo);
         SimNameSimDataID[] simNameSimDataIDs = { snsdi };
 
-        FormatSpecificSpecs formatSpecificSpecs = new ASCIISpecs(simNameSimDataIDs, ExportSpecss.ExportableDataType.PDE_VARIABLE_DATA,
+        FormatSpecificSpecs formatSpecificSpecs = new ASCIISpecs(simNameSimDataIDs, ExportEnums.ExportableDataType.PDE_VARIABLE_DATA,
                 ExportFormat.CSV, ASCIISpecs.CsvRoiLayout.var_time_val, true, false);
 
         return new ExportSpecs(vcId, ExportFormat.HDF5, variableSpecs, timeSpecs, geometrySpecs,

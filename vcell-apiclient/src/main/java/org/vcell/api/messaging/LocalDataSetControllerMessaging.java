@@ -13,7 +13,7 @@ package org.vcell.api.messaging;
 import cbit.plot.PlotData;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.export.server.ExportSpecss;
+import cbit.vcell.export.server.ExportEnums;
 import cbit.vcell.export.server.N5Specs;
 import cbit.vcell.field.io.FieldData;
 import cbit.vcell.field.io.FieldDataSpec;
@@ -308,7 +308,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs export
 		// N5 export is handled by the N5ExportService
 		try {
 			long jobID = vCellApiClient.getExportApi().exportN5(DtoModelTransforms.n5ExportRequestFromExportSpecs(exportSpecs));
-            return new ExportEvent(this, jobID, null, exportSpecs.getVCDataIdentifier(), ExportSpecss.ExportProgressType.EXPORT_START, exportSpecs.getFormat().name(), "", 0.0, exportSpecs.getTimeSpecs(), exportSpecs.getVariableSpecs());
+            return new ExportEvent(this, jobID, null, exportSpecs.getVCDataIdentifier(), ExportEnums.ExportProgressType.EXPORT_START, exportSpecs.getFormat().name(), "", 0.0, exportSpecs.getTimeSpecs(), exportSpecs.getVariableSpecs());
 		}  catch (ApiException e) {
 			ExceptionHandler.onlyDataAccessOrPermissionException(e);
 			throw new RuntimeException("Error should not reach here: " + e.getMessage(), e);

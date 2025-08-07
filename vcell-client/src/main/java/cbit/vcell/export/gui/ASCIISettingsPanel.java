@@ -36,8 +36,8 @@ public class ASCIISettingsPanel extends javax.swing.JPanel implements java.awt.e
 	private javax.swing.JCheckBox ivjJCheckBoxSwitch = null;
 	private javax.swing.JLabel ivjJLabelAdditional = null;
 	private boolean fieldSwitchRowsColumns = false;
-	private ExportSpecss.SimulationDataType fieldSimDataType = null;
-	private ExportSpecss.ExportableDataType fieldExportDataType;
+	private ExportEnums.SimulationDataType fieldSimDataType = null;
+	private ExportEnums.ExportableDataType fieldExportDataType;
 	private javax.swing.JButton ivjCancelJButton = null;
 	private javax.swing.JPanel ivjJPanel1 = null;
 /**
@@ -293,7 +293,7 @@ private javax.swing.JButton getCancelJButton() {
  * @return The exportDataType property value.
  * @see #setExportDataType
  */
-private ExportSpecss.ExportableDataType getExportDataType() {
+private ExportEnums.ExportableDataType getExportDataType() {
 	return fieldExportDataType;
 }
 /**
@@ -464,7 +464,7 @@ private javax.swing.JRadioButton getJRadioButtonVariables() {
  * @return The simDataType property value.
  * @see #setSimDataType
  */
-private ExportSpecss.SimulationDataType getSimDataType() {
+private ExportEnums.SimulationDataType getSimDataType() {
 	return fieldSimDataType;
 }
 /**
@@ -639,8 +639,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
  * @param odeVariableData The new value for the property.
  * @see #getExportDataType
  */
-private void setExportDataType(ExportSpecss.ExportableDataType odeVariableData) {
-	ExportSpecss.ExportableDataType oldValue = fieldExportDataType;
+private void setExportDataType(ExportEnums.ExportableDataType odeVariableData) {
+	ExportEnums.ExportableDataType oldValue = fieldExportDataType;
 	fieldExportDataType = odeVariableData;
 	firePropertyChange("exportDataType", oldValue, odeVariableData);
 }
@@ -649,8 +649,8 @@ private void setExportDataType(ExportSpecss.ExportableDataType odeVariableData) 
  * @param simDataType The new value for the property.
  * @see #getSimDataType
  */
-public void setSimDataType(ExportSpecss.SimulationDataType simDataType) {
-	ExportSpecss.SimulationDataType oldValue = fieldSimDataType;
+public void setSimDataType(ExportEnums.SimulationDataType simDataType) {
+	ExportEnums.SimulationDataType oldValue = fieldSimDataType;
 	fieldSimDataType = simDataType;
 	firePropertyChange("simDataType", oldValue, simDataType);
 }
@@ -686,22 +686,22 @@ public void stateChanged(javax.swing.event.ChangeEvent e) {
 /**
  * Comment
  */
-private void updateChoices(ExportSpecss.SimulationDataType dataType) {
+private void updateChoices(ExportEnums.SimulationDataType dataType) {
 	switch (dataType) {
 		case ODE_SIMULATION:
 			getJRadioButtonParticles().setEnabled(false);
 			getJRadioButtonVariables().setSelected(true);
-			setExportDataType(ExportSpecss.ExportableDataType.ODE_VARIABLE_DATA);
+			setExportDataType(ExportEnums.ExportableDataType.ODE_VARIABLE_DATA);
 			break;
 		case PDE_SIMULATION_NO_PARTICLES:
 			getJRadioButtonParticles().setEnabled(false);
 			getJRadioButtonVariables().setSelected(true);
-			setExportDataType(ExportSpecss.ExportableDataType.PDE_VARIABLE_DATA);
+			setExportDataType(ExportEnums.ExportableDataType.PDE_VARIABLE_DATA);
 			break;
 		case PDE_SIMULATION_WITH_PARTICLES:
 			getJRadioButtonParticles().setEnabled(true);
 			getJRadioButtonParticles().setSelected(true);
-			setExportDataType(ExportSpecss.ExportableDataType.PDE_PARTICLE_DATA);
+			setExportDataType(ExportEnums.ExportableDataType.PDE_PARTICLE_DATA);
 			break;
 	}
 	return;
@@ -710,8 +710,8 @@ private void updateChoices(ExportSpecss.SimulationDataType dataType) {
  * Comment
  */
 private void updateExportDataType() {
-	if (getJRadioButtonVariables().isSelected()) setExportDataType(ExportSpecss.ExportableDataType.PDE_VARIABLE_DATA);
-	if (getJRadioButtonParticles().isSelected()) setExportDataType(ExportSpecss.ExportableDataType.PDE_PARTICLE_DATA);
+	if (getJRadioButtonVariables().isSelected()) setExportDataType(ExportEnums.ExportableDataType.PDE_VARIABLE_DATA);
+	if (getJRadioButtonParticles().isSelected()) setExportDataType(ExportEnums.ExportableDataType.PDE_PARTICLE_DATA);
 	return;
 }
 

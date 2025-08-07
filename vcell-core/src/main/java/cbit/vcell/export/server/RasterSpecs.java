@@ -19,7 +19,7 @@ import java.io.Serializable;
  */
 @Schema(allOf = FormatSpecificSpecs.class, requiredProperties = {"specClass"})
 public class RasterSpecs extends FormatSpecificSpecs implements Serializable {
-	private ExportSpecss.RasterFormats format;
+	private ExportEnums.RasterFormats format;
 	private boolean separateHeader;
 
 /**
@@ -28,7 +28,7 @@ public class RasterSpecs extends FormatSpecificSpecs implements Serializable {
  * @param format int
  * @param separateHeader boolean
  */
-public RasterSpecs(ExportSpecss.RasterFormats format, boolean separateHeader) {
+public RasterSpecs(ExportEnums.RasterFormats format, boolean separateHeader) {
 	super("RasterSpecs");
 	this.format = format;
 	this.separateHeader = separateHeader;
@@ -59,7 +59,7 @@ public boolean equals(java.lang.Object object) {
  * Creation date: (4/23/2004 11:34:51 AM)
  * @return int
  */
-public ExportSpecss.RasterFormats getFormat() {
+public ExportEnums.RasterFormats getFormat() {
 	return format;
 }
 

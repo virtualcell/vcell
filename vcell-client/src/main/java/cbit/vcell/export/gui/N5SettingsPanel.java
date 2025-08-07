@@ -264,7 +264,7 @@ public class N5SettingsPanel extends javax.swing.JPanel implements java.awt.even
         int[] paramScanIndexes = simulationSelector == null ? null : simulationSelector.getselectedParamScanIndexes();
         String dataSetName = getJTextFieldDataSetName().getText();
 
-        return new N5Specs(ExportSpecss.ExportableDataType.PDE_VARIABLE_DATA, ExportFormat.N5, N5Specs.CompressionLevel.GZIP, dataSetName);
+        return new N5Specs(ExportEnums.ExportableDataType.PDE_VARIABLE_DATA, ExportFormat.N5, N5Specs.CompressionLevel.GZIP, dataSetName);
     }
 
     private JLabel lblSeeVcellHelp;

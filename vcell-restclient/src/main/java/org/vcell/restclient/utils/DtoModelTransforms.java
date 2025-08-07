@@ -5,7 +5,7 @@ import cbit.image.GIFImage;
 import cbit.image.GifParsingException;
 import cbit.image.VCImageInfo;
 import cbit.rmi.event.ExportEvent;
-import cbit.rmi.event.ExportStatusEventCreator;
+import cbit.rmi.event.ExportEventController;
 import cbit.vcell.export.server.*;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.field.FieldDataAllDBEntries;
@@ -16,7 +16,6 @@ import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.DataIdentifier;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import org.vcell.restclient.model.*;
-import org.vcell.restclient.model.VariableSpecs;
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
 import org.vcell.util.document.BioModelChildSummary;
@@ -312,11 +311,11 @@ public class DtoModelTransforms {
 
     public static TimeSpecs dtoToTimeSpecs(org.vcell.restclient.model.TimeSpecs dto){
         return new TimeSpecs(dto.getBeginTimeIndex(), dto.getEndTimeIndex(), dto.getAllTimes().stream().mapToDouble(Double::doubleValue).toArray(),
-                ExportSpecss.TimeMode.valueOf(dto.getMode().getValue()));
+                ExportEnums.TimeMode.valueOf(dto.getMode().getValue()));
     }
 
     public static cbit.vcell.export.server.VariableSpecs dtoToVariableSpecs(org.vcell.restclient.model.VariableSpecs dto){
-        return new cbit.vcell.export.server.VariableSpecs(dto.getVariableNames(), ExportSpecss.VariableMode.valueOf(dto.getMode().getValue()));
+        return new cbit.vcell.export.server.VariableSpecs(dto.getVariableNames(), ExportEnums.VariableMode.valueOf(dto.getMode().getValue()));
     }
 
     public static org.vcell.restclient.model.TimeSpecs timeSpecsToDTO(cbit.vcell.export.server.TimeSpecs timeSpecs) {
@@ -510,7 +509,7 @@ public class DtoModelTransforms {
         if (restEvent == null) return null;
 
         // Convert fields
-        ExportSpecss.ExportProgressType eventType = ExportSpecss.ExportProgressType.valueOf(restEvent.getEventType().getValue());
+        ExportEnums.ExportProgressType eventType = ExportEnums.ExportProgressType.valueOf(restEvent.getEventType().getValue());
         Double progress = restEvent.getProgress();
         String format = restEvent.getFormat();
         String location = restEvent.getLocation();
@@ -523,7 +522,7 @@ public class DtoModelTransforms {
 
         // Construct ExportEvent
         return new cbit.rmi.event.ExportEvent(
-                ExportStatusEventCreator.class, // source (set as needed)
+                ExportEventController.class, // source (set as needed)
                 jobID,
                 user,
                 dataIdString,

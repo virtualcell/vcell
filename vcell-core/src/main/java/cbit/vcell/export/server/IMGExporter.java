@@ -16,8 +16,7 @@ import GIFUtils.GIFOutputStream;
 import cbit.image.DisplayAdapterService;
 import cbit.image.DisplayPreferences;
 import cbit.image.ImagePaneModel;
-import cbit.rmi.event.ExportEvent;
-import cbit.rmi.event.ExportStatusEventCreator;
+import cbit.rmi.event.ExportEventController;
 import cbit.vcell.export.gloworm.atoms.UserDataEntry;
 import cbit.vcell.export.gloworm.quicktime.*;
 import cbit.vcell.resource.PropertyLoader;
@@ -50,13 +49,13 @@ public class IMGExporter {
 	
 	private static final int FULL_MODE_ALL_SLICES = -1;
 
-	private ExportStatusEventCreator exportServiceImpl = null;
+	private ExportEventController exportServiceImpl = null;
 /**
  * Insert the method's description here.
  * Creation date: (4/27/2004 1:18:37 PM)
  * @param exportServiceImpl cbit.vcell.export.server.ExportServiceImpl
  */
-public IMGExporter(ExportStatusEventCreator exportServiceImpl) {
+public IMGExporter(ExportEventController exportServiceImpl) {
 	this.exportServiceImpl = exportServiceImpl;
 }
 
@@ -88,13 +87,13 @@ public static void main(String [] args) throws Exception{
 	DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(cachetable,primaryDir,null);
 	DataServerImpl dataServerImpl = new DataServerImpl(dataSetControllerImpl, exportServiceImpl);
 	double[] allTimes = dataSetControllerImpl.getDataSetTimes(vcdID);
-	TimeSpecs timeSpecs = new TimeSpecs(beginTimeIndex, endTimeIndex, allTimes, ExportSpecss.TimeMode.TIME_RANGE);
-	VariableSpecs variableSpecs = new VariableSpecs(varNames, ExportSpecss.VariableMode.VARIABLE_MULTI);
-	GeometrySpecs geometrySpecs = new GeometrySpecs(null, 0, 0, ExportSpecss.GeometryMode.GEOMETRY_SLICE);
+	TimeSpecs timeSpecs = new TimeSpecs(beginTimeIndex, endTimeIndex, allTimes, ExportEnums.TimeMode.TIME_RANGE);
+	VariableSpecs variableSpecs = new VariableSpecs(varNames, ExportEnums.VariableMode.VARIABLE_MULTI);
+	GeometrySpecs geometrySpecs = new GeometrySpecs(null, 0, 0, ExportEnums.GeometryMode.GEOMETRY_SLICE);
 	DisplayPreferences displayPreferences =
 		new DisplayPreferences(DisplayAdapterService.BLUERED, new Range(0,1), DisplayAdapterService.createBlueRedSpecialColors(),true,false);
 	MovieSpecs movieSpecs = new MovieSpecs(
-		1000.0, false, new DisplayPreferences[] {displayPreferences}, ExportFormat.FORMAT_JPEG, ExportSpecss.MirroringMethod.NO_MIRRORING, 1, 1, 1,///
+		1000.0, false, new DisplayPreferences[] {displayPreferences}, ExportFormat.FORMAT_JPEG, ExportEnums.MirroringMethod.NO_MIRRORING, 1, 1, 1,///
 		ImagePaneModel.MESH_MODE, FormatSpecificSpecs.CODEC_JPEG, 1.0f, false,FormatSpecificSpecs.PARTICLE_SELECT);
 	ExportSpecs exportSpecs = new ExportSpecs(vcdID, ExportFormat.QUICKTIME, variableSpecs, timeSpecs, geometrySpecs, movieSpecs,"IMGExporterTest",null);
 	exportServiceImpl.makeRemoteFile(null, user, dataServerImpl, exportSpecs);
@@ -337,19 +336,19 @@ private File[] getParticleFiles(ExportSpecs exportSpecs,User user,DataServerImpl
 //	return new ParticleInfo(visitSmoldynScriptTempDir);
 //}
 
-private static ExportOutput[] makeMedia(ExportStatusEventCreator exportServiceImpl,
-		OutputContext outputContext,long jobID, User user, DataServerImpl dataServerImpl,
-		ExportSpecs exportSpecs,ClientTaskStatusSupport clientTaskStatusSupport,ParticleInfo particleInfo,FileDataContainerManager fileDataContainerManager)
+private static ExportOutput[] makeMedia(ExportEventController exportServiceImpl,
+										OutputContext outputContext, long jobID, User user, DataServerImpl dataServerImpl,
+										ExportSpecs exportSpecs, ClientTaskStatusSupport clientTaskStatusSupport, ParticleInfo particleInfo, FileDataContainerManager fileDataContainerManager)
 						throws RemoteException, IOException, GIFFormatException, DataAccessException, Exception {
 
 	boolean bOverLay = false;
 	int sliceIndicator = 0;
 	if(particleInfo == null){
-		sliceIndicator = (exportSpecs.getGeometrySpecs().getMode() == ExportSpecss.GeometryMode.GEOMETRY_FULL ? FULL_MODE_ALL_SLICES:exportSpecs.getGeometrySpecs().getSliceNumber());
+		sliceIndicator = (exportSpecs.getGeometrySpecs().getMode() == ExportEnums.GeometryMode.GEOMETRY_FULL ? FULL_MODE_ALL_SLICES:exportSpecs.getGeometrySpecs().getSliceNumber());
 	}
 	int imageScale = 0;
 	int meshMode = 0;
-	ExportSpecss.MirroringMethod mirroringType = null;
+	ExportEnums.MirroringMethod mirroringType = null;
 	int membraneScale = 0;
 	double duration = 1.0;
 	DisplayPreferences[] displayPreferences = null;
@@ -607,9 +606,9 @@ for (int sliceNumber = startSlice; sliceNumber < startSlice+sliceCount; sliceNum
 	};
 	
 private static MirrorInfo renderAndMirrorSliceTimePixels(
-		ExportRenderInfo exportRenderInfo,String varName,double timePoint,DisplayPreferences displayPreference,
-		int imageScale,int membraneScaling,int meshMode,int volVarMembrOutlineThickness,
-		int originalWidth,int originalHeight,ExportSpecss.MirroringMethod mirroringType) throws Exception{
+        ExportRenderInfo exportRenderInfo, String varName, double timePoint, DisplayPreferences displayPreference,
+        int imageScale, int membraneScaling, int meshMode, int volVarMembrOutlineThickness,
+        int originalWidth, int originalHeight, ExportEnums.MirroringMethod mirroringType) throws Exception{
 	exportRenderInfo.setVarAndTimeAndDisplay(varName,timePoint, displayPreference);
 	int[] pixels = exportRenderInfo.getPixelsRGB(imageScale,membraneScaling,meshMode,volVarMembrOutlineThickness);
 	pixels = ExportUtils.extendMirrorPixels(pixels,originalWidth,originalHeight, mirroringType);

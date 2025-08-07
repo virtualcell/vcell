@@ -23,13 +23,13 @@ public class TimeSpecs implements Serializable {
 	private int endTimeIndex;
 	private double[] allTimes;
 	@JsonIgnore
-	private ExportSpecss.TimeMode modeID;
+	private ExportEnums.TimeMode modeID;
 /**
  * TimeSpecs constructor comment.
  */
 @JsonCreator
 public TimeSpecs(@JsonProperty("beginTimeIndex") int beginTimeIndex, @JsonProperty("endTimeIndex") int endTimeIndex,
-				 @JsonProperty("allTimes") double[] allTimes, @JsonProperty("mode") ExportSpecss.TimeMode modeID) {
+				 @JsonProperty("allTimes") double[] allTimes, @JsonProperty("mode") ExportEnums.TimeMode modeID) {
 	this.beginTimeIndex = beginTimeIndex;
 	this.endTimeIndex = endTimeIndex;
 	this.allTimes = allTimes;
@@ -82,7 +82,7 @@ public int getEndTimeIndex() {
 	return endTimeIndex;
 }
 
-public ExportSpecss.TimeMode getMode(){
+public ExportEnums.TimeMode getMode(){
 	return modeID;
 }
 

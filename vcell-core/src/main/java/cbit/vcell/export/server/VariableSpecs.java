@@ -22,15 +22,15 @@ import java.util.List;
 public class VariableSpecs implements Serializable {
 	private final String[] variableNames;
 	@JsonIgnore
-	private final ExportSpecss.VariableMode modeID;
+	private final ExportEnums.VariableMode modeID;
 
-public VariableSpecs(String[] variableNames, ExportSpecss.VariableMode modeID) {
+public VariableSpecs(String[] variableNames, ExportEnums.VariableMode modeID) {
 	this.variableNames = variableNames;
 	this.modeID = modeID;
 }
 
 @JsonCreator
-public VariableSpecs (@JsonProperty("variableNames") List<String> variableNames, @JsonProperty("mode") ExportSpecss.VariableMode modeID){
+public VariableSpecs (@JsonProperty("variableNames") List<String> variableNames, @JsonProperty("mode") ExportEnums.VariableMode modeID){
 	this(variableNames.toArray(new String[0]), modeID);
 }
 
@@ -57,7 +57,7 @@ public boolean equals(Object object) {
 	return false;
 }
 
-public ExportSpecss.VariableMode getMode() {
+public ExportEnums.VariableMode getMode() {
 	return modeID;
 }
 

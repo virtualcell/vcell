@@ -1,6 +1,6 @@
 package org.vcell.restq.exports;
 
-import cbit.vcell.export.server.ExportSpecss;
+import cbit.vcell.export.server.ExportEnums;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.resource.PropertyLoader;
@@ -83,8 +83,8 @@ public class ExportRequestTest {
                 Set<ExportEvent> allEvents = exportResourceApi.exportStatus();
                 ExportEvent eventUnderInspection = allEvents.stream().toList().get(0);
                 Assertions.assertEquals(1, allEvents.size());
-                Assertions.assertEquals(ExportSpecss.ExportProgressType.EXPORT_ASSEMBLING, ExportSpecss.ExportProgressType.valueOf(eventUnderInspection.getEventType().getValue()));
-                while (ExportSpecss.ExportProgressType.valueOf(eventUnderInspection.getEventType().getValue()) != ExportSpecss.ExportProgressType.EXPORT_COMPLETE){
+                Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_ASSEMBLING, ExportEnums.ExportProgressType.valueOf(eventUnderInspection.getEventType().getValue()));
+                while (ExportEnums.ExportProgressType.valueOf(eventUnderInspection.getEventType().getValue()) != ExportEnums.ExportProgressType.EXPORT_COMPLETE){
                     allEvents = exportResourceApi.exportStatus();
                     eventUnderInspection = allEvents.stream().toList().get(0);
                     Thread.sleep(500);

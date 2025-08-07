@@ -214,6 +214,7 @@ public class TestEndpointUtils {
 
     public static void setSystemProperties(String simDir, String exportBaseDir){
         PropertyLoader.setProperty(PropertyLoader.primarySimDataDirInternalProperty, simDir);
+        PropertyLoader.setProperty(PropertyLoader.secondarySimDataDirInternalProperty, simDir);
         PropertyLoader.setProperty(PropertyLoader.exportBaseDirInternalProperty, exportBaseDir);
         PropertyLoader.setProperty(PropertyLoader.exportBaseURLProperty, previousExportURL);
         PropertyLoader.setProperty(PropertyLoader.n5DataDir, exportBaseDir);
@@ -222,6 +223,7 @@ public class TestEndpointUtils {
 
     public static void restoreSystemProperties(){
         PropertyLoader.setProperty(PropertyLoader.primarySimDataDirInternalProperty, previousSimDir);
+        PropertyLoader.setProperty(PropertyLoader.secondarySimDataDirInternalProperty, previousSimDir);
         PropertyLoader.setProperty(PropertyLoader.exportBaseDirInternalProperty, previousExportBaseDir);
         PropertyLoader.setProperty(PropertyLoader.n5DataDir, previousN5Path);
         PropertyLoader.setProperty(PropertyLoader.exportBaseURLProperty, previousExportURL);

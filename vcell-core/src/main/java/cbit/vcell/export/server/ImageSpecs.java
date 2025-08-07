@@ -23,8 +23,8 @@ import org.eclipse.microprofile.openapi.annotations.media.Schema;
 public class ImageSpecs extends FormatSpecificSpecs implements Serializable {
 	private DisplayPreferences[] displayPreferences;
 	private ExportFormat format;
-	private ExportSpecss.CompressionFormats compression;
-	private ExportSpecss.MirroringMethod mirroringType;
+	private ExportEnums.CompressionFormats compression;
+	private ExportEnums.MirroringMethod mirroringType;
 	private double duration;
 	private int loopingMode;
 	private int volVarMembrOutlineThickness;
@@ -46,9 +46,9 @@ public class ImageSpecs extends FormatSpecificSpecs implements Serializable {
  * @param loopingMode int
  */
 public ImageSpecs(DisplayPreferences[] displayPreferences, ExportFormat mediaType,
-		ExportSpecss.CompressionFormats compression, ExportSpecss.MirroringMethod mirroringType,
-		double duration, int loopingMode, int volVarMembrOutlineThickness,
-		int imageScaling,int membraneScaling,int meshMode,float compressionQuality,boolean bOverlay,int particleMode) {
+                  ExportEnums.CompressionFormats compression, ExportEnums.MirroringMethod mirroringType,
+                  double duration, int loopingMode, int volVarMembrOutlineThickness,
+                  int imageScaling, int membraneScaling, int meshMode, float compressionQuality, boolean bOverlay, int particleMode) {
 	super("ImageSpecs");
 	this.displayPreferences = displayPreferences;
 	this.format = mediaType;
@@ -109,7 +109,7 @@ public boolean equals(java.lang.Object object) {
  * This method was created in VisualAge.
  * @return int
  */
-public ExportSpecss.CompressionFormats getCompression() {
+public ExportEnums.CompressionFormats getCompression() {
 	return compression;
 }
 /**
@@ -145,7 +145,7 @@ public int getLoopingMode() {
  * This method was created in VisualAge.
  * @return int
  */
-public ExportSpecss.MirroringMethod getMirroringType() {
+public ExportEnums.MirroringMethod getMirroringType() {
 	return mirroringType;
 }
 /**

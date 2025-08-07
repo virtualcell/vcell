@@ -2816,7 +2816,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 	}
 
 	public void exportMessage(ExportEvent event) {
-		if (event.getEventType() == ExportSpecss.ExportProgressType.EXPORT_COMPLETE) {
+		if (event.getEventType() == ExportEnums.ExportProgressType.EXPORT_COMPLETE) {
 			// try to download the thing
 			if(!Objects.equals(event.getFormat(), ExportFormat.N5.name())){
 				downloadExportedData(getMdiManager().getFocusedWindowManager().getComponent(), getUserPreferences(), event);

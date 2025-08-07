@@ -21,15 +21,10 @@ import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
-import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.handlers.ExportResource;
-import org.vcell.restq.services.Exports.ExportService;
-import org.vcell.restq.services.Exports.ExportStatusCreator;
+import org.vcell.restq.services.Exports.ServerExportEventController;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -68,13 +63,9 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
     private TimeUnit waitUnit = TimeUnit.MINUTES;
 
     @Inject
-    ExportService exportService;
-    @Inject
-    ExportStatusCreator exportStatusCreator;
+    ServerExportEventController exportStatusCreator;
     @Inject
     ObjectMapper mapper;
-    @Inject
-    AgroalConnectionFactory connectionFactory;
 
     @Inject
     @Channel("export-request")
@@ -82,8 +73,8 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
 
     @PostConstruct
     void init() throws FileNotFoundException {
-        String primarySimDataDir = PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty, "/simdata");
-        String secondarySimDataDir = PropertyLoader.getProperty(PropertyLoader.secondarySimDataDirInternalProperty, "/simdata");
+        String primarySimDataDir = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirInternalProperty);
+        String secondarySimDataDir = PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirInternalProperty);
         this.dataServer = new DataServerImpl(new DataSetControllerImpl(null, new File(primarySimDataDir), new File(secondarySimDataDir)),
                 new ExportServiceImpl());
     }

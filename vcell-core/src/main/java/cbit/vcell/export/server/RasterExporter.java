@@ -37,7 +37,7 @@ import java.util.Vector;
 
 import javax.imageio.ImageIO;
 
-import cbit.rmi.event.ExportStatusEventCreator;
+import cbit.rmi.event.ExportEventController;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -80,7 +80,7 @@ import cbit.vcell.solvers.MeshDisplayAdapter;
  * @author: Ion Moraru
  */
 public class RasterExporter {
-	private ExportStatusEventCreator exportServiceImpl = null;
+	private ExportEventController exportServiceImpl = null;
 
 	private static final int VTK_HEXAHEDRON = 12;
 	private static final int VTK_QUAD = 9;
@@ -91,7 +91,7 @@ public class RasterExporter {
  * Creation date: (4/27/2004 1:18:37 PM)
  * @param exportServiceImpl cbit.vcell.export.server.ExportServiceImpl
  */
-public RasterExporter(ExportStatusEventCreator exportServiceImpl) {
+public RasterExporter(ExportEventController exportServiceImpl) {
 	this.exportServiceImpl = exportServiceImpl;
 }
 
@@ -464,7 +464,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 	}											
 }
 
-	private static long fireThrottledProgress(ExportStatusEventCreator exportServiceImpl,long lastUpdateTime,String message,long jobID,VCDataIdentifier vcdID,int progressIndex,int endIndex){
+	private static long fireThrottledProgress(ExportEventController exportServiceImpl, long lastUpdateTime, String message, long jobID, VCDataIdentifier vcdID, int progressIndex, int endIndex){
 		if(lastUpdateTime == 0 || (System.currentTimeMillis() - lastUpdateTime)>5000){
 			lastUpdateTime = System.currentTimeMillis();
 			exportServiceImpl.fireExportProgress(jobID, vcdID, message,(double)(progressIndex)/(double)(endIndex+1));

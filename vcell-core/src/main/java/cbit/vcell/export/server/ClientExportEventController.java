@@ -2,7 +2,7 @@ package cbit.vcell.export.server;
 
 import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportListener;
-import cbit.rmi.event.ExportStatusEventCreator;
+import cbit.rmi.event.ExportEventController;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
@@ -11,7 +11,8 @@ import org.vcell.util.document.VCDataIdentifier;
 
 import java.util.Hashtable;
 
-public class OldExportEventCreator implements ExportStatusEventCreator {
+// Old implementation of ExportServiceImpl's event controller.
+public class ClientExportEventController implements ExportEventController {
     private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
     private Hashtable<Long, User> jobRequestIDs = new Hashtable<Long, User>();
 
@@ -42,7 +43,7 @@ public class OldExportEventCreator implements ExportStatusEventCreator {
             throw new RuntimeException("unexpected VCDataIdentifier");
         }
         ExportEvent event = new ExportEvent(
-                this, jobID, user, vcdID.getID(), dataKey, ExportSpecss.ExportProgressType.EXPORT_COMPLETE,
+                this, jobID, user, vcdID.getID(), dataKey, ExportEnums.ExportProgressType.EXPORT_COMPLETE,
                 format, location, null, timeSpecs, varSpecs);
         event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
         fireExportEvent(event);
@@ -56,7 +57,7 @@ public class OldExportEventCreator implements ExportStatusEventCreator {
         if (object != null) {
             user = (User)object;
         }
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportSpecss.ExportProgressType.EXPORT_ASSEMBLING, format, null, null, null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_ASSEMBLING, format, null, null, null, null);
         fireExportEvent(event);
     }
 
@@ -80,7 +81,7 @@ public class OldExportEventCreator implements ExportStatusEventCreator {
         if (object != null) {
             user = (User)object;
         }
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportSpecss.ExportProgressType.EXPORT_FAILURE, format, message, null, null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_FAILURE, format, message, null, null, null);
         fireExportEvent(event);
     }
 
@@ -90,7 +91,7 @@ public class OldExportEventCreator implements ExportStatusEventCreator {
         if (object != null) {
             user = (User)object;
         }
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportSpecss.ExportProgressType.EXPORT_PROGRESS, format, null, new Double(progress), null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_PROGRESS, format, null, new Double(progress), null, null);
         fireExportEvent(event);
     }
 
@@ -101,7 +102,7 @@ public class OldExportEventCreator implements ExportStatusEventCreator {
         if (object != null) {
             user = (User)object;
         }
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportSpecss.ExportProgressType.EXPORT_START, format, null, null, null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_START, format, null, null, null, null);
         fireExportEvent(event);
     }
 

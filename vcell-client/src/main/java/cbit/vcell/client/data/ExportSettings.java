@@ -33,7 +33,7 @@ public class ExportSettings implements ASCIISettingsPanelListener, RasterSetting
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ExportFormat fieldSelectedFormat;
 	private cbit.vcell.export.server.FormatSpecificSpecs fieldFormatSpecificSpecs = null;
-	private ExportSpecss.SimulationDataType fieldSimDataType = ExportSpecss.SimulationDataType.NO_DATA_AVAILABLE;
+	private ExportEnums.SimulationDataType fieldSimDataType = ExportEnums.SimulationDataType.NO_DATA_AVAILABLE;
 	private JPanel ivjJDialogContentPane = null;
 	private JDialog ivjJDialogASCIISettings = null;
 	private JDialog ivjJDialogMediaSettings = null;
@@ -370,7 +370,7 @@ public ExportFormat getSelectedFormat() {
  * @return The simDataType property value.
  * @see #setSimDataType
  */
-public ExportSpecss.SimulationDataType getSimDataType() {
+public ExportEnums.SimulationDataType getSimDataType() {
 	return fieldSimDataType;
 }
 
@@ -573,8 +573,8 @@ public void setSelectedFormat(ExportFormat selectedFormat) {
  * @param simDataType The new value for the property.
  * @see #getSimDataType
  */
-public void setSimDataType(ExportSpecss.SimulationDataType simDataType) {
-	ExportSpecss.SimulationDataType oldValue = fieldSimDataType;
+public void setSimDataType(ExportEnums.SimulationDataType simDataType) {
+	ExportEnums.SimulationDataType oldValue = fieldSimDataType;
 	fieldSimDataType = simDataType;
 	firePropertyChange("simDataType", oldValue, simDataType);
 }
