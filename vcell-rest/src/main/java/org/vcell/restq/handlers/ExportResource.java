@@ -76,13 +76,9 @@ public class ExportResource {
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(operationId = "exportStatus", description = "Get the status of your most recent export jobs.")
-    public Set<ExportEvent> pollExportStatus() throws DataAccessWebException, NotAuthenticatedWebException, NotFoundWebException {
+    public Set<ExportEvent> pollExportStatus() throws DataAccessWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
-        try{
-            return exportService.getMostRecentExportStatus(user);
-        } catch (ObjectNotFoundException e) {
-            throw new NotFoundWebException(e.getMessage(), e);
-        }
+        return exportService.getMostRecentExportStatus(user);
     }
 
     @Path("/{exportJobID}/status-sse")
