@@ -148,7 +148,6 @@ This endpoint does not need any parameter.
 **200** | OK |  -  |
 **401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
-**404** | Not found |  -  |
 **500** | Data Access Exception |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)

@@ -485,12 +485,6 @@ paths:
                 $ref: '#/components/schemas/VCellHTTPError'
         "403":
           description: Not Allowed
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
         "500":
           description: Data Access Exception
           content:

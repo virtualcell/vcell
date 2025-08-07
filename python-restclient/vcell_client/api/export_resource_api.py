@@ -390,7 +390,6 @@ class ExportResourceApi:
             '200': "List[ExportEvent]",
             '401': "VCellHTTPError",
             '403': None,
-            '404': "VCellHTTPError",
             '500': "VCellHTTPError"
             
         }
@@ -458,7 +457,6 @@ class ExportResourceApi:
             '200': "List[ExportEvent]",
             '401': "VCellHTTPError",
             '403': None,
-            '404': "VCellHTTPError",
             '500': "VCellHTTPError"
             
         }
@@ -526,7 +524,6 @@ class ExportResourceApi:
             '200': "List[ExportEvent]",
             '401': "VCellHTTPError",
             '403': None,
-            '404': "VCellHTTPError",
             '500': "VCellHTTPError"
             
         }

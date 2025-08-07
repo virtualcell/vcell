@@ -223,7 +223,6 @@ This endpoint does not need any parameter.
 | **200** | OK |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
-| **404** | Not found |  -  |
 | **500** | Data Access Exception |  -  |
 
 ## exportStatusWithHttpInfo
@@ -293,6 +292,5 @@ ApiResponse<[**Set&lt;ExportEvent&gt;**](ExportEvent.md)>
 | **200** | OK |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
-| **404** | Not found |  -  |
 | **500** | Data Access Exception |  -  |
 

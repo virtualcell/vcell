@@ -521,12 +521,6 @@ paths:
           description: Not Authenticated
         "403":
           description: Not Allowed
-        "404":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/VCellHTTPError'
-          description: Not found
         "500":
           content:
             application/json:
