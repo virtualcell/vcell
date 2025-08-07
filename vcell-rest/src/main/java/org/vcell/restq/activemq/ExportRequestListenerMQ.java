@@ -12,6 +12,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.arc.properties.IfBuildProperty;
 import io.smallrye.mutiny.Uni;
+import io.smallrye.reactive.messaging.annotations.Blocking;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -86,6 +87,7 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
     }
 
     @Incoming("processed-export-request")
+    @Blocking(ordered = false)
     public Uni<Void> consumeExportRequest(Message<String> message) {
         try {
             logger.debug("Received export request: {}", message.getPayload());
