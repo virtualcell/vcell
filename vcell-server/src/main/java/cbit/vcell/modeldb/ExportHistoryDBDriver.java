@@ -17,9 +17,11 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.StringJoiner;
 
 public class ExportHistoryDBDriver{
     public static final ExportHistoryTable exportHistoryTable = ExportHistoryTable.table;
+    public static final ModelParameterValuesTable modelParameterValuesTable = ModelParameterValuesTable.table;
     public static final BioModelTable bioModelTable = BioModelTable.table;
     public static final PublicationTable publicationTable = PublicationTable.table;
     public static final UserTable userTable = UserTable.table;
@@ -27,6 +29,7 @@ public class ExportHistoryDBDriver{
     public static final BioModelSimContextLinkTable bioModelSimContextLinkTable = BioModelSimContextLinkTable.table;
     public static final SimulationTable simTable = SimulationTable.table;
     public static final SimContextTable simContextTable = SimContextTable.table;
+
 
     /**
      * LocalDBManager constructor comment.
@@ -36,89 +39,71 @@ public class ExportHistoryDBDriver{
     }
 
     public record ExportHistory(
-            long   jobID,
-            long   modelRef,
+            long      jobID,
+            long      modelRef,
             ExportFormat exportFormat,
             Timestamp exportDate,
-            String uri,
+            String    uri,
             ExportSpecs exportSpecs
-    ){ }
+    ){}
 
     public void addExportHistory(Connection conn, User user, ExportHistory exportHistory)
             throws SQLException, DependencyException, PermissionException, DataAccessException, ObjectNotFoundException {
 
-        String vcmExpHiSQL =        // SQL statement for inserting into vc_model_export_history table in VCell server
-                "INSERT INTO vc_model_export_history (" +
-                        "id, job_id, user_ref, model_ref, export_format, export_date, uri," +
-                        "data_id, simulation_name, application_name, biomodel_name, variables," +
-                        "start_time, end_time, saved_file_name, application_type, non_spatial," +
-                        "z_slices, t_slices, num_variables" +
-                        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+        ExportSpecs specs = exportHistory.exportSpecs;
+        HumanReadableExportData meta = specs.getHumanReadableExportData();
+        TimeSpecs ts = specs.getTimeSpecs();
+        String[] vars = specs.getVariableSpecs().getVariableNames();
+        // comma-separate the variable names
+        String variablesCsv = String.join(",", vars);
 
-        ExportSpecs exportSpecs = exportHistory.exportSpecs;
-        long modelRef = exportHistory.modelRef;
-        PreparedStatement ps = conn.prepareStatement(vcmExpHiSQL);
-        HumanReadableExportData meta = exportSpecs.getHumanReadableExportData();
-        TimeSpecs ts = exportSpecs.getTimeSpecs();
-        String[] vars = exportSpecs.getVariableSpecs().getVariableNames();
-
-        String timeRange = ts.toString();
-        String[] time_parts = timeRange.split("/");
-        BigDecimal startTime = new BigDecimal(ts.getBeginTimeIndex());
-        BigDecimal endTime = new BigDecimal(ts.getEndTimeIndex());
-
-        long historyId;
-        try ( Statement seqStmt = conn.createStatement();
-              ResultSet rs = seqStmt.executeQuery("SELECT nextval('newSeq')") ) {
-            rs.next();
-            historyId = rs.getLong(1);
+        // 1) insert into vc_model_export_history
+        String ehSQL = ExportHistoryTable.table.getInsertSQL();
+        try (PreparedStatement ps = conn.prepareStatement(ehSQL)) {
+            ExportHistoryTable.table.bindForInsert(ps,
+                    exportHistory.jobID,
+                    Long.parseLong(user.getID().toString()),
+                    exportHistory.modelRef,
+                    exportHistory.exportFormat,
+                    exportHistory.exportDate,
+                    exportHistory.uri,
+                    specs.getVCDataIdentifier().getID(),
+                    meta.simulationName,
+                    meta.applicationName,
+                    meta.biomodelName,
+                    variablesCsv,
+                    BigDecimal.valueOf(ts.getBeginTimeIndex()),
+                    BigDecimal.valueOf(ts.getEndTimeIndex()),
+                    meta.serverSavedFileName,
+                    meta.applicationType,
+                    meta.nonSpatial,
+                    meta.zSlices,
+                    meta.tSlices,
+                    meta.numChannels
+            );
+            ps.executeUpdate();
         }
 
-        ps.setLong(1, historyId);   //change once key values issue resolved
-        ps.setLong(2, exportHistory.jobID);
-        ps.setLong(3, Long.parseLong(user.getID().toString()));
-        ps.setLong(4, modelRef);
-        ps.setString(5, exportHistory.exportFormat.name());
-        ps.setTimestamp(6, exportHistory.exportDate);
-        ps.setString(7, exportHistory.uri);
-        ps.setString(8, exportSpecs.getVCDataIdentifier().getID());
-        ps.setString(9, meta.simulationName);
-        ps.setString(10, meta.applicationName);
-        ps.setString(11, meta.biomodelName);
-        ps.setArray(12, conn.createArrayOf("text", vars));
-        ps.setBigDecimal(13, startTime);
-        ps.setBigDecimal(14, endTime);
-        ps.setString(15, meta.serverSavedFileName);
-        ps.setString(16, meta.applicationType);
-        ps.setBoolean(17, meta.nonSpatial);
-        ps.setInt(18, meta.zSlices);
-        ps.setInt(19, meta.tSlices);
-        ps.setInt(20, meta.numChannels);
-        ps.executeUpdate();
-
-
-        String vcmExpHisPVSQL =        // SQL statement for inserting into vc_model_parameter_value table in VCell server
-                "INSERT INTO vc_model_parameter_values (" +
-                        "export_id, user_ref, model_ref, parameter_name," +
-                        "parameter_original, parameter_changed" +
-                        ") VALUES (?,?,?,?,?,?)";
-
-        PreparedStatement ps2 = conn.prepareStatement(vcmExpHisPVSQL);
-
-
-        for (String entry : meta.differentParameterValues) {
-            String[] parts = entry.split(":");
-            if (parts.length == 3) {
-                ps2.setLong       (1, historyId);   //change once key values issue resolved
-                ps2.setLong(2, Long.parseLong(user.getID().toString()));
-                ps2.setLong(3, modelRef);
-                ps2.setString(4, parts[0]);
-                ps2.setBigDecimal(5, new BigDecimal(parts[1]));
-                ps2.setBigDecimal(6, new BigDecimal(parts[2]));
-                ps2.addBatch();
+        // 2) insert each parameter change
+        String pvSQL = ModelParameterValuesTable.table.getInsertSQL();
+        try (PreparedStatement ps2 = conn.prepareStatement(pvSQL)) {
+            for (String entry : meta.differentParameterValues) {
+                String[] parts = entry.split(":");
+                if (parts.length == 3) {
+                    ModelParameterValuesTable.table.bindForInsert(ps2,
+                            // note: you need the export_id FK—assumes you have it from a sequence
+                            exportHistory.jobID,   // if your PK is the jobID, else use the returned PK
+                            Long.parseLong(user.getID().toString()),
+                            exportHistory.modelRef,
+                            parts[0],
+                            new BigDecimal(parts[1]),
+                            new BigDecimal(parts[2])
+                    );
+                    ps2.addBatch();
+                }
             }
+            ps2.executeBatch();
         }
-        ps2.executeBatch();
 
     }
 
