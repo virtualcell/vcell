@@ -23,8 +23,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -190,9 +193,6 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				pathwaysList.clear();
 
 				NodeList hitNodes = searchResponse.getElementsByTagName("searchHit");
-				if (hitNodes.getLength() == 0) {
-					throw new IllegalStateException("No <searchHit> elements found in XML.");
-				}
 				System.out.println("Found " + hitNodes.getLength() + " hits\n");
 
 
@@ -201,6 +201,10 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 					String uri = Hit.getText(hitElement, "uri");
 					if (uri.contains("reactome")) {
 
+						NodeList responses = hitElement.getElementsByTagName("pathway");
+						if(responses.getLength() == 0) {
+							continue;	// we skip some malformed entries
+						}
 						Hit hit = new Hit(hitElement);
 
 						List<Pathway> pL = hit.pathways();        // pathway
@@ -272,6 +276,9 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 					// <html><body><p style="color:red">This is some text!</p></body></html>
 					// <u> = underlined,  <b> = bold
 					String dbName = pathway.dataSource().name();
+					if(dbName.startsWith("pc14:")) {
+						dbName = dbName.replace("pc14:", "");
+					}
 					if(dbName.contains("Interaction Database")) {
 						dbName = dbName.replace("Interaction Database", "Db");
 					}
@@ -350,19 +357,12 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		AsynchClientTask task1 = new AsynchClientTask("Importing pathway '" + pathway.name() + "'", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(final Hashtable<String, Object> hashTable) throws Exception {
-//				final URL url = new URL(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.PATHWAY_WEB_DO_URL) + "?"
-//						+ PathwayCommonsKeyword.cmd + "=" + PathwayCommonsKeyword.get_record_by_cpath_id
-//						+ "&" + PathwayCommonsKeyword.version + "=" + PathwayCommonsVersion.v2.name
-//						+ "&" + PathwayCommonsKeyword.q + "=" + pathway.primaryId()
-//						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.biopax);
 
 				String id = extractReactomeId(pathway.primaryId());
-
 				final URL url = new URL(" https://reactome.org/ReactomeRESTfulAPI/RESTfulWS/biopaxExporter/Level2/" + id);
 
 				System.out.println(url.toString());
 				String ERROR_CODE_TAG = "error_code";
-//				String ERROR_MSG_TAG = "error_msg";
 
 				String contentString = ClientDownloader.downloadBytes(url, Duration.ofSeconds(10));
 
@@ -376,22 +376,13 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 					throw new IOException("301 Moved Permanently.\nThe requested resource has been permanently relocated to a new URL.\nUnable to redirect: location unknown");
 				}
 
-
 				org.jdom2.Document jdomDocument = XmlUtil.stringToXML(contentString, null);
 				org.jdom2.Element rootElement = jdomDocument.getRootElement();
 				String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
 				if (errorCode != null){
 					throw new RuntimeException("Failed to access " + url + " \n\nPlease try again.");
 				}
-				
-//						String xmlText = StringUtil.textFromInputStream(connection.getInputStream());
-//						PathwayReader pathwayReader = new PathwayReader();
-//						org.jdom2.Document jdomDocument = XmlUtil.stringToXML(xmlText, null);
-				
-//						String xmlText = StringUtil.textFromInputStream(connection.getInputStream(), "UTF-8");
-//						PathwayReader pathwayReader = new PathwayReader();
-//						org.jdom2.Document jdomDocument = XmlUtil.stringToXML(xmlText, "UTF-8");
-				
+
 				PathwayModel pathwayModel = PathwayIOUtil.extractPathwayFromJDOM(jdomDocument, new RDFXMLContext(), 
 						getClientTaskStatusSupport());
 				PathwayData pathwayData = new PathwayData(pathway.name(), pathwayModel);
@@ -445,51 +436,33 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-//				URL url = new URL(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.PATHWAY_WEB_DO_URL) + "?"
-//						+ PathwayCommonsKeyword.cmd + "=" + PathwayCommonsKeyword.search
-//						+ "&" + PathwayCommonsKeyword.version + "=" + PathwayCommonsVersion.v2.name
-//						+ "&" + PathwayCommonsKeyword.q + "=" + URLEncoder.encode(searchText, "UTF-8")
-//						+ "&" + PathwayCommonsKeyword.maxHits + "=" + 14
-//						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.xml);
-				URL url = new URL("https://www.pathwaycommons.org/pc2/search?q=%27"
-						+ URLEncoder.encode(searchText, "UTF-8")
-						+ "%27&type=pathway");
-						System.out.println(url);
-				String responseContent = ClientDownloader.downloadBytes(url, Duration.ofSeconds(10));
-				if(responseContent.contains("301 Moved Permanently")) {
-					// check for orphan <hr> (not self-closing and no </hr>)
-					boolean hasOrphanHr = responseContent.contains("<hr>") && !responseContent.contains("</hr>");
-					if (hasOrphanHr) {		// insert </hr> before </body> if needed
-						responseContent = responseContent.replace("</body>", "</hr>\n</body>");
-					}
-					// the correction doesn't help, the parser doesn't get what it expects
-					throw new IOException("301 Moved Permanently");
+
+				// Encode the quoted term: "%22insulin%22"
+				String encodedQ = URLEncoder.encode('"' + searchText + '"', StandardCharsets.UTF_8.name());
+				String uri = "https://www.pathwaycommons.org/pc2/search?"
+						+ "q=" + encodedQ
+						+ "&type=pathway";
+				System.out.println(uri);
+
+				HttpURLConnection conn = (HttpURLConnection)new URL(uri).openConnection();
+				conn.setRequestProperty("Accept", "application/xml");
+
+				Element searchResponse = null;
+				try (InputStream in = conn.getInputStream()) {
+					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+					DocumentBuilder      db  = dbf.newDocumentBuilder();
+					Document             doc = db.parse(in);
+					doc.getDocumentElement().normalize();
+
+					searchResponse = doc.getDocumentElement();
+					System.out.println("Root element: " + searchResponse.getNodeName());
 				}
-
-				DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-				factory.setNamespaceAware(false);
-				DocumentBuilder builder = factory.newDocumentBuilder();
-
-				InputSource input = new InputSource(new StringReader(responseContent));
-				Document doc = builder.parse(input);
-				doc.getDocumentElement().normalize();
-
-				NodeList responses = doc.getElementsByTagName("searchResponse");
-				if (responses.getLength() == 0) {
-					throw new IllegalStateException("No <searchResponse> element found in XML.");
-				}
-				Element searchResponse = (Element) responses.item(0);
 
 				// let's make sure we have some searchHit elements
 				NodeList hitNodes = searchResponse.getElementsByTagName("searchHit");
-				if(hitNodes.getLength() == 0) {
-					throw new IllegalStateException("No <searchHit> elements found in XML.");
-				}
 				System.out.println("Found " + hitNodes.getLength() + " hits\n");
 				hashTable.put("searchResponse", searchResponse);
 
-//
-//
 //				for (int i = 0; i < hitNodes.getLength(); i++) {
 //					Element hit = (Element) hitNodes.item(i);
 //
@@ -589,8 +562,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.fill = GridBagConstraints.BOTH;
 		add(new JScrollPane(responseTree), gbc);
-		
-		
+
 		gridy ++;
 		CollapsiblePanel filterPanel = new CollapsiblePanel("Filter", true);
 		filterPanel.getContentPanel().setLayout(new GridBagLayout());
@@ -654,7 +626,6 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 //		optionsPanel.expand(false);
 //		add(optionsPanel, gbc);	
 
-		
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;

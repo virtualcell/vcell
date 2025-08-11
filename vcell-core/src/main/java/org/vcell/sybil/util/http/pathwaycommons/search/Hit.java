@@ -19,6 +19,7 @@ import java.util.Vector;
 
 import org.sbpax.util.StringUtil;
 import org.vcell.sybil.util.xml.DOMUtil;
+import org.vcell.util.bioregistry.ncbitaxon.OrganismLookup;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -69,15 +70,15 @@ public class Hit {
 		pathways = new Vector<Pathway>();
 		for (int i = 0; i < responses.getLength(); i++) {
 			Element hit = (Element) responses.item(i);
-			String orgName = "unknown";
-			if(organismId.equals("http://bioregistry.io/ncbitaxon:9606")) {
-				orgName = "Homo Sapiens";
+			String commonName = OrganismLookup.getName(organismId, OrganismLookup.NameType.COMMON);
+			String scientificName = OrganismLookup.getName(organismId, OrganismLookup.NameType.SCIENTIFIC);
+			if(!organismId.contains(":9606")) {
+				System.out.println(organismId);
 			}
-			organism = new Organism(organismId, orgName, orgName);
+			organism = new Organism(organismId, commonName, scientificName);
 			DataSource ds = new DataSource(source, source);
 			pathways.add(new Pathway(uri, name, organism, ds));
 		}
-
 	}
 	
 	public String primaryID() { return primaryID; }
