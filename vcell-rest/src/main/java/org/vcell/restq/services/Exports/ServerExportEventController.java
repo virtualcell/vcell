@@ -1,62 +1,165 @@
 package org.vcell.restq.services.Exports;
 
 import cbit.rmi.event.ExportEvent;
-import cbit.vcell.export.server.ExportSpecs;
+import cbit.rmi.event.ExportEventController;
+import cbit.rmi.event.ExportListener;
 import cbit.vcell.export.server.ExportEnums;
-import cbit.vcell.export.server.TimeSpecs;
-import cbit.vcell.export.server.VariableSpecs;
+import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.arc.properties.IfBuildProperty;
 import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.helpers.MultiEmitterProcessor;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
+import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.eclipse.microprofile.reactive.messaging.Message;
+import org.vcell.restq.activemq.ExportRequestListenerMQ;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
+@IfBuildProperty(name = "vcell.exporter", stringValue = "false")
+class DummyExportEventController implements ExportEventController{
+
+    @Override
+    public ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, String format, String location, ExportSpecs exportSpecs) {
+        return null;
+    }
+
+    @Override
+    public void addExportListener(ExportListener listener) { }
+
+    @Override
+    public void fireExportAssembling(long jobID, VCDataIdentifier vcdID, String format) { }
+
+    @Override
+    public void fireExportEvent(ExportEvent event) { }
+
+    @Override
+    public void fireExportFailed(long jobID, VCDataIdentifier vcdID, String format, String message) { }
+
+    @Override
+    public void fireExportProgress(long jobID, VCDataIdentifier vcdID, String format, double progress) { }
+
+    @Override
+    public void fireExportStarted(long jobID, VCDataIdentifier vcdID, String format) { }
+}
+
+
+@ApplicationScoped
+@IfBuildProperty(name = "vcell.exporter", stringValue = "true")
 public class ServerExportEventController implements cbit.rmi.event.ExportEventController {
     private final ConcurrentHashMap<Long, User> jobRequestToUser = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, MultiEmitterProcessor<ExportEvent>> listeners = new ConcurrentHashMap<>();
-    private final ConcurrentHashMap<User, Set<ComparableExportEvent>> mostRecentExportEvents = new ConcurrentHashMap<>(); // TODO: Clean out this set
+    private final ExportEventQueue exportEventQueue = new ExportEventQueue();
 
-    static class ComparableExportEvent{
-        private final ExportEvent exportEvent;
+    private final static Logger logger = LogManager.getLogger(ServerExportEventController.class);
 
-        public ComparableExportEvent(ExportEvent exportEvent) {
-            this.exportEvent = exportEvent;
-        }
+    @Inject
+    @Channel("outgoing-client-status")
+    Emitter<String> clientStatusEmitter;
 
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof ComparableExportEvent cpe){
-                return cpe.exportEvent.getJobID() == this.exportEvent.getJobID() &&
-                        cpe.exportEvent.getUser().equals(this.exportEvent.getUser());
+    @Inject
+    ObjectMapper objectMapper;
+
+    @Incoming("incoming-client-status")
+    public Uni<Void> clientStatusTopicListener(Message<String> message) {
+        try{
+            JsonNode node = objectMapper.readTree(message.getPayload());
+            if (node.has("eventType") && node.has("format")){
+                ExportEvent exportEvent = objectMapper.treeToValue(node, ExportEvent.class);
+                synchronized (this){
+                    exportEventQueue.addExportEvent(exportEvent);
+                }
+                logger.debug("Received export status from topic: {}", exportEvent);
             }
-            return false;
-        }
-        @Override
-        public int hashCode() {
-            int result = Long.hashCode(exportEvent.getJobID());
-            result = 31 * result + exportEvent.getUser().hashCode();
-            return result;
+            return Uni.createFrom().voidItem();
+        } catch (JsonProcessingException jsonProcessingException){
+            logger.error("Problem parsing export status message", jsonProcessingException);
+            return Uni.createFrom().voidItem();
+        } finally {
+            message.ack();
         }
     }
 
-    protected ExportSpecs exportExists(ExportSpecs exportSpecs) {
-        // Call DB for export history and check if it exists. Store in cache if it exists for future requests.
-        return exportSpecs;
+    public synchronized Multi<ExportEvent> getSSEUsersExportStatus(User user, long exportJobID) throws ObjectNotFoundException {
+        String key = sseEventListenerKey(user, exportJobID);
+        if (!listeners.containsKey(key)) {
+            throw new ObjectNotFoundException("Did not find entry for user " + user.getName() + " and job id " + exportJobID);
+        }
+        return listeners.get(key).toMulti();
+    }
+
+    public synchronized List<ExportEvent> getMostRecentExportStatus (User user, Instant timestamp) {
+        return exportEventQueue.getExportEventsPastSpecificTime(user, timestamp).stream().map(ExportEventQueue.MessageExportEvent::exportEvent).toList();
+    }
+
+
+    public void addExportListener(cbit.rmi.event.ExportListener listener) {
+        throw new IllegalCallerException("addExportListener not implemented for the server");
+    }
+
+    public synchronized void addServerExportListener(ExportRequestListenerMQ.ExportJob exportJob){
+        jobRequestToUser.put(exportJob.id(), exportJob.user());
+        MultiEmitterProcessor<ExportEvent> emitter = MultiEmitterProcessor.create();
+        String key = sseEventListenerKey(exportJob.user(), exportJob.id());
+        listeners.put(key, emitter);
+        ExportEvent event = new ExportEvent(
+                this, exportJob.id(), exportJob.user(), exportJob.simulationIdentifier().getID(), exportJob.simulationIdentifier().getSimulationKey(), ExportEnums.ExportProgressType.EXPORT_ASSEMBLING,
+                exportJob.format().name(), "", null);
+        fireExportEvent(event);
+    }
+
+
+
+
+
+    public synchronized void fireExportEvent(ExportEvent event) {
+        String key = sseEventListenerKey(event.getUser(), event.getJobID());
+        if (!listeners.containsKey(key)){
+            throw new RuntimeException("Did not find entry for user " + event.getUser().getName() + " and job id " + event.getJobID());
+        }
+        MultiEmitterProcessor<ExportEvent> listener = listeners.get(event.getUser().getName() + event.getJobID());
+        listener.onNext(event);
+        if (event.getEventType() == ExportEnums.ExportProgressType.EXPORT_FAILURE || event.getEventType() == ExportEnums.ExportProgressType.EXPORT_COMPLETE){
+            listener.complete();
+            listeners.remove(key);
+            jobRequestToUser.remove(event.getJobID());
+        }
+        try {
+            clientStatusEmitter.send(objectMapper.writeValueAsString(event));
+            logger.debug("Sent event to client status topic: {}", event);
+        } catch (JsonProcessingException e) {
+            logger.error(e);
+        }
+    }
+
+    private synchronized void fireExportEvent(long jobID, VCDataIdentifier vcdID, String format, Double progress, ExportEnums.ExportProgressType exportProgressType, String message){
+        User user = jobRequestToUser.getOrDefault(jobID, null);
+        if (user == null){
+            logger.error("For job (JobID: {}, VCDataID: {}, Format: {}) a user was not found.", jobID, vcdID, format);
+            return;
+        }
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, exportProgressType, format, message, progress);
+        fireExportEvent(event);
     }
 
     public synchronized ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, String format, String location, ExportSpecs exportSpecs) {
-
-        TimeSpecs timeSpecs = (exportSpecs!=null)?exportSpecs.getTimeSpecs():(null);
-        VariableSpecs varSpecs = (exportSpecs!=null)?exportSpecs.getVariableSpecs():(null);
         final KeyValue dataKey;
         if (vcdID instanceof VCSimulationDataIdentifier) {
             dataKey = ((VCSimulationDataIdentifier)vcdID).getSimulationKey();
@@ -66,116 +169,34 @@ public class ServerExportEventController implements cbit.rmi.event.ExportEventCo
             throw new RuntimeException("unexpected VCDataIdentifier");
         }
 
-        ExportEvent event = null;
-        synchronized (this){
-            User user = jobRequestToUser.get(jobID);
-            String key = entryKey(user, jobID);
-
-             event = new ExportEvent(
-                    this, jobID, user, vcdID.getID(), dataKey, ExportEnums.ExportProgressType.EXPORT_COMPLETE,
-                    format, location, null, timeSpecs, varSpecs);
-            event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
-            event.setHumanReadableExportData(exportSpecs.getHumanReadableExportData());
-
-            if (!listeners.containsKey(key)) {
-                throw new RuntimeException("Did not find entry for user " + user.getName() + " and job id " + jobID);
-            }
-            listeners.get(key).onNext(event);
-            listeners.get(key).complete();
-            replaceSetEntry(user, event);
-            removeServerExportListener(user, jobID);
-            jobRequestToUser.remove(jobID);
-        }
+        User user = jobRequestToUser.get(jobID);
+        ExportEvent event = new ExportEvent(
+                this, jobID, user, vcdID.getID(), dataKey, ExportEnums.ExportProgressType.EXPORT_COMPLETE,
+                format, location, null);
+        event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
+        fireExportEvent(event);
 
         return event;
     }
 
-    public void addExportListener(cbit.rmi.event.ExportListener listener) {
-        throw new IllegalCallerException("addExportListener not implemented for the server");
+    public void fireExportFailed(long jobID, VCDataIdentifier vcdID, String format, String message) {
+        fireExportEvent(jobID, vcdID, format, null, ExportEnums.ExportProgressType.EXPORT_FAILURE, message);
     }
 
-    public synchronized Multi<ExportEvent> getUsersExportStatus(User user, long exportJobID) throws ObjectNotFoundException {
-        String key = entryKey(user, exportJobID);
-        if (!listeners.containsKey(key)) {
-            throw new ObjectNotFoundException("Did not find entry for user " + user.getName() + " and job id " + exportJobID);
-        }
-        return listeners.get(key).toMulti();
+    public void fireExportProgress(long jobID, VCDataIdentifier vcdID, String format, double progress) {
+        fireExportEvent(jobID, vcdID, format, progress, ExportEnums.ExportProgressType.EXPORT_PROGRESS, null);
     }
 
-    public synchronized Set<ExportEvent> getMostRecentExportStatus (User user) {
-        if (!mostRecentExportEvents.containsKey(user)) {
-            return new HashSet<>();
-        }
-        return mostRecentExportEvents.get(user).stream().map(cpe -> cpe.exportEvent).collect(java.util.stream.Collectors.toSet());
+    public void fireExportStarted(long jobID, VCDataIdentifier vcdID, String format) {
+        fireExportEvent(jobID, vcdID, format, null, ExportEnums.ExportProgressType.EXPORT_START, null);
     }
 
-    public synchronized void addServerExportListener(User user, long exportJobID){
-        MultiEmitterProcessor<ExportEvent> emitter = MultiEmitterProcessor.create();
-        String key = entryKey(user, exportJobID);
-        listeners.put(key, emitter);
-        jobRequestToUser.put(exportJobID, user);
-        ExportEvent event = new ExportEvent(
-                this, exportJobID, user, "", null, ExportEnums.ExportProgressType.EXPORT_ASSEMBLING,
-                "", "", 0.0, null, null);
-        if (!mostRecentExportEvents.containsKey(user)) {
-            mostRecentExportEvents.put(user, new HashSet<>());
-        }
-        mostRecentExportEvents.get(user).add(new ComparableExportEvent(event));
+    public void fireExportAssembling(long jobID, VCDataIdentifier vcdID, String format) {
+        fireExportEvent(jobID, vcdID, format, null, ExportEnums.ExportProgressType.EXPORT_ASSEMBLING, null);
     }
 
-    public synchronized void fireExportAssembling(long jobID, VCDataIdentifier vcdID, String format) {
-        User user = jobRequestToUser.get(jobID);
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_ASSEMBLING, format, null, null, null, null);
-        fireExportEvent(event);
-    }
-
-    public synchronized void fireExportEvent(ExportEvent event) {
-        String key = entryKey(event.getUser(), event.getJobID());
-        if (!listeners.containsKey(key)){
-            throw new RuntimeException("Did not find entry for user " + event.getUser().getName() + " and job id " + event.getJobID());
-        }
-        MultiEmitterProcessor<ExportEvent> listener = listeners.get(event.getUser().getName() + event.getJobID());
-        listener.onNext(event);
-        replaceSetEntry(event.getUser(), event);
-    }
-
-    public synchronized void fireExportFailed(long jobID, VCDataIdentifier vcdID, String format, String message) {
-        User user = jobRequestToUser.get(jobID);
-        String key = entryKey(user, jobID);
-        if (!listeners.containsKey(key)) {
-            throw new RuntimeException("Did not find entry for user " + user.getName() + " and job id " + jobID);
-        }
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_FAILURE, format, message, null, null, null);
-        listeners.get(key).onNext(event);
-        listeners.get(key).complete();
-
-        replaceSetEntry(user, event);
-        removeServerExportListener(user, jobID);
-        jobRequestToUser.remove(jobID);
-    }
-
-    public synchronized void fireExportProgress(long jobID, VCDataIdentifier vcdID, String format, double progress) {
-        User user = jobRequestToUser.get(jobID);
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_PROGRESS, format, null, progress, null, null);
-        fireExportEvent(event);
-    }
-
-    public synchronized void fireExportStarted(long jobID, VCDataIdentifier vcdID, String format) {
-        User user = jobRequestToUser.get(jobID);
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_START, format, null, null, null, null);
-        fireExportEvent(event);
-    }
-
-    public synchronized void removeServerExportListener(User user, long exportJobID){
-        listeners.remove(user.getName() + exportJobID);
-    }
-
-    private String entryKey(User user, long jobID){
+    private String sseEventListenerKey(User user, long jobID){
         return user.getName() + jobID;
     }
 
-    private synchronized void replaceSetEntry(User user, ExportEvent newEvent){
-        mostRecentExportEvents.get(user).remove(new ComparableExportEvent(newEvent));
-        mostRecentExportEvents.get(user).add(new ComparableExportEvent(newEvent));
-    }
 }

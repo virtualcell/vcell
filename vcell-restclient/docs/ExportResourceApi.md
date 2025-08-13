@@ -6,8 +6,8 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 |------------- | ------------- | -------------|
 | [**exportN5**](ExportResourceApi.md#exportN5) | **POST** /api/v1/export/N5 |  |
 | [**exportN5WithHttpInfo**](ExportResourceApi.md#exportN5WithHttpInfo) | **POST** /api/v1/export/N5 |  |
-| [**exportStatus**](ExportResourceApi.md#exportStatus) | **GET** /api/v1/export/status |  |
-| [**exportStatusWithHttpInfo**](ExportResourceApi.md#exportStatusWithHttpInfo) | **GET** /api/v1/export/status |  |
+| [**exportStatus**](ExportResourceApi.md#exportStatus) | **PATCH** /api/v1/export/status |  |
+| [**exportStatusWithHttpInfo**](ExportResourceApi.md#exportStatusWithHttpInfo) | **PATCH** /api/v1/export/status |  |
 
 
 
@@ -161,11 +161,11 @@ ApiResponse<**Long**>
 
 ## exportStatus
 
-> Set<ExportEvent> exportStatus()
+> List<ExportEvent> exportStatus(body)
 
 
 
-Get the status of your most recent export jobs.
+Get the status of your export jobs past the timestamp (UTC format).
 
 ### Example
 
@@ -185,8 +185,9 @@ public class Example {
         
 
         ExportResourceApi apiInstance = new ExportResourceApi(defaultClient);
+        OffsetDateTime body = OffsetDateTime.now(); // OffsetDateTime | 
         try {
-            Set<ExportEvent> result = apiInstance.exportStatus();
+            List<ExportEvent> result = apiInstance.exportStatus(body);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling ExportResourceApi#exportStatus");
@@ -201,11 +202,14 @@ public class Example {
 
 ### Parameters
 
-This endpoint does not need any parameter.
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **body** | **OffsetDateTime**|  | [optional] |
 
 ### Return type
 
-[**Set&lt;ExportEvent&gt;**](ExportEvent.md)
+[**List&lt;ExportEvent&gt;**](ExportEvent.md)
 
 
 ### Authorization
@@ -214,7 +218,7 @@ This endpoint does not need any parameter.
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 ### HTTP response details
@@ -227,11 +231,11 @@ This endpoint does not need any parameter.
 
 ## exportStatusWithHttpInfo
 
-> ApiResponse<Set<ExportEvent>> exportStatus exportStatusWithHttpInfo()
+> ApiResponse<List<ExportEvent>> exportStatus exportStatusWithHttpInfo(body)
 
 
 
-Get the status of your most recent export jobs.
+Get the status of your export jobs past the timestamp (UTC format).
 
 ### Example
 
@@ -252,8 +256,9 @@ public class Example {
         
 
         ExportResourceApi apiInstance = new ExportResourceApi(defaultClient);
+        OffsetDateTime body = OffsetDateTime.now(); // OffsetDateTime | 
         try {
-            ApiResponse<Set<ExportEvent>> response = apiInstance.exportStatusWithHttpInfo();
+            ApiResponse<List<ExportEvent>> response = apiInstance.exportStatusWithHttpInfo(body);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
@@ -270,11 +275,14 @@ public class Example {
 
 ### Parameters
 
-This endpoint does not need any parameter.
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **body** | **OffsetDateTime**|  | [optional] |
 
 ### Return type
 
-ApiResponse<[**Set&lt;ExportEvent&gt;**](ExportEvent.md)>
+ApiResponse<[**List&lt;ExportEvent&gt;**](ExportEvent.md)>
 
 
 ### Authorization
@@ -283,7 +291,7 @@ ApiResponse<[**Set&lt;ExportEvent&gt;**](ExportEvent.md)>
 
 ### HTTP request headers
 
-- **Content-Type**: Not defined
+- **Content-Type**: application/json
 - **Accept**: application/json
 
 ### HTTP response details

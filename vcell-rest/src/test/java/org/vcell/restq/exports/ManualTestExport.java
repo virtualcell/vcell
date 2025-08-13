@@ -10,13 +10,16 @@ import org.vcell.restclient.model.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 public class ManualTestExport {
     public static void main(String[] args) throws URISyntaxException, IOException, ParseException, ApiException, InterruptedException {
         int numOfExports = 12;
 
+        OffsetDateTime time = OffsetDateTime.now();
         ApiClient apiClient = InteractiveLogin.login(new URI(InteractiveLogin.authDomain),
                 new URI("https://minikube.remote"), true);
         System.setProperty("jdk.internal.httpclient.disableHostnameVerification", "true");
@@ -53,7 +56,7 @@ public class ManualTestExport {
             try {
                 Thread.sleep(1000);
                 System.out.println("---------Checking export status...---------");
-                Set<ExportEvent> exportStatus = exportResourceApi.exportStatus();
+                List<ExportEvent> exportStatus = exportResourceApi.exportStatus(time);
                 for (ExportEvent exportEvent : exportStatus) {
                     if (exportEvent.getEventType() == ExportProgressType.COMPLETE) {
                         numOfExportsCompleted++;

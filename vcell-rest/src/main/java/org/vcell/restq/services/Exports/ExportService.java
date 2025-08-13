@@ -1,6 +1,7 @@
 package org.vcell.restq.services.Exports;
 
 import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportEventController;
 import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.JobRequest;
@@ -12,6 +13,7 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import org.vcell.restq.activemq.ExportRequestListenerMQ;
 import org.vcell.restq.errors.exceptions.RuntimeWebException;
@@ -24,34 +26,28 @@ import org.vcell.util.document.User;
 
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 
 @ApplicationScoped
 public class ExportService {
     @Inject
-    ServerExportEventController exportStatusCreator;
+    Instance<ExportEventController> exportStatusCreator;
 
     @Inject
     SimulationRestService simulationRestService;
-
-    @Inject
-    ObjectMapper jsonMapper;
-
-    @Inject
-    public ExportService(ServerExportEventController exportStatusCreator) throws DataAccessException, FileNotFoundException {
-        this.exportStatusCreator = exportStatusCreator;
-    }
 
     public ExportResource.ExportHistory getExportHistory(User user) throws DataAccessException {
         return new ExportResource.ExportHistory("Hello");
     }
 
     public Multi<ExportEvent> getExportStatuses(User user, long jobID) throws ObjectNotFoundException {
-        return exportStatusCreator.getUsersExportStatus(user, jobID);
+        return ((ServerExportEventController) exportStatusCreator.get()).getSSEUsersExportStatus(user, jobID);
     }
 
-    public Set<ExportEvent> getMostRecentExportStatus(User user) {
-        return exportStatusCreator.getMostRecentExportStatus(user);
+    public List<ExportEvent> getMostRecentExportStatus(User user, Instant instant) {
+        return ((ServerExportEventController) exportStatusCreator.get()).getMostRecentExportStatus(user, instant);
     }
 
     public ExportRequestListenerMQ.ExportJob createExportJobFromRequest(User user, ExportResource.StandardExportInfo request, FormatSpecificSpecs formatSpecificSpecs, ExportFormat format) throws DataAccessException, SQLException {

@@ -44,7 +44,7 @@ public class ClientExportEventController implements ExportEventController {
         }
         ExportEvent event = new ExportEvent(
                 this, jobID, user, vcdID.getID(), dataKey, ExportEnums.ExportProgressType.EXPORT_COMPLETE,
-                format, location, null, timeSpecs, varSpecs);
+                format, location, null);
         event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
         fireExportEvent(event);
         return event;
@@ -57,7 +57,7 @@ public class ClientExportEventController implements ExportEventController {
         if (object != null) {
             user = (User)object;
         }
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_ASSEMBLING, format, null, null, null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_ASSEMBLING, format, null, null);
         fireExportEvent(event);
     }
 
@@ -81,7 +81,7 @@ public class ClientExportEventController implements ExportEventController {
         if (object != null) {
             user = (User)object;
         }
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_FAILURE, format, message, null, null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_FAILURE, format, message, null);
         fireExportEvent(event);
     }
 
@@ -91,7 +91,7 @@ public class ClientExportEventController implements ExportEventController {
         if (object != null) {
             user = (User)object;
         }
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_PROGRESS, format, null, new Double(progress), null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_PROGRESS, format, null, new Double(progress));
         fireExportEvent(event);
     }
 
@@ -102,7 +102,7 @@ public class ClientExportEventController implements ExportEventController {
         if (object != null) {
             user = (User)object;
         }
-        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_START, format, null, null, null, null);
+        ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEnums.ExportProgressType.EXPORT_START, format, null, null);
         fireExportEvent(event);
     }
 

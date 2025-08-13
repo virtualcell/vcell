@@ -55,14 +55,6 @@ public class DTOModelTransformerV0 {
 
     public static ExportEvent exportEventFromJsonRep(Object eventSource, ExportEventRepresentation rep) {
         User user = new User(rep.username, new KeyValue(rep.userkey));
-        TimeSpecs timeSpecs = null;
-        if (rep.exportTimeSpecs!=null) {
-            timeSpecs = timeSpecsFromJsonRep(rep.exportTimeSpecs);
-        }
-        VariableSpecs variableSpecs = null;
-        if (rep.exportVariableSpecs!=null) {
-            variableSpecs = variableSpecsFromJsonRep(rep.exportVariableSpecs);
-        }
         HumanReadableExportData humanReadableExportData1 = null;
         if (rep.exportHumanReadableDataSpec!=null){
             humanReadableExportData1 = humanReadableExportDataFromJsonRep(rep.exportHumanReadableDataSpec);
@@ -70,21 +62,14 @@ public class DTOModelTransformerV0 {
         ExportEvent event = new ExportEvent(
                 eventSource, rep.jobid, user,
                 rep.dataIdString, new KeyValue(rep.dataKey), ExportEnums.ExportProgressType.getExportProgressType(rep.eventType),
-                rep.format, rep.location, rep.progress,
-                timeSpecs, variableSpecs);
+                rep.format, rep.location, rep.progress);
         event.setHumanReadableExportData(humanReadableExportData1);
         return event;
     }
 
     public static ExportEventRepresentation exportEventToJsonRep(ExportEvent event) {
         ExportTimeSpecs exportTimeSpecs = null;
-        if (event.getTimeSpecs()!=null) {
-            exportTimeSpecs = exportTimeSpecsToJsonRep(event.getTimeSpecs());
-        }
         ExportVariableSpecs exportVariableSpecs = null;
-        if (event.getVariableSpecs()!=null) {
-            exportVariableSpecs = variableSpecsToJsonRep(event.getVariableSpecs());
-        }
         ExportHumanReadableDataSpec exportHumanReadableDataSpec = null;
         if (event.getHumanReadableData() != null){
             exportHumanReadableDataSpec = humanReadableExportDataToJsonRep(event.getHumanReadableData());

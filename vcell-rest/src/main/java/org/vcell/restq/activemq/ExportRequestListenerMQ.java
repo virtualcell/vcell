@@ -80,21 +80,23 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
                 new ExportServiceImpl());
     }
 
-    public void addExportJobToQueue(ExportJob exportJob) throws JsonProcessingException {
+    public void addExportJobToQueue(ExportJob exportJob) {
         logger.debug("Export job added to queue: {} for user: {}", exportJob.id(), exportJob.user().getName());
-        exportStatusCreator.addServerExportListener(exportJob.user(), exportJob.id());
-        exportJobEmitter.send(mapper.writeValueAsString(exportJob));
+        try{
+            exportStatusCreator.addServerExportListener(exportJob);
+            exportJobEmitter.send(mapper.writeValueAsString(exportJob));
+        } catch (Exception e){
+            logger.error("Can't add job to remote queue: ", e);
+            exportStatusCreator.fireExportFailed(exportJob.id(), null, null, e.getMessage());
+        }
     }
 
     @Incoming("processed-export-request")
-    @Blocking(ordered = false)
     public Uni<Void> consumeExportRequest(Message<String> message) {
         try {
             logger.debug("Received export request: {}", message.getPayload());
-            return Uni.createFrom().completionStage(startJob(message)).onFailure().recoverWithUni(() -> {
-                logger.error("Failed to process export request: {}", message.getPayload());
-                return Uni.createFrom().completionStage(message.nack(new RuntimeException("Failed to process export request")));
-            });
+            startJob(message);
+            return Uni.createFrom().completionStage(message.ack());
         } catch (Exception e) {
             logger.error(e);
             return Uni.createFrom().completionStage(message.nack(e));
@@ -116,7 +118,6 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
                         throw new RuntimeException(e);
                     }
                 }, threadPoolExecutor)
-                .thenRun(message::ack)
                 .orTimeout(15, waitUnit);
 
         if (handleFailure){

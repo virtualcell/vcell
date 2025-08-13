@@ -5,7 +5,7 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 Method | HTTP request | Description
 ------------- | ------------- | -------------
 [**export_n5**](ExportResourceApi.md#export_n5) | **POST** /api/v1/export/N5 | 
-[**export_status**](ExportResourceApi.md#export_status) | **GET** /api/v1/export/status | 
+[**export_status**](ExportResourceApi.md#export_status) | **PATCH** /api/v1/export/status | 
 
 
 # **export_n5**
@@ -84,11 +84,11 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **export_status**
-> List[ExportEvent] export_status()
+> List[ExportEvent] export_status(body=body)
 
 
 
-Get the status of your most recent export jobs.
+Get the status of your export jobs past the timestamp (UTC format).
 
 ### Example
 
@@ -115,9 +115,10 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.ExportResourceApi(api_client)
+    body = '2013-10-20T19:20:30+01:00' # datetime |  (optional)
 
     try:
-        api_response = api_instance.export_status()
+        api_response = api_instance.export_status(body=body)
         print("The response of ExportResourceApi->export_status:\n")
         pprint(api_response)
     except Exception as e:
@@ -127,7 +128,10 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **body** | **datetime**|  | [optional] 
 
 ### Return type
 
@@ -139,7 +143,7 @@ This endpoint does not need any parameter.
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: application/json
 
 ### HTTP response details

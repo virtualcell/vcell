@@ -24,9 +24,7 @@ from pydantic import BaseModel, StrictFloat, StrictInt, StrictStr
 from pydantic import Field
 from vcell_client.models.export_progress_type import ExportProgressType
 from vcell_client.models.human_readable_export_data import HumanReadableExportData
-from vcell_client.models.time_specs import TimeSpecs
 from vcell_client.models.user import User
-from vcell_client.models.variable_specs import VariableSpecs
 try:
     from typing import Self
 except ImportError:
@@ -44,10 +42,8 @@ class ExportEvent(BaseModel):
     job_id: Optional[StrictInt] = Field(default=None, alias="jobID")
     data_key: Optional[StrictStr] = Field(default=None, alias="dataKey")
     data_id_string: Optional[StrictStr] = Field(default=None, alias="dataIdString")
-    time_specs: Optional[TimeSpecs] = Field(default=None, alias="timeSpecs")
-    variable_specs: Optional[VariableSpecs] = Field(default=None, alias="variableSpecs")
     human_readable_data: Optional[HumanReadableExportData] = Field(default=None, alias="humanReadableData")
-    __properties: ClassVar[List[str]] = ["eventType", "progress", "format", "location", "user", "jobID", "dataKey", "dataIdString", "timeSpecs", "variableSpecs", "humanReadableData"]
+    __properties: ClassVar[List[str]] = ["eventType", "progress", "format", "location", "user", "jobID", "dataKey", "dataIdString", "humanReadableData"]
 
     model_config = {
         "populate_by_name": True,
@@ -88,12 +84,6 @@ class ExportEvent(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of user
         if self.user:
             _dict['user'] = self.user.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of time_specs
-        if self.time_specs:
-            _dict['timeSpecs'] = self.time_specs.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of variable_specs
-        if self.variable_specs:
-            _dict['variableSpecs'] = self.variable_specs.to_dict()
         # override the default output from pydantic by calling `to_dict()` of human_readable_data
         if self.human_readable_data:
             _dict['humanReadableData'] = self.human_readable_data.to_dict()
@@ -122,8 +112,6 @@ class ExportEvent(BaseModel):
             "jobID": obj.get("jobID"),
             "dataKey": obj.get("dataKey"),
             "dataIdString": obj.get("dataIdString"),
-            "timeSpecs": TimeSpecs.from_dict(obj.get("timeSpecs")) if obj.get("timeSpecs") is not None else None,
-            "variableSpecs": VariableSpecs.from_dict(obj.get("variableSpecs")) if obj.get("variableSpecs") is not None else None,
             "humanReadableData": HumanReadableExportData.from_dict(obj.get("humanReadableData")) if obj.get("humanReadableData") is not None else None
         })
         return _obj

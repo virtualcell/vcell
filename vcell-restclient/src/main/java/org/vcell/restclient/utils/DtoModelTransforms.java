@@ -517,8 +517,6 @@ public class DtoModelTransforms {
         long jobID = restEvent.getJobID() != null ? restEvent.getJobID() : 0L;
         org.vcell.util.document.KeyValue dataKey = restEvent.getDataKey() != null ? new org.vcell.util.document.KeyValue(restEvent.getDataKey()) : null;
         String dataIdString = restEvent.getDataIdString();
-        cbit.vcell.export.server.TimeSpecs timeSpecs = restEvent.getTimeSpecs() == null ? null : dtoToTimeSpecs(restEvent.getTimeSpecs());
-        cbit.vcell.export.server.VariableSpecs variableSpecs = restEvent.getVariableSpecs() == null ? null : dtoToVariableSpecs(restEvent.getVariableSpecs());
 
         // Construct ExportEvent
         return new cbit.rmi.event.ExportEvent(
@@ -530,9 +528,7 @@ public class DtoModelTransforms {
                 eventType,
                 format,
                 location,
-                progress,
-                timeSpecs,
-                variableSpecs
+                progress
         );
     }
 }

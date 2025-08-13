@@ -27,8 +27,10 @@ import org.vcell.util.document.KeyValue;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -74,19 +76,23 @@ public class ExportRequestTest {
 //     Tests the clients capability to submit exports, our queue for accepting and distributing messages, retrieval of export status, and the export job itself
     @Test
     public void testExportRequestClient() throws Exception {
+        final OffsetDateTime time = OffsetDateTime.now(); // Before export even starts, so that all events are grabbed from the queue
         ExportResourceApi exportResourceApi = new ExportResourceApi(aliceAPIClient);
         N5ExportRequest exportRequest = getValidExportRequestDTO(0, 1);
         exportResourceApi.exportN5(exportRequest);
 
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
             try{
-                Set<ExportEvent> allEvents = exportResourceApi.exportStatus();
+                List<ExportEvent> allEvents = new ArrayList<>();
+                while (allEvents.isEmpty()){
+                    Thread.sleep(100);
+                    allEvents = exportResourceApi.exportStatus(time);
+                }
                 ExportEvent eventUnderInspection = allEvents.stream().toList().get(0);
-                Assertions.assertEquals(1, allEvents.size());
                 Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_ASSEMBLING, ExportEnums.ExportProgressType.valueOf(eventUnderInspection.getEventType().getValue()));
                 while (ExportEnums.ExportProgressType.valueOf(eventUnderInspection.getEventType().getValue()) != ExportEnums.ExportProgressType.EXPORT_COMPLETE){
-                    allEvents = exportResourceApi.exportStatus();
-                    eventUnderInspection = allEvents.stream().toList().get(0);
+                    allEvents = exportResourceApi.exportStatus(time);
+                    eventUnderInspection = allEvents.stream().toList().get(allEvents.size() - 1);
                     Thread.sleep(500);
                 }
                 Assertions.assertEquals(ExportProgressType.COMPLETE, eventUnderInspection.getEventType());

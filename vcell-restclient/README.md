@@ -121,8 +121,8 @@ Class | Method | HTTP request | Description
 *BioModelResourceApi* | [**saveBioModelWithHttpInfo**](docs/BioModelResourceApi.md#saveBioModelWithHttpInfo) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 *ExportResourceApi* | [**exportN5**](docs/ExportResourceApi.md#exportN5) | **POST** /api/v1/export/N5 | 
 *ExportResourceApi* | [**exportN5WithHttpInfo**](docs/ExportResourceApi.md#exportN5WithHttpInfo) | **POST** /api/v1/export/N5 | 
-*ExportResourceApi* | [**exportStatus**](docs/ExportResourceApi.md#exportStatus) | **GET** /api/v1/export/status | 
-*ExportResourceApi* | [**exportStatusWithHttpInfo**](docs/ExportResourceApi.md#exportStatusWithHttpInfo) | **GET** /api/v1/export/status | 
+*ExportResourceApi* | [**exportStatus**](docs/ExportResourceApi.md#exportStatus) | **PATCH** /api/v1/export/status | 
+*ExportResourceApi* | [**exportStatusWithHttpInfo**](docs/ExportResourceApi.md#exportStatusWithHttpInfo) | **PATCH** /api/v1/export/status | 
 *FieldDataResourceApi* | [**advancedCreate**](docs/FieldDataResourceApi.md#advancedCreate) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 *FieldDataResourceApi* | [**advancedCreateWithHttpInfo**](docs/FieldDataResourceApi.md#advancedCreateWithHttpInfo) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 *FieldDataResourceApi* | [**analyzeFile**](docs/FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.

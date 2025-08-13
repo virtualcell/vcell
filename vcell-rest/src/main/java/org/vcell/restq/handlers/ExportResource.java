@@ -27,7 +27,9 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.User;
 
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -72,13 +74,13 @@ public class ExportResource {
     }
 
     @Path("/status")
-    @GET
+    @PATCH
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(operationId = "exportStatus", description = "Get the status of your most recent export jobs.")
-    public Set<ExportEvent> pollExportStatus() throws DataAccessWebException, NotAuthenticatedWebException {
+    @Operation(operationId = "exportStatus", description = "Get the status of your export jobs past the timestamp (UTC format).")
+    public List<ExportEvent> pollExportStatus(Instant timestamp) throws DataAccessWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
-        return exportService.getMostRecentExportStatus(user);
+        return exportService.getMostRecentExportStatus(user, timestamp);
     }
 
     @Path("/{exportJobID}/status-sse")

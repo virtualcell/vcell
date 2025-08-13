@@ -9,10 +9,8 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { VariableSpecs } from './variable-specs';
 import { ExportProgressType } from './export-progress-type';
 import { User } from './user';
-import { TimeSpecs } from './time-specs';
 import { HumanReadableExportData } from './human-readable-export-data';
 
 
@@ -25,8 +23,6 @@ export interface ExportEvent {
     jobID?: number;
     dataKey?: string;
     dataIdString?: string;
-    timeSpecs?: TimeSpecs;
-    variableSpecs?: VariableSpecs;
     humanReadableData?: HumanReadableExportData;
 }
 export namespace ExportEvent {
