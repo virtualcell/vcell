@@ -52,6 +52,7 @@ import java.io.File;
 
 import cbit.vcell.client.server.DynamicClientProperties;
 import org.sbpax.util.StringUtil;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayIOUtil;
 import org.vcell.pathway.persistence.RDFXMLContext;
@@ -383,8 +384,8 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 					throw new RuntimeException("Failed to access " + url + " \n\nPlease try again.");
 				}
 
-				PathwayModel pathwayModel = PathwayIOUtil.extractPathwayFromJDOM(jdomDocument, new RDFXMLContext(), 
-						getClientTaskStatusSupport());
+				ClientTaskStatusSupport ctss = getClientTaskStatusSupport();
+				PathwayModel pathwayModel = PathwayIOUtil.extractPathwayFromJDOM(jdomDocument, new RDFXMLContext(), ctss);
 				PathwayData pathwayData = new PathwayData(pathway.name(), pathwayModel);
 				hashTable.put("pathwayData", pathwayData);
 			}
