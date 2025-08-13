@@ -19,7 +19,7 @@ import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.ExportEvent;
 import org.vcell.restclient.model.N5ExportRequest;
-import java.util.Set;
+import java.time.OffsetDateTime;
 import org.vcell.restclient.model.VCellHTTPError;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -159,23 +159,25 @@ public class ExportResourceApi {
   }
   /**
    * 
-   * Get the status of your most recent export jobs.
-   * @return Set&lt;ExportEvent&gt;
+   * Get the status of your export jobs past the timestamp (UTC format).
+   * @param body  (optional)
+   * @return List&lt;ExportEvent&gt;
    * @throws ApiException if fails to make API call
    */
-  public Set<ExportEvent> exportStatus() throws ApiException {
-    ApiResponse<Set<ExportEvent>> localVarResponse = exportStatusWithHttpInfo();
+  public List<ExportEvent> exportStatus(OffsetDateTime body) throws ApiException {
+    ApiResponse<List<ExportEvent>> localVarResponse = exportStatusWithHttpInfo(body);
     return localVarResponse.getData();
   }
 
   /**
    * 
-   * Get the status of your most recent export jobs.
-   * @return ApiResponse&lt;Set&lt;ExportEvent&gt;&gt;
+   * Get the status of your export jobs past the timestamp (UTC format).
+   * @param body  (optional)
+   * @return ApiResponse&lt;List&lt;ExportEvent&gt;&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Set<ExportEvent>> exportStatusWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = exportStatusRequestBuilder();
+  public ApiResponse<List<ExportEvent>> exportStatusWithHttpInfo(OffsetDateTime body) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = exportStatusRequestBuilder(body);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -187,10 +189,10 @@ public class ExportResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("exportStatus", localVarResponse);
         }
-        return new ApiResponse<Set<ExportEvent>>(
+        return new ApiResponse<List<ExportEvent>>(
           localVarResponse.statusCode(),
           localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Set<ExportEvent>>() {}) // closes the InputStream
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<List<ExportEvent>>() {}) // closes the InputStream
         );
       } finally {
       }
@@ -203,7 +205,7 @@ public class ExportResourceApi {
     }
   }
 
-  private HttpRequest.Builder exportStatusRequestBuilder() throws ApiException {
+  private HttpRequest.Builder exportStatusRequestBuilder(OffsetDateTime body) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -211,9 +213,15 @@ public class ExportResourceApi {
 
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
+    localVarRequestBuilder.header("Content-Type", "application/json");
     localVarRequestBuilder.header("Accept", "application/json");
 
-    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    try {
+      byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(body);
+      localVarRequestBuilder.method("PATCH", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }

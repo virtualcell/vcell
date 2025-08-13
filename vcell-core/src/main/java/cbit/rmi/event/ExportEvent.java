@@ -14,6 +14,7 @@ import cbit.vcell.export.server.ExportEnums;
 import cbit.vcell.export.server.HumanReadableExportData;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.vcell.util.document.KeyValue;
@@ -40,28 +41,35 @@ public class ExportEvent extends MessageEvent {
 	private final KeyValue dataKey;
 	@JsonProperty(value = "dataIdString")
 	private final String dataIdString;
-	@JsonProperty(value = "timeSpecs")
-	private final TimeSpecs timeSpecs;
-	@JsonProperty(value = "variableSpecs")
-	private final VariableSpecs variableSpecs;
 
 	@JsonIgnore
 	private HumanReadableExportData humanReadableExportData = null;
 	
 	public ExportEvent(Object source, long jobID, User user, 
 			VCDataIdentifier vcDataId, ExportEnums.ExportProgressType argEventType,
-			String format, String location, Double argProgress,
-			TimeSpecs timeSpecs, VariableSpecs variableSpecs) {
+			String format, String location, Double argProgress) {
 
 		this(source,jobID,user,
 			vcDataId.getID(),vcDataId.getDataKey(),argEventType,
-			format,location,argProgress,timeSpecs,variableSpecs);
+			format,location,argProgress);
+	}
+
+	@JsonCreator
+	public ExportEvent(@JsonProperty("jobID") long jobID, @JsonProperty("user") User user,
+					   @JsonProperty("dataIdString") String vcDataId, @JsonProperty("dataKey") String dataKey,
+					   @JsonProperty("eventType") ExportEnums.ExportProgressType argEventType,
+					   @JsonProperty("format") String format, @JsonProperty("location") String location, @JsonProperty("progress") Double argProgress,
+					   @JsonProperty("humanReadableData") HumanReadableExportData humanReadableExportData) {
+
+		this(ExportEvent.class, jobID,user,
+				vcDataId, new KeyValue(dataKey),argEventType,
+				format,location,argProgress);
+		this.humanReadableExportData = humanReadableExportData;
 	}
 	
 	public ExportEvent(Object source, long jobID, User user,
 		String dataIdString, KeyValue dataKey, ExportEnums.ExportProgressType argEventType,
-		String format, String location, Double argProgress,
-		TimeSpecs timeSpecs, VariableSpecs variableSpecs) {
+		String format, String location, Double argProgress) {
 	super(source, new MessageSource(source, dataIdString), new MessageData(argProgress));
 	this.eventType = argEventType;
 	this.format = format;
@@ -71,8 +79,6 @@ public class ExportEvent extends MessageEvent {
 	this.user = user;
 	this.dataIdString = dataIdString;
 	this.dataKey = dataKey;
-	this.timeSpecs = timeSpecs;
-	this.variableSpecs = variableSpecs;
 }
 
 
@@ -146,13 +152,6 @@ public KeyValue getDataKey() {
 
 public String getDataIdString() {
 	return dataIdString;
-}
-
-public TimeSpecs getTimeSpecs() {
-	return timeSpecs;
-}
-public VariableSpecs getVariableSpecs() {
-	return variableSpecs;
 }
 
 @Override

@@ -2674,7 +2674,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 				HumanReadableExportData humanReadableExportData = exportEvent.getHumanReadableData();
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-				double[] exportTimes = exportEvent.getTimeSpecs().getAllTimes();
 
 
 				if (jsonFile.exists()){
@@ -2699,8 +2698,8 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 							humanReadableExportData.simulationName,
 							humanReadableExportData.applicationName,
 							humanReadableExportData.biomodelName,
-                            Arrays.toString(exportEvent.getVariableSpecs().getVariableNames()),
-							exportTimes[exportEvent.getTimeSpecs().getBeginTimeIndex()] + "/" + exportTimes[exportEvent.getTimeSpecs().getEndTimeIndex()],
+                            null,
+							null,
 							humanReadableExportData.differentParameterValues,
 							humanReadableExportData.serverSavedFileName,
 							humanReadableExportData.applicationType,

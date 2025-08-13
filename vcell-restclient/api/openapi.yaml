@@ -500,9 +500,14 @@ paths:
       x-content-type: application/json
       x-accepts: application/json
   /api/v1/export/status:
-    get:
-      description: Get the status of your most recent export jobs.
+    patch:
+      description: Get the status of your export jobs past the timestamp (UTC format).
       operationId: exportStatus
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Instant'
       responses:
         "200":
           content:
@@ -511,7 +516,6 @@ paths:
                 items:
                   $ref: '#/components/schemas/ExportEvent'
                 type: array
-                uniqueItems: true
           description: OK
         "401":
           content:
@@ -532,6 +536,7 @@ paths:
         - user
       tags:
       - Export Resource
+      x-content-type: application/json
       x-accepts: application/json
   /api/v1/fieldData/IDs:
     get:
@@ -2881,11 +2886,6 @@ components:
       example:
         dataKey: dataKey
         jobID: 6
-        variableSpecs:
-          mode: null
-          variableNames:
-          - variableNames
-          - variableNames
         dataIdString: dataIdString
         format: format
         humanReadableData:
@@ -2912,13 +2912,6 @@ components:
           - null
           userName: userName
           key: key
-        timeSpecs:
-          mode: null
-          endTimeIndex: 9
-          beginTimeIndex: 5
-          allTimes:
-          - 9.369310271410669
-          - 9.369310271410669
       properties:
         eventType:
           $ref: '#/components/schemas/ExportProgressType'
@@ -2938,10 +2931,6 @@ components:
           type: string
         dataIdString:
           type: string
-        timeSpecs:
-          $ref: '#/components/schemas/TimeSpecs'
-        variableSpecs:
-          $ref: '#/components/schemas/VariableSpecs'
         humanReadableData:
           $ref: '#/components/schemas/HumanReadableExportData'
       type: object

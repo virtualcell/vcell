@@ -15,8 +15,6 @@
 |**jobID** | **Long** |  |  [optional] |
 |**dataKey** | **String** |  |  [optional] |
 |**dataIdString** | **String** |  |  [optional] |
-|**timeSpecs** | [**TimeSpecs**](TimeSpecs.md) |  |  [optional] |
-|**variableSpecs** | [**VariableSpecs**](VariableSpecs.md) |  |  [optional] |
 |**humanReadableData** | [**HumanReadableExportData**](HumanReadableExportData.md) |  |  [optional] |
 
 

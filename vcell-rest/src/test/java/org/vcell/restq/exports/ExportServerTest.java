@@ -48,7 +48,7 @@ public class ExportServerTest {
     @Inject
     Instance<ExportMQInterface> requestListenerMQ;
     @Inject
-    ServerExportEventController statusCreator;
+    Instance<ServerExportEventController> statusCreator;
     @Inject
     ExportService exportService;
     @Inject
@@ -84,7 +84,7 @@ public class ExportServerTest {
     // TODO: Add test for the queue itself, ensuring that the ack's and nack's are handled appropriately.
 
 
-    @Test //Tests export listener, and the export service directly without any asynchronous behavior
+    @Test //Tests export listener, and the export service directly without any event driven behavior
     public void testExportStatus() throws Exception {
         long jobID = 1;
         ExportSpecs exportSpecs = getValidExportSpec(0, 1);
@@ -93,7 +93,7 @@ public class ExportServerTest {
         CompletableFuture.runAsync(() -> {
             try {
                 ExportServiceImpl.makeRemoteFile(new OutputContext(new AnnotatedFunction[]{}), TestEndpointUtils.administratorUser,
-                        dataServer, exportSpecs, statusCreator, jobID);
+                        dataServer, exportSpecs, statusCreator.get(), jobID);
             } catch (Exception e) {
                 // If an exception is thrown during the export process, the blocking iterable will hang because no finish statement has been sent
                 throw new RuntimeException(e);
@@ -104,18 +104,22 @@ public class ExportServerTest {
             switch (i){
                 case 0:
                     Assertions.assertNull(exportEvent.getProgress());
-                    Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_START, exportEvent.getEventType());
+                    Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_ASSEMBLING, exportEvent.getEventType());
                     break;
                 case 1:
+                    Assertions.assertNull(exportEvent.getProgress());
+                    Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_START, exportEvent.getEventType());
+                    break;
+                case 2:
                     Assertions.assertEquals(.25,exportEvent.getProgress());
                     Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_PROGRESS, exportEvent.getEventType());
                     break;
-                case 2:
+                case 3:
                     Assertions.assertEquals(.8125,exportEvent.getProgress());
                     Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_PROGRESS, exportEvent.getEventType());
                     Assertions.assertNull(exportEvent.getLocation());
                     break;
-                case 3:
+                case 4:
                     Assertions.assertNull(exportEvent.getProgress());
                     Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_COMPLETE, exportEvent.getEventType());
                     Assertions.assertNotNull(exportEvent.getLocation());
@@ -134,13 +138,14 @@ public class ExportServerTest {
     public void testInvalidInputException() throws Exception {
         ExportSpecs exportSpecs = getValidExportSpec(0, 1);
         long badJobID = 2;
-        ExportSpecs badExportSpecs = new ExportSpecs(exportSpecs.getVCDataIdentifier(), null, null, null,
-                new GeometrySpecs(new SpatialSelection[]{}, 1, 1, ExportEnums.GeometryMode.GEOMETRY_SLICE), null, "TestSim", null);
+        ExportSpecs badExportSpecs = new ExportSpecs(exportSpecs.getVCDataIdentifier(), ExportFormat.N5, null, null,
+                new GeometrySpecs(new SpatialSelection[]{}, -1, 5000, ExportEnums.GeometryMode.GEOMETRY_SLICE), null, "TestSim", null);
         Multi<ExportEvent> status = createExportListener(badExportSpecs, badJobID);
+
+        // Start job, while having it be blocking on the main thread to check status
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
             VCSimulationDataIdentifier vcSimulationDataIdentifier = (VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier();
-            ExportRequestListenerMQ.ExportJob exportJob = new ExportRequestListenerMQ.ExportJob(badJobID, TestEndpointUtils.administratorUser,
-                    new AnnotatedFunction[]{}, vcSimulationDataIdentifier.getVcSimID(), vcSimulationDataIdentifier.getJobIndex(), null, null, null, null, null,"TestSim", null);
+            ExportRequestListenerMQ.ExportJob exportJob = new ExportRequestListenerMQ.ExportJob(badJobID, TestEndpointUtils.administratorUser, new AnnotatedFunction[]{}, vcSimulationDataIdentifier.getVcSimID(), vcSimulationDataIdentifier.getJobIndex(), null, null, null, null, null,"TestSim", null);
             CompletableFuture<Void> job = null;
             try {
                 job = requestListenerMQ.get().startJob(Message.of(mapper.writeValueAsString(exportJob)));
@@ -150,9 +155,20 @@ public class ExportServerTest {
             job.join();
             Assertions.assertTrue(job.isDone());
         });
+
+
         BlockingIterable<ExportEvent> blockingIterable = status.subscribe().asIterable();
+        int i = 0;
         for (ExportEvent exportEvent : blockingIterable) {
-            Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_FAILURE, exportEvent.getEventType());
+            switch (i){
+                case 0:
+                    Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_ASSEMBLING, exportEvent.getEventType());
+                    break;
+                case 1:
+                    Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_FAILURE, exportEvent.getEventType());
+                    break;
+            }
+            i++;
         }
         future.join();
     }
@@ -161,7 +177,7 @@ public class ExportServerTest {
     public void testLongRunningThread() throws Exception {
         ExportRequestListenerMQ.ExportJob exportJob = exportService.createExportJobFromRequest(TestEndpointUtils.administratorUser, getValidExportRequest(0, 3).standardExportInformation(),
                 new N5Specs(ExportEnums.ExportableDataType.PDE_VARIABLE_DATA, ExportFormat.N5, "TestDataset", dummyMaskInfo), ExportFormat.N5);
-        statusCreator.addServerExportListener(TestEndpointUtils.administratorUser, exportJob.id());
+        statusCreator.get().addServerExportListener(exportJob);
 
         ((ExportRequestListenerMQ) requestListenerMQ.get()).setThreadWaitTimeUnit(TimeUnit.MILLISECONDS);
         CompletableFuture<Void> job = ((ExportRequestListenerMQ) requestListenerMQ.get()).startJob(Message.of(mapper.writeValueAsString(exportJob)), false);
@@ -228,9 +244,9 @@ public class ExportServerTest {
         ExportRequestListenerMQ.ExportJob exportJob = new ExportRequestListenerMQ.ExportJob(jobID, TestEndpointUtils.administratorUser,
                 new AnnotatedFunction[]{}, vcSimulationDataIdentifier.getVcSimID(), vcSimulationDataIdentifier.getJobIndex(), exportSpecs.getFormat(), exportSpecs.getVariableSpecs(), exportSpecs.getTimeSpecs(),
                 geometrySpecDTO, exportSpecs.getFormatSpecificSpecs(), exportSpecs.getSimulationName(), exportSpecs.getContextName());
-        statusCreator.addServerExportListener(TestEndpointUtils.administratorUser, exportJob.id());
+        statusCreator.get().addServerExportListener(exportJob);
 
-        return statusCreator.getUsersExportStatus(TestEndpointUtils.administratorUser, exportJob.id());
+        return statusCreator.get().getSSEUsersExportStatus(TestEndpointUtils.administratorUser, exportJob.id());
     }
 
 }

@@ -308,7 +308,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,ExportSpecs export
 		// N5 export is handled by the N5ExportService
 		try {
 			long jobID = vCellApiClient.getExportApi().exportN5(DtoModelTransforms.n5ExportRequestFromExportSpecs(exportSpecs));
-            return new ExportEvent(this, jobID, null, exportSpecs.getVCDataIdentifier(), ExportEnums.ExportProgressType.EXPORT_START, exportSpecs.getFormat().name(), "", 0.0, exportSpecs.getTimeSpecs(), exportSpecs.getVariableSpecs());
+            return new ExportEvent(this, jobID, null, exportSpecs.getVCDataIdentifier(), ExportEnums.ExportProgressType.EXPORT_START, exportSpecs.getFormat().name(), "", 0.0);
 		}  catch (ApiException e) {
 			ExceptionHandler.onlyDataAccessOrPermissionException(e);
 			throw new RuntimeException("Error should not reach here: " + e.getMessage(), e);

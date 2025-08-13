@@ -462,18 +462,22 @@ paths:
       - openId:
         - user
   /api/v1/export/status:
-    get:
+    patch:
       tags:
       - Export Resource
-      description: Get the status of your most recent export jobs.
+      description: Get the status of your export jobs past the timestamp (UTC format).
       operationId: exportStatus
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Instant'
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                uniqueItems: true
                 type: array
                 items:
                   $ref: '#/components/schemas/ExportEvent'
@@ -2511,10 +2515,6 @@ components:
           $ref: '#/components/schemas/KeyValue'
         dataIdString:
           type: string
-        timeSpecs:
-          $ref: '#/components/schemas/TimeSpecs'
-        variableSpecs:
-          $ref: '#/components/schemas/VariableSpecs'
         humanReadableData:
           $ref: '#/components/schemas/HumanReadableExportData'
     ExportProgressType:

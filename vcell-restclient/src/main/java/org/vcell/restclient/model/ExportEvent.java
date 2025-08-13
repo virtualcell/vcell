@@ -27,9 +27,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 import org.vcell.restclient.model.ExportProgressType;
 import org.vcell.restclient.model.HumanReadableExportData;
-import org.vcell.restclient.model.TimeSpecs;
 import org.vcell.restclient.model.User;
-import org.vcell.restclient.model.VariableSpecs;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -45,8 +43,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   ExportEvent.JSON_PROPERTY_JOB_I_D,
   ExportEvent.JSON_PROPERTY_DATA_KEY,
   ExportEvent.JSON_PROPERTY_DATA_ID_STRING,
-  ExportEvent.JSON_PROPERTY_TIME_SPECS,
-  ExportEvent.JSON_PROPERTY_VARIABLE_SPECS,
   ExportEvent.JSON_PROPERTY_HUMAN_READABLE_DATA
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
@@ -74,12 +70,6 @@ public class ExportEvent {
 
   public static final String JSON_PROPERTY_DATA_ID_STRING = "dataIdString";
   private String dataIdString;
-
-  public static final String JSON_PROPERTY_TIME_SPECS = "timeSpecs";
-  private TimeSpecs timeSpecs;
-
-  public static final String JSON_PROPERTY_VARIABLE_SPECS = "variableSpecs";
-  private VariableSpecs variableSpecs;
 
   public static final String JSON_PROPERTY_HUMAN_READABLE_DATA = "humanReadableData";
   private HumanReadableExportData humanReadableData;
@@ -287,56 +277,6 @@ public class ExportEvent {
   }
 
 
-  public ExportEvent timeSpecs(TimeSpecs timeSpecs) {
-    this.timeSpecs = timeSpecs;
-    return this;
-  }
-
-   /**
-   * Get timeSpecs
-   * @return timeSpecs
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_TIME_SPECS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public TimeSpecs getTimeSpecs() {
-    return timeSpecs;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_TIME_SPECS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setTimeSpecs(TimeSpecs timeSpecs) {
-    this.timeSpecs = timeSpecs;
-  }
-
-
-  public ExportEvent variableSpecs(VariableSpecs variableSpecs) {
-    this.variableSpecs = variableSpecs;
-    return this;
-  }
-
-   /**
-   * Get variableSpecs
-   * @return variableSpecs
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VARIABLE_SPECS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public VariableSpecs getVariableSpecs() {
-    return variableSpecs;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_VARIABLE_SPECS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVariableSpecs(VariableSpecs variableSpecs) {
-    this.variableSpecs = variableSpecs;
-  }
-
-
   public ExportEvent humanReadableData(HumanReadableExportData humanReadableData) {
     this.humanReadableData = humanReadableData;
     return this;
@@ -382,14 +322,12 @@ public class ExportEvent {
         Objects.equals(this.jobID, exportEvent.jobID) &&
         Objects.equals(this.dataKey, exportEvent.dataKey) &&
         Objects.equals(this.dataIdString, exportEvent.dataIdString) &&
-        Objects.equals(this.timeSpecs, exportEvent.timeSpecs) &&
-        Objects.equals(this.variableSpecs, exportEvent.variableSpecs) &&
         Objects.equals(this.humanReadableData, exportEvent.humanReadableData);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(eventType, progress, format, location, user, jobID, dataKey, dataIdString, timeSpecs, variableSpecs, humanReadableData);
+    return Objects.hash(eventType, progress, format, location, user, jobID, dataKey, dataIdString, humanReadableData);
   }
 
   @Override
@@ -404,8 +342,6 @@ public class ExportEvent {
     sb.append("    jobID: ").append(toIndentedString(jobID)).append("\n");
     sb.append("    dataKey: ").append(toIndentedString(dataKey)).append("\n");
     sb.append("    dataIdString: ").append(toIndentedString(dataIdString)).append("\n");
-    sb.append("    timeSpecs: ").append(toIndentedString(timeSpecs)).append("\n");
-    sb.append("    variableSpecs: ").append(toIndentedString(variableSpecs)).append("\n");
     sb.append("    humanReadableData: ").append(toIndentedString(humanReadableData)).append("\n");
     sb.append("}");
     return sb.toString();
@@ -492,16 +428,6 @@ public class ExportEvent {
     // add `dataIdString` to the URL query string
     if (getDataIdString() != null) {
       joiner.add(String.format("%sdataIdString%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDataIdString()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `timeSpecs` to the URL query string
-    if (getTimeSpecs() != null) {
-      joiner.add(getTimeSpecs().toUrlQueryString(prefix + "timeSpecs" + suffix));
-    }
-
-    // add `variableSpecs` to the URL query string
-    if (getVariableSpecs() != null) {
-      joiner.add(getVariableSpecs().toUrlQueryString(prefix + "variableSpecs" + suffix));
     }
 
     // add `humanReadableData` to the URL query string

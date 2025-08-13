@@ -1,5 +1,8 @@
 package cbit.vcell.export.server;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,9 +21,12 @@ public class HumanReadableExportData implements Serializable {
     public int zSlices;
     public int tSlices;
     public int numChannels;
-    public HumanReadableExportData(String simulationName, String applicationName, String biomodelName,
-                                   ArrayList<String> differentParameterValues,
-                                   String serverSavedFileName, String applicationType, boolean nonSpatial, Map<Integer, String> subVolume){
+
+    @JsonCreator
+    public HumanReadableExportData(@JsonProperty("simulationName") String simulationName, @JsonProperty("applicationName") String applicationName,
+                                   @JsonProperty("biomodelName") String biomodelName, @JsonProperty("differentParameterValues") ArrayList<String> differentParameterValues,
+                                   @JsonProperty("serverSavedFileName") String serverSavedFileName, @JsonProperty("applicationType") String applicationType,
+                                   @JsonProperty("nonSpatial") boolean nonSpatial, @JsonProperty("subVolume") Map<Integer, String> subVolume){
         this.simulationName = simulationName;
         this.applicationName = applicationName;
         this.biomodelName = biomodelName;

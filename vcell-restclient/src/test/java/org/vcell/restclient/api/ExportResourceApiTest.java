@@ -62,12 +62,5 @@ public class ExportResourceApiTest {
      * @throws ApiException
      *          if the Api call fails
      */
-    @Test
-    public void exportStatusTest() throws ApiException {
-        Set<ExportEvent> response = 
-        api.exportStatus();
-        
-        // TODO: test validations
-    }
     
 }

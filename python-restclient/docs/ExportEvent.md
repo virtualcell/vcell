@@ -12,8 +12,6 @@ Name | Type | Description | Notes
 **job_id** | **int** |  | [optional] 
 **data_key** | **str** |  | [optional] 
 **data_id_string** | **str** |  | [optional] 
-**time_specs** | [**TimeSpecs**](TimeSpecs.md) |  | [optional] 
-**variable_specs** | [**VariableSpecs**](VariableSpecs.md) |  | [optional] 
 **human_readable_data** | [**HumanReadableExportData**](HumanReadableExportData.md) |  | [optional] 
 
 ## Example
