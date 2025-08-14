@@ -534,7 +534,7 @@ public class VCMetaDataMiriamManager implements MiriamManager, Serializable {
 	public static List<DataType> getSpecificDataTypes(Identifiable entity) {
 		List<DataType> list = new ArrayList<>();
 		//temp comment ontologies not supported by search feature
-//		list.add(VCMetaDataDataType.DataType_PUBMED);
+		list.add(VCMetaDataDataType.DataType_PUBMED);	// dan aug 25 - uncomment it
 //		list.add(VCMetaDataDataType.DataType_DOI);
 		list.add(VCMetaDataDataType.DataType_Ncit);
 		list.add(VCMetaDataDataType.DataType_GO);
