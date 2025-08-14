@@ -11,17 +11,10 @@
     <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Defective ABCC8 can cause hypo- and hyper-glycemias</bp:NAME>
     <bp:SHORT-NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Defective ABCC8 can cause hypo- and hyper-glycemias</bp:SHORT-NAME>
     <bp:XREF rdf:resource="#unificationXref16" />
-    <bp:XREF rdf:resource="#unificationXref17" />
     <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ATP-binding cassette sub-family C member 8 (ABCC8) is a subunit of the beta-cell ATP-sensitive potassium channel (KATP). KATP channels play an important role in the control of insulin release. Elevation of the ATP:ADP ratio closes KATP channels leading to cellular depolarisation, calcium influx and exocytosis of insulin from its storage granules. Defects in ABCC8 can cause dysregulation of insulin secretion resulting in hyperglycemias or hypoglycemias. Specific phenotypes observed are noninsulin-dependent diabetes mellitus (NIDDM; MIM:125853), permanent neonatal diabetes mellitus (PNDM; MIM:606176), transient neonatal diabetes mellitus 2 (TNDM2; MIM:610374), familial hyperinsulinemic hypoglycemia 1 (HHF1; MIM:256450) and leucine-induced hypoglycemia (LIH; MIM:240800) (Edghill et al. 2010, Flanagan et al. 2009, Yorifuji 2014, Yang et al. 2010, Chandran et al. 2014).</bp:COMMENT>
     <bp:XREF rdf:resource="#publicationXref8" />
-    <bp:XREF rdf:resource="#publicationXref9" />
-    <bp:XREF rdf:resource="#publicationXref10" />
-    <bp:XREF rdf:resource="#publicationXref11" />
-    <bp:XREF rdf:resource="#publicationXref12" />
     <bp:DATA-SOURCE rdf:resource="#dataSource1" />
     <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Authored: Jassal, Bijay, 2015-03-12</bp:COMMENT>
-    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reviewed: Shukla, Suneet, 2015-09-15</bp:COMMENT>
-    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Edited: Jassal, Bijay, 2015-03-12</bp:COMMENT>
   </bp:pathway>
   <bp:biochemicalReaction rdf:ID="biochemicalReaction1">
     <bp:LEFT rdf:resource="#physicalEntityParticipant1" />
@@ -29,14 +22,10 @@
     <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Defective ABCC8 does not form functional KATP channels, causing hyperinsulinemic hypoglycemia</bp:NAME>
     <bp:SHORT-NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Defective ABCC8 does not form functional KATP channels, causing hyperinsulinemic hypoglycemia</bp:SHORT-NAME>
     <bp:XREF rdf:resource="#unificationXref9" />
-    <bp:XREF rdf:resource="#unificationXref10" />
     <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ATP-binding cassette sub-family C member 8 (ABCC8) is a subunit of the beta-cell ATP-sensitive potassium channel (KATP). KATP channels play an important role in the control of insulin release. Elevation of the ATP:ADP ratio closes KATP channels leading to cellular depolarisation, calcium influx and exocytosis of insulin from its storage granules. Defects in ABCC8 can cause dysregulation of insulin secretion resulting in hyperglycemias or hypoglycemias.&lt;br&gt;&lt;br&gt;Familial hyperinsulinemic hypoglycemia (see HHF1; MIM:256450) is a disorder caused by defective negative feedback regulation of insulin secretion (persistent hyperinsulinism) leading to severe hypoglycemia. The most commom ABCC8 mutations causing HHF1 include F1388del, A1330Gfs*35, V187D and E1507K (Thomas et al. 1995, Nestorowicz et al. 1996, Otonkoshi et al. 1999).</bp:COMMENT>
     <bp:XREF rdf:resource="#publicationXref1" />
     <bp:XREF rdf:resource="#publicationXref2" />
-    <bp:XREF rdf:resource="#publicationXref3" />
     <bp:DATA-SOURCE rdf:resource="#dataSource1" />
-    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Authored: Jassal, Bijay, 2015-03-12</bp:COMMENT>
-    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reviewed: Shukla, Suneet, 2015-09-15</bp:COMMENT>
     <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Edited: Jassal, Bijay, 2015-03-12</bp:COMMENT>
   </bp:biochemicalReaction>
   <bp:physicalEntityParticipant rdf:ID="physicalEntityParticipant1">
@@ -180,12 +169,6 @@
     <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">5683113</bp:ID>
     <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Database identifier. Use this URL to connect to the web page of this instance in Reactome: http://www.reactome.org/cgi-bin/eventbrowser?DB=gk_current&amp;ID=5683113</bp:COMMENT>
   </bp:unificationXref>
-  <bp:unificationXref rdf:ID="unificationXref10">
-    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome</bp:DB>
-    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">R-HSA-5683113</bp:ID>
-    <bp:ID-VERSION rdf:datatype="http://www.w3.org/2001/XMLSchema#string">3</bp:ID-VERSION>
-    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome stable identifier. Use this URL to connect to the web page of this instance in Reactome: http://www.reactome.org/cgi-bin/eventbrowser_st_id?ST_ID=R-HSA-5683113.3</bp:COMMENT>
-  </bp:unificationXref>
   <bp:publicationXref rdf:ID="publicationXref1">
     <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">7847376</bp:ID>
     <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
@@ -193,8 +176,6 @@
     <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Homozygosity mapping, to chromosome 11p, of the gene for familial persistent hyperinsulinemic hypoglycemia of infancy</bp:TITLE>
     <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Thomas, P M</bp:AUTHORS>
     <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Cote, G J</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Hallman, D M</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Mathew, P M</bp:AUTHORS>
     <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Am. J. Hum. Genet. 56:416-21</bp:SOURCE>
   </bp:publicationXref>
   <bp:publicationXref rdf:ID="publicationXref2">
@@ -202,39 +183,9 @@
     <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
     <bp:YEAR rdf:datatype="http://www.w3.org/2001/XMLSchema#int">1999</bp:YEAR>
     <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">A point mutation inactivating the sulfonylurea receptor causes the severe form of persistent hyperinsulinemic hypoglycemia of infancy in Finland</bp:TITLE>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Otonkoski, T</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ammälä, C</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Huopio, H</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Cote, G J</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Chapman, J</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Cosgrove, K</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ashfield, R</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Huang, E</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Komulainen, J</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ashcroft, F M</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Dunne, M J</bp:AUTHORS>
     <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Kere, J</bp:AUTHORS>
     <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Thomas, P M</bp:AUTHORS>
     <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Diabetes 48:408-15</bp:SOURCE>
-  </bp:publicationXref>
-  <bp:publicationXref rdf:ID="publicationXref3">
-    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">8923011</bp:ID>
-    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
-    <bp:YEAR rdf:datatype="http://www.w3.org/2001/XMLSchema#int">1996</bp:YEAR>
-    <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Mutations in the sulonylurea receptor gene are associated with familial hyperinsulinism in Ashkenazi Jews</bp:TITLE>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Nestorowicz, A</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Wilson, B A</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Schoor, K P</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Inoue, H</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Glaser, B</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Landau, H</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Stanley, C A</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Thornton, P S</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Clement, J P</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Bryan, J</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Aguilar-Bryan, L</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Permutt, M A</bp:AUTHORS>
-    <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Hum. Mol. Genet. 5:1813-22</bp:SOURCE>
   </bp:publicationXref>
   <bp:pathwayStep rdf:ID="pathwayStep2">
     <bp:STEP-INTERACTIONS rdf:resource="#biochemicalReaction1" />
@@ -245,15 +196,10 @@
     <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Activating ABCC8 mutants cause hyperglycemia in permanent neonatal diabetes mellitus (PNDM) and transient neonatal DM (TNDM)</bp:NAME>
     <bp:SHORT-NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Activating ABCC8 mutants cause hyperglycemia in permanent neonatal diabetes mellitus (PNDM) and transient neonatal DM (TNDM)</bp:SHORT-NAME>
     <bp:XREF rdf:resource="#unificationXref14" />
-    <bp:XREF rdf:resource="#unificationXref15" />
     <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Neonatal diabetes mellitus (NDM) is a rare condition defined as insulin-requiring hyperglycemia within the first month of life. About half of the neonates have a transient form that resolves at a median age of 3 months whereas the rest have a permanent form of diabetes.&lt;br&gt;&lt;br&gt;ATP-binding cassette sub-family C member 8 (ABCC8) is a subunit of the beta-cell ATP-sensitive potassium channel (KATP). KATP channels play an important role in the control of insulin release. Elevation of the ATP:ADP ratio closes KATP channels leading to cellular depolarisation, calcium influx and exocytosis of insulin from its storage granules. Defects in ABCC8 can cause dysregulation of insulin secretion resulting in hyperglycemias or hypoglycemias.&lt;br&gt;&lt;br&gt;Defects in ABCC8 can cause permanent neonatal diabetes mellitus (PNDM; MIM:606176). Wild-type ABCC8 confers a lower open-channel probability (Po) than activating mutations of ABCC8, where overactive KATP channels reduce insulin secretion, resulting in hyperglycemia, diagnosed within the first months of life. PNDM requires lifelong therapy. Mutations causing PNDM include P132L, L213R, N72S, A1185E and E382K (Proks et al. 2006, Babenko et al. 2006, Ellard et al. 2007).&lt;br&gt;&lt;br&gt;Defects in ABCC8 can also cause transient noenatal diabetes mellitus 2 (TNDM2; MIM:610374). Babies are born with intrauterine growth retardation and present within the first 6 weeks of life with severe failure to thrive, hyperglycemia, and dehydration. The condition usually resolves within the first 6 months after birth but there is a predisposition to type 2 diabetes later in life (Naylor et al. 2011). Activating mutations causing TNDM2 are R1379C and L582V (Babenko et al. 2006). These mutations confer a higher open-channel probability (Po) than wild-type ABCC8, keeping the KATP channel open thus not allow cellular depolarisation to occur with the end result of reduced insulin secretion and hyperglycemia.</bp:COMMENT>
-    <bp:XREF rdf:resource="#publicationXref4" />
     <bp:XREF rdf:resource="#publicationXref5" />
-    <bp:XREF rdf:resource="#publicationXref6" />
-    <bp:XREF rdf:resource="#publicationXref7" />
     <bp:DATA-SOURCE rdf:resource="#dataSource1" />
     <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Authored: Jassal, Bijay, 2015-03-12</bp:COMMENT>
-    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reviewed: Shukla, Suneet, 2015-09-15</bp:COMMENT>
     <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Edited: Jassal, Bijay, 2015-03-12</bp:COMMENT>
   </bp:biochemicalReaction>
   <bp:physicalEntityParticipant rdf:ID="physicalEntityParticipant3">
@@ -337,29 +283,6 @@
     <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">5683209</bp:ID>
     <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Database identifier. Use this URL to connect to the web page of this instance in Reactome: http://www.reactome.org/cgi-bin/eventbrowser?DB=gk_current&amp;ID=5683209</bp:COMMENT>
   </bp:unificationXref>
-  <bp:unificationXref rdf:ID="unificationXref15">
-    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome</bp:DB>
-    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">R-HSA-5683209</bp:ID>
-    <bp:ID-VERSION rdf:datatype="http://www.w3.org/2001/XMLSchema#string">3</bp:ID-VERSION>
-    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome stable identifier. Use this URL to connect to the web page of this instance in Reactome: http://www.reactome.org/cgi-bin/eventbrowser_st_id?ST_ID=R-HSA-5683209.3</bp:COMMENT>
-  </bp:unificationXref>
-  <bp:publicationXref rdf:ID="publicationXref4">
-    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">16613899</bp:ID>
-    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
-    <bp:YEAR rdf:datatype="http://www.w3.org/2001/XMLSchema#int">2006</bp:YEAR>
-    <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">A heterozygous activating mutation in the sulphonylurea receptor SUR1 (ABCC8) causes neonatal diabetes</bp:TITLE>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Proks, Peter</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Arnold, Amanda L</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Bruining, Jan</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Girard, Christophe</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Flanagan, Sarah E</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Larkin, Brian</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Colclough, Kevin</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Hattersley, Andrew T</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ashcroft, Frances M</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ellard, Sian</bp:AUTHORS>
-    <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Hum. Mol. Genet. 15:1793-800</bp:SOURCE>
-  </bp:publicationXref>
   <bp:publicationXref rdf:ID="publicationXref5">
     <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">17668386</bp:ID>
     <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
@@ -367,48 +290,7 @@
     <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Permanent neonatal diabetes caused by dominant, recessive, or compound heterozygous SUR1 mutations with opposite functional effects</bp:TITLE>
     <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ellard, Sian</bp:AUTHORS>
     <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Flanagan, Sarah E</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Girard, Christophe A</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Patch, Ann-Marie</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Harries, Lorna W</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Parrish, Andrew</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Edghill, Emma L</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Mackay, Deborah J G</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Proks, Peter</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Shimomura, Kenju</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Haberland, Holger</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Carson, Dennis J</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Shield, Julian P H</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Hattersley, Andrew T</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ashcroft, Frances M</bp:AUTHORS>
     <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Am. J. Hum. Genet. 81:375-82</bp:SOURCE>
-  </bp:publicationXref>
-  <bp:publicationXref rdf:ID="publicationXref6">
-    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">24843477</bp:ID>
-    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
-    <bp:YEAR rdf:datatype="http://www.w3.org/2001/XMLSchema#int">2011</bp:YEAR>
-    <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Genetics and pathophysiology of neonatal diabetes mellitus</bp:TITLE>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Naylor, Rochelle N</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Greeley, Siri Atma W</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Bell, Graeme I</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Philipson, Louis H</bp:AUTHORS>
-    <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">J Diabetes Investig 2:158-69</bp:SOURCE>
-  </bp:publicationXref>
-  <bp:publicationXref rdf:ID="publicationXref7">
-    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">16885549</bp:ID>
-    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
-    <bp:YEAR rdf:datatype="http://www.w3.org/2001/XMLSchema#int">2006</bp:YEAR>
-    <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Activating mutations in the ABCC8 gene in neonatal diabetes mellitus</bp:TITLE>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Babenko, Andrey P</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Polak, Michel</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Cavé, Hélène</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Busiah, Kanetee</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Czernichow, Paul</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Scharfmann, Raphael</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Bryan, Joseph</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Aguilar-Bryan, Lydia</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Vaxillaire, M</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Froguel, P</bp:AUTHORS>
-    <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">N. Engl. J. Med. 355:456-66</bp:SOURCE>
   </bp:publicationXref>
   <bp:pathwayStep rdf:ID="pathwayStep4">
     <bp:STEP-INTERACTIONS rdf:resource="#biochemicalReaction2" />
@@ -419,65 +301,13 @@
     <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">5683177</bp:ID>
     <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Database identifier. Use this URL to connect to the web page of this instance in Reactome: http://www.reactome.org/cgi-bin/eventbrowser?DB=gk_current&amp;ID=5683177</bp:COMMENT>
   </bp:unificationXref>
-  <bp:unificationXref rdf:ID="unificationXref17">
-    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome</bp:DB>
-    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">R-HSA-5683177</bp:ID>
-    <bp:ID-VERSION rdf:datatype="http://www.w3.org/2001/XMLSchema#string">4</bp:ID-VERSION>
-    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome stable identifier. Use this URL to connect to the web page of this instance in Reactome: http://www.reactome.org/cgi-bin/eventbrowser_st_id?ST_ID=R-HSA-5683177.4</bp:COMMENT>
-  </bp:unificationXref>
   <bp:publicationXref rdf:ID="publicationXref8">
     <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">20922570</bp:ID>
     <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
     <bp:YEAR rdf:datatype="http://www.w3.org/2001/XMLSchema#int">2010</bp:YEAR>
     <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Permanent neonatal diabetes due to activating mutations in ABCC8 and KCNJ11</bp:TITLE>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Edghill, Emma L</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Flanagan, Sarah E</bp:AUTHORS>
     <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ellard, Sian</bp:AUTHORS>
     <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Rev Endocr Metab Disord 11:193-8</bp:SOURCE>
-  </bp:publicationXref>
-  <bp:publicationXref rdf:ID="publicationXref9">
-    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">25317244</bp:ID>
-    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
-    <bp:YEAR rdf:datatype="http://www.w3.org/2001/XMLSchema#int">2014</bp:YEAR>
-    <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Molecular mechanisms of protein induced hyperinsulinaemic hypoglycaemia</bp:TITLE>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Chandran, Suresh</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Yap, Fabian</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Hussain, Khalid</bp:AUTHORS>
-    <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">World J Diabetes 5:666-77</bp:SOURCE>
-  </bp:publicationXref>
-  <bp:publicationXref rdf:ID="publicationXref10">
-    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">20500788</bp:ID>
-    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
-    <bp:YEAR rdf:datatype="http://www.w3.org/2001/XMLSchema#int">2010</bp:YEAR>
-    <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Leucine metabolism in regulation of insulin secretion from pancreatic beta cells</bp:TITLE>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Yang, Jichun</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Chi, Yujing</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Burkhardt, Brant R</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Guan, Youfei</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Wolf, Bryan A</bp:AUTHORS>
-    <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Nutr. Rev. 68:270-9</bp:SOURCE>
-  </bp:publicationXref>
-  <bp:publicationXref rdf:ID="publicationXref11">
-    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">25077087</bp:ID>
-    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
-    <bp:YEAR rdf:datatype="http://www.w3.org/2001/XMLSchema#int">2014</bp:YEAR>
-    <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Congenital hyperinsulinism: current status and future perspectives</bp:TITLE>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Yorifuji, Tohru</bp:AUTHORS>
-    <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ann Pediatr Endocrinol Metab 19:57-68</bp:SOURCE>
-  </bp:publicationXref>
-  <bp:publicationXref rdf:ID="publicationXref12">
-    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">18767144</bp:ID>
-    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
-    <bp:YEAR rdf:datatype="http://www.w3.org/2001/XMLSchema#int">2009</bp:YEAR>
-    <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Update of mutations in the genes encoding the pancreatic beta-cell K(ATP) channel subunits Kir6.2 (KCNJ11) and sulfonylurea receptor 1 (ABCC8) in diabetes mellitus and hyperinsulinism</bp:TITLE>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Flanagan, Sarah E</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Clauin, Séverine</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Bellanné-Chantelot, Christine</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">de Lonlay, Pascale</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Harries, Lorna W</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Gloyn, Anna L</bp:AUTHORS>
-    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ellard, Sian</bp:AUTHORS>
-    <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Hum. Mutat. 30:170-80</bp:SOURCE>
   </bp:publicationXref>
 </rdf:RDF>
 
