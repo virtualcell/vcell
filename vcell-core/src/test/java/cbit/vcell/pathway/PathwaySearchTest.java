@@ -127,26 +127,16 @@ public class PathwaySearchTest {
     }
 
 
-
- // ------------------------------------------------------------------------------------
-
     /*
+    pathway = {Pathway@14297} "[Pathway: primaryId="http://bioregistry.io/reactome:R-HSA-180292"; name="GAB1 signalosome";\ndataSource=[DataSource: primaryId="pc14:reactome"; name="pc14:reactome"]]"
+     primaryId = "http://bioregistry.io/reactome:R-HSA-180292"
+     name = "GAB1 signalosome"
+     organism = {Organism@14309} "[Organism: ncbiOrganismId="http://bioregistry.io/ncbitaxon:9606"; commonName="Human"; speciesName="Homo sapiens"]"
+     dataSource = {DataSource@14310} "[DataSource: primaryId="pc14:reactome"; name="pc14:reactome"]"
 
-pathway = {Pathway@14297} "[Pathway: primaryId="http://bioregistry.io/reactome:R-HSA-180292"; name="GAB1 signalosome";\ndataSource=[DataSource: primaryId="pc14:reactome"; name="pc14:reactome"]]"
- primaryId = "http://bioregistry.io/reactome:R-HSA-180292"
- name = "GAB1 signalosome"
- organism = {Organism@14309} "[Organism: ncbiOrganismId="http://bioregistry.io/ncbitaxon:9606"; commonName="Human"; speciesName="Homo sapiens"]"
- dataSource = {DataSource@14310} "[DataSource: primaryId="pc14:reactome"; name="pc14:reactome"]"
-
-corresponds to bPathway.xml
-
----------------------------------------------------------------------------------------
-
-
-
-
+    corresponds to egfrPathway-180292.xml
      */
-
+// TODO: another possible test for a much larger file, probably not worth it
 
 
 
