@@ -31,7 +31,7 @@ public class PathwayParseTest {
     public static void setUp() throws IOException {
         insulinPathwayFile = File.createTempFile("SimID_284673710_0_", ".ida");
         // vcell\vcell-core\src\test\resources\org\vcell\pathway
-        Resources.asByteSource(Resources.getResource("org\\vcell\\pathway/insulinPathway-5683177.xml"))
+        Resources.asByteSource(Resources.getResource("org\\vcell\\pathway\\insulinPathway-5683177.xml"))
                 .copyTo(Files.asByteSink(insulinPathwayFile));
     }
 
