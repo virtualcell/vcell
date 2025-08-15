@@ -6,8 +6,8 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 |------------- | ------------- | -------------|
 | [**exportN5**](ExportResourceApi.md#exportN5) | **POST** /api/v1/export/N5 |  |
 | [**exportN5WithHttpInfo**](ExportResourceApi.md#exportN5WithHttpInfo) | **POST** /api/v1/export/N5 |  |
-| [**exportStatus**](ExportResourceApi.md#exportStatus) | **PATCH** /api/v1/export/status |  |
-| [**exportStatusWithHttpInfo**](ExportResourceApi.md#exportStatusWithHttpInfo) | **PATCH** /api/v1/export/status |  |
+| [**exportStatus**](ExportResourceApi.md#exportStatus) | **GET** /api/v1/export/status |  |
+| [**exportStatusWithHttpInfo**](ExportResourceApi.md#exportStatusWithHttpInfo) | **GET** /api/v1/export/status |  |
 
 
 
@@ -161,11 +161,11 @@ ApiResponse<**Long**>
 
 ## exportStatus
 
-> List<ExportEvent> exportStatus(body)
+> List<ExportEvent> exportStatus(timestamp)
 
 
 
-Get the status of your export jobs past the timestamp (UTC format).
+Get the status of your export jobs past the timestamp (Unix epoch in seconds).
 
 ### Example
 
@@ -185,9 +185,9 @@ public class Example {
         
 
         ExportResourceApi apiInstance = new ExportResourceApi(defaultClient);
-        OffsetDateTime body = OffsetDateTime.now(); // OffsetDateTime | 
+        Long timestamp = 56L; // Long | 
         try {
-            List<ExportEvent> result = apiInstance.exportStatus(body);
+            List<ExportEvent> result = apiInstance.exportStatus(timestamp);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling ExportResourceApi#exportStatus");
@@ -205,7 +205,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **body** | **OffsetDateTime**|  | [optional] |
+| **timestamp** | **Long**|  | [optional] |
 
 ### Return type
 
@@ -218,7 +218,7 @@ public class Example {
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 ### HTTP response details
@@ -231,11 +231,11 @@ public class Example {
 
 ## exportStatusWithHttpInfo
 
-> ApiResponse<List<ExportEvent>> exportStatus exportStatusWithHttpInfo(body)
+> ApiResponse<List<ExportEvent>> exportStatus exportStatusWithHttpInfo(timestamp)
 
 
 
-Get the status of your export jobs past the timestamp (UTC format).
+Get the status of your export jobs past the timestamp (Unix epoch in seconds).
 
 ### Example
 
@@ -256,9 +256,9 @@ public class Example {
         
 
         ExportResourceApi apiInstance = new ExportResourceApi(defaultClient);
-        OffsetDateTime body = OffsetDateTime.now(); // OffsetDateTime | 
+        Long timestamp = 56L; // Long | 
         try {
-            ApiResponse<List<ExportEvent>> response = apiInstance.exportStatusWithHttpInfo(body);
+            ApiResponse<List<ExportEvent>> response = apiInstance.exportStatusWithHttpInfo(timestamp);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
@@ -278,7 +278,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **body** | **OffsetDateTime**|  | [optional] |
+| **timestamp** | **Long**|  | [optional] |
 
 ### Return type
 
@@ -291,7 +291,7 @@ ApiResponse<[**List&lt;ExportEvent&gt;**](ExportEvent.md)>
 
 ### HTTP request headers
 
-- **Content-Type**: application/json
+- **Content-Type**: Not defined
 - **Accept**: application/json
 
 ### HTTP response details

@@ -35,9 +35,9 @@ export interface ExportResourceServiceInterface {
 
     /**
      * 
-     * Get the status of your export jobs past the timestamp (UTC format).
-     * @param body 
+     * Get the status of your export jobs past the timestamp (Unix epoch in seconds).
+     * @param timestamp 
      */
-    exportStatus(body?: string, extraHttpRequestParams?: any): Observable<Array<ExportEvent>>;
+    exportStatus(timestamp?: number, extraHttpRequestParams?: any): Observable<Array<ExportEvent>>;
 
 }

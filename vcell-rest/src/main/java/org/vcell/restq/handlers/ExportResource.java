@@ -74,11 +74,11 @@ public class ExportResource {
     }
 
     @Path("/status")
-    @PATCH
+    @GET
     @RolesAllowed("user")
     @Produces(MediaType.APPLICATION_JSON)
-    @Operation(operationId = "exportStatus", description = "Get the status of your export jobs past the timestamp (UTC format).")
-    public List<ExportEvent> pollExportStatus(Instant timestamp) throws DataAccessWebException, NotAuthenticatedWebException {
+    @Operation(operationId = "exportStatus", description = "Get the status of your export jobs past the timestamp (Unix epoch in seconds).")
+    public List<ExportEvent> pollExportStatus(@QueryParam("timestamp") long timestamp) throws DataAccessWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         return exportService.getMostRecentExportStatus(user, timestamp);
     }

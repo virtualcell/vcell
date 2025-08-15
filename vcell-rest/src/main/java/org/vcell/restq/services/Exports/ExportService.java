@@ -48,8 +48,8 @@ public class ExportService {
         return ((ServerExportEventController) exportStatusCreator.get()).getSSEUsersExportStatus(user, jobID);
     }
 
-    public List<ExportEvent> getMostRecentExportStatus(User user, Instant instant) {
-        return exportStatusListener.get().getMostRecentExportStatus(user, instant);
+    public List<ExportEvent> getMostRecentExportStatus(User user, long timestamp) {
+        return exportStatusListener.get().getMostRecentExportStatus(user, Instant.ofEpochSecond(timestamp));
     }
 
     public ExportRequestListenerMQ.ExportJob createExportJobFromRequest(User user, ExportResource.StandardExportInfo request, FormatSpecificSpecs formatSpecificSpecs, ExportFormat format) throws DataAccessException, SQLException {

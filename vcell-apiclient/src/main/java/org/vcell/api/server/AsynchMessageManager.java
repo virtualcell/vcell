@@ -12,7 +12,6 @@ package org.vcell.api.server;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -48,7 +47,6 @@ import cbit.rmi.event.VCellMessageEventListener;
 import cbit.vcell.resource.VCellExecutorService;
 import cbit.vcell.server.VCellConnection;
 import edu.uchc.connjur.wb.ExecutionTrace;
-import org.vcell.util.ObjectNotFoundException;
 
 /**
  * {@link AsynchMessageManager} polls from {@link VCellConnection} to get remote messages. Remote Messages include the following:
@@ -72,7 +70,7 @@ public class AsynchMessageManager implements AsyncMessageManagerInterface {
     private long pollTime = BASE_POLL_SECONDS;
 	private AtomicBoolean bPoll = new AtomicBoolean(false);
 	private ScheduledFuture<?> pollingHandle = null;
-	private OffsetDateTime lastPoll = OffsetDateTime.now();
+	private long lastPollEpochSecond = Instant.now().getEpochSecond();
 	/**
 	 * for {@link #schedule(long)} method
 	 */
@@ -143,10 +141,10 @@ private void poll( )  {
 		    pollTime = BASE_POLL_SECONDS;
 	    	queuedEvents = clientServerManager.getMessageEvents();
 			try{
-				List<org.vcell.restclient.model.ExportEvent> setOfExports = clientServerManager.getVCellApiClient().getExportApi().exportStatus(lastPoll);
+				List<org.vcell.restclient.model.ExportEvent> setOfExports = clientServerManager.getVCellApiClient().getExportApi().exportStatus(lastPollEpochSecond);
 				List<ExportEvent> exportEvents = setOfExports.stream().map(DtoModelTransforms::dtoToExportEvent).toList();
 				queuedEvents = Stream.concat(exportEvents.stream(), Stream.of(queuedEvents)).toArray(MessageEvent[]::new);
-				lastPoll = OffsetDateTime.now();
+				lastPollEpochSecond = Instant.now().getEpochSecond();
 			} catch (ApiException ex){
 				throw ExceptionHandler.getProperException(ex);
 			}

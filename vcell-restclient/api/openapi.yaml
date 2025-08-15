@@ -500,14 +500,19 @@ paths:
       x-content-type: application/json
       x-accepts: application/json
   /api/v1/export/status:
-    patch:
-      description: Get the status of your export jobs past the timestamp (UTC format).
+    get:
+      description: Get the status of your export jobs past the timestamp (Unix epoch
+        in seconds).
       operationId: exportStatus
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Instant'
+      parameters:
+      - explode: true
+        in: query
+        name: timestamp
+        required: false
+        schema:
+          format: int64
+          type: integer
+        style: form
       responses:
         "200":
           content:
@@ -536,7 +541,6 @@ paths:
         - user
       tags:
       - Export Resource
-      x-content-type: application/json
       x-accepts: application/json
   /api/v1/fieldData/IDs:
     get:
