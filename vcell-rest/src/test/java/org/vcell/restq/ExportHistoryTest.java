@@ -37,6 +37,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -138,7 +139,7 @@ public class ExportHistoryTest {
     @Test
     public void testAddExportHistory() {
         User user = TestEndpointUtils.administratorUser;
-        Timestamp now = new Timestamp(System.currentTimeMillis());
+        Timestamp now = Timestamp.from(Instant.now());
 
         try (Connection conn = agroalConnectionFactory.getConnection(null)) {
             ExportHistoryDBDriver driver = new ExportHistoryDBDriver(null, null);
@@ -166,9 +167,7 @@ public class ExportHistoryTest {
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } catch (ObjectNotFoundException e) {
+        } catch (SQLException | ObjectNotFoundException e) {
             throw new RuntimeException(e);
         } catch (DependencyException e) {
             throw new RuntimeException(e);

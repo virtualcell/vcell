@@ -71,7 +71,6 @@ public class ExportHistoryDBDriver{
                     meta.simulationName,
                     meta.applicationName,
                     meta.biomodelName,
-                    variablesCsv,
                     BigDecimal.valueOf(ts.getBeginTimeIndex()),
                     BigDecimal.valueOf(ts.getEndTimeIndex()),
                     meta.serverSavedFileName,
@@ -81,7 +80,12 @@ public class ExportHistoryDBDriver{
                     meta.tSlices,
                     meta.numChannels
             );
-            ps.executeUpdate();
+            System.out.println("Data insertion tag:");
+            System.out.println(ps.executeUpdate());
+            System.out.println(".");
+            //ps.executeUpdate();
+        } catch (Exception e){
+            System.out.println(e);
         }
 
         // 2) insert each parameter change
