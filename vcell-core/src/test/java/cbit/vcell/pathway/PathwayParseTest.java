@@ -31,7 +31,7 @@ public class PathwayParseTest {
     public static void setUp() throws IOException {
         insulinPathwayFile = File.createTempFile("SimID_284673710_0_", ".ida");
         // vcell\vcell-core\src\test\resources\org\vcell\pathway
-        Resources.asByteSource(Resources.getResource("org\\vcell\\pathway\\insulinPathway-5683177.xml"))
+        Resources.asByteSource(Resources.getResource("org/vcell/pathway/insulinPathway-5683177.xml"))
                 .copyTo(Files.asByteSink(insulinPathwayFile));
     }
 
@@ -127,7 +127,7 @@ public class PathwayParseTest {
         try {
 //            Document document = XmlUtil.readSanitizedXML(new File("CmyFile.xml"));    // for malformed xml files, like trailing garbage
 //            Document document = XmlUtil.readXML(new File("C:\\TEMP\\pathway\\insulinPathway-5683177.xml"));
-            Document document = XmlUtil.readXML(new File("C:\\TEMP\\pathway\\egfrPathway-180292.xml"));
+            Document document = XmlUtil.readXML(new File("C:/TEMP/pathway/egfrPathway-180292.xml"));
             doWork(document);
             System.out.println("done manual run");
         }catch (Exception e) {
