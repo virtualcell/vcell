@@ -36,10 +36,14 @@ public class SequenceInterval extends SequenceLocation {
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
 		super.replace(objectProxy, concreteObject);
 
-		if(sequenceIntervalBegin == objectProxy) {
+		if (objectProxy == null || concreteObject == null) {
+			return;
+		}
+
+		if (sequenceIntervalBegin == objectProxy && concreteObject instanceof SequenceSite) {
 			sequenceIntervalBegin = (SequenceSite) concreteObject;
 		}
-		if(sequenceIntervalEnd == objectProxy) {
+		if (sequenceIntervalEnd == objectProxy && concreteObject instanceof SequenceSite) {
 			sequenceIntervalEnd = (SequenceSite) concreteObject;
 		}
 	}
@@ -47,24 +51,33 @@ public class SequenceInterval extends SequenceLocation {
 	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
 		super.replace(resourceMap, replacedBPObjects);
 
-		if(sequenceIntervalBegin instanceof RdfObjectProxy) {
-			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)sequenceIntervalBegin;
-			if (rdfObjectProxy.getID() != null){
-				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
-				if (concreteObject != null){
-					sequenceIntervalBegin = (SequenceSite) concreteObject;
-				}
+		if (sequenceIntervalBegin instanceof RdfObjectProxy) {
+			RdfObjectProxy proxy = (RdfObjectProxy) sequenceIntervalBegin;
+			BioPaxObject concrete = resourceMap.get(proxy.getID());
+			if (concrete instanceof SequenceSite) {
+				sequenceIntervalBegin = (SequenceSite) concrete;
 			}
 		}
-		if(sequenceIntervalEnd instanceof RdfObjectProxy) {
-			RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)sequenceIntervalEnd;
-			if (rdfObjectProxy.getID() != null){
-				BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
-				if (concreteObject != null){
-					sequenceIntervalEnd = (SequenceSite) concreteObject;
-				}
+		if (sequenceIntervalEnd instanceof RdfObjectProxy) {
+			RdfObjectProxy proxy = (RdfObjectProxy) sequenceIntervalEnd;
+			BioPaxObject concrete = resourceMap.get(proxy.getID());
+			if (concrete instanceof SequenceSite) {
+				sequenceIntervalEnd = (SequenceSite) concrete;
 			}
 		}
+	}
+
+	public boolean isValidInterval() {
+		if (sequenceIntervalBegin == null || sequenceIntervalEnd == null) {
+			return false;
+		}
+		Integer beginPos = sequenceIntervalBegin.getSequencePosition();
+		Integer endPos = sequenceIntervalEnd.getSequencePosition();
+
+		if (beginPos == null || endPos == null) {
+			return false;
+		}
+		return beginPos <= endPos;
 	}
 
 	public void showChildren(StringBuffer sb, int level){
