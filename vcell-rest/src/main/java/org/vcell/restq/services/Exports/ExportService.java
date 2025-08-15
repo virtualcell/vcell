@@ -34,6 +34,8 @@ import java.util.Set;
 public class ExportService {
     @Inject
     Instance<ExportEventController> exportStatusCreator;
+    @Inject
+    Instance<ExportStatusListener> exportStatusListener;
 
     @Inject
     SimulationRestService simulationRestService;
@@ -47,7 +49,7 @@ public class ExportService {
     }
 
     public List<ExportEvent> getMostRecentExportStatus(User user, Instant instant) {
-        return ((ServerExportEventController) exportStatusCreator.get()).getMostRecentExportStatus(user, instant);
+        return exportStatusListener.get().getMostRecentExportStatus(user, instant);
     }
 
     public ExportRequestListenerMQ.ExportJob createExportJobFromRequest(User user, ExportResource.StandardExportInfo request, FormatSpecificSpecs formatSpecificSpecs, ExportFormat format) throws DataAccessException, SQLException {
