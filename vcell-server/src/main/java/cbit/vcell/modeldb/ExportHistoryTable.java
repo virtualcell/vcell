@@ -6,6 +6,10 @@ import cbit.vcell.export.server.ExportFormat;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.StringJoiner;
 
 public class ExportHistoryTable extends Table {
@@ -45,7 +49,7 @@ public class ExportHistoryTable extends Table {
             zSlices, tSlices, numVariables};
 
     private final Field[] insertFields = {
-            userRef, modelRef, exportFormat, exportDate, uri, dataId,
+            jobId, userRef, modelRef, exportFormat, exportDate, uri, dataId,
             simulationName, applicationName, biomodelName, variables,
             startTime, endTime, savedFileName, applicationType, nonSpatial,
             zSlices, tSlices, numVariables

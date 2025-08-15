@@ -84,8 +84,6 @@ public class ExportHistoryDBDriver{
             System.out.println(ps.executeUpdate());
             System.out.println(".");
             //ps.executeUpdate();
-        } catch (Exception e){
-            System.out.println(e);
         }
 
         // 2) insert each parameter change
