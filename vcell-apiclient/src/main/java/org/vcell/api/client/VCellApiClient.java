@@ -4,10 +4,6 @@ import org.vcell.api.types.rpc.VCellApiRpcBody;
 import org.vcell.api.types.rpc.VCellApiRpcRequest;
 import com.google.gson.Gson;
 import com.nimbusds.oauth2.sdk.ParseException;
-import org.vcell.api.types.common.BiomodelRepresentation;
-import org.vcell.api.types.common.SimulationRepresentation;
-import org.vcell.api.types.common.SimulationTaskRepresentation;
-import org.vcell.api.types.common.UserInfo;
 import org.vcell.api.types.events.EventWrapper;
 import org.apache.http.*;
 import org.apache.http.client.ClientProtocolException;
@@ -17,7 +13,6 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.*;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.ContentType;
@@ -27,11 +22,8 @@ import org.apache.http.impl.client.DefaultRedirectStrategy;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.apache.http.util.TextUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.api.client.query.BioModelsQuerySpec;
-import org.vcell.api.client.query.SimTasksQuerySpec;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.CustomApiClientCode;
@@ -40,7 +32,7 @@ import org.vcell.restclient.api.*;
 import org.vcell.restclient.auth.InteractiveLogin;
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
 import org.vcell.restclient.model.UserIdentityJSONSafe;
-import org.vcell.api.types.utils.DTOOldAPI;
+import org.vcell.api.types.utils.DTOModelTransformerV0;
 
 import java.awt.*;
 import java.io.*;
@@ -52,7 +44,6 @@ import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.zip.InflaterInputStream;
 
@@ -348,6 +339,8 @@ public class VCellApiClient implements AutoCloseable {
 
 	public VcImageResourceApi getVcImageApi(){return new VcImageResourceApi(apiClient);}
 
+	public ExportResourceApi getExportApi(){return new ExportResourceApi(apiClient);}
+
 	public String getVCellUserNameFromAuth0Mapping() throws ApiException {
 		try {
 			UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);
@@ -400,7 +393,7 @@ public class VCellApiClient implements AutoCloseable {
 		VCellApiRpcBody vcellapiRpcBody = new VCellApiRpcBody(rpcDestination, rpcRequest, returnRequired, timeoutMS, specialProperties, specialValues);
 		byte[] compressedSerializedRpcBody = null;
 		try {
-			compressedSerializedRpcBody = DTOOldAPI.toCompressedSerialized(vcellapiRpcBody);
+			compressedSerializedRpcBody = DTOModelTransformerV0.toCompressedSerialized(vcellapiRpcBody);
 		} catch (IOException e2) {
 			e2.printStackTrace();
 			throw new RuntimeException("vcellapi rpc failure serializing request body, method="+rpcRequest.methodName+": "+e2.getMessage(),e2);

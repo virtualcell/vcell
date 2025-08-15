@@ -18,25 +18,21 @@ import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Hashtable;
 import java.util.zip.DataFormatException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import cbit.rmi.event.ExportEventController;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
 
 import com.google.common.io.Files;
 
 import cbit.rmi.event.ExportEvent;
-import cbit.rmi.event.ExportListener;
 import cbit.vcell.export.nrrd.NrrdInfo;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataServerImpl;
@@ -46,160 +42,41 @@ import cbit.vcell.solver.VCSimulationDataIdentifier;
 /**
  * This type was created in VisualAge.
  */
-public class ExportServiceImpl implements ExportConstants, ExportService {
+public class ExportServiceImpl implements ExportService {
 	public static final Logger lg = LogManager.getLogger(ExportServiceImpl.class);
 	
-	private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
+	private final ClientExportEventController eventController = new ClientExportEventController();
 
-	private Hashtable<Long, User> jobRequestIDs = new Hashtable<Long, User>();
-	private Hashtable<ExportSpecs, JobRequest> completedExportRequests = new Hashtable<ExportSpecs, JobRequest>();
+	public ExportEventController getEventController() {
+		return eventController;
+	}
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2001 4:09:29 PM)
- * @param log cbit.vcell.server.SessionLog
- */
 public ExportServiceImpl() {
 }
 
 
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2001 5:18:16 PM)
- * @param listener ExportListener
- */
-public synchronized void addExportListener(ExportListener listener) {
-	listenerList.add(ExportListener.class, listener);
+public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs)throws DataAccessException {
+	return makeRemoteFile(outputContext,user, dataServerImpl, exportSpecs, eventController, JobRequest.createExportJobRequest(user).getExportJobID());
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (4/1/2001 11:20:45 AM)
- * @deprecated
- */
-protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, String format, String location,ExportSpecs exportSpecs) {
-	User user = null;
-	Object object = jobRequestIDs.get(new Long(jobID));
-	if (object != null) {
-		user = (User)object;
-	}
-	TimeSpecs timeSpecs = (exportSpecs!=null)?exportSpecs.getTimeSpecs():(null);
-	VariableSpecs varSpecs = (exportSpecs!=null)?exportSpecs.getVariableSpecs():(null);
-	final KeyValue dataKey;
-	if (vcdID instanceof VCSimulationDataIdentifier) {
-		dataKey = ((VCSimulationDataIdentifier)vcdID).getSimulationKey();
-	}else if (vcdID instanceof ExternalDataIdentifier) {
-		dataKey = ((ExternalDataIdentifier)vcdID).getSimulationKey();
-	}else {
-		throw new RuntimeException("unexpected VCDataIdentifier");
-	}
-	ExportEvent event = new ExportEvent(
-			this, jobID, user, vcdID.getID(), dataKey, ExportEvent.EXPORT_COMPLETE, 
-			format, location, null, timeSpecs, varSpecs);
-    event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
-	fireExportEvent(event);
-	return event;
+public ExportEvent makeRemoteFile(OutputContext outputContext, User user, DataServerImpl dataServer, ExportSpecs exportSpecs, boolean zip, ClientTaskStatusSupport clientTaskStatusSupport)throws DataAccessException {
+		return makeRemoteFile(outputContext, user, dataServer, exportSpecs, eventController, zip, clientTaskStatusSupport, JobRequest.createExportJobRequest(user).getExportJobID());
 }
 
-
-protected void fireExportAssembling(long jobID, VCDataIdentifier vcdID, String format) {
-	User user = null;
-	Object object = jobRequestIDs.get(new Long(jobID));
-	if (object != null) {
-		user = (User)object;
-	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_ASSEMBLING, format, null, null, null, null);
-	fireExportEvent(event);
+public static ExportEvent makeRemoteFile(OutputContext outputContext, User user, DataServerImpl dataServer, ExportSpecs exportSpecs, ExportEventController eventCreator, long jobRequestID) throws DataAccessException{
+	return makeRemoteFile(outputContext, user, dataServer, exportSpecs, eventCreator, true, null, jobRequestID);
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (11/17/2000 11:43:22 AM)
- * @param event cbit.rmi.event.ExportEvent
- */
-protected void fireExportEvent(ExportEvent event) {
-	// Guaranteed to return a non-null array
-	Object[] listeners = listenerList.getListenerList();
-	// Reset the source to allow proper wiring
-	event.setSource(this);
-	// Process the listeners last to first, notifying
-	// those that are interested in this event
-	for (int i = listeners.length-2; i>=0; i-=2) {
-	    if (listeners[i]==ExportListener.class) {
-		((ExportListener)listeners[i+1]).exportMessage(event);
-	    }	       
-	}
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (4/1/2001 11:20:45 AM)
- * @deprecated
- */
-protected void fireExportFailed(long jobID, VCDataIdentifier vcdID, String format, String message) {
-	User user = null;
-	Object object = jobRequestIDs.get(new Long(jobID));
-	if (object != null) {
-		user = (User)object;
-	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_FAILURE, format, message, null, null, null);
-	fireExportEvent(event);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (4/1/2001 11:20:45 AM)
- * @param exportSpecs cbit.vcell.export.server.ExportSpecs
- * @param progress double
- */
-protected void fireExportProgress(long jobID, VCDataIdentifier vcdID, String format, double progress) {
-	User user = null;
-	Object object = jobRequestIDs.get(new Long(jobID));
-	if (object != null) {
-		user = (User)object;
-	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_PROGRESS, format, null, new Double(progress), null, null);
-	fireExportEvent(event);
-}
-
-
-/**
- * Insert the method's description here.
- * Creation date: (4/1/2001 11:20:45 AM)
- * @deprecated
- */
-protected void fireExportStarted(long jobID, VCDataIdentifier vcdID, String format) {
-	User user = null;
-	Object object = jobRequestIDs.get(new Long(jobID));
-	if (object != null) {
-		user = (User)object;
-	}
-	ExportEvent event = new ExportEvent(this, jobID, user, vcdID, ExportEvent.EXPORT_START, format, null, null, null, null);
-	fireExportEvent(event);
-}
-
-public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs)throws DataAccessException
-{
-	return makeRemoteFile(outputContext,user, dataServerImpl, exportSpecs, true);
-}
-
-public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, boolean bSaveAsZip) throws DataAccessException
-{
-	return makeRemoteFile(outputContext, user, dataServerImpl, exportSpecs, bSaveAsZip, null);
-}
-
-public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, boolean bSaveAsZip, ClientTaskStatusSupport clientTaskStatusSupport) throws DataAccessException {
+private static ExportEvent makeRemoteFile(OutputContext outputContext, User user, DataServerImpl dataServerImpl, ExportSpecs exportSpecs, ExportEventController eventCreator, boolean bSaveAsZip, ClientTaskStatusSupport clientTaskStatusSupport, long jobRequestID) throws DataAccessException {
 	// if export completes successfully, we return the generated event for logging
 	if (user == null) {
 		throw new DataAccessException("ERROR: user is null");
 	}
-	JobRequest newExportJob = JobRequest.createExportJobRequest(user);
-	jobRequestIDs.put(new Long(newExportJob.getExportJobID()), user);
+	JobRequest newExportJob = JobRequest.createExportJobRequest(user, jobRequestID);
+	if (eventCreator instanceof ClientExportEventController evc){
+		evc.putJobRequest(newExportJob.getExportJobID(), user);
+	}
 	if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): " + newExportJob + ", " + exportSpecs);
 	String fileFormat = null;
 	switch (exportSpecs.getFormat()) {
@@ -223,38 +100,13 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 		case N5:
 			fileFormat = N5Specs.n5Suffix.toUpperCase();
 			break;
-//		case IMAGEJ:
-//			fileFormat = "IMAGEJ";
-//			break;
 	}
-	fireExportStarted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat);
+	eventCreator.fireExportStarted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat);
 
 	try {
 
 		String exportBaseURL = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseURLProperty);
 		String exportBaseDir = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseDirInternalProperty);
-
-		
-//		// see if we've done this before, and try to get it
-//		// for now, works only for the life of the server (eventually will be persistent)
-//		Object completed = completedExportRequests.get(exportSpecs);
-//		if (completed != null) {
-//			try {
-//				JobRequest previousRequest = (JobRequest)completedExportRequests.get(exportSpecs);
-//				File file = new File(exportBaseDir + previousRequest.getJobID() + ".zip");
-//				if (file.exists()) {
-//					URL url = new URL(exportBaseURL + file.getName());
-//					if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Found previously made file: " + file.getName());
-//					fireExportCompleted(newExportJob.getJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString());
-//					// now that we start logging exports, we should do the persistence thing soon...
-//					// so far retutn null, so we at least don't double log during the same server session
-//					return null;
-//				}
-//			} catch (Throwable exc) {
-//				completedExportRequests.remove(exportSpecs);
-//				if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): WARNING: did not find previous export output; attempting to export again");
-//			}
-//		}
 
 		// we need to make new output
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Starting new export job: " + newExportJob);
@@ -264,7 +116,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 			switch (exportSpecs.getFormat()) {
 				case CSV:
 				case HDF5:
-					ASCIIExporter asciiExporter = new ASCIIExporter(this);
+					ASCIIExporter asciiExporter = new ASCIIExporter(eventCreator);
 					Collection<ExportOutput> asciiOut = asciiExporter.makeASCIIData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
 					exportOutputs = asciiOut.toArray(new ExportOutput[asciiOut.size()]);
 					if(((ASCIISpecs)exportSpecs.getFormatSpecificSpecs()).isHDF5()) {
@@ -276,46 +128,45 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 						Files.copy(tempHDF5File, downloadableHDF5File);
 						tempHDF5File.delete();
 						URL url = new URL(exportBaseURL + downloadableHDF5File.getName());
-						return fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
+						return eventCreator.fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
 					}
-					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager, eventCreator);
 				case QUICKTIME:
 				case GIF:
 				case FORMAT_JPEG:
 				case ANIMATED_GIF:
-					IMGExporter imgExporter = new IMGExporter(this);
+					IMGExporter imgExporter = new IMGExporter(eventCreator);
 					exportOutputs = imgExporter.makeMediaData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,clientTaskStatusSupport,fileDataContainerManager);
 					boolean bOverrideZip = exportOutputs.length == 1;
 					if(bSaveAsZip && !bOverrideZip){
-						return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+						return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager, eventCreator);
 					}else{
-						return makeRemoteFile_Unzipped(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+						return makeRemoteFile_Unzipped(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager, eventCreator);
 					}
 				case NRRD:
-//				case IMAGEJ:
-					RasterExporter rrExporter = new RasterExporter(this);
+					RasterExporter rrExporter = new RasterExporter(eventCreator);
 					NrrdInfo[] nrrdInfos = rrExporter.makeRasterData(outputContext,newExportJob, user, dataServerImpl, exportSpecs, fileDataContainerManager);
-					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, nrrdInfos, exportSpecs, newExportJob, fileDataContainerManager);
+					return makeRemoteFile(fileFormat, exportBaseDir, exportBaseURL, nrrdInfos, exportSpecs, newExportJob, fileDataContainerManager, eventCreator);
 				case UCD:
-					RasterExporter rrExporterUCD = new RasterExporter(this);
+					RasterExporter rrExporterUCD = new RasterExporter(eventCreator);
 					exportOutputs = rrExporterUCD.makeUCDData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
-					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager, eventCreator);
 				case PLY:
-					RasterExporter rrExporterPLY = new RasterExporter(this);
+					RasterExporter rrExporterPLY = new RasterExporter(eventCreator);
 					exportOutputs = rrExporterPLY.makePLYWithTexData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
-					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager, eventCreator);
 				case VTK_IMAGE:
-					RasterExporter rrExporterVTK = new RasterExporter(this);
+					RasterExporter rrExporterVTK = new RasterExporter(eventCreator);
 					exportOutputs = rrExporterVTK.makeVTKImageData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
-					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager, eventCreator);
 				case VTK_UNSTRUCT:
-					RasterExporter rrExporterVTKU = new RasterExporter(this);
+					RasterExporter rrExporterVTKU = new RasterExporter(eventCreator);
 					exportOutputs = rrExporterVTKU.makeVTKUnstructuredData(outputContext,newExportJob, user, dataServerImpl, exportSpecs,fileDataContainerManager);
-					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager);
+					return saveResultsToRemoteFile(fileFormat, exportBaseDir, exportBaseURL, exportOutputs, exportSpecs, newExportJob,fileDataContainerManager, eventCreator);
 				case N5:
-					N5Exporter n5Exporter = new N5Exporter(this, user, dataServerImpl,  (VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier());
+					N5Exporter n5Exporter = new N5Exporter(eventCreator, user, dataServerImpl,  (VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier());
 					ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, newExportJob, exportSpecs, fileDataContainerManager);
-					return makeRemoteN5File(fileFormat, n5Exporter.getN5FileNameHash(), exportOutput, exportSpecs, newExportJob, n5Exporter.getN5FilePathSuffix());
+					return makeRemoteN5File(fileFormat, n5Exporter.getN5FileNameHash(), exportOutput, exportSpecs, newExportJob, n5Exporter.getN5FilePathSuffix(), eventCreator);
 				default:
 					throw new DataAccessException("Unknown export format requested");
 			}
@@ -328,7 +179,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 	}
 	catch (Throwable exc) {
 		lg.error(exc.getMessage(), exc);
-		fireExportFailed(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, exc.getMessage());
+		eventCreator.fireExportFailed(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, exc.getMessage());
 		throw new DataAccessException(exc.getMessage());
 	}
 }
@@ -338,7 +189,10 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
  * Insert the method's description here.
  * Creation date: (4/26/2004 6:47:56 PM)
  */
-private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, NrrdInfo[] nrrdInfos, ExportSpecs exportSpecs, JobRequest newExportJob, FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException {
+private static ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL,
+								   NrrdInfo[] nrrdInfos, ExportSpecs exportSpecs, JobRequest newExportJob,
+								   FileDataContainerManager fileDataContainerManager,
+								   ExportEventController eventCreator) throws DataFormatException, IOException, MalformedURLException {
 			boolean exportValid = true;
 
 	// check outputs and package into zip file
@@ -370,10 +224,9 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 	}
 	
 	if (exportValid) {
-		completedExportRequests.put(exportSpecs, newExportJob);
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
 		URL url = new URL(exportBaseURL + zipFile.getName());
-		return fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
+		return eventCreator.fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
 	}
 	else {
 		throw new DataFormatException("Export Server could not produce valid data !");
@@ -385,9 +238,13 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
  * This function saves the remote file into a compressed zip file.
  * Creation date: (4/26/2004 6:47:56 PM)
  */
-private ExportEvent saveResultsToRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob, FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException {
+private static ExportEvent saveResultsToRemoteFile(String fileFormat, String exportBaseDir,
+												   String exportBaseURL, ExportOutput[] exportOutputs,
+												   ExportSpecs exportSpecs, JobRequest newExportJob,
+												   FileDataContainerManager fileDataContainerManager,
+												   ExportEventController eventCreator) throws DataFormatException, IOException, MalformedURLException {
 			boolean exportValid = true;
-			fireExportAssembling(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat);
+			eventCreator.fireExportAssembling(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat);
 
 			// check outputs and package into zip file
 			File zipFile = new File(exportBaseDir + newExportJob.getExportJobID() + ".zip");
@@ -412,10 +269,9 @@ private ExportEvent saveResultsToRemoteFile(String fileFormat, String exportBase
 			zipOut.close();
 			
 			if (exportValid) {
-				completedExportRequests.put(exportSpecs, newExportJob);
 				if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
 				URL url = new URL(exportBaseURL + zipFile.getName());
-				return fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
+				return eventCreator.fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
 			}
 			else {
 				throw new DataFormatException("Export Server could not produce valid data !");
@@ -425,7 +281,11 @@ private ExportEvent saveResultsToRemoteFile(String fileFormat, String exportBase
 /**
  * Save remote file in it original format without compression.
  */
-private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob,FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException
+private static ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBaseDir,
+												   String exportBaseURL, ExportOutput[] exportOutputs,
+												   ExportSpecs exportSpecs, JobRequest newExportJob,
+												   FileDataContainerManager fileDataContainerManager,
+												   ExportEventController eventCreator) throws DataFormatException, IOException, MalformedURLException
 {
 	boolean exportValid = true;
 	String fileNames = "";
@@ -463,10 +323,9 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 		exportValid = false;
 	}
 	if (exportValid) {
-		completedExportRequests.put(exportSpecs, newExportJob);
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileNames);
 		URL url = new URL(exportBaseURL + fileNames);
-		return fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
+		return eventCreator.fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url.toString(),exportSpecs);
 	}
 	else {
 		throw new DataFormatException("Export Server could not produce valid data !");
@@ -474,28 +333,20 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 }
 
 
-private ExportEvent makeRemoteN5File(String fileFormat, String fileName, ExportOutput exportOutput, ExportSpecs exportSpecs, JobRequest newExportJob, String pathSuffix) throws DataFormatException, IOException{
+private static ExportEvent makeRemoteN5File(String fileFormat, String fileName, ExportOutput exportOutput,
+											ExportSpecs exportSpecs, JobRequest newExportJob, String pathSuffix,
+											ExportEventController eventCreator) throws DataFormatException, IOException{
 	if (exportOutput.isValid()) {
-		completedExportRequests.put(exportSpecs, newExportJob);
 		String url = PropertyLoader.getRequiredProperty(PropertyLoader.s3ExportBaseURLProperty);
 		url += "/" + pathSuffix;
 		N5Specs n5Specs = (N5Specs) exportSpecs.getFormatSpecificSpecs();
 		url += "?dataSetName=" + newExportJob.getExportJobID();
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + fileName);
-		return fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url, exportSpecs);
+		return eventCreator.fireExportCompleted(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat, url, exportSpecs);
 	}
 	else {
 		throw new DataFormatException("Export Server could not produce valid data !");
 	}
 }
 
-
-/**
- * Insert the method's description here.
- * Creation date: (3/29/2001 5:18:16 PM)
- * @param listener ExportListener
- */
-public synchronized void removeExportListener(ExportListener listener) {
-	listenerList.remove(ExportListener.class, listener);
-}
 }

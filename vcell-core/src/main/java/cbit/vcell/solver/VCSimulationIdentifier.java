@@ -10,6 +10,7 @@
 
 package cbit.vcell.solver;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
@@ -24,7 +25,8 @@ public final class VCSimulationIdentifier implements java.io.Serializable {
 /**
  * VCSimulationIdentifier constructor comment.
  */
-public VCSimulationIdentifier(org.vcell.util.document.KeyValue argSimulationKey, org.vcell.util.document.User argOwner) {
+@JsonCreator
+public VCSimulationIdentifier(@JsonProperty("simulationKey") org.vcell.util.document.KeyValue argSimulationKey, @JsonProperty("owner") org.vcell.util.document.User argOwner) {
 	super();
 	this.simulationKey = argSimulationKey;
 	this.owner = argOwner;

@@ -11,24 +11,31 @@
 package cbit.vcell.export.server;
 
 import cbit.vcell.math.MathException;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.gson.Gson;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.janelia.saalfeldlab.n5.*;
 import org.vcell.util.DataAccessException;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
+@Schema(allOf = FormatSpecificSpecs.class, requiredProperties = {"specClass"})
 public class N5Specs extends FormatSpecificSpecs implements Serializable {
-	private final ExportFormat format;
-	private final ExportConstants.DataType dataType;
+	private final ExportFormat formatType;
+	private final ExportEnums.ExportableDataType dataType;
+	public Map<Integer, String> subVolumeMapping;
+	@JsonIgnore
 	private final CompressionLevel compression;
 
 	public final String dataSetName;
@@ -45,25 +52,43 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 /**
  * TextSpecs constructor comment.
  */
-	public N5Specs(ExportConstants.DataType dataType, ExportFormat format, CompressionLevel compressionLevel, String dataSetName) {
-		this.format = format;
+	public N5Specs(ExportEnums.ExportableDataType dataType, ExportFormat format,
+                   CompressionLevel compressionLevel, String dataSetName) {
+		super("N5");
+		this.formatType = format;
 		this.dataType = dataType;
 		this.compression = compressionLevel;
 		this.dataSetName = dataSetName;
+		this.subVolumeMapping = null; // it gets set within the HumanReadableExportData
+	}
+
+	@JsonCreator
+	public N5Specs(@JsonProperty("dataType") ExportEnums.ExportableDataType dataType, @JsonProperty("format") ExportFormat format,
+                   @JsonProperty("dataSetName") String dataSetName, @JsonProperty("subVolumeMapping") Map<Integer, String> subVolumeMapping) {
+		super("N5");
+		this.formatType = format;
+		this.dataType = dataType;
+		this.dataSetName = dataSetName;
+		this.compression = CompressionLevel.BZIP;
+		this.subVolumeMapping = subVolumeMapping;
+	}
+
+	public Map<Integer, String> getSubVolumeMapping() {
+		return subVolumeMapping;
 	}
 	/**
 	 * This method was created in VisualAge.
 	 * @return int
 	 */
-	public ExportConstants.DataType getDataType() {
+	public ExportEnums.ExportableDataType getDataType() {
 		return dataType;
 	}
 	/**
 	 * This method was created in VisualAge.
 	 * @return int
 	 */
-	public ExportFormat getFormat() {
-		return format;
+	public ExportFormat getFormatType() {
+		return formatType;
 	}
 
 	public Compression getCompression(){
@@ -90,11 +115,11 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 	 * @return java.lang.String
 	 */
 	public String toString() {
-		return "N5Specs: [compression: " + format + ", chunking: " + dataType + ", switchRowsColumns: " + "]";
+		return "N5Specs: [compression: " + formatType + ", chunking: " + dataType + ", switchRowsColumns: " + "]";
 	}
 
 	public static void writeImageJMetaData(long jobID,long[] dimensions, int[] blockSize, Compression compression, N5FSWriter n5FSWriter, String datasetName, int numChannels, int zSlices,
-										   int timeLength, HashMap<Integer, String> maskMapping, double pixelHeight,
+										   int timeLength, Map<Integer, String> maskMapping, double pixelHeight,
 										   double pixelWidth, double pixelDepth, String unit, HashMap<Integer, Object> channelInfo) throws MathException, DataAccessException {
 		try {
 			HashMap<String, String> compresssionMap = new HashMap<>(){{put("type", compression.getType().toLowerCase());}};
@@ -114,14 +139,14 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 
 	record ImageJMetaData(long[] dimensions ,int[] blockSize, HashMap<String, String> compression, String dataType, String name, double fps, double frameInterval, double pixelWidth,
 						  double pixelHeight, double pixelDepth, double xOrigin, double yOrigin, double zOrigin, int numChannels, int numSlices, int numFrames,
-						  int type, String unit, HashMap<Integer, String> maskMapping, HashMap<Integer, Object> channelInfo){
+						  int type, String unit, Map<Integer, String> maskMapping, HashMap<Integer, Object> channelInfo){
 
 		// https://github.com/saalfeldlab/n5
 		//https://imagej.nih.gov/ij/developer/api/ij/ij/ImagePlus.html#getType() Grayscale with float types
 		//https://imagej.nih.gov/ij/developer/api/ij/ij/measure/Calibration.html#getUnit()
 
 		public static ImageJMetaData generateDefaultRecord(long[] dimensions ,int[] blockSize, HashMap<String, String> compression, String dataSetName, int numChannels,
-														   int numSlices, int numFrames, HashMap<Integer, String> maskMapping, double pixelHeight, double pixelWidth,
+														   int numSlices, int numFrames, Map<Integer, String> maskMapping, double pixelHeight, double pixelWidth,
 														   double pixelDepth, String unit, HashMap<Integer, Object> channelInfo){
 			return  new ImageJMetaData(dimensions, blockSize, compression, DataType.FLOAT64.name().toLowerCase() ,dataSetName, 0.0, 0.0,
 					pixelWidth, pixelHeight, pixelDepth, 0.0, 0.0, 0.0, numChannels, numSlices, numFrames, 2, unit, maskMapping, channelInfo);

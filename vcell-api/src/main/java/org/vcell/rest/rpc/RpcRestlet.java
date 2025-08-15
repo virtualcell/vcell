@@ -25,7 +25,7 @@ import org.vcell.util.CompressionUtils;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.UserLoginInfo;
-import org.vcell.api.types.utils.DTOOldAPI;
+import org.vcell.api.types.utils.DTOModelTransformerV0;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -172,7 +172,7 @@ public final class RpcRestlet extends Restlet {
 					serializableResultObject = rpcService.sendRpcMessage(
 							queue, vcRpcRequest, rpcBody.returnedRequired, specialProperties, specialValues, new UserLoginInfo(username));
 				}
-				byte[] serializedResultObject = DTOOldAPI.toCompressedSerialized(serializableResultObject);
+				byte[] serializedResultObject = DTOModelTransformerV0.toCompressedSerialized(serializableResultObject);
 				response.setStatus(Status.SUCCESS_OK, "rpc method="+method+" succeeded");
 				response.setEntity(new ByteArrayRepresentation(serializedResultObject));
 			} catch (Exception e) {
@@ -180,7 +180,7 @@ public final class RpcRestlet extends Restlet {
 				response.setStatus(Status.SERVER_ERROR_INTERNAL);
 				if(e.getCause() instanceof ServerRejectedSaveException) {//send back actual exception, client needs specific cause
 					try {
-						byte[] serializedResultObject = DTOOldAPI.toCompressedSerialized(e.getCause());
+						byte[] serializedResultObject = DTOModelTransformerV0.toCompressedSerialized(e.getCause());
 						response.setEntity(new ByteArrayRepresentation(serializedResultObject));
 						return;
 					} catch (Exception e1) {

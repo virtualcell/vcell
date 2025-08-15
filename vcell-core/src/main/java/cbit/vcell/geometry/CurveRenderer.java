@@ -301,7 +301,7 @@ public class CurveRenderer implements DrawPaneModel {
                         g2D.setColor(Color.white);
                     }
                     g2D.draw(circle);
-                    if(getSelection().getType() == CurveSelectionInfo.TYPE_CONTROL_POINT && j == getSelection().getControlPoint()){
+                    if(getSelection().getType() == CurveSelectionInfo.CurveSelectionType.CONTROL_POINT.intValue && j == getSelection().getControlPoint()){
                         g2D.setColor(Color.red);
                         g2D.fill(circle);
                     }
@@ -396,14 +396,14 @@ public class CurveRenderer implements DrawPaneModel {
             return null;
         }
         CurveSelectionInfo csi = null;
-        if(getSelection().getType() == CurveSelectionInfo.TYPE_SEGMENT){
+        if(getSelection().getType() == CurveSelectionInfo.CurveSelectionType.SEGMENT.intValue){
             csi = getClosestSegmentSelectionInfo(pickPoint, getSelection().getCurve());
             if(csi != null){
                 if(csi.getCurve() == getSelection().getCurve() && csi.getSegment() != getSelection().getSegmentExtended()){
                     getSelection().setSegmentExtended(csi.getSegment());
                 }
             }
-        } else if(getSelection().getType() == CurveSelectionInfo.TYPE_U){
+        } else if(getSelection().getType() == CurveSelectionInfo.CurveSelectionType.U.intValue){
             csi = pickU(pickPoint, getSelection().getCurve());
         }
         return null;
@@ -620,7 +620,7 @@ public class CurveRenderer implements DrawPaneModel {
         //CurveRendererCurveInfo crci = (CurveRendererCurveInfo)curveTable.get(pickCurve);
         double pickedSegment = pickSegmentProjected(pickPoint, pickCurve);
         if(pickedSegment != Curve.NONE_SELECTED){
-            csi = new CurveSelectionInfo(pickCurve, CurveSelectionInfo.TYPE_SEGMENT, pickedSegment);
+            csi = new CurveSelectionInfo(pickCurve, CurveSelectionInfo.CurveSelectionType.SEGMENT.intValue, pickedSegment);
         }
         return csi;
     }
@@ -917,7 +917,7 @@ public class CurveRenderer implements DrawPaneModel {
         if(pickCurve instanceof ControlPointCurve){
             double pickedCP = pickControlPointProjected(pickPoint, pickCurve);
             if(pickedCP != Curve.NONE_SELECTED){
-                csi = new CurveSelectionInfo(pickCurve, CurveSelectionInfo.TYPE_CONTROL_POINT, pickedCP);
+                csi = new CurveSelectionInfo(pickCurve, CurveSelectionInfo.CurveSelectionType.CONTROL_POINT.intValue, pickedCP);
             }
         }
         return csi;
@@ -996,7 +996,7 @@ public class CurveRenderer implements DrawPaneModel {
         //CurveRendererCurveInfo crci = (CurveRendererCurveInfo)curveTable.get(pickCurve);
         double pickedU = pickUProjected(pickPoint, pickCurve);
         if(pickedU != Curve.NONE_SELECTED){
-            csi = new CurveSelectionInfo(pickCurve, CurveSelectionInfo.TYPE_U, pickedU);
+            csi = new CurveSelectionInfo(pickCurve, CurveSelectionInfo.CurveSelectionType.U.intValue, pickedU);
         }
         return csi;
     }
@@ -1083,11 +1083,11 @@ public class CurveRenderer implements DrawPaneModel {
     public void removeSelected(int operation){
         if(getSelection() != null){
             Curve selected = getSelection().getCurve();
-            if(getSelection().getType() == CurveSelectionInfo.TYPE_CONTROL_POINT){
+            if(getSelection().getType() == CurveSelectionInfo.CurveSelectionType.CONTROL_POINT.intValue){
                 boolean bDeleteKeyPressed = (operation == java.awt.event.KeyEvent.VK_DELETE);
                 int newSelectedControlPoint = ((ControlPointCurve) selected).removeControlPoint(getSelection().getControlPoint(), bDeleteKeyPressed);
                 if(newSelectedControlPoint != CurveSelectionInfo.NONE_SELECTED){
-                    setSelection(new CurveSelectionInfo((ControlPointCurve) selected, CurveSelectionInfo.TYPE_CONTROL_POINT, newSelectedControlPoint));
+                    setSelection(new CurveSelectionInfo((ControlPointCurve) selected, CurveSelectionInfo.CurveSelectionType.CONTROL_POINT.intValue, newSelectedControlPoint));
                     return;
                 }
             }
@@ -1155,12 +1155,12 @@ public class CurveRenderer implements DrawPaneModel {
 
     public void selectNext(){
         if(getSelection() != null){
-            if(getSelection().getType() == CurveSelectionInfo.TYPE_CONTROL_POINT){
+            if(getSelection().getType() == CurveSelectionInfo.CurveSelectionType.CONTROL_POINT.intValue){
                 int scp = getSelection().getControlPoint() + 1;
                 if(scp >= ((ControlPointCurve) getSelection().getCurve()).getControlPointCount()){
                     scp = 0;
                 }
-                setSelection(new CurveSelectionInfo((ControlPointCurve) getSelection().getCurve(), CurveSelectionInfo.TYPE_CONTROL_POINT, scp));
+                setSelection(new CurveSelectionInfo((ControlPointCurve) getSelection().getCurve(), CurveSelectionInfo.CurveSelectionType.CONTROL_POINT.intValue, scp));
                 return;
             }
             //else if (getSelection().getType() == CurveSelectionInfo.TYPE_SEGMENT) {

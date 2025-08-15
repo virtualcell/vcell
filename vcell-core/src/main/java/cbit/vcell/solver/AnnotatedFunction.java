@@ -12,6 +12,7 @@ package cbit.vcell.solver;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.vcell.util.Matchable;
 
 import cbit.vcell.mapping.SimulationContext.Kind;
@@ -146,6 +147,7 @@ public void setName(String name) throws PropertyVetoException {
 	setName(name);
 }
 
+@JsonIgnore
 @Override
 public void setUnitDefinition(VCUnitDefinition unit) throws PropertyVetoException {
     throw new RuntimeException("unit not editable");

@@ -9,11 +9,15 @@
  */
 
 package org.vcell.api.server;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
@@ -23,6 +27,9 @@ import cbit.vcell.client.server.SimStatusEvent;
 import cbit.vcell.client.server.SimStatusListener;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.api.client.ExceptionHandler;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.util.DataAccessException;
 
 import cbit.rmi.event.DataJobEvent;
@@ -63,6 +70,7 @@ public class AsynchMessageManager implements AsyncMessageManagerInterface {
     private long pollTime = BASE_POLL_SECONDS;
 	private AtomicBoolean bPoll = new AtomicBoolean(false);
 	private ScheduledFuture<?> pollingHandle = null;
+	private long lastPollEpochSecond = Instant.now().getEpochSecond();
 	/**
 	 * for {@link #schedule(long)} method
 	 */
@@ -132,6 +140,14 @@ private void poll( )  {
 	    	}
 		    pollTime = BASE_POLL_SECONDS;
 	    	queuedEvents = clientServerManager.getMessageEvents();
+			try{
+				List<org.vcell.restclient.model.ExportEvent> setOfExports = clientServerManager.getVCellApiClient().getExportApi().exportStatus(lastPollEpochSecond);
+				List<ExportEvent> exportEvents = setOfExports.stream().map(DtoModelTransforms::dtoToExportEvent).toList();
+				queuedEvents = Stream.concat(exportEvents.stream(), Stream.of(queuedEvents)).toArray(MessageEvent[]::new);
+				lastPollEpochSecond = Instant.now().getEpochSecond();
+			} catch (ApiException ex){
+				throw ExceptionHandler.getProperException(ex);
+			}
 		}
     	if (report) {
 		    end = System.currentTimeMillis();

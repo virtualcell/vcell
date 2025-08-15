@@ -24,6 +24,11 @@ import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.eclipse.microprofile.openapi.annotations.media.DiscriminatorMapping;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.vcell.util.Coordinate;
 
 import cbit.image.ImagePaneModel;
@@ -31,17 +36,46 @@ import cbit.vcell.export.gloworm.quicktime.VideoMediaSample;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSampleJPEG;
 import cbit.vcell.export.gloworm.quicktime.VideoMediaSampleRaw;
 import cbit.vcell.solvers.CartesianMesh;
+
 /**
  * Dummy parent class.
  */
+@Schema(
+		discriminatorMapping = {
+				@DiscriminatorMapping(value = "N5", schema = N5Specs.class),
+				@DiscriminatorMapping(value = "ASCIISpecs", schema = ASCIISpecs.class),
+				@DiscriminatorMapping(value = "ImageSpecs", schema = ImageSpecs.class),
+				@DiscriminatorMapping(value = "RasterSpecs", schema = RasterSpecs.class),
+				@DiscriminatorMapping(value = "PLYSpecs", schema = PLYSpecs.class),
+				@DiscriminatorMapping(value = "MovieSpecs", schema = MovieSpecs.class)
+		},
+		discriminatorProperty = "format",
+		requiredProperties = {"format"}
+	)
+@JsonTypeInfo(
+		use = JsonTypeInfo.Id.NAME,
+		property = "specClass",  // Discriminator field
+		visible = true
+)
+@JsonSubTypes({@JsonSubTypes.Type(value = N5Specs.class, name = "N5"), @JsonSubTypes.Type(value = ASCIISpecs.class, name = "ASCIISpecs"),
+		@JsonSubTypes.Type(value = ImageSpecs.class, name = "ImageSpecs"), @JsonSubTypes.Type(value = RasterSpecs.class, name = "RasterSpecs"),
+		@JsonSubTypes.Type(value = PLYSpecs.class, name = "PLYSpecs"), @JsonSubTypes.Type(value = MovieSpecs.class, name = "MovieSpecs")})
+
 public abstract class FormatSpecificSpecs implements Serializable {
+	@JsonIgnore
 	public static final Dimension SMOLDYN_DEFAULT_FRAME_SIZE = new Dimension(800,800);
 	public static final int PARTICLE_NONE = 0;
 	public static final int PARTICLE_SELECT = 2;	
 	
 	public final static int CODEC_NONE = 0;
 	public final static int CODEC_JPEG = 1;
+	public String specClass;
 
+	public FormatSpecificSpecs(String specClass) {
+		this.specClass = specClass;
+	}
+
+	@JsonIgnore
 	public static VideoMediaSample getVideoMediaSample(
 			int width,int height,int sampleDuration,boolean isGrayScale,int compressionType,float compressionQuality,int[] argbData) throws Exception{
 			
@@ -75,7 +109,7 @@ public abstract class FormatSpecificSpecs implements Serializable {
 				return new VideoMediaSampleRaw(width, height, sampleDuration,bytes,Integer.SIZE, false);
 			}
 		}
-
+	@JsonIgnore
 	public static VideoMediaSampleJPEG encodeJPEG(BufferedImage bufferedImage,float compressionQuality,int width,int height,int sampleDuration,int bitsPerPixel,boolean isGrayscale) throws Exception{
 		ImageWriter imageWriter = ImageIO.getImageWritersBySuffix("jpeg").next();
 		ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -120,6 +154,7 @@ public abstract class FormatSpecificSpecs implements Serializable {
 		 * Creation date: (3/2/2001 12:03:46 AM)
 		 * @return java.awt.Dimension
 		 */
+		@JsonIgnore
 		public static Dimension getMeshDimensionUnscaled(int normalAxis,CartesianMesh mesh) {
 			switch (normalAxis){
 				case Coordinate.X_AXIS:{
@@ -146,7 +181,8 @@ public abstract class FormatSpecificSpecs implements Serializable {
 				}
 			}
 		}
-		
+
+		@JsonIgnore
 		public static Dimension getImageDimension(int meshMode,int imageScale,CartesianMesh mesh,int normalAxis) {
 			ImagePaneModel imagePaneModel = new ImagePaneModel();
 			imagePaneModel.setMode(meshMode);
@@ -157,12 +193,13 @@ public abstract class FormatSpecificSpecs implements Serializable {
 			return dim;
 		}
 
-		public static Dimension getMirrorDimension(int mirroringType,int originalWidth,int originalHeight){
+		@JsonIgnore
+		public static Dimension getMirrorDimension(ExportEnums.MirroringMethod mirroringType, int originalWidth, int originalHeight){
 			Dimension mirrorDim = new Dimension(originalWidth,originalHeight);
-			if ((mirroringType == ExportConstants.MIRROR_LEFT) || (mirroringType == ExportConstants.MIRROR_RIGHT)){
+			if ((mirroringType == ExportEnums.MirroringMethod.MIRROR_LEFT) || (mirroringType == ExportEnums.MirroringMethod.MIRROR_RIGHT)){
 				mirrorDim.width = 2 * originalWidth;
 			}
-			if ((mirroringType == ExportConstants.MIRROR_TOP) || (mirroringType == ExportConstants.MIRROR_BOTTOM)){
+			if ((mirroringType == ExportEnums.MirroringMethod.MIRROR_TOP) || (mirroringType == ExportEnums.MirroringMethod.MIRROR_BOTTOM)){
 				mirrorDim.height = 2 * originalHeight;
 			}
 			return mirrorDim;

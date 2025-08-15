@@ -10,6 +10,8 @@
 
 package cbit.vcell.geometry;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/15/00 1:10:11 PM)
@@ -19,10 +21,14 @@ public class CurveSelectionInfo implements java.io.Serializable, org.vcell.util.
 	//
 	public static final int NONE_SELECTED = -1;
 	//
-	public static final int TYPE_CURVE = 0;
-	public static final int TYPE_CONTROL_POINT = 1;
-	public static final int TYPE_SEGMENT = 2;
-	public static final int TYPE_U = 3;
+
+	public enum CurveSelectionType{
+		CURVE(0), CONTROL_POINT(1), SEGMENT(2), U(3), NONE(-1);
+		public final int intValue;
+		CurveSelectionType(int intValue){
+			this.intValue = intValue;
+		}
+	}
 
 	private static final String TYPE_LABEL[] = { "curve","controlPoint","segment","u" };
 	//
@@ -42,7 +48,7 @@ public CurveSelectionInfo(Curve curve) {
 	//curve Selection
 	super();
 	setCurve(curve);
-	setType(TYPE_CURVE);
+	setType(CurveSelectionType.CURVE.intValue);
 }
 /**
  * CurveSelectionInfo constructor comment.
@@ -50,7 +56,7 @@ public CurveSelectionInfo(Curve curve) {
 public CurveSelectionInfo(Curve curve, int type, double index) {
 	//Segment or ControlPoint selection
 	super();
-	if (type == TYPE_CONTROL_POINT) {
+	if (type == CurveSelectionType.CONTROL_POINT.intValue) {
 		if (!(curve instanceof ControlPointCurve)) {
 			throw new IllegalArgumentException("TYPE_CONTROL_POINT must have ControlPointCurve");
 		}
@@ -58,18 +64,18 @@ public CurveSelectionInfo(Curve curve, int type, double index) {
 			throw new IllegalArgumentException("index out of range for ControlPointCurve");
 		}
 		setControlPoint((int) index);
-	} else if (type == TYPE_SEGMENT) {
+	} else if (type == CurveSelectionType.SEGMENT.intValue) {
 		if (index < 0 || index >= curve.getSegmentCount()) {
 			throw new IllegalArgumentException("Segment index out of range for Curve");
 		}
 		setSegment((int) index);
-	} else if (type == TYPE_U) {
+	} else if (type == CurveSelectionType.U.intValue) {
 		if (index < 0 || index > 1) {
 			throw new IllegalArgumentException("U must be between 0 and 1");
 		}
 		setU(index);
 	} else {
-		throw new IllegalArgumentException("type must be either TYPE_CONTROL_POINT or TYPE_SEGMENT or TYPE_U");
+		throw new IllegalArgumentException("type must be either CurveSelectionType.CONTROL_POINT or CurveSelectionType.SEGMENT or CurveSelectionType.U");
 	}
 
 	setCurve(curve);
@@ -82,7 +88,7 @@ public CurveSelectionInfo(Curve curve,int argBeginSegment,int argEndSegment,bool
 	//curve Selection
 	super();
 	setCurve(curve);
-	setType(TYPE_SEGMENT);
+	setType(CurveSelectionType.SEGMENT.intValue);
 	this.fieldSegment = argBeginSegment;
 	if(argBeginSegment != argEndSegment){
 		this.fieldSegmentExtended = argEndSegment;
@@ -121,6 +127,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
  * @return The controlPoint property value.
  * @see #setControlPoint
  */
+@JsonIgnore
 public int getControlPoint() {
 	return fieldControlPoint;
 }
@@ -129,6 +136,7 @@ public int getControlPoint() {
  * @return The controlPointExtended property value.
  * @see #setControlPointExtended
  */
+@JsonIgnore
 public int getControlPointExtended() {
 	return fieldControlPointExtended;
 }
@@ -137,6 +145,7 @@ public int getControlPointExtended() {
  * @return The curve property value.
  * @see #setCurve
  */
+@JsonIgnore
 public Curve getCurve() {
 	return fieldCurve;
 }
@@ -146,9 +155,10 @@ public Curve getCurve() {
  * @return double
  * @param selectionU double
  */
+@JsonIgnore
 public double getCurveUfromSelectionU(double selectionU) {
-	if (getType() != TYPE_SEGMENT){
-		throw new RuntimeException("CurveSelectionInfo.getCurveUfromSelectionU(), cannot call when type!=TYPE_SEGMENT");
+	if (getType() != CurveSelectionType.SEGMENT.intValue){
+		throw new RuntimeException("CurveSelectionInfo.getCurveUfromSelectionU(), cannot call when type!=CurveSelectionType.SEGMENT");
 	}
 	
 	int beginSeg = getSegment();
@@ -216,6 +226,7 @@ public double getCurveUfromSelectionU(double selectionU) {
  * @return The directionNegative property value.
  * @see #setDirectionNegative
  */
+@JsonIgnore
 public boolean getDirectionNegative() {
 	return fieldDirectionNegative;
 }
@@ -224,6 +235,7 @@ public boolean getDirectionNegative() {
  * @return The segment property value.
  * @see #setSegment
  */
+@JsonIgnore
 public int getSegment() {
 	return fieldSegment;
 }
@@ -232,6 +244,7 @@ public int getSegment() {
  * Creation date: (7/18/01 5:49:24 PM)
  * @return int
  */
+@JsonIgnore
 public int getSegmentCount() {
 	int beginSeg = getSegment();
 	int endSeg = getSegmentExtended();
@@ -288,6 +301,7 @@ public int getSegmentCount() {
  * @return The segmentExtended property value.
  * @see #setSegmentExtended
  */
+@JsonIgnore
 public int getSegmentExtended() {
 	return fieldSegmentExtended;
 }
@@ -296,6 +310,7 @@ public int getSegmentExtended() {
  * @return The segment property value.
  * @see #setSegment
  */
+@JsonIgnore
 public int[] getSegmentsInSelectionOrder() {
 
 	if(getSegmentCount() <= 0){
@@ -370,6 +385,7 @@ public int[] getSegmentsInSelectionOrder() {
  * @return The type property value.
  * @see #setType
  */
+@JsonIgnore
 public int getType() {
 	return fieldType;
 }
@@ -378,6 +394,7 @@ public int getType() {
  * @return The u property value.
  * @see #setU
  */
+@JsonIgnore
 public double getU() {
 	return fieldU;
 }
@@ -386,6 +403,7 @@ public double getU() {
  * @return The uExtended property value.
  * @see #setUExtended
  */
+@JsonIgnore
 public double getUExtended() {
 	return fieldUExtended;
 }
@@ -452,6 +470,7 @@ public boolean isSegmentSelected(int soi) {
  * @param controlPoint The new value for the property.
  * @see #getControlPoint
  */
+@JsonIgnore
 private void setControlPoint(int controlPoint) {
 	fieldControlPoint = controlPoint;
 }
@@ -460,6 +479,7 @@ private void setControlPoint(int controlPoint) {
  * @param curve The new value for the property.
  * @see #getCurve
  */
+@JsonIgnore
 private void setCurve(Curve curve) {
 	Curve oldValue = fieldCurve;
 	fieldCurve = curve;
@@ -470,6 +490,7 @@ private void setCurve(Curve curve) {
  * @param directionNegative The new value for the property.
  * @see #getDirectionNegative
  */
+@JsonIgnore
 private void setDirectionNegative(boolean directionNegative) {
 	fieldDirectionNegative = directionNegative;
 }
@@ -478,6 +499,7 @@ private void setDirectionNegative(boolean directionNegative) {
  * @param segment The new value for the property.
  * @see #getSegment
  */
+@JsonIgnore
 private void setSegment(int segment) {
 	fieldSegment = segment;
 }
@@ -486,6 +508,7 @@ private void setSegment(int segment) {
  * @param segmentExtended The new value for the property.
  * @see #getSegmentExtended
  */
+@JsonIgnore
 public void setSegmentExtended(int segmentExtended) {
 	if (getSegment() == NONE_SELECTED) {
 		setSegment(segmentExtended);
@@ -512,6 +535,7 @@ public void setSegmentExtended(int segmentExtended) {
  * @param type The new value for the property.
  * @see #getType
  */
+@JsonIgnore
 private void setType(int type) {
 	int oldValue = fieldType;
 	fieldType = type;
@@ -522,6 +546,7 @@ private void setType(int type) {
  * @param u The new value for the property.
  * @see #getU
  */
+@JsonIgnore
 private void setU(double u) {
 	fieldU = u;
 }
@@ -530,6 +555,7 @@ private void setU(double u) {
  * @param uExtended The new value for the property.
  * @see #getUExtended
  */
+@JsonIgnore
 public void setUExtended(double uExtended) {
 	if (getU() == NONE_SELECTED) {
 		setU(uExtended);

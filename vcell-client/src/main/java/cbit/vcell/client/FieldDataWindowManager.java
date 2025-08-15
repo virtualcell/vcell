@@ -28,7 +28,7 @@ import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.clientdb.FieldDataDBEvent;
 import cbit.vcell.clientdb.FieldDataDBEventListener;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
+import cbit.vcell.export.server.SimNameSimDataID;
 import cbit.vcell.field.gui.FieldDataGUIPanel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.math.MathDescription;
