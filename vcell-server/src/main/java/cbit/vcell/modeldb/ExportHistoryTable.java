@@ -45,7 +45,7 @@ public class ExportHistoryTable extends Table {
             zSlices, tSlices, numVariables};
 
     private final Field[] insertFields = {
-            jobId, userRef, modelRef, exportFormat, exportDate, uri, dataId,
+            userRef, modelRef, exportFormat, exportDate, uri, dataId,
             simulationName, applicationName, biomodelName, variables,
             startTime, endTime, savedFileName, applicationType, nonSpatial,
             zSlices, tSlices, numVariables
@@ -55,14 +55,14 @@ public class ExportHistoryTable extends Table {
 
     private ExportHistoryTable() {
         super(TABLE_NAME);
-        addFields(fields);
+        addFields(insertFields);
     }
 
     public String getInsertSQL() {
 
         StringJoiner cols = new StringJoiner(",", "(", ")");
         for (Field f : insertFields) {
-            cols.add(f.getQualifiedColName());
+            cols.add(f.getUnqualifiedColName());
         }
 
         StringJoiner ph = new StringJoiner(",", "(", ")");
@@ -83,7 +83,6 @@ public class ExportHistoryTable extends Table {
             String        simName,
             String        appName,
             String        bioName,
-            String        variablesCsv,
             BigDecimal    startTimeValue,
             BigDecimal    endTimeValue,
             String        savedFileNameValue,
@@ -104,7 +103,6 @@ public class ExportHistoryTable extends Table {
         ps.setString     (i++, simName);
         ps.setString     (i++, appName);
         ps.setString     (i++, bioName);
-        ps.setString     (i++, variablesCsv);
         ps.setBigDecimal (i++, startTimeValue);
         ps.setBigDecimal (i++, endTimeValue);
         ps.setString     (i++, savedFileNameValue);
@@ -114,51 +112,51 @@ public class ExportHistoryTable extends Table {
         ps.setInt        (i++, tSlicesValue);
         ps.setInt        (i++, numVariablesValue);
     }
-    public record ExportHistoryRecord(String jobID, long userRef, long modelRef, ExportFormat format, Timestamp date,
-                                      String uri, String dataID, String simName, String appName, String bioName,
-                                      BigDecimal startTime, BigDecimal endTime, String savedFile, String appType,
-                                      boolean nonSpatial, int zSlices, int tSlices, int numVars) {
-    }
-
-    public ExportHistoryRecord getExportHistoryRecord(ResultSet rset, ExportHistoryRecord exportHistoryRecord) throws SQLException, SQLException {
-
-        long userRef          = rset.getLong((int) exportHistoryRecord.userRef);
-        long modelRef         = rset.getLong((int) exportHistoryRecord.modelRef);
-
-        // enums & timestamps
-        ExportFormat fmt      = ExportFormat.valueOf(rset.getString(exportFormat.toString()));
-        Timestamp date        = rset.getTimestamp(exportDate.toString());
-
-        // strings
-        String jobId            = rset.getString(exportHistoryRecord.jobID);
-        String uriVal         = rset.getString(uri.toString());
-        String dataIdVal      = rset.getString(dataId.toString());
-        String simNameVal     = rset.getString(simulationName.toString());
-        String appNameVal     = rset.getString(applicationName.toString());
-        String bioNameVal     = rset.getString(biomodelName.toString());
-
-        // text array of variables
-        Array sqlArr          = rset.getArray(variables.toString());
-
-        // numeric ranges
-        BigDecimal startBt    = rset.getBigDecimal(startTime.toString());
-        BigDecimal endBt      = rset.getBigDecimal(endTime.toString());
-
-        // more strings & flags
-        String savedFileVal   = rset.getString(savedFileName.toString());
-        String appTypeVal     = rset.getString(applicationType.toString());
-        boolean nonSp         = rset.getBoolean(nonSpatial.toString());
-        int zS                = rset.getInt(zSlices.toString());
-        int tS                = rset.getInt(tSlices.toString());
-        int numV              = rset.getInt(numVariables.toString());
-
-
-
-        return new ExportHistoryRecord(
-                jobId, userRef, modelRef, fmt, date,
-                uriVal, dataIdVal, simNameVal, appNameVal, bioNameVal,
-                startBt, endBt, savedFileVal, appTypeVal,
-                nonSp, zS, tS, numV
-        );
-    }
+//    public record ExportHistoryRecord(String jobID, long userRef, long modelRef, ExportFormat format, Timestamp date,
+//                                      String uri, String dataID, String simName, String appName, String bioName,
+//                                      BigDecimal startTime, BigDecimal endTime, String savedFile, String appType,
+//                                      boolean nonSpatial, int zSlices, int tSlices, int numVars) {
+//    }
+//
+//    public ExportHistoryRecord getExportHistoryRecord(ResultSet rset, ExportHistoryRecord exportHistoryRecord) throws SQLException, SQLException {
+//
+//        long userRef          = rset.getLong((int) exportHistoryRecord.userRef);
+//        long modelRef         = rset.getLong((int) exportHistoryRecord.modelRef);
+//
+//        // enums & timestamps
+//        ExportFormat fmt      = ExportFormat.valueOf(rset.getString(exportFormat.toString()));
+//        Timestamp date        = rset.getTimestamp(exportDate.toString());
+//
+//        // strings
+//        String jobId            = rset.getString(exportHistoryRecord.jobID);
+//        String uriVal         = rset.getString(uri.toString());
+//        String dataIdVal      = rset.getString(dataId.toString());
+//        String simNameVal     = rset.getString(simulationName.toString());
+//        String appNameVal     = rset.getString(applicationName.toString());
+//        String bioNameVal     = rset.getString(biomodelName.toString());
+//
+//        // text array of variables
+//        Array sqlArr          = rset.getArray(variables.toString());
+//
+//        // numeric ranges
+//        BigDecimal startBt    = rset.getBigDecimal(startTime.toString());
+//        BigDecimal endBt      = rset.getBigDecimal(endTime.toString());
+//
+//        // more strings & flags
+//        String savedFileVal   = rset.getString(savedFileName.toString());
+//        String appTypeVal     = rset.getString(applicationType.toString());
+//        boolean nonSp         = rset.getBoolean(nonSpatial.toString());
+//        int zS                = rset.getInt(zSlices.toString());
+//        int tS                = rset.getInt(tSlices.toString());
+//        int numV              = rset.getInt(numVariables.toString());
+//
+//
+//
+//        return new ExportHistoryRecord(
+//                jobId, userRef, modelRef, fmt, date,
+//                uriVal, dataIdVal, simNameVal, appNameVal, bioNameVal,
+//                startBt, endBt, savedFileVal, appTypeVal,
+//                nonSp, zS, tS, numV
+//        );
+//    }
 }
