@@ -7,11 +7,9 @@ import cbit.vcell.export.server.ExportEnums;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.arc.properties.IfBuildProperty;
 import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.helpers.MultiEmitterProcessor;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -19,8 +17,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
-import org.eclipse.microprofile.reactive.messaging.Incoming;
-import org.eclipse.microprofile.reactive.messaging.Message;
 import org.vcell.restq.activemq.ExportRequestListenerMQ;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.ExternalDataIdentifier;
@@ -28,8 +24,6 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 
-import java.time.Instant;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @ApplicationScoped
@@ -66,36 +60,16 @@ class DummyExportEventController implements ExportEventController{
 public class ServerExportEventController implements cbit.rmi.event.ExportEventController {
     private final ConcurrentHashMap<Long, User> jobRequestToUser = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, MultiEmitterProcessor<ExportEvent>> listeners = new ConcurrentHashMap<>();
-    private final ExportEventQueue exportEventQueue = new ExportEventQueue();
 
     private final static Logger logger = LogManager.getLogger(ServerExportEventController.class);
 
     @Inject
-    @Channel("outgoing-client-status")
+    @Channel("publisher-client-status")
     Emitter<String> clientStatusEmitter;
 
     @Inject
     ObjectMapper objectMapper;
 
-    @Incoming("incoming-client-status")
-    public Uni<Void> clientStatusTopicListener(Message<String> message) {
-        try{
-            JsonNode node = objectMapper.readTree(message.getPayload());
-            if (node.has("eventType") && node.has("format")){
-                ExportEvent exportEvent = objectMapper.treeToValue(node, ExportEvent.class);
-                synchronized (this){
-                    exportEventQueue.addExportEvent(exportEvent);
-                }
-                logger.debug("Received export status from topic: {}", exportEvent);
-            }
-            return Uni.createFrom().voidItem();
-        } catch (JsonProcessingException jsonProcessingException){
-            logger.error("Problem parsing export status message", jsonProcessingException);
-            return Uni.createFrom().voidItem();
-        } finally {
-            message.ack();
-        }
-    }
 
     public synchronized Multi<ExportEvent> getSSEUsersExportStatus(User user, long exportJobID) throws ObjectNotFoundException {
         String key = sseEventListenerKey(user, exportJobID);
@@ -103,10 +77,6 @@ public class ServerExportEventController implements cbit.rmi.event.ExportEventCo
             throw new ObjectNotFoundException("Did not find entry for user " + user.getName() + " and job id " + exportJobID);
         }
         return listeners.get(key).toMulti();
-    }
-
-    public synchronized List<ExportEvent> getMostRecentExportStatus (User user, Instant timestamp) {
-        return exportEventQueue.getExportEventsPastSpecificTime(user, timestamp).stream().map(ExportEventQueue.MessageExportEvent::exportEvent).toList();
     }
 
 
@@ -124,9 +94,6 @@ public class ServerExportEventController implements cbit.rmi.event.ExportEventCo
                 exportJob.format().name(), "", null);
         fireExportEvent(event);
     }
-
-
-
 
 
     public synchronized void fireExportEvent(ExportEvent event) {

@@ -69,7 +69,7 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
     ObjectMapper mapper;
 
     @Inject
-    @Channel("export-request")
+    @Channel("publisher-export-request")
     Emitter<String> exportJobEmitter;
 
     @PostConstruct
@@ -91,7 +91,7 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
         }
     }
 
-    @Incoming("processed-export-request")
+    @Incoming("subscriber-export-request")
     public Uni<Void> consumeExportRequest(Message<String> message) {
         try {
             logger.debug("Received export request: {}", message.getPayload());
