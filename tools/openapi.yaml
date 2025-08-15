@@ -462,16 +462,18 @@ paths:
       - openId:
         - user
   /api/v1/export/status:
-    patch:
+    get:
       tags:
       - Export Resource
-      description: Get the status of your export jobs past the timestamp (UTC format).
+      description: Get the status of your export jobs past the timestamp (Unix epoch
+        in seconds).
       operationId: exportStatus
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Instant'
+      parameters:
+      - name: timestamp
+        in: query
+        schema:
+          format: int64
+          type: integer
       responses:
         "200":
           description: OK

@@ -24,7 +24,7 @@ try:
 except ImportError:
     from typing_extensions import Annotated
 
-from datetime import datetime
+from pydantic import StrictInt
 
 from typing import List, Optional
 
@@ -342,7 +342,7 @@ class ExportResourceApi:
     @validate_call
     def export_status(
         self,
-        body: Optional[datetime] = None,
+        timestamp: Optional[StrictInt] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -358,10 +358,10 @@ class ExportResourceApi:
     ) -> List[ExportEvent]:
         """export_status
 
-        Get the status of your export jobs past the timestamp (UTC format).
+        Get the status of your export jobs past the timestamp (Unix epoch in seconds).
 
-        :param body:
-        :type body: datetime
+        :param timestamp:
+        :type timestamp: int
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -385,7 +385,7 @@ class ExportResourceApi:
         """ # noqa: E501
 
         _param = self._export_status_serialize(
-            body=body,
+            timestamp=timestamp,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -413,7 +413,7 @@ class ExportResourceApi:
     @validate_call
     def export_status_with_http_info(
         self,
-        body: Optional[datetime] = None,
+        timestamp: Optional[StrictInt] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -429,10 +429,10 @@ class ExportResourceApi:
     ) -> ApiResponse[List[ExportEvent]]:
         """export_status
 
-        Get the status of your export jobs past the timestamp (UTC format).
+        Get the status of your export jobs past the timestamp (Unix epoch in seconds).
 
-        :param body:
-        :type body: datetime
+        :param timestamp:
+        :type timestamp: int
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -456,7 +456,7 @@ class ExportResourceApi:
         """ # noqa: E501
 
         _param = self._export_status_serialize(
-            body=body,
+            timestamp=timestamp,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -484,7 +484,7 @@ class ExportResourceApi:
     @validate_call
     def export_status_without_preload_content(
         self,
-        body: Optional[datetime] = None,
+        timestamp: Optional[StrictInt] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -500,10 +500,10 @@ class ExportResourceApi:
     ) -> RESTResponseType:
         """export_status
 
-        Get the status of your export jobs past the timestamp (UTC format).
+        Get the status of your export jobs past the timestamp (Unix epoch in seconds).
 
-        :param body:
-        :type body: datetime
+        :param timestamp:
+        :type timestamp: int
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -527,7 +527,7 @@ class ExportResourceApi:
         """ # noqa: E501
 
         _param = self._export_status_serialize(
-            body=body,
+            timestamp=timestamp,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -550,7 +550,7 @@ class ExportResourceApi:
 
     def _export_status_serialize(
         self,
-        body,
+        timestamp,
         _request_auth,
         _content_type,
         _headers,
@@ -572,11 +572,13 @@ class ExportResourceApi:
 
         # process the path parameters
         # process the query parameters
+        if timestamp is not None:
+            
+            _query_params.append(('timestamp', timestamp))
+            
         # process the header parameters
         # process the form parameters
         # process the body parameter
-        if body is not None:
-            _body_params = body
 
 
         # set the HTTP header `Accept`
@@ -586,19 +588,6 @@ class ExportResourceApi:
             ]
         )
 
-        # set the HTTP header `Content-Type`
-        if _content_type:
-            _header_params['Content-Type'] = _content_type
-        else:
-            _default_content_type = (
-                self.api_client.select_header_content_type(
-                    [
-                        'application/json'
-                    ]
-                )
-            )
-            if _default_content_type is not None:
-                _header_params['Content-Type'] = _default_content_type
 
         # authentication setting
         _auth_settings: List[str] = [
@@ -606,7 +595,7 @@ class ExportResourceApi:
         ]
 
         return self.api_client.param_serialize(
-            method='PATCH',
+            method='GET',
             resource_path='/api/v1/export/status',
             path_params=_path_params,
             query_params=_query_params,

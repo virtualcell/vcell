@@ -27,6 +27,7 @@ import org.vcell.util.document.KeyValue;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,7 +77,7 @@ public class ExportRequestTest {
 //     Tests the clients capability to submit exports, our queue for accepting and distributing messages, retrieval of export status, and the export job itself
     @Test
     public void testExportRequestClient() throws Exception {
-        final OffsetDateTime time = OffsetDateTime.now(); // Before export even starts, so that all events are grabbed from the queue
+        final long time = Instant.now().getEpochSecond(); // Before export even starts, so that all events are grabbed from the queue
         ExportResourceApi exportResourceApi = new ExportResourceApi(aliceAPIClient);
         N5ExportRequest exportRequest = getValidExportRequestDTO(0, 1);
         exportResourceApi.exportN5(exportRequest);
