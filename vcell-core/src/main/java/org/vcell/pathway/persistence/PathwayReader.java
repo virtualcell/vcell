@@ -72,6 +72,8 @@ import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.PathwayStep;
 import org.vcell.pathway.PhenotypeVocabulary;
 import org.vcell.pathway.PhysicalEntity;
+import org.vcell.pathway.PhysicalEntityParticipant;
+import org.vcell.pathway.SequenceParticipant;
 import org.vcell.pathway.Protein;
 import org.vcell.pathway.ProteinReference;
 import org.vcell.pathway.Provenance;
@@ -191,8 +193,12 @@ public class PathwayReader {
 						addObjectComplexAssembly(childElement);
 					}else if (childElement.getName().equals("rna")){
 						addObjectRna(childElement);
-					}else if (childElement.getName().equals("physicalEntity")){
+					}else if (childElement.getName().equals("physicalEntity")) {
 						addObjectPhysicalEntity(childElement);
+					}else if(childElement.getName().equals("physicalEntityParticipant")) {
+
+					}else if(childElement.getName().equals("sequenceParticipant")) {
+
 					}else if (childElement.getName().equals("publicationXref")){
 						pathwayModel.add(addObjectPublicationXref(childElement));
 					}else if (childElement.getName().equals("relationshipXref")){
@@ -1643,6 +1649,20 @@ public class PathwayReader {
 		}
 		pathwayModel.add(physicalEntity);
 		return physicalEntity;
+	}
+	private PhysicalEntityParticipant addObjectPhysicalEntityParticipant(Element element) {
+		PhysicalEntityParticipant physicalEntityParticipant = new PhysicalEntityParticipant();
+		Namespace rdf = Namespace.getNamespace("rdf", DefaultNameSpaces.RDF.uri);
+
+		pathwayModel.add(physicalEntityParticipant);
+		return physicalEntityParticipant;
+	}
+	private SequenceParticipant addObjectSequenceParticipant(Element element) {
+		SequenceParticipant sequenceParticipant = new SequenceParticipant();
+		Namespace rdf = Namespace.getNamespace("rdf", DefaultNameSpaces.RDF.uri);
+
+		pathwayModel.add(sequenceParticipant);
+		return sequenceParticipant;
 	}
 
 	private Control addObjectControl(Element controlElement) {
