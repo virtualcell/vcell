@@ -451,6 +451,11 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				Element searchResponse = null;
 				try (InputStream in = conn.getInputStream()) {
 					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+					// Prevent XXE attacks in XML parsing, suggested by GitHub Advanced Security bot
+					dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+					dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+					dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+					dbf.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
 					DocumentBuilder      db  = dbf.newDocumentBuilder();
 					Document             doc = db.parse(in);
 					doc.getDocumentElement().normalize();

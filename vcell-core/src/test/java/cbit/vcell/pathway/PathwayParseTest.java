@@ -122,6 +122,39 @@ public class PathwayParseTest {
         System.out.println(text);
     }
 
+    @Test
+    public void testXXEProtection_blocksExternalEntity() {
+        String maliciousXml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<!DOCTYPE foo [\n" +
+                "  <!ELEMENT foo ANY >\n" +
+                "  <!ENTITY xxe SYSTEM \"file:///etc/passwd\" >\n" +
+                "]>\n" +
+                "<foo>&xxe;</foo>";
+
+        Reader reader = new StringReader(maliciousXml);
+
+        try {
+            Document doc = XmlUtil.readXML(reader, null, null, null);
+            String content = doc.getRootElement().getText();
+
+            // AI generated test, checks for vulnerabilities
+            // If XXE is blocked, content should not contain sensitive data
+            // It may be empty or contain literal "&xxe;" depending on parser behavior
+            // If this assertion fails, it means:
+            // - the content string contains either "root:" or "bin:"
+            // - these are typical markers of external entity resolution, often from XML content
+            // - it suggests that your parser did not properly block or sanitize external entities, which can lead to:
+            //     - security vulnerabilities (e.g. XXE attacks)
+            //     - unexpected file access or leakage
+            //     - broken isolation in our data pipeline
+            assertFalse(content.contains("root:") || content.contains("bin:"), "External entity was resolved!");
+       } catch (RuntimeException e) {
+            // Expected: parser may throw due to disallowed DOCTYPE
+            assertTrue(e.getMessage().contains("DOCTYPE") || e.getMessage().contains("entity"));
+        }
+    }
+
+
 
     public static void main(String args[]) {
         try {

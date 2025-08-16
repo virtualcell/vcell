@@ -141,7 +141,8 @@ private XmlUtil() {
 
 		builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
 		builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-
+		builder.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		builder.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 		builder.build(new StringReader(xml));
 	}
 
@@ -169,6 +170,8 @@ private XmlUtil() {
 			}
 			builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
 			builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+			builder.setFeature("http://xml.org/sax/features/external-general-entities", false);
+			builder.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 			sDoc = builder.build(reader);
 			// ----- Element root = null;
 	  		// ----- root = sDoc.getRootElement();
@@ -197,6 +200,8 @@ private XmlUtil() {
   		builder.setErrorHandler(errorHandler);
 		builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
 		builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		builder.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		builder.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 		try {
 	  		sDoc = builder.build(file);
 			// Element root = null;
@@ -226,6 +231,8 @@ private XmlUtil() {
   		builder.setErrorHandler(errorHandler);
 		builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
 		builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		builder.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		builder.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 		try {
 	  		sDoc = builder.build(inputStream);
 			// Element root = null;
