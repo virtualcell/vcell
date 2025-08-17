@@ -114,7 +114,6 @@ public class CommandServiceSshNative extends CommandService {
 			sshCmdPrefix.add(username+"@"+tryThisHost);
 
 			ArrayList<String> cmdList = new ArrayList<>(sshCmdPrefix);
-			cmdList.addAll(sshCmdPrefix);
 			cmdList.add(String.join(" ", Arrays.asList(commandStrings)));
 			String[] cmd = cmdList.toArray(new String[0]);
 			try {
