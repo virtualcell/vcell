@@ -36,41 +36,19 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * BioModelChildSummary
  */
 @JsonPropertyOrder({
-  BioModelChildSummary.JSON_PROPERTY_SC_NAMES,
-  BioModelChildSummary.JSON_PROPERTY_SC_ANNOTS,
-  BioModelChildSummary.JSON_PROPERTY_GEO_NAMES,
-  BioModelChildSummary.JSON_PROPERTY_GEO_DIMS,
   BioModelChildSummary.JSON_PROPERTY_APP_TYPES,
-  BioModelChildSummary.JSON_PROPERTY_SIM_NAMES,
-  BioModelChildSummary.JSON_PROPERTY_SIM_ANNOTS,
   BioModelChildSummary.JSON_PROPERTY_GEOMETRY_DIMENSIONS,
   BioModelChildSummary.JSON_PROPERTY_GEOMETRY_NAMES,
   BioModelChildSummary.JSON_PROPERTY_SIMULATION_CONTEXT_ANNOTATIONS,
   BioModelChildSummary.JSON_PROPERTY_SIMULATION_CONTEXT_NAMES,
+  BioModelChildSummary.JSON_PROPERTY_ALL_SIMULATION_NAMES,
+  BioModelChildSummary.JSON_PROPERTY_ALL_SIMULATION_ANNOTS,
   BioModelChildSummary.JSON_PROPERTY_APPLICATION_INFO
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class BioModelChildSummary {
-  public static final String JSON_PROPERTY_SC_NAMES = "scNames";
-  private List<String> scNames;
-
-  public static final String JSON_PROPERTY_SC_ANNOTS = "scAnnots";
-  private List<String> scAnnots;
-
-  public static final String JSON_PROPERTY_GEO_NAMES = "geoNames";
-  private List<String> geoNames;
-
-  public static final String JSON_PROPERTY_GEO_DIMS = "geoDims";
-  private List<Integer> geoDims;
-
   public static final String JSON_PROPERTY_APP_TYPES = "appTypes";
   private List<MathType> appTypes;
-
-  public static final String JSON_PROPERTY_SIM_NAMES = "simNames";
-  private List<List<String>> simNames;
-
-  public static final String JSON_PROPERTY_SIM_ANNOTS = "simAnnots";
-  private List<List<String>> simAnnots;
 
   public static final String JSON_PROPERTY_GEOMETRY_DIMENSIONS = "geometryDimensions";
   private List<Integer> geometryDimensions;
@@ -84,143 +62,17 @@ public class BioModelChildSummary {
   public static final String JSON_PROPERTY_SIMULATION_CONTEXT_NAMES = "simulationContextNames";
   private List<String> simulationContextNames;
 
+  public static final String JSON_PROPERTY_ALL_SIMULATION_NAMES = "allSimulationNames";
+  private List<List<String>> allSimulationNames;
+
+  public static final String JSON_PROPERTY_ALL_SIMULATION_ANNOTS = "allSimulationAnnots";
+  private List<List<String>> allSimulationAnnots;
+
   public static final String JSON_PROPERTY_APPLICATION_INFO = "applicationInfo";
   private List<ApplicationInfo> applicationInfo;
 
   public BioModelChildSummary() { 
   }
-
-  public BioModelChildSummary scNames(List<String> scNames) {
-    this.scNames = scNames;
-    return this;
-  }
-
-  public BioModelChildSummary addScNamesItem(String scNamesItem) {
-    if (this.scNames == null) {
-      this.scNames = new ArrayList<>();
-    }
-    this.scNames.add(scNamesItem);
-    return this;
-  }
-
-   /**
-   * Get scNames
-   * @return scNames
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SC_NAMES)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public List<String> getScNames() {
-    return scNames;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_SC_NAMES)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setScNames(List<String> scNames) {
-    this.scNames = scNames;
-  }
-
-
-  public BioModelChildSummary scAnnots(List<String> scAnnots) {
-    this.scAnnots = scAnnots;
-    return this;
-  }
-
-  public BioModelChildSummary addScAnnotsItem(String scAnnotsItem) {
-    if (this.scAnnots == null) {
-      this.scAnnots = new ArrayList<>();
-    }
-    this.scAnnots.add(scAnnotsItem);
-    return this;
-  }
-
-   /**
-   * Get scAnnots
-   * @return scAnnots
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SC_ANNOTS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public List<String> getScAnnots() {
-    return scAnnots;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_SC_ANNOTS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setScAnnots(List<String> scAnnots) {
-    this.scAnnots = scAnnots;
-  }
-
-
-  public BioModelChildSummary geoNames(List<String> geoNames) {
-    this.geoNames = geoNames;
-    return this;
-  }
-
-  public BioModelChildSummary addGeoNamesItem(String geoNamesItem) {
-    if (this.geoNames == null) {
-      this.geoNames = new ArrayList<>();
-    }
-    this.geoNames.add(geoNamesItem);
-    return this;
-  }
-
-   /**
-   * Get geoNames
-   * @return geoNames
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_GEO_NAMES)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public List<String> getGeoNames() {
-    return geoNames;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_GEO_NAMES)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setGeoNames(List<String> geoNames) {
-    this.geoNames = geoNames;
-  }
-
-
-  public BioModelChildSummary geoDims(List<Integer> geoDims) {
-    this.geoDims = geoDims;
-    return this;
-  }
-
-  public BioModelChildSummary addGeoDimsItem(Integer geoDimsItem) {
-    if (this.geoDims == null) {
-      this.geoDims = new ArrayList<>();
-    }
-    this.geoDims.add(geoDimsItem);
-    return this;
-  }
-
-   /**
-   * Get geoDims
-   * @return geoDims
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_GEO_DIMS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public List<Integer> getGeoDims() {
-    return geoDims;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_GEO_DIMS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setGeoDims(List<Integer> geoDims) {
-    this.geoDims = geoDims;
-  }
-
 
   public BioModelChildSummary appTypes(List<MathType> appTypes) {
     this.appTypes = appTypes;
@@ -252,72 +104,6 @@ public class BioModelChildSummary {
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setAppTypes(List<MathType> appTypes) {
     this.appTypes = appTypes;
-  }
-
-
-  public BioModelChildSummary simNames(List<List<String>> simNames) {
-    this.simNames = simNames;
-    return this;
-  }
-
-  public BioModelChildSummary addSimNamesItem(List<String> simNamesItem) {
-    if (this.simNames == null) {
-      this.simNames = new ArrayList<>();
-    }
-    this.simNames.add(simNamesItem);
-    return this;
-  }
-
-   /**
-   * Get simNames
-   * @return simNames
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIM_NAMES)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public List<List<String>> getSimNames() {
-    return simNames;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_SIM_NAMES)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimNames(List<List<String>> simNames) {
-    this.simNames = simNames;
-  }
-
-
-  public BioModelChildSummary simAnnots(List<List<String>> simAnnots) {
-    this.simAnnots = simAnnots;
-    return this;
-  }
-
-  public BioModelChildSummary addSimAnnotsItem(List<String> simAnnotsItem) {
-    if (this.simAnnots == null) {
-      this.simAnnots = new ArrayList<>();
-    }
-    this.simAnnots.add(simAnnotsItem);
-    return this;
-  }
-
-   /**
-   * Get simAnnots
-   * @return simAnnots
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIM_ANNOTS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public List<List<String>> getSimAnnots() {
-    return simAnnots;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_SIM_ANNOTS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimAnnots(List<List<String>> simAnnots) {
-    this.simAnnots = simAnnots;
   }
 
 
@@ -453,6 +239,72 @@ public class BioModelChildSummary {
   }
 
 
+  public BioModelChildSummary allSimulationNames(List<List<String>> allSimulationNames) {
+    this.allSimulationNames = allSimulationNames;
+    return this;
+  }
+
+  public BioModelChildSummary addAllSimulationNamesItem(List<String> allSimulationNamesItem) {
+    if (this.allSimulationNames == null) {
+      this.allSimulationNames = new ArrayList<>();
+    }
+    this.allSimulationNames.add(allSimulationNamesItem);
+    return this;
+  }
+
+   /**
+   * Get allSimulationNames
+   * @return allSimulationNames
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_ALL_SIMULATION_NAMES)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public List<List<String>> getAllSimulationNames() {
+    return allSimulationNames;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_ALL_SIMULATION_NAMES)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setAllSimulationNames(List<List<String>> allSimulationNames) {
+    this.allSimulationNames = allSimulationNames;
+  }
+
+
+  public BioModelChildSummary allSimulationAnnots(List<List<String>> allSimulationAnnots) {
+    this.allSimulationAnnots = allSimulationAnnots;
+    return this;
+  }
+
+  public BioModelChildSummary addAllSimulationAnnotsItem(List<String> allSimulationAnnotsItem) {
+    if (this.allSimulationAnnots == null) {
+      this.allSimulationAnnots = new ArrayList<>();
+    }
+    this.allSimulationAnnots.add(allSimulationAnnotsItem);
+    return this;
+  }
+
+   /**
+   * Get allSimulationAnnots
+   * @return allSimulationAnnots
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_ALL_SIMULATION_ANNOTS)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public List<List<String>> getAllSimulationAnnots() {
+    return allSimulationAnnots;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_ALL_SIMULATION_ANNOTS)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setAllSimulationAnnots(List<List<String>> allSimulationAnnots) {
+    this.allSimulationAnnots = allSimulationAnnots;
+  }
+
+
   public BioModelChildSummary applicationInfo(List<ApplicationInfo> applicationInfo) {
     this.applicationInfo = applicationInfo;
     return this;
@@ -498,40 +350,32 @@ public class BioModelChildSummary {
       return false;
     }
     BioModelChildSummary bioModelChildSummary = (BioModelChildSummary) o;
-    return Objects.equals(this.scNames, bioModelChildSummary.scNames) &&
-        Objects.equals(this.scAnnots, bioModelChildSummary.scAnnots) &&
-        Objects.equals(this.geoNames, bioModelChildSummary.geoNames) &&
-        Objects.equals(this.geoDims, bioModelChildSummary.geoDims) &&
-        Objects.equals(this.appTypes, bioModelChildSummary.appTypes) &&
-        Objects.equals(this.simNames, bioModelChildSummary.simNames) &&
-        Objects.equals(this.simAnnots, bioModelChildSummary.simAnnots) &&
+    return Objects.equals(this.appTypes, bioModelChildSummary.appTypes) &&
         Objects.equals(this.geometryDimensions, bioModelChildSummary.geometryDimensions) &&
         Objects.equals(this.geometryNames, bioModelChildSummary.geometryNames) &&
         Objects.equals(this.simulationContextAnnotations, bioModelChildSummary.simulationContextAnnotations) &&
         Objects.equals(this.simulationContextNames, bioModelChildSummary.simulationContextNames) &&
+        Objects.equals(this.allSimulationNames, bioModelChildSummary.allSimulationNames) &&
+        Objects.equals(this.allSimulationAnnots, bioModelChildSummary.allSimulationAnnots) &&
         Objects.equals(this.applicationInfo, bioModelChildSummary.applicationInfo);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(scNames, scAnnots, geoNames, geoDims, appTypes, simNames, simAnnots, geometryDimensions, geometryNames, simulationContextAnnotations, simulationContextNames, applicationInfo);
+    return Objects.hash(appTypes, geometryDimensions, geometryNames, simulationContextAnnotations, simulationContextNames, allSimulationNames, allSimulationAnnots, applicationInfo);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class BioModelChildSummary {\n");
-    sb.append("    scNames: ").append(toIndentedString(scNames)).append("\n");
-    sb.append("    scAnnots: ").append(toIndentedString(scAnnots)).append("\n");
-    sb.append("    geoNames: ").append(toIndentedString(geoNames)).append("\n");
-    sb.append("    geoDims: ").append(toIndentedString(geoDims)).append("\n");
     sb.append("    appTypes: ").append(toIndentedString(appTypes)).append("\n");
-    sb.append("    simNames: ").append(toIndentedString(simNames)).append("\n");
-    sb.append("    simAnnots: ").append(toIndentedString(simAnnots)).append("\n");
     sb.append("    geometryDimensions: ").append(toIndentedString(geometryDimensions)).append("\n");
     sb.append("    geometryNames: ").append(toIndentedString(geometryNames)).append("\n");
     sb.append("    simulationContextAnnotations: ").append(toIndentedString(simulationContextAnnotations)).append("\n");
     sb.append("    simulationContextNames: ").append(toIndentedString(simulationContextNames)).append("\n");
+    sb.append("    allSimulationNames: ").append(toIndentedString(allSimulationNames)).append("\n");
+    sb.append("    allSimulationAnnots: ").append(toIndentedString(allSimulationAnnots)).append("\n");
     sb.append("    applicationInfo: ").append(toIndentedString(applicationInfo)).append("\n");
     sb.append("}");
     return sb.toString();
@@ -580,42 +424,6 @@ public class BioModelChildSummary {
 
     StringJoiner joiner = new StringJoiner("&");
 
-    // add `scNames` to the URL query string
-    if (getScNames() != null) {
-      for (int i = 0; i < getScNames().size(); i++) {
-        joiner.add(String.format("%sscNames%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getScNames().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-      }
-    }
-
-    // add `scAnnots` to the URL query string
-    if (getScAnnots() != null) {
-      for (int i = 0; i < getScAnnots().size(); i++) {
-        joiner.add(String.format("%sscAnnots%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getScAnnots().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-      }
-    }
-
-    // add `geoNames` to the URL query string
-    if (getGeoNames() != null) {
-      for (int i = 0; i < getGeoNames().size(); i++) {
-        joiner.add(String.format("%sgeoNames%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getGeoNames().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-      }
-    }
-
-    // add `geoDims` to the URL query string
-    if (getGeoDims() != null) {
-      for (int i = 0; i < getGeoDims().size(); i++) {
-        joiner.add(String.format("%sgeoDims%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getGeoDims().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-      }
-    }
-
     // add `appTypes` to the URL query string
     if (getAppTypes() != null) {
       for (int i = 0; i < getAppTypes().size(); i++) {
@@ -624,24 +432,6 @@ public class BioModelChildSummary {
               "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
               URLEncoder.encode(String.valueOf(getAppTypes().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
         }
-      }
-    }
-
-    // add `simNames` to the URL query string
-    if (getSimNames() != null) {
-      for (int i = 0; i < getSimNames().size(); i++) {
-        joiner.add(String.format("%ssimNames%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getSimNames().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-      }
-    }
-
-    // add `simAnnots` to the URL query string
-    if (getSimAnnots() != null) {
-      for (int i = 0; i < getSimAnnots().size(); i++) {
-        joiner.add(String.format("%ssimAnnots%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getSimAnnots().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
       }
     }
 
@@ -678,6 +468,24 @@ public class BioModelChildSummary {
         joiner.add(String.format("%ssimulationContextNames%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
             URLEncoder.encode(String.valueOf(getSimulationContextNames().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      }
+    }
+
+    // add `allSimulationNames` to the URL query string
+    if (getAllSimulationNames() != null) {
+      for (int i = 0; i < getAllSimulationNames().size(); i++) {
+        joiner.add(String.format("%sallSimulationNames%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+            URLEncoder.encode(String.valueOf(getAllSimulationNames().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      }
+    }
+
+    // add `allSimulationAnnots` to the URL query string
+    if (getAllSimulationAnnots() != null) {
+      for (int i = 0; i < getAllSimulationAnnots().size(); i++) {
+        joiner.add(String.format("%sallSimulationAnnots%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+            URLEncoder.encode(String.valueOf(getAllSimulationAnnots().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
       }
     }
 
