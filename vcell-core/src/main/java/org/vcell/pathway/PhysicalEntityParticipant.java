@@ -15,7 +15,7 @@ import org.vcell.util.Displayable;
  */
 public class PhysicalEntityParticipant extends EntityImpl implements Displayable {
     private PhysicalEntity physicalEntity;
-    private Integer stoichiometry = 1;  // default per L3 spec
+    private double stoichiometry = 1.0;  // default per L3 spec
     private ParticipantDirectionVocabulary participantDirection;
     private CellularLocationVocabulary cellularLocation;
     private ArrayList<ExperimentalFormVocabulary> experimentalFormVocabulary = new ArrayList<>();
@@ -25,7 +25,7 @@ public class PhysicalEntityParticipant extends EntityImpl implements Displayable
     public PhysicalEntity getPhysicalEntity() {
         return physicalEntity;
     }
-    public Integer getStoichiometry() {
+    public double getStoichiometry() {
         return stoichiometry;
     }
     public ParticipantDirectionVocabulary getParticipantDirection() {
@@ -45,8 +45,8 @@ public class PhysicalEntityParticipant extends EntityImpl implements Displayable
     public void setPhysicalEntity(PhysicalEntity pe) {
         this.physicalEntity = pe;
     }
-    public void setStoichiometry(Integer stoich) {
-        this.stoichiometry = (stoich == null ? 1 : stoich);
+    public void setStoichiometry(double stoich) {
+        this.stoichiometry = stoich;
     }
     public void setParticipantDirection(ParticipantDirectionVocabulary dir) {
         this.participantDirection = dir;
@@ -145,7 +145,7 @@ public class PhysicalEntityParticipant extends EntityImpl implements Displayable
     public void showChildren(StringBuffer sb, int level) {
         super.showChildren(sb, level);
         printObject(sb, "physicalEntity", physicalEntity, level);
-        printInteger(sb, "stoichiometry", stoichiometry, level);
+        printDouble(sb, "stoichiometry", stoichiometry, level);
         printObject(sb, "participantDirection", participantDirection, level);
         printObject(sb, "cellularLocation", cellularLocation, level);
         printObjects(sb, "experimentalFormVocabulary", experimentalFormVocabulary, level);

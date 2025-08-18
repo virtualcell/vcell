@@ -9,8 +9,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.vcell.pathway.BioPaxObject;
-import org.vcell.pathway.PathwayModel;
+import org.vcell.pathway.*;
 import org.vcell.pathway.persistence.PathwayReader;
 import org.vcell.pathway.persistence.RDFXMLContext;
 
@@ -89,7 +88,7 @@ public class PathwayParseTest {
                 System.out.println(name + " " + count)
         );
 
-        // ------------------------------------------------------------
+        // ---- compare XML objects with BioPax (parsed) objects ------------------------
 
         List<String> missingInParsed = new ArrayList<>();
         for (String key : childCounts.keySet()) {
@@ -111,13 +110,31 @@ public class PathwayParseTest {
         System.out.println("\nElements present in both:");
         matchedCounts.forEach((key, value) -> System.out.println(key + " → " + value));
 
+
         // ----------------------------------------------------------------------
+
+        for (PhysicalEntityParticipant pe : pathwayModel.getObjects(PhysicalEntityParticipant.class)) {
+            // here we should see the proxy
+            System.out.println("PhysicalEntityParticipant: " + pe.getID());
+        }
 
         pathwayModel.reconcileReferences(null);
         String text = pathwayModel.show(true);
 
+        for (PhysicalEntity pe : pathwayModel.getObjects(PhysicalEntity.class)) {
+            if (!(pe instanceof Protein ||
+                    pe instanceof Complex ||
+                    pe instanceof SmallMolecule ||
+                    pe instanceof DnaRegion ||
+                    pe instanceof RnaRegion)) {
+                System.out.println("Unsubclassed PhysicalEntity: " + pe.getID());
+            }
+        }
 
-
+        for (PhysicalEntityParticipant pe : pathwayModel.getObjects(PhysicalEntityParticipant.class)) {
+            // here we should see the real PhysicalEntityParticipant
+            System.out.println("PhysicalEntityParticipant: " + pe.getID());
+        }
 
         System.out.println(text);
     }

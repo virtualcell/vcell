@@ -883,6 +883,15 @@ public class PathwayReader {
 
 	// =================================================================================================================
 
+	/*
+	Entity
+	├── PhysicalEntity
+	│   ├── Protein
+	│   ├── DNA
+	│   └── Complex
+	└── PhysicalEntityParticipant
+	    └── SequenceParticipant
+	 */
 	private boolean addContentPhysicalEntityParticipant(PhysicalEntityParticipant physicalEntityParticipant, Element element, Element childElement) {
 		// note that PhysicalEntityParticipant extends EntityImpl, so we call addContentEntity()
 		if (addContentEntity(physicalEntityParticipant, element, childElement)) {
@@ -892,9 +901,57 @@ public class PathwayReader {
 //		CELLULAR-LOCATION
 //		PHYSICAL-ENTITY
 //		STOICHIOMETRIC-COEFFICIENT
+		/*
+	<bp:physicalEntityParticipant rdf:ID="physicalEntityParticipant36">
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Converted from EntitySet in Reactome</bp:COMMENT>
+    <bp:CELLULAR-LOCATION rdf:resource="#openControlledVocabulary1" />
+    <bp:PHYSICAL-ENTITY rdf:resource="#physicalEntity3" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome DB_ID: 9038479</bp:COMMENT>
+    <bp:STOICHIOMETRIC-COEFFICIENT rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1</bp:STOICHIOMETRIC-COEFFICIENT>
+    </bp:physicalEntityParticipant>
+    <bp:physicalEntity rdf:ID="physicalEntity3">
+    <bp:DATA-SOURCE rdf:resource="#dataSource1" />
+    <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">GRB2:p-Y627,Y659-GAB1,GRB2:p-Y627,Y659-GAB1:PIP3 [plasma membrane]</bp:NAME>
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Converted from EntitySet in Reactome. Each synonym is a name of a PhysicalEntity, and each XREF points to one PhysicalEntity</bp:COMMENT>
+  </bp:physicalEntity>
 
-	// TODO: here
+		 */
+		String tag = childElement.getName();
+		if (tag.equals("PHYSICAL-ENTITY")) {
+			PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
+			addAttributes(physicalEntityProxy, childElement);
+			pathwayModel.add(physicalEntityProxy);
+			physicalEntityParticipant.setPhysicalEntity(physicalEntityProxy);
 
+			if (childElement.getChildren().size() > 0) {
+				PhysicalEntity realEntity = addObjectPhysicalEntity(childElement);
+				// The proxy will be reconciled later, but realEntity is parsed now
+			}
+			return true;
+		} else if (tag.equals("CELLULAR-LOCATION")) {
+			Element vocabElement = childElement.getChild("openControlledVocabulary", bp);
+			if (vocabElement != null) {
+				CellularLocationVocabularyProxy clvProxy = new CellularLocationVocabularyProxy();
+				addAttributes(clvProxy, vocabElement);
+				pathwayModel.add(clvProxy);
+
+				if (vocabElement.getChildren().isEmpty()) {
+					physicalEntityParticipant.setCellularLocation(clvProxy);
+				} else {
+					CellularLocationVocabulary clv = addObjectCellularLocationVocabulary(vocabElement);
+					physicalEntityParticipant.setCellularLocation(clv);
+				}
+				return true;
+			}
+		} else if (tag.equals("STOICHIOMETRIC-COEFFICIENT")) {
+			try {
+				double coeff = Double.parseDouble(childElement.getTextTrim());
+				physicalEntityParticipant.setStoichiometry(coeff);
+			} catch (NumberFormatException e) {
+				showIgnored(childElement, "Invalid stoichiometric coefficient", physicalEntityParticipant);
+			}
+			return true;
+		}
 		return false;
 	}
 	private boolean addContentSequenceParticipant(SequenceParticipant sequenceParticipant, Element element, Element childElement) {
