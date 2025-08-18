@@ -30,6 +30,12 @@ public final class Pathway implements Comparable {
 		Element dataSourceElement = DOMUtil.firstChildElement(element, "data_source");
 		if(dataSourceElement != null) { dataSource = new DataSource(dataSourceElement); }
 	}
+	public Pathway(String primaryId, String name, Organism organism, DataSource dataSource) {
+		this.primaryId = primaryId;
+		this.name = name;
+		this.organism = organism;
+		this.dataSource = dataSource;
+	}
 
 	public String primaryId() { return primaryId; }
 	public String name() { return name; }

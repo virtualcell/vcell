@@ -55,6 +55,18 @@ public class PathwayModel {
 		return biopaxObjects;
 	}
 
+	// get entities by class
+	// usage example: pathwayModel.getObjects(PhysicalEntity.class)
+	public <T extends BioPaxObject> Set<T> getObjects(Class<T> clazz) {
+		Set<T> result = new HashSet<>();
+		for (BioPaxObject element : getBiopaxObjects()) {
+			if (clazz.isInstance(element)) {
+				result.add(clazz.cast(element));
+			}
+		}
+		return result;
+	}
+
 //	public Set<BioPaxObject> getBiopaxObjects(){
 //		return Collections.unmodifiableSet(biopaxObjects);
 //	}

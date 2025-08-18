@@ -23,83 +23,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 import org.sbpax.schemas.util.DefaultNameSpaces;
-import org.vcell.pathway.BindingFeature;
-import org.vcell.pathway.BindingFeatureImpl;
-import org.vcell.pathway.BioPaxObject;
-import org.vcell.pathway.BioSource;
-import org.vcell.pathway.BiochemicalPathwayStep;
-import org.vcell.pathway.BiochemicalReaction;
-import org.vcell.pathway.BiochemicalReactionImpl;
-import org.vcell.pathway.Catalysis;
-import org.vcell.pathway.CellVocabulary;
-import org.vcell.pathway.CellularLocationVocabulary;
-import org.vcell.pathway.ChemicalStructure;
-import org.vcell.pathway.Complex;
-import org.vcell.pathway.ComplexAssembly;
-import org.vcell.pathway.Control;
-import org.vcell.pathway.ControlledVocabulary;
-import org.vcell.pathway.Conversion;
-import org.vcell.pathway.CovalentBindingFeature;
-import org.vcell.pathway.Degradation;
-import org.vcell.pathway.DeltaG;
-import org.vcell.pathway.Dna;
-import org.vcell.pathway.DnaReference;
-import org.vcell.pathway.DnaRegion;
-import org.vcell.pathway.DnaRegionReference;
-import org.vcell.pathway.Entity;
-import org.vcell.pathway.EntityFeature;
-import org.vcell.pathway.EntityFeatureImpl;
-import org.vcell.pathway.EntityReference;
-import org.vcell.pathway.EntityReferenceTypeVocabulary;
-import org.vcell.pathway.Evidence;
-import org.vcell.pathway.EvidenceCodeVocabulary;
-import org.vcell.pathway.ExperimentalForm;
-import org.vcell.pathway.ExperimentalFormVocabulary;
-import org.vcell.pathway.FragmentFeature;
-import org.vcell.pathway.Gene;
-import org.vcell.pathway.GeneticInteraction;
-import org.vcell.pathway.Interaction;
-import org.vcell.pathway.InteractionImpl;
-import org.vcell.pathway.InteractionParticipant;
-import org.vcell.pathway.InteractionVocabulary;
-import org.vcell.pathway.KPrime;
-import org.vcell.pathway.ModificationFeature;
-import org.vcell.pathway.Modulation;
-import org.vcell.pathway.MolecularInteraction;
-import org.vcell.pathway.Pathway;
-import org.vcell.pathway.PathwayEvent;
-import org.vcell.pathway.PathwayModel;
-import org.vcell.pathway.PathwayStep;
-import org.vcell.pathway.PhenotypeVocabulary;
-import org.vcell.pathway.PhysicalEntity;
-import org.vcell.pathway.Protein;
-import org.vcell.pathway.ProteinReference;
-import org.vcell.pathway.Provenance;
-import org.vcell.pathway.PublicationXref;
-import org.vcell.pathway.RelationshipTypeVocabulary;
-import org.vcell.pathway.RelationshipXref;
-import org.vcell.pathway.Rna;
-import org.vcell.pathway.RnaReference;
-import org.vcell.pathway.RnaRegion;
-import org.vcell.pathway.RnaRegionReference;
-import org.vcell.pathway.Score;
-import org.vcell.pathway.SequenceInterval;
-import org.vcell.pathway.SequenceLocation;
-import org.vcell.pathway.SequenceModificationVocabulary;
-import org.vcell.pathway.SequenceRegionVocabulary;
-import org.vcell.pathway.SequenceSite;
-import org.vcell.pathway.SmallMolecule;
-import org.vcell.pathway.SmallMoleculeReference;
-import org.vcell.pathway.Stoichiometry;
-import org.vcell.pathway.TemplateReaction;
-import org.vcell.pathway.TemplateReactionRegulation;
-import org.vcell.pathway.TissueVocabulary;
-import org.vcell.pathway.Transport;
-import org.vcell.pathway.TransportImpl;
-import org.vcell.pathway.TransportWithBiochemicalReaction;
-import org.vcell.pathway.UnificationXref;
-import org.vcell.pathway.UtilityClass;
-import org.vcell.pathway.Xref;
+import org.vcell.pathway.*;
 import org.vcell.pathway.persistence.BiopaxProxy.CellularLocationVocabularyProxy;
 import org.vcell.pathway.persistence.BiopaxProxy.InteractionOrPathwayProxy;
 import org.vcell.pathway.persistence.BiopaxProxy.InteractionProxy;
@@ -191,8 +115,20 @@ public class PathwayReader {
 						addObjectComplexAssembly(childElement);
 					}else if (childElement.getName().equals("rna")){
 						addObjectRna(childElement);
-					}else if (childElement.getName().equals("physicalEntity")){
+					}else if (childElement.getName().equals("physicalEntity")) {
 						addObjectPhysicalEntity(childElement);
+					}else if(childElement.getName().equals("physicalEntityParticipant")) {
+						addObjectPhysicalEntityParticipant(childElement);
+					}else if(childElement.getName().equals("sequenceParticipant")) {
+						addObjectSequenceParticipant(childElement);
+					}else if(childElement.getName().equals("sequenceFeature")) {
+						addObjectSequenceFeature(childElement);
+					}else if(childElement.getName().equals("sequenceSite")) {
+						addObjectSequenceSite(childElement);
+					}else if(childElement.getName().equals("sequenceInterval")) {
+						addObjectSequenceInterval(childElement);
+					}else if(childElement.getName().equals("participantDirectionVocabulary")) {
+						addObjectParticipantDirectionVocabulary(childElement);
 					}else if (childElement.getName().equals("publicationXref")){
 						pathwayModel.add(addObjectPublicationXref(childElement));
 					}else if (childElement.getName().equals("relationshipXref")){
@@ -326,6 +262,9 @@ public class PathwayReader {
 		}
 		if (childElement.getName().equals("DATA-SOURCE")){
 			Element dataSourceElement = childElement.getChild("dataSource",bp);
+			if(dataSourceElement == null) {
+				return false;
+			}
 			entity.getDataSource().add(addObjectProvenance(dataSourceElement));
 			return true;
 		}else if (childElement.getName().equals("SHORT-NAME")){
@@ -337,7 +276,7 @@ public class PathwayReader {
 		}else if (childElement.getName().equals("XREF")){
 			entity.getxRef().add(addObjectXref(childElement));
 			return true;
-		}else if (childElement.getName().equals("EVIDENCE")){
+		}else if (childElement.getName().equals("EVIDENCE")) {
 			entity.getEvidence().add(addObjectEvidence(childElement));
 			return true;
 		}else{
@@ -941,7 +880,104 @@ public class PathwayReader {
 			return false; // no match
 		}
 	}
-	
+
+	// =================================================================================================================
+
+	/*
+	Entity
+	├── PhysicalEntity
+	│   ├── Protein
+	│   ├── DNA
+	│   └── Complex
+	└── PhysicalEntityParticipant
+	    └── SequenceParticipant
+	 */
+	private boolean addContentPhysicalEntityParticipant(PhysicalEntityParticipant physicalEntityParticipant, Element element, Element childElement) {
+		// note that PhysicalEntityParticipant extends EntityImpl, so we call addContentEntity()
+		if (addContentEntity(physicalEntityParticipant, element, childElement)) {
+			return true;	// if addContent() returns true, it means it's consumed here, we have nothing else to do
+		}
+		// specific here, on top of what EntityImpl has
+//		CELLULAR-LOCATION
+//		PHYSICAL-ENTITY
+//		STOICHIOMETRIC-COEFFICIENT
+		/*
+	<bp:physicalEntityParticipant rdf:ID="physicalEntityParticipant36">
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Converted from EntitySet in Reactome</bp:COMMENT>
+    <bp:CELLULAR-LOCATION rdf:resource="#openControlledVocabulary1" />
+    <bp:PHYSICAL-ENTITY rdf:resource="#physicalEntity3" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome DB_ID: 9038479</bp:COMMENT>
+    <bp:STOICHIOMETRIC-COEFFICIENT rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1</bp:STOICHIOMETRIC-COEFFICIENT>
+    </bp:physicalEntityParticipant>
+    <bp:physicalEntity rdf:ID="physicalEntity3">
+    <bp:DATA-SOURCE rdf:resource="#dataSource1" />
+    <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">GRB2:p-Y627,Y659-GAB1,GRB2:p-Y627,Y659-GAB1:PIP3 [plasma membrane]</bp:NAME>
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Converted from EntitySet in Reactome. Each synonym is a name of a PhysicalEntity, and each XREF points to one PhysicalEntity</bp:COMMENT>
+  </bp:physicalEntity>
+
+		 */
+		String tag = childElement.getName();
+		if (tag.equals("PHYSICAL-ENTITY")) {
+			PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
+			addAttributes(physicalEntityProxy, childElement);
+			pathwayModel.add(physicalEntityProxy);
+			physicalEntityParticipant.setPhysicalEntity(physicalEntityProxy);
+
+			if (childElement.getChildren().size() > 0) {
+				PhysicalEntity realEntity = addObjectPhysicalEntity(childElement);
+				// The proxy will be reconciled later, but realEntity is parsed now
+			}
+			return true;
+		} else if (tag.equals("CELLULAR-LOCATION")) {
+			Element vocabElement = childElement.getChild("openControlledVocabulary", bp);
+			if (vocabElement != null) {
+				CellularLocationVocabularyProxy clvProxy = new CellularLocationVocabularyProxy();
+				addAttributes(clvProxy, vocabElement);
+				pathwayModel.add(clvProxy);
+
+				if (vocabElement.getChildren().isEmpty()) {
+					physicalEntityParticipant.setCellularLocation(clvProxy);
+				} else {
+					CellularLocationVocabulary clv = addObjectCellularLocationVocabulary(vocabElement);
+					physicalEntityParticipant.setCellularLocation(clv);
+				}
+				return true;
+			}
+		} else if (tag.equals("STOICHIOMETRIC-COEFFICIENT")) {
+			try {
+				double coeff = Double.parseDouble(childElement.getTextTrim());
+				physicalEntityParticipant.setStoichiometry(coeff);
+			} catch (NumberFormatException e) {
+				showIgnored(childElement, "Invalid stoichiometric coefficient", physicalEntityParticipant);
+			}
+			return true;
+		}
+		return false;
+	}
+	private boolean addContentSequenceParticipant(SequenceParticipant sequenceParticipant, Element element, Element childElement) {
+		// note that SequenceParticipant extends PhysicalEntityParticipant, so we call addContentPhysicalEntityParticipant()
+		if (addContentPhysicalEntityParticipant(sequenceParticipant, element, childElement)) {
+			return true;	// if addContent() returns true, it means it's consumed here, we have nothing else to do
+		}
+		// specific here, on top of what PhysicalEntityParticipant has
+//		SEQUENCE-FEATURE-LIST
+//		SEQUENCE-FEATURE-LIST
+//		SEQUENCE-FEATURE-LIST
+
+
+		return false;
+	}
+	private boolean addContentSequenceFeature(SequenceFeature sequenceFeature, Element element, Element childElement) {
+
+		return false;
+	}
+	private boolean addContentParticipantDirectionVocabulary(ParticipantDirectionVocabulary participantDirectionVocabulary, Element element, Element childElement) {
+
+		return false;
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+
 	private <T> void insertAtStart(ArrayList<T> list, T newElement){
 		if (list.size()==0){
 			list.add(newElement);
@@ -1641,6 +1677,77 @@ public class PathwayReader {
 		pathwayModel.add(physicalEntity);
 		return physicalEntity;
 	}
+	// =================================================================================
+
+	private PhysicalEntityParticipant addObjectPhysicalEntityParticipant(Element element) {
+		PhysicalEntityParticipant physicalEntityParticipant = new PhysicalEntityParticipant();
+		if (element.getAttributes().size() > 0){
+			addAttributes(physicalEntityParticipant, element);
+		}
+		for (Object child : element.getChildren()){
+			if (child instanceof Element){
+				Element childElement = (Element)child;
+				if (!addContentPhysicalEntityParticipant(physicalEntityParticipant, element, childElement)){
+					showUnexpected(childElement, physicalEntityParticipant);
+				}
+			}
+		}
+		pathwayModel.add(physicalEntityParticipant);
+		return physicalEntityParticipant;
+	}
+
+	private SequenceParticipant addObjectSequenceParticipant(Element element) {
+		SequenceParticipant sequenceParticipant = new SequenceParticipant();
+		if (element.getAttributes().size() > 0){
+			addAttributes(sequenceParticipant, element);
+		}
+		for (Object child : element.getChildren()){
+			if (child instanceof Element){
+				Element childElement = (Element)child;
+				if (!addContentSequenceParticipant(sequenceParticipant, element, childElement)){
+					showUnexpected(childElement, sequenceParticipant);
+				}
+			}
+		}
+		pathwayModel.add(sequenceParticipant);
+		return sequenceParticipant;
+	}
+
+	private SequenceFeature addObjectSequenceFeature(Element element) {
+		SequenceFeature sequenceFeature = new SequenceFeature();
+		if (element.getAttributes().size() > 0){
+			addAttributes(sequenceFeature, element);
+		}
+		for (Object child : element.getChildren()){
+			if (child instanceof Element){
+				Element childElement = (Element)child;
+				if (!addContentSequenceFeature(sequenceFeature, element, childElement)){
+					showUnexpected(childElement, sequenceFeature);
+				}
+			}
+		}
+		pathwayModel.add(sequenceFeature);
+		return sequenceFeature;
+	}
+
+	private ParticipantDirectionVocabulary addObjectParticipantDirectionVocabulary(Element element) {
+		ParticipantDirectionVocabulary participantDirectionVocabulary = new ParticipantDirectionVocabulary();
+		if (element.getAttributes().size() > 0){
+			addAttributes(participantDirectionVocabulary, element);
+		}
+		for (Object child : element.getChildren()){
+			if (child instanceof Element){
+				Element childElement = (Element)child;
+				if (!addContentParticipantDirectionVocabulary(participantDirectionVocabulary, element, childElement)){
+					showUnexpected(childElement, participantDirectionVocabulary);
+				}
+			}
+		}
+		pathwayModel.add(participantDirectionVocabulary);
+		return participantDirectionVocabulary;
+	}
+
+	// -----------------------------------------------------------------------------------
 
 	private Control addObjectControl(Element controlElement) {
 		Control control = new Control();
@@ -2287,6 +2394,7 @@ public class PathwayReader {
 		for (Object child : element.getChildren()){
 			if (child instanceof Element){
 				Element childElement = (Element)child;
+				System.out.println(childElement.getName());
 				if (!addContentPathway(pathway, element, childElement)){
 					showUnexpected(childElement, pathway);
 				}
