@@ -12,6 +12,7 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
+import org.vcell.util.document.VersionableType;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.StringJoiner;
 
-public class ExportHistoryDBDriver{
+public class ExportHistoryDBDriver {
     public static final ExportHistoryTable exportHistoryTable = ExportHistoryTable.table;
     public static final ModelParameterValuesTable modelParameterValuesTable = ModelParameterValuesTable.table;
     public static final BioModelTable bioModelTable = BioModelTable.table;
@@ -47,7 +48,7 @@ public class ExportHistoryDBDriver{
             ExportSpecs exportSpecs
     ){}
 
-    public void addExportHistory(Connection conn, User user, ExportHistory exportHistory)
+    public void addExportHistory(Connection conn, User user, ExportHistory exportHistory, KeyFactory keyFactory)
             throws SQLException, DependencyException, PermissionException, DataAccessException, ObjectNotFoundException {
 
         ExportSpecs specs = exportHistory.exportSpecs;
@@ -61,6 +62,7 @@ public class ExportHistoryDBDriver{
         String ehSQL = ExportHistoryTable.table.getInsertSQL();
         try (PreparedStatement ps = conn.prepareStatement(ehSQL)) {
             ExportHistoryTable.table.bindForInsert(ps,
+                    keyFactory.getNewKey(conn),
                     exportHistory.jobID,
                     Long.parseLong(user.getID().toString()),
                     exportHistory.modelRef,
@@ -71,6 +73,7 @@ public class ExportHistoryDBDriver{
                     meta.simulationName,
                     meta.applicationName,
                     meta.biomodelName,
+                    conn.createArrayOf("VARCHAR", exportHistory.exportSpecs().getVariableSpecs().getVariableNames()),
                     BigDecimal.valueOf(ts.getBeginTimeIndex()),
                     BigDecimal.valueOf(ts.getEndTimeIndex()),
                     meta.serverSavedFileName,
@@ -93,8 +96,8 @@ public class ExportHistoryDBDriver{
                 String[] parts = entry.split(":");
                 if (parts.length == 3) {
                     ModelParameterValuesTable.table.bindForInsert(ps2,
-                            // note: you need the export_id FK—assumes you have it from a sequence
-                            exportHistory.jobID,   // if your PK is the jobID, else use the returned PK
+
+                            exportHistory.jobID,
                             Long.parseLong(user.getID().toString()),
                             exportHistory.modelRef,
                             parts[0],
@@ -173,17 +176,17 @@ public class ExportHistoryDBDriver{
             exportSpecs.setExportMetaData(meta);
 
 
-            ExportHistoryDBDriver.ExportHistory history = new ExportHistoryDBDriver.ExportHistory(
-                    /*jobID=*/ 1,
-                    /*modelRef=*/ 2,
-                    /*format=*/ ExportFormat.N5,
-                    /*date=*/ testExportDate,
-                    /*uri=*/ "https://vcell.cam.uchc.edu/n5Data/paulricky/5456fb59b530a19.n5?dataSetName=3681309072",
-                    /*specs=*/ exportSpecs
-            );
+//            ExportHistoryDBDriver.ExportHistory history = new ExportHistoryDBDriver.ExportHistory(
+//                    /*jobID=*/ 1,
+//                    /*modelRef=*/ 2,
+//                    /*format=*/ ExportFormat.N5,
+//                    /*date=*/ testExportDate,
+//                    /*uri=*/ "https://vcell.cam.uchc.edu/n5Data/paulricky/5456fb59b530a19.n5?dataSetName=3681309072",
+//                    /*specs=*/ exportSpecs
+//            );
 
 
-            dbDriver.addExportHistory(connection, user, history);
+            //dbDriver.addExportHistory(connection, user, history);
 
             System.out.println("=== Test get before deletion ===");
             try (ResultSet rs = dbDriver.getExportHistoryForUser(connection, user)) {
