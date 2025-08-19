@@ -155,7 +155,8 @@ public class ExportHistoryTest {
                             now,
                             "https://vcell.cam.uchc.edu/n5Data/paulricky/5456fb59b530a19.n5?dataSetName=3681309072",
                             exportSpecs
-                    )
+                    ),
+                    agroalConnectionFactory.getKeyFactory()
             );
 
             try (ResultSet rs = driver.getExportHistoryForUser(conn, user)) {
@@ -188,7 +189,8 @@ public class ExportHistoryTest {
 
 
             driver.addExportHistory(conn, user,
-                    new ExportHistoryDBDriver.ExportHistory(7L, Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()), ExportFormat.N5, now, "to-delete", exportSpecs)
+                    new ExportHistoryDBDriver.ExportHistory(7L, Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()), ExportFormat.N5, now, "to-delete", exportSpecs),
+                    agroalConnectionFactory.getKeyFactory()
             );
 
 
@@ -230,10 +232,12 @@ public class ExportHistoryTest {
             ExportHistoryDBDriver driver = new ExportHistoryDBDriver(null, null);
 
             driver.addExportHistory(conn, user,
-                    new ExportHistoryDBDriver.ExportHistory(100L, Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()), ExportFormat.N5, now, "uri100", exportSpecs)
+                    new ExportHistoryDBDriver.ExportHistory(100L, Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()), ExportFormat.N5, now, "uri100", exportSpecs),
+                    agroalConnectionFactory.getKeyFactory()
             );
             driver.addExportHistory(conn, user,
-                    new ExportHistoryDBDriver.ExportHistory(101L, Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()), ExportFormat.N5, now, "uri101", exportSpecs)
+                    new ExportHistoryDBDriver.ExportHistory(101L, Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()), ExportFormat.N5, now, "uri101", exportSpecs),
+                    agroalConnectionFactory.getKeyFactory()
             );
 
             int count = 0;
