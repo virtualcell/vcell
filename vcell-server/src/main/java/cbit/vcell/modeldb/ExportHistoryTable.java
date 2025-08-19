@@ -3,6 +3,7 @@ package cbit.vcell.modeldb;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.vcell.export.server.ExportFormat;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.document.KeyValue;
 
 import java.math.BigDecimal;
@@ -16,7 +17,7 @@ import java.util.StringJoiner;
 public class ExportHistoryTable extends Table {
     private static final String TABLE_NAME = "vc_model_export_history";
 
-   // public final Field id = new Field(id_ColumnName, Field.SQLDataType.integer,"PRIMARY KEY");
+    public final Field id = new Field(id_ColumnName, Field.SQLDataType.integer,"PRIMARY KEY");
 
     public final Field jobId = new Field("job_id", Field.SQLDataType.varchar_50, "NOT NULL");
 
@@ -84,7 +85,7 @@ public class ExportHistoryTable extends Table {
 
     public void bindForInsert(
             PreparedStatement ps,
-            KeyValue keyValue,
+            KeyValue key,
             long        jobIdValue,
             long          userRefValue,
             long          modelRefValue,
