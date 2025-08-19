@@ -2262,7 +2262,7 @@ public SimulationRep getSimulationRep(KeyValue simKey, boolean bEnableRetry) thr
 		Object lock = new Object();
 		Connection con = conFactory.getConnection(lock);
 		try {
-			exportHistoryDB.addExportHistory(con, user, exportHistoryValues);
+			exportHistoryDB.addExportHistory(con, user, exportHistoryValues, conFactory.getKeyFactory());
 		} catch (Throwable e) {
 			lg.error(e.getMessage(),e);
 			try {

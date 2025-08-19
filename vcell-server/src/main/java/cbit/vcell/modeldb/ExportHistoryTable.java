@@ -3,6 +3,8 @@ package cbit.vcell.modeldb;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.vcell.export.server.ExportFormat;
+import org.vcell.db.KeyFactory;
+import org.vcell.util.document.KeyValue;
 
 import java.math.BigDecimal;
 import java.sql.*;
@@ -14,6 +16,8 @@ import java.util.StringJoiner;
 
 public class ExportHistoryTable extends Table {
     private static final String TABLE_NAME = "vc_model_export_history";
+
+    public final Field id = new Field(id_ColumnName, Field.SQLDataType.integer,"PRIMARY KEY");
 
     public final Field jobId = new Field("job_id", Field.SQLDataType.varchar_50, "NOT NULL");
 
@@ -75,8 +79,10 @@ public class ExportHistoryTable extends Table {
         }
         return "INSERT INTO " + TABLE_NAME + " " + cols.toString() + " VALUES " + ph.toString();
     }
+
     public void bindForInsert(
             PreparedStatement ps,
+            KeyValue key,
             long        jobIdValue,
             long          userRefValue,
             long          modelRefValue,
@@ -87,6 +93,7 @@ public class ExportHistoryTable extends Table {
             String        simName,
             String        appName,
             String        bioName,
+            Array      variables,
             BigDecimal    startTimeValue,
             BigDecimal    endTimeValue,
             String        savedFileNameValue,
@@ -107,6 +114,7 @@ public class ExportHistoryTable extends Table {
         ps.setString     (i++, simName);
         ps.setString     (i++, appName);
         ps.setString     (i++, bioName);
+        ps.setArray       (i++, variables);
         ps.setBigDecimal (i++, startTimeValue);
         ps.setBigDecimal (i++, endTimeValue);
         ps.setString     (i++, savedFileNameValue);
@@ -115,6 +123,7 @@ public class ExportHistoryTable extends Table {
         ps.setInt        (i++, zSlicesValue);
         ps.setInt        (i++, tSlicesValue);
         ps.setInt        (i++, numVariablesValue);
+
     }
 //    public record ExportHistoryRecord(String jobID, long userRef, long modelRef, ExportFormat format, Timestamp date,
 //                                      String uri, String dataID, String simName, String appName, String bioName,
