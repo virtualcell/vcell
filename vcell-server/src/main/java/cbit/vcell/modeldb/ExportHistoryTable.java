@@ -3,15 +3,10 @@ package cbit.vcell.modeldb;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.vcell.export.server.ExportFormat;
-import org.vcell.db.KeyFactory;
 import org.vcell.util.document.KeyValue;
 
 import java.math.BigDecimal;
 import java.sql.*;
-import java.time.Instant;
-import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.StringJoiner;
 
 public class ExportHistoryTable extends Table {
@@ -68,7 +63,7 @@ public class ExportHistoryTable extends Table {
         addFields(customFields);
     }
 
-    public String getInsertSQL(KeyValue key) {
+    public String getInsertSQL() {
 
         StringJoiner cols = new StringJoiner(",", "(", ")");
         Field[] fieldsToInsert = getFields();
@@ -80,11 +75,12 @@ public class ExportHistoryTable extends Table {
         for (int i = 0; i < fieldsToInsert.length; i++) {
             ph.add("?");
         }
-        return "INSERT INTO " + TABLE_NAME + " " + cols.toString() + " VALUES " + ph.toString() + key;
+        return "INSERT INTO " + TABLE_NAME + " " + cols.toString() + " VALUES " + ph.toString();
     }
 
     public void bindForInsert(
             PreparedStatement ps,
+            KeyValue keyValue,
             long        jobIdValue,
             long          userRefValue,
             long          modelRefValue,
