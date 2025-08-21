@@ -3,15 +3,10 @@ package cbit.vcell.modeldb;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.vcell.export.server.ExportFormat;
-import org.vcell.db.KeyFactory;
 import org.vcell.util.document.KeyValue;
 
 import java.math.BigDecimal;
 import java.sql.*;
-import java.time.Instant;
-import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.StringJoiner;
 
 public class ExportHistoryTable extends Table {
@@ -52,37 +47,40 @@ public class ExportHistoryTable extends Table {
 //            startTime, endTime, savedFileName, applicationType, nonSpatial,
 //            zSlices, tSlices, numVariables};
 
-    private final Field[] insertFields = {
-            // note that primary key id cannot be placed in fields (will causes class initialization error),
-            jobId, userRef, modelRef, exportFormat, exportDate, uri, dataId,
-            simulationName, applicationName, biomodelName, variables,
-            startTime, endTime, savedFileName, applicationType, nonSpatial,
-            zSlices, tSlices, numVariables
-    };
-
     public static final ExportHistoryTable table = new ExportHistoryTable();
 
     private ExportHistoryTable() {
         super(TABLE_NAME);
-        addFields(insertFields);
+        // Minus id, which is added by the table abstract class
+        // note that primary key id cannot be placed in fields (will causes class initialization error),
+        Field[] customFields = {
+                // note that primary key id cannot be placed in fields (will causes class initialization error),
+                jobId, userRef, modelRef, exportFormat, exportDate, uri, dataId,
+                simulationName, applicationName, biomodelName, variables,
+                startTime, endTime, savedFileName, applicationType, nonSpatial,
+                zSlices, tSlices, numVariables
+        };
+        addFields(customFields);
     }
 
-    public String getInsertSQL(KeyValue key) {
+    public String getInsertSQL() {
 
         StringJoiner cols = new StringJoiner(",", "(", ")");
-        for (Field f : insertFields) {
+        Field[] fieldsToInsert = getFields();
+        for (Field f : fieldsToInsert) {
             cols.add(f.getUnqualifiedColName());
         }
 
         StringJoiner ph = new StringJoiner(",", "(", ")");
-        for (int i = 0; i < insertFields.length; i++) {
+        for (int i = 0; i < fieldsToInsert.length; i++) {
             ph.add("?");
         }
-        return "INSERT INTO " + TABLE_NAME + " " + cols.toString() + " VALUES " + ph.toString() + key;
+        return "INSERT INTO " + TABLE_NAME + " " + cols.toString() + " VALUES " + ph.toString();
     }
 
     public void bindForInsert(
             PreparedStatement ps,
+            KeyValue keyValue,
             long        jobIdValue,
             long          userRefValue,
             long          modelRefValue,
@@ -104,7 +102,7 @@ public class ExportHistoryTable extends Table {
             int           numVariablesValue
     ) throws SQLException {
         int i = 1;
-       // ps.setInt     (i++,  Integer.parseInt(key.toString()));
+        ps.setInt     (i++,  Integer.parseInt(keyValue.toString()));
         ps.setLong    (i++, jobIdValue);
         ps.setLong       (i++, userRefValue);
         ps.setLong       (i++, modelRefValue);

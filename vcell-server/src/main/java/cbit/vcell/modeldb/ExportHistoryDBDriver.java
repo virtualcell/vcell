@@ -59,9 +59,11 @@ public class ExportHistoryDBDriver {
         String variablesCsv = String.join(",", vars);
 
         // 1) insert into vc_model_export_history
-        String ehSQL = ExportHistoryTable.table.getInsertSQL(keyFactory.getNewKey(conn));
+        String ehSQL = ExportHistoryTable.table.getInsertSQL();
+        KeyValue keyValue = keyFactory.getNewKey(conn);
         try (PreparedStatement ps = conn.prepareStatement(ehSQL)) {
             ExportHistoryTable.table.bindForInsert(ps,
+                    keyValue,
                     exportHistory.jobID,
                     Long.parseLong(user.getID().toString()),
                     exportHistory.modelRef,
