@@ -45,10 +45,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URL;
 import java.nio.channels.FileChannel;
-import java.sql.*;
 import java.util.*;
 /**
  * This type was created in VisualAge.
@@ -697,11 +695,7 @@ private ExportSpecs getExportSpecs() {
 	return exportSpecs;
 }
 
-
-
-
-
-	private ExportSpecs.SimulationSelector createSimulationSelector(){
+private ExportSpecs.SimulationSelector createSimulationSelector(){
 	
 	ExportSpecs.SimulationSelector simulationSelector =
 		new ExportSpecs.SimulationSelector(){
