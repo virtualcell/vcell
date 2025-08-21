@@ -54,6 +54,7 @@ public class DBTopLevel extends AbstractDBTopLevel{
 	private final BioModelDbDriver bioModelDB;
 	private final MathModelDbDriver mathModelDB;
 	private final UserDbDriver userDB;
+	private final ExportHistoryDBDriver exportHistoryDBDriver;
 //	private DBCacheTable dbCacheTable = null;
 
 	private static final int SQL_ERROR_CODE_BADCONNECTION = 1010; //??????????????????????????????????????
@@ -76,6 +77,7 @@ DBTopLevel(ConnectionFactory aConFactory) throws SQLException{
 	this.userDB = new UserDbDriver(); 
 	this.bioModelDB = new BioModelDbDriver(databaseSyntax,keyFactory);
 	this.mathModelDB = new MathModelDbDriver(databaseSyntax, keyFactory);
+	this.exportHistoryDBDriver = new ExportHistoryDBDriver(databaseSyntax, keyFactory);
 }
 
 
@@ -2260,7 +2262,7 @@ public SimulationRep getSimulationRep(KeyValue simKey, boolean bEnableRetry) thr
 		Object lock = new Object();
 		Connection con = conFactory.getConnection(lock);
 		try {
-			exportHistoryDB.addExportHistory(con, user, exportHistoryValues, conFactory.getKeyFactory());
+			exportHistoryDBDriver.addExportHistory(con, user, exportHistoryValues, conFactory.getKeyFactory());
 		} catch (Throwable e) {
 			lg.error(e.getMessage(),e);
 			try {

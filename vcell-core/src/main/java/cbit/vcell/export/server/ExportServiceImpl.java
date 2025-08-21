@@ -350,6 +350,3 @@ private static ExportEvent makeRemoteN5File(String fileFormat, String fileName, 
 }
 
 }
-
-
-}
