@@ -17,7 +17,7 @@ import java.util.StringJoiner;
 public class ExportHistoryTable extends Table {
     private static final String TABLE_NAME = "vc_model_export_history";
 
-    public final Field id = new Field(id_ColumnName, Field.SQLDataType.integer,"PRIMARY KEY");
+   // public final Field id = new Field(id_ColumnName, Field.SQLDataType.integer,"PRIMARY KEY");
 
     public final Field jobId = new Field("job_id", Field.SQLDataType.varchar_50, "NOT NULL");
 
@@ -47,12 +47,13 @@ public class ExportHistoryTable extends Table {
     //public final Field insertDate = new Field("insert_date", Field.SQLDataType.date, "NOT NULL DEFAULT CURRENT_TIMESTAMP");
 
 
-    private final Field fields[] = {jobId, userRef, modelRef, exportFormat, exportDate, uri,
-            dataId, simulationName, applicationName, biomodelName, variables,
-            startTime, endTime, savedFileName, applicationType, nonSpatial,
-            zSlices, tSlices, numVariables};
+//    private final Field fields[] = {jobId, userRef, modelRef, exportFormat, exportDate, uri,
+//            dataId, simulationName, applicationName, biomodelName, variables,
+//            startTime, endTime, savedFileName, applicationType, nonSpatial,
+//            zSlices, tSlices, numVariables};
 
     private final Field[] insertFields = {
+            // note that primary key id cannot be placed in fields (will causes class initialization error),
             jobId, userRef, modelRef, exportFormat, exportDate, uri, dataId,
             simulationName, applicationName, biomodelName, variables,
             startTime, endTime, savedFileName, applicationType, nonSpatial,
@@ -66,7 +67,7 @@ public class ExportHistoryTable extends Table {
         addFields(insertFields);
     }
 
-    public String getInsertSQL() {
+    public String getInsertSQL(KeyValue key) {
 
         StringJoiner cols = new StringJoiner(",", "(", ")");
         for (Field f : insertFields) {
@@ -77,12 +78,11 @@ public class ExportHistoryTable extends Table {
         for (int i = 0; i < insertFields.length; i++) {
             ph.add("?");
         }
-        return "INSERT INTO " + TABLE_NAME + " " + cols.toString() + " VALUES " + ph.toString();
+        return "INSERT INTO " + TABLE_NAME + " " + cols.toString() + " VALUES " + ph.toString() + key;
     }
 
     public void bindForInsert(
             PreparedStatement ps,
-            KeyValue key,
             long        jobIdValue,
             long          userRefValue,
             long          modelRefValue,
@@ -104,6 +104,7 @@ public class ExportHistoryTable extends Table {
             int           numVariablesValue
     ) throws SQLException {
         int i = 1;
+       // ps.setInt     (i++,  Integer.parseInt(key.toString()));
         ps.setLong    (i++, jobIdValue);
         ps.setLong       (i++, userRefValue);
         ps.setLong       (i++, modelRefValue);
