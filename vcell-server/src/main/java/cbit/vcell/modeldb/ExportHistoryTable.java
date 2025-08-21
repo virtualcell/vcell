@@ -17,7 +17,7 @@ import java.util.StringJoiner;
 public class ExportHistoryTable extends Table {
     private static final String TABLE_NAME = "vc_model_export_history";
 
-    public final Field id = new Field(id_ColumnName, Field.SQLDataType.integer,"PRIMARY KEY");
+   // public final Field id = new Field(id_ColumnName, Field.SQLDataType.integer,"PRIMARY KEY");
 
     public final Field jobId = new Field("job_id", Field.SQLDataType.varchar_50, "NOT NULL");
 
@@ -68,7 +68,7 @@ public class ExportHistoryTable extends Table {
         addFields(customFields);
     }
 
-    public String getInsertSQL() {
+    public String getInsertSQL(KeyValue key) {
 
         StringJoiner cols = new StringJoiner(",", "(", ")");
         Field[] fieldsToInsert = getFields();
@@ -80,12 +80,11 @@ public class ExportHistoryTable extends Table {
         for (int i = 0; i < fieldsToInsert.length; i++) {
             ph.add("?");
         }
-        return "INSERT INTO " + TABLE_NAME + " " + cols.toString() + " VALUES " + ph.toString();
+        return "INSERT INTO " + TABLE_NAME + " " + cols.toString() + " VALUES " + ph.toString() + key;
     }
 
     public void bindForInsert(
             PreparedStatement ps,
-            KeyValue key,
             long        jobIdValue,
             long          userRefValue,
             long          modelRefValue,
