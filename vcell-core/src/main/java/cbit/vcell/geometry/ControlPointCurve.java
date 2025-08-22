@@ -12,6 +12,10 @@ package cbit.vcell.geometry;
 
 import java.util.Vector;
 
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.DiscriminatorMapping;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.vcell.util.Coordinate;
 
 /**
@@ -20,30 +24,44 @@ import org.vcell.util.Coordinate;
  * @author: 
  */
 @SuppressWarnings("serial")
+@Schema(
+		allOf = {Curve.class},
+		discriminatorMapping = {
+				@DiscriminatorMapping(value = "Spline", schema = Spline.class),
+				@DiscriminatorMapping(value = "SampledCurve", schema = SampledCurve.class)
+		},
+		discriminatorProperty = "type",
+		requiredProperties = {"type"},
+		properties = {@SchemaProperty(name = "type", type = SchemaType.STRING, defaultValue = "ControlPointCurve")}
+)
 public abstract class ControlPointCurve extends Curve {
 	private Vector<Coordinate> controlPoints = new Vector<Coordinate>(); 
 	public static final int INFINITE = 0;
+	public final String type;
 /**
  * ControlPointCurve constructor comment.
  */
-protected ControlPointCurve() {
-	super();
+protected ControlPointCurve(String type) {
+	super("ControlPointCurve");
+	this.type = type;
 }
 /**
  * ControlPointCurve constructor comment.
  */
-protected ControlPointCurve(Coordinate[] argControlPoints) {
-	super();
+protected ControlPointCurve(Coordinate[] argControlPoints, String type) {
+	super("ControlPointCurve");
 	for (int c = 0; c < argControlPoints.length; c += 1) {
 		controlPoints.addElement(argControlPoints[c]);
 	}
+	this.type = type;
 }
 /**
  * ControlPointCurve constructor comment.
  */
-protected ControlPointCurve(Coordinate argControlPoint) {
-	super();
+protected ControlPointCurve(Coordinate argControlPoint, String type) {
+	super("ControlPointCurve");
 	controlPoints.addElement(argControlPoint);
+	this.type = type;
 }
 /**
  * Insert the method's description here.

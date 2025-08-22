@@ -145,6 +145,7 @@ public class ExportHistoryDBDriver {
         return ps.executeQuery();
     }
 
+<<<<<<< HEAD
 
     public static void main(String[] args) throws SQLException, PermissionException, DataAccessException {
         try (Connection connection = DriverManager.getConnection(
@@ -209,4 +210,6 @@ public class ExportHistoryDBDriver {
     }
 
 
+=======
+>>>>>>> origin/local-export-history
 }

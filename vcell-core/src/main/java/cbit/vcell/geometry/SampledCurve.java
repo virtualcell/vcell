@@ -10,34 +10,39 @@
 
 package cbit.vcell.geometry;
 
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.vcell.util.Coordinate;
+
 /**
  * This type was created in VisualAge.
  */
+@Schema(allOf = {ControlPointCurve.class}, requiredProperties = {"type"}, properties = {@SchemaProperty(name = "type", type = SchemaType.STRING, defaultValue = "SampledCurve")})
 public class SampledCurve extends ControlPointCurve {
 /**
  * SampledCurve constructor comment.
  */
 public SampledCurve() {
-	super();
+	super("SampledCurve");
 }
 /**
  * SampledCurve constructor comment.
  */
 public SampledCurve(Coordinate[] argControlPoints) {
-	super(argControlPoints);
+	super(argControlPoints, "SampledCurve");
 }
 /**
  * SampledCurve constructor comment.
  */
 protected SampledCurve(Coordinate argControlPoint) {
-	super(argControlPoint);
+	super(argControlPoint, "SampledCurve");
 }
 /**
  * SampledCurve constructor comment.
  */
 public SampledCurve(Curve sampleThisCurve, int samplePointCount) {
-	super();
+	super("SampledCurve");
 	for (int c = 0; c < samplePointCount; c += 1) {
 		double u = (double) c / (double) (samplePointCount - 1);
 		appendControlPoint(new Coordinate(sampleThisCurve.getX(u), sampleThisCurve.getY(u), sampleThisCurve.getZ(u)));

@@ -13,7 +13,7 @@ import org.vcell.util.PermissionException;
 public class ExceptionHandler {
     private static final Logger logger = LogManager.getLogger(ExceptionHandler.class);
 
-    protected static Exception getProperException(ApiException e){
+    public static Exception getProperException(ApiException e){
         int httpCode = e.getCode();
         String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
         String originalExceptionClassName = e.getClass().getSimpleName();

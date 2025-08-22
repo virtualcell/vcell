@@ -1,0 +1,17 @@
+
+
+# FunctionCategory
+
+## Enum
+
+
+* `PREDEFINED` (value: `"PREDEFINED"`)
+
+* `OLDUSERDEFINED` (value: `"OLDUSERDEFINED"`)
+
+* `OUTPUTFUNCTION` (value: `"OUTPUTFUNCTION"`)
+
+* `POSTPROCESSFUNCTION` (value: `"POSTPROCESSFUNCTION"`)
+
+
+

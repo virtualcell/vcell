@@ -10,9 +10,13 @@
 
 package cbit.rmi.event;
 
+import cbit.vcell.export.server.ExportEnums;
 import cbit.vcell.export.server.HumanReadableExportData;
 import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.export.server.VariableSpecs;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
@@ -21,33 +25,51 @@ import org.vcell.util.document.VCDataIdentifier;
  * This is the event class to support the cbit.vcell.desktop.controls.ExportListener interface.
  */
 public class ExportEvent extends MessageEvent {
-	private final int eventType;
+	@JsonProperty(value = "eventType")
+	private final ExportEnums.ExportProgressType eventType;
+	@JsonProperty(value = "progress")
 	private final Double progress;
+	@JsonProperty(value = "format")
 	private final String format;
+	@JsonProperty(value = "location")
 	private final String location;
+	@JsonProperty(value = "user")
 	private final User user;
+	@JsonProperty(value = "jobID")
 	private final long jobID;
+	@JsonProperty(value = "dataKey")
 	private final KeyValue dataKey;
+	@JsonProperty(value = "dataIdString")
 	private final String dataIdString;
-	private final TimeSpecs timeSpecs;
-	private final VariableSpecs variableSpecs;
 
+	@JsonIgnore
 	private HumanReadableExportData humanReadableExportData = null;
 	
 	public ExportEvent(Object source, long jobID, User user, 
-			VCDataIdentifier vcDataId, int argEventType, 
-			String format, String location, Double argProgress,
-			TimeSpecs timeSpecs, VariableSpecs variableSpecs) {
+			VCDataIdentifier vcDataId, ExportEnums.ExportProgressType argEventType,
+			String format, String location, Double argProgress) {
 
 		this(source,jobID,user,
 			vcDataId.getID(),vcDataId.getDataKey(),argEventType,
-			format,location,argProgress,timeSpecs,variableSpecs);
+			format,location,argProgress);
+	}
+
+	@JsonCreator
+	public ExportEvent(@JsonProperty("jobID") long jobID, @JsonProperty("user") User user,
+					   @JsonProperty("dataIdString") String vcDataId, @JsonProperty("dataKey") String dataKey,
+					   @JsonProperty("eventType") ExportEnums.ExportProgressType argEventType,
+					   @JsonProperty("format") String format, @JsonProperty("location") String location, @JsonProperty("progress") Double argProgress,
+					   @JsonProperty("humanReadableData") HumanReadableExportData humanReadableExportData) {
+
+		this(ExportEvent.class, jobID,user,
+				vcDataId, new KeyValue(dataKey),argEventType,
+				format,location,argProgress);
+		this.humanReadableExportData = humanReadableExportData;
 	}
 	
-	public ExportEvent(Object source, long jobID, User user, 
-		String dataIdString, KeyValue dataKey, int argEventType, 
-		String format, String location, Double argProgress,
-		TimeSpecs timeSpecs, VariableSpecs variableSpecs) {
+	public ExportEvent(Object source, long jobID, User user,
+		String dataIdString, KeyValue dataKey, ExportEnums.ExportProgressType argEventType,
+		String format, String location, Double argProgress) {
 	super(source, new MessageSource(source, dataIdString), new MessageData(argProgress));
 	this.eventType = argEventType;
 	this.format = format;
@@ -57,8 +79,6 @@ public class ExportEvent extends MessageEvent {
 	this.user = user;
 	this.dataIdString = dataIdString;
 	this.dataKey = dataKey;
-	this.timeSpecs = timeSpecs;
-	this.variableSpecs = variableSpecs;
 }
 
 
@@ -67,7 +87,12 @@ public class ExportEvent extends MessageEvent {
  * Creation date: (1/4/01 1:24:16 PM)
  * @return int
  */
+@JsonIgnore
 public int getEventTypeID() {
+	return eventType.intValue;
+}
+
+public ExportEnums.ExportProgressType getEventType() {
 	return eventType;
 }
 
@@ -125,16 +150,8 @@ public KeyValue getDataKey() {
 	return dataKey;
 }
 
-
 public String getDataIdString() {
 	return dataIdString;
-}
-
-public TimeSpecs getTimeSpecs() {
-	return timeSpecs;
-}
-public VariableSpecs getVariableSpecs() {
-	return variableSpecs;
 }
 
 @Override
@@ -142,7 +159,7 @@ public boolean isSupercededBy(MessageEvent messageEvent) {
 	if (messageEvent instanceof ExportEvent){
 		ExportEvent exportEvent = (ExportEvent)messageEvent;
 		
-		if (eventType == EXPORT_PROGRESS && exportEvent.eventType == EXPORT_PROGRESS){
+		if (eventType == ExportEnums.ExportProgressType.EXPORT_PROGRESS && exportEvent.eventType == ExportEnums.ExportProgressType.EXPORT_PROGRESS){
 			if (getProgress() < exportEvent.getProgress()){
 				return true;
 			}
@@ -179,10 +196,7 @@ public String toString() {
 		+ dataIdString;
 }
 
-
-
-
-public void setHumanReadableExportData(HumanReadableExportData humanReadableExportData){
+	public void setHumanReadableExportData(HumanReadableExportData humanReadableExportData){
 	this.humanReadableExportData = humanReadableExportData;
 }
 

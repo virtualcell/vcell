@@ -16,6 +16,7 @@ package cbit.vcell.export.gui;
  */
 import javax.swing.JFrame;
 
+import cbit.vcell.export.server.ExportEnums;
 import org.vcell.util.document.KeyValue;
 
 import cbit.rmi.event.ExportEvent;
@@ -45,15 +46,13 @@ public static void main(java.lang.String[] args) {
 		VCSimulationDataIdentifier vcSimDataId = new VCSimulationDataIdentifier(new VCSimulationIdentifier(new KeyValue("234"), null),1);
 		aExportMonitorPanel.addExportEvent(new ExportEvent(
 			aExportMonitorPanel, 123456789L, null,
-			vcSimDataId.getID(), vcSimDataId.getSimulationKey(), ExportEvent.EXPORT_PROGRESS,
-			"CSV", "", new Double(0.47),
-			null, null),
+			vcSimDataId.getID(), vcSimDataId.getSimulationKey(), ExportEnums.ExportProgressType.EXPORT_PROGRESS,
+			"CSV", "", new Double(0.47)),
 		"bogus [application: model]");
 		aExportMonitorPanel.addExportEvent(new ExportEvent(
 			aExportMonitorPanel, 987654321L, null,
-			vcSimDataId.getID(), vcSimDataId.getSimulationKey(), ExportEvent.EXPORT_COMPLETE,
-			"GIF", "http://nrcam.uchc.edu/export/987654321.zip", new Double(1),
-			null, null),
+			vcSimDataId.getID(), vcSimDataId.getSimulationKey(), ExportEnums.ExportProgressType.EXPORT_COMPLETE,
+			"GIF", "http://nrcam.uchc.edu/export/987654321.zip", new Double(1)),
 		"simulation [application: model]");
 		frame.pack();
 		frame.setVisible(true);

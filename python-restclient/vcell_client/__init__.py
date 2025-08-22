@@ -20,6 +20,7 @@ __version__ = "1.0.0"
 # import apis into sdk package
 from vcell_client.api.admin_resource_api import AdminResourceApi
 from vcell_client.api.bio_model_resource_api import BioModelResourceApi
+from vcell_client.api.export_resource_api import ExportResourceApi
 from vcell_client.api.field_data_resource_api import FieldDataResourceApi
 from vcell_client.api.geometry_resource_api import GeometryResourceApi
 from vcell_client.api.hello_world_api import HelloWorldApi
@@ -43,22 +44,35 @@ from vcell_client.exceptions import ApiException
 
 # import models into sdk package
 from vcell_client.models.acces_token_representation_record import AccesTokenRepresentationRecord
+from vcell_client.models.analytic_curve import AnalyticCurve
+from vcell_client.models.annotated_function_dto import AnnotatedFunctionDTO
 from vcell_client.models.application_info import ApplicationInfo
 from vcell_client.models.batch_system_type import BatchSystemType
 from vcell_client.models.bio_model import BioModel
 from vcell_client.models.bio_model_child_summary import BioModelChildSummary
 from vcell_client.models.bio_model_summary import BioModelSummary
 from vcell_client.models.biomodel_ref import BiomodelRef
+from vcell_client.models.composite_curve import CompositeCurve
+from vcell_client.models.control_point_curve import ControlPointCurve
+from vcell_client.models.coordinate import Coordinate
+from vcell_client.models.curve import Curve
+from vcell_client.models.curve_selection_info import CurveSelectionInfo
 from vcell_client.models.data_identifier import DataIdentifier
 from vcell_client.models.detailed_state import DetailedState
 from vcell_client.models.domain import Domain
+from vcell_client.models.export_event import ExportEvent
+from vcell_client.models.export_progress_type import ExportProgressType
+from vcell_client.models.exportable_data_type import ExportableDataType
 from vcell_client.models.extent import Extent
 from vcell_client.models.external_data_identifier import ExternalDataIdentifier
 from vcell_client.models.field_data import FieldData
 from vcell_client.models.field_data_reference import FieldDataReference
 from vcell_client.models.field_data_saved_results import FieldDataSavedResults
 from vcell_client.models.field_data_shape import FieldDataShape
+from vcell_client.models.function_category import FunctionCategory
 from vcell_client.models.gif_image import GIFImage
+from vcell_client.models.geometry_mode import GeometryMode
+from vcell_client.models.geometry_spec_dto import GeometrySpecDTO
 from vcell_client.models.geometry_summary import GeometrySummary
 from vcell_client.models.group_access import GroupAccess
 from vcell_client.models.group_access_all import GroupAccessAll
@@ -66,6 +80,7 @@ from vcell_client.models.group_access_none import GroupAccessNone
 from vcell_client.models.group_access_some import GroupAccessSome
 from vcell_client.models.hello_world_message import HelloWorldMessage
 from vcell_client.models.htc_job_id import HtcJobID
+from vcell_client.models.human_readable_export_data import HumanReadableExportData
 from vcell_client.models.i_size import ISize
 from vcell_client.models.identity import Identity
 from vcell_client.models.math_model_child_summary import MathModelChildSummary
@@ -73,10 +88,12 @@ from vcell_client.models.math_model_summary import MathModelSummary
 from vcell_client.models.math_type import MathType
 from vcell_client.models.mathmodel_ref import MathmodelRef
 from vcell_client.models.model_type import ModelType
+from vcell_client.models.n5_export_request import N5ExportRequest
 from vcell_client.models.origin import Origin
 from vcell_client.models.publication import Publication
 from vcell_client.models.publication_info import PublicationInfo
 from vcell_client.models.specialclaim import SPECIALCLAIM
+from vcell_client.models.sampled_curve import SampledCurve
 from vcell_client.models.scheduler_status import SchedulerStatus
 from vcell_client.models.simulation_execution_status_record import SimulationExecutionStatusRecord
 from vcell_client.models.simulation_job_status_record import SimulationJobStatusRecord
@@ -85,8 +102,16 @@ from vcell_client.models.simulation_queue_entry_status_record import SimulationQ
 from vcell_client.models.simulation_queue_id import SimulationQueueID
 from vcell_client.models.simulation_status_persistent_record import SimulationStatusPersistentRecord
 from vcell_client.models.source_model import SourceModel
+from vcell_client.models.spatial_selection import SpatialSelection
+from vcell_client.models.spatial_selection_contour import SpatialSelectionContour
+from vcell_client.models.spatial_selection_membrane import SpatialSelectionMembrane
+from vcell_client.models.spatial_selection_volume import SpatialSelectionVolume
+from vcell_client.models.spline import Spline
+from vcell_client.models.standard_export_info import StandardExportInfo
 from vcell_client.models.status import Status
 from vcell_client.models.status_message import StatusMessage
+from vcell_client.models.time_mode import TimeMode
+from vcell_client.models.time_specs import TimeSpecs
 from vcell_client.models.user import User
 from vcell_client.models.user_identity_json_safe import UserIdentityJSONSafe
 from vcell_client.models.user_login_info_for_mapping import UserLoginInfoForMapping
@@ -98,6 +123,8 @@ from vcell_client.models.v_cell_http_error import VCellHTTPError
 from vcell_client.models.v_cell_site import VCellSite
 from vcell_client.models.v_cell_software_version import VCellSoftwareVersion
 from vcell_client.models.variable_domain import VariableDomain
+from vcell_client.models.variable_mode import VariableMode
+from vcell_client.models.variable_specs import VariableSpecs
 from vcell_client.models.variable_type import VariableType
 from vcell_client.models.version import Version
 from vcell_client.models.version_flag import VersionFlag

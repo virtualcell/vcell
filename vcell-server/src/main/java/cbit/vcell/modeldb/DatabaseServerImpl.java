@@ -1361,6 +1361,9 @@ public void addExportHistory(User user, ExportHistoryDBDriver.ExportHistory expo
     } catch (SQLException e) {
         throw new DataAccessException(e);
     }
+<<<<<<< HEAD
 }
 
+=======
+>>>>>>> origin/local-export-history
 }

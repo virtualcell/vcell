@@ -88,6 +88,7 @@ public class ExportHistoryTest {
         VCDataIdentifier vcdId = new VCSimulationDataIdentifier(vcSimId, 0);
 
 
+<<<<<<< HEAD
         GeometrySpecs geometrySpecs = new GeometrySpecs(null, 1, 1, 1);
 
 
@@ -99,6 +100,19 @@ public class ExportHistoryTest {
 
 
         FormatSpecificSpecs formatSpecific = new FormatSpecificSpecs() {
+=======
+        GeometrySpecs geometrySpecs = new GeometrySpecs(null, 1, 1, ExportEnums.GeometryMode.GEOMETRY_FULL);
+
+
+        double[] times = new double[]{0.0, 1.0};
+        TimeSpecs timeSpecs = new TimeSpecs(0, 1, times, ExportEnums.TimeMode.TIME_RANGE);
+
+
+        VariableSpecs variableSpecs = new VariableSpecs(new String[]{"X"}, ExportEnums.VariableMode.VARIABLE_ONE);
+
+
+        FormatSpecificSpecs formatSpecific = new FormatSpecificSpecs("N5") {
+>>>>>>> origin/local-export-history
             @Override public boolean equals(Object o) { return this==o; }
             @Override public String toString() { return "DUMMY"; }
         };

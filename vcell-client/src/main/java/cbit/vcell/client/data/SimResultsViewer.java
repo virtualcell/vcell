@@ -16,7 +16,8 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.export.gui.ExportMonitorPanel;
-import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.export.server.ExportParamScanInfo;
+import cbit.vcell.export.server.SimNameSimDataID;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.Constant;
 import cbit.vcell.mathmodel.MathModel;
@@ -309,7 +310,7 @@ private void initialize() throws DataAccessException {
 				}
 			});
 		} else {
-			pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), ExportSpecs.getParamScanInfo(getSimulation(), getSelectedParamScanJobIndex())));
+			pdeDataViewer.setSimNameSimDataID(new SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), ExportParamScanInfo.getParamScanInfo(getSimulation(), getSelectedParamScanJobIndex())));
 		}
 		
 		setParamChoicesPanel(panel);
@@ -487,7 +488,7 @@ private void updateScanParamChoices(final String message,ListReset listReset){
 				if (hashTable.get(ClientTaskDispatcher.TASK_ABORTED_BY_ERROR) == null) {
 					ClientPDEDataContext newPDEDC = (ClientPDEDataContext)hashTable.get("newPDEDC");
 					pdeDataViewer.setPdeDataContext(newPDEDC);
-					pdeDataViewer.setSimNameSimDataID(new ExportSpecs.SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), ExportSpecs.getParamScanInfo(getSimulation(), vcdid.getJobIndex())));
+					pdeDataViewer.setSimNameSimDataID(new SimNameSimDataID(getSimulation().getName(), getSimulation().getSimulationInfo().getAuthoritativeVCSimulationIdentifier(), ExportParamScanInfo.getParamScanInfo(getSimulation(), vcdid.getJobIndex())));
 				}else{
 					if(listReset != null && pdeDataViewer != null && pdeDataViewer.getPdeDataContext() != null && pdeDataViewer.getPdeDataContext().getVCDataIdentifier() != null){
 						listReset.reset(pdeDataViewer.getPdeDataContext().getVCDataIdentifier());

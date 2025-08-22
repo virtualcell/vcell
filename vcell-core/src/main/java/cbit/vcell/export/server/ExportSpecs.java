@@ -14,19 +14,22 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.Arrays;
 
+<<<<<<< HEAD
+=======
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+>>>>>>> origin/local-export-history
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
-import org.vcell.util.Matchable;
 import org.vcell.util.Range;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.image.DisplayAdapterService;
 import cbit.image.DisplayPreferences;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
+
 /**
  * This type was created in VisualAge.
  */
@@ -43,128 +46,15 @@ public class ExportSpecs implements Serializable {
 
 	private HumanReadableExportData humanReadableExportData;
 
-	public static ExportParamScanInfo getParamScanInfo(Simulation simulation, int selectedParamScanJobIndex){
-		int scanCount = simulation.getScanCount();
-		if(scanCount == 1){//no parameter scan
-			return null;
-		}
-		String[] scanConstantNames = simulation.getMathOverrides().getScannedConstantNames();
-		Arrays.sort(scanConstantNames);
-		int[] paramScanJobIndexes = new int[scanCount];
-		String[][] scanConstValues = new String[scanCount][scanConstantNames.length];
-		for (int i = 0; i < scanCount; i++) {
-			paramScanJobIndexes[i] = i;
-			for (int j = 0; j < scanConstantNames.length; j++) {
-				String paramScanValue = simulation.getMathOverrides().getActualExpression(scanConstantNames[j], new MathOverrides.ScanIndex(i)).infix();
-	//			System.out.println("ScanIndex="+i+" ScanConstName='"+scanConstantNames[j]+"' paramScanValue="+paramScanValue);
-				scanConstValues[i][j] = paramScanValue;
-			}
-		}
-		return new ExportParamScanInfo(paramScanJobIndexes, selectedParamScanJobIndex, scanConstantNames, scanConstValues);
-	}
-
 	public interface SimulationSelector{
 		public void selectSimulations();
 		public void selectParamScanInfo();
-		public ExportSpecs.SimNameSimDataID[] getSelectedSimDataInfo();
+		public SimNameSimDataID[] getSelectedSimDataInfo();
 		public int[] getselectedParamScanIndexes();
 		public int getNumAvailableSimulations();
 		public int getNumAvailableParamScans();
 	}
 
-	public static class ExportParamScanInfo implements Matchable,Serializable{
-		private int[] paramScanJobIndexes;//these are the param scan job indexes we are possibly interested in
-		private int defaultParamScanJobIndex;//this is the "selected" param scan simdata job index at the time this object was created, 0 if no param scan
-		private String[] paramScanConstantNames;
-		private String[][] paramScanConstantValues;
-		
-		
-		public ExportParamScanInfo(int[] paramScanJobIndexes,int defaultParamScanJobIndex, String[] paramScanConstantNames,String[][] paramScanConstantValues) {
-			this.paramScanJobIndexes = paramScanJobIndexes;
-			this.defaultParamScanJobIndex = defaultParamScanJobIndex;
-			this.paramScanConstantNames = paramScanConstantNames;
-			this.paramScanConstantValues = paramScanConstantValues;
-		}
-		public boolean compareEqual(Matchable obj) {
-			if (obj instanceof ExportParamScanInfo) {
-				ExportParamScanInfo exportParamScanInfo = (ExportParamScanInfo)obj;
-				if (defaultParamScanJobIndex == exportParamScanInfo.defaultParamScanJobIndex &&
-					Compare.isEqualOrNull(paramScanJobIndexes, exportParamScanInfo.paramScanJobIndexes)){
-					
-					for (int i = 0;paramScanConstantNames!=null &&  i<paramScanConstantNames.length; i++) {
-						if(!paramScanConstantNames[i].equals(exportParamScanInfo.paramScanConstantNames[i])){
-							return false;
-						}
-					}
-					for (int i = 0;paramScanConstantValues!=null &&  i<paramScanConstantValues.length; i++) {
-						if(!paramScanConstantValues[i].equals(exportParamScanInfo.paramScanConstantValues[i])){
-							return false;
-						}
-					}
-					
-					return true;
-				}
-			}
-			return false;
-			
-		}
-		public int[] getParamScanJobIndexes() {
-			return paramScanJobIndexes;
-		}
-		public int getDefaultParamScanJobIndex() {
-			return defaultParamScanJobIndex;
-		}
-		public String[] getParamScanConstantNames() {
-			return paramScanConstantNames;
-		}
-		public String[][] getParamScanConstantValues() {
-			return paramScanConstantValues;
-		}
-	}
-
-	public static class SimNameSimDataID implements Matchable,Serializable{
-		private String simulationName;
-		private VCSimulationIdentifier vcSimulationIdentifier;
-		private ExportParamScanInfo exportParamScanInfo;
-		public SimNameSimDataID(String simulationName,VCSimulationIdentifier vcSimulationIdentifier,ExportParamScanInfo exportParamScanInfo) {
-			this.simulationName = simulationName;
-			this.vcSimulationIdentifier = vcSimulationIdentifier;
-			this.exportParamScanInfo = exportParamScanInfo;
-		}
-		public VCDataIdentifier getVCDataIdentifier(int paramScanJobIndex){
-			if(exportParamScanInfo == null && paramScanJobIndex > 0){
-				throw new IllegalArgumentException("Error SimNameSimDataID.getVCDataIdentifier: jobIndex > 0 unexpected with no parameter scan");
-			}else if(exportParamScanInfo != null && paramScanJobIndex >= exportParamScanInfo.getParamScanJobIndexes().length){
-				throw new IllegalArgumentException("Error SimNameSimDataID.getVCDataIdentifier: jobIndex > parameter scan count");
-			}
-			return new VCSimulationDataIdentifier(vcSimulationIdentifier, paramScanJobIndex);
-		}
-		public int getDefaultJobIndex(){
-			return (exportParamScanInfo==null?0:exportParamScanInfo.defaultParamScanJobIndex);
-		}
-		public ExportParamScanInfo getExportParamScanInfo(){
-			return exportParamScanInfo;
-		}
-		public String getSimulationName(){
-			return simulationName;
-		}
-		public boolean compareEqual(Matchable obj) {
-			if (obj instanceof SimNameSimDataID) {
-				SimNameSimDataID simNameSimDataID = (SimNameSimDataID)obj;
-				if (
-					simulationName.equals(simNameSimDataID.getSimulationName()) &&
-					vcSimulationIdentifier.equals(simNameSimDataID.vcSimulationIdentifier) &&
-					Compare.isEqualOrNull(exportParamScanInfo, simNameSimDataID.getExportParamScanInfo())){
-					return true;
-				}
-			}
-			return false;
-		}
-	}
-
-	/**
-	 * This method was created in VisualAge.
-	 */
 	public ExportSpecs(org.vcell.util.document.VCDataIdentifier vcdID, ExportFormat format,
 			VariableSpecs variableSpecs, TimeSpecs timeSpecs, 
 			GeometrySpecs geometrySpecs, FormatSpecificSpecs formatSpecificSpecs,
@@ -177,6 +67,23 @@ public class ExportSpecs implements Serializable {
 		this.formatSpecificSpecs = formatSpecificSpecs;
 		this.simulatioName = simulationName;
 		this.contextName = contextName;
+	}
+
+	@JsonCreator
+	public ExportSpecs(@JsonProperty("vcdataIdentifier") VCDataIdentifier vcdataIdentifier, @JsonProperty("format") ExportFormat format,
+					   @JsonProperty("variableSpecs") VariableSpecs variableSpecs, @JsonProperty("timeSpecs") TimeSpecs timeSpecs,
+					   @JsonProperty("geometrySpecs") GeometrySpecs geometrySpecs, @JsonProperty("formatSpecificSpecs") FormatSpecificSpecs formatSpecificSpecs,
+					   @JsonProperty("simulationName") String simulationName, @JsonProperty("contextName") String contextName,
+					   @JsonProperty("humanReadableExportData") HumanReadableExportData humanReadableExportData) {
+		this.vcDataIdentifier = vcdataIdentifier;
+		this.format = format;
+		this.variableSpecs = variableSpecs;
+		this.timeSpecs = timeSpecs;
+		this.geometrySpecs = geometrySpecs;
+		this.formatSpecificSpecs = formatSpecificSpecs;
+		this.simulatioName = simulationName;
+		this.contextName = contextName;
+		this.humanReadableExportData = humanReadableExportData;
 	}
 
 	public String getContextName(){

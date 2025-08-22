@@ -35,6 +35,11 @@ private JobRequest(User user, int jobType) {
 	this.jobType = jobType;
 	this.jobID = random.nextInt() + 5000000000L;
 }
+private JobRequest(User user, int jobType, long jobID) {
+	this.user = user;
+	this.jobType = jobType;
+	this.jobID = jobID;
+}
 /**
  * Insert the method's description here.
  * Creation date: (4/3/2001 3:48:06 PM)
@@ -48,6 +53,15 @@ public static JobRequest createExportJobRequest(User user) {
 		return new JobRequest(user, EXPORT_JOB);
 	}
 }
+
+public static JobRequest createExportJobRequest(User user, long jobID) {
+	if (user == null) {
+		throw new NullPointerException("User cannot be null");
+	} else {
+		return new JobRequest(user, EXPORT_JOB, jobID);
+	}
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (4/3/2001 4:21:34 PM)

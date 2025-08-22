@@ -13,6 +13,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
@@ -58,7 +59,8 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 	/**
  * User constructor comment.
  */
-public User(String userid, KeyValue key) {
+@JsonCreator
+public User(@JsonProperty("userName") String userid, @JsonProperty("key") KeyValue key) {
 	this.userName = userid;
 	this.key = key;
 }

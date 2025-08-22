@@ -1,5 +1,6 @@
 package org.vcell.restq.openapi;
 
+import cbit.vcell.parser.Expression;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -17,6 +18,7 @@ public class ObjectMapperCustomizer implements io.quarkus.jackson.ObjectMapperCu
     public void customize(ObjectMapper objectMapper) {
         SimpleModule myModule = new SimpleModule();
         myModule.addSerializer(KeyValue.class, new KeyValueSerializer());
+        myModule.addSerializer(Expression.class, new ExpressionSerializer());
         objectMapper.registerModule(myModule);
     }
 
@@ -29,6 +31,18 @@ public class ObjectMapperCustomizer implements io.quarkus.jackson.ObjectMapperCu
         @Override
         public void serialize(KeyValue kv, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
             jsonGenerator.writeString(kv.toString());
+        }
+    }
+
+    private static class ExpressionSerializer extends StdSerializer<Expression> {
+
+        public ExpressionSerializer() {
+            super(Expression.class);
+        }
+
+        @Override
+        public void serialize(Expression ex, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+            jsonGenerator.writeString(ex.infix());
         }
     }
 }

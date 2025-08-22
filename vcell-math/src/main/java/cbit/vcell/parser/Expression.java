@@ -17,6 +17,8 @@ import java.util.*;
 import jscl.math.Generic;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.vcell.util.Issue.IssueSource;
 import org.vcell.util.Matchable;
 
@@ -25,6 +27,7 @@ import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import net.sourceforge.interval.ia_math.RealInterval;
 
 @SuppressWarnings("serial")
+@Schema(type = SchemaType.STRING)
 public class Expression implements java.io.Serializable, org.vcell.util.Matchable, IssueSource {
 
 	private final static Logger logger = LogManager.getLogger(Expression.class);

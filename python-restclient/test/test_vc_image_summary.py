@@ -63,8 +63,16 @@ class TestVCImageSummary(unittest.TestCase):
                     name = '', 
                     owner = vcell_client.models.user.User(
                         user_name = '', 
-                        key = '', ), ),
-                preview = None,
+                        key = '', 
+                        my_specials = [
+                            'admins'
+                            ], ), ),
+                preview = vcell_client.models.gif_image.GIFImage(
+                    gif_encoded_data = bytes(b'blah'), 
+                    size = vcell_client.models.i_size.ISize(
+                        x = 56, 
+                        y = 56, 
+                        z = 56, ), ),
                 software_version = vcell_client.models.v_cell_software_version.VCellSoftwareVersion(
                     software_version_string = '', 
                     vcell_site = 'alpha', 

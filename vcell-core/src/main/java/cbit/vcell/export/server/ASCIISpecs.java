@@ -12,25 +12,28 @@ package cbit.vcell.export.server;
 
 import java.io.Serializable;
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.vcell.util.Compare;
 /**
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
+@Schema(allOf = FormatSpecificSpecs.class, requiredProperties = {"specClass"})
 public class ASCIISpecs extends FormatSpecificSpecs implements Serializable {
 	public static enum CsvRoiLayout {var_time_val,time_sim_var}
 	private boolean switchRowsColumns;
 	private ExportFormat format;
-	private ExportConstants.DataType dataType;
-	private ExportSpecs.SimNameSimDataID[] simNameSimDataIDs;
+	private ExportEnums.ExportableDataType dataType;
+	private SimNameSimDataID[] simNameSimDataIDs;
 	private int[] exportMultipleParamScans;
 	private CsvRoiLayout csvLayout;
 	private boolean isHDF5;
 /**
  * TextSpecs constructor comment.
  */
-public ASCIISpecs(ExportSpecs.SimNameSimDataID[] simNameSimDataIDs, ExportConstants.DataType dataType, ExportFormat format,
-				   int[] exportMultipleParamScans, CsvRoiLayout csvLayout, boolean isHDF5, boolean switchRowsColumns) {
+public ASCIISpecs(SimNameSimDataID[] simNameSimDataIDs, ExportEnums.ExportableDataType dataType, ExportFormat format,
+                  int[] exportMultipleParamScans, CsvRoiLayout csvLayout, boolean isHDF5, boolean switchRowsColumns) {
+	super("ASCIISpecs");
 	this.format = format;
 	this.dataType = dataType;
 	this.switchRowsColumns = switchRowsColumns;
@@ -40,8 +43,8 @@ public ASCIISpecs(ExportSpecs.SimNameSimDataID[] simNameSimDataIDs, ExportConsta
 	this.isHDF5 = isHDF5;
 }
 
-public ASCIISpecs(ExportSpecs.SimNameSimDataID[] simNameSimDataIDs, ExportConstants.DataType dataType, ExportFormat format,
-				  CsvRoiLayout csvLayout, boolean isHDF5, boolean switchRowsColumns){
+public ASCIISpecs(SimNameSimDataID[] simNameSimDataIDs, ExportEnums.ExportableDataType dataType, ExportFormat format,
+                  CsvRoiLayout csvLayout, boolean isHDF5, boolean switchRowsColumns){
 	this(simNameSimDataIDs, dataType, format, null, csvLayout, isHDF5, switchRowsColumns);
 }
 
@@ -76,14 +79,14 @@ public boolean equals(java.lang.Object object) {
 public int[] getExportMultipleParamScans(){
 	return exportMultipleParamScans;
 }
-public ExportSpecs.SimNameSimDataID[] getSimNameSimDataIDs(){
+public SimNameSimDataID[] getSimNameSimDataIDs(){
 	return simNameSimDataIDs;
 }
 /**
  * This method was created in VisualAge.
  * @return int
  */
-public ExportConstants.DataType getDataType() {
+public ExportEnums.ExportableDataType getDataType() {
 	return dataType;
 }
 /**
