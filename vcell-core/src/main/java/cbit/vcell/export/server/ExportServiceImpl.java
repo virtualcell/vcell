@@ -48,8 +48,9 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import org.vcell.restq.db.AgroalConnectionFactory;
 import cbit.vcell.modeldb.ExportHistoryDBDriver;
+import org.vcell.restq.db.AgroalConnectionFactory;
+
 
 
 /**
@@ -60,11 +61,13 @@ import cbit.vcell.modeldb.ExportHistoryDBDriver;
 
 public class ExportServiceImpl implements ExportConstants, ExportService {
 	public static final Logger lg = LogManager.getLogger(ExportServiceImpl.class);
-	
+
 	private javax.swing.event.EventListenerList listenerList = new javax.swing.event.EventListenerList();
 
 	private Hashtable<Long, User> jobRequestIDs = new Hashtable<Long, User>();
 	private Hashtable<ExportSpecs, JobRequest> completedExportRequests = new Hashtable<ExportSpecs, JobRequest>();
+
+
 
 	@Inject
 	AgroalConnectionFactory agroalConnectionFactory;
@@ -133,13 +136,15 @@ protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, St
 		throw new RuntimeException("unexpected VCDataIdentifier");
 	}
 	ExportEvent event = new ExportEvent(
-			this, jobID, user, vcdID.getID(), dataKey, ExportEvent.EXPORT_COMPLETE, 
+			this, jobID, user, vcdID.getID(), dataKey, ExportEvent.EXPORT_COMPLETE,
 			format, location, null, timeSpecs, varSpecs);
     event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
 
 	assert exportSpecs != null;
 	event.setHumanReadableExportData(exportSpecs.getHumanReadableExportData());
 	assert user != null;
+
+
 
 	try (Connection conn = agroalConnectionFactory.getConnection(null)) {
 		exportHistoryDBDriver.addExportHistory(conn, vcdID.getOwner(), new ExportHistoryDBDriver.ExportHistory(jobID, 1, exportSpecs.getFormat(), new Timestamp(System.currentTimeMillis()), location, exportSpecs), agroalConnectionFactory.getKeyFactory());
@@ -187,7 +192,7 @@ protected void fireExportEvent(ExportEvent event) {
 	for (int i = listeners.length-2; i>=0; i-=2) {
 	    if (listeners[i]==ExportListener.class) {
 		((ExportListener)listeners[i+1]).exportMessage(event);
-	    }	       
+	    }
 	}
 }
 
@@ -291,7 +296,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 		String exportBaseURL = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseURLProperty);
 		String exportBaseDir = PropertyLoader.getRequiredProperty(PropertyLoader.exportBaseDirInternalProperty);
 
-		
+
 //		// see if we've done this before, and try to get it
 //		// for now, works only for the life of the server (eventually will be persistent)
 //		Object completed = completedExportRequests.get(exportSpecs);
@@ -407,7 +412,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 			if (nrrdInfos[i].isHasData()) {
 				// nrrdInfo 'header' file contains either just the header or both the header and data together
 				ZipEntry zipEntry = new ZipEntry(nrrdInfos[i].getCanonicalFilename((nrrdInfos[i].isSeparateHeader()?true:false)));
-				zipOut.putNextEntry(zipEntry);				
+				zipOut.putNextEntry(zipEntry);
 				fileDataContainerManager.writeAndFlush(nrrdInfos[i].getHeaderFileID(), zipOut);
 				if (nrrdInfos[i].isSeparateHeader()) {
 						// The data was not saved with the 'header' file so save it separately
@@ -425,7 +430,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
 	} finally {
 		zipOut.close();
 	}
-	
+
 	if (exportValid) {
 		completedExportRequests.put(exportSpecs, newExportJob);
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
@@ -467,7 +472,7 @@ private ExportEvent saveResultsToRemoteFile(String fileFormat, String exportBase
 				}
 			}
 			zipOut.close();
-			
+
 			if (exportValid) {
 				completedExportRequests.put(exportSpecs, newExportJob);
 				if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
@@ -499,7 +504,7 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 		//if there are more export outputs, loops through the second till the last.
 		for (int i=1;i<exportOutputs.length;i++)
 		{
-			if (exportOutputs[i].isValid()) 
+			if (exportOutputs[i].isValid())
 			{
 				File moreFile = new File(exportBaseDir + newExportJob.getExportJobID()+"_"+ i + extStr);
 				FileOutputStream moreFileOut = new FileOutputStream(moreFile);
