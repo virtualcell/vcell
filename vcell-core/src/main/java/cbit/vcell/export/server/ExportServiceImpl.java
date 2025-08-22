@@ -43,8 +43,9 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
-import org.vcell.restq.db.AgroalConnectionFactory;
 import cbit.vcell.modeldb.ExportHistoryDBDriver;
+import org.vcell.restq.db.AgroalConnectionFactory;
+
 
 
 /**
@@ -58,6 +59,8 @@ public class ExportServiceImpl implements ExportService {
 	public ExportEventController getEventController() {
 		return eventController;
 	}
+
+
 
 	@Inject
 	AgroalConnectionFactory agroalConnectionFactory;
@@ -94,13 +97,15 @@ protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, St
 		throw new RuntimeException("unexpected VCDataIdentifier");
 	}
 	ExportEvent event = new ExportEvent(
-			this, jobID, user, vcdID.getID(), dataKey, ExportEvent.EXPORT_COMPLETE, 
+			this, jobID, user, vcdID.getID(), dataKey, ExportEvent.EXPORT_COMPLETE,
 			format, location, null, timeSpecs, varSpecs);
     event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
 
 	assert exportSpecs != null;
 	event.setHumanReadableExportData(exportSpecs.getHumanReadableExportData());
 	assert user != null;
+
+
 
 	try (Connection conn = agroalConnectionFactory.getConnection(null)) {
 		exportHistoryDBDriver.addExportHistory(conn, vcdID.getOwner(), new ExportHistoryDBDriver.ExportHistory(jobID, 1, exportSpecs.getFormat(), new Timestamp(System.currentTimeMillis()), location, exportSpecs), agroalConnectionFactory.getKeyFactory());
@@ -263,7 +268,7 @@ private static ExportEvent makeRemoteFile(String fileFormat, String exportBaseDi
 			if (nrrdInfos[i].isHasData()) {
 				// nrrdInfo 'header' file contains either just the header or both the header and data together
 				ZipEntry zipEntry = new ZipEntry(nrrdInfos[i].getCanonicalFilename((nrrdInfos[i].isSeparateHeader()?true:false)));
-				zipOut.putNextEntry(zipEntry);				
+				zipOut.putNextEntry(zipEntry);
 				fileDataContainerManager.writeAndFlush(nrrdInfos[i].getHeaderFileID(), zipOut);
 				if (nrrdInfos[i].isSeparateHeader()) {
 						// The data was not saved with the 'header' file so save it separately
@@ -281,7 +286,7 @@ private static ExportEvent makeRemoteFile(String fileFormat, String exportBaseDi
 	} finally {
 		zipOut.close();
 	}
-	
+
 	if (exportValid) {
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
 		URL url = new URL(exportBaseURL + zipFile.getName());
@@ -326,7 +331,7 @@ private static ExportEvent saveResultsToRemoteFile(String fileFormat, String exp
 				}
 			}
 			zipOut.close();
-			
+
 			if (exportValid) {
 				if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
 				URL url = new URL(exportBaseURL + zipFile.getName());
@@ -362,7 +367,7 @@ private static ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exp
 		//if there are more export outputs, loops through the second till the last.
 		for (int i=1;i<exportOutputs.length;i++)
 		{
-			if (exportOutputs[i].isValid()) 
+			if (exportOutputs[i].isValid())
 			{
 				File moreFile = new File(exportBaseDir + newExportJob.getExportJobID()+"_"+ i + extStr);
 				FileOutputStream moreFileOut = new FileOutputStream(moreFile);

@@ -692,9 +692,21 @@
 			<artifactId>microprofile-openapi-api</artifactId>
 			<version>${microprofile-openapi.version}</version> <!-- or use the latest stable version -->
 		</dependency>
+		<dependency>
+			<groupId>org.vcell</groupId>
+			<artifactId>vcell-server</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.vcell</groupId>
+			<artifactId>vcell-rest</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
 
 
-    </dependencies>
+	</dependencies>
 	
 	<profiles>
 		<profile>
