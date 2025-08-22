@@ -25,8 +25,12 @@ import java.util.zip.DataFormatException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import jakarta.inject.Inject;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.db.ConnectionFactory;
+import org.vcell.db.DatabaseSyntax;
+import org.vcell.db.KeyFactory;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
@@ -44,10 +48,16 @@ import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.simdata.OutputContext;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
+import org.vcell.restq.db.AgroalConnectionFactory;
+import cbit.vcell.modeldb.ExportHistoryDBDriver;
+
 
 /**
  * This type was created in VisualAge.
  */
+
+
+
 public class ExportServiceImpl implements ExportConstants, ExportService {
 	public static final Logger lg = LogManager.getLogger(ExportServiceImpl.class);
 	
@@ -56,8 +66,32 @@ public class ExportServiceImpl implements ExportConstants, ExportService {
 	private Hashtable<Long, User> jobRequestIDs = new Hashtable<Long, User>();
 	private Hashtable<ExportSpecs, JobRequest> completedExportRequests = new Hashtable<ExportSpecs, JobRequest>();
 
+	@Inject
+	AgroalConnectionFactory agroalConnectionFactory;
 
-/**
+	ExportHistoryDBDriver exportHistoryDBDriver = new ExportHistoryDBDriver(null, null);
+//	ConnectionFactory connFactory = new ConnectionFactory() {
+//		@Override
+//		public void close() throws SQLException {}
+//
+//		@Override
+//		public void failed(Connection con, Object lock) throws SQLException {}
+//
+//		@Override
+//		public Connection getConnection(Object lock) throws SQLException {return null;}
+//
+//		@Override
+//		public void release(Connection con, Object lock) throws SQLException {}
+//
+//		@Override
+//		public KeyFactory getKeyFactory() {return null;}
+//
+//		@Override
+//		public DatabaseSyntax getDatabaseSyntax() {return null;}
+//	};
+
+
+	/**
  * Insert the method's description here.
  * Creation date: (3/29/2001 4:09:29 PM)
  * @param log cbit.vcell.server.SessionLog
@@ -76,12 +110,13 @@ public synchronized void addExportListener(ExportListener listener) {
 }
 
 
+
 /**
  * Insert the method's description here.
  * Creation date: (4/1/2001 11:20:45 AM)
  * @deprecated
  */
-protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, String format, String location,ExportSpecs exportSpecs) {
+protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, String format, String location,ExportSpecs exportSpecs) throws SQLException, DataAccessException {
 	User user = null;
 	Object object = jobRequestIDs.get(new Long(jobID));
 	if (object != null) {
@@ -106,16 +141,21 @@ protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, St
 	event.setHumanReadableExportData(exportSpecs.getHumanReadableExportData());
 	assert user != null;
 
+	try (Connection conn = agroalConnectionFactory.getConnection(null)) {
+		exportHistoryDBDriver.addExportHistory(conn, vcdID.getOwner(), new ExportHistoryDBDriver.ExportHistory(jobID, 1, exportSpecs.getFormat(), new Timestamp(System.currentTimeMillis()), location, exportSpecs), agroalConnectionFactory.getKeyFactory());
 
-exportToDB(
-			jobID,
-			Long.parseLong(user.getID().toString()),
-			Long.parseLong(vcdID.getOwner().getID().toString()),
-			format,
-			new Timestamp(System.currentTimeMillis()),
-			location,
-			exportSpecs
-	);
+	}
+
+
+//exportToDB(
+//			jobID,
+//			Long.parseLong(user.getID().toString()),
+//			Long.parseLong(vcdID.getOwner().getID().toString()),
+//			format,
+//			new Timestamp(System.currentTimeMillis()),
+//			location,
+//			exportSpecs
+//	);
 	fireExportEvent(event);
 	return event;
 }
@@ -355,7 +395,7 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
  * Insert the method's description here.
  * Creation date: (4/26/2004 6:47:56 PM)
  */
-private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, NrrdInfo[] nrrdInfos, ExportSpecs exportSpecs, JobRequest newExportJob, FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException {
+private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, NrrdInfo[] nrrdInfos, ExportSpecs exportSpecs, JobRequest newExportJob, FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException, SQLException, DataAccessException {
 			boolean exportValid = true;
 
 	// check outputs and package into zip file
@@ -402,7 +442,7 @@ private ExportEvent makeRemoteFile(String fileFormat, String exportBaseDir, Stri
  * This function saves the remote file into a compressed zip file.
  * Creation date: (4/26/2004 6:47:56 PM)
  */
-private ExportEvent saveResultsToRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob, FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException {
+private ExportEvent saveResultsToRemoteFile(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob, FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException, SQLException, DataAccessException {
 			boolean exportValid = true;
 			fireExportAssembling(newExportJob.getExportJobID(), exportSpecs.getVCDataIdentifier(), fileFormat);
 
@@ -442,8 +482,7 @@ private ExportEvent saveResultsToRemoteFile(String fileFormat, String exportBase
 /**
  * Save remote file in it original format without compression.
  */
-private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob,FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException
-{
+private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBaseDir, String exportBaseURL, ExportOutput[] exportOutputs, ExportSpecs exportSpecs, JobRequest newExportJob,FileDataContainerManager fileDataContainerManager) throws DataFormatException, IOException, MalformedURLException, SQLException, DataAccessException {
 	boolean exportValid = true;
 	String fileNames = "";
 	if(exportOutputs.length > 0  && exportOutputs[0].isValid())
@@ -491,7 +530,7 @@ private ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exportBase
 }
 
 
-private ExportEvent makeRemoteN5File(String fileFormat, String fileName, ExportOutput exportOutput, ExportSpecs exportSpecs, JobRequest newExportJob, String pathSuffix) throws DataFormatException, IOException{
+private ExportEvent makeRemoteN5File(String fileFormat, String fileName, ExportOutput exportOutput, ExportSpecs exportSpecs, JobRequest newExportJob, String pathSuffix) throws DataFormatException, IOException, SQLException, DataAccessException {
 	if (exportOutput.isValid()) {
 		completedExportRequests.put(exportSpecs, newExportJob);
 		String url = PropertyLoader.getRequiredProperty(PropertyLoader.s3ExportBaseURLProperty);
@@ -516,95 +555,95 @@ public synchronized void removeExportListener(ExportListener listener) {
 	listenerList.remove(ExportListener.class, listener);
 }
 
-private void exportToDB(long   jobID,
-						long   userRef,
-						long   modelRef,
-						String exportFormat,
-						Timestamp exportDate,
-						String uri,
-						ExportSpecs exportSpecs) {
-	Connection conn      = null;
-	PreparedStatement ps = null;
-	PreparedStatement psParam = null;
-	ResultSet rsSeq      = null;
-	boolean passed;
-	try {
-		conn = DriverManager.getConnection("DB_URL", "quarkus", "quarkus");
-
-
-		String vcmExpHiSQL =		// SQL statement for inserting into vc_model_export_history table in VCell server
-				"INSERT INTO vc_model_export_history (" +
-						"id, job_id, user_ref, model_ref, export_format, export_date, uri," +
-						"data_id, simulation_name, application_name, biomodel_name, variables," +
-						"start_time, end_time, saved_file_name, application_type, non_spatial," +
-						"z_slices, t_slices, num_variables" +
-						") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-		ps = conn.prepareStatement(vcmExpHiSQL);
-
-		HumanReadableExportData meta = exportSpecs.getHumanReadableExportData();
-		TimeSpecs       ts   = exportSpecs.getTimeSpecs();
-		String[]        vars = exportSpecs.getVariableSpecs().getVariableNames();
-
-		String timeRange = ts.toString();
-		String[] time_parts   = timeRange.split("/");
-		BigDecimal startTime = new BigDecimal(time_parts[0]);
-		BigDecimal endTime   = new BigDecimal(time_parts[1]);
-
-
-		ps.setLong       (2, jobID);
-		ps.setLong       (3, userRef);
-		ps.setLong       (4, modelRef);
-		ps.setString     (5, exportFormat);
-		ps.setTimestamp  (6, exportDate);
-		ps.setString     (7, uri);
-		ps.setString     (8, exportSpecs.getVCDataIdentifier().getID());
-		ps.setString     (9, meta.simulationName);
-		ps.setString     (10, meta.applicationName);
-		ps.setString     (11, meta.biomodelName);
-		ps.setArray      (12, conn.createArrayOf("text", vars));
-		ps.setBigDecimal (13, startTime);
-		ps.setBigDecimal (14, endTime);
-		ps.setString     (15, meta.serverSavedFileName);
-		ps.setString     (16, meta.applicationType);
-		ps.setBoolean    (17, meta.nonSpatial);
-		ps.setInt        (18, meta.zSlices);
-		ps.setInt        (19, meta.tSlices);
-		ps.setInt        (20, meta.numChannels);
-		ps.executeUpdate();
-
-
-		String vcmExpHisPVSQL =		// SQL statement for inserting into vc_model_parameter_value table in VCell server
-				"INSERT INTO vc_model_parameter_values (" +
-						"export_id, user_ref, model_ref, parameter_name," +
-						"parameter_original, parameter_changed" +
-						") VALUES (?,?,?,?,?,?)";
-		psParam = conn.prepareStatement(vcmExpHisPVSQL);
-
-
-		for (String entry : meta.differentParameterValues) {
-			String[] parts = entry.split(":");
-			if (parts.length == 3) {
-				//psParam.setLong       (1, historyId);
-				psParam.setLong       (2, userRef);
-				psParam.setLong       (3, modelRef);
-				psParam.setString     (4, parts[0]);
-				psParam.setBigDecimal (5, new BigDecimal(parts[1]));
-				psParam.setBigDecimal (6, new BigDecimal(parts[2]));
-				psParam.addBatch();
-			}
-		}
-		psParam.executeBatch();
-	}
-	catch(SQLException e){
-		lg.error("Error exporting to database",e);
-	}
-	finally {
-		try{ if(rsSeq  !=null) rsSeq.close();  }catch(Exception ign){}
-		try{ if(psParam !=null) psParam.close(); }catch(Exception ign){}
-		try{ if(ps     !=null) ps.close();   }catch(Exception ign){}
-		try{ if(conn   !=null) conn.close();  }catch(Exception ign){}
-	}
-}
-
-
-}
+//private void exportToDB(long   jobID,
+//						long   userRef,
+//						long   modelRef,
+//						String exportFormat,
+//						Timestamp exportDate,
+//						String uri,
+//						ExportSpecs exportSpecs) {
+//	Connection conn      = null;
+//	PreparedStatement ps = null;
+//	PreparedStatement psParam = null;
+//	ResultSet rsSeq      = null;
+//	boolean passed;
+//	try {
+//		conn = DriverManager.getConnection("DB_URL", "quarkus", "quarkus");
+//
+//
+//		String vcmExpHiSQL =		// SQL statement for inserting into vc_model_export_history table in VCell server
+//				"INSERT INTO vc_model_export_history (" +
+//						"id, job_id, user_ref, model_ref, export_format, export_date, uri," +
+//						"data_id, simulation_name, application_name, biomodel_name, variables," +
+//						"start_time, end_time, saved_file_name, application_type, non_spatial," +
+//						"z_slices, t_slices, num_variables" +
+//						") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+//		ps = conn.prepareStatement(vcmExpHiSQL);
+//
+//		HumanReadableExportData meta = exportSpecs.getHumanReadableExportData();
+//		TimeSpecs       ts   = exportSpecs.getTimeSpecs();
+//		String[]        vars = exportSpecs.getVariableSpecs().getVariableNames();
+//
+//		String timeRange = ts.toString();
+//		String[] time_parts   = timeRange.split("/");
+//		BigDecimal startTime = new BigDecimal(time_parts[0]);
+//		BigDecimal endTime   = new BigDecimal(time_parts[1]);
+//
+//
+//		ps.setLong       (2, jobID);
+//		ps.setLong       (3, userRef);
+//		ps.setLong       (4, modelRef);
+//		ps.setString     (5, exportFormat);
+//		ps.setTimestamp  (6, exportDate);
+//		ps.setString     (7, uri);
+//		ps.setString     (8, exportSpecs.getVCDataIdentifier().getID());
+//		ps.setString     (9, meta.simulationName);
+//		ps.setString     (10, meta.applicationName);
+//		ps.setString     (11, meta.biomodelName);
+//		ps.setArray      (12, conn.createArrayOf("text", vars));
+//		ps.setBigDecimal (13, startTime);
+//		ps.setBigDecimal (14, endTime);
+//		ps.setString     (15, meta.serverSavedFileName);
+//		ps.setString     (16, meta.applicationType);
+//		ps.setBoolean    (17, meta.nonSpatial);
+//		ps.setInt        (18, meta.zSlices);
+//		ps.setInt        (19, meta.tSlices);
+//		ps.setInt        (20, meta.numChannels);
+//		ps.executeUpdate();
+//
+//
+//		String vcmExpHisPVSQL =		// SQL statement for inserting into vc_model_parameter_value table in VCell server
+//				"INSERT INTO vc_model_parameter_values (" +
+//						"export_id, user_ref, model_ref, parameter_name," +
+//						"parameter_original, parameter_changed" +
+//						") VALUES (?,?,?,?,?,?)";
+//		psParam = conn.prepareStatement(vcmExpHisPVSQL);
+//
+//
+//		for (String entry : meta.differentParameterValues) {
+//			String[] parts = entry.split(":");
+//			if (parts.length == 3) {
+//				//psParam.setLong       (1, historyId);
+//				psParam.setLong       (2, userRef);
+//				psParam.setLong       (3, modelRef);
+//				psParam.setString     (4, parts[0]);
+//				psParam.setBigDecimal (5, new BigDecimal(parts[1]));
+//				psParam.setBigDecimal (6, new BigDecimal(parts[2]));
+//				psParam.addBatch();
+//			}
+//		}
+//		psParam.executeBatch();
+//	}
+//	catch(SQLException e){
+//		lg.error("Error exporting to database",e);
+//	}
+//	finally {
+//		try{ if(rsSeq  !=null) rsSeq.close();  }catch(Exception ign){}
+//		try{ if(psParam !=null) psParam.close(); }catch(Exception ign){}
+//		try{ if(ps     !=null) ps.close();   }catch(Exception ign){}
+//		try{ if(conn   !=null) conn.close();  }catch(Exception ign){}
+//	}
+//}
+//
+//
+//}
