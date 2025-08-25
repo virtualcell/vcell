@@ -129,6 +129,8 @@ public class PathwayReader {
 						addObjectSequenceInterval(childElement);
 					}else if(childElement.getName().equals("participantDirectionVocabulary")) {
 						addObjectParticipantDirectionVocabulary(childElement);
+					}else if(childElement.getName().equals("openControlledVocabulary")) {
+						addObjectControlledVocabulary(childElement);
 					}else if (childElement.getName().equals("publicationXref")){
 						pathwayModel.add(addObjectPublicationXref(childElement));
 					}else if (childElement.getName().equals("relationshipXref")){
@@ -928,21 +930,27 @@ public class PathwayReader {
 				// The proxy will be reconciled later, but realEntity is parsed now
 			}
 			return true;
-		} else if (tag.equals("CELLULAR-LOCATION")) {
-			Element vocabElement = childElement.getChild("openControlledVocabulary", bp);
-			if (vocabElement != null) {
-				CellularLocationVocabularyProxy clvProxy = new CellularLocationVocabularyProxy();
-				addAttributes(clvProxy, vocabElement);
-				pathwayModel.add(clvProxy);
 
-				if (vocabElement.getChildren().isEmpty()) {
-					physicalEntityParticipant.setCellularLocation(clvProxy);
-				} else {
-					CellularLocationVocabulary clv = addObjectCellularLocationVocabulary(vocabElement);
-					physicalEntityParticipant.setCellularLocation(clv);
-				}
+		} else if (tag.equals("CELLULAR-LOCATION")) {
+			// case 1: reference only (rdf:resource)
+			if (childElement.getChildren().isEmpty()) {
+				// note than when we find the real thing in the xml we won't know it's a CellularLocationVocabulary
+				// most likely we would have initialized it as ControlledVocabulary
+				CellularLocationVocabularyProxy clvProxy = new CellularLocationVocabularyProxy();
+				addAttributes(clvProxy, childElement); // sets rdf:resource or rdf:ID
+				pathwayModel.add(clvProxy);
+				physicalEntityParticipant.setCellularLocation(clvProxy);
 				return true;
 			}
+			// case 2: inline definition
+			Element vocabElement = childElement.getChild("openControlledVocabulary", bp);
+			if (vocabElement != null && !vocabElement.getChildren().isEmpty()) {
+				CellularLocationVocabulary clv = addObjectCellularLocationVocabulary(vocabElement);
+				physicalEntityParticipant.setCellularLocation(clv);
+				return true;
+			}
+			// mMalformed or unexpected structure
+
 		} else if (tag.equals("STOICHIOMETRIC-COEFFICIENT")) {
 			try {
 				double coeff = Double.parseDouble(childElement.getTextTrim());
@@ -954,6 +962,7 @@ public class PathwayReader {
 		}
 		return false;
 	}
+
 	private boolean addContentSequenceParticipant(SequenceParticipant sequenceParticipant, Element element, Element childElement) {
 		// note that SequenceParticipant extends PhysicalEntityParticipant, so we call addContentPhysicalEntityParticipant()
 		if (addContentPhysicalEntityParticipant(sequenceParticipant, element, childElement)) {
@@ -963,14 +972,38 @@ public class PathwayReader {
 //		SEQUENCE-FEATURE-LIST
 //		SEQUENCE-FEATURE-LIST
 //		SEQUENCE-FEATURE-LIST
+		String tag = childElement.getName();
+		if (tag.equals("SEQUENCE-FEATURE-LIST")) {
+			Element sequenceFeatureElement = childElement.getChild("sequenceFeature", bp);
+			if (sequenceFeatureElement != null) {
+				SequenceFeature sequenceFeature;
 
+				if (sequenceFeatureElement.getChildren().isEmpty()) {
+					// Reference only → create proxy
+					BiopaxProxy.SequenceFeatureProxy proxy = new BiopaxProxy.SequenceFeatureProxy();
+					addAttributes(proxy, sequenceFeatureElement);
+					pathwayModel.add(proxy);
+					sequenceFeature = proxy;
+				} else {
+					// Inline definition → parse fully
+					sequenceFeature = addObjectSequenceFeature(sequenceFeatureElement);
+				}
 
+				sequenceParticipant.getSequenceFeatures().add(sequenceFeature);
+				return true;
+			}
+			// don't consume it if malformed
+		}
 		return false;
 	}
+
 	private boolean addContentSequenceFeature(SequenceFeature sequenceFeature, Element element, Element childElement) {
-
-		return false;
+		if (addContentEntityFeature(sequenceFeature, element, childElement)){
+			return true;
+		}
+		return false; // no match
 	}
+
 	private boolean addContentParticipantDirectionVocabulary(ParticipantDirectionVocabulary participantDirectionVocabulary, Element element, Element childElement) {
 
 		return false;
@@ -1001,6 +1034,7 @@ public class PathwayReader {
 		if (childElement.getName().equals("COMPONENTS")){
 			Element physicalEntityParticipantElement = childElement.getChild("physicalEntityParticipant",bp);
 			if (physicalEntityParticipantElement!=null){
+				// TODO: not sure if this code works
 				Element physicalEntityPropertyElement = physicalEntityParticipantElement.getChild("PHYSICAL-ENTITY",bp);
 				if (physicalEntityPropertyElement!=null){
 					if (physicalEntityPropertyElement.getChildren().size()==0){
@@ -1025,16 +1059,25 @@ public class PathwayReader {
 					}
 				}
 			}
-			if (childElement.getChildren().size()==0){
-//				PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
-//				addAttributes(physicalEntityProxy, childElement);
-//				pathwayModel.add(physicalEntityProxy);
-//				if (childElement.getName().equals("LEFT")){
-//					conversion.getLeftSide().add(physicalEntityProxy);
-//				}else{
-//					conversion.getRightSide().add(physicalEntityProxy);
-//				}
-				showIgnored(childElement, "complex/COMPONENTS assuming redundant sequenceParticipant or physicalEntityParticipant", complex);
+			/*
+			  regardless of what is here, PhysicalEntityParticipant or SequenceParticipant,
+			  we make a PhysicalEntityProxy and reconcile with the actual class later
+			  <bp:complex rdf:ID="complex1">
+    			<bp:COMPONENTS rdf:resource="#sequenceParticipant1" />
+    			<bp:COMPONENTS rdf:resource="#sequenceParticipant2" />
+    			TODO: we may skip this and the reconciliation if we don't actually care
+    			 about the composition of the complex
+			 */
+			if (childElement.getChildren().size()==0 && childElement.hasAttributes()) {
+				Attribute resourceAttribute = childElement.getAttribute("resource", rdf);
+				if (resourceAttribute != null) {
+					PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
+					addAttributes(physicalEntityProxy, childElement);
+					pathwayModel.add(physicalEntityProxy);
+					complex.getComponents().add(physicalEntityProxy);
+					return true;
+				}
+				showIgnored(childElement, "Complex.COMPONENTS assuming redundant attribute", complex);
 				return true;
 			}
 			return false;
@@ -1295,10 +1338,30 @@ public class PathwayReader {
 					}
 				}
 			}
-//			if (childElement.getChildren().size()==0){
-//				showIgnored(childElement, "LEFT/RIGHT assuming redundant sequenceParticipant or physicalEntityParticipant");
-//				return true;
-//			}
+			/*
+			  regardless of what is here, PhysicalEntityParticipant or SequenceParticipant,
+			  we make a PhysicalEntityProxy and reconcile with the actual class later
+  			  <bp:catalysis rdf:ID="catalysis1">
+    			<bp:CONTROLLER rdf:resource="#sequenceParticipant3" />
+			 */
+			if (childElement.getChildren().size()==0 && childElement.hasAttributes()){
+				Attribute resourceAttribute = childElement.getAttribute("resource",rdf);
+				if (resourceAttribute!=null) {
+					PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
+					addAttributes(physicalEntityProxy, childElement);
+					pathwayModel.add(physicalEntityProxy);
+					control.addPhysicalController(physicalEntityProxy);
+					String uri1 = context.unRelativizeURI(childElement, resourceAttribute.getValue());
+					String uri2 = physicalEntityProxy.getID();
+					// sanity check, had to do it somewhere, why not here
+					if(!uri1.equals(uri2)) {
+						System.out.println("uri mismatch: " + uri1 + " != " + uri2);
+					}
+					return true;
+				}
+				showIgnored(childElement, "Control.CONTROLLER assuming redundant attribute");
+				return true;
+			}
 			return false;
 //			// is it a pathway controller?
 //			control.getPathwayControllers().add(addPathway(childElement));
@@ -1436,16 +1499,20 @@ public class PathwayReader {
 				}
 				return found;
 			}
-			if (childElement.getChildren().size()==0){
-//				PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
-//				addAttributes(physicalEntityProxy, childElement);
-//				pathwayModel.add(physicalEntityProxy);
-//				if (childElement.getName().equals("LEFT")){
-//					conversion.getLeftSide().add(physicalEntityProxy);
-//				}else{
-//					conversion.getRightSide().add(physicalEntityProxy);
-//				}
-				showIgnored(childElement, "conversion/LEFT or conversion/RIGHT assuming redundant sequenceParticipant or physicalEntityParticipant", conversion);
+			if (childElement.getChildren().size()==0 && childElement.hasAttributes()){
+				Attribute resourceAttribute = childElement.getAttribute("resource",rdf);
+				if (resourceAttribute!=null) {
+					PhysicalEntityProxy physicalEntityProxy = new PhysicalEntityProxy();
+					addAttributes(physicalEntityProxy, childElement);
+					pathwayModel.add(physicalEntityProxy);
+					if (childElement.getName().equals("LEFT")){
+						conversion.addPhysicalEntityAsParticipant(physicalEntityProxy, InteractionParticipant.Type.LEFT);
+					}else{
+						conversion.addPhysicalEntityAsParticipant(physicalEntityProxy, InteractionParticipant.Type.RIGHT);
+					}
+					return true;
+				}
+				showIgnored(childElement, "conversion/LEFT or conversion/RIGHT assuming redundant attribute", conversion);
 				return true;
 			}
 			return false;

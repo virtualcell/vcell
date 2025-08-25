@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.vcell.pathway.*;
+import org.vcell.pathway.persistence.BiopaxProxy;
 import org.vcell.pathway.persistence.PathwayReader;
 import org.vcell.pathway.persistence.RDFXMLContext;
 
@@ -73,17 +74,21 @@ public class PathwayParseTest {
         PathwayModel pathwayModel = pathwayReader.parse(rootElement, null);
         System.out.println("ending parsing");
 
+        int proxyCount = 0;
         Map<String, Integer> parsedCounts = new LinkedHashMap<>();
         for(BioPaxObject bpo : pathwayModel.getBiopaxObjects()) {
 
-            if("XrefProxy".equals(bpo.getTypeLabel())) {
+            if(bpo instanceof BiopaxProxy.RdfObjectProxy) {
+                proxyCount++;
                 continue;   // we skip the proxies, we only want the real things
             }
+            System.out.println("     " + bpo.getTypeLabel());
             String rawId = bpo.getIDShort();        // e.g. "#unificationXref5"
             String cleanedId = rawId.replaceFirst("^#", "") // remove leading #
                     .replaceFirst("\\d+$", "");             // remove trailing digits
             parsedCounts.put(cleanedId, parsedCounts.getOrDefault(cleanedId, 0) + 1);
         }
+        System.out.println("Found 'RdfObjectProxy':" + proxyCount);
         parsedCounts.forEach((name, count) ->
                 System.out.println(name + " " + count)
         );
@@ -114,12 +119,24 @@ public class PathwayParseTest {
         // ----------------------------------------------------------------------
 
         for (PhysicalEntityParticipant pe : pathwayModel.getObjects(PhysicalEntityParticipant.class)) {
-            // here we should see the proxy
-            System.out.println("PhysicalEntityParticipant: " + pe.getID());
+            // here we should see the PhysicalEntityParticipants and the SequenceParticipants
+            if(pe instanceof SequenceParticipant) {
+                // SequenceParticipant extends PhysicalEntityParticipant
+                System.out.println("SequenceParticipant: " + pe.getID());
+            } else {
+                System.out.println("PhysicalEntityParticipant: " + pe.getID());
+            }
         }
 
         pathwayModel.reconcileReferences(null);
+        pathwayModel.refreshParentMap();
         String text = pathwayModel.show(true);
+        System.out.println("---------- Reconciled Proxies -------------------------------------------");
+
+        for (PhysicalEntityParticipant pe : pathwayModel.getObjects(PhysicalEntityParticipant.class)) {
+            // here we should see the proxy
+            System.out.println("PhysicalEntityParticipant: " + pe.getID());
+        }
 
         for (PhysicalEntity pe : pathwayModel.getObjects(PhysicalEntity.class)) {
             if (!(pe instanceof Protein ||
@@ -175,9 +192,9 @@ public class PathwayParseTest {
 
     public static void main(String args[]) {
         try {
-//            Document document = XmlUtil.readSanitizedXML(new File("CmyFile.xml"));    // for malformed xml files, like trailing garbage
-//            Document document = XmlUtil.readXML(new File("C:\\TEMP\\pathway\\insulinPathway-5683177.xml"));
-            Document document = XmlUtil.readXML(new File("C:/TEMP/pathway/egfrPathway-180292.xml"));
+//            Document document = XmlUtil.readSanitizedXML(new File("MyFile.xml"));    // for malformed xml files, like trailing garbage
+            Document document = XmlUtil.readXML(new File("C:\\TEMP\\pathway\\insulinPathway-5683177.xml"));
+//            Document document = XmlUtil.readXML(new File("C:/TEMP/pathway/egfrPathway-180292.xml"));
             doWork(document);
             System.out.println("done manual run");
         }catch (Exception e) {

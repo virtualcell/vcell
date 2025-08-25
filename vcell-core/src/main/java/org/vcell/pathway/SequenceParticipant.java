@@ -16,12 +16,12 @@ public class SequenceParticipant extends PhysicalEntityParticipant implements Di
     private ArrayList<SequenceFeature> sequenceFeature = new ArrayList<>();
 
     // getter
-    public ArrayList<SequenceFeature> getSequenceFeature() {
+    public ArrayList<SequenceFeature> getSequenceFeatures() {
         return sequenceFeature;
     }
 
     // setter (or you may prefer an addSequenceFeature helper)
-    public void setSequenceFeature(ArrayList<SequenceFeature> seqFeat) {
+    public void setSequenceFeatures(ArrayList<SequenceFeature> seqFeat) {
         this.sequenceFeature = seqFeat;
     }
 

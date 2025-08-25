@@ -23,6 +23,7 @@ import java.util.Set;
 import org.vcell.pathway.group.PathwayGrouping;
 import org.vcell.pathway.id.URIUtil;
 import org.vcell.pathway.kinetics.SBPAXKineticsExtractor;
+import org.vcell.pathway.persistence.BiopaxProxy;
 import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 import org.vcell.pathway.sbo.SBOListEx;
 import org.vcell.pathway.sbo.SBOParam;
@@ -229,24 +230,76 @@ public class PathwayModel {
 		
 	}
 
-	// You're not expected to understand this
 	public void reconcileReferences(ClientTaskStatusSupport clientTaskStatusSupport) {
-		try{
-			HashMap<String, BioPaxObject> resourceMap = new HashMap<String, BioPaxObject>();
-			HashSet<BioPaxObject> replacedBPObjects = new HashSet<BioPaxObject>();
-			for (BioPaxObject bpObject : biopaxObjects){
-				if (!(bpObject instanceof RdfObjectProxy) && bpObject.getID() != null ){
+		try {
+			setDisableUpdate(true);
+
+			HashMap<String, BioPaxObject> resourceMap = new HashMap<String, BioPaxObject>();	// map of all “real” objects by ID
+			for (BioPaxObject bpObject : biopaxObjects) {
+				if (!(bpObject instanceof RdfObjectProxy) && bpObject.getID() != null ) {
 					resourceMap.put(bpObject.getID(), bpObject);
 				} 
 			}
 
-			setDisableUpdate(true);
-			ArrayList<RdfObjectProxy> proxiesToDelete = new ArrayList<RdfObjectProxy>();
-			reconcileReferencesPreprocessing();
+			// collect proxies to delete
+			// collect "real" objects to delete (PhysicalEntityParticipant, SequenceParticipant, ControlledVocabulary
+			// are being replaced by PhysicalEntity, CellularLocationVocabulary)
+			List<RdfObjectProxy> proxiesToDelete = new ArrayList<>();
+			List<BioPaxObject> objectsToDelete = new ArrayList<>();
+			// vocabularies to add to biopaxObjects
+			// we need to add them after the for loop, otherwise we get .ConcurrentModificationException
+			List<BioPaxObject> vocabulariesToAdd = new ArrayList<>();
+
+			// first pass: deal with PhysicalEntityParticipant and SequenceParticipant
+			// rebind proxy → participant → physicalEntity
+			for (BioPaxObject o : biopaxObjects) {
+				if (o instanceof BiopaxProxy.PhysicalEntityProxy) {
+					BiopaxProxy.PhysicalEntityProxy proxy = (BiopaxProxy.PhysicalEntityProxy) o;
+					String id = proxy.getID();
+					BioPaxObject realObject = resourceMap.get(id);
+					if (realObject instanceof PhysicalEntityParticipant) {
+						PhysicalEntityParticipant pep = (PhysicalEntityParticipant) realObject;
+						PhysicalEntity pe = pep.getPhysicalEntity();
+						// rebind so future .replace() calls see the PE, not the participant
+						resourceMap.put(id, pe);
+						objectsToDelete.add(pep);
+						proxiesToDelete.add(proxy);
+					}
+					else if (realObject instanceof SequenceParticipant) {
+						SequenceParticipant sp = (SequenceParticipant) realObject;
+						PhysicalEntity pe = sp.getPhysicalEntity();
+						resourceMap.put(id, pe);
+						objectsToDelete.add(sp);
+						proxiesToDelete.add(proxy);
+					}
+				} else if(o instanceof BiopaxProxy.CellularLocationVocabularyProxy) {
+					BiopaxProxy.CellularLocationVocabularyProxy proxy = (BiopaxProxy.CellularLocationVocabularyProxy) o;
+					String id = proxy.getID();
+					BioPaxObject realObject = resourceMap.get(id);
+					if (realObject instanceof ControlledVocabulary && !(realObject instanceof CellularLocationVocabulary)) {
+						ControlledVocabulary cv = (ControlledVocabulary) realObject;
+						// upgrade to CellularLocationVocabulary
+						CellularLocationVocabulary clv = new CellularLocationVocabulary();
+						clv.setID(cv.getID());
+						clv.setTerm(cv.getTerm());
+						clv.setxRef(cv.getxRef());
+						clv.setComments(cv.getComments());
+
+						vocabulariesToAdd.add(clv);
+						resourceMap.put(id, clv);
+						objectsToDelete.add(cv);
+						proxiesToDelete.add(proxy);
+					}
+				}
+			}
+			biopaxObjects.addAll(vocabulariesToAdd);
+
+			// the normal replace on every object, but proxy IDs now map to the underlying PhysicalEntity
 			int count = 0;
 			int totalCount = biopaxObjects.size();
-			for (BioPaxObject bpObject : biopaxObjects){
-				if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()){
+			HashSet<BioPaxObject> replacedBPObjects = new HashSet<BioPaxObject>();
+			for (BioPaxObject bpObject : biopaxObjects) {
+				if(clientTaskStatusSupport != null && clientTaskStatusSupport.isInterrupted()) {
 					throw UserCancelException.CANCEL_GENERIC;
 				}
 				int prog = (int)(count*100.0/totalCount);
@@ -256,31 +309,15 @@ public class PathwayModel {
 					clientTaskStatusSupport.setProgress(prog);
 				}
 				
-				if(bpObject instanceof RdfObjectProxy){
-					proxiesToDelete.add((RdfObjectProxy)bpObject);
-				}else{
+				if(!(bpObject instanceof RdfObjectProxy)) {
 					bpObject.replace(resourceMap, replacedBPObjects);
 				}
-				
-//				if (bpObject instanceof RdfObjectProxy){
-//					RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)bpObject;
-//					if (rdfObjectProxy.getResource() != null){
-//						String resource = rdfObjectProxy.getResource().replace("#","");
-//						BioPaxObject concreteObject = resourceMap.get(resource);//findFromResourceID(rdfObjectProxy.getResource());
-//						if (concreteObject != null){
-//							//System.out.println("replacing "+rdfObjectProxy.toString()+" with "+concreteObject.toString());
-//							replace(rdfObjectProxy,concreteObject);
-//							proxiesToDelete.add(rdfObjectProxy);
-//						}else{
-////							System.out.println("unable to resolve reference to "+rdfObjectProxy.toString());
-//						}
-//					}else{
-////						System.out.println("rdfProxy had no resource set "+rdfObjectProxy.toString());
-//					}
-//				}
 			}
+
+			// prune all proxies AND the participants we unwrapped
 			biopaxObjects.removeAll(proxiesToDelete);
-			
+			biopaxObjects.removeAll(objectsToDelete);
+
 			hideUtilityClassObjects();
 			cleanupUnresolvedProxies();
 			ConvertModulationToCatalysis();
@@ -288,7 +325,8 @@ public class PathwayModel {
 			ProcessKineticLaws();
 			setDisableUpdate(false);
 			firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));
-		}finally{
+
+		} finally {
 			setDisableUpdate(false);
 		}
 	}

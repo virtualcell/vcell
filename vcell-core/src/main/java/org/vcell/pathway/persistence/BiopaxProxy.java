@@ -10,38 +10,7 @@
 
 package org.vcell.pathway.persistence;
 
-import org.vcell.pathway.BioSource;
-import org.vcell.pathway.CellVocabulary;
-import org.vcell.pathway.CellularLocationVocabulary;
-import org.vcell.pathway.ChemicalStructure;
-import org.vcell.pathway.ConversionImpl;
-import org.vcell.pathway.DnaRegionReference;
-import org.vcell.pathway.EntityFeatureImpl;
-import org.vcell.pathway.EntityImpl;
-import org.vcell.pathway.EntityReference;
-import org.vcell.pathway.EntityReferenceTypeVocabulary;
-import org.vcell.pathway.Evidence;
-import org.vcell.pathway.EvidenceCodeVocabulary;
-import org.vcell.pathway.ExperimentalForm;
-import org.vcell.pathway.ExperimentalFormVocabulary;
-import org.vcell.pathway.Gene;
-import org.vcell.pathway.InteractionImpl;
-import org.vcell.pathway.InteractionVocabulary;
-import org.vcell.pathway.Pathway;
-import org.vcell.pathway.PathwayStep;
-import org.vcell.pathway.PhenotypeVocabulary;
-import org.vcell.pathway.PhysicalEntity;
-import org.vcell.pathway.Provenance;
-import org.vcell.pathway.RelationshipTypeVocabulary;
-import org.vcell.pathway.RnaRegionReference;
-import org.vcell.pathway.Score;
-import org.vcell.pathway.SequenceLocation;
-import org.vcell.pathway.SequenceModificationVocabulary;
-import org.vcell.pathway.SequenceRegionVocabulary;
-import org.vcell.pathway.SequenceSite;
-import org.vcell.pathway.Stoichiometry;
-import org.vcell.pathway.TissueVocabulary;
-import org.vcell.pathway.Xref;
+import org.vcell.pathway.*;
 import org.vcell.pathway.sbpax.SBEntityImpl;
 import org.vcell.pathway.sbpax.SBMeasurable;
 import org.vcell.pathway.sbpax.SBState;
@@ -63,6 +32,14 @@ public class BiopaxProxy {
 	public static class InteractionOrPathwayProxy extends InteractionImpl implements RdfObjectProxy { }
 	public static class PathwayProxy extends Pathway implements RdfObjectProxy { }
 	public static class PhysicalEntityProxy extends PhysicalEntity implements RdfObjectProxy { }
+	public static class PhysicalEntityParticipantProxy extends PhysicalEntityParticipant implements RdfObjectProxy { }
+	public static class SequenceParticipantProxy extends SequenceParticipant implements RdfObjectProxy { }
+	public static class ParticipantDirectionVocabularyProxy extends ParticipantDirectionVocabulary implements RdfObjectProxy { }
+	public static class SequenceFeatureProxy extends SequenceFeature implements RdfObjectProxy { }
+	public static class SequenceIntervalProxy extends SequenceInterval implements RdfObjectProxy { }
+	public static class SequenceLocationProxy extends SequenceLocation implements RdfObjectProxy { }
+	public static class SequenceSiteProxy extends SequenceSite implements RdfObjectProxy { }
+	public static class SequenceModificationVocabularyProxy extends SequenceModificationVocabulary implements RdfObjectProxy { }
 	public static class BioPaxObjectProxy extends EntityImpl implements RdfObjectProxy { }
 	public static class PathwayStepProxy extends PathwayStep implements RdfObjectProxy { }
 	public static class ProvenanceProxy extends Provenance implements RdfObjectProxy { }
@@ -70,10 +47,7 @@ public class BiopaxProxy {
 	public static class PhysicalEntityOrPathwayProxy extends EntityImpl implements RdfObjectProxy { }
 	public static class StoichiometryProxy extends Stoichiometry implements RdfObjectProxy { }
 	public static class XrefProxy extends Xref implements RdfObjectProxy { }
-	public static class SequenceLocationProxy extends SequenceLocation implements RdfObjectProxy { }
-	public static class SequenceSiteProxy extends SequenceSite implements RdfObjectProxy { }
 	public static class RelationshipTypeVocabularyProxy extends RelationshipTypeVocabulary implements RdfObjectProxy { }
-	public static class SequenceModificationVocabularyProxy extends SequenceModificationVocabulary implements RdfObjectProxy { }
 	public static class EntityFeatureProxy extends EntityFeatureImpl implements RdfObjectProxy { }
 	public static class CellularLocationVocabularyProxy extends CellularLocationVocabulary implements RdfObjectProxy { }
 	public static class EntityReferenceProxy extends EntityReference implements RdfObjectProxy { }
