@@ -15,10 +15,7 @@ import org.vcell.pathway.persistence.PathwayReader;
 import org.vcell.pathway.persistence.RDFXMLContext;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -48,7 +45,6 @@ public class PathwayParseTest {
 
         Document document = XmlUtil.readXML(insulinPathwayFile);
         doWork(document);
-        System.out.println("done parseTest");
     }
 
     // -------------------------------------------------------------------------------------------------------------
@@ -66,13 +62,12 @@ public class PathwayParseTest {
             String name = child.getName();
             childCounts.put(name, childCounts.getOrDefault(name, 0) + 1);
         }
-        childCounts.forEach((name, count) ->
-                System.out.println(name + " " + count)
-        );
+        // check that we found a few children that are of particular interes to us
+        assertTrue(childCounts.getOrDefault("biochemicalReaction", 0) > 0, "Expected at least one biochemicalReaction element");
+        assertTrue(childCounts.getOrDefault("physicalEntityParticipant", 0) > 0, "Expected at least one physicalEntityParticipant element");
+        assertTrue(childCounts.getOrDefault("sequenceParticipant", 0) > 0, "Expected at least one sequenceParticipant element");
 
-        System.out.println("starting parsing");
         PathwayModel pathwayModel = pathwayReader.parse(rootElement, null);
-        System.out.println("ending parsing");
 
         int proxyCount = 0;
         Map<String, Integer> parsedCounts = new LinkedHashMap<>();
@@ -82,18 +77,16 @@ public class PathwayParseTest {
                 proxyCount++;
                 continue;   // we skip the proxies, we only want the real things
             }
-            System.out.println("     " + bpo.getTypeLabel());
             String rawId = bpo.getIDShort();        // e.g. "#unificationXref5"
             String cleanedId = rawId.replaceFirst("^#", "") // remove leading #
                     .replaceFirst("\\d+$", "");             // remove trailing digits
             parsedCounts.put(cleanedId, parsedCounts.getOrDefault(cleanedId, 0) + 1);
         }
-        System.out.println("Found 'RdfObjectProxy':" + proxyCount);
-        parsedCounts.forEach((name, count) ->
-                System.out.println(name + " " + count)
-        );
-
-        // ---- compare XML objects with BioPax (parsed) objects ------------------------
+        // check that we parsed these children
+        assertTrue(parsedCounts.getOrDefault("biochemicalReaction", 0) > 0, "Expected at least one parsed biochemicalReaction");
+        assertTrue(parsedCounts.getOrDefault("physicalEntityParticipant", 0) > 0, "Expected at least one parsed physicalEntityParticipant");
+        assertTrue(parsedCounts.getOrDefault("sequenceParticipant", 0) > 0, "Expected at least one parsed sequenceParticipant");
+        assertTrue(proxyCount > 0, "Expected at least one RdfObjectProxy");
 
         List<String> missingInParsed = new ArrayList<>();
         for (String key : childCounts.keySet()) {
@@ -109,51 +102,33 @@ public class PathwayParseTest {
                 matchedCounts.put(key, "XML: " + xmlCount + ", Parsed: " + parsedCount);
             }
         }
-        System.out.println("Elements in XML but missing in parsed model:");
-        missingInParsed.forEach(System.out::println);
+        // ---- compare counts for XML objects and BioPax (parsed) objects ------------------------
+        assertEquals(childCounts.get("physicalEntityParticipant"), parsedCounts.get("physicalEntityParticipant"),
+                "Mismatch in count for physicalEntityParticipant between XML and parsed model");
+        assertEquals(childCounts.get("sequenceParticipant"), parsedCounts.get("sequenceParticipant"),
+                "Mismatch in count for sequenceParticipant between XML and parsed model");
 
-        System.out.println("\nElements present in both:");
-        matchedCounts.forEach((key, value) -> System.out.println(key + " → " + value));
-
-
-        // ----------------------------------------------------------------------
-
-        for (PhysicalEntityParticipant pe : pathwayModel.getObjects(PhysicalEntityParticipant.class)) {
-            // here we should see the PhysicalEntityParticipants and the SequenceParticipants
-            if(pe instanceof SequenceParticipant) {
-                // SequenceParticipant extends PhysicalEntityParticipant
-                System.out.println("SequenceParticipant: " + pe.getID());
-            } else {
-                System.out.println("PhysicalEntityParticipant: " + pe.getID());
-            }
-        }
 
         pathwayModel.reconcileReferences(null);
         pathwayModel.refreshParentMap();
         String text = pathwayModel.show(true);
-        System.out.println("---------- Reconciled Proxies -------------------------------------------");
 
-        for (PhysicalEntityParticipant pe : pathwayModel.getObjects(PhysicalEntityParticipant.class)) {
-            // here we should see the proxy
-            System.out.println("PhysicalEntityParticipant: " + pe.getID());
-        }
+        //
+        Set<PhysicalEntityParticipant> participants = pathwayModel.getObjects(PhysicalEntityParticipant.class);
+        assertTrue(participants.isEmpty(), "Expected no remaining PhysicalEntityParticipant instances after reconciliation");
 
-        for (PhysicalEntity pe : pathwayModel.getObjects(PhysicalEntity.class)) {
-            if (!(pe instanceof Protein ||
-                    pe instanceof Complex ||
-                    pe instanceof SmallMolecule ||
-                    pe instanceof DnaRegion ||
-                    pe instanceof RnaRegion)) {
-                System.out.println("Unsubclassed PhysicalEntity: " + pe.getID());
-            }
-        }
-
-        for (PhysicalEntityParticipant pe : pathwayModel.getObjects(PhysicalEntityParticipant.class)) {
-            // here we should see the real PhysicalEntityParticipant
-            System.out.println("PhysicalEntityParticipant: " + pe.getID());
-        }
-
-        System.out.println(text);
+        // all PhysicalEntities should be subclassed
+        // for many models this may actually fail, it's quite a common occurrence to use raw PhysicalEntities
+        // we may want to keep this commented out
+//        for (PhysicalEntity pe : pathwayModel.getObjects(PhysicalEntity.class)) {
+//            if (!(pe instanceof Protein ||
+//                    pe instanceof Complex ||
+//                    pe instanceof SmallMolecule ||
+//                    pe instanceof DnaRegion ||
+//                    pe instanceof RnaRegion)) {
+//                fail("Found unsubclassed PhysicalEntity: " + pe.getID());   // throw an assertion
+//            }
+//        }
     }
 
     @Test
@@ -193,8 +168,8 @@ public class PathwayParseTest {
     public static void main(String args[]) {
         try {
 //            Document document = XmlUtil.readSanitizedXML(new File("MyFile.xml"));    // for malformed xml files, like trailing garbage
-            Document document = XmlUtil.readXML(new File("C:\\TEMP\\pathway\\insulinPathway-5683177.xml"));
-//            Document document = XmlUtil.readXML(new File("C:/TEMP/pathway/egfrPathway-180292.xml"));
+//            Document document = XmlUtil.readXML(new File("C:\\TEMP\\pathway\\insulinPathway-5683177.xml"));
+            Document document = XmlUtil.readXML(new File("C:/TEMP/pathway/egfrPathway-180292.xml"));
             doWork(document);
             System.out.println("done manual run");
         }catch (Exception e) {

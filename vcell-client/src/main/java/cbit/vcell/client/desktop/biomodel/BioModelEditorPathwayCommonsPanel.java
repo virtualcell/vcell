@@ -365,17 +365,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 				System.out.println(url.toString());
 				String ERROR_CODE_TAG = "error_code";
 
-				String contentString = ClientDownloader.downloadBytes(url, Duration.ofSeconds(10));
-
-				if(contentString.contains("301 Moved Permanently")) {
-					// check for orphan <hr> (not self-closing and no </hr>)
-					boolean hasOrphanHr = contentString.contains("<hr>") && !contentString.contains("</hr>");
-					if (hasOrphanHr) {		// insert </hr> before </body> if needed
-						contentString = contentString.replace("</body>", "</hr>\n</body>");
-					}
-					// the correction doesn't help, the parser doesn't get what it expects
-					throw new IOException("301 Moved Permanently.\nThe requested resource has been permanently relocated to a new URL.\nUnable to redirect: location unknown");
-				}
+				String contentString = ClientDownloader.downloadBytes(url, Duration.ofSeconds(20));
 
 				org.jdom2.Document jdomDocument = XmlUtil.stringToXML(contentString, null);
 				org.jdom2.Element rootElement = jdomDocument.getRootElement();

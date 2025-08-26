@@ -70,7 +70,7 @@ public class PathwaySearchTest {
         final URL url = new URL("https://reactome.org/ReactomeRESTfulAPI/RESTfulWS/biopaxExporter/Level2/" + pathwayId);
 
         String ERROR_CODE_TAG = "error_code";
-        String contentString = downloadBytes(url, Duration.ofSeconds(10));      // download
+        String contentString = downloadBytes(url, Duration.ofSeconds(20));      // download
 
         // assert response is XML
         assertTrue(contentString.trim().startsWith("<?xml"), "Response does not start with XML declaration");
@@ -108,9 +108,7 @@ public class PathwaySearchTest {
 
         boolean foundLevel2Import = imports.stream()
                 .anyMatch(el -> "http://www.biopax.org/release/biopax-level2.owl".equals(el.getAttributeValue("resource", rdfNs)));
-
         assertTrue(foundLevel2Import, "Expected owl:imports to reference BioPAX Level 2 ontology");
-
 
         // assert pathway name contains expected substring
         List<org.jdom2.Element> pathways = rootElement.getChildren("pathway", Namespace.getNamespace("http://www.biopax.org/release/biopax-level2.owl#"));
