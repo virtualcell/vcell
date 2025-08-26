@@ -289,7 +289,7 @@ public class PropertyLoader {
 
 	public static final String imageJ = record("vcell.imageJ", ValueType.EXE);
 	public static final String enableSpringSaLaD = record("vcell.enableSpringSaLaD", ValueType.BOOL);
-	public static final boolean enableSpringSaLaD_default_value = true;
+	public static final boolean enableSpringSaLaD_default_value = false;
 
 	private static final String headlessGUI = record("headless", ValueType.GEN);
 
