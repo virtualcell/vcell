@@ -53,5 +53,7 @@ void getUnitNormal(cbit.vcell.render.Vect3d unitNormal);
  * Quadrilateral constructor comment.
  */
 public void reverseDirection();
+
+    Polygon deepClone();
 }
 
