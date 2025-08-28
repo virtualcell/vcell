@@ -41,15 +41,15 @@ public class PathwayParseTest {
 // -----------------------------------------------------------------------------------------------------------------
 
     @Test
-    public void parseTest() throws IOException {
+    public void pathwayParseTest() throws IOException {
 
         Document document = XmlUtil.readXML(insulinPathwayFile);
-        doWork(document);
+        pathwayParse(document);
     }
 
     // -------------------------------------------------------------------------------------------------------------
 
-    private static void doWork(Document document) {
+    private static void pathwayParse(Document document) {
 
         RDFXMLContext rdfXmlContext = new RDFXMLContext();
         PathwayReader pathwayReader = new PathwayReader(rdfXmlContext);
@@ -168,9 +168,10 @@ public class PathwayParseTest {
     public static void main(String args[]) {
         try {
 //            Document document = XmlUtil.readSanitizedXML(new File("MyFile.xml"));    // for malformed xml files, like trailing garbage
-//            Document document = XmlUtil.readXML(new File("C:\\TEMP\\pathway\\insulinPathway-5683177.xml"));
-            Document document = XmlUtil.readXML(new File("C:/TEMP/pathway/egfrPathway-180292.xml"));
-            doWork(document);
+//            Document document = XmlUtil.readXML(new File("C:\\TEMP\\pathway\\insulinPathway-5683177.xml"));   // Defective ABCC8 does not form functional KATP
+//            Document document = XmlUtil.readXML(new File("C:/TEMP/pathway/egfrPathway-180292.xml"));
+            Document document = XmlUtil.readXML(new File("C:/TEMP/pathway/R-HSA-9615017.xml")); // insulin pathway: FOXO mediated transcription of...
+            pathwayParse(document);
             System.out.println("done manual run");
         }catch (Exception e) {
             e.printStackTrace();
