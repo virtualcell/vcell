@@ -26,6 +26,11 @@ public class Organism {
 		commonName = DOMUtil.firstChildContent(element, "common_name");
 		speciesName = DOMUtil.firstChildContent(element, "species_name");
 	}
+	public Organism(String ncbiOrganismId, String commonName, String speciesName) {
+		this.ncbiOrganismId = ncbiOrganismId;
+		this.commonName = commonName;
+		this.speciesName = speciesName;
+	}
 
 	public String ncbiOrganismId() { return ncbiOrganismId; }
 	public String commonName() { return commonName; }

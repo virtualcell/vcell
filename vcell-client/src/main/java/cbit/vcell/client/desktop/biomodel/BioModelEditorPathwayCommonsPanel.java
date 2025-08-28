@@ -21,8 +21,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,9 +46,13 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import javax.xml.parsers.*;
+import org.w3c.dom.*;
+import java.io.File;
 
 import cbit.vcell.client.server.DynamicClientProperties;
 import org.sbpax.util.StringUtil;
+import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayIOUtil;
 import org.vcell.pathway.persistence.RDFXMLContext;
@@ -66,6 +75,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.desktop.BioModelNode;
 import cbit.vcell.resource.PropertyLoader;
+import org.xml.sax.InputSource;
 
 @SuppressWarnings("serial")
 public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
@@ -182,17 +192,30 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 			} else {
 //				pathwaysList = new ArrayList<Pathway>();
 				pathwaysList.clear();
-				List<Element> hitElements = DOMUtil.childElements(searchResponse, "search_hit");
-				int pathwayCount = 0;
-				for(Element hitElement : hitElements) {
-					Hit hit = new Hit(hitElement);
-					List<Pathway> pL = hit.pathways();		// pathway
-					int numPathways = pL.size();
-					if (numPathways > 0) {
-						for (Pathway pathway: pL) {
-							pathway.setOrganism(hit.organism());
-							if(!pathwaysList.contains(pathway)) {
-								pathwaysList.add(pathway);
+
+				NodeList hitNodes = searchResponse.getElementsByTagName("searchHit");
+				System.out.println("Found " + hitNodes.getLength() + " hits\n");
+
+
+				for (int i = 0; i < hitNodes.getLength(); i++) {
+					Element hitElement = (Element) hitNodes.item(i);
+					String uri = Hit.getText(hitElement, "uri");
+					if (uri.contains("reactome")) {
+
+						NodeList responses = hitElement.getElementsByTagName("pathway");
+						if(responses.getLength() == 0) {
+							continue;	// we skip some malformed entries
+						}
+						Hit hit = new Hit(hitElement);
+
+						List<Pathway> pL = hit.pathways();        // pathway
+						int numPathways = pL.size();
+						if (numPathways > 0) {
+							for (Pathway pathway : pL) {
+								// pathway.setOrganism(hit.organism());
+								if (!pathwaysList.contains(pathway)) {
+									pathwaysList.add(pathway);
+								}
 							}
 						}
 					}
@@ -254,6 +277,9 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 					// <html><body><p style="color:red">This is some text!</p></body></html>
 					// <u> = underlined,  <b> = bold
 					String dbName = pathway.dataSource().name();
+					if(dbName.startsWith("pc14:")) {
+						dbName = dbName.replace("pc14:", "");
+					}
 					if(dbName.contains("Interaction Database")) {
 						dbName = dbName.replace("Interaction Database", "Db");
 					}
@@ -332,33 +358,24 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		AsynchClientTask task1 = new AsynchClientTask("Importing pathway '" + pathway.name() + "'", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
 			@Override
 			public void run(final Hashtable<String, Object> hashTable) throws Exception {
-				final URL url = new URL(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.PATHWAY_WEB_DO_URL) + "?"
-						+ PathwayCommonsKeyword.cmd + "=" + PathwayCommonsKeyword.get_record_by_cpath_id 
-						+ "&" + PathwayCommonsKeyword.version + "=" + PathwayCommonsVersion.v2.name 
-						+ "&" + PathwayCommonsKeyword.q + "=" + pathway.primaryId()
-						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.biopax);
-				
-				System.out.println(url.toString());				
+
+				String id = extractReactomeId(pathway.primaryId());
+				final URL url = new URL(" https://reactome.org/ReactomeRESTfulAPI/RESTfulWS/biopaxExporter/Level2/" + id);
+
+				System.out.println(url.toString());
 				String ERROR_CODE_TAG = "error_code";
-//				String ERROR_MSG_TAG = "error_msg";
-				final String contentString = ClientDownloader.downloadBytes(url, Duration.ofSeconds(10));
+
+				String contentString = ClientDownloader.downloadBytes(url, Duration.ofSeconds(20));
+
 				org.jdom2.Document jdomDocument = XmlUtil.stringToXML(contentString, null);
 				org.jdom2.Element rootElement = jdomDocument.getRootElement();
 				String errorCode = rootElement.getChildText(ERROR_CODE_TAG);
 				if (errorCode != null){
 					throw new RuntimeException("Failed to access " + url + " \n\nPlease try again.");
 				}
-				
-//						String xmlText = StringUtil.textFromInputStream(connection.getInputStream());
-//						PathwayReader pathwayReader = new PathwayReader();
-//						org.jdom2.Document jdomDocument = XmlUtil.stringToXML(xmlText, null);
-				
-//						String xmlText = StringUtil.textFromInputStream(connection.getInputStream(), "UTF-8");
-//						PathwayReader pathwayReader = new PathwayReader();
-//						org.jdom2.Document jdomDocument = XmlUtil.stringToXML(xmlText, "UTF-8");
-				
-				PathwayModel pathwayModel = PathwayIOUtil.extractPathwayFromJDOM(jdomDocument, new RDFXMLContext(), 
-						getClientTaskStatusSupport());
+
+				ClientTaskStatusSupport ctss = getClientTaskStatusSupport();
+				PathwayModel pathwayModel = PathwayIOUtil.extractPathwayFromJDOM(jdomDocument, new RDFXMLContext(), ctss);
 				PathwayData pathwayData = new PathwayData(pathway.name(), pathwayModel);
 				hashTable.put("pathwayData", pathwayData);
 			}
@@ -410,27 +427,59 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 			
 			@Override
 			public void run(Hashtable<String, Object> hashTable) throws Exception {
-				URL url = new URL(DynamicClientProperties.getDynamicClientProperties().getProperty(PropertyLoader.PATHWAY_WEB_DO_URL) + "?"
-						+ PathwayCommonsKeyword.cmd + "=" + PathwayCommonsKeyword.search 
-						+ "&" + PathwayCommonsKeyword.version + "=" + PathwayCommonsVersion.v2.name 
-						+ "&" + PathwayCommonsKeyword.q + "=" + URLEncoder.encode(searchText, "UTF-8")
-						+ "&" + PathwayCommonsKeyword.maxHits + "=" + 14
-						+ "&" + PathwayCommonsKeyword.output + "=" + PathwayCommonsKeyword.xml);
-				System.out.println(url);
-				String responseContent = ClientDownloader.downloadBytes(url, Duration.ofSeconds(10));
-				Document document = DOMUtil.parse(responseContent);	
 
-				Element errorElement = DOMUtil.firstChildElement(document, "error");
-				if (errorElement != null) { 
-//					String xml = DOMUtil.firstChildContent(document, "error");
-					throw  new RuntimeException(errorElement.getTextContent()); 
+				// Encode the quoted term: "%22insulin%22"
+				String encodedQ = URLEncoder.encode('"' + searchText + '"', StandardCharsets.UTF_8.name());
+				String uri = "https://www.pathwaycommons.org/pc2/search?"
+						+ "q=" + encodedQ
+						+ "&type=pathway";
+				System.out.println(uri);
+
+				HttpURLConnection conn = (HttpURLConnection)new URL(uri).openConnection();
+				conn.setRequestProperty("Accept", "application/xml");
+
+				Element searchResponse = null;
+				try (InputStream in = conn.getInputStream()) {
+					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+					// Prevent XXE attacks in XML parsing, suggested by GitHub Advanced Security bot
+					dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+					dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+					dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+					dbf.setFeature(javax.xml.XMLConstants.FEATURE_SECURE_PROCESSING, true);
+					DocumentBuilder      db  = dbf.newDocumentBuilder();
+					Document             doc = db.parse(in);
+					doc.getDocumentElement().normalize();
+
+					searchResponse = doc.getDocumentElement();
+					System.out.println("Root element: " + searchResponse.getNodeName());
 				}
-				Element searchResponse = DOMUtil.firstChildElement(document, "search_response");
-				if (searchResponse != null) {
-//					String xml = DOMUtil.firstChildContent(document, "search_response");
-//					System.out.println(xml);
-					hashTable.put("searchResponse", searchResponse);
-				}
+
+				// let's make sure we have some searchHit elements
+				NodeList hitNodes = searchResponse.getElementsByTagName("searchHit");
+				System.out.println("Found " + hitNodes.getLength() + " hits\n");
+				hashTable.put("searchResponse", searchResponse);
+
+//				for (int i = 0; i < hitNodes.getLength(); i++) {
+//					Element hit = (Element) hitNodes.item(i);
+//
+//					String uri = getText(hit, "uri");
+//					String name = getText(hit, "name");
+//					String source = getText(hit, "dataSource");
+//					String organism = getText(hit, "organism");
+//					String participants = getText(hit, "numParticipants");
+//					String processes = getText(hit, "numProcesses");
+//
+//					System.out.println("Pathway: " + name);
+//					System.out.println("    URI: " + uri);
+//					System.out.println("    Source: " + source);
+//					System.out.println("    Organism: " + (organism != null ? organism : "[unspecified]"));
+//					System.out.println("    Participants: " + participants + " | Processes: " + processes);
+//					System.out.println();
+//
+//					if(uri.contains("reactome")) {
+//						hashTable.put("searchHit", hit);
+//					}
+//				}
 			}
 		};
 		AsynchClientTask task2 = new AsynchClientTask("showing", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
@@ -509,8 +558,7 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 		gbc.insets = new Insets(4,4,4,4);
 		gbc.fill = GridBagConstraints.BOTH;
 		add(new JScrollPane(responseTree), gbc);
-		
-		
+
 		gridy ++;
 		CollapsiblePanel filterPanel = new CollapsiblePanel("Filter", true);
 		filterPanel.getContentPanel().setLayout(new GridBagLayout());
@@ -574,7 +622,6 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 //		optionsPanel.expand(false);
 //		add(optionsPanel, gbc);	
 
-		
 		gridy ++;
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -636,4 +683,14 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 	@Override
 	protected void onSelectedObjectsChange(Object[] selectedObjects) {
 	}
+
+	public static String extractReactomeId(String primaryId) {
+		final String PREFIX = "R-HSA-";
+		int index = primaryId.indexOf(PREFIX);
+		if (index == -1) {
+			throw new IllegalArgumentException("Malformed primaryId: missing 'R-HSA-' prefix");
+		}
+		return primaryId.substring(index + PREFIX.length());
+	}
+
 }
