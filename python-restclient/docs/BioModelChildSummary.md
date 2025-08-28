@@ -4,17 +4,13 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**sc_names** | **List[str]** |  | [optional] 
-**sc_annots** | **List[str]** |  | [optional] 
-**geo_names** | **List[str]** |  | [optional] 
-**geo_dims** | **List[int]** |  | [optional] 
 **app_types** | [**List[MathType]**](MathType.md) |  | [optional] 
-**sim_names** | **List[List[str]]** |  | [optional] 
-**sim_annots** | **List[List[str]]** |  | [optional] 
 **geometry_dimensions** | **List[int]** |  | [optional] 
 **geometry_names** | **List[str]** |  | [optional] 
 **simulation_context_annotations** | **List[str]** |  | [optional] 
 **simulation_context_names** | **List[str]** |  | [optional] 
+**all_simulation_names** | **List[List[str]]** |  | [optional] 
+**all_simulation_annots** | **List[List[str]]** |  | [optional] 
 **application_info** | [**List[ApplicationInfo]**](ApplicationInfo.md) |  | [optional] 
 
 ## Example
