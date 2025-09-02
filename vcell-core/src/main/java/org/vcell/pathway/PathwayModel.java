@@ -258,18 +258,13 @@ public class PathwayModel {
 					String id = proxy.getID();
 					BioPaxObject realObject = resourceMap.get(id);
 					if (realObject instanceof PhysicalEntityParticipant) {
+						// this also cover the case when realObject is instanceof SequenceParticipant
+						// since SequenceParticipant extends PhysicalEntityParticipant
 						PhysicalEntityParticipant pep = (PhysicalEntityParticipant) realObject;
 						PhysicalEntity pe = pep.getPhysicalEntity();
 						// rebind so future .replace() calls see the PE, not the participant
 						resourceMap.put(id, pe);
 						objectsToDelete.add(pep);
-						proxiesToDelete.add(proxy);
-					}
-					else if (realObject instanceof SequenceParticipant) {
-						SequenceParticipant sp = (SequenceParticipant) realObject;
-						PhysicalEntity pe = sp.getPhysicalEntity();
-						resourceMap.put(id, pe);
-						objectsToDelete.add(sp);
 						proxiesToDelete.add(proxy);
 					}
 				} else if(o instanceof BiopaxProxy.CellularLocationVocabularyProxy) {
@@ -321,7 +316,6 @@ public class PathwayModel {
 			hideUtilityClassObjects();
 			cleanupUnresolvedProxies();
 			ConvertModulationToCatalysis();
-//			System.out.println(show(false));
 			ProcessKineticLaws();
 			setDisableUpdate(false);
 			firePathwayChanged(new PathwayEvent(this,PathwayEvent.CHANGED));

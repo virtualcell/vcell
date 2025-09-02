@@ -120,18 +120,6 @@ public class InteractionImpl extends EntityImpl implements Interaction {
 					System.out.println(this + ": Unable to resolve proxy participant to PhysicalEntity");
 				}
 			}
-
-//			InteractionParticipant thing = participants.get(i);
-//			if(thing.getPhysicalEntity() instanceof RdfObjectProxy) {
-//				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing.getPhysicalEntity();
-//				if (rdfObjectProxy.getID() != null){
-//					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
-//					if (concreteObject != null){
-//						PhysicalEntity physicalEntity = (PhysicalEntity)concreteObject;
-//						participants.set(i, new InteractionParticipant(this, physicalEntity, thing.getType()));
-//					}
-//				}
-//			}
 		}
 	}
 

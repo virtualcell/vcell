@@ -124,7 +124,7 @@ public class PathwayXMLHelper {
 	}
 	public static void showUnexpected(Element childElement) {
 		String message = "Unexpected element " + getElementPathString(childElement);
-		//System.out.println(message);
+		System.err.println(message);
 	}
 	public static void showIgnored(Element childElement, String reason) {
 		String message = "Ignoring element " + getElementPathString(childElement) + "   " + reason;

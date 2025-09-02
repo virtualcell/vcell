@@ -94,6 +94,10 @@ public class PathwayReader {
 						addObjectSmallMolecule(childElement);
 					}else if (childElement.getName().equals("protein")){
 						addObjectProtein(childElement);
+					}else if (childElement.getName().equals("dna")){
+						addObjectDna(childElement);
+					}else if (childElement.getName().equals("rna")){
+						addObjectRna(childElement);
 					}else if (childElement.getName().equals("complex")){
 						addObjectComplex(childElement);
 					}else if (childElement.getName().equals("catalysis")){
@@ -273,7 +277,13 @@ public class PathwayReader {
 			insertAtStart(entity.getName(),childElement.getTextTrim());
 			return true;
 		}else if (childElement.getName().equals("NAME")){
-			entity.getName().add(childElement.getTextTrim());
+			String name = childElement.getTextTrim();
+			entity.getName().add(name);
+			String geneSymbol = extractGeneSymbol(name);
+			if(geneSymbol != null && geneSymbol.length() > 0 && entity.getName().size() == 1) {
+				// insert at start, only if we don't have already parsed a SHORT-NAME
+				insertAtStart(entity.getName(), geneSymbol);
+			}
 			return true;
 		}else if (childElement.getName().equals("XREF")){
 			entity.getxRef().add(addObjectXref(childElement));
@@ -2651,6 +2661,15 @@ public class PathwayReader {
 		return unificationXref;
 	}
 
-	
-	
+	public static String extractGeneSymbol(String input) {
+		if (input == null) return null;
+
+		String[] tokens = input.trim().split("\\s+");
+		if (tokens.length == 2 && tokens[0].startsWith("ENSEMBL:ENS")) {
+			return tokens[1];
+		}
+		return null; // pattern not matched
+	}
+
+
 }

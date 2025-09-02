@@ -21,6 +21,7 @@ import java.io.*;
 import java.net.*;
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyManagementException;
@@ -41,8 +42,7 @@ public class PathwaySearchTest {
     private static final Namespace RDF_NS = Namespace.getNamespace("rdf",
             "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
     private static final Namespace BP_NS = Namespace.getNamespace("bp",
-            "http://www.biopax.org/release/biopax-level3.owl#");
-
+            "http://www.biopax.org/release/biopax-level2.owl#");
 
     @BeforeAll
     public static void setUp() throws IOException {
@@ -69,20 +69,6 @@ public class PathwaySearchTest {
         pathwayDownload(pathwayId);
         System.out.println("pathwayDownloadTest - done");
     }
-
-
-
-    /*
-    pathway = {Pathway@14297} "[Pathway: primaryId="http://bioregistry.io/reactome:R-HSA-180292"; name="GAB1 signalosome";\ndataSource=[DataSource: primaryId="pc14:reactome"; name="pc14:reactome"]]"
-     primaryId = "http://bioregistry.io/reactome:R-HSA-180292"
-     name = "GAB1 signalosome"
-     organism = {Organism@14309} "[Organism: ncbiOrganismId="http://bioregistry.io/ncbitaxon:9606"; commonName="Human"; speciesName="Homo sapiens"]"
-     dataSource = {DataSource@14310} "[DataSource: primaryId="pc14:reactome"; name="pc14:reactome"]"
-
-    corresponds to egfrPathway-180292.xml
-     */
-// TODO: another possible test for a much larger file, probably not worth it
-
 
 
     // This test will query for insulin and receives a list of insulin pathways
@@ -122,7 +108,7 @@ public class PathwaySearchTest {
 
     // --- Utilities ---------------------------------------------------------------------------------------------------
 
-    public static String downloadBytes(final URL url, Duration timeout) {
+    private static String downloadBytes(final URL url, Duration timeout) {
         try {
             boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
             boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
@@ -163,12 +149,12 @@ public class PathwaySearchTest {
     }
 
     // wrapper to get a jdom2 Document
-    public static org.jdom2.Document downloadAndParseXml(URL url, Duration timeout) {
+    private static org.jdom2.Document downloadAndParseXml(URL url, Duration timeout) {
         String xmlContent = downloadBytes(url, timeout);
         return XmlUtil.stringToXML(xmlContent, null);
     }
 
-    public static String pathwayDownload(String pathwayId) throws MalformedURLException {
+    private static String pathwayDownload(String pathwayId) throws MalformedURLException {
         final URL url = new URL("https://reactome.org/ReactomeRESTfulAPI/RESTfulWS/biopaxExporter/Level2/" + pathwayId);
 
         String ERROR_CODE_TAG = "error_code";
@@ -228,14 +214,16 @@ public class PathwaySearchTest {
      * @return a new Document containing only the cloned, pruned elements in encounter order
      */
     private static Document filter(Document inputDoc, String rootId, int maxDepth) {
-        // 1. build lookup: rdf:ID → Element
+
+        // build lookup: rdf:ID → Element
         Map<String, Element> idToElement = new HashMap<>();
         for (Element e : collectElementsWithId(inputDoc)) {
             String id = e.getAttributeValue("ID", RDF_NS);
             idToElement.put(id, e);
         }
 
-        // 2. BFS with depth tracking, visited set, and a LinkedHashMap for cloned results
+        // BFS (Breadth-First Search)
+        // with depth tracking, visited set, and a LinkedHashMap for cloned results
         Queue<String> queue = new LinkedList<>();
         Map<String, Integer> depth   = new HashMap<>();
         Set<String> visited          = new HashSet<>();
@@ -257,12 +245,12 @@ public class PathwaySearchTest {
                 continue; // missing reference, skip
             }
 
-            // 3. clone and prune unwanted bits
+            // clone and prune unwanted bits
             Element cloned = original.clone();
-            pruneUnwanted(cloned);
+            pruneInlineChildren(cloned);
             clones.put(currentId, cloned);
 
-            // 4. enqueue any referenced IDs
+            // enqueue any referenced IDs
             for (Element child : original.getDescendants(new ElementFilter())) {
                 String res = child.getAttributeValue("resource", RDF_NS);
                 if (res != null && res.contains("#")) {
@@ -275,7 +263,7 @@ public class PathwaySearchTest {
             }
         }
 
-        // 5. assemble new RDF root and attach each clone in insertion order
+        // assemble new RDF root and attach each clone in insertion order
         Element newRoot = new Element("RDF", RDF_NS);
         newRoot.addNamespaceDeclaration(RDF_NS);
         newRoot.addNamespaceDeclaration(BP_NS);
@@ -287,9 +275,7 @@ public class PathwaySearchTest {
         return new Document(newRoot);
     }
 
-    /**
-     * Finds every Element in the document that carries an rdf:ID attribute.
-     */
+    // finds every Element in the document that carries an rdf:ID attribute.
     private static List<Element> collectElementsWithId(Document doc) {
         List<Element> list = new ArrayList<>();
         for (Element e : doc.getRootElement().getDescendants(new ElementFilter())) {
@@ -300,68 +286,26 @@ public class PathwaySearchTest {
         return list;
     }
 
-    /**
-     * Detaches any children matching the unwanted patterns:
-     *   • <bp:COMMENT rdf:datatype="…">
-     *   • <bp:publicationXref>
-     *   • <bp:AUTHORS>
-     *   • <bp:XREF rdf:resource="#unificationXref">
-     *   • <bp:DATA-SOURCE rdf:resource="#dataSource">
-     *   • <bp:SYNONYMS>
-     */
-    private static void pruneUnwanted(Element root) {
-        // COMMENT with rdf:datatype
-        Iterator<Element> comments = root.getDescendants(
-                new ElementFilter("COMMENT", BP_NS));
-        while (comments.hasNext()) {
-            comments.next().detach();
+    private static void pruneInlineChildren(Element element) {
+        List<Element> toRemove = new ArrayList<>();
+        for (Element e : element.getDescendants(new ElementFilter("COMMENT", BP_NS))) {
+            toRemove.add(e);
         }
-
-        // publicationXref
-        Iterator<Element> pubs = root.getDescendants(
-                new ElementFilter("publicationXref", BP_NS));
-        while (pubs.hasNext()) {
-            pubs.next().detach();
+        for (Element e : element.getDescendants(new ElementFilter("SYNONYMS", BP_NS))) {
+            toRemove.add(e);
         }
-
-        // AUTHORS
-        Iterator<Element> authors = root.getDescendants(
-                new ElementFilter("AUTHORS", BP_NS));
-        while (authors.hasNext()) {
-            authors.next().detach();
+        for (Element e : element.getDescendants(new ElementFilter("AUTHORS", BP_NS))) {
+            toRemove.add(e);
         }
-
-        // XREF pointing to unificationXref
-        Iterator<Element> xrefs = root.getDescendants(
-                new ElementFilter("XREF", BP_NS));
-        while (xrefs.hasNext()) {
-            Element x = xrefs.next();
-            String res = x.getAttributeValue("resource", RDF_NS);
-            if (res != null && res.endsWith("#unificationXref")) {
-                x.detach();
-            }
-        }
-
-        // DATA-SOURCE pointing to dataSource
-        Iterator<Element> sources = root.getDescendants(
-                new ElementFilter("DATA-SOURCE", BP_NS));
-        while (sources.hasNext()) {
-            Element s = sources.next();
-            String res = s.getAttributeValue("resource", RDF_NS);
-            if (res != null && res.endsWith("#dataSource")) {
-                s.detach();
-            }
-        }
-
-        // SYNONYMS
-        Iterator<Element> syns = root.getDescendants(
-                new ElementFilter("SYNONYMS", BP_NS));
-        while (syns.hasNext()) {
-            syns.next().detach();
+        for (Element e : toRemove) {
+            e.detach();
         }
     }
 
-    private static void downloadPathway(String pathwayId, String destinationDir) {
+    // given a pathwayId, extracts it and stores it as xml file in the specified directory
+    // the goal is to facilitate debugging by not repeatedly download it every time we
+    // need to parse it
+    private static void pathwayDownloadToFile(String pathwayId, String destinationDir) {
         destinationDir = destinationDir != null
                 ? destinationDir
                 : "C:"
@@ -389,7 +333,15 @@ public class PathwaySearchTest {
         }
     }
 
-    private static String filterPathwayByTargetId(String pathwayId, String targetId, String sourceDir) {
+    /*
+       Given a large pathway xml file, we extract an entity we want to analize (for example a biochemical reaction)
+       We also recursively extract its referenced subgraph
+       Input: directory containing downloaded files
+            File format: pathwayId + ".xml" - use pathwayDownloadToFile() to extract the pathway
+       pathwayId (just the numeric part, like 9615017)
+       targetId - the entity we want to extract, ex biochemicalReaction27
+     */
+    private static Document filterPathwayByTargetId(String pathwayId, String targetId, String sourceDir) {
 
         sourceDir = sourceDir != null
                 ? sourceDir
@@ -408,7 +360,7 @@ public class PathwaySearchTest {
             contentString = java.nio.file.Files.readString(sourceFile);     // attempt to read the RDF/XML file from disk
 
         } catch (IOException e) {
-            // Fallback: download from Pathway Commons if local file is missing or unreadable
+            // fallback: download from Pathway Commons if local file is missing or unreadable
             System.err.println("Failed to read local file — falling back to download");
             readSuccess = false;
         }
@@ -421,17 +373,38 @@ public class PathwaySearchTest {
 
             // filter down to just that element + its referenced subgraph
             Document filteredDoc = filter(fullDoc, targetId, maxDepth);
-
-            // output the result as a pretty‐printed XML String
-            XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
-            String filteredString = out.outputString(filteredDoc);
-            System.out.println(filteredString);
-            return filteredString;
+            return filteredDoc;
 
         }catch (Exception e) {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private static void writeFilteredPathway(Document doc, String pathwayId, String targetId, String sourceDir) {
+        // 1. Resolve output directory
+        sourceDir = sourceDir != null
+                ? sourceDir
+                : "C:"
+                + File.separator + "temp"
+                + File.separator + "pathway"
+                + File.separator + "downloads";
+        try {
+            Path dirPath = Paths.get(sourceDir);    // ensure directory exists
+            Files.createDirectories(dirPath);
+            String fileName = pathwayId + "_" + targetId + ".xml";  // construct output file path
+            Path outputPath = dirPath.resolve(fileName);
+
+            // write the JDOM Document to file
+            XMLOutputter outputter = new XMLOutputter(Format.getPrettyFormat());
+            try (FileWriter writer = new FileWriter(outputPath.toFile())) {
+                outputter.output(doc, writer);
+            }
+            System.out.println("Filtered pathway written to: " + outputPath.toAbsolutePath());
+        } catch (IOException e) {
+            System.err.println("Failed to write filtered pathway to file");
+            e.printStackTrace();
+        }
     }
 
 // ------------------------------------------------------------------------------------------------------------------
@@ -441,62 +414,21 @@ public class PathwaySearchTest {
         String pathwayId = (args.length > 0) ? args[0] : "9615017";                 // reactome pathway ID (ex: 9615017
         String targetId = (args.length > 1) ? args[1] : "biochemicalReaction29";    // the rdf:ID we want to extract (ex: biochemicalReaction1)
 
-//        downloadPathway(pathwayId, null);
-        filterPathwayByTargetId(pathwayId, targetId, null);
+//        pathwayDownloadToFile(pathwayId, null);
+        Document filteredDoc = filterPathwayByTargetId(pathwayId, targetId, null);
+        if(filteredDoc == null) {
+            System.out.println("Filtered document is null");
+            System.exit(1);
+        }
+        // output the result as a pretty‐printed XML String
+        XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
+        String filteredString = out.outputString(filteredDoc);
+        System.out.println(filteredString);
+
+        // optional, save it
+        writeFilteredPathway( filteredDoc, pathwayId, targetId, null);
         System.out.println("Done work on pathway id " + pathwayId);
    }
 
 
 }
-/*
-complex : "FOXO1,FOXO1:PPARGC1A,FOXO3,FOXO4,FOXO6:G6PC gene"  ID='http://www.reactome.org/biopax/9615017##complex10' : Unable to resolve proxy component to PhysicalEntity
-biochemical reaction : "SREBF1 gene expression is inhibited by FOXO1"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction29' : Unable to resolve proxy participant to PhysicalEntity
-complex : "FOXO1,FOXO3,FOXO4:IGFBP1 gene"  ID='http://www.reactome.org/biopax/9615017##complex13' : Unable to resolve proxy component to PhysicalEntity
-complex : "FOXO1:RETN gene"  ID='http://www.reactome.org/biopax/9615017##complex23' : Unable to resolve proxy component to PhysicalEntity
-complex : "FOXO4:ATXN3:SOD2 gene"  ID='http://www.reactome.org/biopax/9615017##complex3' : Unable to resolve proxy component to PhysicalEntity
-biochemical reaction : "RETN gene expression is stimulated by FOXO1"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction34' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "FOXO1:PPARGC1A,FOXO4 binds PCK1 gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction18' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "IGFBP1 gene expression is stimulated by FOXO1,FOXO3,FOXO4"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction21' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "GCK gene expression is inhibited by FOXO1, SIN3A and HDACs"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction27' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "FOXO3,FOXO6,(FOXO1) binds CAT gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction7' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "FBXO32 gene expression is stimulated by FOXO1,FOXO3,(FOXO4)"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction23' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "FOXO1 and SIN3A:HDAC complex bind GCK gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction26' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "CAT gene expression is stimulated by FOXO3,FOXO6,(FOXO1)"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction8' : Unable to resolve proxy participant to PhysicalEntity
-complex : "FOXO1:SREBF1 gene"  ID='http://www.reactome.org/biopax/9615017##complex18' : Unable to resolve proxy component to PhysicalEntity
-biochemical reaction : "SOD2 gene expression is stimulated by FOXO4, FOXO3 and FOXO1"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction6' : Unable to resolve proxy participant to PhysicalEntity
-complex : "FOXO1,FOXO3,(FOXO4):FBXO32 gene"  ID='http://www.reactome.org/biopax/9615017##complex14' : Unable to resolve proxy component to PhysicalEntity
-biochemical reaction : "FOXO1,FOXO3,FOXO4 bind IGFBP1 gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction20' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "FOXO1 binds RETN gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction33' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "ABCA6 gene expression is stimulated by FOXO1,FOXO3"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction25' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "POMC gene expression is inhibited by FOXO1"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction14' : Unable to resolve proxy participant to PhysicalEntity
-complex : "FOXO1:AGRP gene"  ID='http://www.reactome.org/biopax/9615017##complex7' : Unable to resolve proxy component to PhysicalEntity
-complex : "FOXO1:NR3C1:(ALDO,11DCORST,CORST,CORT):TRIM63 gene"  ID='http://www.reactome.org/biopax/9615017##complex21' : Unable to resolve proxy component to PhysicalEntity
-biochemical reaction : "G6PC gene expression is stimulated by FOXO1,FOXO3,FOXO4,FOXO6"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction17' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "NPY gene expression is stimulated by FOXO1"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction10' : Unable to resolve proxy participant to PhysicalEntity
-complex : "FOXO3:SOD2 gene"  ID='http://www.reactome.org/biopax/9615017##complex4' : Unable to resolve proxy component to PhysicalEntity
-complex : "FOXO1:PPARGC1A,FOXO3,FOXO4:PCK1 gene"  ID='http://www.reactome.org/biopax/9615017##complex12' : Unable to resolve proxy component to PhysicalEntity
-biochemical reaction : "FOXO4:ATXN3 binds SOD2 gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction4' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "AGRP gene expression is stimulated by FOXO1"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction12' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "FOXO1 binds AGRP gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction11' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "FOXO1,FOXO3 and SMAD3 bind TRIM63 gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction31' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "FOXO1 and NR3C1 bind TRIM63 gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction30' : Unable to resolve proxy participant to PhysicalEntity
-complex : "FOXO6:PLXNA4 gene"  ID='http://www.reactome.org/biopax/9615017##complex1' : Unable to resolve proxy component to PhysicalEntity
-biochemical reaction : "FOXO1 binds NPY gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction9' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "TRIM63 gene expression is stimulated by FOXO1 and FOXO3"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction32' : Unable to resolve proxy participant to PhysicalEntity
-complex : "FOXO1,FOXO3:p-2S-SMAD2/3:SMAD4:TRIM63 gene"  ID='http://www.reactome.org/biopax/9615017##complex22' : Unable to resolve proxy component to PhysicalEntity
-complex : "FOXO1:NPY gene"  ID='http://www.reactome.org/biopax/9615017##complex6' : Unable to resolve proxy component to PhysicalEntity
-biochemical reaction : "FOXO1 binds SREBF1 gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction28' : Unable to resolve proxy participant to PhysicalEntity
-complex : "FOXO3,FOXO6,(FOXO1):CAT gene"  ID='http://www.reactome.org/biopax/9615017##complex5' : Unable to resolve proxy component to PhysicalEntity
-biochemical reaction : "FOXO6 binds PLXNA4 gene"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction1' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "FOXO1,FOXO3,(FOXO4) bind FBXO32 gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction22' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "FOXO3 binds SOD2 gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction5' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "PCK1 gene expression is stimulated by FOXO1:PPARGC1A"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction19' : Unable to resolve proxy participant to PhysicalEntity
-complex : "FOXO1,FOXO3:ABCA6 gene"  ID='http://www.reactome.org/biopax/9615017##complex15' : Unable to resolve proxy component to PhysicalEntity
-biochemical reaction : "FOXO1,FOXO1:PPARGC1A,FOXO3,FOXO4,FOXO6 bind G6PC gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction16' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "FOXO1 binds POMC gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction13' : Unable to resolve proxy participant to PhysicalEntity
-biochemical reaction : "PLXNA4 gene expression is stimulated by FOXO6"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction2' : Unable to resolve proxy participant to PhysicalEntity
-complex : "FOXO1:POMC gene"  ID='http://www.reactome.org/biopax/9615017##complex8' : Unable to resolve proxy component to PhysicalEntity
-complex : "FOXO1:SIN3A:HDAC1.HDAC2 dimers:GCK gene"  ID='http://www.reactome.org/biopax/9615017##complex16' : Unable to resolve proxy component to PhysicalEntity
-biochemical reaction : "FOXO1,FOXO3 bind ABCA6 gene promoter"  ID='http://www.reactome.org/biopax/9615017##biochemicalReaction24' : Unable to resolve proxy participant to PhysicalEntity
-
- */
