@@ -33,7 +33,7 @@ import cbit.util.xml.XmlUtil;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.*;
-
+import static org.vcell.util.network.ClientDownloader.downloadBytes;
 
 
 @Tag("Fast")
@@ -55,6 +55,8 @@ public class PathwaySearchTest {
     }
 
     /*
+    Given a reactome pathway id, it downloads a pathway as xml document
+
     pathway = {Pathway@14156} "[Pathway: primaryId="http://bioregistry.io/reactome:R-HSA-5683177"; name="Defective ABCC8 can cause hypo- and hyper-glycemias";\ndataSource=[DataSource: primaryId="pc14:reactome"; name="pc14:reactome"]]"
      primaryId = "http://bioregistry.io/reactome:R-HSA-5683177"
      name = "Defective ABCC8 can cause hypo- and hyper-glycemias"
@@ -107,46 +109,6 @@ public class PathwaySearchTest {
     }
 
     // --- Utilities ---------------------------------------------------------------------------------------------------
-
-    private static String downloadBytes(final URL url, Duration timeout) {
-        try {
-            boolean bIgnoreHostMismatch = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreHostMismatch, false);
-            boolean bIgnoreCertProblems = PropertyLoader.getBooleanProperty(PropertyLoader.sslIgnoreCertProblems, false);
-            boolean ignoreCertProblems = bIgnoreCertProblems || bIgnoreHostMismatch;
-
-            HttpClient client;
-            if (ignoreCertProblems) {
-                // create a trust manager that does not validate certificate chains
-                TrustManager[] trustAllCerts = new TrustManager[] {
-                        new X509TrustManager() {
-                            public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
-                            public void checkClientTrusted(X509Certificate[] certs, String authType) { }
-                            public void checkServerTrusted(X509Certificate[] certs, String authType) { }
-                        }
-                };
-
-                // Install the all-trusting trust manager
-                SSLContext sslContext = SSLContext.getInstance("SSL");
-                sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-
-                // Create an HttpClient that uses the custom SSL context
-                client = HttpClient.newBuilder()
-                        .sslContext(sslContext)
-                        .build();
-            } else {
-                // Use default SSL verification
-                client = HttpClient.newHttpClient();
-            }
-
-            // Send a GET request
-            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder().uri(url.toURI()).timeout(timeout).GET().build();
-            java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
-
-            return response.body();
-        } catch (NoSuchAlgorithmException | KeyManagementException | URISyntaxException | IOException | InterruptedException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     // wrapper to get a jdom2 Document
     private static org.jdom2.Document downloadAndParseXml(URL url, Duration timeout) {
