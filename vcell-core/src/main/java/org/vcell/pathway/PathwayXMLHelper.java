@@ -12,12 +12,16 @@ package org.vcell.pathway;
 
 import java.util.Hashtable;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdom2.Attribute;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Parent;
 
 public class PathwayXMLHelper {
+
+	private static final Logger lg = LogManager.getLogger(PathwayXMLHelper.class);
 
 //	public static final Namespace vcns = Namespace.getNamespace("vcns", "vcns-something");
 	public static final String schemaString = new String("http://www.w3.org/2001/XMLSchema#string");
@@ -85,22 +89,22 @@ public class PathwayXMLHelper {
 	public static void showUnexpected(Attribute attribute, BioPaxObject bpObject) {
 		String message = "Unexpected attribute " + getElementPathString(attribute.getParent()) + " << " + attribute.getQualifiedName();
 		bpObject.addParserWarning(message);
-		//System.out.println(message);
+		lg.debug(message);
 	}
 	public static void showUnexpected(Object object, BioPaxObject bpObject) {
 		String message = "Unexpected object " + object.toString();
 		bpObject.addParserWarning(message);
-		//System.out.println(message);
+		lg.debug(message);
 	}
 	public static void showIgnored(Attribute attribute, BioPaxObject bpObject) {
 		String message = "Ignored attribute " + getElementPathString(attribute.getParent()) + " << " + attribute.getQualifiedName();
 		bpObject.addParserWarning(message);
-		//System.out.println(message);
+		lg.debug(message);
 	}
 	public static void showUnexpected(Element childElement, BioPaxObject bpObject) {
 		String message = "Unexpected element " + getElementPathString(childElement);
 		bpObject.addParserWarning(message);
-		//System.out.println(message);
+		lg.debug(message);
 	}
 	public static void showIgnored(Element childElement, String reason, BioPaxObject bpObject) {
 //		if (!reason.contains("?")){
@@ -108,27 +112,27 @@ public class PathwayXMLHelper {
 //		}
 		String message = "Ignoring element " + getElementPathString(childElement) + "   " + reason;
 		bpObject.addParserWarning(message);
-		//System.out.println(message);
+		lg.debug(message);
 	}
 	public static void showUnexpected(Attribute attribute) {
 		String message = "Unexpected attribute " + getElementPathString(attribute.getParent()) + " << " + attribute.getQualifiedName();
-		//System.out.println(message);
+		lg.debug(message);
 	}
 	public static void showUnexpected(Object object) {
 		String message = "Unexpected object " + object.toString();
-		//System.out.println(message);
+		lg.debug(message);
 	}
 	public static void showIgnored(Attribute attribute) {
 		String message = "Ignored attribute " + getElementPathString(attribute.getParent()) + " << " + attribute.getQualifiedName();
-		//System.out.println(message);
+		lg.debug(message);
 	}
 	public static void showUnexpected(Element childElement) {
 		String message = "Unexpected element " + getElementPathString(childElement);
-		System.err.println(message);
+		lg.debug(message);
 	}
 	public static void showIgnored(Element childElement, String reason) {
 		String message = "Ignoring element " + getElementPathString(childElement) + "   " + reason;
-		//System.out.println(message);
+		lg.debug(message);
 	}
 	
 }

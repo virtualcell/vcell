@@ -20,6 +20,8 @@ import javax.net.ssl.X509TrustManager;
 import java.io.*;
 import java.net.*;
 import java.net.http.HttpClient;
+import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -30,7 +32,10 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.*;
 import cbit.util.xml.XmlUtil;
+import org.vcell.util.bioregistry.ncbitaxon.OrganismLookup;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.vcell.util.network.ClientDownloader.downloadBytes;
@@ -38,6 +43,8 @@ import static org.vcell.util.network.ClientDownloader.downloadBytes;
 
 @Tag("Fast")
 public class PathwaySearchTest {
+
+    private static final Logger lg = LogManager.getLogger(PathwaySearchTest.class);
 
     private static final Namespace RDF_NS = Namespace.getNamespace("rdf",
             "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
@@ -69,7 +76,7 @@ public class PathwaySearchTest {
     public void pathwayDownloadTest() throws MalformedURLException {
         String pathwayId = "5683177";  // Reactome pathway ID
         pathwayDownload(pathwayId);
-        System.out.println("pathwayDownloadTest - done");
+        lg.debug("pathwayDownloadTest - done");
     }
 
 
@@ -83,7 +90,7 @@ public class PathwaySearchTest {
         String uri = "https://www.pathwaycommons.org/pc2/search?"
                 + "q=" + encodedQ
                 + "&type=pathway";
-        System.out.println("Query URI: " + uri);
+        lg.debug("Query URI: " + uri);
 
         HttpURLConnection conn = (HttpURLConnection) new URL(uri).openConnection();
         conn.setRequestProperty("Accept", "application/xml");
@@ -105,8 +112,32 @@ public class PathwaySearchTest {
         List<org.jdom2.Element> hits = root.getChildren("searchHit");
         assertFalse(hits.isEmpty(), "No <searchHit> elements found");
         assertEquals(100, hits.size(), "Expected 100 <searchHit> elements, but found " + hits.size());
-        System.out.println("searchTest - done");
+        lg.debug("searchTest - done");
     }
+
+    @Test
+    public void fetchTaxonomyNameFromIdTest() {
+        String taxonId = "9940"; // Ovis aries (sheep)
+
+        try {
+            HttpResponse<String> response = OrganismLookup.fetchTaxonomyResponse(taxonId);
+            assertEquals(200, response.statusCode(), "Unexpected HTTP status");
+
+            String result = OrganismLookup.parseTaxonomyName(taxonId, response.body());
+            assertEquals("Ovis aries (sheep)", result, "Incorrect taxonomy name");
+
+        } catch (HttpTimeoutException e) {
+            fail("Timeout occurred while fetching taxonomy data");
+        } catch (UnknownHostException e) {
+            fail("Host unreachable: check network or endpoint");
+        } catch (IOException e) {
+            fail("I/O error during taxonomy fetch: " + e.getMessage());
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            fail("Request interrupted");
+        }
+    }
+
 
     // --- Utilities ---------------------------------------------------------------------------------------------------
 
@@ -287,10 +318,10 @@ public class PathwaySearchTest {
             Path outputFile = dirPath.resolve(pathwayId + ".xml");
             java.nio.file.Files.write(outputFile, contentString.getBytes(StandardCharsets.UTF_8));
 
-            System.out.println("Saved BioPAX to: " + outputFile.toAbsolutePath());
+            lg.debug("Saved BioPAX to: " + outputFile.toAbsolutePath());
         }
         catch (Exception e) {
-            System.err.println("Failed to download or save pathway " + pathwayId);
+            lg.warn("Failed to download or save pathway " + pathwayId);
             e.printStackTrace();
         }
     }
@@ -323,7 +354,7 @@ public class PathwaySearchTest {
 
         } catch (IOException e) {
             // fallback: download from Pathway Commons if local file is missing or unreadable
-            System.err.println("Failed to read local file — falling back to download");
+            lg.warn("Failed to read local file — falling back to download");
             readSuccess = false;
         }
         try {
@@ -362,10 +393,9 @@ public class PathwaySearchTest {
             try (FileWriter writer = new FileWriter(outputPath.toFile())) {
                 outputter.output(doc, writer);
             }
-            System.out.println("Filtered pathway written to: " + outputPath.toAbsolutePath());
+            lg.debug("Filtered pathway written to: " + outputPath.toAbsolutePath());
         } catch (IOException e) {
-            System.err.println("Failed to write filtered pathway to file");
-            e.printStackTrace();
+            lg.warn("Failed to write filtered pathway to file", e);
         }
     }
 
@@ -379,17 +409,17 @@ public class PathwaySearchTest {
 //        pathwayDownloadToFile(pathwayId, null);
         Document filteredDoc = filterPathwayByTargetId(pathwayId, targetId, null);
         if(filteredDoc == null) {
-            System.out.println("Filtered document is null");
+            lg.debug("Filtered document is null");
             System.exit(1);
         }
         // output the result as a pretty‐printed XML String
         XMLOutputter out = new XMLOutputter(Format.getPrettyFormat());
         String filteredString = out.outputString(filteredDoc);
-        System.out.println(filteredString);
+        lg.debug(filteredString);
 
         // optional, save it
         writeFilteredPathway( filteredDoc, pathwayId, targetId, null);
-        System.out.println("Done work on pathway id " + pathwayId);
+        lg.debug("Done work on pathway id " + pathwayId);
    }
 
 
