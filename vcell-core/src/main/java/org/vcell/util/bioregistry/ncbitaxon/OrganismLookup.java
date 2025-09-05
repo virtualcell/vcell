@@ -2,6 +2,7 @@ package org.vcell.util.bioregistry.ncbitaxon;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -27,7 +28,7 @@ public class OrganismLookup {
 
     private static final String PREFIX = "http://bioregistry.io/ncbitaxon:";
 
-    private static final Map<String, String> COMMON_NAMES = Map.ofEntries(
+    private static final Map<String, String> COMMON_NAMES = new LinkedHashMap<>(Map.ofEntries(
             Map.entry("9606", "human"),
             Map.entry("10090", "house mouse"),
             Map.entry("10116", "Norway rat"),
@@ -46,10 +47,10 @@ public class OrganismLookup {
             Map.entry("9825",  "domestic pig"),
             Map.entry("9796",  "horse"),
             Map.entry("9940",  "sheep"),
-            Map.entry("9925",  "Goat")
-    );
+            Map.entry("9925",  "goat")
+    ));
 
-    private static final Map<String, String> SCIENTIFIC_NAMES = Map.ofEntries(
+    private static final Map<String, String> SCIENTIFIC_NAMES = new LinkedHashMap<>(Map.ofEntries(
             Map.entry("9606", "Homo sapiens"),
             Map.entry("10090", "Mus musculus"),
             Map.entry("10116", "Rattus norvegicus"),
@@ -69,7 +70,7 @@ public class OrganismLookup {
             Map.entry("9796",  "Equus caballus"),
             Map.entry("9940",  "Ovis aries"),
             Map.entry("9925",  "Capra hircus")
-    );
+    ));
 
     // get name from full URI
     public static String getName(String fullUri, NameType type) {

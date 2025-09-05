@@ -360,6 +360,10 @@ public class BioModelEditorPathwayCommonsPanel extends DocumentEditorSubPanel {
 			public void run(final Hashtable<String, Object> hashTable) throws Exception {
 
 				String id = extractReactomeId(pathway.primaryId());
+				// TODO: we do have a lvl 3 parser, PathwayReaderBiopax3.parse() invoked in extractPathwayFromJDOM()
+				//  we only need to fix its potential bugs and use it, just replace Level2 with Level3 here
+				//  of course probably reconcileReferences may also need work, much simplification anyway
+				//  since SequenceParticipant is gone
 				final URL url = new URL(" https://reactome.org/ReactomeRESTfulAPI/RESTfulWS/biopaxExporter/Level2/" + id);
 
 				System.out.println(url.toString());
