@@ -58,18 +58,26 @@ public class Complex extends PhysicalEntity {
 	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
 		super.replace(resourceMap, replacedBPObjects);
 
-		for (int i=0; i<component.size(); i++) {
+		for (int i = 0; i < component.size(); i++) {
 			PhysicalEntity thing = component.get(i);
-			if(thing instanceof RdfObjectProxy) {
-				RdfObjectProxy rdfObjectProxy = (RdfObjectProxy)thing;
-				if (rdfObjectProxy.getID() != null){
-					BioPaxObject concreteObject = resourceMap.get(rdfObjectProxy.getID());
-					if (concreteObject != null){
-						component.set(i, (PhysicalEntity)concreteObject);
-					}
+
+			if (thing instanceof RdfObjectProxy) {
+				RdfObjectProxy proxy = (RdfObjectProxy) thing;
+				BioPaxObject candidate = resourceMap.get(proxy.getID());
+
+				// resolve one level deeper if still a proxy
+				if (candidate instanceof RdfObjectProxy) {
+					candidate = resourceMap.get(((RdfObjectProxy) candidate).getID());
+				}
+
+				if (candidate instanceof PhysicalEntity) {
+					component.set(i, (PhysicalEntity) candidate);
+				} else {			// resolution failed
+					System.out.println(this + ": Unable to resolve proxy component to PhysicalEntity");
 				}
 			}
 		}
+
 		for (int i=0; i<componentStoichiometry.size(); i++) {
 			Stoichiometry thing = componentStoichiometry.get(i);
 			if(thing instanceof RdfObjectProxy) {
