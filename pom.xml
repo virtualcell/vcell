@@ -198,6 +198,11 @@
 
 
 	<repositories>
+		<!-- we use this because javax.media:jai_core:1.1.3 is not available in Maven Central or in the Alfresco repository -->
+		<repository>
+			<id>osgeo</id>
+			<url>https://repo.osgeo.org/repository/release/</url>
+		</repository>
 		<!-- needed for com.mxgraph.jgraphx -->
 		<repository>
 			<id>com.alfresco.repository.public</id>
