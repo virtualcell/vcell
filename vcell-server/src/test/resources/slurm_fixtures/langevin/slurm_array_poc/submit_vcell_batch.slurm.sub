@@ -44,7 +44,7 @@ singularity exec --cleanenv \
   $CONTAINER_IMAGE \
   JavaPreprocessor64 $SIMXML $OUTPUT_DIR
 
-# ------------------------------------------------------------------
+# ---------------------------------------------------------------
 
 declare -A job_pid_map  # associative array to store job index -> PID mapping
 job_pids=()  # list to track PIDs
