@@ -1,48 +1,11 @@
 package org.vcell.solver.smoldyn;
 
-import java.awt.Color;
-import java.beans.PropertyVetoException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
-import org.apache.commons.io.output.NullWriter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.solver.smoldyn.SmoldynFileWriter.NotAConstantException;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ISize;
-
 import cbit.image.ImageException;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.geometry.SurfaceClass;
-import cbit.vcell.geometry.surface.GeometricRegion;
-import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
-import cbit.vcell.geometry.surface.Node;
+import cbit.vcell.geometry.*;
+import cbit.vcell.geometry.surface.*;
 import cbit.vcell.geometry.surface.Polygon;
-import cbit.vcell.geometry.surface.Surface;
-import cbit.vcell.geometry.surface.SurfaceCollection;
-import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
-import cbit.vcell.geometry.surface.Triangle;
-import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.math.CompartmentSubDomain;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.MembraneSubDomain;
+import cbit.vcell.math.*;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
-import cbit.vcell.math.ParticleVariable;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.parser.ExpressionException;
@@ -51,6 +14,18 @@ import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverException;
 import cbit.vcell.solver.server.SolverFileWriter;
 import cbit.vcell.solvers.MembraneElement;
+import cbit.vcell.xml.XmlHelper;
+import org.apache.commons.io.output.NullWriter;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.solver.smoldyn.SmoldynFileWriter.NotAConstantException;
+import org.vcell.util.ISize;
+
+import java.awt.*;
+import java.beans.PropertyVetoException;
+import java.io.PrintWriter;
+import java.util.*;
+import java.util.List;
 
 public class SmoldynSurfaceTessellator extends SolverFileWriter {
 
@@ -214,7 +189,7 @@ public class SmoldynSurfaceTessellator extends SolverFileWriter {
 
 	protected void cloneAndResample(Geometry geometry) throws Exception {
 	// clone and resample geometry
-			resampledGeometry = (Geometry) BeanUtils.cloneSerializable(geometry);
+			resampledGeometry = XmlHelper.cloneGeometry(geometry);
 			GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
 			ISize newSize = simulation.getMeshSpecification().getSamplingSize();
 			geoSurfaceDesc.setVolumeSampleSize(newSize);
