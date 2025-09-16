@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.TokenMangler;
@@ -26,13 +27,18 @@ import org.vcell.util.TokenMangler;
 public class BioModelChildSummary implements java.io.Serializable {
 	private final static Logger lg = LogManager.getLogger(BioModelChildSummary.class);
 //	public static final boolean debug = true;
+	@JsonIgnore
 	private String scNames[] = new String[0];
+	@JsonIgnore
 	private String scAnnots[] = new String[0];
+	@JsonIgnore
 	private String geoNames[] = new String[0];
+	@JsonIgnore
 	private int geoDims[] = new int[0];
 	private MathType appTypes[] = new MathType[0]; //deterministic application or stochastic application
-
+	@JsonIgnore
 	private String simNames[][] = new String[0][];
+	@JsonIgnore
 	private String simAnnots[][] = new String[0][];
 
 	private final static String NOCHILDREN = "NOCHILDREN";
@@ -208,6 +214,7 @@ public MathType[] getAppTypes() {
  * Creation date: (8/20/2004 2:18:34 PM)
  * @return java.lang.String[]
  */
+@JsonIgnore
 public String[] getSimulationAnnotations(String simulationContextName) {
 	for (int i = 0; i < scNames.length; i++){
 		if (scNames[i].equals(simulationContextName)){
@@ -232,11 +239,20 @@ public String[]getSimulationContextNames()
 	return scNames;
 }
 
+public String[][] getAllSimulationNames(){
+	return simNames;
+}
+
+public String[][] getAllSimulationAnnots(){
+	return simAnnots;
+}
+
 /**
  * Insert the method's description here.
  * Creation date: (8/20/2004 2:18:34 PM)
  * @return java.lang.String[]
  */
+@JsonIgnore
 public String[] getSimulationNames(String simulationContextName) {
 	for (int i = 0; i < scNames.length; i++){
 		if (scNames[i].equals(simulationContextName)){

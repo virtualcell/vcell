@@ -14,17 +14,13 @@ import { MathType } from './math-type';
 
 
 export interface BioModelChildSummary { 
-    scNames?: Array<string>;
-    scAnnots?: Array<string>;
-    geoNames?: Array<string>;
-    geoDims?: Array<number>;
     appTypes?: Array<MathType>;
-    simNames?: Array<Array<string>>;
-    simAnnots?: Array<Array<string>>;
     geometryDimensions?: Array<number>;
     geometryNames?: Array<string>;
     simulationContextAnnotations?: Array<string>;
     simulationContextNames?: Array<string>;
+    allSimulationNames?: Array<Array<string>>;
+    allSimulationAnnots?: Array<Array<string>>;
     applicationInfo?: Array<ApplicationInfo>;
 }
 
