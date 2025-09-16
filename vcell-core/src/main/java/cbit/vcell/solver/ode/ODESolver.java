@@ -18,6 +18,6 @@ import cbit.vcell.solver.server.Solver;
  * Creation date: (8/19/2000 8:58:11 PM)
  * @author: John Wagner
  */
-public interface ODESolver extends Solver {
+public interface ODESolver extends Solver, ODESolverResultsSetReturnable {
 	ODESolverResultSet getODESolverResultSet();
 }
