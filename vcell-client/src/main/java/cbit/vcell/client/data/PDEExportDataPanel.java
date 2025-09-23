@@ -22,6 +22,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.*;
 import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
+import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
@@ -647,7 +648,6 @@ private ExportSpecs getExportSpecs() {
 	for (int i = 0; i < selections.length; i++) {
 		selections[i] = (SpatialSelection)selectionsArr[i];
 	}
-	SimulationContext sc = (SimulationContext) getSimulation().getSimulationOwner();
 	MathOverrides mathOverrides = getSimulation().getMathOverrides();
 
 	String[] filteredConstants = mathOverrides.getFilteredConstantNames();
@@ -667,14 +667,25 @@ private ExportSpecs getExportSpecs() {
 
 	String serverSavedFileName = getExportSettings1().getFormatSpecificSpecs() instanceof N5Specs ? ((N5Specs) getExportSettings1().getFormatSpecificSpecs()).dataSetName : "";
 
-	boolean nonSpatial = sc.getGeometry().getDimension() == 0;
+	SimulationOwner simulationOwner = getSimulation().getSimulationOwner();
+	boolean nonSpatial = simulationOwner.getGeometry().getDimension() == 0;
 	HashMap<Integer, String> subVolumes = new HashMap<>();
-	for(SubVolume subVolume: sc.getGeometry().getGeometrySpec().getSubVolumes()){
+	for(SubVolume subVolume: simulationOwner.getGeometry().getGeometrySpec().getSubVolumes()){
 		subVolumes.put(subVolume.getHandle(), subVolume.getName());
 	}
-	HumanReadableExportData humanReadableExportData = new HumanReadableExportData(getSimulation().getName(), sc.getName(), sc.getBioModel().getName(),
-			differentParameterValues, serverSavedFileName, sc.getApplicationType().name(), nonSpatial, subVolumes);
 	GeometrySpecs geometrySpecs = new GeometrySpecs(selections, getNormalAxis(), getSlice(), geoMode);
+
+	HumanReadableExportData humanReadableExportData;
+	if (simulationOwner instanceof SimulationContext sc){
+		humanReadableExportData = new HumanReadableExportData(getSimulation().getName(), sc.getName(), sc.getBioModel().getName(),
+				differentParameterValues, serverSavedFileName, sc.getApplicationType().name(), nonSpatial, subVolumes);
+	} else if (simulationOwner instanceof MathModel mathModel){
+		humanReadableExportData = new HumanReadableExportData(getSimulation().getName(), mathModel.getName(), mathModel.getName(),
+				differentParameterValues, serverSavedFileName, mathModel.getDocumentType().name(), nonSpatial, subVolumes);
+	} else {
+		throw new IllegalArgumentException("Expected " + SimulationContext.class.getName() + " or " + MathModel.class.getName());
+	}
+
 	ExportSpecs exportSpecs = new ExportSpecs(
 			vcDataIdentifier,
 			getExportSettings1().getSelectedFormat(),
