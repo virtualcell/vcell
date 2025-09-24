@@ -4,7 +4,6 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**version_flag** | **int** |  | [optional] 
 **int_value** | **int** |  | [optional] 
 **archived** | **bool** |  | [optional] 
 **current** | **bool** |  | [optional] 
