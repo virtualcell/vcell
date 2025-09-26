@@ -6,8 +6,6 @@ import java.math.BigInteger;
 import javax.swing.*;
 import javax.swing.border.Border;
 
-import cbit.vcell.solver.NFsimSimulationOptions;
-import org.vcell.solver.nfsim.gui.NFSimSimulationOptionsPanel;
 import org.vcell.util.gui.CollapsiblePanel;
 
 import cbit.vcell.client.PopupGenerator;
@@ -24,10 +22,10 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 	private javax.swing.JRadioButton multiRunRadioButton = null;
 	private javax.swing.ButtonGroup buttonGroupTrials = null;
 
-	private JLabel numOfTrialsLabel = null;
-	private JTextField ivjJTextFieldNumOfTrials = null;
-	private JLabel numOfParallelLocalRuns = null;
-	private JTextField ivjJTextFieldNumOfParallelLocalRuns = null;
+	private JLabel totalNumberOfJobsLabel = null;
+	private JTextField totalNumberOfJobsJTextField = null;
+	private JLabel maxNumberOfConcurrentJobsLabel = null;
+	private JTextField maxNumberOfConcurrentJobsJTextField = null;
 
 	private JTextField numPartitionsXTextField = null;
 	private JTextField numPartitionsYTextField = null;
@@ -164,8 +162,8 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.gridx = 0;
 			gbc.gridy = 0;
 			gbc.fill = GridBagConstraints.BOTH;
-//			gbc.weightx = 1.0;
-//			gbc.weighty = 1.0;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
 			gbc.insets = new Insets(1,1,1,1);
 			getContentPanel().add(trialPanel, gbc);
 			
@@ -173,8 +171,8 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.gridx = 1;
 			gbc.gridy = 0;
 			gbc.fill = GridBagConstraints.BOTH;
-//			gbc.weightx = 1.0;
-//			gbc.weighty = 1.0;
+			gbc.weightx = 1.0;
+			gbc.weighty = 1.0;
 			gbc.insets = new Insets(1,1,1,1);
 			getContentPanel().add(centerPanel, gbc);
 			
@@ -182,7 +180,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.gridx = 2;
 			gbc.gridy = 0;
 			gbc.fill = GridBagConstraints.BOTH;
-			gbc.weightx = 1.0;
+			gbc.weightx = 0.0;
 			gbc.weighty = 1.0;
 			gbc.insets = new Insets(1,1,1,1);
 			getContentPanel().add(rightPanel, gbc);
@@ -221,7 +219,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(0,22,1,6);
-			trialPanel.add(getNumOfTrialsLabel(), gbc);
+			trialPanel.add(getTotalNumberOfJobsLabel(), gbc);
 
 			gbc = new GridBagConstraints();
 			gbc.gridx = 2;
@@ -229,6 +227,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(0,5,3,1);
+			gbc.weightx = 1.0;
 			trialPanel.add(getJTextFieldNumOfTrials(), gbc);
 
 			gbc = new GridBagConstraints();
@@ -245,6 +244,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(0,5,3,1);
+			gbc.weightx = 1.0;
 			trialPanel.add(getJTextFieldNumOfParallelLocalRuns(), gbc);
 
 			gbc = new GridBagConstraints();
@@ -269,6 +269,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(5,5,3,1);
+			gbc.weightx = 1.0;
 			trialPanel.add(getNumPartitionsXTextField(), gbc);
 
 			gbc = new GridBagConstraints();
@@ -285,6 +286,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(0,5,3,1);
+			gbc.weightx = 1.0;
 			trialPanel.add(getNumPartitionsYTextField(), gbc);
 
 			gbc = new GridBagConstraints();
@@ -301,16 +303,9 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(0,5,3,1);
+			gbc.weightx = 1.0;
 			trialPanel.add(getNumPartitionsZTextField(), gbc);
 
-//			gbc = new GridBagConstraints();		// --- empty panel (filler)
-//			gbc.gridx = 3;
-//			gbc.gridy = 1;
-//			gbc.anchor = GridBagConstraints.EAST;
-//			gbc.fill = GridBagConstraints.HORIZONTAL;
-//			gbc.weightx = 1.0;
-//			trialPanel.add(new JLabel(""), gbc);
-			
 			// ----- centerPanel -----------------------------------------------------
 			gbc = new GridBagConstraints();
 			gbc.gridx = 0;
@@ -318,6 +313,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(0,26,1,5);
+			gbc.weightx = 0.0;
 			centerPanel.add(new JLabel("Spring Interval"), gbc);
 
 			gbc = new GridBagConstraints();
@@ -326,13 +322,15 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(0,5,3,1);
+			gbc.weightx = 1.0;
 			centerPanel.add(getJTextFieldIntervalSpring(), gbc);
 
 			gbc = new GridBagConstraints();
 			gbc.gridx = 2;
 			gbc.gridy = 0;
 			gbc.anchor = GridBagConstraints.WEST;
-			gbc.insets = new Insets(0,6,1,22);
+			gbc.insets = new Insets(0,6,1,0);
+			gbc.weightx = 0.0;
 			centerPanel.add(new JLabel("s"), gbc);
 
 			gbc = new GridBagConstraints();
@@ -341,6 +339,7 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(0,26,1,5);
+			gbc.weightx = 0.0;
 			centerPanel.add(new JLabel("Image Interval"), gbc);
 
 			gbc = new GridBagConstraints();
@@ -349,13 +348,15 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.HORIZONTAL;
 			gbc.insets = new Insets(0,5,3,1);
+			gbc.weightx = 1.0;
 			centerPanel.add(getJTextFieldIntervalImage(), gbc);
 
 			gbc = new GridBagConstraints();
 			gbc.gridx = 2;
 			gbc.gridy = 1;
 			gbc.anchor = GridBagConstraints.WEST;
-			gbc.insets = new Insets(0,6,1,22);
+			gbc.insets = new Insets(0,6,1,0);
+			gbc.weightx = 0.0;
 			centerPanel.add(new JLabel("s"), gbc);
 
 			gbc = new GridBagConstraints();		// --- empty panel (filler)
@@ -363,13 +364,13 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 			gbc.gridy = 2;
 			gbc.anchor = GridBagConstraints.EAST;
 			gbc.fill = GridBagConstraints.VERTICAL;
-			gbc.weightx = 1.0;
+			gbc.weightx = 0.0;
 			gbc.weighty = 1.0;
 			centerPanel.add(new JLabel(""), gbc);
 
 			// ----- rightPanel ----------------------------------------------------
 			gbc = new GridBagConstraints();
-			gbc.gridx = 3;
+			gbc.gridx = 0;
 			gbc.gridy = 0;
 			gbc.anchor = GridBagConstraints.WEST;
 			gbc.fill = GridBagConstraints.BOTH;
@@ -456,29 +457,29 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 		return multiRunRadioButton;
 	}
 	private javax.swing.JTextField getJTextFieldNumOfTrials() {
-		if (ivjJTextFieldNumOfTrials == null) {
+		if (totalNumberOfJobsJTextField == null) {
 			try {
-				ivjJTextFieldNumOfTrials = new javax.swing.JTextField();
-				ivjJTextFieldNumOfTrials.setName("JTextFieldNumOfTrials");
-				ivjJTextFieldNumOfTrials.setColumns(9);
-				ivjJTextFieldNumOfTrials.setText("");
+				totalNumberOfJobsJTextField = new javax.swing.JTextField();
+				totalNumberOfJobsJTextField.setName("JTextFieldNumOfTrials");
+				totalNumberOfJobsJTextField.setColumns(9);
+				totalNumberOfJobsJTextField.setText("");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
 		}
-		return ivjJTextFieldNumOfTrials;
+		return totalNumberOfJobsJTextField;
 	}
-	private javax.swing.JLabel getNumOfTrialsLabel() {
-		if (numOfTrialsLabel == null) {
+	private javax.swing.JLabel getTotalNumberOfJobsLabel() {
+		if (totalNumberOfJobsLabel == null) {
 			try {
-				numOfTrialsLabel = new javax.swing.JLabel();
-				numOfTrialsLabel.setName("NumOfTrials");
-				numOfTrialsLabel.setText("Num. Of Trials");
+				totalNumberOfJobsLabel = new javax.swing.JLabel();
+				totalNumberOfJobsLabel.setName("TotalNumberOfJobs");
+				totalNumberOfJobsLabel.setText("Total Num. Of Jobs");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
 		}
-		return numOfTrialsLabel;
+		return totalNumberOfJobsLabel;
 	}
 	private JCheckBox getRandomSeedCheckBox() {
 		if(randomSeedCheckBox == null) {
@@ -598,29 +599,29 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 	}
 
 	private javax.swing.JTextField getJTextFieldNumOfParallelLocalRuns() {
-		if (ivjJTextFieldNumOfParallelLocalRuns == null) {
+		if (maxNumberOfConcurrentJobsJTextField == null) {
 			try {
-				ivjJTextFieldNumOfParallelLocalRuns = new javax.swing.JTextField();
-				ivjJTextFieldNumOfParallelLocalRuns.setName("JTextFieldNumOfParallelLocalRuns");
-				ivjJTextFieldNumOfParallelLocalRuns.setColumns(3);
-				ivjJTextFieldNumOfParallelLocalRuns.setText("");
+				maxNumberOfConcurrentJobsJTextField = new javax.swing.JTextField();
+				maxNumberOfConcurrentJobsJTextField.setName("MaxNumberOfConcurrentJobsJTextField");
+				maxNumberOfConcurrentJobsJTextField.setColumns(3);
+				maxNumberOfConcurrentJobsJTextField.setText("");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
 		}
-		return ivjJTextFieldNumOfParallelLocalRuns;
+		return maxNumberOfConcurrentJobsJTextField;
 	}
 	private javax.swing.JLabel getNumOfParallelLocalRunsLabel() {
-		if (numOfParallelLocalRuns == null) {
+		if (maxNumberOfConcurrentJobsLabel == null) {
 			try {
-				numOfParallelLocalRuns = new javax.swing.JLabel();
-				numOfParallelLocalRuns.setName("NumOfParallelLocalRuns");
-				numOfParallelLocalRuns.setText("Parallel Local Runs");
+				maxNumberOfConcurrentJobsLabel = new javax.swing.JLabel();
+				maxNumberOfConcurrentJobsLabel.setName("MaxNumberOfConcurrentJobsLabel");
+				maxNumberOfConcurrentJobsLabel.setText("Max. Concurrent Jobs");
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}
 		}
-		return numOfParallelLocalRuns;
+		return maxNumberOfConcurrentJobsLabel;
 	}
 
 	private JTextField getJTextFieldIntervalImage() {

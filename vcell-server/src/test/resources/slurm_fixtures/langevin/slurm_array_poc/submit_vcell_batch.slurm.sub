@@ -18,7 +18,7 @@
 
 # shell variables
 BASE_DIR=/home/FCAM/vasilescu/vcell-batch-job
-CONTAINER_IMAGE=$BASE_DIR/container/vcell-batch_7.7.0.30.sif
+CONTAINER_IMAGE=$BASE_DIR/container/vcell-batch-7.7.0.34.sif
 INPUT_DIR=$BASE_DIR/input
 OUTPUT_DIR=$BASE_DIR/output
 LOG_DIR=$BASE_DIR/logs

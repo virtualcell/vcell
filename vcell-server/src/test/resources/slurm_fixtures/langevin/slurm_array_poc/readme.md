@@ -96,7 +96,7 @@ Z:/.ssh/ghcr_login_token
 
 Pull the desired container image:
 ```powershell
-apptainer pull vcell-batch-7.7.0.27.sif docker://ghcr.io/virtualcell/vcell-batch:7.7.0.27
+apptainer pull vcell-batch-7.7.0.34.sif docker://ghcr.io/virtualcell/vcell-batch:7.7.0.34
 ```
 
 > All container images are saved under **container/** using versioned filenames \
@@ -122,8 +122,8 @@ Frequently used, from BASE_DIR
 ```powershell
 sed -i 's/\r$//' ./scripts/submit_vcell_batch.slurm.sub
 tail -f ./logs/submit_vcell_batch.log
-singularity exec ./container/vcell-batch_7.7.0.28.sif java --version    # java version
-singularity shell ./container/vcell-batch_7.7.0.28.sif                  # enter singularity
+singularity exec ./container/vcell-batch-7.7.0.28.sif java --version    # java version
+singularity shell ./container/vcell-batch-7.7.0.28.sif                  # enter singularity
 ```
 #### Initialize directory structure
 ```powershell
@@ -132,7 +132,7 @@ singularity shell ./container/vcell-batch_7.7.0.28.sif                  # enter 
 
 #### Running the solver inside the container
 ```powershell
-singularity exec ./container/vcell-batch_7.7.0.28.sif langevin_x64 --version
+singularity exec ./container/vcell-batch-7.7.0.34.sif langevin_x64 --version
 ```
 
 #### Launching a slurm script
