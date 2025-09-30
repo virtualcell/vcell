@@ -8,17 +8,18 @@
                 <item><bold>BioModels</bold></item>
                 <item><bold>MathModels</bold></item>
             </list>
-            Each uses a different methodology of model creation that best suits a given user's experience.
+            Each uses a different method to create models to best suit a given user's experience.
 
             <para><bold>BioModel</bold></para>
-            A BioModel is a computational model defined and built through defining biological concepts within
-            a graphical interface.
+            A BioModel is a computational model built by defining the biological components of the model within a graphical interface.
 
             BioModels consist of:
-            <list>
-                <item>a model's biological system, including cellular structures, species and biochemical reactions ("<link target="PhysOverview">Physiology</link>")</item>
-                <item>one or more sets of constraints and conditions imposed on the model ("<link target="ApplicationOverview">Application</link>")</item>
-            </list>
+            <para>
+            (1) A <link target="PhysOverview">Physiology</link>; the cellular structures, species and biochemical reactions that are components of the model.
+            </para>
+            <para>
+            (2) <link target="ApplicationOverview">Applications</link>; the application of the model to a specific instance of physiology,in which the initial state and any additional conditions or constraints on the physiology are defined.
+            </para>
 
             Each <link target="ApplicationOverview">Application</link>
             allows the user to define the quantitative values needed to define, run and visualize a Virtual
@@ -27,16 +28,21 @@
                 <item><link target="GeometryOverview">Geometry</link></item>
                 <item><link target="SpecificationsOverview">Specifications</link> (e.g. species, reactions)</item>
                 <item><link target="ProtocolsOverview">Protocols</link> (e.g. events, electrical mapping)</item>
-                <item>one or more <link target="simulations_overview">Simulations</link></item>
-                <item><link target="PEOverview">Parameter Estimation</link> (if applicable)</item>
+                <item><link target="simulations_overview">Simulations</link>, of which there can be one or more.</item>
+                <item><link target="PEOverview">Parameter Estimation</link> (if applicable) for defining parameters based on experimental data</item>
 			</list>
 
             <para><bold>MathModel</bold></para>
-            MathModels define Virtual Experiments using the <bold>Virtual Cell Markup Language</bold> (<bold>VCML</bold>).
-            A MathModel consists of:
+            MathModels create individual Applications (Virtual Experiments) using the <bold>Virtual Cell Markup Language</bold> (<bold>VCML</bold>).  VCell automatically creates a unique MathModel for each Application within a BioModel; such MathModels can be created ad hoc or edited using VCML.  Note that a MathModel does not have an associated Physiology.
+            A MathModel consists of a series of definitions for:
             <list>
-                <item></item>
+                <item>Constants</item>
+                <item>Variables</item>
+                <item>Functions</item>
+                <item>Volume domains</item>
+                <item>Membrane domains</item>
             </list>
+            See <link target="generated_math">Generated Math</link> for more information on the components of the math description and how to <bold>create</bold> a stand-alone MathModel from an existing BioModel Application that can then be further edited.
 
 
         </introduction>

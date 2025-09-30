@@ -49,7 +49,7 @@
 	  </item>
 	  <item>
 		<bold>Compare With Saved</bold> - compares the currently open document with its latest saved version in the database and displays the result in a separate window. 
-		Refer to the section on <link target = "ManageDBCompareWith">Compare With</link> for further information. 
+		Refer to the section on <link target = "CompareWithSaved">Compare With Saved</link> for further information.
 	  </item>
 	  <item>
 		<link target = "Permissions">Permissions...</link>
