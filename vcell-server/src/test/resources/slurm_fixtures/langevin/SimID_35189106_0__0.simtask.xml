@@ -153,8 +153,8 @@
         <PartitionNx>10</PartitionNx>
         <PartitionNy>10</PartitionNy>
         <PartitionNz>10</PartitionNz>
-        <NumOfParallelRuns>8</NumOfParallelRuns>
-        <NumBatchTrials>20</NumBatchTrials>
+        <TotalNumberOfJobs>100</TotalNumberOfJobs>
+        <NumberOfConcurrentJobs>20</NumberOfConcurrentJobs>
       </LangevinSimulationOptions>
       <NumberProcessors>1</NumberProcessors>
     </SolverTaskDescription>
