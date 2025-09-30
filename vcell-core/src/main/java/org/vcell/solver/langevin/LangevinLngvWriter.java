@@ -980,7 +980,7 @@ public class LangevinLngvWriter {
 
 		int numTrials = std.getNumTrials();
 		BigInteger randomSeed = lso.getRandomSeed();
-		int simultaneousRuns = lso.getNumOfParallelLocalRuns();
+		int simultaneousRuns = lso.getNumberOfConcurrentJobs();
 
 		// TODO: do not delete this, until we decide on how much info the solver needs
 		// These are not needed but may be nice to have in the future, makes the solver instance more aware
@@ -988,7 +988,7 @@ public class LangevinLngvWriter {
 //		sb.append("\n");
 //		sb.append("Parallel: " + (simultaneousRuns == 1 ? "true" : "false"));
 //		sb.append("\n");
-//		sb.append("SimultaneousRuns: " + simultaneousRuns);		// this is always 1 on local and quota dependent on server
+//		sb.append("SimultaneousRuns: " + simultaneousRuns);		// this is always 1 on local and slurm dependent on server
 //		sb.append("\n");
 
 		// if we don't specify a random seed the solver will do its thing like in the past (use system time in ms)

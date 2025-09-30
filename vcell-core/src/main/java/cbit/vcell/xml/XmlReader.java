@@ -6722,9 +6722,13 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
         if(temp != null) {
             lo.setNPart(2, Integer.parseInt(temp));
         }
-        temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_numOfParallelLocalRuns, vcNamespace);
+        temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_totalNumberOfJobs, vcNamespace);
         if(temp != null) {
-            lo.setNumOfParallelLocalRuns(Integer.parseInt(temp));
+            lo.setTotalNumberOfJobs(Integer.parseInt(temp));
+        }
+        temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_numberOfConcurrentJobs, vcNamespace);
+        if(temp != null) {
+            lo.setNumberOfConcurrentJobs(Integer.parseInt(temp));
         }
         temp = langevinSimulationOptionsElement.getChildText(XMLTags.LangevinSO_randomSeed, vcNamespace);
         if(temp != null) {

@@ -253,6 +253,9 @@ public class VCML {
 	public final static String LangevinSimulationOptions_Partition_Nx = "PartitionNx";
 	public final static String LangevinSimulationOptions_Partition_Ny = "PartitionNy";
 	public final static String LangevinSimulationOptions_Partition_Nz = "PartitionNz";
+	public final static String LangevinSimulationOptions_numberOfConcurrentJobs	= "NumberOfConcurrentJobs";
+	public final static String LangevinSimulationOptions_totalNumberOfJobs	= "TotalNumberOfJobs";
+	// deprecated, kept for backward compatibility with old .vcml files; use totalNumberOfJobs instead
 	public final static String LangevinSimulationOptions_numOfParallelLocalRuns	= "NumOfParallelLocalRuns";
 
 	public final static String NFSimSimulationOptions	= "NFSimSimulationOptions";
