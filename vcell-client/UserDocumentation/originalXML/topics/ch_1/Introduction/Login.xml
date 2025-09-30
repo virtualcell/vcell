@@ -1,29 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <vcelldoc>
-<page title="User Login">
+<page title="Logging into VCell">
 	
 	<introduction> 
-	When VCell is launched, a dialog window will pop up, welcoming the user and asking how they would like to proceed
-		with login. There are three options:
+	The first time a user launches VCell, a dialog window appears for login options.
+	</introduction>
+
+	<appearance>
+	<imgReference target = "VCellLoginPopup.png"/>
+	</appearance>
+
+	<operations>
 	<list>
 		<item>
-			<bold>Login</bold> - Redirect to the default browser of the computer, to authenticate through Auth0.
+			<bold>Login</bold> redirects the user to the default browser of the local computer to authenticate using Auth0.  At first use the user will be prompted to create a Profile in Auth0 that will link to the user's VCell Username.  See the <link target = "Auth0ProfilePage"> Auth0 Profile Instructions</link> .
+		</item>
+			<item>
+			<bold>Guest</bold> logs in as the VCell Guest User (VCell Guest) and allows limited access to VCell to allow exploration of public VCell models.
 		</item>
 		<item>
-			<bold>Guest</bold> - Immediately login as the VCell Guest User, allowing limited access to VCell features.
-		</item>
-		<item>
-			<bold>Skip</bold> - Dismisses the dialog, placing VCell in a "offline" state. Should the user wish to login
-			at a future time, it is possible through the `Account` menu.
+		<bold>Skip</bold> dismisses the dialog and allows "offline" use of VCell, without connection to the servers or databases.  Any models created in an "offline" mode need to be exported to VCML or SBML to be saved locally.  The user can log in at any time using the "Account Login" menu item.
 		</item>
 	</list>
-		For more information about what happens after clicking <bold>Login</bold>, see <link target="Auth0Overview">Auth0 Overview</link>
-	</introduction>
-	
-	<appearance>
-		<imgReference target = "VCellLoginPopup.png"/>
-	</appearance>
-	<comments>  </comments>
+	</operations>
 
 </page>
 

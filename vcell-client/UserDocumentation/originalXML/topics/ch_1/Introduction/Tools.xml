@@ -17,10 +17,7 @@
 	  <item>
 		  <link target = "ExportedDataViewer">Exported Data Viewer</link> - opens a table listing server links to access all Spatial Simulation Datasets that have been exported using while using the current local host.
 	  </item>
-	  <item>
-	     <link target = "TransformToStochCapable">Transform to Stochastic Capable</link> - launches a tool to convert a deterministic model to a stochastic-capable model, where possible.  
-    </item>
-	</list>	
+	</list>
 	</operations>
 	
 	<comments>  </comments>
