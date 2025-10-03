@@ -32,7 +32,6 @@ import java.util.stream.Stream;
 public class SpatialSBMLSimResults {
 
     //private ODESolverResultSet resultSet;
-    private final OutputContext DEFAULT_OUTPUT_CONTEXT = new OutputContext(new AnnotatedFunction[] {});
     private final DataSetControllerImpl dataSetController;
     private final VCSimulationIdentifier simId;
     private final int jobIndex;
@@ -87,7 +86,9 @@ public class SpatialSBMLSimResults {
         VCDataIdentifier vcDId = new VCSimulationDataIdentifier(this.simId, this.jobIndex);
         double[] times = this.getDesiredTimes(vcDId, utcSim);
 
-        DataOperation dataOperation = new DataOperation.DataProcessingOutputInfoOP(vcDId,true, this.DEFAULT_OUTPUT_CONTEXT);
+        AnnotatedFunction[] annotatedFunctions = this.sbmlMapping.getAllRuntimeStes().stream().filter(AnnotatedFunction.class::isInstance).map(AnnotatedFunction.class::cast).toArray(AnnotatedFunction[]::new);
+        OutputContext outputContext = new OutputContext(annotatedFunctions);
+        DataOperation dataOperation = new DataOperation.DataProcessingOutputInfoOP(vcDId,true, outputContext);
         DataOperationResults.DataProcessingOutputInfo results = (DataOperationResults.DataProcessingOutputInfo) this.dataSetController.doDataOperation(dataOperation);
         Set<String> varNamesSet = new HashSet<>(Arrays.asList(results.getVariableNames()));
 
@@ -101,14 +102,19 @@ public class SpatialSBMLSimResults {
         if (ste instanceof Structure.StructureSize) ste = this.getStructureSizeSymbolTableEntry(ste, sbmlId);
 
         cbit.vcell.math.Variable mathVar = this.mathMapping.getVariable(ste);
-        if (mathVar != null) return this.processSpatialData(mathVar, vcDId, mesh, varNamesSet, times);
+        if (mathVar == null && ste instanceof AnnotatedFunction annotatedFunction && annotatedFunction.isOutputFunction()){
+            mathVar = annotatedFunction;
+        }
+        if (mathVar != null) return this.processSpatialData(mathVar, vcDId, mesh, varNamesSet, times, outputContext);
         if (ste instanceof Kinetics.KineticsParameter lumpedRate && Kinetics.ROLE_LumpedReactionRate == lumpedRate.getRole())
-            return this.processLumpedRate(sbmlId, vcDId, lumpedRate, times, mesh, varNamesSet);
-        throw new RuntimeException("Math mapping couldn't find mathVar with ste: " + ste.getName());
+            return this.processLumpedRate(sbmlId, vcDId, lumpedRate, times, mesh, varNamesSet, outputContext);
+
+        String errorFormat = "Math mapping couldn't find correct mathVar or properly process ste: %s (%s)";
+        throw new RuntimeException(String.format(errorFormat, ste, ste.getClass().getSimpleName()));
     }
 
-    private SBMLDataRecord processSpatialData(cbit.vcell.math.Variable mathVar, VCDataIdentifier vcDId, CartesianMesh mesh, Set<String> varNamesSet, double[] times) throws IOException, DataAccessException, ExpressionException {
-        DataIdentifier[] dataIdentifiers = this.dataSetController.getDataIdentifiers(this.DEFAULT_OUTPUT_CONTEXT, vcDId);
+    private SBMLDataRecord processSpatialData(cbit.vcell.math.Variable mathVar, VCDataIdentifier vcDId, CartesianMesh mesh, Set<String> varNamesSet, double[] times, OutputContext outputContext) throws IOException, DataAccessException, ExpressionException {
+        DataIdentifier[] dataIdentifiers = this.dataSetController.getDataIdentifiers(outputContext, vcDId);
         Set<String> identifierSet = Arrays.stream(dataIdentifiers).map(DataIdentifier::getName).collect(Collectors.toSet());
         identifierSet.addAll(varNamesSet);
         int meshStep = mesh.getSizeZ() * mesh.getSizeY() * mesh.getSizeX();
@@ -116,7 +122,7 @@ public class SpatialSBMLSimResults {
         if (identifierSet.contains(mathVar.getName())) {
             data = new double[meshStep * times.length];
             for (int i = 0; i < times.length; i++) {
-                SimDataBlock sdb = this.dataSetController.getSimDataBlock(this.DEFAULT_OUTPUT_CONTEXT, vcDId, mathVar.getName(), times[i]);
+                SimDataBlock sdb = this.dataSetController.getSimDataBlock(outputContext, vcDId, mathVar.getName(), times[i]);
                 double[] subData = sdb.getData();
                 System.arraycopy(subData, 0, data, i * meshStep, subData.length);
             }
@@ -131,7 +137,7 @@ public class SpatialSBMLSimResults {
         return new SBMLDataRecord(data, List.of(times.length, mesh.getSizeZ(), mesh.getSizeY(), mesh.getSizeX()), times);
     }
 
-    private SBMLDataRecord processLumpedRate(String sbmlId, VCDataIdentifier vcDId, Kinetics.KineticsParameter lumpedRate, double[] times, CartesianMesh mesh, Set<String> varNamesSet) throws ExpressionException, DataAccessException {
+    private SBMLDataRecord processLumpedRate(String sbmlId, VCDataIdentifier vcDId, Kinetics.KineticsParameter lumpedRate, double[] times, CartesianMesh mesh, Set<String> varNamesSet, OutputContext outputContext) throws ExpressionException, DataAccessException {
         // if reaction has been transformed to distributed, then retrieve distributed rate and multiply by compartment size.
         // find distributed rate by looking in MathSymbolMapping for a variable which is mapped to the same reaction and has ROLE_ReactionRate
         Stream<Kinetics.KineticsParameter> kineticsParameterStream = this.mathMapping.getMappedBiologicalSymbols().stream()
@@ -163,7 +169,7 @@ public class SpatialSBMLSimResults {
         if (varNamesSet.contains(distributedRateMathVar.getName())) {
             data = new double[meshStep * times.length];
             for (int i = 0; i < times.length; i++) {
-                SimDataBlock sdb = this.dataSetController.getSimDataBlock(this.DEFAULT_OUTPUT_CONTEXT, vcDId, distributedRateMathVar.getName(), times[i]);
+                SimDataBlock sdb = this.dataSetController.getSimDataBlock(outputContext, vcDId, distributedRateMathVar.getName(), times[i]);
                 double[] subData = sdb.getData();
                 for (int j = 0; j < subData.length; j++) {
                     data[i * meshStep + j] = subData[j] * compartmentSize;

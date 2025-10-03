@@ -94,6 +94,10 @@ public class SBMLSymbolMapping {
         return sbase_to_runtime_ste_map.get(sbaseWrapper);
     }
 
+    Set<EditableSymbolTableEntry> getAllRuntimeStes(){
+        return new HashSet<>(sbase_to_runtime_ste_map.values());
+    }
+
     SBase getSBase(EditableSymbolTableEntry ste, SymbolContext symbolContext) {
         final SBase[] matches;
         switch (symbolContext) {
