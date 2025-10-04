@@ -28,7 +28,7 @@ import cbit.vcell.geometry.concept.ThreeSpacePoint;
  * @author: John Wagner
  */
 @SuppressWarnings("serial")
-public class AbstractPolygon implements Polygon, PolygonConcept, java.io.Serializable {
+public abstract class AbstractPolygon implements Polygon, PolygonConcept, java.io.Serializable {
 	private final Node[] fieldNodes; 
 
 /**

@@ -11,50 +11,14 @@
 package cbit.vcell.solver.test;
 
 
-import java.util.Enumeration;
-import java.util.Vector;
-
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.SimulationOwner;
-import org.vcell.util.*;
-import org.vcell.util.document.VCDocument;
-
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.AnalyticSubVolume;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.AbstractMathMapping;
 import cbit.vcell.mapping.DiffEquMathMapping;
 import cbit.vcell.mapping.MappingException;
-import cbit.vcell.math.CompartmentSubDomain;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.Equation;
-import cbit.vcell.math.FastInvariant;
-import cbit.vcell.math.FastRate;
-import cbit.vcell.math.FastSystem;
-import cbit.vcell.math.FilamentRegionVariable;
-import cbit.vcell.math.FilamentVariable;
-import cbit.vcell.math.Function;
-import cbit.vcell.math.FunctionColumnDescription;
-import cbit.vcell.math.InsideVariable;
-import cbit.vcell.math.JumpCondition;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathUtilities;
-import cbit.vcell.math.MemVariable;
-import cbit.vcell.math.MembraneRegionVariable;
-import cbit.vcell.math.MembraneSubDomain;
-import cbit.vcell.math.ODESolverResultSetColumnDescription;
-import cbit.vcell.math.OdeEquation;
-import cbit.vcell.math.OutsideVariable;
-import cbit.vcell.math.PdeEquation;
-import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.math.SubDomain;
-import cbit.vcell.math.Variable;
+import cbit.vcell.math.*;
 import cbit.vcell.math.Variable.Domain;
-import cbit.vcell.math.VariableHash;
-import cbit.vcell.math.VariableType;
-import cbit.vcell.math.VolVariable;
-import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.numericstest.ConstructedSolutionTemplate;
 import cbit.vcell.numericstest.SolutionTemplate;
@@ -64,17 +28,23 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionTerm;
 import cbit.vcell.parser.SimpleSymbolTable;
-import cbit.vcell.simdata.DataIdentifier;
-import cbit.vcell.simdata.DataInfoProvider;
-import cbit.vcell.simdata.PDEDataManager;
-import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.SimDataConstants;
+import cbit.vcell.simdata.*;
+import cbit.vcell.solver.MathOverrides;
 import cbit.vcell.solver.Simulation;
+import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.SimulationSymbolTable;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.SensVariable;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.util.ColumnDescription;
+import cbit.vcell.xml.XmlHelper;
+import org.vcell.util.Coordinate;
+import org.vcell.util.CoordinateIndex;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.VCDocument;
+
+import java.util.Enumeration;
+import java.util.Vector;
 
 public class MathTestingUtilities {
 
@@ -736,7 +706,7 @@ public class MathTestingUtilities {
         }
         MathDescription exactMath = null;
         try {
-            exactMath = (MathDescription) BeanUtils.cloneSerializable(mathDesc);
+            exactMath = XmlHelper.cloneMathDescription(mathDesc);
             exactMath.setDescription("constructed exact solution from MathDescription (" + mathDesc.getName() + ")");
             exactMath.setName("exact from " + mathDesc.getName());
         } catch(Exception e){

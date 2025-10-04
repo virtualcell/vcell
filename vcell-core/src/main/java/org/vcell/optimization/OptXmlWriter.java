@@ -10,22 +10,6 @@
 
 package org.vcell.optimization;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-
-import javax.xml.stream.XMLStreamException;
-
-import cbit.vcell.solver.*;
-import org.jdom2.CDATA;
-import org.jdom2.Element;
-import org.sbml.jsbml.SBMLException;
-import org.vcell.sbml.vcell.MathModel_SBMLExporter;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.ISize;
-import org.vcell.util.document.KeyValue;
-
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
@@ -40,30 +24,28 @@ import cbit.vcell.mathmodel.MathModel;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.modelopt.ReferenceDataMappingSpec;
-import cbit.vcell.opt.Constraint;
-import cbit.vcell.opt.ConstraintType;
-import cbit.vcell.opt.CopasiOptimizationMethod;
-import cbit.vcell.opt.CopasiOptimizationParameter;
-import cbit.vcell.opt.ElementWeights;
-import cbit.vcell.opt.ExplicitFitObjectiveFunction;
+import cbit.vcell.opt.*;
 import cbit.vcell.opt.ExplicitObjectiveFunction;
 import cbit.vcell.opt.ObjectiveFunction;
-import cbit.vcell.opt.OptXmlTags;
-import cbit.vcell.opt.OptimizationException;
-import cbit.vcell.opt.OptimizationSolverSpec;
-import cbit.vcell.opt.OptimizationSpec;
-import cbit.vcell.opt.Parameter;
-import cbit.vcell.opt.PdeObjectiveFunction;
-import cbit.vcell.opt.ReferenceData;
-import cbit.vcell.opt.SimpleReferenceData;
-import cbit.vcell.opt.SpatialReferenceData;
-import cbit.vcell.opt.TimeWeights;
-import cbit.vcell.opt.VariableWeights;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.ResourceUtil;
+import cbit.vcell.solver.*;
 import cbit.vcell.solvers.FiniteVolumeFileWriter;
+import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+import org.jdom2.CDATA;
+import org.jdom2.Element;
+import org.sbml.jsbml.SBMLException;
+import org.vcell.sbml.vcell.MathModel_SBMLExporter;
+import org.vcell.util.ISize;
+import org.vcell.util.document.KeyValue;
+
+import javax.xml.stream.XMLStreamException;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public class OptXmlWriter {
 	
@@ -384,7 +366,7 @@ public class OptXmlWriter {
 			// clone and resample geometry
 			Geometry resampledGeometry = null;
 			try {
-				resampledGeometry = (Geometry) BeanUtils.cloneSerializable(simulation.getMathDescription().getGeometry());
+				resampledGeometry = XmlHelper.cloneGeometry(simulation.getMathDescription().getGeometry());
 				GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
 				ISize newSize = simulation.getMeshSpecification().getSamplingSize();
 				geoSurfaceDesc.setVolumeSampleSize(newSize);

@@ -400,7 +400,7 @@ public AnnotatedFunction simplifyFunction(AnnotatedFunction function) throws Exp
 	// attempt to bind function and substitute
 	AnnotatedFunction simpleFunction = null;
 	try {
-		simpleFunction = (AnnotatedFunction)BeanUtils.cloneSerializable(function);
+		simpleFunction = function.deepClone();
 		Expression exp = simpleFunction.getExpression();
 		exp = SolverUtilities.substituteSizeAndNormalFunctions(exp, function.getFunctionType().getVariableDomain());
 		exp.bindExpression(this);

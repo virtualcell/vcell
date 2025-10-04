@@ -14,6 +14,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import cbit.vcell.solver.*;
+import cbit.vcell.xml.XmlHelper;
 import org.vcell.util.*;
 import org.vcell.util.document.VCDocument;
 import org.vcell.util.gui.DialogUtils;
@@ -197,7 +198,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 						int defaultTotalVolumeElements = mathGeometry.getGeometrySurfaceDescription().getVolumeSampleSize().getXYZ();
 						int newTotalVolumeElements = meshSpecification.getSamplingSize().getXYZ();
 						if (defaultTotalVolumeElements > newTotalVolumeElements) { // coarser
-							Geometry resampledGeometry = (Geometry) BeanUtils.cloneSerializable(mathGeometry);
+							Geometry resampledGeometry = XmlHelper.cloneGeometry(mathGeometry);
 							GeometrySurfaceDescription geoSurfaceDesc = resampledGeometry.getGeometrySurfaceDescription();
 							geoSurfaceDesc.setVolumeSampleSize(newSize);
 							geoSurfaceDesc.updateAll();
