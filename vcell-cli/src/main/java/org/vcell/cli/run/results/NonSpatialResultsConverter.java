@@ -1,5 +1,6 @@
 package org.vcell.cli.run.results;
 
+import cbit.vcell.math.MathException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.MathOverrides;
@@ -17,15 +18,18 @@ import org.vcell.sbml.vcell.lazy.LazySBMLDataAccessor;
 import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
 import org.vcell.sedml.SEDMLImportException;
 import org.vcell.sedml.log.BiosimulationLog;
+import org.vcell.util.DataAccessException;
 
+import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class NonSpatialResultsConverter extends ResultsConverter {
     private final static Logger logger = LogManager.getLogger(NonSpatialResultsConverter.class);
 
-    public static Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizeNonSpatialResultsBySedmlDataGenerator(SedML sedml, Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, SEDMLImportException {
-        Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> nonSpatialOrganizedResultsMap = new HashMap<>();
+    public static Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> organizeNonSpatialResultsBySedmlDataGenerator(SedML sedml, Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, SEDMLImportException, MathException, IOException, DataAccessException {
+        Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> nonSpatialOrganizedResultsMap = new HashMap<>();
         if (nonSpatialResultsHash.isEmpty()) return nonSpatialOrganizedResultsMap;
 
         for (Output output : ResultsConverter.getValidOutputs(sedml)){
@@ -63,7 +67,7 @@ public class NonSpatialResultsConverter extends ResultsConverter {
             }
 
             for (DataGenerator dataGen : dataGeneratorsToProcess) {
-                ValueHolder<LazySBMLNonSpatialDataAccessor> valueHolder = NonSpatialResultsConverter.getNonSpatialValueHolderForDataGenerator(sedml, dataGen, nonSpatialResultsHash, taskToSimulationMap, maxTimeLength);
+                ValueHolder<LazySBMLDataAccessor> valueHolder = NonSpatialResultsConverter.getNonSpatialValueHolderForDataGenerator(sedml, dataGen, nonSpatialResultsHash, taskToSimulationMap, maxTimeLength);
                 if (valueHolder == null) continue;
                 nonSpatialOrganizedResultsMap.put(dataGen, valueHolder);
             }
@@ -73,7 +77,7 @@ public class NonSpatialResultsConverter extends ResultsConverter {
     }
 
 
-    public static Map<Report, List<Hdf5SedmlResults>> prepareNonSpatialDataForHdf5(SedML sedml, Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> nonSpatialResultsMapping,
+    public static Map<Report, List<Hdf5SedmlResults>> prepareNonSpatialDataForHdf5(SedML sedml, Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> nonSpatialResultsMapping,
                                                                                    Set<DataGenerator> allValidDataGenerators, String sedmlLocation, boolean isBioSimMode) {
         Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
         if (nonSpatialResultsMapping.isEmpty()){
@@ -159,11 +163,11 @@ public class NonSpatialResultsConverter extends ResultsConverter {
         return results;
     }
 
-    private static ValueHolder<LazySBMLNonSpatialDataAccessor> getNonSpatialValueHolderForDataGenerator(SedML sedml, DataGenerator dataGen,
+    private static ValueHolder<LazySBMLDataAccessor> getNonSpatialValueHolderForDataGenerator(SedML sedml, DataGenerator dataGen,
                                                                                   Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash,
-                                                                                  Map<AbstractTask, TempSimulation> taskToSimulationMap, int padToLength) throws ExpressionException {
+                                                                                  Map<AbstractTask, TempSimulation> taskToSimulationMap, int padToLength) throws ExpressionException, MathException, IOException, DataAccessException {
         if (dataGen == null) throw new IllegalArgumentException("Provided Data Generator can not be null!");
-        Map<Variable, ValueHolder<LazySBMLNonSpatialDataAccessor>> resultsByVariable = new HashMap<>();
+        Map<Variable, ValueHolder<LazySBMLDataAccessor>> resultsByVariable = new HashMap<>();
 
         // get the list of variables associated with the data reference
         for (Variable var : dataGen.getListOfVariables()) {
@@ -204,12 +208,12 @@ public class NonSpatialResultsConverter extends ResultsConverter {
             if (taskJobs.isEmpty()) continue;
 
             boolean resultsAlreadyExist = topLevelTask instanceof RepeatedTask && resultsByVariable.containsKey(var);
-            ValueHolder<LazySBMLNonSpatialDataAccessor> individualVarResultsHolder = resultsAlreadyExist ? resultsByVariable.get(var) :
+            ValueHolder<LazySBMLDataAccessor> individualVarResultsHolder = resultsAlreadyExist ? resultsByVariable.get(var) :
                     new ValueHolder<>(taskToSimulationMap.get(topLevelTask));
             for (TaskJob taskJob : taskJobs) {
                 // Leaving intermediate variables for debugging access
                 NonSpatialSBMLSimResults nonSpatialResults = nonSpatialResultsHash.get(taskJob);
-                LazySBMLNonSpatialDataAccessor dataAccessor = nonSpatialResults.getSBMLDataAccessor(vcellVarId, utcSim, padToLength);
+                LazySBMLDataAccessor dataAccessor = nonSpatialResults.getSBMLDataAccessor(vcellVarId, utcSim);
                 individualVarResultsHolder.listOfResultSets.add(dataAccessor);
             }
             resultsByVariable.put(var, individualVarResultsHolder);
@@ -220,29 +224,39 @@ public class NonSpatialResultsConverter extends ResultsConverter {
 
         String exampleReference = resultsByVariable.keySet().iterator().next().getReference();
         int numJobs = resultsByVariable.values().iterator().next().listOfResultSets.size();
-        ValueHolder<LazySBMLNonSpatialDataAccessor> synthesizedResults = new ValueHolder<>(taskToSimulationMap.get(sedml.getTaskWithId(exampleReference)));
-        SimpleDataGenCalculator calc = new SimpleDataGenCalculator(dataGen);
+        ValueHolder<LazySBMLDataAccessor> synthesizedResults = new ValueHolder<>(taskToSimulationMap.get(sedml.getTaskWithId(exampleReference)));
+
+        // We need to efficiently determine what the desired times should be, and there's a variety of odd cases to consider
+        // (1) We have results by lists of the same variable over all scans. Let's assume the scans don't change length of time, and get desired times per vars
+        List<List<Double>> desiredTimesList = resultsByVariable.values().stream().map(ValueHolder::getListOfResultSets).map((x)->x.get(0)).map(LazySBMLDataAccessor::getDesiredTimes).toList();
+        // (2) We need to verify that the desired times for all vars is the same
+        List<String> stringRepresentationOfTimes = desiredTimesList.stream().map((x)->String.join(",", x.stream().map(String::valueOf).toList())).distinct().toList();
+        //if (1 != stringRepresentationOfTimes.size()) throw new IllegalArgumentException("Times do not match"); // We can't handle variable requested times right now.
+        // (3) We just get the first value...aka the "only" value
+        List<Double> desiredTimes = desiredTimesList.get(0);
 
         // Perform the math!
+        SimpleDataGenCalculator calc = new SimpleDataGenCalculator(dataGen);
         for (int jobNum = 0; jobNum < numJobs; jobNum++){
             final int finalJobNum = jobNum; // need to finalize to put in lambda.
             LazySBMLNonSpatialDataAccessor synthesizedLazyDataset = new LazySBMLNonSpatialDataAccessor(
                     ()-> NonSpatialResultsConverter.getSynthesizedDataSet(calc, resultsByVariable, synthesizedResults.vcSimulation, padToLength, finalJobNum),
-                    padToLength
+                    padToLength,
+                    desiredTimes
             );
             synthesizedResults.listOfResultSets.add(synthesizedLazyDataset);
         }
         return synthesizedResults;
     }
 
-    private static SBMLDataRecord getSynthesizedDataSet(SimpleDataGenCalculator calc, Map<Variable, ValueHolder<LazySBMLNonSpatialDataAccessor>> resultsByVariable,
+    private static SBMLDataRecord getSynthesizedDataSet(SimpleDataGenCalculator calc, Map<Variable, ValueHolder<LazySBMLDataAccessor>> resultsByVariable,
                                                         Simulation vcSimulation, int finalMaxLengthOfData, int jobNum) throws Exception {
         double[] postProcessedData = new double[finalMaxLengthOfData];
         for (int datumIndex = 0; datumIndex < finalMaxLengthOfData; datumIndex++){
             for (Variable var : resultsByVariable.keySet()){
                 if (jobNum >= resultsByVariable.get(var).listOfResultSets.size()) continue;
-                ValueHolder<LazySBMLNonSpatialDataAccessor> nonSpatialValue = resultsByVariable.get(var);
-                LazySBMLNonSpatialDataAccessor specificJobDataSet = nonSpatialValue.listOfResultSets.get(jobNum);
+                ValueHolder<LazySBMLDataAccessor> nonSpatialValue = resultsByVariable.get(var);
+                LazySBMLDataAccessor specificJobDataSet = nonSpatialValue.listOfResultSets.get(jobNum);
                 double[] lazyData = specificJobDataSet.getData().data();
                 double datum = datumIndex >= lazyData.length ? Double.NaN : lazyData[datumIndex];
                 calc.setArgument(var.getId(), datum);

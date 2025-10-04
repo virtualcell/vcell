@@ -94,29 +94,6 @@ public class OmexHandler {
         }
     }
 
-    public static void rename(String zipFileName, String entryOldName, String entryNewName) throws Exception {
-
-        /* Define ZIP File System Properties in HashMap */
-        Map<String, String> zip_properties = new HashMap<>();
-        /* We want to read an existing ZIP File, so we set this to False */
-        zip_properties.put("create", "false");
-
-        /* Specify the path to the ZIP File that you want to read as a File System */
-        URI zip_disk = URI.create("jar:file:/" + zipFileName);
-
-        /* Create ZIP file System */
-        try (FileSystem zipfs = FileSystems.newFileSystem(zip_disk, zip_properties)) {
-            /* Access file that needs to be renamed */
-            Path pathInZipfile = zipfs.getPath(entryOldName);
-            /* Specify new file name */
-            Path renamedZipEntry = zipfs.getPath(entryNewName);
-            logger.trace("About to rename an entry from ZIP File" + pathInZipfile.toUri());
-            /* Execute rename */
-            Files.move(pathInZipfile, renamedZipEntry, StandardCopyOption.ATOMIC_MOVE);
-            logger.trace("File successfully renamed");
-        }
-    }
-
     public List<String> getSedmlLocationsRelative(){
         Collection<ArchiveEntry> entries = this.archive.getEntries();
 
@@ -135,25 +112,15 @@ public class OmexHandler {
             sedmlMap.get(isMaster ? MASTER : REGULAR).add(entry);
         }
 
+        if (!sedmlMap.get(MASTER).isEmpty()) return sedmlMap.get(MASTER).stream().map(ArchiveEntry::getFilePath).toList();
+
         // Test corner cases
-        if (sedmlMap.get(MASTER).isEmpty()){
-            if (sedmlMap.get(REGULAR).isEmpty()) {
-                throw new RuntimeException("There are no SED-MLs in the archive to execute");
-            }
-            if (masterCount > 0) {
-                logger.warn("No SED-MLs are marked as master, so will run them all");
-            }
-            return sedmlMap.get(REGULAR).stream().map(ArchiveEntry::getFilePath).toList();
-        }
+        if (sedmlMap.get(REGULAR).isEmpty()) throw new RuntimeException("There are no SED-MLs in the archive to execute");
 
-        return sedmlMap.get(MASTER).stream().map(ArchiveEntry::getFilePath).toList();
+        if (masterCount > 0) logger.warn("No SED-MLs are marked as master, so will run them all");
+
+        return sedmlMap.get(REGULAR).stream().map(ArchiveEntry::getFilePath).toList();
     }
-
-    private boolean isSedmlFormat(ArchiveEntry entry) {
-        URI format = entry.getFormat();
-        return format.getPath().contains("sedml") || format.getPath().contains("sed-ml");
-    }
-
 
     public ArrayList<String> getSedmlLocationsAbsolute(){
         ArrayList<String> sedmlListAbsolute = new ArrayList<>();
@@ -165,9 +132,13 @@ public class OmexHandler {
         return sedmlListAbsolute;
     }
 
+    private boolean isSedmlFormat(ArchiveEntry entry) {
+        URI format = entry.getFormat();
+        return format.getPath().contains("sedml") || format.getPath().contains("sed-ml");
+    }
+
     public String getOutputPathFromSedml(String absoluteSedmlPath) {
         String outputPath = "";
-        //String sedmlName = absoluteSedmlPath.substring(absoluteSedmlPath.lastIndexOf(File.separator) + 1);
         List<String> sedmlListRelative = this.getSedmlLocationsRelative();
         for (String sedmlFileRelative : sedmlListRelative) {
             boolean check = absoluteSedmlPath.contains(Paths.get(sedmlFileRelative).normalize().toString());

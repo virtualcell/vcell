@@ -1,6 +1,7 @@
 package org.vcell.sedml.testsupport;
 
 import cbit.vcell.mapping.MappingException;
+import cbit.vcell.solver.SolverException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.vcell.sbml.vcell.SBMLImportException;
@@ -122,6 +123,10 @@ public class OmexTestingDatabase {
         if (traceEvent.exception instanceof RuntimeException && traceEvent.message.contains("Failed execution")){
             if (traceEvent.message.contains("divide by zero")) return FailureType.DIVIDE_BY_ZERO;
             if (traceEvent.message.contains("infinite loop")) return FailureType.SOLVER_FAILURE;
+        }
+
+        if (traceEvent.exception instanceof SolverException){
+            return FailureType.SOLVER_FAILURE;
         }
 
         if (traceEvent.exception != null && traceEvent.message.toLowerCase().contains("non-compatible sedml simulations"))

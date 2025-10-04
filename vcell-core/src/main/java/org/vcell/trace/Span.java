@@ -3,7 +3,7 @@ package org.vcell.trace;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Span {
+public class Span implements AutoCloseable {
 
     public enum ContextType {
         Root,
