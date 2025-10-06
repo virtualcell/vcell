@@ -137,38 +137,7 @@ public class SlurmProxyTest {
 		return slurmProxy.createJobScriptText(JOB_NAME, commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
 	}
 
-	public String createScriptForNativeSolversBatch(String simTaskResourcePath, String[] command, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
 
-		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource(simTaskResourcePath));
-		KeyValue simKey = simTask.getSimKey();
-
-		SlurmProxy slurmProxy = new SlurmProxy(null, "vcell");
-		File subFileExternal = new File("/share/apps/vcell3/htclogs/V_REL_"+simKey+"_0_0.slurm.sub");
-
-		User simOwner = simTask.getSimulation().getVersion().getOwner();
-		final int jobId = simTask.getSimulationJob().getJobIndex();
-
-
-		// TODO: fill here with stuff
-
-
-		String args = null;		// dummy code, replace once we know
-		ExecutableCommand preprocessorCmd = new ExecutableCommand(null, false, false, args);
-		ExecutableCommand solverCmd = new ExecutableCommand(null, false, false, args);
-		ExecutableCommand postprocessorCmd = new ExecutableCommand(null, false, false, args);
-
-		// TODO: more stuff
-
-		ExecutableCommand.Container commandSet = new ExecutableCommand.Container();
-		commandSet.add(preprocessorCmd);
-		commandSet.add(solverCmd);
-		commandSet.add(postprocessorCmd);
-
-		int NUM_CPUs = 1;
-		int MEM_SIZE_MB = 1000;
-		ArrayList<PortableCommand> postProcessingCommands = new ArrayList<>();
-		return slurmProxy.createJobScriptText(JOB_NAME, commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
-	}
 
 	public String createScriptForJavaSolvers(String simTaskResourcePath, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
 
@@ -287,20 +256,22 @@ public class SlurmProxyTest {
 		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
 	}
 
-//	@Test
-//	public void testSimJobScriptLangevinBatch() throws IOException, XmlParseException, ExpressionException {
-//		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_35189106_0__0.simtask.xml";
-//		String JOB_NAME = "SimID_35189106_0_0";
-//
-//
-//		// TODO: fill here with stuff
-//
-//
-//		String[] command = null;	// dummy to avoid compiler error for "command" variable below
-//		String slurmScript = createScriptForNativeSolversBatch(simTaskResourcePath, command, JOB_NAME);
-//		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/SimID_35189106_0_0.slurm.sub");
-//		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
-//	}
+	@Test
+	public void testSimJobScriptLangevinBatch() throws IOException, XmlParseException, ExpressionException {
+		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_35189106_0__0.simtask.xml";
+		String JOB_NAME = "SimID_35189106_0_";
+
+		String executable = "/usr/local/app/localsolvers/linux64/langevin_x64";
+		String outputLog = "/share/apps/vcell3/users/danv/SimID_35189106_0_.log";
+		String messagingConfig = "/share/apps/vcell3/users/danv/SimID_35189106_0_.langevinMessagingConfig";
+		String inputFilePath = "/share/apps/vcell3/users/danv/SimID_35189106_0_.langevinInput";
+		String[] command = new String[] { executable, "simulate", "--output-log="+outputLog,
+				"--vc-send-status-config="+messagingConfig, inputFilePath, "0", "-tid", "0" };
+
+		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, command, JOB_NAME);
+		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/slurm_array_poc/submit_vcell_batch.slurm.sub");
+		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
+	}
 
 
 	@Test

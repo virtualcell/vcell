@@ -14,7 +14,9 @@ import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
+import cbit.vcell.solver.LangevinSimulationOptions;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.solvers.ExecutableCommand;
 import edu.uchc.connjur.wb.LineStringBuilder;
@@ -416,6 +418,24 @@ public class SlurmProxy extends HtcProxy {
 		
 	}
 
+	String  generateLangevinBatchScript(String jobName, ExecutableCommand.Container commandSet, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
+		SolverTaskDescription std = simTask.getSimulation().getSolverTaskDescription();
+		LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
+		int totalNumberOfJobs = lso.getTotalNumberOfJobs();
+		int numberOfConcurrentJobs = lso.getNumberOfConcurrentJobs();
+		String memPerCpu = "8G";
+		int cpusPerTask = 1;
+		int numNodes = 1;
+		String timeout = "24:00:00";
+
+
+
+
+		String langevinBatchString = "";
+
+		return langevinBatchString;
+	}
+
 	SbatchSolverComponents generateScript(String jobName, ExecutableCommand.Container commandSet, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 
 		//SlurmProxy ultimately instantiated from {vcellroot}/docker/build/Dockerfile-submit-dev by way of cbit.vcell.message.server.batch.sim.HtcSimulationWorker
@@ -688,7 +708,13 @@ public class SlurmProxy extends HtcProxy {
 
 	@Override
 	public HtcJobID submitJob(String jobName, File sub_file_as_internal_path, File sub_file_with_external_path, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask,File primaryUserDirExternal) throws ExecutableException, IOException {
-		String scriptText = createJobScriptText(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
+		SolverTaskDescription std = simTask.getSimulationJob().getSimulation().getSolverTaskDescription();
+		String scriptText;
+		if(std.getSolverDescription().isLangevinSolver() && std.getLangevinSimulationOptions().getTotalNumberOfJobs() > 1) {
+			scriptText = createBatchJobScriptText(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
+		} else {
+			scriptText = createJobScriptText(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
+		}
 		Files.writeString(sub_file_as_internal_path.toPath(), scriptText);
 		return submitJobFile(sub_file_with_external_path);
 	}
@@ -719,20 +745,7 @@ public class SlurmProxy extends HtcProxy {
 		if (LG.isDebugEnabled()) {
 			LG.debug("generating local SLURM submit script for jobName="+jobName);
 		}
-		SlurmProxy.SbatchSolverComponents sbatchSolverComponents = generateScript(jobName, commandSet, memSizeMB, postProcessingCommands, simTask);
-
-		StringBuilder scriptContent = new StringBuilder();
-		scriptContent.append(sbatchSolverComponents.getSingularityCommands());
-		scriptContent.append(sbatchSolverComponents.getSendFailureMsgCommands());
-		scriptContent.append(sbatchSolverComponents.getCallExitCommands());
-		scriptContent.append(sbatchSolverComponents.getPreProcessCommands());
-		scriptContent.append(sbatchSolverComponents.solverCommands);
-		scriptContent.append(sbatchSolverComponents.getExitCommands());
-		String substitutedSbatchCommands = sbatchSolverComponents.getSbatchCommands();
-		String origScriptText =  substitutedSbatchCommands+"\n\n"+
-				scriptContent.toString()+"\n\n"+
-				"#Following commands (if any) are read by JavaPostProcessor64\n"+
-				sbatchSolverComponents.postProcessCommands+"\n";
+		String origScriptText = generateLangevinBatchScript(jobName, commandSet, postProcessingCommands, simTask);
 		String scriptText = toUnixStyleText(origScriptText);
 		return scriptText;
 	}
