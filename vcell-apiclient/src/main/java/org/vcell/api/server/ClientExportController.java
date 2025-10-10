@@ -72,7 +72,9 @@ public void setClientServerManager(ClientServerManager newClientServerManager) {
 public void startExport(OutputContext outputContext,ExportSpecs exportSpecs) throws RemoteProxyException {
 	try {
 		ExportEvent event = getClientServerManager().getDataSetController().makeRemoteFile(outputContext,exportSpecs);
-		getClientServerManager().getAsynchMessageManager().fireExportEvent(event);
+		if (event != null){
+			getClientServerManager().getAsynchMessageManager().fireExportEvent(event);
+		}
 		// ignore; we'll get two downloads otherwise... getClientServerManager().getAsynchMessageManager().fireExportEvent(event);
 	} catch (DataAccessException exc) {
 		throw new RemoteProxyException(exc.getMessage(), exc);
