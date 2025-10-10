@@ -10,6 +10,7 @@
 
 package cbit.vcell.export.server;
 
+import cbit.rmi.event.ExportEventController;
 import cbit.vcell.export.server.FileDataContainerManager.FileDataContainerID;
 import cbit.vcell.geometry.SinglePoint;
 import cbit.vcell.math.VariableType;
@@ -40,10 +41,10 @@ import java.util.*;
  *
  * @author: Ion Moraru
  */
-public class ASCIIExporter implements ExportConstants {
+public class ASCIIExporter {
     private final static Logger lg = LogManager.getLogger(ASCIIExporter.class);
 
-    private ExportServiceImpl exportServiceImpl = null;
+    private ExportEventController exportServiceImpl = null;
 
     /**
      * Insert the method's description here.
@@ -51,7 +52,7 @@ public class ASCIIExporter implements ExportConstants {
      *
      * @param exportServiceImpl cbit.vcell.export.server.ExportServiceImpl
      */
-    public ASCIIExporter(ExportServiceImpl exportServiceImpl){
+    public ASCIIExporter(ExportEventController exportServiceImpl){
         this.exportServiceImpl = exportServiceImpl;
     }
 
@@ -184,7 +185,7 @@ public class ASCIIExporter implements ExportConstants {
         SimulationDescription simulationDescription = new SimulationDescription(outputContext, user, dataServerImpl, vcdID, true, null);
         fileDataContainerManager.append(exportOutput.getFileDataContainerID(), simulationDescription.getHeader(dataType));
         fileDataContainerManager.append(exportOutput.getFileDataContainerID(), getODEDataValues(jobID, user, dataServerImpl, vcdID, variableSpecs.getVariableNames(), timeSpecs.getBeginTimeIndex(), timeSpecs.getEndTimeIndex(), asciiSpecs.getSwitchRowsColumns(), fileDataContainerManager));
-        dataID += variableSpecs.getModeID() == 0 ? variableSpecs.getVariableNames()[0] : "ManyVars";
+        dataID += variableSpecs.getMode() == ExportEnums.VariableMode.VARIABLE_ONE ? variableSpecs.getVariableNames()[0] : "ManyVars";
         return Arrays.asList(exportOutput);
     }
 
@@ -423,12 +424,12 @@ public class ASCIIExporter implements ExportConstants {
     private ExportOutput sofyaFormat(OutputContext outputContext, long jobID, User user, DataServerImpl dataServerImpl,
                                      final VCDataIdentifier orig_vcdID, VariableSpecs variableSpecs, TimeSpecs timeSpecs,
                                      GeometrySpecs geometrySpecs, ASCIISpecs asciiSpecs, String contextName, FileDataContainerManager fileDataContainerManager) throws DataAccessException, IOException{
-        ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
+        SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
         CartesianMesh mesh = dataServerImpl.getMesh(user, orig_vcdID);//use mesh to calulate indexes
         final int SIM_COUNT = simNameSimDataIDs.length;
         final int PARAMSCAN_COUNT = (asciiSpecs.getExportMultipleParamScans() != null ? asciiSpecs.getExportMultipleParamScans().length : 1);
         final int TIME_COUNT = timeSpecs.getEndTimeIndex() - timeSpecs.getBeginTimeIndex() + 1;
-        if(PARAMSCAN_COUNT > 1 || geometrySpecs.getModeID() != GEOMETRY_SELECTIONS/* || geometrySpecs.getCurves().length != 0*/){
+        if(PARAMSCAN_COUNT > 1 || geometrySpecs.getMode() != ExportEnums.GeometryMode.GEOMETRY_SELECTIONS/* || geometrySpecs.getCurves().length != 0*/){
             throw new DataAccessException("Alternate csv format cannot have parameter scans and must be 'point selection' type");
         }
         final long MESSAGE_LIMIT = 5000;//millisecodns
@@ -555,7 +556,7 @@ public class ASCIIExporter implements ExportConstants {
         if (!MacosArm64) {
             NativeLib.HDF5.load();
         }
-        ExportSpecs.SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
+        SimNameSimDataID[] simNameSimDataIDs = asciiSpecs.getSimNameSimDataIDs();
         Vector<ExportOutput[]> exportOutputV = new Vector<ExportOutput[]>();
         double progressCounter = 0;
         final int SIM_COUNT = simNameSimDataIDs.length;
@@ -565,7 +566,7 @@ public class ASCIIExporter implements ExportConstants {
         final int TIME_COUNT = endTimeIndex - beginTimeIndex + 1;
 
         double TOTAL_EXPORTS_OPS = 0;
-        switch(geometrySpecs.getModeID()){
+        switch(geometrySpecs.getMode()){
             case GEOMETRY_SELECTIONS:
                 TOTAL_EXPORTS_OPS = SIM_COUNT * PARAMSCAN_COUNT * variableSpecs.getVariableNames().length * (geometrySpecs.getCurves().length + (geometrySpecs.getPointCount() > 0 ? 1 : 0));
                 break;
@@ -636,7 +637,7 @@ public class ASCIIExporter implements ExportConstants {
                             insertInts(hdf5GroupID, PCS.TIMEBOUNDS.name(), new long[]{2}, new int[]{beginTimeIndex, endTimeIndex});//UiTableExporterToHDF5.writeHDF5Dataset(hdf5GroupID, PCS.TIMEBOUNDS.name(), new long[] {2}, new int[] {beginTimeIndex,endTimeIndex},false);
                         }
 
-                        switch(geometrySpecs.getModeID()){
+                        switch(geometrySpecs.getMode()){
                             case GEOMETRY_SELECTIONS:{
                                 // Set mesh on SpatialSelection because mesh is transient field because it's too big for messaging
                                 SpatialSelection[] spatialSelections = geometrySpecs.getSelections();
@@ -735,7 +736,7 @@ public class ASCIIExporter implements ExportConstants {
                             case GEOMETRY_SLICE:
                             case GEOMETRY_FULL:{
                                 int sliceNumber = geometrySpecs.getSliceNumber();
-                                if(geometrySpecs.getModeID() == GEOMETRY_FULL){
+                                if(geometrySpecs.getMode() == ExportEnums.GeometryMode.GEOMETRY_FULL){
                                     sliceNumber = -1;
                                 }
                                 String dataID = "_Slice_" + Coordinate.getNormalAxisPlaneName(geometrySpecs.getAxis()) + "_" + sliceNumber + "_";

@@ -10,6 +10,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.xml.XMLSource;
@@ -26,6 +27,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.Publication;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
 import org.vcell.restq.db.AgroalConnectionFactory;
+import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -187,5 +189,44 @@ public class TestEndpointUtils {
 
         connection.commit();
         new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()).cleanupDatabase();
+        connection.close();
+    }
+
+    public static void insertAdminsSimulation(DatabaseServerImpl databaseServer, AgroalConnectionFactory connectionFactory) throws IOException, DataAccessException, SQLException {
+        InputStream xmlFile = TestEndpointUtils.class.getResourceAsStream("/simdata/Administrator/SimID_597714292_0__0.simtask.xml");
+        assert xmlFile != null;
+        String readXML = new String(xmlFile.readAllBytes());
+        xmlFile.close();
+        databaseServer.saveSimulation(administratorUser, new BigString(readXML), false);
+        Object object = new Object();
+        Connection connection = connectionFactory.getConnection(object);
+        connection.prepareStatement("UPDATE vc_simulation SET id = 597714292 WHERE name = 'FRAP'").executeUpdate();
+        connection.commit();
+        connection.close();
+    }
+
+
+    private final static String previousExportBaseDir =  PropertyLoader.getProperty(PropertyLoader.exportBaseDirInternalProperty, System.getProperty("java.io.tmpdir"));
+    private final static String previousSimDir = PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty, System.getProperty("java.io.tmpdir"));
+    private final static String previousN5Path = PropertyLoader.getProperty(PropertyLoader.n5DataDir, System.getProperty("java.io.tmpdir"));
+    private final static String previousExportURL = PropertyLoader.getProperty(PropertyLoader.exportBaseURLProperty, "http://localhost:8080/exports");
+    private final static String previousS3BaseURL = PropertyLoader.getProperty(PropertyLoader.exportBaseURLProperty, "http://localhost:8080/s3");
+
+    public static void setSystemProperties(String simDir, String exportBaseDir){
+        PropertyLoader.setProperty(PropertyLoader.primarySimDataDirInternalProperty, simDir);
+        PropertyLoader.setProperty(PropertyLoader.secondarySimDataDirInternalProperty, simDir);
+        PropertyLoader.setProperty(PropertyLoader.exportBaseDirInternalProperty, exportBaseDir);
+        PropertyLoader.setProperty(PropertyLoader.exportBaseURLProperty, previousExportURL);
+        PropertyLoader.setProperty(PropertyLoader.n5DataDir, exportBaseDir);
+        PropertyLoader.setProperty(PropertyLoader.s3ExportBaseURLProperty, previousS3BaseURL);
+    }
+
+    public static void restoreSystemProperties(){
+        PropertyLoader.setProperty(PropertyLoader.primarySimDataDirInternalProperty, previousSimDir);
+        PropertyLoader.setProperty(PropertyLoader.secondarySimDataDirInternalProperty, previousSimDir);
+        PropertyLoader.setProperty(PropertyLoader.exportBaseDirInternalProperty, previousExportBaseDir);
+        PropertyLoader.setProperty(PropertyLoader.n5DataDir, previousN5Path);
+        PropertyLoader.setProperty(PropertyLoader.exportBaseURLProperty, previousExportURL);
+        PropertyLoader.setProperty(PropertyLoader.s3ExportBaseURLProperty, previousS3BaseURL);
     }
 }

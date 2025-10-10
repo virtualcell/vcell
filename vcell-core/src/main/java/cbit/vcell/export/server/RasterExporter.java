@@ -37,6 +37,7 @@ import java.util.Vector;
 
 import javax.imageio.ImageIO;
 
+import cbit.rmi.event.ExportEventController;
 import org.vcell.util.Coordinate;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.Extent;
@@ -78,8 +79,8 @@ import cbit.vcell.solvers.MeshDisplayAdapter;
  * Creation date: (4/27/2004 12:53:34 PM)
  * @author: Ion Moraru
  */
-public class RasterExporter implements ExportConstants {
-	private ExportServiceImpl exportServiceImpl = null;
+public class RasterExporter {
+	private ExportEventController exportServiceImpl = null;
 
 	private static final int VTK_HEXAHEDRON = 12;
 	private static final int VTK_QUAD = 9;
@@ -90,7 +91,7 @@ public class RasterExporter implements ExportConstants {
  * Creation date: (4/27/2004 1:18:37 PM)
  * @param exportServiceImpl cbit.vcell.export.server.ExportServiceImpl
  */
-public RasterExporter(ExportServiceImpl exportServiceImpl) {
+public RasterExporter(ExportEventController exportServiceImpl) {
 	this.exportServiceImpl = exportServiceImpl;
 }
 
@@ -309,7 +310,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 	long lastUpdateTime = 0;
 	switch (rasterSpecs.getFormat()) {
 		case NRRD_SINGLE: {
-			switch (geometrySpecs.getModeID()) {
+			switch (geometrySpecs.getMode()) {
 				case GEOMETRY_FULL:{
 					NrrdInfo nrrdInfo =
 						NRRDHelper.getSizeCheckedNrrdHelper(variableSpecs, mesh.getISize(),mesh.getExtent(), dataProcessingOutputInfo).
@@ -350,7 +351,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 			}			
 		}
 		case NRRD_BY_TIME: {
-			switch (geometrySpecs.getModeID()) {
+			switch (geometrySpecs.getMode()) {
 				case GEOMETRY_FULL: {
 					NRRDHelper nrrdHelper = NRRDHelper.getSizeCheckedNrrdHelper(variableSpecs, mesh.getISize(),mesh.getExtent(), dataProcessingOutputInfo);
 					Vector<NrrdInfo> nrrdinfoV = new Vector<NrrdInfo>();
@@ -404,7 +405,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 			}			
 		}
 		case NRRD_BY_VARIABLE : {
-			switch (geometrySpecs.getModeID()) {
+			switch (geometrySpecs.getMode()) {
 				case GEOMETRY_FULL: {
 					Vector<NrrdInfo> nrrdinfoV = new Vector<NrrdInfo>();
 					int progressIndex = 1;
@@ -463,7 +464,7 @@ private NrrdInfo[] exportPDEData(OutputContext outputContext,long jobID, User us
 	}											
 }
 
-	private static long fireThrottledProgress(ExportServiceImpl exportServiceImpl,long lastUpdateTime,String message,long jobID,VCDataIdentifier vcdID,int progressIndex,int endIndex){
+	private static long fireThrottledProgress(ExportEventController exportServiceImpl, long lastUpdateTime, String message, long jobID, VCDataIdentifier vcdID, int progressIndex, int endIndex){
 		if(lastUpdateTime == 0 || (System.currentTimeMillis() - lastUpdateTime)>5000){
 			lastUpdateTime = System.currentTimeMillis();
 			exportServiceImpl.fireExportProgress(jobID, vcdID, message,(double)(progressIndex)/(double)(endIndex+1));

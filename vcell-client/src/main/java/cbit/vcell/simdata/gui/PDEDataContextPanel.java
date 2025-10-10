@@ -857,7 +857,7 @@ public Curve[] getAllUserCurves() {
  */
 public String getCurveValue(CurveSelectionInfo csi) {
 	String infoS = null;
-	if (csi.getType() == CurveSelectionInfo.TYPE_SEGMENT) {
+	if (csi.getType() == CurveSelectionInfo.CurveSelectionType.SEGMENT.intValue) {
 		if (membranesAndIndexes != null) {
 			java.util.Enumeration<SampledCurve> keysEnum = membranesAndIndexes.keys();
 			while (keysEnum.hasMoreElements()) {
@@ -1717,7 +1717,7 @@ public CurveSelectionInfo findChomboCurveSelectionInfoForPoint(CoordinateIndex c
 				{
 					if (memIndexes[idx] == memIndex)
 					{
-						return new CurveSelectionInfo(sc, CurveSelectionInfo.TYPE_SEGMENT, idx);
+						return new CurveSelectionInfo(sc, CurveSelectionInfo.CurveSelectionType.SEGMENT.intValue, idx);
 					}
 				}
 			}

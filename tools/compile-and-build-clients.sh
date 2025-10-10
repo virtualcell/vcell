@@ -19,6 +19,7 @@ fi
 
 cp ./vcell-rest/target/generated/openapi.yaml ./tools/openapi.yaml
 ./tools/generate.sh
+./tools/python-fix.sh
 
 if [[ "$CURRENT_DIR" == "$SCRIPT_DIR" ]]; then
   popd || exit

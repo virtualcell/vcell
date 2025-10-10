@@ -11,11 +11,17 @@
 package cbit.vcell.simdata;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
+
 /**
  * Insert the type's description here.
  * Creation date: (7/18/2001 2:39:54 PM)
  * @author: Frank Morgan
  */
+@Schema(allOf = {SpatialSelection.class}, requiredProperties = "type", properties = {@SchemaProperty(name = "type", defaultValue = "Contour", type = SchemaType.STRING)})
 public class SpatialSelectionContour extends SpatialSelection {
 	private int[] fieldSampledDataIndexes = null;
 /**
@@ -27,7 +33,7 @@ public class SpatialSelectionContour extends SpatialSelection {
  * @param selectionKind int
  */
 public SpatialSelectionContour(cbit.vcell.geometry.CurveSelectionInfo argCurveSelectionInfo, cbit.vcell.math.VariableType argVarType, cbit.vcell.solvers.CartesianMesh argMesh, int[] sampledDataIndexes) {
-	super(argCurveSelectionInfo, argVarType, argMesh);
+	super(argCurveSelectionInfo, argVarType, argMesh, "Contour");
 	if (argVarType.equals(cbit.vcell.math.VariableType.CONTOUR)){
 		fieldSampledDataIndexes = sampledDataIndexes;
 	}else if (argVarType.equals(cbit.vcell.math.VariableType.CONTOUR_REGION)){
@@ -45,6 +51,7 @@ public SpatialSelectionContour(cbit.vcell.geometry.CurveSelectionInfo argCurveSe
  * @return int
  * @param u double
  */
+@JsonIgnore
 public int getIndex(double selectionU) {
 	int index = -1;
 
@@ -129,6 +136,7 @@ public int[] getIndexSamples() {
  * Creation date: (7/18/2001 3:29:48 PM)
  * @return double
  */
+@JsonIgnore
 public double getLengthInMicrons() {
 	return getCurveSelectionInfo().getCurve().getSpatialLength();
 }

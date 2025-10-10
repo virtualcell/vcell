@@ -17,6 +17,7 @@ import javax.swing.table.AbstractTableModel;
 
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.ExportStatus;
+
 /**
  * Insert the type's description here.
  * Creation date: (4/4/2001 12:14:46 PM)
@@ -67,25 +68,25 @@ public int addExportEvent(String resultSetID, ExportEvent event) {
 	// now update the cells
 	exportStatus.setFormat(event.getFormat());
 	exportStatus.setDestination(event.getLocation());
-	switch (event.getEventTypeID()) {
-		case cbit.rmi.event.ExportEvent.EXPORT_START: {
+	switch (event.getEventType()) {
+		case EXPORT_START: {
 			exportStatus.getProgressBar().setString("Starting export...");
 			break;
 		}
-		case cbit.rmi.event.ExportEvent.EXPORT_PROGRESS: {
+		case EXPORT_PROGRESS: {
 			exportStatus.getProgressBar().setValue((int)(event.getProgress().doubleValue() * 100));
 			exportStatus.getProgressBar().setString(null);
 			break;
 		}
-		case cbit.rmi.event.ExportEvent.EXPORT_ASSEMBLING: {
+		case EXPORT_ASSEMBLING: {
 			exportStatus.getProgressBar().setString("Building export file...");
 			break;
 		}
-		case cbit.rmi.event.ExportEvent.EXPORT_FAILURE: {
+		case EXPORT_FAILURE: {
 			exportStatus.getProgressBar().setString("Export failed!");
 			break;
 		}
-		case cbit.rmi.event.ExportEvent.EXPORT_COMPLETE: {
+		case EXPORT_COMPLETE: {
 			exportStatus.getProgressBar().setValue(100);
 			exportStatus.getProgressBar().setString("Complete");
 			exportStatus.setComplete(Boolean.TRUE);

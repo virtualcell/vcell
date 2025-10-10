@@ -21,11 +21,11 @@ public class ExportUtils {
  * @return int[]
  * @param pixels int[]
  */
-public static int[] extendMirrorPixels(int[] pixels, int width, int height, int mode) throws DataFormatException {
+public static int[] extendMirrorPixels(int[] pixels, int width, int height, ExportEnums.MirroringMethod mode) throws DataFormatException {
 	if (pixels.length != width * height) throw new DataFormatException("Pixel number incompatible with given width, height");
 	int[] mirroredPixels;
 	switch (mode) {
-		case ExportConstants.MIRROR_LEFT:
+		case MIRROR_LEFT:
 			mirroredPixels = new int[pixels.length * 2];
 			for (int i=0;i<height;i++) {
 				for (int j=0;j<width;j++) {
@@ -34,7 +34,7 @@ public static int[] extendMirrorPixels(int[] pixels, int width, int height, int 
 				}
 			}
 			break;
-		case ExportConstants.MIRROR_TOP:
+		case MIRROR_TOP:
 			mirroredPixels = new int[pixels.length * 2];
 			for (int i=0;i<height;i++) {
 				for (int j=0;j<width;j++) {
@@ -43,7 +43,7 @@ public static int[] extendMirrorPixels(int[] pixels, int width, int height, int 
 				}
 			}
 			break;
-		case ExportConstants.MIRROR_RIGHT:
+		case MIRROR_RIGHT:
 			mirroredPixels = new int[pixels.length * 2];
 			for (int i=0;i<height;i++) {
 				for (int j=0;j<width;j++) {
@@ -52,7 +52,7 @@ public static int[] extendMirrorPixels(int[] pixels, int width, int height, int 
 				}
 			}
 			break;
-		case ExportConstants.MIRROR_BOTTOM:
+		case MIRROR_BOTTOM:
 			mirroredPixels = new int[pixels.length * 2];
 			for (int i=0;i<height;i++) {
 				for (int j=0;j<width;j++) {

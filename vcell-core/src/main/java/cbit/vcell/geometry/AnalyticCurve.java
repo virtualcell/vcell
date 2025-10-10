@@ -12,6 +12,10 @@ package cbit.vcell.geometry;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Matchable;
 
@@ -31,6 +35,7 @@ import cbit.vcell.parser.SymbolTableEntry;
  *  exceptions in the abstract base class Curve...which violates
  *  a fundamental OO design principle.
  */
+@Schema(allOf = {Curve.class}, requiredProperties = {"type"}, properties = {@SchemaProperty(name = "type", type = SchemaType.STRING, defaultValue = "AnalyticCurve")})
 public class AnalyticCurve extends Curve implements SymbolTable {
 	private Expression expX = null;
 	private Expression expY = null;
@@ -41,6 +46,7 @@ public class AnalyticCurve extends Curve implements SymbolTable {
  */
 public AnalyticCurve(Expression x, Expression y, Expression z) throws ExpressionBindingException {
 	// cbit.util.Assertion.assert (x != null && y != null && z != null);
+	super("AnalyticCurve");
 	this.expX = x;
 	this.expY = y;
 	this.expZ = z;
@@ -234,6 +240,21 @@ public int setDesiredSampling(int argNumSamplePoints) {
 }
 public void getEntries(Map<String, SymbolTableEntry> entryMap) {
 	entryMap.put(ReservedParameterSymbol.getU().getName(), ReservedParameterSymbol.getU());	
+}
+
+@JsonIgnore
+public Expression getExpressionX(){
+	return expX;
+}
+
+@JsonIgnore
+public Expression getExpressionY() {
+	return expY;
+}
+
+@JsonIgnore
+public Expression getExpressionZ() {
+	return expZ;
 }
 
 }

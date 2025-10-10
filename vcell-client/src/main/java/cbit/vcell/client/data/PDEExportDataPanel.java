@@ -21,8 +21,7 @@ import cbit.vcell.client.UserMessage;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.export.server.*;
-import cbit.vcell.export.server.ExportSpecs.SimNameSimDataID;
-import cbit.vcell.geometry.GeometrySpec;
+import cbit.vcell.export.server.SimNameSimDataID;
 import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.VariableType;
@@ -53,7 +52,7 @@ import java.util.*;
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
-public class PDEExportDataPanel extends JPanel implements ExportConstants {
+public class PDEExportDataPanel extends JPanel {
 	private JRadioButton bothVarRadioButton;
 	private JLabel defineExportDataLabel;
 	private JLabel selectVariablesLabel;
@@ -503,11 +502,11 @@ private void connPtoP3SetTarget() {
 /**
  * Comment
  */
-public int dataType() {
+public ExportEnums.SimulationDataType dataType() {
 	if (getPdeDataContext().hasParticleData()) {
-		return PDE_SIMULATION_WITH_PARTICLES;
+		return ExportEnums.SimulationDataType.PDE_SIMULATION_WITH_PARTICLES;
 	} else {
-		return PDE_SIMULATION_NO_PARTICLES;
+		return ExportEnums.SimulationDataType.PDE_SIMULATION_NO_PARTICLES;
 	}
 }
 
@@ -635,13 +634,13 @@ private ExportSpecs getExportSpecs() {
 	for (int i = 0; i < variableSelections.length; i++){
 		variableNames[i] = (String)variableSelections[i];
 	}
-	VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportConstants.VARIABLE_MULTI);
-	TimeSpecs timeSpecs = new TimeSpecs(getJSlider1().getValue(), getJSlider2().getValue(), getPdeDataContext().getTimePoints(), ExportConstants.TIME_RANGE);
-	int geoMode = ExportConstants.GEOMETRY_SELECTIONS;
+	VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportEnums.VariableMode.VARIABLE_MULTI);
+	TimeSpecs timeSpecs = new TimeSpecs(getJSlider1().getValue(), getJSlider2().getValue(), getPdeDataContext().getTimePoints(), ExportEnums.TimeMode.TIME_RANGE);
+	ExportEnums.GeometryMode geoMode = ExportEnums.GeometryMode.GEOMETRY_SELECTIONS;
 	if (getJRadioButtonSlice().isSelected()) {
-		geoMode = ExportConstants.GEOMETRY_SLICE;
+		geoMode = ExportEnums.GeometryMode.GEOMETRY_SLICE;
 	} else if (getJRadioButtonFull().isSelected()) {
-		geoMode = ExportConstants.GEOMETRY_FULL;
+		geoMode = ExportEnums.GeometryMode.GEOMETRY_FULL;
 	}
 	Object[] selectionsArr = getROISelections().getSelectedValuesList().toArray();
 	SpatialSelection[] selections = new SpatialSelection[selectionsArr.length];
@@ -665,13 +664,18 @@ private ExportSpecs getExportSpecs() {
         }
 	}
 
-	String serverSavedFileName = getExportSettings1().getFormatSpecificSpecs() instanceof N5Specs ? ((N5Specs) getExportSettings1().getFormatSpecificSpecs()).dataSetName : "";
 
 	SimulationOwner simulationOwner = getSimulation().getSimulationOwner();
 	boolean nonSpatial = simulationOwner.getGeometry().getDimension() == 0;
 	HashMap<Integer, String> subVolumes = new HashMap<>();
 	for(SubVolume subVolume: simulationOwner.getGeometry().getGeometrySpec().getSubVolumes()){
 		subVolumes.put(subVolume.getHandle(), subVolume.getName());
+	}
+
+	String serverSavedFileName = "";
+	if (getExportSettings1().getFormatSpecificSpecs() instanceof N5Specs n5Specs){
+		serverSavedFileName = n5Specs.dataSetName;
+		n5Specs.subVolumeMapping = subVolumes;
 	}
 	GeometrySpecs geometrySpecs = new GeometrySpecs(selections, getNormalAxis(), getSlice(), geoMode);
 
@@ -704,7 +708,7 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 	
 	ExportSpecs.SimulationSelector simulationSelector =
 		new ExportSpecs.SimulationSelector(){
-			private ExportSpecs.SimNameSimDataID[] multiSimNameSimDataIDs;
+			private SimNameSimDataID[] multiSimNameSimDataIDs;
 //			private ExportSpecs.ExportParamScanInfo exportParamScanInfo;
 			private int[] selectedParamScanIndexes;
 			private Simulation[] simulations;
@@ -725,7 +729,7 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 //					}
 //				}
 				if(multiSimNameSimDataIDs == null){
-					return new ExportSpecs.SimNameSimDataID[] {currentSimNameSimDataID};
+					return new SimNameSimDataID[] {currentSimNameSimDataID};
 				}
 				return multiSimNameSimDataIDs;
 			}
@@ -746,13 +750,13 @@ private ExportSpecs.SimulationSelector createSimulationSelector(){
 							new String[] {"Simulation","Mesh x,y,z","NumTimePoints","EndTime","Output Descr."},
 							rowData, ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 					if (choices != null) {
-						multiSimNameSimDataIDs = new ExportSpecs.SimNameSimDataID[choices.length];
+						multiSimNameSimDataIDs = new SimNameSimDataID[choices.length];
 						for (int i = 0; i < choices.length; i++) {
 							multiSimNameSimDataIDs[i] =
-								new ExportSpecs.SimNameSimDataID(
+								new SimNameSimDataID(
 									simulations[choices[i]].getName(),
 									simulations[choices[i]].getSimulationInfo().getAuthoritativeVCSimulationIdentifier(),
-									ExportSpecs.getParamScanInfo(simulations[choices[i]], (currentSimNameSimDataID==null?0:currentSimNameSimDataID.getDefaultJobIndex()))
+									ExportParamScanInfo.getParamScanInfo(simulations[choices[i]], (currentSimNameSimDataID==null?0:currentSimNameSimDataID.getDefaultJobIndex()))
 								);
 						}
 					}
@@ -1888,8 +1892,8 @@ public void setNormalAxis(int normalAxis) {
  * @param pdeDataContext The new value for the property.
  * @see #getPdeDataContext
  */
-private ExportSpecs.SimNameSimDataID currentSimNameSimDataID;
-public void setPdeDataContext(PDEDataContext pdeDataContext,ExportSpecs.SimNameSimDataID currentSimNameSimDataID) {
+private SimNameSimDataID currentSimNameSimDataID;
+public void setPdeDataContext(PDEDataContext pdeDataContext, SimNameSimDataID currentSimNameSimDataID) {
 	//currentSimNameSimDataID 2 states
 	//1.  with ExportSpecs.ExportParamScanInfo
 	//2.  without ExportSpecs.ExportParamScanInfo
@@ -2088,7 +2092,7 @@ private void startExport() {
 		PopupGenerator.showErrorDialog(this, "To export selections, you must select at least one item from the ROI selection list");
 	}
 
-	getExportSettings1().setTimeSpecs(new TimeSpecs(getJSlider1().getValue(), getJSlider2().getValue(), getPdeDataContext().getTimePoints(), ExportConstants.TIME_RANGE));
+	getExportSettings1().setTimeSpecs(new TimeSpecs(getJSlider1().getValue(), getJSlider2().getValue(), getPdeDataContext().getTimePoints(), ExportEnums.TimeMode.TIME_RANGE));
 	getExportSettings1().setDisplayPreferences(displayPreferences,Arrays.asList(variableSelections).toArray(new String[0]),viewZoom);
 	getExportSettings1().setSliceCount(FormatSpecificSpecs.getSliceCount(getJRadioButtonFull().isSelected(), getNormalAxis(), getPdeDataContext().getCartesianMesh()));
 	getExportSettings1().setImageSizeCalculationInfo(getPdeDataContext().getCartesianMesh(),getNormalAxis());
