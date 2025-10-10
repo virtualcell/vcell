@@ -677,9 +677,6 @@ private ExportSpecs getExportSpecs() {
 		serverSavedFileName = n5Specs.dataSetName;
 		n5Specs.subVolumeMapping = subVolumes;
 	}
-
-	HumanReadableExportData humanReadableExportData = new HumanReadableExportData(getSimulation().getName(), sc.getName(), sc.getBioModel().getName(),
-			differentParameterValues, serverSavedFileName, sc.getApplicationType().name(), nonSpatial, subVolumes);
 	GeometrySpecs geometrySpecs = new GeometrySpecs(selections, getNormalAxis(), getSlice(), geoMode);
 
 	HumanReadableExportData humanReadableExportData;
