@@ -418,17 +418,32 @@ public class SlurmProxy extends HtcProxy {
 		
 	}
 
-	String  generateLangevinBatchScript(String jobName, ExecutableCommand.Container commandSet, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
+	private static int getRoundedMemoryLimit(int memPerTaskMB) {
+		int rawLimit = (int)(memPerTaskMB * 0.9);
+		// Round down to nearest 100 MB
+		return (rawLimit / 100) * 100;
+	}
+
+	String  generateLangevinBatchScript(String jobName, ExecutableCommand.Container commandSet, double memSizeMB,
+										Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
+
+		String vcellUserid = simTask.getUser().getName();
+		KeyValue simID = simTask.getSimulationInfo().getSimulationVersion().getVersionKey();
 		SolverTaskDescription std = simTask.getSimulation().getSolverTaskDescription();
 		LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
 		int totalNumberOfJobs = lso.getTotalNumberOfJobs();
-		int numberOfConcurrentJobs = lso.getNumberOfConcurrentJobs();
-		String memPerCpu = "8G";
-		int cpusPerTask = 1;
-		int numNodes = 1;
-		String timeout = "24:00:00";
+		int numberOfConcurrentTasks = lso.getNumberOfConcurrentJobs();
+		SolverDescription solverDescription = std.getSolverDescription();
+//		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid, simID, solverDescription, memSizeMB, simTask.isPowerUser());
 
+		int memPerTask = 2048; // in MB
+		LineStringBuilder slurmCommands = new LineStringBuilder();
+		slurmBatchScriptInit(jobName, simTask.isPowerUser(), memPerTask, numberOfConcurrentTasks, slurmCommands);
+		System.out.println(slurmCommands.sb.toString());
 
+		int javaMemXmx = getRoundedMemoryLimit(memPerTask);
+		LineStringBuilder singularityCommands = buildSingularitySlurmSection(simTask, javaMemXmx);
+		System.out.println(singularityCommands.sb.toString());
 
 
 		String langevinBatchString = "";
@@ -556,6 +571,136 @@ public class SlurmProxy extends HtcProxy {
 //		lsb.newline();
 		return new SbatchSolverComponents(slurmCommands.sb.toString(), lsb.sb.toString(),preProcessLSB.sb.toString(),singularityLSB.sb.toString(),callExitLSB.sb.toString(),sendFailMsgLSB.sb.toString(),exitLSB.sb.toString(),postProcessLSB.sb.toString());
 	}
+
+	private LineStringBuilder buildSingularitySlurmSection(SimulationTask simTask, int memoryLimit) {
+		String primaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
+		String secondaryDataDirExternal = PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirExternalProperty);
+
+		String jmshost_sim_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostExternal);
+		String jmsport_sim_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortExternal);
+		String jmsrestport_sim_external = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimRestPortExternal);
+		String htclogdir_external = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
+		String jmsuser = PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser);
+		String jmspswd = PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile);
+		String jmsblob_minsize = PropertyLoader.getProperty(PropertyLoader.jmsBlobMessageMinSize, "10000");
+		String mongodbhost_external = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostExternal);
+		String mongodbport_external = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortExternal);
+		String mongodb_database = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
+		String serverid = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
+		String softwareVersion = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
+		String slurm_tmpdir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
+		String slurm_singularity_cachedir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_cachedir);
+		String slurm_singularity_pullfolder = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_pullfolder);
+		String slurm_singularity_module_name = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_module_name);
+		String simDataDirArchiveExternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveExternal);
+		String simDataDirArchiveInternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveInternal);
+
+		String solverName = simTask.getSimulation().getSolverTaskDescription().getSolverDescription().name();
+		List<String> vcellfvsolver_solverList = List.of(PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellfvsolver_solver_list).split(","));
+		List<String> vcellsolvers_solverList = List.of(PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellsolvers_solver_list).split(","));
+		List<String> vcellbatch_solverList = List.of(PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_solver_list).split(","));
+
+		final String solverDockerName;
+		final String batchDockerName = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_docker_name);
+		if (vcellfvsolver_solverList.contains(solverName)) {
+			solverDockerName = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellfvsolver_docker_name);
+		} else if (vcellsolvers_solverList.contains(solverName)) {
+			solverDockerName = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellsolvers_docker_name);
+		} else if (vcellbatch_solverList.contains(solverName)) {
+			solverDockerName = batchDockerName;
+		} else {
+			throw new RuntimeException("solverName=" + solverName + " not in vcellfvsolver_solverList=" + vcellfvsolver_solverList +
+					" or vcellsolvers_solverList=" + vcellsolvers_solverList + " or vcellbatch_solverList=" + vcellbatch_solverList);
+		}
+
+		String[] environmentVars = new String[] {
+				"java_mem_Xmx=" + memoryLimit + "M",
+				"jmshost_sim_internal=" + jmshost_sim_external,
+				"jmsport_sim_internal=" + jmsport_sim_external,
+				"jmsrestport_sim_internal=" + jmsrestport_sim_external,
+				"jmsuser=" + jmsuser,
+				"jmspswd=" + jmspswd,
+				"jmsblob_minsize=" + jmsblob_minsize,
+				"mongodbhost_internal=" + mongodbhost_external,
+				"mongodbport_internal=" + mongodbport_external,
+				"mongodb_database=" + mongodb_database,
+				"primary_datadir_external=" + primaryDataDirExternal,
+				"secondary_datadir_external=" + secondaryDataDirExternal,
+				"htclogdir_external=" + htclogdir_external,
+				"softwareVersion=" + softwareVersion,
+				"serverid=" + serverid
+		};
+
+		List<SingularityBinding> bindings = List.of(
+				new SingularityBinding(primaryDataDirExternal, "/simdata"),
+				new SingularityBinding(secondaryDataDirExternal, "/simdata_secondary"),
+				new SingularityBinding(simDataDirArchiveExternal, simDataDirArchiveInternal),
+				new SingularityBinding(htclogdir_external, "/htclogs"),
+				new SingularityBinding(slurm_tmpdir, "/solvertmp")
+		);
+
+		LineStringBuilder singularityLSB = new LineStringBuilder();
+		appendSingularitySetup(singularityLSB,
+				solverDockerName, Optional.of(batchDockerName),
+				bindings,
+				slurm_tmpdir, slurm_singularity_cachedir, slurm_singularity_pullfolder,
+				slurm_singularity_module_name, environmentVars);
+
+		return singularityLSB;
+	}
+
+	private void appendSingularitySetup(LineStringBuilder lsb,
+										String solverDockerName, Optional<String> batchDockerName,
+										List<SingularityBinding> bindings,
+										String slurm_tmpdir,
+										String slurm_singularity_cachedir,
+										String slurm_singularity_pullfolder,
+										String singularity_module_name,
+										String[] environmentVars) {
+
+		lsb.write("TMPDIR=" + slurm_tmpdir);
+		lsb.write("if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi");
+
+		// Initialize Singularity
+		lsb.write("echo `hostname`");
+		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles");
+		lsb.write("source /usr/share/Modules/init/bash");
+		lsb.write("module load " + singularity_module_name);
+		lsb.write("export SINGULARITY_CACHEDIR=" + slurm_singularity_cachedir);
+		lsb.write("export SINGULARITY_PULLFOLDER=" + slurm_singularity_pullfolder);
+		// lsb.write("TEMP_DIRNAME=$(mktemp --directory --tmpdir=/local)");
+
+		lsb.write("echo \"job running on host `hostname -f`\"");
+		lsb.write("echo \"id is `id`\"");
+		lsb.write("echo ENVIRONMENT");
+		lsb.write("env");
+		lsb.newline();
+
+		boolean bFirstBind = true;
+		for (SingularityBinding binding : bindings) {
+			if (bFirstBind) {
+				lsb.write("container_bindings=\"--bind " + binding.hostPath + ":" + binding.containerPath + " \"");
+				bFirstBind = false;
+			} else {
+				lsb.write("container_bindings+=\"--bind " + binding.hostPath + ":" + binding.containerPath + " \"");
+			}
+		}
+
+		boolean bFirstEnv = true;
+		for (String envVar : environmentVars) {
+			if (bFirstEnv) {
+				lsb.write("container_env=\"--env " + envVar + " \"");
+				bFirstEnv = false;
+			} else {
+				lsb.write("container_env+=\"--env " + envVar + " \"");
+			}
+		}
+		lsb.write("solver_docker_name="+solverDockerName);
+		if (batchDockerName.isPresent()) {
+			lsb.write("batch_docker_name="+batchDockerName.get());
+		}
+	}
+
 
 
 	private void callExitScript(ExecutableCommand.Container commandSet, LineStringBuilder lsb) {
@@ -705,6 +850,41 @@ public class SlurmProxy extends HtcProxy {
 		}
 		lsb.write("# VCell SlurmProxy memory limit source='"+memoryMBAllowed.getMemLimitSource()+"'");
 	}
+	private void slurmBatchScriptInit(String jobName, boolean bPowerUser, int memParTask, int numberOfConcurrentTasks, LineStringBuilder lsb) {
+		lsb.write("#!/usr/bin/bash");
+		File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
+
+		if (bPowerUser) {
+			String partition_pu = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition_pu);
+			String qos_pu = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_qos_pu);
+			lsb.write("#SBATCH --partition=" + partition_pu);
+			lsb.write("#SBATCH --qos=" + qos_pu);
+		} else {
+			String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
+			String reservation = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_reservation);
+			String qos = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_qos);
+			lsb.write("#SBATCH --partition=" + partition);
+			lsb.write("#SBATCH --reservation=" + reservation);
+			lsb.write("#SBATCH --qos=" + qos);
+		}
+
+		lsb.write("#SBATCH -J " + jobName);
+		lsb.write("#SBATCH -o " + new File(htcLogDirExternal, jobName + ".slurm.log").getAbsolutePath());
+		lsb.write("#SBATCH -e " + new File(htcLogDirExternal, jobName + ".slurm.log").getAbsolutePath());
+		lsb.write("#SBATCH --ntasks=" + numberOfConcurrentTasks);
+		lsb.write("#SBATCH --cpus-per-task=1");
+		lsb.write("#SBATCH --mem-per-cpu=" + memParTask + "M");
+		lsb.write("#SBATCH --nodes=1");
+		lsb.write("#SBATCH --time=24:00:00");
+		lsb.write("#SBATCH --no-kill");
+		lsb.write("#SBATCH --no-requeue");
+
+		String nodelist = PropertyLoader.getProperty(PropertyLoader.htcNodeList, null);
+		if (nodelist != null && nodelist.trim().length() > 0) {
+			lsb.write("#SBATCH --nodelist=" + nodelist);
+		}
+	}
+
 
 	@Override
 	public HtcJobID submitJob(String jobName, File sub_file_as_internal_path, File sub_file_with_external_path, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask,File primaryUserDirExternal) throws ExecutableException, IOException {
@@ -745,7 +925,7 @@ public class SlurmProxy extends HtcProxy {
 		if (LG.isDebugEnabled()) {
 			LG.debug("generating local SLURM submit script for jobName="+jobName);
 		}
-		String origScriptText = generateLangevinBatchScript(jobName, commandSet, postProcessingCommands, simTask);
+		String origScriptText = generateLangevinBatchScript(jobName, commandSet, memSizeMB, postProcessingCommands, simTask);
 		String scriptText = toUnixStyleText(origScriptText);
 		return scriptText;
 	}
