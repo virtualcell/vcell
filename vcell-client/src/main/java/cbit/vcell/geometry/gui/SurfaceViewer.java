@@ -550,7 +550,7 @@ private cbit.vcell.geometry.surface.SurfaceCollection getCentroidSurface(cbit.vc
 		cbit.vcell.geometry.surface.OrigSurface quadSurface = (cbit.vcell.geometry.surface.OrigSurface)quadSurfaceCollection.getSurfaces(0);
 		cbit.vcell.geometry.surface.OrigSurface quadSurfaceCopy = null;
 		try {
-			quadSurfaceCopy = (cbit.vcell.geometry.surface.OrigSurface)org.vcell.util.BeanUtils.cloneSerializable(quadSurface);
+			quadSurfaceCopy = quadSurface.deepClone();
 		}catch (Throwable e){
 			e.printStackTrace(System.out);
 			throw new RuntimeException(e.getMessage());
