@@ -423,10 +423,35 @@ public class SlurmProxy extends HtcProxy {
 		// Round down to nearest 100 MB
 		return (rawLimit / 100) * 100;
 	}
+	private static String extractUser(ExecutableCommand.Container commandSet) {
+		for (ExecutableCommand ec: commandSet.getExecCommands()) {
+			ExecutableCommand.Container commandSet2 = new ExecutableCommand.Container();
+			if(ec.getCommands().get(0).equals("JavaPreprocessor64")) {
+				continue;
+			}else {
+				for(String command : ec.getCommands()) {
+					if(command.startsWith("-Duser=")) {
+						return command.substring(7);
+					} else if(command.contains("langevinInput")) {
+						// Langevin input file is of the form /some/path/users/...
+						String[] pathParts = command.split("/");
+						for(int i=0; i<pathParts.length; i++) {
+							String part = pathParts[i];
+							if(part.contains("users")) {
+								return pathParts[i+1];
+							}
+						}
+					}
+				}
+			}
+		}
+		throw new RuntimeException("Could not extract user from command set: "+commandSet);
+	}
 
 	String  generateLangevinBatchScript(String jobName, ExecutableCommand.Container commandSet, double memSizeMB,
 										Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 
+		String userName = extractUser(commandSet);
 		String vcellUserid = simTask.getUser().getName();
 		KeyValue simID = simTask.getSimulationInfo().getSimulationVersion().getVersionKey();
 		SolverTaskDescription std = simTask.getSimulation().getSolverTaskDescription();

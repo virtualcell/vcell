@@ -17,63 +17,29 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-# ---- injected configuration (exact locations / naming conventions) ----
-SIM_ID=35189106
-USERID=danv
-JOB_NAME=V_REL_${SIM_ID}_0_0
-HTC_LOG_DIR_EXTERNAL=/share/apps/vcell3/htclogs
-PRIMARY_DATA_DIR_EXTERNAL=/share/apps/vcell3/users/danv
-SECONDARY_DATA_DIR_EXTERNAL=/share/apps/vcell7/users
-SIMARCHIVE_HOST=   # keep generator-provided value if any
-SLURM_TMPDIR=/scratch/vcell
-SINGULARITY_CACHEDIR=/share/apps/vcell3/singularity/cachdir
-SINGULARITY_PULLFOLDER=/share/apps/vcell3/singularity/pullfolder
-SINGULARITY_MODULE_NAME=singularity/vcell-3.10.0
-
-# Docker images from generator (use configured values)
-SOLVER_DOCKER_NAME=ghcr.io/virtualcell/vcell-batch:7.6.0.43
-BATCH_DOCKER_NAME=ghcr.io/virtualcell/vcell-batch:7.6.0.43
-
-# derived paths
-SLURM_SUB_PATH="${HTC_LOG_DIR_EXTERNAL}/${JOB_NAME}.slurm.sub"
-SLURM_LOG_PATH="${HTC_LOG_DIR_EXTERNAL}/${JOB_NAME}.slurm.log"
-
-# runtime parameters (replace TOTAL_JOBS and TIMEOUT_SECONDS with generator values at runtime)
-TOTAL_JOBS=10
-TIMEOUT_SECONDS=300
-MAX_CONCURRENT_JOBS=${SLURM_NTASKS:-20}   # uses SBATCH --ntasks
-
-# create required dirs if missing
-mkdir -p "${HTC_LOG_DIR_EXTERNAL}"
-mkdir -p "${PRIMARY_DATA_DIR_EXTERNAL}"
-mkdir -p "${SLURM_TMPDIR}"
-
-# ---- environment / singularity setup (preserve production ordering) ----
-echo "$(hostname)"
+# ------------------------------------------------------------------
+# Universal generated preamble (keep exactly as produced by generator)
+# ------------------------------------------------------------------
+TMPDIR=/scratch/vcell
+if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi
+echo `hostname`
 export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles
 source /usr/share/Modules/init/bash
-module load "${SINGULARITY_MODULE_NAME}"
-export SINGULARITY_CACHEDIR="${SINGULARITY_CACHEDIR}"
-export SINGULARITY_PULLFOLDER="${SINGULARITY_PULLFOLDER}"
-echo "job running on host $(hostname -f)"
-echo "id is $(id)"
-echo "ENVIRONMENT"
+module load singularity/vcell-3.10.0
+export SINGULARITY_CACHEDIR=/share/apps/vcell3/singularity/cachdir
+export SINGULARITY_PULLFOLDER=/share/apps/vcell3/singularity/pullfolder
+echo "job running on host `hostname -f`"
+echo "id is `id`"
+echo ENVIRONMENT
 env
 
-# container bindings in production order (host -> container)
-container_bindings="--bind ${PRIMARY_DATA_DIR_EXTERNAL}:/simdata "
-container_bindings+="--bind ${SECONDARY_DATA_DIR_EXTERNAL}:/simdata_secondary "
-if [[ -n "${SIMARCHIVE_HOST}" ]]; then
-  container_bindings+="--bind ${SIMARCHIVE_HOST}:/archive "
-fi
-container_bindings+="--bind ${HTC_LOG_DIR_EXTERNAL}:/htclogs "
-container_bindings+="--bind ${SLURM_TMPDIR}:/solvertmp "
+container_bindings="--bind /share/apps/vcell3/users:/simdata "
+container_bindings+="--bind /share/apps/vcell7/users:/simdata_secondary "
+container_bindings+="--bind /share/apps/vcell12/users:/share/apps/vcell12/users "
+container_bindings+="--bind /share/apps/vcell3/htclogs:/htclogs "
+container_bindings+="--bind /scratch/vcell:/solvertmp "
 
-# compute java_mem_Xmx from mem-per-task; mem-per-cpu is 2048M, cpus-per-task=1 -> mem/task=2048M
-# subtract small overhead; adjust formula as needed by generator
-JAVA_MEM_XMX=1800M
-
-container_env="--env java_mem_Xmx=${JAVA_MEM_XMX} "
+container_env="--env java_mem_Xmx=1800M "
 container_env+="--env jmshost_sim_internal=rke-wn-01.cam.uchc.edu "
 container_env+="--env jmsport_sim_internal=31618 "
 container_env+="--env jmsrestport_sim_internal=30163 "
@@ -83,82 +49,77 @@ container_env+="--env jmsblob_minsize=100000 "
 container_env+="--env mongodbhost_internal=rke-wn-01.cam.uchc.edu "
 container_env+="--env mongodbport_internal=30019 "
 container_env+="--env mongodb_database=test "
-container_env+="--env primary_datadir_external=${PRIMARY_DATA_DIR_EXTERNAL} "
-container_env+="--env secondary_datadir_external=${SECONDARY_DATA_DIR_EXTERNAL} "
-container_env+="--env htclogdir_external=${HTC_LOG_DIR_EXTERNAL} "
+container_env+="--env primary_datadir_external=/share/apps/vcell3/users "
+container_env+="--env secondary_datadir_external=/share/apps/vcell7/users "
+container_env+="--env htclogdir_external=/share/apps/vcell3/htclogs "
 container_env+="--env softwareVersion=Rel_Version_7.6.0_build_28 "
 container_env+="--env serverid=REL "
 
-solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} docker://${SOLVER_DOCKER_NAME}"
-batch_container_prefix="singularity run --containall ${container_bindings} ${container_env} docker://${BATCH_DOCKER_NAME}"
+solver_docker_name=ghcr.io/virtualcell/vcell-batch:7.6.0.43
+batch_docker_name=ghcr.io/virtualcell/vcell-batch:7.6.0.43
+# ------------------------------------------------------------------
 
-# helper: send failure message via batch container (preserve production call)
-sendFailureMsg() {
-  ${batch_container_prefix} --msg-userid clientUser --msg-password dummy --msg-host rke-wn-01.cam.uchc.edu --msg-port 31618 --msg-job-host "$(hostname)" --msg-job-userid "${USERID}" --msg-job-simkey "${SIM_ID}" --msg-job-jobindex 0 --msg-job-taskid 0 --msg-job-errmsg "$1" SendErrorMsg
-  stat=$?
-  if [[ $stat -ne 0 ]]; then
-    echo "failed to send error message, retcode=$stat"
-  else
-    echo "sent failure message"
-  fi
-}
+# Script-controlled variables (populated by generator in real use)
+USERID=danv
+SIM_ID=35189106
+TOTAL_JOBS=10            # to be set by generator to lso.getTotalNumberOfJobs()
+TIMEOUT_SECONDS=300      # per-job timeout (seconds), adjust per generator
+LOG_FILE="/share/apps/vcell3/htclogs/${SLURM_JOB_NAME}_${SLURM_JOB_ID}_submit.log"
 
-# exit processor wrapper calling JavaPostprocessor64 inside batch container
-callExitProcessor() {
-  # usage: callExitProcessor <exitCode>
-  ${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 "$1" "${SLURM_SUB_PATH}"
-  return $?
-}
-
-# central logging for this script
-LOG_FILE="${HTC_LOG_DIR_EXTERNAL}/${JOB_NAME}_${SLURM_JOB_ID}_submit.log"
+mkdir -p /share/apps/vcell3/htclogs
 echo "Job Execution Log" > "${LOG_FILE}"
 echo "------------------" >> "${LOG_FILE}"
 echo "=== [$(date)] === SLURM job ${SLURM_JOB_ID} started on $(hostname)" | tee -a "${LOG_FILE}"
 
-# ---- Preprocess (must succeed or call exit processor and exit) ----
-SIMXML="/simdata/SimID_${SIM_ID}_0__0.simtask.xml"
+# Preprocessor XML path (per-user)
+SIMXML="/simdata/${USERID}/SimID_${SIM_ID}_0__0.simtask.xml"
+
 echo "[Preprocess] Running JavaPreprocessor64 ${SIMXML}" | tee -a "${LOG_FILE}"
-${batch_container_prefix} JavaPreprocessor64 "${SIMXML}" /simdata >> "${LOG_FILE}" 2>&1
+${batch_docker_name:+} # placeholder to maintain generated code context
+
+# run JavaPreprocessor64 inside batch container (use generated batch prefix)
+${batch_container_prefix:-"singularity run --containall ${container_bindings} ${container_env} docker://${batch_docker_name}"} JavaPreprocessor64 "${SIMXML}" "/simdata/${USERID}" >> "${LOG_FILE}" 2>&1
 stat=$?
-echo "JavaPreprocessor64 returned $stat" | tee -a "${LOG_FILE}"
+echo "JavaPreprocessor64 returned ${stat}" | tee -a "${LOG_FILE}"
 if [ $stat -ne 0 ]; then
-  callExitProcessor $stat
+  ${batch_container_prefix:-"singularity run --containall ${container_bindings} ${container_env} docker://${batch_docker_name}"} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 $stat "${HTC_LOG_DIR_EXTERNAL:-/share/apps/vcell3/htclogs}/${SLURM_JOB_NAME}.slurm.sub" >> "${LOG_FILE}" 2>&1 || true
   echo "Preprocessor failed; exiting ${stat}" | tee -a "${LOG_FILE}"
   exit $stat
 fi
 
-# ---- parallel simulation launch with concurrency throttling (preserve your logic) ----
-INPUT_DIR="/simdata"
-OUTPUT_DIR="/simdata"   # solver writes results to user dir; solver logs go to /htclogs via --output-log
-LOG_DIR="/htclogs"
-SLURM_JOB_NAME="${JOB_NAME}"
-
+# ------------------------------------------------------------------
+# Preserve original concurrency / PID-tracking logic exactly as requested
+# Inputs and solver logs are per-user under /simdata/${USERID}
+# ------------------------------------------------------------------
+INPUT_DIR="/simdata/${USERID}"
+LOG_DIR="/simdata/${USERID}"   # solver writes logs here per your specification
 declare -A job_pid_map
 job_pids=()
 running_jobs=0
 any_fail=0
+max_concurrent_jobs=${SLURM_NTASKS:-20}
 
 for i in $(seq 0 $((TOTAL_JOBS - 1))); do
-    echo "Job $i started at $(date)" | tee -a "${LOG_FILE}"
+    echo "Job $i started at $(date)" >> "${LOG_FILE}"
+
     timeout "${TIMEOUT_SECONDS}s" srun -N 1 -n 1 -c 1 \
-       singularity exec --cleanenv \
-         --bind "${PRIMARY_DATA_DIR_EXTERNAL}:${PRIMARY_DATA_DIR_EXTERNAL}" \
-         --bind "${HTC_LOG_DIR_EXTERNAL}:${HTC_LOG_DIR_EXTERNAL}" \
-         --bind "${SLURM_TMPDIR}:${SLURM_TMPDIR}" \
-         docker://${SOLVER_DOCKER_NAME} \
-         langevin_x64 simulate \
-           "${INPUT_DIR}/SimID_${SIM_ID}_0_.langevinInput" \
-           "${i}" \
-           --output-log="${LOG_DIR}/${SLURM_JOB_NAME}_${i}.log" \
-           --vc-print-status &
+      singularity exec --containall \
+        ${container_bindings} \
+        ${container_env} \
+        docker://${solver_docker_name} \
+        langevin_x64 simulate \
+          "${INPUT_DIR}/SimID_${SIM_ID}_0_.langevinInput" \
+          ${i} \
+          --output-log="${LOG_DIR}/SimID_${SIM_ID}_0_${i}.log" \
+          --vc-print-status &
+
     pid=$!
     job_pids+=($pid)
     job_pid_map[$pid]=$i
     ((running_jobs++))
 
-    # throttle: wait for any finished job before launching new ones when concurrency limit hit
-    while (( running_jobs >= MAX_CONCURRENT_JOBS )); do
+    # throttle: wait for a finished job before launching a new one when concurrency limit hit
+    while (( running_jobs >= max_concurrent_jobs )); do
         for idx in "${!job_pids[@]}"; do
             pid="${job_pids[$idx]}"
             if [[ -z "${pid}" ]]; then
@@ -168,7 +129,7 @@ for i in $(seq 0 $((TOTAL_JOBS - 1))); do
                 wait "$pid"
                 exit_code=$?
                 job_index=${job_pid_map[$pid]:-unknown}
-                echo "Job $job_index with PID $pid finished with exit code $exit_code at $(date)" | tee -a "${LOG_FILE}"
+                echo "Job $job_index with PID $pid finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
                 unset "job_pids[$idx]"
                 unset "job_pid_map[$pid]"
                 ((running_jobs--))
@@ -190,40 +151,39 @@ for pid in "${job_pids[@]}"; do
     wait "$pid"
     exit_code=$?
     job_index=${job_pid_map[$pid]:-unknown}
-    echo "Job $job_index with PID $pid finished with exit code $exit_code at $(date)" | tee -a "${LOG_FILE}"
+    echo "Job $job_index with PID $pid finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
     if [[ $exit_code -ne 0 ]]; then
         any_fail=1
     fi
 done
+echo "Batch jobs completed at $(date)" >> "${LOG_FILE}"
 
-echo "Batch jobs completed at $(date)" | tee -a "${LOG_FILE}"
-
-# ---- start the postprocess solver invocation (must run after all simulation jobs finished) ----
-echo "Starting the last (postprocess) job at $(date)" | tee -a "${LOG_FILE}"
+# postprocess solver invocation (runs after all simulations finish)
+echo "Starting the last job (postprocess) at $(date)" >> "${LOG_FILE}"
 timeout "${TIMEOUT_SECONDS}s" srun -N 1 -n 1 -c 1 \
-       singularity exec --cleanenv \
-         --bind "${PRIMARY_DATA_DIR_EXTERNAL}:${PRIMARY_DATA_DIR_EXTERNAL}" \
-         --bind "${HTC_LOG_DIR_EXTERNAL}:${HTC_LOG_DIR_EXTERNAL}" \
-         --bind "${SLURM_TMPDIR}:${SLURM_TMPDIR}" \
-         docker://${SOLVER_DOCKER_NAME} \
-      langevin_x64 postprocess \
-        "${INPUT_DIR}/SimID_${SIM_ID}_0_.langevinInput" \
-        "${TOTAL_JOBS}" \
-        --output-log="${LOG_DIR}/${SLURM_JOB_NAME}_P.log" \
-        --vc-print-status &
+  singularity exec --containall \
+    ${container_bindings} \
+    ${container_env} \
+    docker://${solver_docker_name} \
+    langevin_x64 postprocess \
+      "${INPUT_DIR}/SimID_${SIM_ID}_0_.langevinInput" \
+      ${TOTAL_JOBS} \
+      --output-log="${LOG_DIR}/SimID_${SIM_ID}_0_P.log" \
+      --vc-print-status &
+
 last_pid=$!
 wait $last_pid
 exit_code=$?
-echo "Job 'Last' with PID $last_pid finished with exit code $exit_code at $(date)" | tee -a "${LOG_FILE}"
-echo "The final job finished at $(date)" | tee -a "${LOG_FILE}"
-echo "All jobs completed at $(date)" | tee -a "${LOG_FILE}"
+echo "Job 'Last' with PID $last_pid finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
+echo "The final job finished at $(date)" >> "${LOG_FILE}"
+echo "All jobs completed at $(date)" >> "${LOG_FILE}"
 
-# ---- run JavaPostprocessor64 inside batch container and exit with appropriate code ----
+# Run JavaPostprocessor64 inside batch container
 echo "[Postprocess] Running JavaPostprocessor64..." | tee -a "${LOG_FILE}"
-${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 "${TOTAL_JOBS}" "${SLURM_SUB_PATH}" >> "${LOG_FILE}" 2>&1
+${batch_container_prefix:-"singularity run --containall ${container_bindings} ${container_env} docker://${batch_docker_name}"} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 "${TOTAL_JOBS}" "${HTC_LOG_DIR_EXTERNAL:-/share/apps/vcell3/htclogs}/${SLURM_JOB_NAME}.slurm.sub" >> "${LOG_FILE}" 2>&1
 post_exit=$?
 
-# decide final exit code: prefer any_fail or post_exit if non-zero
+# final exit decision
 if [[ "${any_fail}" -ne 0 ]]; then
   echo "One or more simulation tasks failed; exiting non-zero" | tee -a "${LOG_FILE}"
   exit 1
