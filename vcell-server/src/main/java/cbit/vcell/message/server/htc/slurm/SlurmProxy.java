@@ -448,6 +448,45 @@ public class SlurmProxy extends HtcProxy {
 		throw new RuntimeException("Could not extract user from command set: "+commandSet);
 	}
 
+
+	/**
+	 * Compute SBATCH --time
+	 * as HH:MM:00 (seconds fixed to "00").
+	 * or as D-HH:MM:00 (if over 99 hours).
+	 *
+	 * Uses integer math only and adds a 10% cushion, rounded up to whole minutes.
+	 *
+	 * totalNumberOfJobs: total simulation tasks
+	 * numberOfConcurrentTasks: parallel slots (SLURM_NTASKS)
+	 * timeoutSeconds: per-task timeout in seconds
+	 */
+	public static String computeSlurmTimeLimit(int totalNumberOfJobs,
+														  int numberOfConcurrentTasks,
+														  int timeoutSeconds) {
+		if (totalNumberOfJobs < 0) throw new IllegalArgumentException("totalNumberOfJobs >= 0 required");
+		if (numberOfConcurrentTasks <= 0) throw new IllegalArgumentException("numberOfConcurrentTasks > 0 required");
+		if (timeoutSeconds <= 0) throw new IllegalArgumentException("timeoutSeconds > 0 required");
+
+		int perTaskMinutes = (timeoutSeconds + 59) / 60; // ceiling(timeoutSeconds/60)
+		int batches = (totalNumberOfJobs + numberOfConcurrentTasks - 1) / numberOfConcurrentTasks;
+		long workMinutes = (long) batches * perTaskMinutes;
+		long extraMinutes = 3L * perTaskMinutes;
+		long totalMinutes = workMinutes + extraMinutes;
+		long cushionedMinutes = (long) Math.ceil(totalMinutes * 1.10);
+
+		long totalHours = cushionedMinutes / 60;
+		long minutes = cushionedMinutes % 60;
+
+		if (totalHours < 100) {
+			return String.format("%02d:%02d:00", totalHours, minutes);
+		} else {
+			long days = totalHours / 24;
+			long hours = totalHours % 24;
+			return String.format("%d-%02d:%02d:00", days, hours, minutes);
+		}
+	}
+
+
 	String  generateLangevinBatchScript(String jobName, ExecutableCommand.Container commandSet, double memSizeMB,
 										Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 
@@ -461,10 +500,22 @@ public class SlurmProxy extends HtcProxy {
 		SolverDescription solverDescription = std.getSolverDescription();
 //		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid, simID, solverDescription, memSizeMB, simTask.isPowerUser());
 
+		int timeoutPerTaskSeconds = 300;
+		String slurmJobTimeout = computeSlurmTimeLimit(totalNumberOfJobs, numberOfConcurrentTasks, timeoutPerTaskSeconds);
+
 		int memPerTask = 2048; // in MB
 		LineStringBuilder slurmCommands = new LineStringBuilder();
 		slurmBatchScriptInit(jobName, simTask.isPowerUser(), memPerTask, numberOfConcurrentTasks, slurmCommands);
 		System.out.println(slurmCommands.sb.toString());
+
+		String user = extractUser(commandSet);
+		System.out.println("USERID="+user);
+		System.out.println("SIM_ID="+simID);
+		System.out.println("TOTAL_JOBS="+totalNumberOfJobs);
+		System.out.println("TIMEOUT_SECONDS="+user);
+		System.out.println("USERID="+user);
+
+
 
 		int javaMemXmx = getRoundedMemoryLimit(memPerTask);
 		LineStringBuilder singularityCommands = buildSingularitySlurmSection(simTask, javaMemXmx);
