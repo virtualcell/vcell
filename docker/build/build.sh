@@ -7,7 +7,6 @@ ssh_key=
 skip_push=false
 skip_maven=false
 SUDO_CMD=sudo
-mvn_repo=$HOME/.m2
 
 show_help() {
 	echo "usage: build.sh [OPTIONS] target repo tag"
@@ -244,7 +243,7 @@ shift
 
 if [ "$skip_maven" == "false" ]; then
 	pushd ../..
-	mvn --batch-mode -Dmaven.repo.local=$mvn_repo clean install dependency:copy-dependencies -DskipTests=true
+	mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
 	popd
 fi
 
