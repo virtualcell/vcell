@@ -110,7 +110,7 @@ build_rest() {
 }
 
 build_exporter() {
-	echo "building $repo/vcell-rest:$tag"
+	echo "building $repo/vcell-exporter:$tag"
 	echo "$SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../vcell-rest/src/main/docker/Dockerfile.jvm --tag $repo/vcell-exporter:$tag ../../vcell-rest"
 	mvn clean install -DskipTests -Dvcell.exporter=true -f ../../vcell-rest/pom.xml
 	$SUDO_CMD docker buildx build --platform=linux/amd64 -f ../../vcell-rest/src/main/docker/Dockerfile.jvm --tag $repo/vcell-exporter:$tag ../../vcell-rest
@@ -303,11 +303,11 @@ case $target in
 		;;
 	all)
 #		build_api && build_rest && build_db && build_sched && build_submit && build_data && build_mongo && build_batch && build_opt && build_clientgen && build_admin
-		build_api && build_rest && build_webapp && build_db && build_sched && build_submit && build_data && build_mongo && build_batch && build_opt && build_clientgen && build_admin
+		build_api && build_rest && build_exporter && build_webapp && build_db && build_sched && build_submit && build_data && build_mongo && build_batch && build_opt && build_clientgen && build_admin
 		exit $?
 		;;
 	appservices)
-		build_api && build_rest && build_webapp && build_db && build_sched && build_submit && build_data && build_mongo
+		build_api && build_rest && build_exporter && build_webapp && build_db && build_sched && build_submit && build_data && build_mongo
 		exit $?
 		;;
 	*)

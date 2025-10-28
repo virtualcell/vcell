@@ -2,6 +2,10 @@ name: CI-application-containers
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: "Repository tag (e.g., 7.7.0.37)"
+        required: true
   release:
     types: [published]
   
@@ -25,7 +29,11 @@ jobs:
       run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
     - name: set global environment variables
       run: |
-        echo "VCELL_TAG=`git rev-parse --short HEAD`" >> $GITHUB_ENV
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "TAG_NAME=${{ github.event.inputs.tag }}" >> $GITHUB_ENV
+        else
+          echo "VCELL_TAG=`git rev-parse --short HEAD`" >> $GITHUB_ENV
+        fi
         echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
         echo "VCELL_DEPLOY_REMOTE_DIR=/share/apps/vcell3/deployed_github" >> $GITHUB_ENV
         echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV
