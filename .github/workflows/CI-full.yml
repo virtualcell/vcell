@@ -12,6 +12,13 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
+    - name: Free up VM's disk space
+      run: |
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /usr/local/.ghcup
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/share/swift
+        sudo apt-get clean
     - uses: actions/checkout@v4
     - name: Get the VCell version from tags
       id: version
