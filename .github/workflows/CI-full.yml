@@ -27,10 +27,13 @@ jobs:
 
     - name: Get the VCell version from tags
       id: version
-      run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
-      
+      run: echo "FRIENDLY_TAG=${GITHUB_REF:10}" >> $GITHUB_ENV
+
     - name: set global environment variables
       run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "FRIENDLY_TAG=${{ github.event.inputs.tag }}" >> $GITHUB_ENV    
+        fi
         echo "VCELL_TAG=`git rev-parse --short HEAD`" >> $GITHUB_ENV
         echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
         echo "VCELL_DEPLOY_REMOTE_DIR=/share/apps/vcell3/deployed_github" >> $GITHUB_ENV
@@ -120,7 +123,7 @@ jobs:
       run: |
         for CONTAINER in vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-webapp-island vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin;\
            do docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:latest;\
-           docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${{ steps.version.outputs.tag }};\
+           docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${FRIENDLY_TAG};\
            docker push --all-tags ${VCELL_REPO_NAMESPACE}/$CONTAINER;\
         done
 
