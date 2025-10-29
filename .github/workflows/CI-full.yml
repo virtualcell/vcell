@@ -121,7 +121,7 @@ jobs:
     - name: tag as latest and push to registry
       shell: bash
       run: |
-        for CONTAINER in vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-webapp-island vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin;\
+        for CONTAINER in vcell-exporter vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-webapp-island vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin;\
            do docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:latest;\
            docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${FRIENDLY_TAG};\
            docker push --all-tags ${VCELL_REPO_NAMESPACE}/$CONTAINER;\
