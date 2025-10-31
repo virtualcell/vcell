@@ -183,3 +183,28 @@ variables of interest for multiple runs under slurm, in containers, are:
    <NumBatchTrials>20</NumBatchTrials>
 </LangevinSimulationOptions>
 ```
+
+### 8 The real deal (running in production environment)
+
+#### important directories on mantis-040
+```powershell
+/share/apps/vcell3/htclogs/   - slurm script and logs
+/share/apps/vcell3/users/danv - user's home directory, xml input file, results
+```
+
+#### useful commands
+```powershell
+ssh vcell@mantis-040.cam.uchc.edu     # login to mantis as vcell user
+sed -i 's/\r$//' ./<script_name.sub>  # fix line endings (Windows -> Unix style)
+ls -lt | head -20                     # list most recent files
+cat <file_name>                       # view file content
+tail -f /share/apps/vcell3/htclogs/<log_file_name>   # monitor log file
+
+sbatch <script_name>.slurm.sub        # submit a job
+squeue -j <job_id>                     # check job status
+squeue -u <myName>                    # check job queue
+scancel <job_id>                      # cancel a job
+sacct -j <job_id>                     # check job accounting info
+tail -f /share/apps/vcell3/htclogs/<log_file_name>   # monitor log file
+
+```
