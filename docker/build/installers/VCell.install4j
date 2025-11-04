@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<install4j version="10.0.6" transformSequenceNumber="10">
+<install4j version="11.0.5" transformSequenceNumber="11">
   <directoryPresets config="../target" />
   <application name="The Virtual Cell ${compiler:Site}" applicationId="${compiler:applicationId}" mediaDir="${compiler:outputDir}" compression="9" lzmaCompression="true" shortName="VCell_${compiler:Site}" publisher="University of Connecticut Health Center" publisherWeb="http://vcell.org" version="${compiler:vcellVersion}.${compiler:vcellBuild}" allPathsRelative="true" backupOnSave="true" autoSave="true" macVolumeId="dcbbe26700a89e7f" javaMinVersion="17" allowBetaVM="true">
     <variables>
@@ -465,7 +465,7 @@ return console.askOkCancel(message, true);
                   </property>
                 </serializedBean>
               </action>
-              <action id="9" beanClass="com.install4j.runtime.beans.actions.InstallFilesAction" actionElevationType="elevated" failureStrategy="askRetryQuit" errorMessage="${i18n:FileCorrupted}" />
+              <action id="9" beanClass="com.install4j.runtime.beans.actions.InstallFilesAction" actionElevationType="elevated" errorMessage="${i18n:FileCorrupted}" />
               <action id="2226" beanClass="com.install4j.runtime.beans.actions.net.DownloadFileAction" enabled="false" actionElevationType="elevated">
                 <serializedBean>
                   <property name="targetFile">
@@ -1032,7 +1032,7 @@ context.goForward(1, true, true);
                       <property name="url" type="string">${installer:updaterDownloadUrl}</property>
                     </serializedBean>
                   </action>
-                  <action id="143" beanClass="com.install4j.runtime.beans.actions.files.SetModeAction" actionElevationType="elevated" failureStrategy="askRetryQuit">
+                  <action id="143" beanClass="com.install4j.runtime.beans.actions.files.SetModeAction" actionElevationType="elevated">
                     <serializedBean>
                       <property name="files" type="array" class="java.io.File" length="1">
                         <element index="0">
@@ -1397,25 +1397,6 @@ if (context.isUnattended()) {
     </styles>
   </installerGui>
   <mediaSets>
-    <macos name="Mac OS X Single Bundle ${compiler:vcellVersion} ${compiler:Site}" id="105" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" architecture="universal" launcherId="102">
-      <excludedBeans>
-        <bean refId="1672" />
-        <bean refId="1673" />
-        <bean refId="1674" />
-        <bean refId="1675" />
-      </excludedBeans>
-      <exclude>
-        <entry filesetId="1115" />
-        <entry filesetId="1117" />
-        <entry filesetId="1119" />
-        <entry filesetId="1121" />
-      </exclude>
-      <variables>
-        <variable name="resourceJar" value="../src_macosx_64" />
-        <variable name="resourceDir" value="resources" />
-      </variables>
-      <jreBundle usePack200="false" />
-    </macos>
     <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" downloadURL="${compiler:updateSiteBaseUrl}" architecture="64">
       <excludedLaunchers>
         <launcher id="102" />
@@ -1512,13 +1493,31 @@ if (context.isUnattended()) {
       </variables>
       <jreBundle usePack200="false" />
     </unixInstaller>
+    <macosFolder name="MacOS ${compiler:vcellVersion} ${compiler:Site}" id="3086" architecture="universal">
+      <excludedLaunchers>
+        <launcher id="345" />
+        <launcher id="447" />
+        <launcher id="534" />
+        <launcher id="627" />
+        <launcher id="1880" />
+      </excludedLaunchers>
+      <excludedBeans>
+        <bean refId="1672" />
+        <bean refId="1673" />
+        <bean refId="1674" />
+        <bean refId="1675" />
+      </excludedBeans>
+      <exclude>
+        <entry filesetId="1115" />
+        <entry filesetId="1117" />
+        <entry filesetId="1119" />
+        <entry filesetId="1121" />
+      </exclude>
+      <jreBundle jdkProviderId="JBR" release="17/latest" usePack200="false" overrideJdkRelease="true" manualJreEntry="true" />
+    </macosFolder>
   </mediaSets>
-  <buildIds>
-    <mediaSet refId="105" />
-    <mediaSet refId="349" />
-    <mediaSet refId="450" />
-    <mediaSet refId="652" />
-    <mediaSet refId="547" />
+  <buildIds buildAll="false">
+    <mediaSet refId="3086" />
   </buildIds>
   <buildOptions verbose="true" />
 </install4j>
