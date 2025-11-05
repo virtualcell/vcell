@@ -20,9 +20,9 @@ RUN mkdir -p /usr/local/app && \
     apt -y install wget apt-utils libfreetype6 fontconfig fonts-dejavu
 
 RUN mkdir /installer && cd /installer && \
-    wget --quiet -O install4j_unix_10_0_5.tar.gz \
+    wget --quiet -O install4j_unix_11_0_5.tar.gz \
         https://download.ej-technologies.com/install4j/install4j_unix_11_0_5.tar.gz && \
-    tar xzf install4j_unix_10_0_5.tar.gz
+    tar xzf install4j_unix_11_0_5.tar.gz
 
 COPY ./license.txt \
     ./vcell-client/src/main/resources/thirdpartylicenses.txt \
