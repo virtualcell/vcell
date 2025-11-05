@@ -323,10 +323,7 @@ java.desktop/sun.awt.image=ALL-UNNAMED
             <actions>
               <action id="360" beanClass="com.install4j.runtime.beans.actions.misc.RequestPrivilegesAction" actionElevationType="none">
                 <serializedBean>
-                  <property name="failIfNotObtainedMac" type="boolean" value="false" />
-                  <property name="obtainIfAdminMac" type="boolean" value="true" />
-                  <property name="obtainIfNormalMac" type="boolean" value="true" />
-                  <property name="obtainIfNormalWin" type="boolean" value="true" />
+                  <property name="obtainIfAdminWin" type="boolean" value="false" />
                 </serializedBean>
               </action>
             </actions>

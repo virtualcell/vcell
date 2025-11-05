@@ -21,7 +21,7 @@ RUN mkdir -p /usr/local/app && \
 
 RUN mkdir /installer && cd /installer && \
     wget --quiet -O install4j_unix_10_0_5.tar.gz \
-        https://download.ej-technologies.com/install4j/install4j_unix_10_0_5.tar.gz && \
+        https://download.ej-technologies.com/install4j/install4j_unix_11_0_5.tar.gz && \
     tar xzf install4j_unix_10_0_5.tar.gz
 
 COPY ./license.txt \
