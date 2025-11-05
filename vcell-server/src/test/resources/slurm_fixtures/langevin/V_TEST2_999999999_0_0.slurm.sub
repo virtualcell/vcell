@@ -1,0 +1,158 @@
+#!/usr/bin/bash
+#SBATCH --partition=vcell
+#SBATCH --reservation=
+#SBATCH --qos=vcell
+#SBATCH -J V_TEST2_999999999_0_0
+#SBATCH -o /share/apps/vcell3/htclogs/V_TEST2_999999999_0_0.slurm.log
+#SBATCH -e /share/apps/vcell3/htclogs/V_TEST2_999999999_0_0.slurm.log
+#SBATCH --ntasks=20			# number of concurrent tasks
+#SBATCH --cpus-per-task=1
+#SBATCH --mem-per-cpu=2048M
+#SBATCH --nodes=1
+#SBATCH --time=24:00:00		# timeout for the entire job
+#SBATCH --no-kill
+#SBATCH --no-requeue
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+# Script-controlled variables (populated by generator in real use)
+USERID=danv
+SIM_ID=999999999
+TOTAL_JOBS=50            # to be set by generator to lso.getTotalNumberOfJobs()
+JOB_TIMEOUT_SECONDS=300  # per-job timeout (seconds), adjust per generator
+LOG_FILE="/share/apps/vcell3/htclogs/${SLURM_JOB_NAME}_submit.log"
+
+
+# Truncate Slurm output log and solver output log
+: > /share/apps/vcell3/htclogs/V_TEST2_${SIM_ID}_0_0.slurm.log
+: > /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.log
+
+echo "=== Singularity check BEFORE module load ==="
+if command -v singularity >/dev/null 2>&1; then
+    echo "Singularity found at: $(command -v singularity)"
+    singularity --version
+else
+    echo "Singularity not found in current PATH"
+fi
+
+# ------------------------------------------------------------------
+# Universal generated preamble (keep exactly as produced by generator)
+# ------------------------------------------------------------------
+TMPDIR=/scratch/vcell
+if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi
+echo `hostname`
+export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles
+if [ -f /usr/share/modules/init/bash ]; then
+    source /usr/share/modules/init/bash
+	module load singularity/vcell-3.10.0
+else
+    echo "[Warning] Module init script not found — skipping module setup"
+fi
+export SINGULARITY_CACHEDIR=/share/apps/vcell3/singularity/cachdir
+export SINGULARITY_PULLFOLDER=/share/apps/vcell3/singularity/pullfolder
+
+echo "=== Singularity check AFTER module load ==="
+if command -v singularity >/dev/null 2>&1; then
+    echo "Singularity found at: $(command -v singularity)"
+    singularity --version
+else
+    echo "Singularity not found after module load"
+fi
+
+# extracts min memory per node, to display below. Otherwise, useless
+# based on mem/cpu snd number of cpus, defined in SBATCH above
+MEM=$(scontrol show job ${SLURM_JOB_ID} | awk -F= '/MinMemoryNode/ {print $2}' | awk '{print $1}')
+
+echo "======= SLURM job started ======="
+echo "Hostname       : $(hostname -f)"
+echo "User           : $USERID"
+echo "Sim ID         : $SIM_ID"
+echo "id             : `id`"
+echo "Total Jobs     : $TOTAL_JOBS"
+echo "Job Timeout    : $JOB_TIMEOUT_SECONDS"
+echo "Slurm Job ID   : $SLURM_JOB_ID"
+echo "Slurm Job Name : $SLURM_JOB_NAME"
+echo "Start Time     : $(date)"
+echo "Working Dir    : $(pwd)"
+echo "Node List      : $SLURM_NODELIST"
+echo "CPUs per task  : $SLURM_CPUS_PER_TASK"
+echo "Memory         : ${MEM} MB total"
+echo "Environment snapshot:"
+env
+echo "================================="
+
+container_bindings="--bind /share/apps/vcell3/users:/simdata "
+container_bindings+="--bind /share/apps/vcell7/users:/simdata_secondary "
+container_bindings+="--bind /share/apps/vcell12/users:/share/apps/vcell12/users "
+container_bindings+="--bind /share/apps/vcell3/htclogs:/htclogs "
+container_bindings+="--bind /scratch/vcell:/solvertmp "
+
+container_env="--env java_mem_Xmx=1800M "
+container_env+="--env jmshost_sim_internal=rke-wn-01.cam.uchc.edu "
+container_env+="--env jmsport_sim_internal=31618 "
+container_env+="--env jmsrestport_sim_internal=30163 "
+container_env+="--env jmsuser=clientUser "
+container_env+="--env jmspswd=dummy "
+container_env+="--env jmsblob_minsize=100000 "
+container_env+="--env mongodbhost_internal=rke-wn-01.cam.uchc.edu "
+container_env+="--env mongodbport_internal=30019 "
+container_env+="--env mongodb_database=test "
+container_env+="--env primary_datadir_external=/share/apps/vcell3/users "
+container_env+="--env secondary_datadir_external=/share/apps/vcell7/users "
+container_env+="--env htclogdir_external=/share/apps/vcell3/htclogs "
+container_env+="--env softwareVersion=Test2_Version_7.7.0_build_34 "
+container_env+="--env serverid=REL "
+
+# ------------------------------------------------------------------
+
+
+echo "Job Execution Log" > "${LOG_FILE}"
+echo "------------------" >> "${LOG_FILE}"
+echo "=== [$(date)] === SLURM job ${SLURM_JOB_ID} started on $(hostname)" | tee -a "${LOG_FILE}"
+
+# Container image path
+sif_path="/share/apps/vcell3/singularity/cachdir/sif/vcell-batch-7.7.0.34.sif"
+# Full solver command
+batch_container_prefix="singularity run --containall ${container_bindings} ${container_env} ${sif_path}"
+solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} ${sif_path}"
+
+# Preprocessor XML path (per-user)
+SIMXML="/simdata/${USERID}/SimID_${SIM_ID}_0__0.simtask.xml"
+echo "[Preprocess] Running JavaPreprocessor64 ${SIMXML}" | tee -a "${LOG_FILE}"
+
+# run JavaPreprocessor64 inside batch container (use generated batch prefix)
+${batch_container_prefix} JavaPreprocessor64 "${SIMXML}" "/simdata/${USERID}"
+stat=$?
+echo "JavaPreprocessor64 returned ${stat}" | tee -a "${LOG_FILE}"
+if [ $stat -ne 0 ]; then
+  ${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 $stat "${HTC_LOG_DIR_EXTERNAL:-/share/apps/vcell3/htclogs}/${SLURM_JOB_NAME}.slurm.sub" || true
+  echo "Preprocessor failed; exiting ${stat}" | tee -a "${LOG_FILE}"
+  exit $stat
+fi
+
+
+# Run single instance of solver
+slurm_prefix="srun -N1 -n1 -c${SLURM_CPUS_PER_TASK}"
+${slurm_prefix} ${solver_container_prefix} langevin_x64 simulate --output-log=/simdata/danv/SimID_${SIM_ID}_0_.log /simdata/danv/SimID_${SIM_ID}_0_.langevinInput 0 -tid 0
+
+
+# Run JavaPostprocessor64 inside batch container
+echo "[Postprocess] Running JavaPostprocessor64..." | tee -a "${LOG_FILE}"
+${batch_container_prefix}  JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 "${TOTAL_JOBS}" "${HTC_LOG_DIR_EXTERNAL:-/share/apps/vcell3/htclogs}/${SLURM_JOB_NAME}.slurm.sub"
+post_exit=$?
+
+# final exit decision
+if [[ "${any_fail}" -ne 0 ]]; then
+  echo "One or more simulation tasks failed; exiting non-zero" | tee -a "${LOG_FILE}"
+  exit 1
+fi
+
+if [[ "${post_exit}" -ne 0 ]]; then
+  echo "JavaPostprocessor64 failed with ${post_exit}; exiting ${post_exit}" | tee -a "${LOG_FILE}"
+  exit "${post_exit}"
+fi
+
+echo "=== [$(date)] === SLURM job completed successfully" | tee -a "${LOG_FILE}"
+exit 0

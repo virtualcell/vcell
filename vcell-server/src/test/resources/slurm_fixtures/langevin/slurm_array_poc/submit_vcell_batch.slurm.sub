@@ -7,7 +7,7 @@
 #SBATCH --ntasks=4              # how many tasks to run in parallel
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=8G        # ntasks x cpus-per-task = 4 x 1  --> 4 x 8G = 32G
-#SBATCH --time=01:00:00         # 1 hour timeout
+#SBATCH --time=01:00:00         # 1 hour timeout for the entire job, format D-HH:MM:SS
 #SBATCH --partition=vcell
 #SBATCH --qos=vcell
 
