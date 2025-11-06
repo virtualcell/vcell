@@ -89,7 +89,7 @@ if [ ! -z "$installer_deploy_dir" ]; then
   version=$(echo "${vcell_version}_${vcell_build}" | tr '.' _)
   if ! scp "./generated_installers/VCell_${vcell_siteCamel}_windows-x64_${version}_64bit.exe" \
     "./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_32bit.sh" \
-    "./generated_installers/VCell_${vcell_siteCamel}_macos_${version}_64bit.dmg" \
+    "./generated_installers/VCell_${vcell_siteCamel}_macos_${version}.dmg" \
     "./generated_installers/VCell_${vcell_siteCamel}_windows-x32_${version}_32bit.exe" \
     "./generated_installers/VCell_${vcell_siteCamel}_unix_${version}_64bit.sh" \
     "./generated_installers/updates.xml" \
