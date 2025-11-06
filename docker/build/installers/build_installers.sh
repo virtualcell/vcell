@@ -16,8 +16,8 @@ compiler_vcellClasspathColonSep_Mac64="${compiler_vcellClasspathColonSep}"
 
 cd /config
 
-PATH=/installer/install4j11.0.5/bin:$PATH
-INSTALL4JC=/installer/install4j11.0.5/bin/install4jc
+PATH=/installer/install4j10.0.5/bin:$PATH
+INSTALL4JC=/installer/install4j10.0.5/bin/install4jc
 
 #
 # retrieve text secrets from file (docker-compose 'secrets' mounts these files in memory at runtime)
@@ -147,7 +147,7 @@ mv /outputdir/updates.xml /outputdir/updates_linux32.xml
 
 #Generate mac 64bit installer
 $INSTALL4JC \
-	-b 105 \
+	-b 3087 \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
 	-D \
