@@ -21,6 +21,8 @@ COLON_SEP=`ls -m ${JARS_DIR}/maven-jars | tr -d '[:space:]' | tr ',' ':'`
 $INSTALL4J_PATH \
 --disable-signing \
 --media-types=macosFolder \
+--faster \
+--debug \
 -D \
 macKeystore=${CONFIG_DIR}/Apple_Dev_Id_Certificate_exp_20270924.p12,\
 vcellLicenseFilePath=${CONFIG_DIR}/license.txt,\
