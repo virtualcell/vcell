@@ -1,4 +1,4 @@
-name: CI-application-containers
+name: Build and Publish VCell Docker Images
 
 on:
   workflow_dispatch:
@@ -6,6 +6,10 @@ on:
       tag:
         description: "Repository tag (e.g., 7.7.0.37)"
         required: true
+      client_only:
+        description: "Build only client images (true/false)"
+        required: false
+        default: "false"
   release:
     types: [published]
   
@@ -60,47 +64,15 @@ jobs:
     - name: Install Dependencies
       run: pip install -r requirements.txt
 
-    - name: build vcell-cli-utils package
+    - name: build python packages
       run: |
-        cd vcell-cli-utils
-        poetry install
-        poetry run python -m pytest
-
-    - name: build vcell-admin package
-      run: |
-        cd docker/swarm/vcell-admin
-        poetry install
-        poetry run python -m pytest
-
-    - name: build pythonCopasiOpt package
-      run: |
-        cd pythonCopasiOpt/vcell-opt
-        poetry install
-        poetry run python -m pytest
-
-    - name: build pythonVtk package
-      run: |
-        cd pythonVtk
-        poetry install
-        poetry run python -m pytest
-
-    - name: build vcutils package
-      run: |
-        cd python-utils
-        poetry install
-        poetry run python -m pytest
-
-    - name: build python-restclient package
-      run: |
-        cd python-restclient
-        poetry install
-        poetry run python -m pytest
-
-    - name: build vcelldata package
-      run: |
-        cd pythonData
-        poetry install
-        poetry run python -m pytest
+        set -ux
+        for POETRY_DIR in vcell-cli-utils docker/swarm/vcell-admin pythonCopasiOpt/vcell-opt pythonVtk python-utils python-restclient pythonData;\
+        do pushd $POETRY_DIR;\
+          poetry install;\
+          poetry run python -m pytest;\
+          popd;\
+        done
 
     - name: setup java 17 with maven cache
       uses: actions/setup-java@v4
@@ -115,12 +87,27 @@ jobs:
         cd docker/build
         echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
         echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        ./build.sh all ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
+        if [ "${{ github.event.inputs.client_only }}" = "true" ]; then
+          echo "Building only client images"
+          export BUILD_IMAGES="clientgen"
+        else
+          echo "Building all images"
+          export BUILD_IMAGES="all"
+        fi
+        ./build.sh ${BUILD_IMAGES} ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
 
     - name: tag as latest and push to registry
       shell: bash
       run: |
-        for CONTAINER in vcell-exporter vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-webapp-island vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin;\
+        if [ "${{ github.event.inputs.client_only }}" = "true" ]; then
+          echo "Building only client images"
+          export CONTAINER_SET="vcell-clientgen"
+        else
+          echo "Building all images"
+          export CONTAINER_SET="vcell-exporter vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-webapp-island vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin"
+        fi
+        
+        for CONTAINER in ${CONTAINER_SET};\
            do docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:latest;\
            docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${FRIENDLY_TAG};\
            docker push --all-tags ${VCELL_REPO_NAMESPACE}/$CONTAINER;\
