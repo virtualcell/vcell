@@ -147,7 +147,7 @@ mv /outputdir/updates.xml /outputdir/updates_linux32.xml
 
 #Generate mac 64bit installer
 $INSTALL4JC \
-	-b 3087 \
+	-b 105 \
 	--win-keystore-password=$winCodeSignKeystore_pswd \
 	--mac-keystore-password=$macCodeSignKeystore_pswd \
 	-D \

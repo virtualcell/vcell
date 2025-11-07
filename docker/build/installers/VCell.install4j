@@ -1563,7 +1563,7 @@ if (context.isUnattended()) {
     </styles>
   </installerGui>
   <mediaSets>
-    <macosFolder name="MacOS ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="3087" installDir="VCell_${compiler:Site}" customInstallBaseDir="${installer:sys.userHome}${installer:sys.programFilesDir}" architecture="universal">
+    <macosFolder name="MacOS ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="105" installDir="VCell_${compiler:Site}" customInstallBaseDir="${installer:sys.userHome}${installer:sys.programFilesDir}" architecture="universal">
       <excludedLaunchers>
         <launcher id="345" />
         <launcher id="447" />
@@ -1683,7 +1683,7 @@ if (context.isUnattended()) {
     </unixInstaller>
   </mediaSets>
   <buildIds>
-    <mediaSet refId="3087" />
+    <mediaSet refId="105" />
     <mediaSet refId="349" />
     <mediaSet refId="450" />
     <mediaSet refId="652" />
