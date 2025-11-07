@@ -363,94 +363,6 @@ return console.askOkCancel(message, true);
               </formComponent>
             </formComponents>
           </screen>
-          <screen id="3100" beanClass="com.install4j.runtime.beans.screens.DefaultInfoScreen" actionElevationType="elevated" rollbackBarrierExitCode="0">
-            <condition>import java.io.File;
-File userAgnostic = new File((String)context.getVariable("sys.programFilesDir"));
-String appName =  "VCell_" + context.getCompilerVariable("Site");
-List&lt;File&gt; installed = Arrays.stream(userAgnostic.listFiles()).filter(f -&gt; f.toString().contains(appName)).toList();
-return installed.size() == 1;
-</condition>
-            <actions>
-              <action id="3106" beanClass="com.install4j.runtime.beans.actions.misc.RequestPrivilegesAction" actionElevationType="none" rollbackBarrierExitCode="0">
-                <serializedBean>
-                  <property name="obtainIfAdminMac" type="boolean" value="true" />
-                  <property name="obtainIfNormalMac" type="boolean" value="true" />
-                  <property name="obtainIfNormalWin" type="boolean" value="true" />
-                </serializedBean>
-              </action>
-              <action id="3104" beanClass="com.install4j.runtime.beans.actions.files.DeleteFileAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
-                <serializedBean>
-                  <property name="backupForRollback" type="boolean" value="false" />
-                  <property name="directoryFilter">
-                    <object class="com.install4j.api.beans.ScriptProperty">
-                      <property name="value" type="string">String folderName = "VCell_" + context.getCompilerVariable("Site");
-com.install4j.api.Util.logInfo(null, directory.getAbsolutePath());
-return directory.getAbsolutePath().contains(folderName);
-</property>
-                    </object>
-                  </property>
-                  <property name="fileFilter">
-                    <object class="com.install4j.api.beans.ScriptProperty">
-                      <property name="value" type="string">
-String folderName = "VCell_" + context.getCompilerVariable("Site");
-com.install4j.api.Util.logInfo(null, file.getAbsolutePath());
-return file.getAbsolutePath().contains(folderName);
-
-</property>
-                    </object>
-                  </property>
-                  <property name="files" type="array" class="java.io.File" length="2">
-                    <element index="0">
-                      <object class="java.io.File">
-                        <string>${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}</string>
-                      </object>
-                    </element>
-                    <element index="1">
-                      <object class="java.io.File">
-                        <string>${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}.app</string>
-                      </object>
-                    </element>
-                  </property>
-                  <property name="recursive" type="boolean" value="true" />
-                </serializedBean>
-              </action>
-            </actions>
-            <formComponents>
-              <formComponent id="3101" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent">
-                <serializedBean>
-                  <property name="labelText" type="string">${i18n:InfoBeforeClickLabel}</property>
-                </serializedBean>
-                <visibilityScript>!context.isConsole()</visibilityScript>
-              </formComponent>
-              <formComponent id="3102" beanClass="com.install4j.runtime.beans.formcomponents.HtmlDisplayFormComponent" useExternalParametrization="true" externalParametrizationName="HTML or text display" externalParametrizationMode="include">
-                <serializedBean>
-                  <property name="displayedText" type="string">To continue this installation the admin install of VCell will be removed 
-[${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}],
-for it will be replaced by a user privilege installation.
-</property>
-                  <property name="fillVertical" type="boolean" value="true" />
-                  <property name="textSource" type="enum" class="com.install4j.runtime.beans.screens.components.TextSource" value="DIRECT" />
-                </serializedBean>
-                <externalParametrizationPropertyNames>
-                  <propertyName>textSource</propertyName>
-                  <propertyName>displayedText</propertyName>
-                  <propertyName>displayedTextFile</propertyName>
-                  <propertyName>variableName</propertyName>
-                </externalParametrizationPropertyNames>
-              </formComponent>
-              <formComponent id="3103" beanClass="com.install4j.runtime.beans.formcomponents.ConsoleHandlerFormComponent">
-                <serializedBean>
-                  <property name="consoleScript">
-                    <object class="com.install4j.api.beans.ScriptProperty">
-                      <property name="value" type="string">console.waitForEnter();
-return true;
-</property>
-                    </object>
-                  </property>
-                </serializedBean>
-              </formComponent>
-            </formComponents>
-          </screen>
           <screen id="4" beanClass="com.install4j.runtime.beans.screens.InstallationDirectoryScreen" actionElevationType="none">
             <condition>!context.getBooleanVariable("sys.confirmedUpdateInstallation")</condition>
             <actions>
@@ -697,6 +609,94 @@ return bngperlfile.exists();
               </formComponent>
             </formComponents>
           </screen>
+          <screen id="3100" beanClass="com.install4j.runtime.beans.screens.DefaultInfoScreen" actionElevationType="elevated" rollbackBarrierExitCode="0">
+            <condition>import java.io.File;
+File userAgnostic = new File((String)context.getVariable("sys.programFilesDir"));
+String appName =  "VCell_" + context.getCompilerVariable("Site");
+List&lt;File&gt; installed = Arrays.stream(userAgnostic.listFiles()).filter(f -&gt; f.toString().contains(appName)).toList();
+return installed.size() == 1;
+</condition>
+            <actions>
+              <action id="3106" beanClass="com.install4j.runtime.beans.actions.misc.RequestPrivilegesAction" actionElevationType="none" rollbackBarrierExitCode="0">
+                <serializedBean>
+                  <property name="obtainIfAdminMac" type="boolean" value="true" />
+                  <property name="obtainIfNormalMac" type="boolean" value="true" />
+                  <property name="obtainIfNormalWin" type="boolean" value="true" />
+                </serializedBean>
+              </action>
+              <action id="3104" beanClass="com.install4j.runtime.beans.actions.files.DeleteFileAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
+                <serializedBean>
+                  <property name="backupForRollback" type="boolean" value="false" />
+                  <property name="directoryFilter">
+                    <object class="com.install4j.api.beans.ScriptProperty">
+                      <property name="value" type="string">String folderName = "VCell_" + context.getCompilerVariable("Site");
+com.install4j.api.Util.logInfo(null, directory.getAbsolutePath());
+return directory.getAbsolutePath().contains(folderName);
+</property>
+                    </object>
+                  </property>
+                  <property name="fileFilter">
+                    <object class="com.install4j.api.beans.ScriptProperty">
+                      <property name="value" type="string">
+String folderName = "VCell_" + context.getCompilerVariable("Site");
+com.install4j.api.Util.logInfo(null, file.getAbsolutePath());
+return file.getAbsolutePath().contains(folderName);
+
+</property>
+                    </object>
+                  </property>
+                  <property name="files" type="array" class="java.io.File" length="2">
+                    <element index="0">
+                      <object class="java.io.File">
+                        <string>${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}</string>
+                      </object>
+                    </element>
+                    <element index="1">
+                      <object class="java.io.File">
+                        <string>${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}.app</string>
+                      </object>
+                    </element>
+                  </property>
+                  <property name="recursive" type="boolean" value="true" />
+                </serializedBean>
+              </action>
+            </actions>
+            <formComponents>
+              <formComponent id="3101" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent">
+                <serializedBean>
+                  <property name="labelText" type="string">${i18n:InfoBeforeClickLabel}</property>
+                </serializedBean>
+                <visibilityScript>!context.isConsole()</visibilityScript>
+              </formComponent>
+              <formComponent id="3102" beanClass="com.install4j.runtime.beans.formcomponents.HtmlDisplayFormComponent" useExternalParametrization="true" externalParametrizationName="HTML or text display" externalParametrizationMode="include">
+                <serializedBean>
+                  <property name="displayedText" type="string">To finish this installation the admin install of VCell will be removed 
+[${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}],
+at it is replaced by a user installation.
+</property>
+                  <property name="fillVertical" type="boolean" value="true" />
+                  <property name="textSource" type="enum" class="com.install4j.runtime.beans.screens.components.TextSource" value="DIRECT" />
+                </serializedBean>
+                <externalParametrizationPropertyNames>
+                  <propertyName>textSource</propertyName>
+                  <propertyName>displayedText</propertyName>
+                  <propertyName>displayedTextFile</propertyName>
+                  <propertyName>variableName</propertyName>
+                </externalParametrizationPropertyNames>
+              </formComponent>
+              <formComponent id="3103" beanClass="com.install4j.runtime.beans.formcomponents.ConsoleHandlerFormComponent">
+                <serializedBean>
+                  <property name="consoleScript">
+                    <object class="com.install4j.api.beans.ScriptProperty">
+                      <property name="value" type="string">console.waitForEnter();
+return true;
+</property>
+                    </object>
+                  </property>
+                </serializedBean>
+              </formComponent>
+            </formComponents>
+          </screen>
           <screen id="12" beanClass="com.install4j.runtime.beans.screens.FinishedScreen" actionElevationType="none" styleId="2349" finishScreen="true">
             <actions>
               <action name="MacOSXExecLauncher" id="1599" beanClass="com.install4j.runtime.beans.actions.finish.ExecuteLauncherAction" actionElevationType="none">
@@ -939,94 +939,6 @@ return console.askYesNo(message, true);
               </property>
             </serializedBean>
             <beans>
-              <screen id="3111" beanClass="com.install4j.runtime.beans.screens.DefaultInfoScreen" actionElevationType="elevated" rollbackBarrierExitCode="0">
-                <condition>import java.io.File;
-File userAgnostic = new File((String)context.getVariable("sys.programFilesDir"));
-String appName =  "VCell_" + context.getCompilerVariable("Site");
-List&lt;File&gt; installed = Arrays.stream(userAgnostic.listFiles()).filter(f -&gt; f.toString().contains(appName)).toList();
-return installed.size() == 1;
-</condition>
-                <actions>
-                  <action id="3112" beanClass="com.install4j.runtime.beans.actions.misc.RequestPrivilegesAction" actionElevationType="none" rollbackBarrierExitCode="0">
-                    <serializedBean>
-                      <property name="obtainIfAdminMac" type="boolean" value="true" />
-                      <property name="obtainIfNormalMac" type="boolean" value="true" />
-                      <property name="obtainIfNormalWin" type="boolean" value="true" />
-                    </serializedBean>
-                  </action>
-                  <action id="3113" beanClass="com.install4j.runtime.beans.actions.files.DeleteFileAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
-                    <serializedBean>
-                      <property name="backupForRollback" type="boolean" value="false" />
-                      <property name="directoryFilter">
-                        <object class="com.install4j.api.beans.ScriptProperty">
-                          <property name="value" type="string">String folderName = "VCell_" + context.getCompilerVariable("Site");
-com.install4j.api.Util.logInfo(null, directory.getAbsolutePath());
-return directory.getAbsolutePath().contains(folderName);
-</property>
-                        </object>
-                      </property>
-                      <property name="fileFilter">
-                        <object class="com.install4j.api.beans.ScriptProperty">
-                          <property name="value" type="string">
-String folderName = "VCell_" + context.getCompilerVariable("Site");
-com.install4j.api.Util.logInfo(null, file.getAbsolutePath());
-return file.getAbsolutePath().contains(folderName);
-
-</property>
-                        </object>
-                      </property>
-                      <property name="files" type="array" class="java.io.File" length="2">
-                        <element index="0">
-                          <object class="java.io.File">
-                            <string>${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}</string>
-                          </object>
-                        </element>
-                        <element index="1">
-                          <object class="java.io.File">
-                            <string>${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}.app</string>
-                          </object>
-                        </element>
-                      </property>
-                      <property name="recursive" type="boolean" value="true" />
-                    </serializedBean>
-                  </action>
-                </actions>
-                <formComponents>
-                  <formComponent id="3114" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent">
-                    <serializedBean>
-                      <property name="labelText" type="string">${i18n:InfoBeforeClickLabel}</property>
-                    </serializedBean>
-                    <visibilityScript>!context.isConsole()</visibilityScript>
-                  </formComponent>
-                  <formComponent id="3115" beanClass="com.install4j.runtime.beans.formcomponents.HtmlDisplayFormComponent" useExternalParametrization="true" externalParametrizationName="HTML or text display" externalParametrizationMode="include">
-                    <serializedBean>
-                      <property name="displayedText" type="string">To continue this update the admin install of VCell will be removed 
-[${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}],
-for it will be replaced by a user privilege installation.
-</property>
-                      <property name="fillVertical" type="boolean" value="true" />
-                      <property name="textSource" type="enum" class="com.install4j.runtime.beans.screens.components.TextSource" value="DIRECT" />
-                    </serializedBean>
-                    <externalParametrizationPropertyNames>
-                      <propertyName>textSource</propertyName>
-                      <propertyName>displayedText</propertyName>
-                      <propertyName>displayedTextFile</propertyName>
-                      <propertyName>variableName</propertyName>
-                    </externalParametrizationPropertyNames>
-                  </formComponent>
-                  <formComponent id="3116" beanClass="com.install4j.runtime.beans.formcomponents.ConsoleHandlerFormComponent">
-                    <serializedBean>
-                      <property name="consoleScript">
-                        <object class="com.install4j.api.beans.ScriptProperty">
-                          <property name="value" type="string">console.waitForEnter();
-return true;
-</property>
-                        </object>
-                      </property>
-                    </serializedBean>
-                  </formComponent>
-                </formComponents>
-              </screen>
               <screen name="New version available" id="130" beanClass="com.install4j.runtime.beans.screens.FormScreen">
                 <serializedBean>
                   <property name="subTitle" type="string">${i18n:updater.NewVersionAvailableSubtitle("${compiler:sys.fullName}")}</property>
@@ -1216,6 +1128,94 @@ context.goForward(1, true, true);
                       <propertyName>statusVisible</propertyName>
                       <propertyName>initialStatusMessage</propertyName>
                     </externalParametrizationPropertyNames>
+                  </formComponent>
+                </formComponents>
+              </screen>
+              <screen id="3111" beanClass="com.install4j.runtime.beans.screens.DefaultInfoScreen" actionElevationType="elevated" rollbackBarrierExitCode="0">
+                <condition>import java.io.File;
+File userAgnostic = new File((String)context.getVariable("sys.programFilesDir"));
+String appName =  "VCell_" + context.getCompilerVariable("Site");
+List&lt;File&gt; installed = Arrays.stream(userAgnostic.listFiles()).filter(f -&gt; f.toString().contains(appName)).toList();
+return installed.size() == 1;
+</condition>
+                <actions>
+                  <action id="3112" beanClass="com.install4j.runtime.beans.actions.misc.RequestPrivilegesAction" actionElevationType="none" rollbackBarrierExitCode="0">
+                    <serializedBean>
+                      <property name="obtainIfAdminMac" type="boolean" value="true" />
+                      <property name="obtainIfNormalMac" type="boolean" value="true" />
+                      <property name="obtainIfNormalWin" type="boolean" value="true" />
+                    </serializedBean>
+                  </action>
+                  <action id="3113" beanClass="com.install4j.runtime.beans.actions.files.DeleteFileAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
+                    <serializedBean>
+                      <property name="backupForRollback" type="boolean" value="false" />
+                      <property name="directoryFilter">
+                        <object class="com.install4j.api.beans.ScriptProperty">
+                          <property name="value" type="string">String folderName = "VCell_" + context.getCompilerVariable("Site");
+com.install4j.api.Util.logInfo(null, directory.getAbsolutePath());
+return directory.getAbsolutePath().contains(folderName);
+</property>
+                        </object>
+                      </property>
+                      <property name="fileFilter">
+                        <object class="com.install4j.api.beans.ScriptProperty">
+                          <property name="value" type="string">
+String folderName = "VCell_" + context.getCompilerVariable("Site");
+com.install4j.api.Util.logInfo(null, file.getAbsolutePath());
+return file.getAbsolutePath().contains(folderName);
+
+</property>
+                        </object>
+                      </property>
+                      <property name="files" type="array" class="java.io.File" length="2">
+                        <element index="0">
+                          <object class="java.io.File">
+                            <string>${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}</string>
+                          </object>
+                        </element>
+                        <element index="1">
+                          <object class="java.io.File">
+                            <string>${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}.app</string>
+                          </object>
+                        </element>
+                      </property>
+                      <property name="recursive" type="boolean" value="true" />
+                    </serializedBean>
+                  </action>
+                </actions>
+                <formComponents>
+                  <formComponent id="3114" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent">
+                    <serializedBean>
+                      <property name="labelText" type="string">${i18n:InfoBeforeClickLabel}</property>
+                    </serializedBean>
+                    <visibilityScript>!context.isConsole()</visibilityScript>
+                  </formComponent>
+                  <formComponent id="3115" beanClass="com.install4j.runtime.beans.formcomponents.HtmlDisplayFormComponent" useExternalParametrization="true" externalParametrizationName="HTML or text display" externalParametrizationMode="include">
+                    <serializedBean>
+                      <property name="displayedText" type="string">To finish this update the admin install of VCell will be removed 
+[${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}],
+for it will be replaced by a user privilege installation.
+</property>
+                      <property name="fillVertical" type="boolean" value="true" />
+                      <property name="textSource" type="enum" class="com.install4j.runtime.beans.screens.components.TextSource" value="DIRECT" />
+                    </serializedBean>
+                    <externalParametrizationPropertyNames>
+                      <propertyName>textSource</propertyName>
+                      <propertyName>displayedText</propertyName>
+                      <propertyName>displayedTextFile</propertyName>
+                      <propertyName>variableName</propertyName>
+                    </externalParametrizationPropertyNames>
+                  </formComponent>
+                  <formComponent id="3116" beanClass="com.install4j.runtime.beans.formcomponents.ConsoleHandlerFormComponent">
+                    <serializedBean>
+                      <property name="consoleScript">
+                        <object class="com.install4j.api.beans.ScriptProperty">
+                          <property name="value" type="string">console.waitForEnter();
+return true;
+</property>
+                        </object>
+                      </property>
+                    </serializedBean>
                   </formComponent>
                 </formComponents>
               </screen>
