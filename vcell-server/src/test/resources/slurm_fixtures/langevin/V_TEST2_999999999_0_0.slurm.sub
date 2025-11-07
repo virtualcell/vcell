@@ -26,8 +26,11 @@ LOG_FILE="/share/apps/vcell3/htclogs/${SLURM_JOB_NAME}_submit.log"
 
 
 # Truncate Slurm output log and solver output log
-: > /share/apps/vcell3/htclogs/V_TEST2_${SIM_ID}_0_0.slurm.log
-: > /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.log
+rm -f /share/apps/vcell3/htclogs/V_TEST2_${SIM_ID}_0_0.slurm.log
+rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.log
+rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.functions
+rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.langevinInput
+rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.langevinMessagingConfig
 
 echo "=== Singularity check BEFORE module load ==="
 if command -v singularity >/dev/null 2>&1; then
@@ -117,6 +120,8 @@ sif_path="/share/apps/vcell3/singularity/cachdir/sif/vcell-batch-7.7.0.34.sif"
 # Full solver command
 batch_container_prefix="singularity run --containall ${container_bindings} ${container_env} ${sif_path}"
 solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} ${sif_path}"
+slurm_prefix="srun -N1 -n1 -c${SLURM_CPUS_PER_TASK}"
+
 
 # Preprocessor XML path (per-user)
 SIMXML="/simdata/${USERID}/SimID_${SIM_ID}_0__0.simtask.xml"
@@ -132,16 +137,77 @@ if [ $stat -ne 0 ]; then
   exit $stat
 fi
 
+# ----------------------------------------------------------------------------------------------
 
+INPUT_DIR="/simdata/${USERID}"  # on singularity, each solver instance reads inputs from here
+LOG_DIR="/simdata/${USERID}"   # on singularity, each solver solver writes logs here
+declare -A job_pid_map
+job_pids=()
+running_jobs=0
+any_fail=0
+max_concurrent_jobs=${SLURM_NTASKS:-20}
+
+i=0;
 # Run single instance of solver
-slurm_prefix="srun -N1 -n1 -c${SLURM_CPUS_PER_TASK}"
-${slurm_prefix} ${solver_container_prefix} langevin_x64 simulate --output-log=/simdata/danv/SimID_${SIM_ID}_0_.log /simdata/danv/SimID_${SIM_ID}_0_.langevinInput 0 -tid 0
+echo "Job $i started at $(date)" >> "${LOG_FILE}"
+timeout "${JOB_TIMEOUT_SECONDS}s" \
+    ${slurm_prefix} ${solver_container_prefix} \
+    langevin_x64 simulate \
+    --output-log=${LOG_DIR}/SimID_${SIM_ID}_0_${i}.log \
+    ${INPUT_DIR}/SimID_${SIM_ID}_0_.langevinInput \
+    $i \
+    -tid 0 &
+pid=$!
+wait $pid
+exit_code=$?
+echo "Job $i finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
+if [[ $exit_code -ne 0 ]]; then
+  echo "Job $i failed with exit code $exit_code" >> "${LOG_FILE}"
+  any_fail=1
+fi
 
+i=1;
+# Run single instance of solver
+echo "Job $i started at $(date)" >> "${LOG_FILE}"
+timeout "${JOB_TIMEOUT_SECONDS}s" \
+    ${slurm_prefix} ${solver_container_prefix} \
+    langevin_x64 simulate \
+    --output-log=${LOG_DIR}/SimID_${SIM_ID}_0_${i}.log \
+    ${INPUT_DIR}/SimID_${SIM_ID}_0_.langevinInput \
+    $i \
+    -tid 0 &
+pid=$!
+wait $pid
+exit_code=$?
+echo "Job $i finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
+if [[ $exit_code -ne 0 ]]; then
+  echo "Job $i failed with exit code $exit_code" >> "${LOG_FILE}"
+  any_fail=1
+fi
+
+echo "Starting the last job (postprocess) at $(date)" >> "${LOG_FILE}"
+timeout "${JOB_TIMEOUT_SECONDS}s" \
+    ${slurm_prefix} ${solver_container_prefix} \
+    langevin_x64 postprocess \
+    /simdata/danv/SimID_${SIM_ID}_0_.langevinInput \
+    2 \
+    --output-log=${LOG_DIR}/SimID_${SIM_ID}_0_P.log
+exit_code=$?
+echo "Job 'Last' finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
+if [[ $exit_code -ne 0 ]]; then
+  echo "Job 'Last' failed with exit code $exit_code" >> "${LOG_FILE}"
+  any_fail=1
+fi
+echo "All simulation jobs completed at $(date)" >> "${LOG_FILE}"
+
+# ----------------------------------------------------------------------------------------------
 
 # Run JavaPostprocessor64 inside batch container
 echo "[Postprocess] Running JavaPostprocessor64..." | tee -a "${LOG_FILE}"
-${batch_container_prefix}  JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 "${TOTAL_JOBS}" "${HTC_LOG_DIR_EXTERNAL:-/share/apps/vcell3/htclogs}/${SLURM_JOB_NAME}.slurm.sub"
+set +e
+timeout 20s ${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 "${TOTAL_JOBS}" "${HTC_LOG_DIR_EXTERNAL:-/share/apps/vcell3/htclogs}/${SLURM_JOB_NAME}.slurm.sub"
 post_exit=$?
+set -e
 
 # final exit decision
 if [[ "${any_fail}" -ne 0 ]]; then
@@ -149,8 +215,11 @@ if [[ "${any_fail}" -ne 0 ]]; then
   exit 1
 fi
 
-if [[ "${post_exit}" -ne 0 ]]; then
-  echo "JavaPostprocessor64 failed with ${post_exit}; exiting ${post_exit}" | tee -a "${LOG_FILE}"
+if [[ "${post_exit}" -eq 124 ]]; then
+  echo "JavaPostprocessor64 timed out after 20 seconds; exiting with code 124" | tee -a "${LOG_FILE}"
+  exit 124
+elif [[ "${post_exit}" -ne 0 ]]; then
+  echo "JavaPostprocessor64 failed with exit code ${post_exit}; exiting ${post_exit}" | tee -a "${LOG_FILE}"
   exit "${post_exit}"
 fi
 
