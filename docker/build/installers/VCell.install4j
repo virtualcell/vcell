@@ -365,6 +365,18 @@ return console.askOkCancel(message, true);
           </screen>
           <screen id="4" beanClass="com.install4j.runtime.beans.screens.InstallationDirectoryScreen" actionElevationType="none">
             <condition>!context.getBooleanVariable("sys.confirmedUpdateInstallation")</condition>
+            <preActivation>String pastInstallDir = (String)context.getVariable("sys.installationDir");
+String agnosticAppDir = (String)context.getVariable("sys.programFilesDir");
+boolean windowsOrMac = Util.isWindows() || Util.isMacOS();
+if (pastInstallDir.contains(agnosticAppDir) &amp;&amp; windowsOrMac){
+    String homeDir = (String)context.getVariable("sys.userHome");
+    if (Util.isMacOS()){
+        context.setInstallationDirectory(new File(homeDir + "/Application"));
+    } else{
+        context.setInstallationDirectory(new File(homeDir + "\\AppData\\Local\\Programs"));
+    }
+}
+</preActivation>
             <actions>
               <action id="5" beanClass="com.install4j.runtime.beans.actions.misc.LoadResponseFileAction" multiExec="true">
                 <serializedBean>
@@ -1475,7 +1487,7 @@ if (context.isUnattended()) {
     </styles>
   </installerGui>
   <mediaSets>
-    <macosFolder name="MacOS ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="105" installDir="VCell_${compiler:Site}" customInstallBaseDir="~/Applications/VCell_${compiler:Site}" architecture="universal">
+    <macosFolder name="MacOS ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="105" installDir="VCell_${compiler:Site}" customInstallBaseDir="~/Applications" architecture="universal">
       <excludedLaunchers>
         <launcher id="345" />
         <launcher id="447" />
@@ -1497,7 +1509,7 @@ if (context.isUnattended()) {
       </exclude>
       <jreBundle jdkProviderId="JBR" release="17/latest" usePack200="false" overrideJdkRelease="true" />
     </macosFolder>
-    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" downloadURL="${compiler:updateSiteBaseUrl}" customInstallBaseDir="${installer:sys.localAppdataDir}/VCell_${compiler:Site}" architecture="64">
+    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" downloadURL="${compiler:updateSiteBaseUrl}" customInstallBaseDir="${installer:sys.userHome}\AppData\Local\Programs" architecture="64">
       <excludedLaunchers>
         <launcher id="102" />
         <launcher id="447" />
@@ -1521,7 +1533,7 @@ if (context.isUnattended()) {
       </variables>
       <jreBundle usePack200="false" />
     </windows>
-    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 32 Bit" id="450" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_32bit" installDir="VCell_${compiler:Site}" customInstallBaseDir="${installer:sys.localAppdataDir}/VCell_${compiler:Site}" architecture="32">
+    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 32 Bit" id="450" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_32bit" installDir="VCell_${compiler:Site}" customInstallBaseDir="${installer:sys.userHome}\AppData\Local\Programs" architecture="32">
       <excludedLaunchers>
         <launcher id="102" />
         <launcher id="345" />
