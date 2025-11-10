@@ -367,13 +367,14 @@ return console.askOkCancel(message, true);
             <condition>!context.getBooleanVariable("sys.confirmedUpdateInstallation")</condition>
             <preActivation>String pastInstallDir = (String)context.getVariable("sys.installationDir");
 String agnosticAppDir = (String)context.getVariable("sys.programFilesDir");
+String appName =  "VCell_" + context.getCompilerVariable("Site");
 boolean windowsOrMac = Util.isWindows() || Util.isMacOS();
 if (pastInstallDir.contains(agnosticAppDir) &amp;&amp; windowsOrMac){
     String homeDir = (String)context.getVariable("sys.userHome");
     if (Util.isMacOS()){
-        context.setInstallationDirectory(new File(homeDir + "/Application"));
+        context.setInstallationDirectory(new File(homeDir + "/Application/" + appName));
     } else{
-        context.setInstallationDirectory(new File(homeDir + "\\AppData\\Local\\Programs"));
+        context.setInstallationDirectory(new File(homeDir + "\\AppData\\Local\\Programs\\" + appName));
     }
 }
 </preActivation>
