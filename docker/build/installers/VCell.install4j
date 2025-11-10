@@ -366,15 +366,16 @@ return console.askOkCancel(message, true);
           <screen id="4" beanClass="com.install4j.runtime.beans.screens.InstallationDirectoryScreen" actionElevationType="none">
             <condition>!context.getBooleanVariable("sys.confirmedUpdateInstallation")</condition>
             <preActivation>String pastInstallDir = (String)context.getVariable("sys.installationDir");
-String agnosticAppDir = (String)context.getVariable("sys.programFilesDir");
+String privilegedAppDir = (String)context.getVariable("sys.programFilesDir");
 String appName =  "VCell_" + context.getCompilerVariable("Site");
 boolean windowsOrMac = Util.isWindows() || Util.isMacOS();
-if (pastInstallDir.contains(agnosticAppDir) &amp;&amp; windowsOrMac){
+if (pastInstallDir.contains(privilegedAppDir) &amp;&amp; windowsOrMac){
     String homeDir = (String)context.getVariable("sys.userHome");
     if (Util.isMacOS()){
-        context.setInstallationDirectory(new File(homeDir + "/Application/" + appName));
+        context.setInstallationDirectory(new File(homeDir + "/Applications/" + appName));
     } else{
-        context.setInstallationDirectory(new File(homeDir + "\\AppData\\Local\\Programs\\" + appName));
+        String localAppDataDir = (String)context.getVariable("sys.localAppdataDir");
+        context.setInstallationDirectory(new File(localAppDataDir + "\\Programs\\" + appName));
     }
 }
 </preActivation>
@@ -626,8 +627,9 @@ return bngperlfile.exists();
             <condition>import java.io.File;
 File userAgnostic = new File((String)context.getVariable("sys.programFilesDir"));
 String appName =  "VCell_" + context.getCompilerVariable("Site");
-List&lt;File&gt; installed = Arrays.stream(userAgnostic.listFiles()).filter(f -&gt; f.toString().contains(appName)).toList();
-return installed.size() == 1;
+List&lt;File&gt; vcellRelatedAdminDirs = Arrays.stream(userAgnostic.listFiles()).filter(f -&gt; f.toString().contains(appName)).toList();
+boolean existsAdminInstall = vcellRelatedAdminDirs.size() == 1;
+return existsAdminInstall;
 </condition>
             <actions>
               <action id="3106" beanClass="com.install4j.runtime.beans.actions.misc.RequestPrivilegesAction" actionElevationType="none" rollbackBarrierExitCode="0">
@@ -769,7 +771,16 @@ return true;
           <screen id="14" beanClass="com.install4j.runtime.beans.screens.StartupScreen" rollbackBarrierExitCode="0">
             <actions>
               <action id="20" beanClass="com.install4j.runtime.beans.actions.misc.LoadResponseFileAction" />
-              <action id="21" beanClass="com.install4j.runtime.beans.actions.misc.RequireInstallerPrivilegesAction" actionElevationType="none" />
+              <action id="21" beanClass="com.install4j.runtime.beans.actions.misc.RequireInstallerPrivilegesAction" actionElevationType="none">
+                <condition>import java.io.File;
+File userAgnostic = new File((String)context.getVariable("sys.programFilesDir"));
+String appName =  "VCell_" + context.getCompilerVariable("Site");
+List&lt;File&gt; vcellRelatedAdminDirs = Arrays.stream(userAgnostic.listFiles()).filter(f -&gt; f.toString().contains(appName)).toList();
+boolean existsAdminInstall = vcellRelatedAdminDirs.size() == 1;
+return existsAdminInstall;
+
+</condition>
+              </action>
             </actions>
           </screen>
         </startup>
@@ -797,7 +808,7 @@ return console.askYesNo(message, true);
           </screen>
           <screen id="16" beanClass="com.install4j.runtime.beans.screens.UninstallationScreen">
             <actions>
-              <action id="17" beanClass="com.install4j.runtime.beans.actions.UninstallFilesAction" actionElevationType="elevated" />
+              <action id="17" beanClass="com.install4j.runtime.beans.actions.UninstallFilesAction" />
             </actions>
             <formComponents>
               <formComponent id="2260" beanClass="com.install4j.runtime.beans.formcomponents.ProgressComponent">
