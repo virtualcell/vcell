@@ -3,8 +3,8 @@
 #SBATCH --reservation=
 #SBATCH --qos=vcell
 #SBATCH -J V_TEST2_999999999_0_0
-#SBATCH -o /share/apps/vcell3/htclogs/V_TEST2_999999999_0_0.slurm.log
-#SBATCH -e /share/apps/vcell3/htclogs/V_TEST2_999999999_0_0.slurm.log
+#SBATCH -o /share/apps/vcell3/htclogs/V_TEST2_999999999_0_.slurm.log
+#SBATCH -e /share/apps/vcell3/htclogs/V_TEST2_999999999_0_.slurm.log
 #SBATCH --ntasks=20			# number of concurrent tasks
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=2048M
@@ -25,8 +25,9 @@ JOB_TIMEOUT_SECONDS=300  # per-job timeout (seconds), adjust per generator
 LOG_FILE="/share/apps/vcell3/htclogs/${SLURM_JOB_NAME}_submit.log"
 
 
-# Truncate Slurm output log and solver output log
-rm -f /share/apps/vcell3/htclogs/V_TEST2_${SIM_ID}_0_0.slurm.log
+# Truncate / delete various logs and the solver input file, to start clean
+: > /share/apps/vcell3/htclogs/V_TEST2_999999999_0_.slurm.log
+
 rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.log
 rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.functions
 rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.langevinInput
@@ -147,6 +148,9 @@ running_jobs=0
 any_fail=0
 max_concurrent_jobs=${SLURM_NTASKS:-20}
 
+: <<'BLOCK_COMMENT'
+echo "here-document beginning, this won't run"
+
 i=0;
 # Run single instance of solver
 echo "Job $i started at $(date)" >> "${LOG_FILE}"
@@ -199,6 +203,10 @@ if [[ $exit_code -ne 0 ]]; then
   any_fail=1
 fi
 echo "All simulation jobs completed at $(date)" >> "${LOG_FILE}"
+
+echo "Still skipped"
+BLOCK_COMMENT
+echo "This will run again after here-document"
 
 # ----------------------------------------------------------------------------------------------
 
