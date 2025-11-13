@@ -5,7 +5,7 @@
 #SBATCH -J V_TEST2_999999999_0_0
 #SBATCH -o /share/apps/vcell3/htclogs/V_TEST2_999999999_0_.slurm.log
 #SBATCH -e /share/apps/vcell3/htclogs/V_TEST2_999999999_0_.slurm.log
-#SBATCH --ntasks=20			# number of concurrent tasks
+#SBATCH --ntasks=4			# number of concurrent tasks
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=2048M
 #SBATCH --nodes=1
@@ -16,11 +16,12 @@
 set -o errexit
 set -o pipefail
 set -o nounset
+set +e
 
 # Script-controlled variables (populated by generator in real use)
 USERID=danv
 SIM_ID=999999999
-TOTAL_JOBS=50            # to be set by generator to lso.getTotalNumberOfJobs()
+TOTAL_JOBS=10            # to be set by generator to lso.getTotalNumberOfJobs()
 JOB_TIMEOUT_SECONDS=300  # per-job timeout (seconds), adjust per generator
 LOG_FILE="/share/apps/vcell3/htclogs/${SLURM_JOB_NAME}_submit.log"
 
@@ -38,7 +39,7 @@ if command -v singularity >/dev/null 2>&1; then
     echo "Singularity found at: $(command -v singularity)"
     singularity --version
 else
-    echo "Singularity not found in current PATH"
+    echo "Singularity not found before module load"
 fi
 
 # ------------------------------------------------------------------
@@ -141,72 +142,169 @@ fi
 # ----------------------------------------------------------------------------------------------
 
 INPUT_DIR="/simdata/${USERID}"  # on singularity, each solver instance reads inputs from here
-LOG_DIR="/simdata/${USERID}"   # on singularity, each solver solver writes logs here
+LOG_DIR="/simdata/${USERID}"    # on singularity, each solver instance writes logs here
 declare -A job_pid_map
 job_pids=()
 running_jobs=0
 any_fail=0
-max_concurrent_jobs=${SLURM_NTASKS:-20}
+max_concurrent_jobs=${SLURM_NTASKS:-4}
 
-: <<'BLOCK_COMMENT'
-echo "here-document beginning, this won't run"
+echo "max_concurrent_jobs: ${max_concurrent_jobs}" >> "${LOG_FILE}"
+echo "TOTAL_JOBS to launch: ${TOTAL_JOBS}" >> "${LOG_FILE}"
 
-i=0;
-# Run single instance of solver
-echo "Job $i started at $(date)" >> "${LOG_FILE}"
-timeout "${JOB_TIMEOUT_SECONDS}s" \
-    ${slurm_prefix} ${solver_container_prefix} \
-    langevin_x64 simulate \
+for ((i = 0; i < TOTAL_JOBS; i++)); do
+    echo "Job $i starting at $(date)" >> "${LOG_FILE}"
+
+    ( sleep 2 ) &
+
+    echo "Job $i started at $(date)" >> "${LOG_FILE}"
+    pid=$!
+    echo "PID is $pid" >> "${LOG_FILE}"
+
+    job_pids+=($pid)
+    echo "A" >> "${LOG_FILE}"
+
+    job_pid_map[$pid]=$i
+    echo "B" >> "${LOG_FILE}"
+
+    ((running_jobs++))
+    echo "running_jobs: ${running_jobs}" >> "${LOG_FILE}"
+
+    while (( running_jobs >= max_concurrent_jobs )); do
+        echo "inside "
+        for idx in "${!job_pids[@]}"; do
+            pid="${job_pids[$idx]}"
+            echo "before kill -0 check for pid: ${pid}" >> "${LOG_FILE}"
+            if [[ -z "${pid}" ]]; then continue; fi
+            if ! kill -0 "$pid" 2>/dev/null; then
+                echo "detected finished pid: ${pid}" >> "${LOG_FILE}"
+                wait "$pid"
+                exit_code=$?
+                job_index=${job_pid_map[$pid]:-unknown}
+                echo "Job $job_index finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
+                unset "job_pids[$idx]"
+                unset "job_pid_map[$pid]"
+                ((running_jobs--))
+                if [[ $exit_code -ne 0 ]]; then any_fail=1; fi
+                break
+            fi
+        done
+        sleep 1
+    done
+done
+
+# Final wait for remaining jobs
+for pid in "${job_pids[@]}"; do
+    if [[ -z "${pid}" ]]; then continue; fi
+    wait "$pid"
+    exit_code=$?
+    job_index=${job_pid_map[$pid]:-unknown}
+    echo "Job $job_index finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
+    if [[ $exit_code -ne 0 ]]; then any_fail=1; fi
+done
+echo "Batch jobs completed at $(date)" >> "${LOG_FILE}"
+
+
+
+# -----------------------------------------------------------------------------------
+
+: <<'COMMENTED_CODE_1'
+for ((i = 0; i < TOTAL_JOBS; i++)); do
+    echo "Job $i started at $(date)" >> "${LOG_FILE}"
+
+    timeout "${JOB_TIMEOUT_SECONDS}s" \
+        ${slurm_prefix} ${solver_container_prefix} \
+        langevin_x64 simulate \
+        --output-log="${LOG_DIR}/SimID_${SIM_ID}_0_${i}.log" \
+        "${INPUT_DIR}/SimID_${SIM_ID}_0_.langevinInput" \
+        "$i" \
+        -tid 0 &
+
+    pid=$!
+    job_pids+=($pid)
+    job_pid_map[$pid]=$i
+done
+
+# Wait for both jobs to finish
+for pid in "${job_pids[@]}"; do
+    wait "$pid"
+    exit_code=$?
+    job_index=${job_pid_map[$pid]:-unknown}
+    echo "Job $job_index finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
+    if [[ $exit_code -ne 0 ]]; then
+        echo "Job $job_index failed with exit code $exit_code" >> "${LOG_FILE}"
+        any_fail=1
+    fi
+done
+COMMENTED_CODE_1
+
+# ----------------------------------------------------------------------------------------------
+
+: <<'COMMENTED_CODE'
+
+for i in $(seq 0 $((TOTAL_JOBS - 1))); do
+    echo "Job $i started at $(date)" >> "${LOG_FILE}"
+
+    timeout "${JOB_TIMEOUT_SECONDS}s" ${slurm_prefix} ${solver_container_prefix} \
+        langevin_x64 simulate \
     --output-log=${LOG_DIR}/SimID_${SIM_ID}_0_${i}.log \
     ${INPUT_DIR}/SimID_${SIM_ID}_0_.langevinInput \
     $i \
     -tid 0 &
-pid=$!
-wait $pid
-exit_code=$?
-echo "Job $i finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
-if [[ $exit_code -ne 0 ]]; then
-  echo "Job $i failed with exit code $exit_code" >> "${LOG_FILE}"
-  any_fail=1
-fi
 
-i=1;
-# Run single instance of solver
-echo "Job $i started at $(date)" >> "${LOG_FILE}"
-timeout "${JOB_TIMEOUT_SECONDS}s" \
-    ${slurm_prefix} ${solver_container_prefix} \
-    langevin_x64 simulate \
-    --output-log=${LOG_DIR}/SimID_${SIM_ID}_0_${i}.log \
-    ${INPUT_DIR}/SimID_${SIM_ID}_0_.langevinInput \
-    $i \
-    -tid 0 &
-pid=$!
-wait $pid
-exit_code=$?
-echo "Job $i finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
-if [[ $exit_code -ne 0 ]]; then
-  echo "Job $i failed with exit code $exit_code" >> "${LOG_FILE}"
-  any_fail=1
-fi
+    pid=$!                # capture the job PID
+    job_pids+=($pid)      # store the PID
+    job_pid_map[$pid]=$i  # map job index to PID
+    ((running_jobs++))    # increment running job count
 
+    # wait for a finished job before launching a new one if we hit the concurrency limit
+    while (( running_jobs >= max_concurrent_jobs )); do
+        for idx in "${!job_pids[@]}"; do
+            pid="${job_pids[$idx]}"
+            if [[ -z "${pid}" ]]; then continue; fi
+            if ! kill -0 "$pid" 2>/dev/null; then   # check if process is still running
+                wait "$pid"   # ensure exit status is collected
+                exit_code=$?
+                job_index=${job_pid_map[$pid]:-unknown}   # retrieve original job index
+                echo "Job $job_index with PID $pid finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
+                unset "job_pids[$idx]"      # remove PID from active PID list
+                unset "job_pid_map[$pid]"   # remove mapping
+                ((running_jobs--))          # decrement running job count
+                if [[ $exit_code -ne 0 ]]; then any_fail=1; fi
+                break                       # exit for-loop once we free up a slot
+            fi
+        done
+        sleep 1   # allow brief pause before rechecking
+    done
+done
+
+# Final wait for remaining jobs
+for pid in "${job_pids[@]}"; do
+    if [[ -z "${pid}" ]]; then continue; fi
+    wait "$pid"
+    exit_code=$?
+    job_index=${job_pid_map[$pid]:-unknown}     # retrieve original job index
+    echo "Job $job_index with PID $pid finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
+    if [[ $exit_code -ne 0 ]]; then any_fail=1; fi
+done
+echo "Batch jobs completed at $(date)" >> "${LOG_FILE}"
+
+# Postprocess step
 echo "Starting the last job (postprocess) at $(date)" >> "${LOG_FILE}"
-timeout "${JOB_TIMEOUT_SECONDS}s" \
-    ${slurm_prefix} ${solver_container_prefix} \
+timeout "${JOB_TIMEOUT_SECONDS}s" ${slurm_prefix} ${solver_container_prefix} \
     langevin_x64 postprocess \
-    /simdata/danv/SimID_${SIM_ID}_0_.langevinInput \
-    2 \
-    --output-log=${LOG_DIR}/SimID_${SIM_ID}_0_P.log
-exit_code=$?
-echo "Job 'Last' finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
-if [[ $exit_code -ne 0 ]]; then
-  echo "Job 'Last' failed with exit code $exit_code" >> "${LOG_FILE}"
-  any_fail=1
-fi
-echo "All simulation jobs completed at $(date)" >> "${LOG_FILE}"
+    "${INPUT_DIR}/SimID_${SIM_ID}_0_.langevinInput" \
+    ${TOTAL_JOBS} \
+    --output-log="${LOG_DIR}/SimID_${SIM_ID}_0_P.log" &
 
-echo "Still skipped"
-BLOCK_COMMENT
-echo "This will run again after here-document"
+last_pid=$!
+wait $last_pid
+exit_code=$?
+echo "Job 'Last' with PID $last_pid finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
+echo "The final job finished at $(date)" >> "${LOG_FILE}"
+echo "All jobs completed at $(date)" >> "${LOG_FILE}"
+
+COMMENTED_CODE
 
 # ----------------------------------------------------------------------------------------------
 
