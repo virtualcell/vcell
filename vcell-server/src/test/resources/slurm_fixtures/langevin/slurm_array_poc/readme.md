@@ -201,10 +201,18 @@ cat <file_name>                       # view file content
 tail -f /share/apps/vcell3/htclogs/<log_file_name>   # monitor log file
 
 sbatch <script_name>.slurm.sub        # submit a job
-squeue -j <job_id>                     # check job status
+squeue -j <job_id>                    # check job status
 squeue -u <myName>                    # check job queue
 scancel <job_id>                      # cancel a job
 sacct -j <job_id>                     # check job accounting info
 tail -f /share/apps/vcell3/htclogs/<log_file_name>   # monitor log file
+
+```
+
+#### frequently used for testing
+```powershell
+sed -i 's/\r$//' ./V_TEST2_999999999_0_0.slurm.sub
+sbatch ./V_TEST2_999999999_0_0.slurm.sub
+sacct -j 974291 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,NodeList
 
 ```
