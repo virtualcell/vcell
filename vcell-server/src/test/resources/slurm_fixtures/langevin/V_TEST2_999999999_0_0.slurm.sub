@@ -5,7 +5,7 @@
 #SBATCH -J V_TEST2_999999999_0_0
 #SBATCH -o /share/apps/vcell3/htclogs/V_TEST2_999999999_0_.slurm.log
 #SBATCH -e /share/apps/vcell3/htclogs/V_TEST2_999999999_0_.slurm.log
-#SBATCH --ntasks=20			# number of concurrent tasks
+#SBATCH --ntasks=3			# number of concurrent tasks
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=2048M
 #SBATCH --nodes=1
@@ -21,7 +21,7 @@ set +e
 # Script-controlled variables (populated by generator in real use)
 USERID=danv
 SIM_ID=999999999
-TOTAL_JOBS=50            # to be set by generator to lso.getTotalNumberOfJobs()
+TOTAL_JOBS=7             # to be set by generator to lso.getTotalNumberOfJobs()
 JOB_TIMEOUT_SECONDS=300  # per-job timeout (seconds), adjust per generator
 LOG_FILE="/share/apps/vcell3/htclogs/${SLURM_JOB_NAME}_submit.log"
 

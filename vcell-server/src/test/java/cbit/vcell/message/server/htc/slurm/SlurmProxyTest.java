@@ -267,13 +267,13 @@ public class SlurmProxyTest {
 
 	@Test
 	public void testSimJobScriptLangevinBatch() throws IOException, XmlParseException, ExpressionException {
-		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_35189106_0__0.simtask.xml";
-		String JOB_NAME = "V_REL_35189106_0_0";
+		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_999999999_0__0.simtask.xml";
+		String JOB_NAME = "V_TEST2_999999999_0_0";
 
 		String executable = "/usr/local/app/localsolvers/linux64/langevin_x64";
-		String outputLog = "/share/apps/vcell3/users/danv/SimID_35189106_0_.log";
-		String messagingConfig = "/share/apps/vcell3/users/danv/SimID_35189106_0_.langevinMessagingConfig";
-		String inputFilePath = "/share/apps/vcell3/users/danv/SimID_35189106_0_.langevinInput";
+		String outputLog = "/share/apps/vcell3/users/danv/SimID_999999999_0_.log";
+		String messagingConfig = "/share/apps/vcell3/users/danv/SimID_999999999_0_.langevinMessagingConfig";
+		String inputFilePath = "/share/apps/vcell3/users/danv/SimID_999999999_0_.langevinInput";
 		String[] command = new String[] { executable, "simulate", "--output-log="+outputLog,
 				"--vc-send-status-config="+messagingConfig, inputFilePath, "0", "-tid", "0" };
 
