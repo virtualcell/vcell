@@ -267,6 +267,11 @@ public class SlurmProxyTest {
 
 	@Test
 	public void testSimJobScriptLangevinBatch() throws IOException, XmlParseException, ExpressionException {
+
+		setProperty(PropertyLoader.htc_vcellopt_docker_name, "ghcr.io/virtualcell/vcell-opt:7.7.0.34");
+		setProperty(PropertyLoader.vcellSoftwareVersion, "Rel_Version_7.7.0_build_34");
+		setProperty(PropertyLoader.vcellServerIDProperty,"TEST2");
+
 		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_999999999_0__0.simtask.xml";
 		String JOB_NAME = "V_TEST2_999999999_0_0";
 
@@ -277,15 +282,54 @@ public class SlurmProxyTest {
 		String[] command = new String[] { executable, "simulate", "--output-log="+outputLog,
 				"--vc-send-status-config="+messagingConfig, inputFilePath, "0", "-tid", "0" };
 
-		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, command, JOB_NAME);
-		System.out.println(slurmScript);
+		String actualSlurmScript = createScriptForNativeSolvers(simTaskResourcePath, command, JOB_NAME);
+		System.out.println(actualSlurmScript);
 
-//		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/slurm_array_poc/submit_vcell_batch.slurm.sub");
-//		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
+		// this is the source of truth
+		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/V_TEST2_999999999_0_0.slurm.sub");
+
+		// compare line by line, char by char for better diagnostics
+		String[] expectedLines = expectedSlurmScript.split("\\R");
+		String[] actualLines = actualSlurmScript.split("\\R");
+
+		int expectedLineCount = expectedLines.length;
+		int actualLineCount = actualLines.length;
+		int maxLines = Math.max(expectedLineCount, actualLineCount);
+
+		for (int i = 0; i < maxLines; i++) {
+			if (i >= actualLineCount) {
+				Assertions.fail("Actual script is shorter: missing line " + (i + 1));
+			}
+			if (i >= expectedLineCount) {
+				Assertions.fail("Actual script is longer: unexpected line " + (i + 1));
+			}
+
+			String expectedLine = expectedLines[i];
+			String actualLine = actualLines[i];
+
+			int expectedLen = expectedLine.length();
+			int actualLen = actualLine.length();
+			int maxChars = Math.max(expectedLen, actualLen);
+
+			for (int j = 0; j < maxChars; j++) {
+				if (j >= actualLen) {
+					Assertions.fail("Line " + (i + 1) + " is shorter than expected at char " + j);
+				}
+				if (j >= expectedLen) {
+					Assertions.fail("Line " + (i + 1) + " is longer than expected at char " + j);
+				}
+
+				char expectedChar = expectedLine.charAt(j);
+				char actualChar = actualLine.charAt(j);
+
+				if (expectedChar != actualChar) {
+					Assertions.fail("Mismatch at line " + (i + 1) + ", char " + j +
+							": expected '" + expectedChar + "', got '" + actualChar + "'");
+				}
+			}
+		}
 		System.out.println("Done");
-
 	}
-
 
 	@Test
 	public void testSimJobScriptNFsim() throws IOException, XmlParseException, ExpressionException {
