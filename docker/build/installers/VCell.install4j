@@ -685,10 +685,9 @@ return file.getAbsolutePath().contains(folderName);
               </formComponent>
               <formComponent id="3102" beanClass="com.install4j.runtime.beans.formcomponents.HtmlDisplayFormComponent" useExternalParametrization="true" externalParametrizationName="HTML or text display" externalParametrizationMode="include">
                 <serializedBean>
-                  <property name="displayedText" type="string">To finish this installation the admin install of VCell will be removed 
+                  <property name="displayedText" type="string">To finish this installation, the admin install of VCell will be removed 
 [${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}],
-at it is replaced by a user installation.
-</property>
+as a user installation now replaces it.</property>
                   <property name="fillVertical" type="boolean" value="true" />
                   <property name="textSource" type="enum" class="com.install4j.runtime.beans.screens.components.TextSource" value="DIRECT" />
                 </serializedBean>
