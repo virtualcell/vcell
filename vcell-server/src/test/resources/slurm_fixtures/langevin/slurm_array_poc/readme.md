@@ -211,6 +211,7 @@ tail -f /share/apps/vcell3/htclogs/<log_file_name>   # monitor log file
 
 #### frequently used for testing
 ```powershell
+ssh vcell@mantis-040.cam.uchc.edu
 sed -i 's/\r$//' ./V_TEST2_999999999_0_0.slurm.sub
 sbatch ./V_TEST2_999999999_0_0.slurm.sub
 sacct -j 974291 --format=JobID,State,ExitCode,Elapsed,MaxRSS,ReqMem,NodeList
