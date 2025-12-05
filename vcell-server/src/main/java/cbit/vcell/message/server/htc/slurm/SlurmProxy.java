@@ -655,7 +655,7 @@ public class SlurmProxy extends HtcProxy {
 		SolverDescription solverDescription = std.getSolverDescription();
 		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid, simID, solverDescription, memSizeMB, simTask.isPowerUser());
 
-		int timeoutPerTaskSeconds = 300;		// TODO: do we hardcode this? Should it be part of LangevinSimulationOptions?
+		int timeoutPerTaskSeconds = 28800;		// 8 hours TODO: do we hardcode this? Should it be part of LangevinSimulationOptions?
 		String slurmJobTimeout = computeSlurmTimeLimit(totalNumberOfJobs, numberOfConcurrentTasks, timeoutPerTaskSeconds);
 		int javaMemXmx = getRoundedMemoryLimit(memoryMBAllowed.getMemLimit());
 
