@@ -271,6 +271,7 @@ public class SlurmProxyTest {
 		setProperty(PropertyLoader.htc_vcellopt_docker_name, "ghcr.io/virtualcell/vcell-opt:7.7.0.34");
 		setProperty(PropertyLoader.vcellSoftwareVersion, "Rel_Version_7.7.0_build_34");
 		setProperty(PropertyLoader.vcellServerIDProperty,"TEST2");
+		setProperty(PropertyLoader.jmsSimHostExternal, "k8s-wn-01.cam.uchc.edu");
 
 		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_999999999_0__0.simtask.xml";
 		String JOB_NAME = "V_TEST2_999999999_0_0";

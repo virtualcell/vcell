@@ -496,6 +496,7 @@ public class SlurmProxy extends HtcProxy {
 		int lastUnderscore = jobName.lastIndexOf('_');
 		String trimmedJobName = (lastUnderscore >= 0) ? jobName.substring(0, lastUnderscore + 1) : jobName;
 		String logFilePath = htcLogDir + "/" + trimmedJobName + ".submit.log";
+		String messagingConfigFilePath = simDataDir + "/" + userId + "/SimID_" + simId + "_0_.langevinMessagingConfig";
 
 		lsb.write("# Script-controlled variables (populated by generator in real use)");
 		lsb.write("USERID=" + userId);
@@ -503,6 +504,7 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("TOTAL_JOBS=" + totalJobs + "            # to be set by generator to lso.getTotalNumberOfJobs()");
 		lsb.write("JOB_TIMEOUT_SECONDS=" + jobTimeoutSeconds + "  # per-job timeout (seconds), adjust per generator");
 		lsb.write("LOG_FILE=\"" + logFilePath + "\"");
+		lsb.write("MESSAGING_CONFIG_FILE=\"" + messagingConfigFilePath + "\"");
 		lsb.write("");
 
 		lsb.write("# Truncate / delete various logs and the solver input file, to start clean");

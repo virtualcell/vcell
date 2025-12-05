@@ -1,5 +1,5 @@
-broker_host=rke-wn-01.cam.uchc.edu
-broker_port=30163
+broker_host=k8s-wn-01.cam.uchc.edu
+broker_port=30162
 broker_username=admin
 broker_password=admin
 vc_username=temp

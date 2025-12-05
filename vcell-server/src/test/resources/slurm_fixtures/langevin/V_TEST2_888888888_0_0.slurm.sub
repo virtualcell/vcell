@@ -114,65 +114,57 @@ echo "------------------"
 echo "=== [$(date)] === SLURM job ${SLURM_JOB_ID} started on $(hostname)"
 
 INPUT_DIR="/simdata/${USERID}"
-CONFIG_FILE="${INPUT_DIR}/SimID_${SIM_ID}_0_.langevinMessagingConfig"
+CONFIG_FILE="/share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.langevinMessagingConfig"
 
-${solver_container_prefix} env CONFIG_FILE="$CONFIG_FILE" /bin/bash -c "
-  set -o errexit; set -o pipefail; set -o nounset
+echo "Parse config file once"
+broker_host=""; broker_port=""; broker_username=""; broker_password=""
+vc_username=""; simKey=""; taskID=""; jobIndex=""
+while IFS="=" read -r key value; do
+  case "$key" in
+    broker_host)       broker_host="$value" ;;
+    broker_port)       broker_port="$value" ;;
+    broker_username)   broker_username="$value" ;;
+    broker_password)   broker_password="$value" ;;
+    vc_username)       vc_username="$value" ;;
+    simKey)            simKey="$value" ;;
+    taskID)            taskID="$value" ;;
+    jobIndex)          jobIndex="$value" ;;
+  esac
+done < "$CONFIG_FILE"
+echo "Parsed configuration:"
+echo "  broker_host     = $broker_host"
+echo "  broker_port     = $broker_port"
+echo "  broker_username = $broker_username"
+echo "  broker_password = $broker_password"
+echo "  vc_username     = $vc_username"
+echo "  simKey          = $simKey"
+echo "  taskID          = $taskID"
+echo "  jobIndex        = $jobIndex"
 
-  # Initialize variables to satisfy set -u
-  broker_host=''; broker_port=''; broker_username=''; broker_password=''
-  vc_username=''; simKey=''; taskID=''; jobIndex=''
+statusCode=1001
+statusMsg="Running"
+# Immutable part, built once
+BASE_PROPERTIES="JMSDeliveryMode=persistent&JMSTimeToLive=3000"
+BASE_PROPERTIES+="&SimKey=${simKey}"
+BASE_PROPERTIES+="&JobIndex=${jobIndex}"
+BASE_PROPERTIES+="&TaskID=${taskID}"
+BASE_PROPERTIES+="&UserName=${vc_username}"
+BASE_PROPERTIES+="&MessageType=WorkerEvent"
+BASE_PROPERTIES+="&WorkerEvent_Status=${statusCode}"
+BASE_PROPERTIES+="&WorkerEvent_StatusMsg=${statusMsg}"
+BASE_PROPERTIES+="&HostName=$(hostname)"
 
-  # Parse config file
-  while IFS='=' read -r key value; do
-    case \"\$key\" in
-      broker_host)       broker_host=\"\$value\" ;;
-      broker_port)       broker_port=\"\$value\" ;;
-      broker_username)   broker_username=\"\$value\" ;;
-      broker_password)   broker_password=\"\$value\" ;;
-      vc_username)       vc_username=\"\$value\" ;;
-      simKey)            simKey=\"\$value\" ;;
-      taskID)            taskID=\"\$value\" ;;
-      jobIndex)          jobIndex=\"\$value\" ;;
-    esac
-  done < \"\$CONFIG_FILE\"
+# --------------------------------------------------------------------------------
 
-  # Guard required vars
-  : \"\${broker_host:?Missing broker_host}\"
-  : \"\${broker_port:?Missing broker_port}\"
-  : \"\${broker_username:?Missing broker_username}\"
-  : \"\${broker_password:?Missing broker_password}\"
+# Build only the execution command (after each task in the production code)
+timepoint=$(date +%s)
+progress=0.5
+PROPERTIES="${BASE_PROPERTIES}&WorkerEvent_TimePoint=${timepoint}&WorkerEvent_Progress=${progress}"
 
-  echo \"Parsed configuration:\"
-  echo \"  broker_host     = \$broker_host\"
-  echo \"  broker_port     = \$broker_port\"
-  echo \"  broker_username = \$broker_username\"
-  echo \"  broker_password = \$broker_password\"
-  echo \"  vc_username     = \$vc_username\"
-  echo \"  simKey          = \$simKey\"
-  echo \"  taskID          = \$taskID\"
-  echo \"  jobIndex        = \$jobIndex\"
-
-  # Build properties
-  timepoint=\$(date +%s)
-  progress=0.5
-  statusCode=1001
-  statusMsg='Running'
-
-  statusMsg=\$(echo \"\$statusMsg\" | tr -d \"\\n\\r\" | sed \"s/'/ /g; s/\\\"/ /g\")
-  statusMsg=\$(python3 -c \"import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))\" \"\$statusMsg\")
-
-  PROPERTIES=\"JMSDeliveryMode=persistent&JMSTimeToLive=3000\"
-  PROPERTIES=\"\${PROPERTIES}&SimKey=\${simKey}&JobIndex=\${jobIndex}&TaskID=\${taskID}&UserName=\${vc_username}\"
-  PROPERTIES=\"\${PROPERTIES}&MessageType=WorkerEvent&WorkerEvent_Status=\${statusCode}&WorkerEvent_StatusMsg=\${statusMsg}\"
-  PROPERTIES=\"\${PROPERTIES}&WorkerEvent_TimePoint=\${timepoint}&WorkerEvent_Progress=\${progress}&HostName=\$(hostname)\"
-
-  echo 'Final PROPERTIES string:'
-  echo \"\$PROPERTIES\"
-
-  echo \"---- Trying configured broker_port \$broker_port ----\"
-  curl -v -XPOST \"http://\${broker_username}:\${broker_password}@\${broker_host}:\${broker_port}/api/message/workerEvent?type=queue&\${PROPERTIES}\"
-"
+msgCommand="set -o errexit; set -o pipefail; set -o nounset"
+msgCommand+="
+curl -v -XPOST \"http://${broker_username}:${broker_password}@${broker_host}:${broker_port}/api/message/workerEvent?type=queue&${PROPERTIES}\""
+${solver_container_prefix} /bin/bash -c "$msgCommand"   # Execute inside singularity
 
 echo "=== [$(date)] === MESSAGING job completed successfully"
 exit 0
