@@ -627,20 +627,25 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("");
 	}
 	private void writeContainerImageAndPrefixes(LineStringBuilder lsb) {
-		String singularityCachedir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_cachedir);
-		String sifFilename = "vcell-batch-7.7.0.34.sif"; // TODO: dynamically resolve latest version or extract from software version
-		String sifPath = singularityCachedir + "/sif/" + sifFilename;
+		// Resolve docker image names
+		final String batchDockerName = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_docker_name);
+		final String solverDockerName = batchDockerName;
 
-		lsb.write("# Container image path");
-		lsb.write("sif_path=\"" + sifPath + "\"");
-
+		// Write out docker names and prefixes
 		lsb.write("# Full solver command");
-		lsb.write("batch_container_prefix=\"singularity run --containall ${container_bindings} ${container_env} ${sif_path}\"");
-		lsb.write("solver_container_prefix=\"singularity run --containall ${container_bindings} ${container_env} ${sif_path}\"");
+		lsb.write("solver_docker_name=" + solverDockerName);
+		lsb.write("solver_container_prefix=\"singularity run --containall " +
+				"${container_bindings} ${container_env} docker://${solver_docker_name}\"");
+
+		if (batchDockerName != null && !batchDockerName.isEmpty()) {
+			lsb.write("batch_docker_name=" + batchDockerName);
+			lsb.write("batch_container_prefix=\"singularity run --containall " +
+					"${container_bindings} ${container_env} docker://${batch_docker_name}\"");
+		}
+
 		lsb.write("slurm_prefix=\"srun -N1 -n1 -c${SLURM_CPUS_PER_TASK}\"");
 		lsb.write("");
 	}
-
 	String  generateLangevinBatchScript(String jobName, ExecutableCommand.Container commandSet, double memSizeMB,
 										Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 

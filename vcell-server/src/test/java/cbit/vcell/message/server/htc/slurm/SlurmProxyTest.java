@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static cbit.vcell.message.server.htc.HtcProxy.toUnixStyleText;
+
 
 @Tag("Fast")
 public class SlurmProxyTest {
@@ -272,6 +274,7 @@ public class SlurmProxyTest {
 		setProperty(PropertyLoader.vcellSoftwareVersion, "Rel_Version_7.7.0_build_34");
 		setProperty(PropertyLoader.vcellServerIDProperty,"TEST2");
 		setProperty(PropertyLoader.jmsSimHostExternal, "k8s-wn-01.cam.uchc.edu");
+		setProperty(PropertyLoader.htc_vcellbatch_docker_name, "ghcr.io/virtualcell/vcell-batch:7.7.0.34");
 
 		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_999999999_0__0.simtask.xml";
 		String JOB_NAME = "V_TEST2_999999999_0_0";
@@ -288,6 +291,7 @@ public class SlurmProxyTest {
 
 		// this is the source of truth
 		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/V_TEST2_999999999_0_0.slurm.sub");
+		expectedSlurmScript = toUnixStyleText(expectedSlurmScript);
 
 		// compare line by line, char by char for better diagnostics
 		String[] expectedLines = expectedSlurmScript.split("\\R");
@@ -297,38 +301,8 @@ public class SlurmProxyTest {
 		int actualLineCount = actualLines.length;
 		int maxLines = Math.max(expectedLineCount, actualLineCount);
 
-		for (int i = 0; i < maxLines; i++) {
-			if (i >= actualLineCount) {
-				Assertions.fail("Actual script is shorter: missing line " + (i + 1));
-			}
-			if (i >= expectedLineCount) {
-				Assertions.fail("Actual script is longer: unexpected line " + (i + 1));
-			}
+		Assertions.assertEquals(expectedSlurmScript.trim(), actualSlurmScript.trim(), "Strings should be equal");
 
-			String expectedLine = expectedLines[i];
-			String actualLine = actualLines[i];
-
-			int expectedLen = expectedLine.length();
-			int actualLen = actualLine.length();
-			int maxChars = Math.max(expectedLen, actualLen);
-
-			for (int j = 0; j < maxChars; j++) {
-				if (j >= actualLen) {
-					Assertions.fail("Line " + (i + 1) + " is shorter than expected at char " + j);
-				}
-				if (j >= expectedLen) {
-					Assertions.fail("Line " + (i + 1) + " is longer than expected at char " + j);
-				}
-
-				char expectedChar = expectedLine.charAt(j);
-				char actualChar = actualLine.charAt(j);
-
-				if (expectedChar != actualChar) {
-					Assertions.fail("Mismatch at line " + (i + 1) + ", char " + j +
-							": expected '" + expectedChar + "', got '" + actualChar + "'");
-				}
-			}
-		}
 		System.out.println("Done");
 	}
 

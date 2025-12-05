@@ -110,11 +110,11 @@ container_env+="--env htclogdir_external=/share/apps/vcell3/htclogs "
 container_env+="--env softwareVersion=Rel_Version_7.7.0_build_34 "
 container_env+="--env serverid=TEST2 "
 
-# Container image path
-sif_path="/share/apps/vcell3/singularity/cachdir/sif/vcell-batch-7.7.0.34.sif"
 # Full solver command
-batch_container_prefix="singularity run --containall ${container_bindings} ${container_env} ${sif_path}"
-solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} ${sif_path}"
+solver_docker_name=ghcr.io/virtualcell/vcell-batch:7.7.0.34
+solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} docker://${solver_docker_name}"
+batch_docker_name=ghcr.io/virtualcell/vcell-batch:7.7.0.34
+batch_container_prefix="singularity run --containall ${container_bindings} ${container_env} docker://${batch_docker_name}"
 slurm_prefix="srun -N1 -n1 -c${SLURM_CPUS_PER_TASK}"
 
 # === From here down, the code is identical for all jobs and should be copied from a resource file ===
