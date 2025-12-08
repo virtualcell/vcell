@@ -274,11 +274,16 @@
 				<version>2.7.3</version>
 			</dependency>
 
-			<!-- Align OSGi annotations -->
+			<!-- OSGi -->
 			<dependency>
 				<groupId>org.osgi</groupId>
 				<artifactId>osgi.annotation</artifactId>
 				<version>7.0.0</version>
+			</dependency>
+			<dependency>
+				<groupId>org.osgi</groupId>
+				<artifactId>org.osgi.resource</artifactId>
+				<version>1.0.1</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
