@@ -273,6 +273,13 @@
 				<artifactId>serializer</artifactId>
 				<version>2.7.3</version>
 			</dependency>
+
+			<!-- Align OSGi annotations -->
+			<dependency>
+				<groupId>org.osgi</groupId>
+				<artifactId>osgi.annotation</artifactId>
+				<version>7.0.0</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
