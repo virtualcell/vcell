@@ -245,7 +245,6 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- JUnit BOM: aligns all JUnit Jupiter artifacts -->
 			<dependency>
 				<groupId>org.junit</groupId>
 				<artifactId>junit-bom</artifactId>
@@ -255,6 +254,7 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
 
 	<build>
 		<plugins>

@@ -127,10 +127,12 @@
 		<dependency>
 			<groupId>javax.media</groupId>
 			<artifactId>jai_core</artifactId>
+			<version>${jai-core.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.sun.media</groupId>
 			<artifactId>jai-codec</artifactId>
+			<version>${jai-core.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
@@ -359,10 +361,6 @@
 				<exclusion>
 					<groupId>xalan</groupId>
 					<artifactId>xalan</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>xalan</groupId>
-					<artifactId>serializer</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>com.esotericsoftware.kryo</groupId>
@@ -814,7 +812,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-mac.version}/langevin-macos-13</url>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-mac.version}/langevin-macos-universal</url>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
 										<outputFileName>langevin_x64</outputFileName>
 									</configuration>
@@ -943,7 +941,7 @@
 										<goal>wget</goal>
 									</goals>
 									<configuration>
-										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-mac.version}/langevin-macos-13</url>
+										<url>https://github.com/cam-center/LangevinNoVis01/releases/download/${solvers-langevin-mac.version}/langevin-macos-universal</url>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64</outputDirectory>
 										<outputFileName>langevin_x64</outputFileName>
 									</configuration>
