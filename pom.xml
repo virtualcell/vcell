@@ -315,6 +315,13 @@
 				<version>1</version>
 				<type>pom</type>
 			</dependency>
+
+			<dependency>
+				<groupId>net.java</groupId>
+				<artifactId>jvnet-parent</artifactId>
+				<version>1</version>
+				<type>pom</type>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
