@@ -273,24 +273,10 @@
 				<artifactId>serializer</artifactId>
 				<version>2.7.3</version>
 			</dependency>
-
-			<!-- OSGi -->
 			<dependency>
-				<groupId>org.osgi</groupId>
-				<artifactId>osgi.annotation</artifactId>
-				<version>7.0.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.osgi</groupId>
-				<artifactId>org.osgi.resource</artifactId>
-				<version>1.0.1</version>
-			</dependency>
-
-			<!-- Bnd annotations -->
-			<dependency>
-				<groupId>biz.aQute.bnd</groupId>
-				<artifactId>biz.aQute.bnd.annotation</artifactId>
-				<version>5.3.0</version>
+				<groupId>xalan</groupId>
+				<artifactId>xalan</artifactId>
+				<version>2.7.3</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
@@ -320,7 +306,18 @@
 						<id>enforce</id>
 						<configuration>
 							<rules>
-								<dependencyConvergence/>
+								<dependencyConvergence>
+									<!-- Exclude non-runtime artifacts that keep tripping Enforcer -->
+									<excludes>
+										<!-- Parent POMs -->
+										<exclude>net.java:jvnet-parent</exclude>
+										<!-- OSGi build-time annotations -->
+										<exclude>biz.aQute.bnd:biz.aQute.bnd.annotation</exclude>
+										<!-- Any other annotation-only helpers -->
+										<exclude>org.osgi:osgi.annotation</exclude>
+										<exclude>org.osgi:org.osgi.resource</exclude>
+									</excludes>
+								</dependencyConvergence>
 							</rules>
 						</configuration>
 						<goals>
