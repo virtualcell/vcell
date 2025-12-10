@@ -650,6 +650,7 @@ public class SlurmProxy extends HtcProxy {
 										Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 
 		// TODO: extractUser is very unrobust, must be fixed
+		// it may be the userName can be obtained like so: String vcellUserid = simTask.getUser().getName();
 		String userName = extractUser(commandSet);
 		String vcellUserid = simTask.getUser().getName();
 		KeyValue simID = simTask.getSimulationInfo().getSimulationVersion().getVersionKey();
@@ -936,6 +937,8 @@ public class SlurmProxy extends HtcProxy {
 			LineStringBuilder lsb) {
 		lsb.write("#!/usr/bin/bash");
 		File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
+		String logPath = new File(htcLogDirExternal, jobName + ".slurm.log").getPath().replace("\\", "/");
+
 		if(bPowerUser) {
 			String partition_pu = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition_pu);
 			String reservation_pu = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_reservation_pu);
@@ -952,8 +955,8 @@ public class SlurmProxy extends HtcProxy {
 			lsb.write("#SBATCH --qos=" +qos);
 		}
 		lsb.write("#SBATCH -J " + jobName);
-		lsb.write("#SBATCH -o " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
-		lsb.write("#SBATCH -e " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
+		lsb.write("#SBATCH -o " + logPath);
+		lsb.write("#SBATCH -e " + logPath);
 		lsb.write("#SBATCH --mem="+memoryMBAllowed.getMemLimit()+"M");
 		lsb.write("#SBATCH --no-kill");
 		lsb.write("#SBATCH --no-requeue");

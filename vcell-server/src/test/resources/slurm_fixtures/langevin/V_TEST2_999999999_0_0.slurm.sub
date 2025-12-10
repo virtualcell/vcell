@@ -107,13 +107,13 @@ container_env+="--env mongodb_database=test "
 container_env+="--env primary_datadir_external=/share/apps/vcell3/users "
 container_env+="--env secondary_datadir_external=/share/apps/vcell7/users "
 container_env+="--env htclogdir_external=/share/apps/vcell3/htclogs "
-container_env+="--env softwareVersion=Rel_Version_7.7.0_build_34 "
+container_env+="--env softwareVersion=Rel_Version_7.7.0_build_39 "
 container_env+="--env serverid=TEST2 "
 
 # Full solver command
-solver_docker_name=ghcr.io/virtualcell/vcell-batch:7.7.0.34
+solver_docker_name=ghcr.io/virtualcell/vcell-batch:7.7.0.39
 solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} docker://${solver_docker_name}"
-batch_docker_name=ghcr.io/virtualcell/vcell-batch:7.7.0.34
+batch_docker_name=ghcr.io/virtualcell/vcell-batch:7.7.0.39
 batch_container_prefix="singularity run --containall ${container_bindings} ${container_env} docker://${batch_docker_name}"
 slurm_prefix="srun -N1 -n1 -c${SLURM_CPUS_PER_TASK}"
 
@@ -131,7 +131,7 @@ ${batch_container_prefix} JavaPreprocessor64 "${SIMXML}" "/simdata/${USERID}"
 stat=$?
 echo "JavaPreprocessor64 returned ${stat}" | tee -a "${LOG_FILE}"
 if [ $stat -ne 0 ]; then
-  ${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 $stat "${HTC_LOG_DIR_EXTERNAL:-/share/apps/vcell3/htclogs}/${SLURM_JOB_NAME}.slurm.sub" || true
+  ${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 $stat "/htclogs/${SLURM_JOB_NAME}.slurm.sub" || true
   echo "Preprocessor failed; exiting ${stat}" | tee -a "${LOG_FILE}"
   exit $stat
 fi
@@ -323,7 +323,7 @@ echo "All tasks completed at $(date)" >> "${LOG_FILE}"
 # ----------------------------------------------------------------------------------------------
 # run JavaPostprocessor64 inside batch container
 echo "[Postprocess] Running JavaPostprocessor64..." | tee -a "${LOG_FILE}"
-timeout 20s ${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 "${TOTAL_JOBS}" "${HTC_LOG_DIR_EXTERNAL:-/share/apps/vcell3/htclogs}/${SLURM_JOB_NAME}.slurm.sub"
+timeout 20s ${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 "${TOTAL_JOBS}" "/htclogs/${SLURM_JOB_NAME}.slurm.sub"
 post_exit=$?
 set -e
 

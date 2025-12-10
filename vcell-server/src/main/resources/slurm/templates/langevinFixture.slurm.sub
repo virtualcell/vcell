@@ -12,7 +12,7 @@ ${batch_container_prefix} JavaPreprocessor64 "${SIMXML}" "/simdata/${USERID}"
 stat=$?
 echo "JavaPreprocessor64 returned ${stat}" | tee -a "${LOG_FILE}"
 if [ $stat -ne 0 ]; then
-  ${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 $stat "${HTC_LOG_DIR_EXTERNAL:-/share/apps/vcell3/htclogs}/${SLURM_JOB_NAME}.slurm.sub" || true
+  ${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 $stat "/htclogs/${SLURM_JOB_NAME}.slurm.sub" || true
   echo "Preprocessor failed; exiting ${stat}" | tee -a "${LOG_FILE}"
   exit $stat
 fi
@@ -204,7 +204,7 @@ echo "All tasks completed at $(date)" >> "${LOG_FILE}"
 # ----------------------------------------------------------------------------------------------
 # run JavaPostprocessor64 inside batch container
 echo "[Postprocess] Running JavaPostprocessor64..." | tee -a "${LOG_FILE}"
-timeout 20s ${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 "${TOTAL_JOBS}" "${HTC_LOG_DIR_EXTERNAL:-/share/apps/vcell3/htclogs}/${SLURM_JOB_NAME}.slurm.sub"
+timeout 20s ${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 "${TOTAL_JOBS}" "/htclogs/${SLURM_JOB_NAME}.slurm.sub"
 post_exit=$?
 set -e
 

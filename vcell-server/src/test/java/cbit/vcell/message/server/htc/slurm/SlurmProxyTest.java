@@ -110,7 +110,7 @@ public class SlurmProxyTest {
 		List<String> args = new ArrayList<>( 4 );
 		args.add( PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor) );
 		args.add( simTaskFilePathExternal );
-		args.add( primaryUserDirExternal.getAbsolutePath() );
+		args.add( primaryUserDirExternal.getPath().replace("\\", "/") );
 		ExecutableCommand preprocessorCmd = new ExecutableCommand(null, false, false,args);
 
 		ExecutableCommand.LibraryPath libraryPath = new ExecutableCommand.LibraryPath("/usr/local/app/localsolvers/linux64");
@@ -126,7 +126,7 @@ public class SlurmProxyTest {
 				Integer.toString(jobId),
 				Integer.toString(simTask.getTaskID()),
 				SOLVER_EXIT_CODE_REPLACE_STRING,
-				subFileExternal.getAbsolutePath());
+				subFileExternal.getPath().replace("\\", "/"));
 		postprocessorCmd.setExitCodeToken(SOLVER_EXIT_CODE_REPLACE_STRING);
 
 		ExecutableCommand.Container commandSet = new ExecutableCommand.Container();
@@ -269,12 +269,11 @@ public class SlurmProxyTest {
 
 	@Test
 	public void testSimJobScriptLangevinBatch() throws IOException, XmlParseException, ExpressionException {
-
-		setProperty(PropertyLoader.htc_vcellopt_docker_name, "ghcr.io/virtualcell/vcell-opt:7.7.0.34");
-		setProperty(PropertyLoader.vcellSoftwareVersion, "Rel_Version_7.7.0_build_34");
+		setProperty(PropertyLoader.htc_vcellopt_docker_name, "ghcr.io/virtualcell/vcell-opt:7.7.0.39");
+		setProperty(PropertyLoader.vcellSoftwareVersion, "Rel_Version_7.7.0_build_39");
 		setProperty(PropertyLoader.vcellServerIDProperty,"TEST2");
 		setProperty(PropertyLoader.jmsSimHostExternal, "k8s-wn-01.cam.uchc.edu");
-		setProperty(PropertyLoader.htc_vcellbatch_docker_name, "ghcr.io/virtualcell/vcell-batch:7.7.0.34");
+		setProperty(PropertyLoader.htc_vcellbatch_docker_name, "ghcr.io/virtualcell/vcell-batch:7.7.0.39");
 
 		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_999999999_0__0.simtask.xml";
 		String JOB_NAME = "V_TEST2_999999999_0_0";
@@ -287,7 +286,6 @@ public class SlurmProxyTest {
 				"--vc-send-status-config="+messagingConfig, inputFilePath, "0", "-tid", "0" };
 
 		String actualSlurmScript = createScriptForNativeSolvers(simTaskResourcePath, command, JOB_NAME);
-		System.out.println(actualSlurmScript);
 
 		// this is the source of truth
 		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/V_TEST2_999999999_0_0.slurm.sub");
