@@ -674,7 +674,6 @@ public class SlurmProxy extends HtcProxy {
 		writeSlurmJobMetadata(lsb);
 		writeContainerBindingsAndEnv(lsb, javaMemXmx);
 		writeContainerImageAndPrefixes(lsb);
-		System.out.println(lsb.sb.toString());
 
 		String langevinFixture;
 		try {
@@ -935,9 +934,15 @@ public class SlurmProxy extends HtcProxy {
 
 	private void slurmScriptInit(String jobName, boolean bPowerUser, MemLimitResults memoryMBAllowed,
 			LineStringBuilder lsb) {
+		String os = System.getProperty("os.name").toLowerCase();
+		boolean isWindows = os.startsWith("windows");
+
 		lsb.write("#!/usr/bin/bash");
 		File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
-		String logPath = new File(htcLogDirExternal, jobName + ".slurm.log").getPath().replace("\\", "/");
+		String logPath = new File(htcLogDirExternal, jobName + ".slurm.log").getAbsolutePath();
+		if(isWindows) {
+			logPath = logPath.replaceAll("[A-Za-z]:", "").replace("\\", "/");
+		}
 
 		if(bPowerUser) {
 			String partition_pu = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition_pu);

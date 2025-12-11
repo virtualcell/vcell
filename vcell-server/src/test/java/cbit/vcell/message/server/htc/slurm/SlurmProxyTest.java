@@ -15,6 +15,7 @@ import org.vcell.util.document.User;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,10 +25,10 @@ import static cbit.vcell.message.server.htc.HtcProxy.toUnixStyleText;
 @Tag("Fast")
 public class SlurmProxyTest {
 
-	private final HashMap<String,String> originalProperties = new HashMap<>();
+	private final HashMap<String,String> originalProperties = new LinkedHashMap<>();
 
 	private void setProperty(String key, String value) {
-		originalProperties.put(key, System.getProperty(key));
+		originalProperties.putIfAbsent(key, System.getProperty(key));
 		System.setProperty(key, value);
 	}
 
@@ -95,11 +96,20 @@ public class SlurmProxyTest {
 
 	public String createScriptForNativeSolvers(String simTaskResourcePath, String[] command, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
 
+		String os = System.getProperty("os.name").toLowerCase();
+		boolean isWindows = os.startsWith("windows");
+
 		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource(simTaskResourcePath));
 		KeyValue simKey = simTask.getSimKey();
 
 		SlurmProxy slurmProxy = new SlurmProxy(null, "vcell");
 		File subFileExternal = new File("/share/apps/vcell3/htclogs/V_REL_"+simKey+"_0_0.slurm.sub");
+		String subFileExternalPath = subFileExternal.getAbsolutePath();
+		if(isWindows) {
+			subFileExternalPath = subFileExternalPath
+					.replaceAll("[A-Za-z]:", "")   // remove drive letter, keep the leading backslash
+					.replace("\\", "/");           // normalize separators
+		}
 
 		User simOwner = simTask.getSimulation().getVersion().getOwner();
 		final int jobId = simTask.getSimulationJob().getJobIndex();
@@ -107,10 +117,17 @@ public class SlurmProxyTest {
 		// preprocessor
 		String simTaskFilePathExternal = "/share/apps/vcell3/users/schaff/SimID_"+simKey+"_0__0.simtask.xml";
 		File primaryUserDirExternal = new File("/share/apps/vcell3/users/schaff");
+		String primaryUserDirExternalPath = primaryUserDirExternal.getAbsolutePath();
+		if(isWindows) {
+			primaryUserDirExternalPath = primaryUserDirExternalPath
+					.replaceAll("[A-Za-z]:", "")
+					.replace("\\", "/");
+		}
+
 		List<String> args = new ArrayList<>( 4 );
 		args.add( PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor) );
 		args.add( simTaskFilePathExternal );
-		args.add( primaryUserDirExternal.getPath().replace("\\", "/") );
+		args.add( primaryUserDirExternalPath );
 		ExecutableCommand preprocessorCmd = new ExecutableCommand(null, false, false,args);
 
 		ExecutableCommand.LibraryPath libraryPath = new ExecutableCommand.LibraryPath("/usr/local/app/localsolvers/linux64");
@@ -126,7 +143,7 @@ public class SlurmProxyTest {
 				Integer.toString(jobId),
 				Integer.toString(simTask.getTaskID()),
 				SOLVER_EXIT_CODE_REPLACE_STRING,
-				subFileExternal.getPath().replace("\\", "/"));
+				subFileExternalPath);
 		postprocessorCmd.setExitCodeToken(SOLVER_EXIT_CODE_REPLACE_STRING);
 
 		ExecutableCommand.Container commandSet = new ExecutableCommand.Container();
@@ -286,22 +303,13 @@ public class SlurmProxyTest {
 				"--vc-send-status-config="+messagingConfig, inputFilePath, "0", "-tid", "0" };
 
 		String actualSlurmScript = createScriptForNativeSolvers(simTaskResourcePath, command, JOB_NAME);
+		actualSlurmScript = toUnixStyleText(actualSlurmScript);
 
 		// this is the source of truth
 		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/V_TEST2_999999999_0_0.slurm.sub");
 		expectedSlurmScript = toUnixStyleText(expectedSlurmScript);
 
-		// compare line by line, char by char for better diagnostics
-		String[] expectedLines = expectedSlurmScript.split("\\R");
-		String[] actualLines = actualSlurmScript.split("\\R");
-
-		int expectedLineCount = expectedLines.length;
-		int actualLineCount = actualLines.length;
-		int maxLines = Math.max(expectedLineCount, actualLineCount);
-
 		Assertions.assertEquals(expectedSlurmScript.trim(), actualSlurmScript.trim(), "Strings should be equal");
-
-		System.out.println("Done");
 	}
 
 	@Test
