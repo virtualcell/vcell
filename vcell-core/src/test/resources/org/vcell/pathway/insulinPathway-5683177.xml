@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:bp="http://www.biopax.org/release/biopax-level2.owl#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:owl="http://www.w3.org/2002/07/owl#" xmlns:xsd="http://www.w3.org/2001/XMLSchema#" xml:base="http://www.reactome.org/biopax/5683177#">
+  <owl:Ontology rdf:about="">
+    <owl:imports rdf:resource="http://www.biopax.org/release/biopax-level2.owl" />
+    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">BioPAX pathway converted from "Defective ABCC8 can cause hypo- and hyper-glycemias" in the Reactome database.</rdfs:comment>
+  </owl:Ontology>
+  <bp:pathway rdf:ID="pathway1">
+    <bp:PATHWAY-COMPONENTS rdf:resource="#pathwayStep2" />
+    <bp:PATHWAY-COMPONENTS rdf:resource="#pathwayStep4" />
+    <bp:ORGANISM rdf:resource="#bioSource1" />
+    <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Defective ABCC8 can cause hypo- and hyper-glycemias</bp:NAME>
+    <bp:SHORT-NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Defective ABCC8 can cause hypo- and hyper-glycemias</bp:SHORT-NAME>
+    <bp:XREF rdf:resource="#unificationXref16" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ATP-binding cassette sub-family C member 8 (ABCC8) is a subunit of the beta-cell ATP-sensitive potassium channel (KATP). KATP channels play an important role in the control of insulin release. Elevation of the ATP:ADP ratio closes KATP channels leading to cellular depolarisation, calcium influx and exocytosis of insulin from its storage granules. Defects in ABCC8 can cause dysregulation of insulin secretion resulting in hyperglycemias or hypoglycemias. Specific phenotypes observed are noninsulin-dependent diabetes mellitus (NIDDM; MIM:125853), permanent neonatal diabetes mellitus (PNDM; MIM:606176), transient neonatal diabetes mellitus 2 (TNDM2; MIM:610374), familial hyperinsulinemic hypoglycemia 1 (HHF1; MIM:256450) and leucine-induced hypoglycemia (LIH; MIM:240800) (Edghill et al. 2010, Flanagan et al. 2009, Yorifuji 2014, Yang et al. 2010, Chandran et al. 2014).</bp:COMMENT>
+    <bp:XREF rdf:resource="#publicationXref8" />
+    <bp:DATA-SOURCE rdf:resource="#dataSource1" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Authored: Jassal, Bijay, 2015-03-12</bp:COMMENT>
+  </bp:pathway>
+  <bp:biochemicalReaction rdf:ID="biochemicalReaction1">
+    <bp:LEFT rdf:resource="#physicalEntityParticipant1" />
+    <bp:LEFT rdf:resource="#physicalEntityParticipant2" />
+    <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Defective ABCC8 does not form functional KATP channels, causing hyperinsulinemic hypoglycemia</bp:NAME>
+    <bp:SHORT-NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Defective ABCC8 does not form functional KATP channels, causing hyperinsulinemic hypoglycemia</bp:SHORT-NAME>
+    <bp:XREF rdf:resource="#unificationXref9" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ATP-binding cassette sub-family C member 8 (ABCC8) is a subunit of the beta-cell ATP-sensitive potassium channel (KATP). KATP channels play an important role in the control of insulin release. Elevation of the ATP:ADP ratio closes KATP channels leading to cellular depolarisation, calcium influx and exocytosis of insulin from its storage granules. Defects in ABCC8 can cause dysregulation of insulin secretion resulting in hyperglycemias or hypoglycemias.&lt;br&gt;&lt;br&gt;Familial hyperinsulinemic hypoglycemia (see HHF1; MIM:256450) is a disorder caused by defective negative feedback regulation of insulin secretion (persistent hyperinsulinism) leading to severe hypoglycemia. The most commom ABCC8 mutations causing HHF1 include F1388del, A1330Gfs*35, V187D and E1507K (Thomas et al. 1995, Nestorowicz et al. 1996, Otonkoshi et al. 1999).</bp:COMMENT>
+    <bp:XREF rdf:resource="#publicationXref1" />
+    <bp:XREF rdf:resource="#publicationXref2" />
+    <bp:DATA-SOURCE rdf:resource="#dataSource1" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Edited: Jassal, Bijay, 2015-03-12</bp:COMMENT>
+  </bp:biochemicalReaction>
+  <bp:physicalEntityParticipant rdf:ID="physicalEntityParticipant1">
+    <bp:PHYSICAL-ENTITY rdf:resource="#complex1" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome DB_ID: 5683095</bp:COMMENT>
+    <bp:STOICHIOMETRIC-COEFFICIENT rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1</bp:STOICHIOMETRIC-COEFFICIENT>
+  </bp:physicalEntityParticipant>
+  <bp:openControlledVocabulary rdf:ID="openControlledVocabulary1">
+    <bp:TERM rdf:datatype="http://www.w3.org/2001/XMLSchema#string">plasma membrane</bp:TERM>
+    <bp:XREF rdf:resource="#unificationXref1" />
+  </bp:openControlledVocabulary>
+  <bp:unificationXref rdf:ID="unificationXref1">
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">GO</bp:DB>
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">0005886</bp:ID>
+  </bp:unificationXref>
+  <bp:complex rdf:ID="complex1">
+    <bp:COMPONENTS rdf:resource="#sequenceParticipant1" />
+    <bp:COMPONENTS rdf:resource="#sequenceParticipant2" />
+    <bp:ORGANISM rdf:resource="#bioSource1" />
+    <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">KCNJ11 tetramer:ABCC8 mutants [plasma membrane]</bp:NAME>
+    <bp:SHORT-NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">KCNJ11 tetramer:ABCC8 mutants</bp:SHORT-NAME>
+    <bp:XREF rdf:resource="#unificationXref5" />
+    <bp:XREF rdf:resource="#unificationXref6" />
+    <bp:DATA-SOURCE rdf:resource="#dataSource1" />
+  </bp:complex>
+  <bp:sequenceParticipant rdf:ID="sequenceParticipant1">
+    <bp:CELLULAR-LOCATION rdf:resource="#openControlledVocabulary1" />
+    <bp:PHYSICAL-ENTITY rdf:resource="#protein1" />
+    <bp:SEQUENCE-FEATURE-LIST rdf:resource="#sequenceFeature1" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome DB_ID: 265561</bp:COMMENT>
+    <bp:STOICHIOMETRIC-COEFFICIENT rdf:datatype="http://www.w3.org/2001/XMLSchema#double">4</bp:STOICHIOMETRIC-COEFFICIENT>
+  </bp:sequenceParticipant>
+  <bp:protein rdf:ID="protein1">
+    <bp:DATA-SOURCE rdf:resource="#dataSource1" />
+    <bp:ORGANISM rdf:resource="#bioSource1" />
+    <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">UniProt:Q14654 KCNJ11</bp:NAME>
+    <bp:SHORT-NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">KCNJ11</bp:SHORT-NAME>
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">KCNJ11</bp:SYNONYMS>
+    <bp:XREF rdf:resource="#unificationXref3" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">FUNCTION Inward rectifier potassium channel that forms the pore of ATP-sensitive potassium channels (KATP), regulating potassium permeability as a function of cytoplasmic ATP and ADP concentrations in many different cells (PubMed:29286281, PubMed:34815345). Inward rectifier potassium channels are characterized by a greater tendency to allow potassium to flow into the cell rather than out of it. Their voltage dependence is regulated by the concentration of extracellular potassium; as external potassium is raised, the voltage range of the channel opening shifts to more positive voltages. The inward rectification is mainly due to the blockage of outward current by internal magnesium. Can be blocked by extracellular barium (By similarity). In pancreatic cells, it forms KATP channels with ABCC8/SUR1 (PubMed:29286281, PubMed:34815345). Can form cardiac and smooth muscle-type KATP channels with ABCC9.CATALYTIC ACTIVITY K(+)(in) = K(+)(out)ACTIVITY REGULATION KATP channels are regulated by cytoplasmic ATP/ADP ratios; ATP inhibits the channel by closing the pore, while ADP activates the channel (PubMed:29286281, PubMed:34815345). Activated by phosphatidylinositol 4,5-biphosphate (PtdIns(4,5)P2) (PubMed:34815345).SUBUNIT Homotetramer; the homotetramer binds four ATP molecules (one ATP per subunit) (PubMed:29286281, PubMed:34815345). Forms an heterooctamer with ABCC8/SUR1; one KCNJ11 homotetramer interacts with four ABCC8/SUR1 molecules (PubMed:34815345, PubMed:9831708). Interacts with ABCC9/SUR2.INTERACTION There are two PtdIns(4,5)P2 binding sites: A canonical site where the phosphate groups of one PtdIns(4,5)P2 molecule are coordinated at least by residues Lys-67, Trp-68 and Arg-176; a non-canonical site where the second PtdIns(4,5)P2 molecule is coordinated by both KCNJ11 and ABCC8/SUR1 residues.PTM Phosphorylation by MAPK1 results in changes in channel gating that destabilize the closed states and reduce the ATP sensitivity.DISEASE The disease is caused by variants affecting the gene represented in this entry.DISEASE The disease is caused by variants affecting the gene represented in this entry.DISEASE The disease is caused by variants affecting the gene represented in this entry.DISEASE Defects in KCNJ11 may contribute to non-insulin-dependent diabetes mellitus (NIDDM), also known as diabetes mellitus type 2.DISEASE The disease is caused by variants affecting the gene represented in this entry.SIMILARITY Belongs to the inward rectifier-type potassium channel (TC 1.A.2.1) family. KCNJ11 subfamily.SEQUENCE CAUTION Extended N-terminus.</bp:COMMENT>
+  </bp:protein>
+  <bp:dataSource rdf:ID="dataSource1">
+    <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome</bp:NAME>
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">http://www.reactome.org</bp:COMMENT>
+  </bp:dataSource>
+  <bp:bioSource rdf:ID="bioSource1">
+    <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Homo sapiens</bp:NAME>
+    <bp:TAXON-XREF rdf:resource="#unificationXref2" />
+  </bp:bioSource>
+  <bp:unificationXref rdf:ID="unificationXref2">
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">NCBI Taxonomy</bp:DB>
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">9606</bp:ID>
+  </bp:unificationXref>
+  <bp:unificationXref rdf:ID="unificationXref3">
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">UniProt</bp:DB>
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Q14654</bp:ID>
+  </bp:unificationXref>
+  <bp:sequenceFeature rdf:ID="sequenceFeature1">
+    <bp:FEATURE-TYPE rdf:resource="#openControlledVocabulary2" />
+    <bp:FEATURE-LOCATION rdf:resource="#sequenceInterval1" />
+  </bp:sequenceFeature>
+  <bp:openControlledVocabulary rdf:ID="openControlledVocabulary2">
+    <bp:TERM rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Chain Coordinates</bp:TERM>
+  </bp:openControlledVocabulary>
+  <bp:sequenceInterval rdf:ID="sequenceInterval1">
+    <bp:SEQUENCE-INTERVAL-BEGIN rdf:resource="#sequenceSite1" />
+    <bp:SEQUENCE-INTERVAL-END rdf:resource="#sequenceSite2" />
+  </bp:sequenceInterval>
+  <bp:sequenceSite rdf:ID="sequenceSite1">
+    <bp:SEQUENCE-POSITION rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">1</bp:SEQUENCE-POSITION>
+    <bp:POSITION-STATUS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">EQUAL</bp:POSITION-STATUS>
+  </bp:sequenceSite>
+  <bp:sequenceSite rdf:ID="sequenceSite2">
+    <bp:SEQUENCE-POSITION rdf:datatype="http://www.w3.org/2001/XMLSchema#integer">390</bp:SEQUENCE-POSITION>
+    <bp:POSITION-STATUS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">EQUAL</bp:POSITION-STATUS>
+  </bp:sequenceSite>
+  <bp:sequenceParticipant rdf:ID="sequenceParticipant2">
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Converted from EntitySet in Reactome</bp:COMMENT>
+    <bp:CELLULAR-LOCATION rdf:resource="#openControlledVocabulary1" />
+    <bp:PHYSICAL-ENTITY rdf:resource="#protein2" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome DB_ID: 5683203</bp:COMMENT>
+    <bp:STOICHIOMETRIC-COEFFICIENT rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1</bp:STOICHIOMETRIC-COEFFICIENT>
+  </bp:sequenceParticipant>
+  <bp:protein rdf:ID="protein2">
+    <bp:DATA-SOURCE rdf:resource="#dataSource1" />
+    <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ABCC8 mutants (HHF1) [plasma membrane]</bp:NAME>
+    <bp:ORGANISM rdf:resource="#bioSource1" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Converted from EntitySet in Reactome. Each synonym is a name of a PhysicalEntity, and each XREF points to one PhysicalEntity</bp:COMMENT>
+    <bp:XREF rdf:resource="#unificationXref4" />
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ABCC8 E1507K [plasma membrane]</bp:SYNONYMS>
+    <bp:XREF rdf:resource="#unificationXref4" />
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ABCC8 F1388del [plasma membrane]</bp:SYNONYMS>
+    <bp:XREF rdf:resource="#unificationXref4" />
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ABCC8 V187D [plasma membrane]</bp:SYNONYMS>
+    <bp:XREF rdf:resource="#unificationXref4" />
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ABCC8 A1330Gfs*35 [plasma membrane]</bp:SYNONYMS>
+  </bp:protein>
+  <bp:unificationXref rdf:ID="unificationXref4">
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">UniProt</bp:DB>
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Q09428</bp:ID>
+  </bp:unificationXref>
+  <bp:unificationXref rdf:ID="unificationXref5">
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome Database ID Release 93</bp:DB>
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">5683095</bp:ID>
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Database identifier. Use this URL to connect to the web page of this instance in Reactome: http://www.reactome.org/cgi-bin/eventbrowser?DB=gk_current&amp;ID=5683095</bp:COMMENT>
+  </bp:unificationXref>
+  <bp:unificationXref rdf:ID="unificationXref6">
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome</bp:DB>
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">R-HSA-5683095</bp:ID>
+    <bp:ID-VERSION rdf:datatype="http://www.w3.org/2001/XMLSchema#string">1</bp:ID-VERSION>
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome stable identifier. Use this URL to connect to the web page of this instance in Reactome: http://www.reactome.org/cgi-bin/eventbrowser_st_id?ST_ID=R-HSA-5683095.1</bp:COMMENT>
+  </bp:unificationXref>
+  <bp:physicalEntityParticipant rdf:ID="physicalEntityParticipant2">
+    <bp:PHYSICAL-ENTITY rdf:resource="#smallMolecule1" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome DB_ID: 113592</bp:COMMENT>
+    <bp:STOICHIOMETRIC-COEFFICIENT rdf:datatype="http://www.w3.org/2001/XMLSchema#double">4</bp:STOICHIOMETRIC-COEFFICIENT>
+  </bp:physicalEntityParticipant>
+  <bp:openControlledVocabulary rdf:ID="openControlledVocabulary3">
+    <bp:TERM rdf:datatype="http://www.w3.org/2001/XMLSchema#string">cytosol</bp:TERM>
+    <bp:XREF rdf:resource="#unificationXref7" />
+  </bp:openControlledVocabulary>
+  <bp:unificationXref rdf:ID="unificationXref7">
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">GO</bp:DB>
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">0005829</bp:ID>
+  </bp:unificationXref>
+  <bp:smallMolecule rdf:ID="smallMolecule1">
+    <bp:DATA-SOURCE rdf:resource="#dataSource1" />
+    <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ATP(4-) [ChEBI:30616]</bp:NAME>
+    <bp:SHORT-NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ATP(4-)</bp:SHORT-NAME>
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Adenosine 5'-triphosphate</bp:SYNONYMS>
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">atp</bp:SYNONYMS>
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ATP</bp:SYNONYMS>
+    <bp:XREF rdf:resource="#unificationXref8" />
+  </bp:smallMolecule>
+  <bp:unificationXref rdf:ID="unificationXref8">
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ChEBI</bp:DB>
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">30616</bp:ID>
+  </bp:unificationXref>
+  <bp:unificationXref rdf:ID="unificationXref9">
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome Database ID Release 93</bp:DB>
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">5683113</bp:ID>
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Database identifier. Use this URL to connect to the web page of this instance in Reactome: http://www.reactome.org/cgi-bin/eventbrowser?DB=gk_current&amp;ID=5683113</bp:COMMENT>
+  </bp:unificationXref>
+  <bp:publicationXref rdf:ID="publicationXref1">
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">7847376</bp:ID>
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
+    <bp:YEAR rdf:datatype="http://www.w3.org/2001/XMLSchema#int">1995</bp:YEAR>
+    <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Homozygosity mapping, to chromosome 11p, of the gene for familial persistent hyperinsulinemic hypoglycemia of infancy</bp:TITLE>
+    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Thomas, P M</bp:AUTHORS>
+    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Cote, G J</bp:AUTHORS>
+    <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Am. J. Hum. Genet. 56:416-21</bp:SOURCE>
+  </bp:publicationXref>
+  <bp:publicationXref rdf:ID="publicationXref2">
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">10334322</bp:ID>
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
+    <bp:YEAR rdf:datatype="http://www.w3.org/2001/XMLSchema#int">1999</bp:YEAR>
+    <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">A point mutation inactivating the sulfonylurea receptor causes the severe form of persistent hyperinsulinemic hypoglycemia of infancy in Finland</bp:TITLE>
+    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Kere, J</bp:AUTHORS>
+    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Thomas, P M</bp:AUTHORS>
+    <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Diabetes 48:408-15</bp:SOURCE>
+  </bp:publicationXref>
+  <bp:pathwayStep rdf:ID="pathwayStep2">
+    <bp:STEP-INTERACTIONS rdf:resource="#biochemicalReaction1" />
+  </bp:pathwayStep>
+  <bp:biochemicalReaction rdf:ID="biochemicalReaction2">
+    <bp:LEFT rdf:resource="#physicalEntityParticipant3" />
+    <bp:RIGHT rdf:resource="#physicalEntityParticipant4" />
+    <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Activating ABCC8 mutants cause hyperglycemia in permanent neonatal diabetes mellitus (PNDM) and transient neonatal DM (TNDM)</bp:NAME>
+    <bp:SHORT-NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Activating ABCC8 mutants cause hyperglycemia in permanent neonatal diabetes mellitus (PNDM) and transient neonatal DM (TNDM)</bp:SHORT-NAME>
+    <bp:XREF rdf:resource="#unificationXref14" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Neonatal diabetes mellitus (NDM) is a rare condition defined as insulin-requiring hyperglycemia within the first month of life. About half of the neonates have a transient form that resolves at a median age of 3 months whereas the rest have a permanent form of diabetes.&lt;br&gt;&lt;br&gt;ATP-binding cassette sub-family C member 8 (ABCC8) is a subunit of the beta-cell ATP-sensitive potassium channel (KATP). KATP channels play an important role in the control of insulin release. Elevation of the ATP:ADP ratio closes KATP channels leading to cellular depolarisation, calcium influx and exocytosis of insulin from its storage granules. Defects in ABCC8 can cause dysregulation of insulin secretion resulting in hyperglycemias or hypoglycemias.&lt;br&gt;&lt;br&gt;Defects in ABCC8 can cause permanent neonatal diabetes mellitus (PNDM; MIM:606176). Wild-type ABCC8 confers a lower open-channel probability (Po) than activating mutations of ABCC8, where overactive KATP channels reduce insulin secretion, resulting in hyperglycemia, diagnosed within the first months of life. PNDM requires lifelong therapy. Mutations causing PNDM include P132L, L213R, N72S, A1185E and E382K (Proks et al. 2006, Babenko et al. 2006, Ellard et al. 2007).&lt;br&gt;&lt;br&gt;Defects in ABCC8 can also cause transient noenatal diabetes mellitus 2 (TNDM2; MIM:610374). Babies are born with intrauterine growth retardation and present within the first 6 weeks of life with severe failure to thrive, hyperglycemia, and dehydration. The condition usually resolves within the first 6 months after birth but there is a predisposition to type 2 diabetes later in life (Naylor et al. 2011). Activating mutations causing TNDM2 are R1379C and L582V (Babenko et al. 2006). These mutations confer a higher open-channel probability (Po) than wild-type ABCC8, keeping the KATP channel open thus not allow cellular depolarisation to occur with the end result of reduced insulin secretion and hyperglycemia.</bp:COMMENT>
+    <bp:XREF rdf:resource="#publicationXref5" />
+    <bp:DATA-SOURCE rdf:resource="#dataSource1" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Authored: Jassal, Bijay, 2015-03-12</bp:COMMENT>
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Edited: Jassal, Bijay, 2015-03-12</bp:COMMENT>
+  </bp:biochemicalReaction>
+  <bp:physicalEntityParticipant rdf:ID="physicalEntityParticipant3">
+    <bp:CELLULAR-LOCATION rdf:resource="#openControlledVocabulary3" />
+    <bp:PHYSICAL-ENTITY rdf:resource="#smallMolecule2" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome DB_ID: 29804</bp:COMMENT>
+    <bp:STOICHIOMETRIC-COEFFICIENT rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1</bp:STOICHIOMETRIC-COEFFICIENT>
+  </bp:physicalEntityParticipant>
+  <bp:smallMolecule rdf:ID="smallMolecule2">
+    <bp:DATA-SOURCE rdf:resource="#dataSource1" />
+    <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">potassium(1+) [ChEBI:29103]</bp:NAME>
+    <bp:SHORT-NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">potassium(1+)</bp:SHORT-NAME>
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">K+</bp:SYNONYMS>
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Potassium</bp:SYNONYMS>
+    <bp:XREF rdf:resource="#unificationXref11" />
+  </bp:smallMolecule>
+  <bp:unificationXref rdf:ID="unificationXref11">
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ChEBI</bp:DB>
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">29103</bp:ID>
+  </bp:unificationXref>
+  <bp:physicalEntityParticipant rdf:ID="physicalEntityParticipant4">
+    <bp:PHYSICAL-ENTITY rdf:resource="#smallMolecule2" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome DB_ID: 74126</bp:COMMENT>
+    <bp:STOICHIOMETRIC-COEFFICIENT rdf:datatype="http://www.w3.org/2001/XMLSchema#double">1</bp:STOICHIOMETRIC-COEFFICIENT>
+  </bp:physicalEntityParticipant>
+  <bp:openControlledVocabulary rdf:ID="openControlledVocabulary4">
+    <bp:TERM rdf:datatype="http://www.w3.org/2001/XMLSchema#string">extracellular region</bp:TERM>
+    <bp:XREF rdf:resource="#unificationXref12" />
+  </bp:openControlledVocabulary>
+  <bp:unificationXref rdf:ID="unificationXref12">
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">GO</bp:DB>
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">0005576</bp:ID>
+  </bp:unificationXref>
+  <bp:catalysis rdf:ID="catalysis1">
+    <bp:CONTROLLER rdf:resource="#sequenceParticipant3" />
+    <bp:CONTROLLED rdf:resource="#biochemicalReaction2" />
+    <bp:DIRECTION rdf:datatype="http://www.w3.org/2001/XMLSchema#string">PHYSIOL-LEFT-TO-RIGHT</bp:DIRECTION>
+    <bp:CONTROL-TYPE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ACTIVATION</bp:CONTROL-TYPE>
+    <bp:XREF rdf:resource="#relationshipXref1" />
+    <bp:XREF rdf:resource="#unificationXref13" />
+    <bp:DATA-SOURCE rdf:resource="#dataSource1" />
+  </bp:catalysis>
+  <bp:sequenceParticipant rdf:ID="sequenceParticipant3">
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Converted from EntitySet in Reactome</bp:COMMENT>
+    <bp:CELLULAR-LOCATION rdf:resource="#openControlledVocabulary1" />
+    <bp:PHYSICAL-ENTITY rdf:resource="#protein3" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome DB_ID: 5683210</bp:COMMENT>
+  </bp:sequenceParticipant>
+  <bp:protein rdf:ID="protein3">
+    <bp:DATA-SOURCE rdf:resource="#dataSource1" />
+    <bp:NAME rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ABCC8 mutants (PNDM, TNDM2) [plasma membrane]</bp:NAME>
+    <bp:ORGANISM rdf:resource="#bioSource1" />
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Converted from EntitySet in Reactome. Each synonym is a name of a PhysicalEntity, and each XREF points to one PhysicalEntity</bp:COMMENT>
+    <bp:XREF rdf:resource="#unificationXref4" />
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ABCC8 P132L [plasma membrane]</bp:SYNONYMS>
+    <bp:XREF rdf:resource="#unificationXref4" />
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ABCC8 N72S [plasma membrane]</bp:SYNONYMS>
+    <bp:XREF rdf:resource="#unificationXref4" />
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ABCC8 A1185E [plasma membrane]</bp:SYNONYMS>
+    <bp:XREF rdf:resource="#unificationXref4" />
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ABCC8 E382K [plasma membrane]</bp:SYNONYMS>
+    <bp:XREF rdf:resource="#unificationXref4" />
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ABCC8 R1379C [plasma membrane]</bp:SYNONYMS>
+    <bp:XREF rdf:resource="#unificationXref4" />
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ABCC8 L213R [plasma membrane]</bp:SYNONYMS>
+    <bp:XREF rdf:resource="#unificationXref4" />
+    <bp:SYNONYMS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">ABCC8 L582V [plasma membrane]</bp:SYNONYMS>
+  </bp:protein>
+  <bp:relationshipXref rdf:ID="relationshipXref1">
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">GO</bp:DB>
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">0015272</bp:ID>
+    <bp:RELATIONSHIP-TYPE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">GO molecular function</bp:RELATIONSHIP-TYPE>
+  </bp:relationshipXref>
+  <bp:unificationXref rdf:ID="unificationXref13">
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome Database ID Release 93</bp:DB>
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">5683244</bp:ID>
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Database identifier. Use this URL to connect to the web page of this instance in Reactome: http://www.reactome.org/cgi-bin/eventbrowser?DB=gk_current&amp;ID=5683244</bp:COMMENT>
+  </bp:unificationXref>
+  <bp:unificationXref rdf:ID="unificationXref14">
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome Database ID Release 93</bp:DB>
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">5683209</bp:ID>
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Database identifier. Use this URL to connect to the web page of this instance in Reactome: http://www.reactome.org/cgi-bin/eventbrowser?DB=gk_current&amp;ID=5683209</bp:COMMENT>
+  </bp:unificationXref>
+  <bp:publicationXref rdf:ID="publicationXref5">
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">17668386</bp:ID>
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
+    <bp:YEAR rdf:datatype="http://www.w3.org/2001/XMLSchema#int">2007</bp:YEAR>
+    <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Permanent neonatal diabetes caused by dominant, recessive, or compound heterozygous SUR1 mutations with opposite functional effects</bp:TITLE>
+    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ellard, Sian</bp:AUTHORS>
+    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Flanagan, Sarah E</bp:AUTHORS>
+    <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Am. J. Hum. Genet. 81:375-82</bp:SOURCE>
+  </bp:publicationXref>
+  <bp:pathwayStep rdf:ID="pathwayStep4">
+    <bp:STEP-INTERACTIONS rdf:resource="#biochemicalReaction2" />
+    <bp:STEP-INTERACTIONS rdf:resource="#catalysis1" />
+  </bp:pathwayStep>
+  <bp:unificationXref rdf:ID="unificationXref16">
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Reactome Database ID Release 93</bp:DB>
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">5683177</bp:ID>
+    <bp:COMMENT rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Database identifier. Use this URL to connect to the web page of this instance in Reactome: http://www.reactome.org/cgi-bin/eventbrowser?DB=gk_current&amp;ID=5683177</bp:COMMENT>
+  </bp:unificationXref>
+  <bp:publicationXref rdf:ID="publicationXref8">
+    <bp:ID rdf:datatype="http://www.w3.org/2001/XMLSchema#string">20922570</bp:ID>
+    <bp:DB rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Pubmed</bp:DB>
+    <bp:YEAR rdf:datatype="http://www.w3.org/2001/XMLSchema#int">2010</bp:YEAR>
+    <bp:TITLE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Permanent neonatal diabetes due to activating mutations in ABCC8 and KCNJ11</bp:TITLE>
+    <bp:AUTHORS rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Ellard, Sian</bp:AUTHORS>
+    <bp:SOURCE rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Rev Endocr Metab Disord 11:193-8</bp:SOURCE>
+  </bp:publicationXref>
+</rdf:RDF>
+

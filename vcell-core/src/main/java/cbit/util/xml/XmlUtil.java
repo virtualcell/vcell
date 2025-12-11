@@ -29,7 +29,9 @@ import javax.xml.transform.*;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -139,7 +141,8 @@ private XmlUtil() {
 
 		builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
 		builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-
+		builder.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		builder.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 		builder.build(new StringReader(xml));
 	}
 
@@ -167,6 +170,8 @@ private XmlUtil() {
 			}
 			builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
 			builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+			builder.setFeature("http://xml.org/sax/features/external-general-entities", false);
+			builder.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 			sDoc = builder.build(reader);
 			// ----- Element root = null;
 	  		// ----- root = sDoc.getRootElement();
@@ -195,6 +200,8 @@ private XmlUtil() {
   		builder.setErrorHandler(errorHandler);
 		builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
 		builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		builder.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		builder.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 		try {
 	  		sDoc = builder.build(file);
 			// Element root = null;
@@ -224,6 +231,8 @@ private XmlUtil() {
   		builder.setErrorHandler(errorHandler);
 		builder.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true); // https://semgrep.dev/docs/cheat-sheets/java-xxe
 		builder.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+		builder.setFeature("http://xml.org/sax/features/external-general-entities", false);
+		builder.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
 		try {
 	  		sDoc = builder.build(inputStream);
 			// Element root = null;
@@ -244,9 +253,31 @@ private XmlUtil() {
 
     	return sDoc;
 	}
-	
 
-/**
+	// use this to repair malformed xml files, like trailing garbage
+	public static Document readSanitizedXML(File file) throws IOException, JDOMException {
+		try (InputStream rawInput = new FileInputStream(file)) {
+
+			byte[] rawBytes = rawInput.readAllBytes();		// read raw bytes
+
+			byte[] cleanedBytes = stripBOM(rawBytes);		// strip BOM if present
+
+			String xmlText = new String(cleanedBytes, StandardCharsets.UTF_8);	// trim leading junk before <?xml
+			int xmlStart = xmlText.indexOf("<?xml");
+			if (xmlStart > 0) {
+				xmlText = xmlText.substring(xmlStart);
+			}
+
+			// convert cleaned string back to InputStream
+			InputStream cleanedInput = new ByteArrayInputStream(xmlText.getBytes(StandardCharsets.UTF_8));
+
+			return XmlUtil.readXML(cleanedInput);
+		}
+	}
+
+
+
+	/**
  * This method is used to set the Default Namespace to the XML document represented by 'rootNode'.
  * Creation date: (5/8/2003 12:51:03 PM)
  * @return Element
@@ -405,4 +436,16 @@ public static Element setDefaultNamespace(Element rootNode, Namespace namespace)
 		XmlReader xmlReader = new XmlReader(true);
 		return xmlReader.getGeometry(xmlproducer.getXML(geometry));
 	}
+
+	private static byte[] stripBOM(byte[] bytes) {
+		// UTF-8 BOM: 0xEF,0xBB,0xBF
+		if (bytes.length >= 3 &&
+				bytes[0] == (byte)0xEF &&
+				bytes[1] == (byte)0xBB &&
+				bytes[2] == (byte)0xBF) {
+			return Arrays.copyOfRange(bytes, 3, bytes.length);
+		}
+		return bytes;
+	}
+
 }

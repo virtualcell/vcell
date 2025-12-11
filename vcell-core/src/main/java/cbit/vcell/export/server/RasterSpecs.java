@@ -11,12 +11,15 @@
 package cbit.vcell.export.server;
 
 
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 import java.io.Serializable;
 /**
  * This type was created in VisualAge.
  */
+@Schema(allOf = FormatSpecificSpecs.class, requiredProperties = {"specClass"})
 public class RasterSpecs extends FormatSpecificSpecs implements Serializable {
-	private int format;
+	private ExportEnums.RasterFormats format;
 	private boolean separateHeader;
 
 /**
@@ -25,7 +28,8 @@ public class RasterSpecs extends FormatSpecificSpecs implements Serializable {
  * @param format int
  * @param separateHeader boolean
  */
-public RasterSpecs(int format, boolean separateHeader) {
+public RasterSpecs(ExportEnums.RasterFormats format, boolean separateHeader) {
+	super("RasterSpecs");
 	this.format = format;
 	this.separateHeader = separateHeader;
 }
@@ -55,7 +59,7 @@ public boolean equals(java.lang.Object object) {
  * Creation date: (4/23/2004 11:34:51 AM)
  * @return int
  */
-public int getFormat() {
+public ExportEnums.RasterFormats getFormat() {
 	return format;
 }
 

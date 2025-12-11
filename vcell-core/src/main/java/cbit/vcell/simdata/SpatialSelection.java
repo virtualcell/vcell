@@ -9,6 +9,10 @@
  */
 
 package cbit.vcell.simdata;
+import cbit.vcell.export.server.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.eclipse.microprofile.openapi.annotations.media.DiscriminatorMapping;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.vcell.util.Coordinate;
 
 import cbit.vcell.geometry.CurveSelectionInfo;
@@ -19,14 +23,24 @@ import cbit.vcell.solvers.CartesianMesh;
  * Creation date: (2/26/2001 3:48:34 PM)
  * @author: Jim Schaff
  */
+@Schema(
+		discriminatorMapping = {
+				@DiscriminatorMapping(value = "Membrane", schema = SpatialSelectionMembrane.class),
+				@DiscriminatorMapping(value = "Contour", schema = SpatialSelectionContour.class),
+				@DiscriminatorMapping(value = "Volume", schema = SpatialSelectionVolume.class)
+		},
+		discriminatorProperty = "type",
+		requiredProperties = {"type"}
+)
 public abstract class SpatialSelection implements java.io.Serializable, org.vcell.util.Matchable {
 	
 	private CurveSelectionInfo curveSelectionInfo = null;
 	transient private CartesianMesh mesh = null;
 	private VariableType varType = null;
+	public final String type;
 
 	//
-	public class SSHelper {
+	public static class SSHelper {
 
 		VariableType varType;
 		Coordinate[]	meshCoords;
@@ -116,17 +130,18 @@ public abstract class SpatialSelection implements java.io.Serializable, org.vcel
 /**
  * SpatialSelection constructor comment.
  */
-protected SpatialSelection(CurveSelectionInfo argCurveSelectionInfo, VariableType argVarType, CartesianMesh argMesh){
+protected SpatialSelection(CurveSelectionInfo argCurveSelectionInfo, VariableType argVarType, CartesianMesh argMesh, String type){
 	if (argCurveSelectionInfo==null || argMesh==null || argVarType==null){
 		throw new IllegalArgumentException("null argument");
 	}
-	if (argCurveSelectionInfo.getType()==CurveSelectionInfo.TYPE_CURVE && !argCurveSelectionInfo.getCurve().isValid()){
+	if (argCurveSelectionInfo.getType()==CurveSelectionInfo.CurveSelectionType.CURVE.intValue && !argCurveSelectionInfo.getCurve().isValid()){
 		throw new IllegalArgumentException("curve is invalid");
 	}
 	
 	this.curveSelectionInfo = argCurveSelectionInfo;
 	this.mesh = argMesh;
 	this.varType = argVarType;
+	this.type = type;
 }
 
 
@@ -169,6 +184,7 @@ public cbit.vcell.geometry.CurveSelectionInfo getCurveSelectionInfo() {
  * @return int
  * @param u double
  */
+@JsonIgnore
 public abstract int getIndex(double u);
 
 
@@ -177,6 +193,7 @@ public abstract int getIndex(double u);
  * Creation date: (7/18/2001 3:14:22 PM)
  * @return double
  */
+@JsonIgnore
 public abstract double getLengthInMicrons();
 
 
@@ -185,6 +202,7 @@ public abstract double getLengthInMicrons();
  * Creation date: (4/2/2001 1:54:58 PM)
  * @return cbit.vcell.solvers.CartesianMesh
  */
+@JsonIgnore
 public cbit.vcell.solvers.CartesianMesh getMesh() {
 	return mesh;
 }
@@ -280,12 +298,12 @@ public String toString() {
 	cbit.vcell.geometry.Curve curve = this.curveSelectionInfo.getCurve();
 	if (isPoint()){
 		return "Point="+curve.hashCode()+" ["+((cbit.vcell.geometry.SinglePoint)curve).getBeginningCoordinate()+"]";
-	}else if(this.curveSelectionInfo.getType() == CurveSelectionInfo.TYPE_CURVE ||
-			 this.curveSelectionInfo.getType() == CurveSelectionInfo.TYPE_CONTROL_POINT){
+	}else if(this.curveSelectionInfo.getType() == CurveSelectionInfo.CurveSelectionType.CURVE.intValue ||
+			 this.curveSelectionInfo.getType() == CurveSelectionInfo.CurveSelectionType.CONTROL_POINT.intValue){
 		return "Curve="+curve.hashCode()+" ["+curve.getBeginningCoordinate()+" to "+curve.getEndingCoordinate()+"]";
-	}else if(this.curveSelectionInfo.getType() == CurveSelectionInfo.TYPE_SEGMENT){
+	}else if(this.curveSelectionInfo.getType() == CurveSelectionInfo.CurveSelectionType.SEGMENT.intValue){
 		return "Curve="+curve.hashCode()+" Segments ["+this.curveSelectionInfo.getSegmentCount()+"]";
-	}else if(this.curveSelectionInfo.getType() == CurveSelectionInfo.TYPE_U){
+	}else if(this.curveSelectionInfo.getType() == CurveSelectionInfo.CurveSelectionType.U.intValue){
 		return "Curve="+curve.hashCode()+" U ["+this.curveSelectionInfo.getU()+" to "+this.curveSelectionInfo.getUExtended()+"]";
 	}else{
 		return "Curve="+curve.hashCode();

@@ -28,25 +28,17 @@ public RpcDbServerProxy(UserLoginInfo userLoginInfo, VCMessageSession vcMessageS
 	super(userLoginInfo, vcMessageSession, VCellQueue.DbRequestQueue);
 }
 
-public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException{
-	return (TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>>)rpc("getSpecialUsers",new Object[0]);
+public TreeMap<SpecialUser.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException{
+	return (TreeMap<SpecialUser.SPECIAL_CLAIM,TreeMap<User,String>>)rpc("getSpecialUsers",new Object[0]);
 }
 
 public org.vcell.util.document.VCDocumentInfo curate(CurateSpec curateSpec) throws DataAccessException, ObjectNotFoundException {
 	return (org.vcell.util.document.VCDocumentInfo)rpc("curate",new Object[]{userLoginInfo.getUser(),curateSpec});
 }
 
-	public void deleteGeometry(org.vcell.util.document.KeyValue geometryKey) throws DataAccessException, ObjectNotFoundException {
-	rpc("deleteGeometry",new Object[]{userLoginInfo.getUser(), geometryKey});
-}
-
 
 public void deleteResultSetExport(org.vcell.util.document.KeyValue eleKey) throws DataAccessException {
 	rpc("deleteResultSetExport",new Object[]{userLoginInfo.getUser(), eleKey});
-}
-
-public void deleteVCImage(org.vcell.util.document.KeyValue imageKey) throws DataAccessException, ObjectNotFoundException {
-	rpc("deleteVCImage",new Object[]{userLoginInfo.getUser(), imageKey});
 }
 
 public cbit.vcell.numericstest.TestSuiteOPResults doTestSuiteOP(cbit.vcell.numericstest.TestSuiteOP tsop) throws DataAccessException {
@@ -72,18 +64,6 @@ public cbit.vcell.model.DBFormalSpecies[] getDatabaseSpecies(java.lang.String li
 
 public cbit.vcell.model.ReactionDescription[] getDictionaryReactions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
 	return (cbit.vcell.model.ReactionDescription[])rpc("getDictionaryReactions",new Object[]{userLoginInfo.getUser(), reactionQuerySpec});
-}
-
-public cbit.vcell.geometry.GeometryInfo getGeometryInfo(org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (cbit.vcell.geometry.GeometryInfo)rpc("getGeometryInfo",new Object[]{userLoginInfo.getUser(),key});
-}
-
-public cbit.vcell.geometry.GeometryInfo[] getGeometryInfos(boolean bAll) throws DataAccessException {
-	return (cbit.vcell.geometry.GeometryInfo[])rpc("getGeometryInfos",new Object[]{userLoginInfo.getUser(), new Boolean(bAll)});
-}
-
-public BigString getGeometryXML(org.vcell.util.document.KeyValue key) throws DataAccessException {
-	return (BigString)rpc("getGeometryXML",new Object[]{userLoginInfo.getUser(), key});
 }
 
 public org.vcell.util.Preference[] getPreferences() throws DataAccessException {
@@ -121,21 +101,6 @@ public cbit.vcell.numericstest.TestSuiteInfoNew[] getTestSuiteInfos() throws Dat
 
 public cbit.vcell.model.ReactionDescription[] getUserReactionDescriptions(ReactionQuerySpec reactionQuerySpec) throws DataAccessException {
 	return (cbit.vcell.model.ReactionDescription[])rpc("getUserReactionDescriptions",new Object[]{userLoginInfo.getUser(), reactionQuerySpec});
-}
-
-public cbit.image.VCImageInfo getVCImageInfo(org.vcell.util.document.KeyValue key) throws DataAccessException, ObjectNotFoundException {
-	return (cbit.image.VCImageInfo)rpc("getVCImageInfo",new Object[]{userLoginInfo.getUser(),key});
-}
-
-public cbit.image.VCImageInfo[] getVCImageInfos(boolean bAll)
-    throws DataAccessException {
-    return (cbit.image.VCImageInfo[]) rpc(
-        "getVCImageInfos",
-        new Object[] { userLoginInfo.getUser(), new Boolean(bAll)});
-}
-
-public BigString getVCImageXML(org.vcell.util.document.KeyValue key) throws DataAccessException {
-	return (BigString)rpc("getVCImageXML",new Object[]{userLoginInfo.getUser(), key});
 }
 
 public VCInfoContainer getVCInfoContainer() throws DataAccessException {
@@ -180,23 +145,8 @@ private Object rpc(String methodName, Object[] args) throws ObjectNotFoundExcept
 	}
 }
 
-public BigString saveGeometry(BigString geometryXML) throws DataAccessException, ObjectNotFoundException {
-	return (BigString)rpc("saveGeometry",new Object[]{userLoginInfo.getUser(), geometryXML});
-}
-
-public BigString saveGeometryAs(BigString geometryXML, java.lang.String newName) throws DataAccessException, ObjectNotFoundException {
-	return (BigString)rpc("saveGeometryAs",new Object[]{userLoginInfo.getUser(), geometryXML, newName});
-}
-
 public org.vcell.util.BigString saveSimulation(org.vcell.util.BigString simulationXML, boolean bForceIndependent) throws DataAccessException {
 	return (BigString)rpc("saveSimulation",new Object[]{userLoginInfo.getUser(), simulationXML, new Boolean(bForceIndependent)});
 }
 
-public BigString saveVCImage(BigString vcImageXML) throws DataAccessException, ObjectNotFoundException {
-	return (BigString)rpc("saveVCImage",new Object[]{userLoginInfo.getUser(), vcImageXML});
-}
-
-public BigString saveVCImageAs(BigString vcImageXML, java.lang.String newName) throws DataAccessException, ObjectNotFoundException {
-	return (BigString)rpc("saveVCImageAs",new Object[]{userLoginInfo.getUser(), vcImageXML, newName});
-}
 }

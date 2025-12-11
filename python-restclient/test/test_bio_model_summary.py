@@ -38,13 +38,11 @@ class TestBioModelSummary(unittest.TestCase):
         if include_optional:
             return BioModelSummary(
                 version = vcell_client.models.version.Version(
-                    version_key = vcell_client.models.key_value.KeyValue(
-                        value = 1.337, ), 
+                    version_key = '', 
                     annot = '', 
                     branch_id = 1.337, 
-                    branch_point_ref_key = vcell_client.models.key_value.KeyValue(
-                        value = 1.337, ), 
-                    date = 'Thu Mar 10 00:00:00 UTC 2022', 
+                    branch_point_ref_key = '', 
+                    date = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'), 
                     flag = vcell_client.models.version_flag.VersionFlag(
                         version_flag = 56, 
                         int_value = 56, 
@@ -57,7 +55,10 @@ class TestBioModelSummary(unittest.TestCase):
                     name = '', 
                     owner = vcell_client.models.user.User(
                         user_name = '', 
-                        key = , ), ),
+                        key = '', 
+                        my_specials = [
+                            'admins'
+                            ], ), ),
                 summary = vcell_client.models.bio_model_child_summary.BioModelChildSummary(
                     sc_names = [
                         ''
@@ -105,10 +106,8 @@ class TestBioModelSummary(unittest.TestCase):
                         ], ),
                 publication_information = [
                     vcell_client.models.publication_info.PublicationInfo(
-                        publication_key = vcell_client.models.key_value.KeyValue(
-                            value = 1.337, ), 
-                        version_key = vcell_client.models.key_value.KeyValue(
-                            value = 1.337, ), 
+                        publication_key = '', 
+                        version_key = '', 
                         title = '', 
                         authors = [
                             ''
@@ -121,9 +120,11 @@ class TestBioModelSummary(unittest.TestCase):
                         vc_document_type = 'BIOMODEL_DOC', 
                         user = vcell_client.models.user.User(
                             user_name = '', 
-                            key = , ), 
-                        the_hash_code = 56, 
-                        pub_date = 'Thu Mar 10 00:00:00 UTC 2022', )
+                            key = '', 
+                            my_specials = [
+                                'admins'
+                                ], ), 
+                        the_hash_code = 56, )
                     ],
                 v_cell_software_version = vcell_client.models.v_cell_software_version.VCellSoftwareVersion(
                     software_version_string = '', 
@@ -134,7 +135,6 @@ class TestBioModelSummary(unittest.TestCase):
                     minor_version = 56, 
                     patch_version = 56, 
                     build_int = 56, 
-                    site = 'alpha', 
                     description = '', )
             )
         else:

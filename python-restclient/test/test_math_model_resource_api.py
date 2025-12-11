@@ -39,6 +39,12 @@ class TestMathModelResourceApi(unittest.TestCase):
         """
         pass
 
+    def test_get_summary(self) -> None:
+        """Test case for get_summary
+
+        """
+        pass
+
     def test_get_vcml(self) -> None:
         """Test case for get_vcml
 

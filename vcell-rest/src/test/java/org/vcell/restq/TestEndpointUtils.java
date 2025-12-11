@@ -10,6 +10,7 @@ import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.xml.XMLSource;
@@ -26,6 +27,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.Publication;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
 import org.vcell.restq.db.AgroalConnectionFactory;
+import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -43,30 +45,22 @@ import java.util.Objects;
 
 public class TestEndpointUtils {
 
-    public static final String userAdminID = "2";
-    public static final String userNagiosID = "3";
-    public static final User vcellNagiosUser = new User("vcellNagios", new KeyValue(userNagiosID));
-    public static final User administratorUser = new User("Administrator", new KeyValue(userAdminID));
+    public static final String userAdminKey = "2";
+    public static final String userNagiosKey = "3";
+    public static final User vcellNagiosUser = new User("vcellNagios", new KeyValue(userNagiosKey));
+    public static final User administratorUser = new User("Administrator", new KeyValue(userAdminKey));
+    public static final User vcellSupportUser = new User("VCellSupport", new KeyValue("4"));
+    public static final User randomUser = new User("randomUser", new KeyValue("5"));
 
     public static final UserLoginInfoForMapping vcellNagiosUserLoginInfo = new UserLoginInfoForMapping().userID("vcellNagios").password("1700596370261");
     public static final UserLoginInfoForMapping administratorUserLoginInfo = new UserLoginInfoForMapping().userID("Administrator").password("1700596370260");
 
     public static void removeAllMappings(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
-        AdminDBTopLevel adminDBTopLevel = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()).getAdminDBTopLevel();
-        adminDBTopLevel.getUserIdentitiesFromUser(TestEndpointUtils.vcellNagiosUser, true).stream().forEach(userIdentity -> {
-            try {
-                adminDBTopLevel.deleteUserIdentity(userIdentity.user(), userIdentity.subject(), userIdentity.issuer(), true);
-            } catch (SQLException | DataAccessException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        adminDBTopLevel.getUserIdentitiesFromUser(TestEndpointUtils.administratorUser, true).stream().forEach(userIdentity -> {
-            try {
-                adminDBTopLevel.deleteUserIdentity(userIdentity.user(), userIdentity.subject(), userIdentity.issuer(), true);
-            } catch (SQLException | DataAccessException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        Object object = new Object();
+        Connection connection = agroalConnectionFactory.getConnection(object);
+        connection.prepareStatement("DELETE FROM VC_USERIDENTITY").execute();
+        connection.commit();
+        connection.close();
     }
 
     public static void mapApiClientToAdmin(ApiClient apiClient) throws ApiException {
@@ -160,6 +154,11 @@ public class TestEndpointUtils {
         return tmpFile;
     }
 
+    public static String getResourceString(String relativeResourcePath) throws IOException {
+        InputStream inputStream = Objects.requireNonNull(TestEndpointUtils.class.getResourceAsStream(relativeResourcePath));
+        return IOUtils.toString(inputStream);
+    }
+
     /**
      * Empties out all BioModel, Geometry, math, and simulation related tables
      */
@@ -180,11 +179,54 @@ public class TestEndpointUtils {
         connection.prepareStatement("DELETE FROM VC_MATHMODEL").execute();
         connection.prepareStatement("DELETE FROM VC_MATH").execute();
 
+        connection.prepareStatement("DELETE FROM VC_IMAGE").execute();
+        connection.prepareStatement("DELETE FROM VC_IMAGEDATA").execute();
+        connection.prepareStatement("DELETE FROM VC_IMAGEREGION").execute();
+
         connection.prepareStatement("DELETE FROM VC_GEOMETRY").execute();
         connection.prepareStatement("DELETE FROM VC_GEOMETRICREGION").execute();
         connection.prepareStatement("DELETE FROM VC_GEOMEXTENT").execute();
 
         connection.commit();
         new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory()).cleanupDatabase();
+        connection.close();
+    }
+
+    public static void insertAdminsSimulation(DatabaseServerImpl databaseServer, AgroalConnectionFactory connectionFactory) throws IOException, DataAccessException, SQLException {
+        InputStream xmlFile = TestEndpointUtils.class.getResourceAsStream("/simdata/Administrator/SimID_597714292_0__0.simtask.xml");
+        assert xmlFile != null;
+        String readXML = new String(xmlFile.readAllBytes());
+        xmlFile.close();
+        databaseServer.saveSimulation(administratorUser, new BigString(readXML), false);
+        Object object = new Object();
+        Connection connection = connectionFactory.getConnection(object);
+        connection.prepareStatement("UPDATE vc_simulation SET id = 597714292 WHERE name = 'FRAP'").executeUpdate();
+        connection.commit();
+        connection.close();
+    }
+
+
+    private final static String previousExportBaseDir =  PropertyLoader.getProperty(PropertyLoader.exportBaseDirInternalProperty, System.getProperty("java.io.tmpdir"));
+    private final static String previousSimDir = PropertyLoader.getProperty(PropertyLoader.primarySimDataDirInternalProperty, System.getProperty("java.io.tmpdir"));
+    private final static String previousN5Path = PropertyLoader.getProperty(PropertyLoader.n5DataDir, System.getProperty("java.io.tmpdir"));
+    private final static String previousExportURL = PropertyLoader.getProperty(PropertyLoader.exportBaseURLProperty, "http://localhost:8080/exports");
+    private final static String previousS3BaseURL = PropertyLoader.getProperty(PropertyLoader.exportBaseURLProperty, "http://localhost:8080/s3");
+
+    public static void setSystemProperties(String simDir, String exportBaseDir){
+        PropertyLoader.setProperty(PropertyLoader.primarySimDataDirInternalProperty, simDir);
+        PropertyLoader.setProperty(PropertyLoader.secondarySimDataDirInternalProperty, simDir);
+        PropertyLoader.setProperty(PropertyLoader.exportBaseDirInternalProperty, exportBaseDir);
+        PropertyLoader.setProperty(PropertyLoader.exportBaseURLProperty, previousExportURL);
+        PropertyLoader.setProperty(PropertyLoader.n5DataDir, exportBaseDir);
+        PropertyLoader.setProperty(PropertyLoader.s3ExportBaseURLProperty, previousS3BaseURL);
+    }
+
+    public static void restoreSystemProperties(){
+        PropertyLoader.setProperty(PropertyLoader.primarySimDataDirInternalProperty, previousSimDir);
+        PropertyLoader.setProperty(PropertyLoader.secondarySimDataDirInternalProperty, previousSimDir);
+        PropertyLoader.setProperty(PropertyLoader.exportBaseDirInternalProperty, previousExportBaseDir);
+        PropertyLoader.setProperty(PropertyLoader.n5DataDir, previousN5Path);
+        PropertyLoader.setProperty(PropertyLoader.exportBaseURLProperty, previousExportURL);
+        PropertyLoader.setProperty(PropertyLoader.s3ExportBaseURLProperty, previousS3BaseURL);
     }
 }

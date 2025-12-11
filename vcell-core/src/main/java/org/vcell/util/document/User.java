@@ -10,11 +10,16 @@
 
 package org.vcell.util.document;
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Comparator;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
+import org.eclipse.microprofile.openapi.annotations.media.DiscriminatorMapping;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
 import org.vcell.util.Immutable;
 import org.vcell.util.Matchable;
 
@@ -23,41 +28,14 @@ import org.vcell.util.Matchable;
  */
 @SuppressWarnings("serial")
 public class User implements java.io.Serializable, Matchable, Immutable {
-	private final static String PREVIOUS_DATABASE_VALUE_ADMIN = "special0";
-	private final static String PREVIOUS_DATABASE_VALUE_POWERUSER = "special1";
-	private final static String PREVIOUS_DATABASE_VALUE_PUBLICATION = "publication";
-
-	public enum SPECIAL_CLAIM {
-		admins/*special0*/,
-		powerUsers/*special1*/,
-		publicationEditors /*publication*/;  // users allowed to modify publications
-
-		public static SPECIAL_CLAIM fromDatabase(String databaseString){
-			if (databaseString.equals(PREVIOUS_DATABASE_VALUE_ADMIN)){
-				return admins;
-			}
-			if (databaseString.equals(PREVIOUS_DATABASE_VALUE_POWERUSER)){
-				return powerUsers;
-			}
-			if (databaseString.equals(PREVIOUS_DATABASE_VALUE_PUBLICATION)){
-				return publicationEditors;
-			}
-			return SPECIAL_CLAIM.valueOf(databaseString);
-		}
-
-		public String toDatabaseString(){
-			return name();
-		}
-	};//Must match a name 'special' column of 'vc_specialusers'// table
-
 	@JsonProperty
 	private String userName = null;
 	@JsonProperty
 	private KeyValue key = null;
 
+	protected SpecialUser.SPECIAL_CLAIM[] mySpecials;
 
 	public static final String VCellTestAccountName = "vcelltestaccount";
-
 	public static final User tempUser = new User("temp",new KeyValue("123"));
 	public static final String VCELL_GUEST_NAME = "vcellguest";
 	public static final User VCELL_GUEST = new User(VCELL_GUEST_NAME,new KeyValue("140220477"));
@@ -78,42 +56,11 @@ public class User implements java.io.Serializable, Matchable, Immutable {
 		return userName+":"+key;
 	}
 
-	public static class SpecialUser extends User implements Serializable, Matchable, Immutable{
-		private SPECIAL_CLAIM[] mySpecials;
-		public SpecialUser(String userid, KeyValue key,SPECIAL_CLAIM[] mySpecials) {
-			super(userid, key);
-			this.mySpecials = mySpecials;
-		}
-		public SPECIAL_CLAIM[] getMySpecials() {
-			return mySpecials;
-		}
-
-		public boolean isAdmin() {
-			return Arrays.asList(mySpecials).contains(SPECIAL_CLAIM.admins);
-		}
-
-		public boolean isPublisher() {
-			return Arrays.asList(mySpecials).contains(SPECIAL_CLAIM.publicationEditors);
-		}
-
-//		@Override
-//		public boolean compareEqual(Matchable obj) {
-//			// TODO Auto-generated method stub
-//			if(obj == this) {
-//				return true;
-//			}
-//			boolean superCompare = super.compareEqual(obj);
-//			if(obj instanceof SpecialUser) {
-//				return superCompare && Compare.isEqualOrNullStrict(((SpecialUser)obj).getMySpecials(), getMySpecials());
-//			}
-//			return superCompare;
-//		}
-	}
-
 	/**
  * User constructor comment.
  */
-public User(String userid, KeyValue key) {
+@JsonCreator
+public User(@JsonProperty("userName") String userid, @JsonProperty("key") KeyValue key) {
 	this.userName = userid;
 	this.key = key;
 }

@@ -19,6 +19,7 @@ import org.vcell.util.DataAccessException;
 import cbit.vcell.server.SimulationJobStatus.SchedulerStatus;
 import cbit.vcell.server.SimulationJobStatus.SimulationQueueID;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCellServerID;
 
@@ -455,9 +456,9 @@ public class SimulationStateMachine {
         //has checked the 'timeoutDisabledCheckBox' in SolverTaskDescriptionAdvancedPanel on the client-side GUI
         boolean isPowerUser = simulation.getSolverTaskDescription().isTimeoutDisabled();//Set from GUI
         if(isPowerUser) {//Check if user allowed to be power user for 'special1' long running sims (see User.SPECIALS and vc_specialusers table)
-            User.SpecialUser myUser = simulationDatabase.getUser(simulation.getVersion().getOwner().getName());
+            SpecialUser myUser = simulationDatabase.getUser(simulation.getVersion().getOwner().getName());
             //'powerUsers' (previously called 'special1') assigned to users by request to allow long running sims
-            isPowerUser = isPowerUser && Arrays.asList(myUser.getMySpecials()).contains(User.SPECIAL_CLAIM.powerUsers);
+            isPowerUser = isPowerUser && Arrays.asList(myUser.getMySpecials()).contains(SpecialUser.SPECIAL_CLAIM.powerUsers);
         }
         SimulationTask simulationTask = new SimulationTask(new SimulationJob(simulation, jobIndex, fieldDataIdentifierSpecs), taskID,null,isPowerUser);
 

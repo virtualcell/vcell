@@ -17,26 +17,23 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 
 import cbit.vcell.export.gui.*;
+import cbit.vcell.export.server.*;
 import org.vcell.client.logicalwindow.transition.LWJDialogDecorator;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.VCAssert;
 
-import cbit.vcell.export.server.ExportConstants;
-import cbit.vcell.export.server.ExportFormat;
-import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.export.server.TimeSpecs;
 import cbit.vcell.solvers.CartesianMesh;
 /**
  * Insert the type's description here.
  * Creation date: (1/18/00 12:04:07 PM)
  * @author: Ion I. Moraru
  */
-public class ExportSettings implements ASCIISettingsPanelListener, RasterSettingsPanelListener, ExportConstants, java.beans.PropertyChangeListener {
+public class ExportSettings implements ASCIISettingsPanelListener, RasterSettingsPanelListener, java.beans.PropertyChangeListener {
 	private ASCIISettingsPanel ivjASCIISettingsPanel1 = null;
 	protected transient java.beans.PropertyChangeSupport propertyChange;
 	private ExportFormat fieldSelectedFormat;
 	private cbit.vcell.export.server.FormatSpecificSpecs fieldFormatSpecificSpecs = null;
-	private int fieldSimDataType = 0;
+	private ExportEnums.SimulationDataType fieldSimDataType = ExportEnums.SimulationDataType.NO_DATA_AVAILABLE;
 	private JPanel ivjJDialogContentPane = null;
 	private JDialog ivjJDialogASCIISettings = null;
 	private JDialog ivjJDialogMediaSettings = null;
@@ -373,7 +370,7 @@ public ExportFormat getSelectedFormat() {
  * @return The simDataType property value.
  * @see #setSimDataType
  */
-public int getSimDataType() {
+public ExportEnums.SimulationDataType getSimDataType() {
 	return fieldSimDataType;
 }
 
@@ -576,8 +573,8 @@ public void setSelectedFormat(ExportFormat selectedFormat) {
  * @param simDataType The new value for the property.
  * @see #getSimDataType
  */
-public void setSimDataType(int simDataType) {
-	int oldValue = fieldSimDataType;
+public void setSimDataType(ExportEnums.SimulationDataType simDataType) {
+	ExportEnums.SimulationDataType oldValue = fieldSimDataType;
 	fieldSimDataType = simDataType;
 	firePropertyChange("simDataType", oldValue, simDataType);
 }
@@ -646,20 +643,4 @@ public boolean showFormatSpecificDialog(Frame reference,boolean selectionHasVolu
 	return isClosedOK();
 }
 
-/**
- * @param format should be FORMAT constant from {@link ExportConstants} 
- * @return true if selecting requires an options Dialog 
- */
-/*
-public static boolean requiresFollowOnDialog(ExportFormat format) {
-	switch (format) {
-	case FORMAT_UCD:
-	case FORMAT_VTK_UNSTRUCT:
-	case FORMAT_VTK_IMAGE:
-		return false;
-	default:	
-		return true;
-	}
-}
-*/
 }

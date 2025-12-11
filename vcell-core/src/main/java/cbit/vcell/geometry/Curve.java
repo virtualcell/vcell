@@ -10,6 +10,12 @@
 
 package cbit.vcell.geometry;
 
+import cbit.vcell.simdata.SpatialSelectionContour;
+import cbit.vcell.simdata.SpatialSelectionMembrane;
+import cbit.vcell.simdata.SpatialSelectionVolume;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.eclipse.microprofile.openapi.annotations.media.DiscriminatorMapping;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.vcell.util.Coordinate;
 /**
  * This type was created in VisualAge.
@@ -19,21 +25,36 @@ import org.vcell.util.Coordinate;
  *  decision reflecting immutability from the standpoint of
  *  the user.
  */
+
+@Schema(
+		discriminatorMapping = {
+				@DiscriminatorMapping(value = "AnalyticCurve", schema = AnalyticCurve.class),
+				@DiscriminatorMapping(value = "CompositeCurve", schema = CompositeCurve.class),
+				@DiscriminatorMapping(value = "ControlPointCurve", schema = ControlPointCurve.class)
+		},
+		discriminatorProperty = "type",
+		requiredProperties = {"type"}
+)
 public abstract class Curve implements org.vcell.util.Matchable, java.io.Serializable, Cloneable {
 	//Leave false by default
 	private boolean bClosed = false;
 	//
 	public static final int NONE_SELECTED = -1;
 	private static final int DEFAULT_NUM_SAMPLES_FLAG = 0;
+	@JsonIgnore
 	private transient int fieldNumSamplePoints = DEFAULT_NUM_SAMPLES_FLAG;
+	@JsonIgnore
 	private transient SampledCurve sampledCurve = null;
+	@JsonIgnore
 	private transient int sampledCurveID = 0;
 	private String description = null;
+	public final String type;
 
 /**
  * Curve constructor comment.
  */
-protected Curve() {
+protected Curve(String type) {
+	this.type = type;
 }
 /**
  * Insert the method's description here.

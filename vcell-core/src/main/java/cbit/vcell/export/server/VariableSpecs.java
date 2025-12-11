@@ -10,25 +10,27 @@
 
 package cbit.vcell.export.server;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.Serializable;
 import java.util.List;
 /**
  * This type was created in VisualAge.
  */
 public class VariableSpecs implements Serializable {
-	private String[] variableNames;
-	private int modeID;
-/**
- * This method was created in VisualAge.
- * @param variableNames java.lang.String[]
- * @param scaleSettings cbit.image.Range[]
- */
-public VariableSpecs(String[] variableNames, int modeID) {
+	private final String[] variableNames;
+	@JsonIgnore
+	private final ExportEnums.VariableMode modeID;
+
+public VariableSpecs(String[] variableNames, ExportEnums.VariableMode modeID) {
 	this.variableNames = variableNames;
 	this.modeID = modeID;
 }
 
-public VariableSpecs (List<String> variableNames, int modeID){
+@JsonCreator
+public VariableSpecs (@JsonProperty("variableNames") List<String> variableNames, @JsonProperty("mode") ExportEnums.VariableMode modeID){
 	this(variableNames.toArray(new String[0]), modeID);
 }
 
@@ -41,7 +43,7 @@ public VariableSpecs (List<String> variableNames, int modeID){
 public boolean equals(Object object) {
 	if (object instanceof VariableSpecs) {
 		VariableSpecs variableSpecs = (VariableSpecs)object;
-		if (modeID == variableSpecs.getModeID()) {
+		if (modeID == variableSpecs.getMode()) {
 			if (variableNames.length == variableSpecs.getVariableNames().length) {
 				for (int i = 0; i < variableNames.length; i++){
 					if (! variableNames[i].equals(variableSpecs.getVariableNames()[i])) {
@@ -54,13 +56,11 @@ public boolean equals(Object object) {
 	}
 	return false;
 }
-/**
- * This method was created in VisualAge.
- * @return int
- */
-public int getModeID() {
+
+public ExportEnums.VariableMode getMode() {
 	return modeID;
 }
+
 /**
  * This method was created in VisualAge.
  * @return java.lang.String[]

@@ -88,21 +88,24 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
                 if (table.getModel() instanceof ExportedDataTableModel) {
                     ExportedDataTableModel.TableData rowData = ((ExportedDataTableModel) table.getModel()).getValueAt(row);
                     if(rowData != null && rowData.applicationType != null) {
-                        SimulationContext.Application application = SimulationContext.Application.valueOf(rowData.applicationType);
-                        switch (application) {
-                            case NETWORK_DETERMINISTIC:
-                                setIcon(rowData.nonSpatial ? VCellIcons.appDetNonspIcon : VCellIcons.appDetSpatialIcon);
-                                break;
-                            case NETWORK_STOCHASTIC:
-                                setIcon(rowData.nonSpatial ? VCellIcons.appStoNonspIcon : VCellIcons.appStoSpatialIcon);
-                                break;
-                            case SPRINGSALAD:
-                                setIcon(rowData.nonSpatial ? null : VCellIcons.appSpringSaLaDSpatialIcon);
-                                break;
-                            case RULE_BASED_STOCHASTIC:
-                                setIcon(VCellIcons.appRbmNonspIcon);
-                                break;
-                    }
+                        if (!rowData.applicationType.equals("MATHMODEL_DOC")){
+                            SimulationContext.Application application = SimulationContext.Application.valueOf(rowData.applicationType);
+                            switch (application) {
+                                case NETWORK_DETERMINISTIC:
+                                    setIcon(rowData.nonSpatial ? VCellIcons.appDetNonspIcon : VCellIcons.appDetSpatialIcon);
+                                    break;
+                                case NETWORK_STOCHASTIC:
+                                    setIcon(rowData.nonSpatial ? VCellIcons.appStoNonspIcon : VCellIcons.appStoSpatialIcon);
+                                    break;
+                                case SPRINGSALAD:
+                                    setIcon(rowData.nonSpatial ? null : VCellIcons.appSpringSaLaDSpatialIcon);
+                                    break;
+                                case RULE_BASED_STOCHASTIC:
+                                    setIcon(VCellIcons.appRbmNonspIcon);
+                                    break;
+                            }
+                        }
+
 //                        setToolTipText(application.getDescription());
                         setHorizontalTextPosition(SwingConstants.RIGHT);
                     }

@@ -13,16 +13,19 @@ package cbit.vcell.export.server;
 import java.io.Serializable;
 
 import cbit.image.DisplayPreferences;
+import org.eclipse.microprofile.openapi.annotations.media.Schema;
+
 /**
  * This type was created in VisualAge.
  */
 @SuppressWarnings("serial")
+@Schema(allOf = FormatSpecificSpecs.class, requiredProperties = {"specClass"})
 public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
 	private double duration;
 	private boolean overlayMode;
 	private DisplayPreferences[] displayPreferences;
 	private ExportFormat encodingFormat;
-	private int mirroringType;
+	private ExportEnums.MirroringMethod mirroringType;
 	private int volVarMembrOutlineThickness;
 	private int imageScaling;
 	private int membraneScaling;
@@ -42,8 +45,9 @@ public class MovieSpecs extends FormatSpecificSpecs implements Serializable {
  * @param mirroring int
  */
 public MovieSpecs(double duration, boolean overlayMode, DisplayPreferences[] displayPreferences, ExportFormat format,
-		int mirroringType, int volVarMembrOutlineThickness,
-		int imageScaling,int membraneScaling,int meshMode,int compressionType,float compressionQuality,boolean bQTVR,int particleMode) {
+                  ExportEnums.MirroringMethod mirroringType, int volVarMembrOutlineThickness,
+                  int imageScaling, int membraneScaling, int meshMode, int compressionType, float compressionQuality, boolean bQTVR, int particleMode) {
+	super("MovieSpecs");
 	this.duration = duration;
 	this.overlayMode = overlayMode;
 	this.displayPreferences = displayPreferences;
@@ -130,7 +134,7 @@ public ExportFormat getEncodingFormat() {
  * This method was created in VisualAge.
  * @return int
  */
-public int getMirroringType() {
+public ExportEnums.MirroringMethod getMirroringType() {
 	return mirroringType;
 }
 /**

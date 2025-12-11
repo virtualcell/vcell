@@ -80,7 +80,7 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
-| **401** | Not Authorized |  -  |
+| **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **404** | Not found |  -  |
 | **500** | Data Access Exception |  -  |
@@ -151,7 +151,7 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **204** | No Content |  -  |
-| **401** | Not Authorized |  -  |
+| **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **404** | Not found |  -  |
 | **500** | Data Access Exception |  -  |
@@ -641,7 +641,7 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
+| **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **422** | Unprocessable content submitted |  -  |
 | **500** | Data Access Exception |  -  |
@@ -717,7 +717,7 @@ ApiResponse<**String**>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
-| **401** | Not Authorized |  -  |
+| **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **422** | Unprocessable content submitted |  -  |
 | **500** | Data Access Exception |  -  |

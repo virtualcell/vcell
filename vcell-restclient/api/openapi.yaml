@@ -51,7 +51,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -96,7 +96,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -141,7 +141,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -177,7 +177,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -241,7 +241,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "422":
@@ -316,7 +316,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -447,6 +447,101 @@ paths:
       tags:
       - Bio Model Resource
       x-accepts: application/json
+  /api/v1/export/N5:
+    post:
+      description: "Create an N5 (ImageJ compatible) export. The request must contain\
+        \ the standard export information, exportable data type, dataset name, and\
+        \ sub-volume specifications."
+      operationId: exportN5
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/N5ExportRequest'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                format: int64
+                type: integer
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Bad Request.
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          description: Not Allowed
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Unprocessable content submitted
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      tags:
+      - Export Resource
+      x-content-type: application/json
+      x-accepts: application/json
+  /api/v1/export/status:
+    get:
+      description: Get the status of your export jobs past the timestamp (Unix epoch
+        in seconds).
+      operationId: exportStatus
+      parameters:
+      - explode: true
+        in: query
+        name: timestamp
+        required: false
+        schema:
+          format: int64
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ExportEvent'
+                type: array
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          description: Not Allowed
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      tags:
+      - Export Resource
+      x-accepts: application/json
   /api/v1/fieldData/IDs:
     get:
       operationId: getAllIDs
@@ -464,7 +559,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -529,7 +624,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "422":
@@ -573,7 +668,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "422":
@@ -621,7 +716,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -673,7 +768,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "422":
@@ -713,7 +808,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -753,7 +848,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -793,7 +888,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "422":
@@ -840,7 +935,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -867,6 +962,214 @@ paths:
       tags:
       - Field Data Resource
       x-accepts: application/json
+  /api/v1/geometry:
+    post:
+      description: Save's VCML with <Geometry> as the root element.
+      operationId: saveGeometry
+      parameters:
+      - description: Name to save new Geometry under. Leave blank if re-saving existing
+          Geometry.
+        explode: true
+        in: query
+        name: newName
+        required: false
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/xml:
+            schema:
+              type: string
+        required: true
+      responses:
+        "200":
+          content:
+            application/xml:
+              schema:
+                type: string
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          description: Not Allowed
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Unprocessable content submitted
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      tags:
+      - Geometry Resource
+      x-content-type: application/xml
+      x-accepts: application/json
+  /api/v1/geometry/summaries:
+    get:
+      description: Return Geometry summaries.
+      operationId: getGeometrySummaries
+      parameters:
+      - description: Include Geometry summaries that are public and shared with the
+          requester. Default is true.
+        explode: true
+        in: query
+        name: includePublicAndShared
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/GeometrySummary'
+                type: array
+          description: OK
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - Geometry Resource
+      x-accepts: application/json
+  /api/v1/geometry/summary/{id}:
+    get:
+      description: "All of the text based information about a Geometry (dimensions,\
+        \ extent, origin, etc...), but not the actual Geometry itself."
+      operationId: getGeometrySummary
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeometrySummary'
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - Geometry Resource
+      x-accepts: application/json
+  /api/v1/geometry/{id}:
+    delete:
+      description: Remove specific Geometry.
+      operationId: deleteGeometry
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - Geometry Resource
+      x-accepts: application/json
+    get:
+      description: Returns <Geometry> as root element in VCML format.
+      operationId: getGeometryVCML
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/xml:
+              schema:
+                type: string
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - Geometry Resource
+      x-accepts: application/json
   /api/v1/helloworld:
     get:
       operationId: getHelloWorld
@@ -886,6 +1189,215 @@ paths:
       summary: Get hello world message.
       tags:
       - Hello World
+      x-accepts: application/json
+  /api/v1/image:
+    post:
+      description: Save the VCML representation of an image.
+      operationId: saveImageVCML
+      parameters:
+      - description: Name to save new ImageVCML under. Leave blank if re-saving existing
+          ImageVCML.
+        explode: true
+        in: query
+        name: name
+        required: false
+        schema:
+          type: string
+        style: form
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+        required: true
+      responses:
+        "200":
+          content:
+            text/plain:
+              schema:
+                type: string
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Unprocessable content submitted
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - VC Image Resource
+      x-content-type: application/json
+      x-accepts: application/json
+  /api/v1/image/summaries:
+    get:
+      description: Return Image summaries.
+      operationId: getImageSummaries
+      parameters:
+      - description: Include Image summaries that are public and shared with the requester.
+          Default is true.
+        explode: true
+        in: query
+        name: includePublicAndShared
+        required: false
+        schema:
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/VCImageSummary'
+                type: array
+          description: OK
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - VC Image Resource
+      x-accepts: application/json
+  /api/v1/image/summary/{id}:
+    get:
+      description: "All of the miscellaneous information about an Image (Extent, ISize,\
+        \ preview, etc...), but not the actual Image itself."
+      operationId: getImageSummary
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCImageSummary'
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - VC Image Resource
+      x-accepts: application/json
+  /api/v1/image/{id}:
+    delete:
+      description: Remove specific image VCML.
+      operationId: deleteImageVCML
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - VC Image Resource
+      x-accepts: application/json
+    get:
+      description: Get specific image VCML.
+      operationId: getImageVCML
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            text/plain:
+              schema:
+                type: string
+          description: OK
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Unprocessable content submitted
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      tags:
+      - VC Image Resource
       x-accepts: application/json
   /api/v1/mathModel:
     post:
@@ -928,7 +1440,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "422":
@@ -1043,7 +1555,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -1146,7 +1658,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -1186,7 +1698,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -1227,7 +1739,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -1350,7 +1862,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "500":
@@ -1434,7 +1946,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -1470,7 +1982,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "409":
@@ -1522,7 +2034,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "409":
@@ -1562,7 +2074,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "500":
           content:
             application/json:
@@ -1601,7 +2113,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           description: Not Allowed
         "404":
@@ -1646,7 +2158,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
-          description: Not Authorized
+          description: Not Authenticated
         "403":
           content:
             application/json:
@@ -1688,6 +2200,66 @@ components:
           type: string
         userKey:
           type: string
+      type: object
+    AnalyticCurve:
+      allOf:
+      - $ref: '#/components/schemas/Curve'
+      properties:
+        type:
+          default: AnalyticCurve
+          type: string
+        expX:
+          type: string
+        expY:
+          type: string
+        expZ:
+          type: string
+        offset:
+          $ref: '#/components/schemas/Coordinate'
+        analyticOffset:
+          $ref: '#/components/schemas/Coordinate'
+        defaultNumSamples:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        valid:
+          type: boolean
+      required:
+      - type
+      type: object
+    AnnotatedFunctionDTO:
+      example:
+        functionName: functionName
+        domain:
+          name: name
+        functionType:
+          defaultUnits: defaultUnits
+          name: name
+          typeName: typeName
+          defaultLabel: defaultLabel
+          units: units
+          label: label
+          type: 0
+          variableDomain: null
+          legacyWarn: true
+        error: error
+        category: null
+        functionExpression: functionExpression
+      properties:
+        functionName:
+          type: string
+        functionExpression:
+          type: string
+        error:
+          type: string
+        domain:
+          $ref: '#/components/schemas/Domain'
+        functionType:
+          $ref: '#/components/schemas/VariableType'
+        category:
+          $ref: '#/components/schemas/FunctionCategory'
       type: object
     Application:
       type: object
@@ -1929,6 +2501,9 @@ components:
           publicationKey: publicationKey
           pubmedid: pubmedid
           user:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           url: url
@@ -1945,6 +2520,9 @@ components:
           publicationKey: publicationKey
           pubmedid: pubmedid
           user:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           url: url
@@ -1957,6 +2535,9 @@ components:
         version:
           date: 2000-01-23T04:56:07.000+00:00
           owner:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           branchID: 0.8008281904610115
@@ -2016,6 +2597,195 @@ components:
         versionFlag:
           format: int32
           type: integer
+      type: object
+    CompositeCurve:
+      allOf:
+      - $ref: '#/components/schemas/Curve'
+      properties:
+        type:
+          default: CompositeCurve
+          type: string
+        fieldCurves:
+          items: {}
+          type: array
+        curveCount:
+          format: int32
+          type: integer
+        defaultNumSamples:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        valid:
+          type: boolean
+      required:
+      - type
+      type: object
+    ControlPointCurve:
+      allOf:
+      - $ref: '#/components/schemas/Curve'
+      discriminator:
+        mapping:
+          Spline: '#/components/schemas/Spline'
+          SampledCurve: '#/components/schemas/SampledCurve'
+        propertyName: type
+      properties:
+        type:
+          default: ControlPointCurve
+          type: string
+        controlPoints:
+          items:
+            $ref: '#/components/schemas/Coordinate'
+          type: array
+        controlPointCount:
+          format: int32
+          type: integer
+        controlPointsVector:
+          items:
+            $ref: '#/components/schemas/Coordinate'
+          type: array
+        maxControlPoints:
+          format: int32
+          type: integer
+        minControlPoints:
+          format: int32
+          type: integer
+        controlPointAddable:
+          type: boolean
+        valid:
+          type: boolean
+      required:
+      - type
+      type: object
+    Coordinate:
+      example:
+        x: 1.4658129805029452
+        "y": 5.962133916683182
+        z: 5.637376656633329
+      properties:
+        x:
+          format: double
+          type: number
+        "y":
+          format: double
+          type: number
+        z:
+          format: double
+          type: number
+      type: object
+    Curve:
+      discriminator:
+        mapping:
+          AnalyticCurve: '#/components/schemas/AnalyticCurve'
+          CompositeCurve: '#/components/schemas/CompositeCurve'
+          ControlPointCurve: '#/components/schemas/ControlPointCurve'
+        propertyName: type
+      example:
+        spatialLength: 3.616076749251911
+        valid: true
+        bClosed: true
+        endingCoordinate:
+          x: 1.4658129805029452
+          "y": 5.962133916683182
+          z: 5.637376656633329
+        description: description
+        beginningCoordinate:
+          x: 1.4658129805029452
+          "y": 5.962133916683182
+          z: 5.637376656633329
+        numSamplePoints: 7
+        closed: true
+        type: type
+        defaultNumSamples: 2
+        segmentCount: 9
+      properties:
+        bClosed:
+          type: boolean
+        description:
+          type: string
+        type:
+          type: string
+        beginningCoordinate:
+          $ref: '#/components/schemas/Coordinate'
+        defaultNumSamples:
+          format: int32
+          type: integer
+        endingCoordinate:
+          $ref: '#/components/schemas/Coordinate'
+        numSamplePoints:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        spatialLength:
+          format: double
+          type: number
+        closed:
+          type: boolean
+        valid:
+          type: boolean
+      required:
+      - type
+      type: object
+    CurveSelectionInfo:
+      example:
+        fieldControlPoint: 4
+        fieldCurve:
+          spatialLength: 3.616076749251911
+          valid: true
+          bClosed: true
+          endingCoordinate:
+            x: 1.4658129805029452
+            "y": 5.962133916683182
+            z: 5.637376656633329
+          description: description
+          beginningCoordinate:
+            x: 1.4658129805029452
+            "y": 5.962133916683182
+            z: 5.637376656633329
+          numSamplePoints: 7
+          closed: true
+          type: type
+          defaultNumSamples: 2
+          segmentCount: 9
+        fieldControlPointExtended: 1
+        fieldDirectionNegative: true
+        fieldSegment: 7
+        fieldUExtended: 1.0246457001441578
+        fieldType: 2
+        crossing: true
+        fieldU: 1.2315135367772556
+        fieldSegmentExtended: 6
+      properties:
+        fieldCurve:
+          $ref: '#/components/schemas/Curve'
+        fieldType:
+          format: int32
+          type: integer
+        fieldControlPoint:
+          format: int32
+          type: integer
+        fieldSegment:
+          format: int32
+          type: integer
+        fieldU:
+          format: double
+          type: number
+        fieldUExtended:
+          format: double
+          type: number
+        fieldControlPointExtended:
+          format: int32
+          type: integer
+        fieldSegmentExtended:
+          format: int32
+          type: integer
+        fieldDirectionNegative:
+          type: boolean
+        crossing:
+          type: boolean
       type: object
     DataIdentifier:
       example:
@@ -2116,6 +2886,74 @@ components:
         name:
           type: string
       type: object
+    ExportEvent:
+      example:
+        dataKey: dataKey
+        jobID: 6
+        dataIdString: dataIdString
+        format: format
+        humanReadableData:
+          numChannels: 5
+          applicationType: applicationType
+          differentParameterValues:
+          - differentParameterValues
+          - differentParameterValues
+          serverSavedFileName: serverSavedFileName
+          subVolume:
+            key: subVolume
+          zSlices: 1
+          simulationName: simulationName
+          biomodelName: biomodelName
+          nonSpatial: true
+          tSlices: 5
+          applicationName: applicationName
+        progress: 0.8008281904610115
+        location: location
+        eventType: null
+        user:
+          mySpecials:
+          - null
+          - null
+          userName: userName
+          key: key
+      properties:
+        eventType:
+          $ref: '#/components/schemas/ExportProgressType'
+        progress:
+          format: double
+          type: number
+        format:
+          type: string
+        location:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+        jobID:
+          format: int64
+          type: integer
+        dataKey:
+          type: string
+        dataIdString:
+          type: string
+        humanReadableData:
+          $ref: '#/components/schemas/HumanReadableExportData'
+      type: object
+    ExportProgressType:
+      enum:
+      - EXPORT_START
+      - EXPORT_COMPLETE
+      - EXPORT_FAILURE
+      - EXPORT_ASSEMBLING
+      - EXPORT_PROGRESS
+      type: string
+    ExportableDataType:
+      enum:
+      - ODE_VARIABLE_DATA
+      - PDE_VARIABLE_DATA
+      - PDE_PARTICLE_DATA
+      type: string
+    Expression:
+      type: string
     Extent:
       example:
         x: 7.061401241503109
@@ -2141,6 +2979,9 @@ components:
     ExternalDataIdentifier:
       example:
         owner:
+          mySpecials:
+          - null
+          - null
           userName: userName
           key: key
         dataKey: dataKey
@@ -2249,6 +3090,9 @@ components:
         annotation: annotation
         fieldDataID:
           owner:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           dataKey: dataKey
@@ -2287,8 +3131,8 @@ components:
           "y": 9.301444243932576
           z: 3.616076749251911
         times:
-        - 6.027456183070403
-        - 6.027456183070403
+        - 0.8008281904610115
+        - 0.8008281904610115
         origin:
           x: 5.962133916683182
           "y": 5.637376656633329
@@ -2348,6 +3192,216 @@ components:
             format: double
             type: number
           type: array
+      type: object
+    FunctionCategory:
+      enum:
+      - PREDEFINED
+      - OLDUSERDEFINED
+      - OUTPUTFUNCTION
+      - POSTPROCESSFUNCTION
+      type: string
+    GIFImage:
+      example:
+        size:
+          x: 2
+          "y": 4
+          z: 7
+        gifEncodedData: ""
+      properties:
+        gifEncodedData:
+          format: binary
+          type: string
+        size:
+          $ref: '#/components/schemas/ISize'
+      type: object
+    GeometryMode:
+      enum:
+      - GEOMETRY_SELECTIONS
+      - GEOMETRY_SLICE
+      - GEOMETRY_FULL
+      type: string
+    GeometrySpecDTO:
+      example:
+        selections:
+        - variableType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          varType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          smallestMeshCellDimensionLength: 7.457744773683766
+          closed: true
+          type: type
+          point: true
+          curveSelectionInfo:
+            fieldControlPoint: 4
+            fieldCurve:
+              spatialLength: 3.616076749251911
+              valid: true
+              bClosed: true
+              endingCoordinate:
+                x: 1.4658129805029452
+                "y": 5.962133916683182
+                z: 5.637376656633329
+              description: description
+              beginningCoordinate:
+                x: 1.4658129805029452
+                "y": 5.962133916683182
+                z: 5.637376656633329
+              numSamplePoints: 7
+              closed: true
+              type: type
+              defaultNumSamples: 2
+              segmentCount: 9
+            fieldControlPointExtended: 1
+            fieldDirectionNegative: true
+            fieldSegment: 7
+            fieldUExtended: 1.0246457001441578
+            fieldType: 2
+            crossing: true
+            fieldU: 1.2315135367772556
+            fieldSegmentExtended: 6
+        - variableType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          varType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          smallestMeshCellDimensionLength: 7.457744773683766
+          closed: true
+          type: type
+          point: true
+          curveSelectionInfo:
+            fieldControlPoint: 4
+            fieldCurve:
+              spatialLength: 3.616076749251911
+              valid: true
+              bClosed: true
+              endingCoordinate:
+                x: 1.4658129805029452
+                "y": 5.962133916683182
+                z: 5.637376656633329
+              description: description
+              beginningCoordinate:
+                x: 1.4658129805029452
+                "y": 5.962133916683182
+                z: 5.637376656633329
+              numSamplePoints: 7
+              closed: true
+              type: type
+              defaultNumSamples: 2
+              segmentCount: 9
+            fieldControlPointExtended: 1
+            fieldDirectionNegative: true
+            fieldSegment: 7
+            fieldUExtended: 1.0246457001441578
+            fieldType: 2
+            crossing: true
+            fieldU: 1.2315135367772556
+            fieldSegmentExtended: 6
+        sliceNumber: 4
+        geometryMode: null
+        axis: 1
+      properties:
+        selections:
+          items:
+            $ref: '#/components/schemas/SpatialSelection'
+          type: array
+        axis:
+          format: int32
+          type: integer
+        sliceNumber:
+          format: int32
+          type: integer
+        geometryMode:
+          $ref: '#/components/schemas/GeometryMode'
+      type: object
+    GeometrySummary:
+      example:
+        extent:
+          x: 7.061401241503109
+          "y": 9.301444243932576
+          z: 3.616076749251911
+        origin:
+          x: 5.962133916683182
+          "y": 5.637376656633329
+          z: 2.3021358869347655
+        imageRef: imageRef
+        dimension: 0
+        version:
+          date: 2000-01-23T04:56:07.000+00:00
+          owner:
+            mySpecials:
+            - null
+            - null
+            userName: userName
+            key: key
+          branchID: 0.8008281904610115
+          flag:
+            archived: true
+            current: true
+            intValue: 1
+            versionFlag: 6
+            published: true
+          groupAccess:
+            groupid: 5.962133916683182
+            description: description
+          name: name
+          annot: annot
+          branchPointRefKey: branchPointRefKey
+          versionKey: versionKey
+        softwareVersion:
+          vcellSite: null
+          patchVersion: 4
+          buildInt: 7
+          description: description
+          majorVersion: 3
+          minorVersion: 2
+          buildNumber: buildNumber
+          softwareVersionString: softwareVersionString
+          versionNumber: versionNumber
+      properties:
+        dimension:
+          format: int32
+          type: integer
+        origin:
+          $ref: '#/components/schemas/Origin'
+        extent:
+          $ref: '#/components/schemas/Extent'
+        imageRef:
+          type: string
+        version:
+          $ref: '#/components/schemas/Version'
+        softwareVersion:
+          $ref: '#/components/schemas/VCellSoftwareVersion'
       type: object
     GroupAccess:
       discriminator:
@@ -2441,6 +3495,53 @@ components:
           type: string
         batchSystemType:
           $ref: '#/components/schemas/BatchSystemType'
+      type: object
+    HumanReadableExportData:
+      example:
+        numChannels: 5
+        applicationType: applicationType
+        differentParameterValues:
+        - differentParameterValues
+        - differentParameterValues
+        serverSavedFileName: serverSavedFileName
+        subVolume:
+          key: subVolume
+        zSlices: 1
+        simulationName: simulationName
+        biomodelName: biomodelName
+        nonSpatial: true
+        tSlices: 5
+        applicationName: applicationName
+      properties:
+        simulationName:
+          type: string
+        biomodelName:
+          type: string
+        applicationName:
+          type: string
+        differentParameterValues:
+          items:
+            type: string
+          type: array
+        applicationType:
+          type: string
+        serverSavedFileName:
+          type: string
+        nonSpatial:
+          type: boolean
+        subVolume:
+          additionalProperties:
+            type: string
+          type: object
+        zSlices:
+          format: int32
+          type: integer
+        tSlices:
+          format: int32
+          type: integer
+        numChannels:
+          format: int32
+          type: integer
       type: object
     ISize:
       example:
@@ -2537,6 +3638,9 @@ components:
         version:
           date: 2000-01-23T04:56:07.000+00:00
           owner:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           branchID: 0.8008281904610115
@@ -2571,6 +3675,9 @@ components:
           publicationKey: publicationKey
           pubmedid: pubmedid
           user:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           url: url
@@ -2587,6 +3694,9 @@ components:
           publicationKey: publicationKey
           pubmedid: pubmedid
           user:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           url: url
@@ -2647,6 +3757,183 @@ components:
       - BIOMODEL
       - MATHMODEL
       type: string
+    N5ExportRequest:
+      example:
+        subVolume:
+          key: subVolume
+        exportableDataType: null
+        datasetName: datasetName
+        standardExportInformation:
+          contextName: contextName
+          simulationKey: simulationKey
+          variableSpecs:
+            mode: null
+            variableNames:
+            - variableNames
+            - variableNames
+          simulationName: simulationName
+          geometrySpecs:
+            selections:
+            - variableType:
+                defaultUnits: defaultUnits
+                name: name
+                typeName: typeName
+                defaultLabel: defaultLabel
+                units: units
+                label: label
+                type: 0
+                variableDomain: null
+                legacyWarn: true
+              varType:
+                defaultUnits: defaultUnits
+                name: name
+                typeName: typeName
+                defaultLabel: defaultLabel
+                units: units
+                label: label
+                type: 0
+                variableDomain: null
+                legacyWarn: true
+              smallestMeshCellDimensionLength: 7.457744773683766
+              closed: true
+              type: type
+              point: true
+              curveSelectionInfo:
+                fieldControlPoint: 4
+                fieldCurve:
+                  spatialLength: 3.616076749251911
+                  valid: true
+                  bClosed: true
+                  endingCoordinate:
+                    x: 1.4658129805029452
+                    "y": 5.962133916683182
+                    z: 5.637376656633329
+                  description: description
+                  beginningCoordinate:
+                    x: 1.4658129805029452
+                    "y": 5.962133916683182
+                    z: 5.637376656633329
+                  numSamplePoints: 7
+                  closed: true
+                  type: type
+                  defaultNumSamples: 2
+                  segmentCount: 9
+                fieldControlPointExtended: 1
+                fieldDirectionNegative: true
+                fieldSegment: 7
+                fieldUExtended: 1.0246457001441578
+                fieldType: 2
+                crossing: true
+                fieldU: 1.2315135367772556
+                fieldSegmentExtended: 6
+            - variableType:
+                defaultUnits: defaultUnits
+                name: name
+                typeName: typeName
+                defaultLabel: defaultLabel
+                units: units
+                label: label
+                type: 0
+                variableDomain: null
+                legacyWarn: true
+              varType:
+                defaultUnits: defaultUnits
+                name: name
+                typeName: typeName
+                defaultLabel: defaultLabel
+                units: units
+                label: label
+                type: 0
+                variableDomain: null
+                legacyWarn: true
+              smallestMeshCellDimensionLength: 7.457744773683766
+              closed: true
+              type: type
+              point: true
+              curveSelectionInfo:
+                fieldControlPoint: 4
+                fieldCurve:
+                  spatialLength: 3.616076749251911
+                  valid: true
+                  bClosed: true
+                  endingCoordinate:
+                    x: 1.4658129805029452
+                    "y": 5.962133916683182
+                    z: 5.637376656633329
+                  description: description
+                  beginningCoordinate:
+                    x: 1.4658129805029452
+                    "y": 5.962133916683182
+                    z: 5.637376656633329
+                  numSamplePoints: 7
+                  closed: true
+                  type: type
+                  defaultNumSamples: 2
+                  segmentCount: 9
+                fieldControlPointExtended: 1
+                fieldDirectionNegative: true
+                fieldSegment: 7
+                fieldUExtended: 1.0246457001441578
+                fieldType: 2
+                crossing: true
+                fieldU: 1.2315135367772556
+                fieldSegmentExtended: 6
+            sliceNumber: 4
+            geometryMode: null
+            axis: 1
+          outputContext:
+          - functionName: functionName
+            domain:
+              name: name
+            functionType:
+              defaultUnits: defaultUnits
+              name: name
+              typeName: typeName
+              defaultLabel: defaultLabel
+              units: units
+              label: label
+              type: 0
+              variableDomain: null
+              legacyWarn: true
+            error: error
+            category: null
+            functionExpression: functionExpression
+          - functionName: functionName
+            domain:
+              name: name
+            functionType:
+              defaultUnits: defaultUnits
+              name: name
+              typeName: typeName
+              defaultLabel: defaultLabel
+              units: units
+              label: label
+              type: 0
+              variableDomain: null
+              legacyWarn: true
+            error: error
+            category: null
+            functionExpression: functionExpression
+          simulationJob: 6
+          timeSpecs:
+            mode: null
+            endTimeIndex: 9
+            beginTimeIndex: 5
+            allTimes:
+            - 9.369310271410669
+            - 9.369310271410669
+      properties:
+        standardExportInformation:
+          $ref: '#/components/schemas/StandardExportInfo'
+        subVolume:
+          additionalProperties:
+            type: string
+          type: object
+        exportableDataType:
+          $ref: '#/components/schemas/ExportableDataType'
+        datasetName:
+          type: string
+      type: object
     Origin:
       example:
         x: 5.962133916683182
@@ -2755,6 +4042,9 @@ components:
         publicationKey: publicationKey
         pubmedid: pubmedid
         user:
+          mySpecials:
+          - null
+          - null
           userName: userName
           key: key
         url: url
@@ -2794,6 +4084,38 @@ components:
         theHashCode:
           format: int32
           type: integer
+      type: object
+    SPECIAL_CLAIM:
+      enum:
+      - admins
+      - powerUsers
+      - publicationEditors
+      - vcellSupport
+      type: string
+    SampledCurve:
+      allOf:
+      - $ref: '#/components/schemas/ControlPointCurve'
+      properties:
+        type:
+          default: SampledCurve
+          type: string
+        defaultNumSamples:
+          format: int32
+          type: integer
+        maxControlPoints:
+          format: int32
+          type: integer
+        minControlPoints:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        spatialLength:
+          format: double
+          type: number
+      required:
+      - type
       type: object
     SchedulerStatus:
       enum:
@@ -2860,6 +4182,9 @@ components:
             jobNumber: 0
         fieldVCSimID:
           owner:
+            mySpecials:
+            - null
+            - null
             userName: userName
             key: key
           simulationKey: simulationKey
@@ -2964,6 +4289,342 @@ components:
         modelType:
           $ref: '#/components/schemas/ModelType'
       type: object
+    SpatialSelection:
+      discriminator:
+        mapping:
+          Membrane: '#/components/schemas/SpatialSelectionMembrane'
+          Contour: '#/components/schemas/SpatialSelectionContour'
+          Volume: '#/components/schemas/SpatialSelectionVolume'
+        propertyName: type
+      example:
+        variableType:
+          defaultUnits: defaultUnits
+          name: name
+          typeName: typeName
+          defaultLabel: defaultLabel
+          units: units
+          label: label
+          type: 0
+          variableDomain: null
+          legacyWarn: true
+        varType:
+          defaultUnits: defaultUnits
+          name: name
+          typeName: typeName
+          defaultLabel: defaultLabel
+          units: units
+          label: label
+          type: 0
+          variableDomain: null
+          legacyWarn: true
+        smallestMeshCellDimensionLength: 7.457744773683766
+        closed: true
+        type: type
+        point: true
+        curveSelectionInfo:
+          fieldControlPoint: 4
+          fieldCurve:
+            spatialLength: 3.616076749251911
+            valid: true
+            bClosed: true
+            endingCoordinate:
+              x: 1.4658129805029452
+              "y": 5.962133916683182
+              z: 5.637376656633329
+            description: description
+            beginningCoordinate:
+              x: 1.4658129805029452
+              "y": 5.962133916683182
+              z: 5.637376656633329
+            numSamplePoints: 7
+            closed: true
+            type: type
+            defaultNumSamples: 2
+            segmentCount: 9
+          fieldControlPointExtended: 1
+          fieldDirectionNegative: true
+          fieldSegment: 7
+          fieldUExtended: 1.0246457001441578
+          fieldType: 2
+          crossing: true
+          fieldU: 1.2315135367772556
+          fieldSegmentExtended: 6
+      properties:
+        curveSelectionInfo:
+          $ref: '#/components/schemas/CurveSelectionInfo'
+        varType:
+          $ref: '#/components/schemas/VariableType'
+        type:
+          type: string
+        smallestMeshCellDimensionLength:
+          format: double
+          type: number
+        variableType:
+          $ref: '#/components/schemas/VariableType'
+        closed:
+          type: boolean
+        point:
+          type: boolean
+      required:
+      - type
+      type: object
+    SpatialSelectionContour:
+      allOf:
+      - $ref: '#/components/schemas/SpatialSelection'
+      properties:
+        type:
+          default: Contour
+          type: string
+        fieldSampledDataIndexes:
+          items:
+            format: int32
+            type: integer
+          type: array
+        indexSamples:
+          items:
+            format: int32
+            type: integer
+          type: array
+        sampledDataIndexes:
+          items:
+            format: int32
+            type: integer
+          type: array
+      required:
+      - type
+      type: object
+    SpatialSelectionMembrane:
+      allOf:
+      - $ref: '#/components/schemas/SpatialSelection'
+      properties:
+        type:
+          default: Membrane
+          type: string
+        fieldSampledDataIndexes:
+          items:
+            format: int32
+            type: integer
+          type: array
+        selectionSource:
+          $ref: '#/components/schemas/SampledCurve'
+      required:
+      - type
+      type: object
+    SpatialSelectionVolume:
+      allOf:
+      - $ref: '#/components/schemas/SpatialSelection'
+      properties:
+        type:
+          default: Volume
+          type: string
+        symmetric:
+          type: boolean
+      required:
+      - type
+      type: object
+    Spline:
+      allOf:
+      - $ref: '#/components/schemas/ControlPointCurve'
+      properties:
+        type:
+          default: Spline
+          type: string
+        defaultNumSamples:
+          format: int32
+          type: integer
+        maxControlPoints:
+          format: int32
+          type: integer
+        minControlPoints:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+      required:
+      - type
+      type: object
+    StandardExportInfo:
+      example:
+        contextName: contextName
+        simulationKey: simulationKey
+        variableSpecs:
+          mode: null
+          variableNames:
+          - variableNames
+          - variableNames
+        simulationName: simulationName
+        geometrySpecs:
+          selections:
+          - variableType:
+              defaultUnits: defaultUnits
+              name: name
+              typeName: typeName
+              defaultLabel: defaultLabel
+              units: units
+              label: label
+              type: 0
+              variableDomain: null
+              legacyWarn: true
+            varType:
+              defaultUnits: defaultUnits
+              name: name
+              typeName: typeName
+              defaultLabel: defaultLabel
+              units: units
+              label: label
+              type: 0
+              variableDomain: null
+              legacyWarn: true
+            smallestMeshCellDimensionLength: 7.457744773683766
+            closed: true
+            type: type
+            point: true
+            curveSelectionInfo:
+              fieldControlPoint: 4
+              fieldCurve:
+                spatialLength: 3.616076749251911
+                valid: true
+                bClosed: true
+                endingCoordinate:
+                  x: 1.4658129805029452
+                  "y": 5.962133916683182
+                  z: 5.637376656633329
+                description: description
+                beginningCoordinate:
+                  x: 1.4658129805029452
+                  "y": 5.962133916683182
+                  z: 5.637376656633329
+                numSamplePoints: 7
+                closed: true
+                type: type
+                defaultNumSamples: 2
+                segmentCount: 9
+              fieldControlPointExtended: 1
+              fieldDirectionNegative: true
+              fieldSegment: 7
+              fieldUExtended: 1.0246457001441578
+              fieldType: 2
+              crossing: true
+              fieldU: 1.2315135367772556
+              fieldSegmentExtended: 6
+          - variableType:
+              defaultUnits: defaultUnits
+              name: name
+              typeName: typeName
+              defaultLabel: defaultLabel
+              units: units
+              label: label
+              type: 0
+              variableDomain: null
+              legacyWarn: true
+            varType:
+              defaultUnits: defaultUnits
+              name: name
+              typeName: typeName
+              defaultLabel: defaultLabel
+              units: units
+              label: label
+              type: 0
+              variableDomain: null
+              legacyWarn: true
+            smallestMeshCellDimensionLength: 7.457744773683766
+            closed: true
+            type: type
+            point: true
+            curveSelectionInfo:
+              fieldControlPoint: 4
+              fieldCurve:
+                spatialLength: 3.616076749251911
+                valid: true
+                bClosed: true
+                endingCoordinate:
+                  x: 1.4658129805029452
+                  "y": 5.962133916683182
+                  z: 5.637376656633329
+                description: description
+                beginningCoordinate:
+                  x: 1.4658129805029452
+                  "y": 5.962133916683182
+                  z: 5.637376656633329
+                numSamplePoints: 7
+                closed: true
+                type: type
+                defaultNumSamples: 2
+                segmentCount: 9
+              fieldControlPointExtended: 1
+              fieldDirectionNegative: true
+              fieldSegment: 7
+              fieldUExtended: 1.0246457001441578
+              fieldType: 2
+              crossing: true
+              fieldU: 1.2315135367772556
+              fieldSegmentExtended: 6
+          sliceNumber: 4
+          geometryMode: null
+          axis: 1
+        outputContext:
+        - functionName: functionName
+          domain:
+            name: name
+          functionType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          error: error
+          category: null
+          functionExpression: functionExpression
+        - functionName: functionName
+          domain:
+            name: name
+          functionType:
+            defaultUnits: defaultUnits
+            name: name
+            typeName: typeName
+            defaultLabel: defaultLabel
+            units: units
+            label: label
+            type: 0
+            variableDomain: null
+            legacyWarn: true
+          error: error
+          category: null
+          functionExpression: functionExpression
+        simulationJob: 6
+        timeSpecs:
+          mode: null
+          endTimeIndex: 9
+          beginTimeIndex: 5
+          allTimes:
+          - 9.369310271410669
+          - 9.369310271410669
+      properties:
+        outputContext:
+          items:
+            $ref: '#/components/schemas/AnnotatedFunctionDTO'
+          type: array
+        contextName:
+          type: string
+        simulationName:
+          type: string
+        simulationKey:
+          type: string
+        simulationJob:
+          format: int32
+          type: integer
+        geometrySpecs:
+          $ref: '#/components/schemas/GeometrySpecDTO'
+        timeSpecs:
+          $ref: '#/components/schemas/TimeSpecs'
+        variableSpecs:
+          $ref: '#/components/schemas/VariableSpecs'
+      type: object
     Status:
       enum:
       - UNKNOWN
@@ -3004,6 +4665,9 @@ components:
               jobNumber: 0
           fieldVCSimID:
             owner:
+              mySpecials:
+              - null
+              - null
               userName: userName
               key: key
             simulationKey: simulationKey
@@ -3031,8 +4695,39 @@ components:
           format: double
           type: number
       type: object
+    TimeMode:
+      enum:
+      - TIME_POINT
+      - TIME_RANGE
+      type: string
+    TimeSpecs:
+      example:
+        mode: null
+        endTimeIndex: 9
+        beginTimeIndex: 5
+        allTimes:
+        - 9.369310271410669
+        - 9.369310271410669
+      properties:
+        beginTimeIndex:
+          format: int32
+          type: integer
+        endTimeIndex:
+          format: int32
+          type: integer
+        allTimes:
+          items:
+            format: double
+            type: number
+          type: array
+        mode:
+          $ref: '#/components/schemas/TimeMode'
+      type: object
     User:
       example:
+        mySpecials:
+        - null
+        - null
         userName: userName
         key: key
       properties:
@@ -3040,6 +4735,10 @@ components:
           type: string
         key:
           type: string
+        mySpecials:
+          items:
+            $ref: '#/components/schemas/SPECIAL_CLAIM'
+          type: array
       type: object
     UserIdentityJSONSafe:
       example:
@@ -3096,9 +4795,72 @@ components:
       - GEOMETRY_DOC
       - EXTERNALFILE_DOC
       type: string
+    VCImageSummary:
+      example:
+        extent:
+          x: 7.061401241503109
+          "y": 9.301444243932576
+          z: 3.616076749251911
+        preview:
+          size:
+            x: 2
+            "y": 4
+            z: 7
+          gifEncodedData: ""
+        size:
+          x: 2
+          "y": 4
+          z: 7
+        version:
+          date: 2000-01-23T04:56:07.000+00:00
+          owner:
+            mySpecials:
+            - null
+            - null
+            userName: userName
+            key: key
+          branchID: 0.8008281904610115
+          flag:
+            archived: true
+            current: true
+            intValue: 1
+            versionFlag: 6
+            published: true
+          groupAccess:
+            groupid: 5.962133916683182
+            description: description
+          name: name
+          annot: annot
+          branchPointRefKey: branchPointRefKey
+          versionKey: versionKey
+        softwareVersion:
+          vcellSite: null
+          patchVersion: 4
+          buildInt: 7
+          description: description
+          majorVersion: 3
+          minorVersion: 2
+          buildNumber: buildNumber
+          softwareVersionString: softwareVersionString
+          versionNumber: versionNumber
+      properties:
+        size:
+          $ref: '#/components/schemas/ISize'
+        extent:
+          $ref: '#/components/schemas/Extent'
+        version:
+          $ref: '#/components/schemas/Version'
+        preview:
+          $ref: '#/components/schemas/GIFImage'
+        softwareVersion:
+          $ref: '#/components/schemas/VCellSoftwareVersion'
+      type: object
     VCSimulationIdentifier:
       example:
         owner:
+          mySpecials:
+          - null
+          - null
           userName: userName
           key: key
         simulationKey: simulationKey
@@ -3171,6 +4933,26 @@ components:
       - VARIABLEDOMAIN_NONSPATIAL
       - VARIABLEDOMAIN_POINT
       type: string
+    VariableMode:
+      enum:
+      - VARIABLE_ONE
+      - VARIABLE_MULTI
+      - VARIABLE_ALL
+      type: string
+    VariableSpecs:
+      example:
+        mode: null
+        variableNames:
+        - variableNames
+        - variableNames
+      properties:
+        variableNames:
+          items:
+            type: string
+          type: array
+        mode:
+          $ref: '#/components/schemas/VariableMode'
+      type: object
     VariableType:
       example:
         defaultUnits: defaultUnits
@@ -3207,6 +4989,9 @@ components:
       example:
         date: 2000-01-23T04:56:07.000+00:00
         owner:
+          mySpecials:
+          - null
+          - null
           userName: userName
           key: key
         branchID: 0.8008281904610115

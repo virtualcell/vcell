@@ -177,12 +177,12 @@ public class N5ExporterTest {
         OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
 
 
-        VariableSpecs variableSpecs = new VariableSpecs(variables.stream().map(di -> di.getName()).toList(), Integer.parseInt(modelID));
-        GeometrySpecs geometrySpecs = new GeometrySpecs(new SpatialSelection[0], 0, 0, 0);
-        N5Specs n5Specs = new N5Specs(ExportConstants.DataType.PDE_VARIABLE_DATA, ExportFormat.N5, compressionLevel, modelID);
+        VariableSpecs variableSpecs = new VariableSpecs(variables.stream().map(di -> di.getName()).toList(), ExportEnums.VariableMode.VARIABLE_MULTI);
+        GeometrySpecs geometrySpecs = new GeometrySpecs(new SpatialSelection[0], 0, 0, ExportEnums.GeometryMode.GEOMETRY_SELECTIONS);
+        N5Specs n5Specs = new N5Specs(ExportEnums.ExportableDataType.PDE_VARIABLE_DATA, ExportFormat.N5, compressionLevel, modelID);
 
         double[] allTimes = dataServer.getDataSetTimes(testUser,n5Exporter.getVcDataID());
-        TimeSpecs timeSpecs = new TimeSpecs(startTimeIndex, endTimeIndex, allTimes, variableSpecs.getModeID());
+        TimeSpecs timeSpecs = new TimeSpecs(startTimeIndex, endTimeIndex, allTimes, ExportEnums.TimeMode.TIME_RANGE);
         ExportSpecs exportSpecs = new ExportSpecs(n5Exporter.getVcDataID(), ExportFormat.N5, variableSpecs, timeSpecs, geometrySpecs, n5Specs, "", "");
         HashMap<Integer, String> dummyMaskInfo = new HashMap<>(){{put(0, "Dummy"); put(1, "Test");}};
         exportSpecs.setExportMetaData(new HumanReadableExportData("", "", "", new ArrayList<>(), "", "", false, dummyMaskInfo));
@@ -200,7 +200,8 @@ public class N5ExporterTest {
         VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(simModel.simID), testUser);
 
         vcDataID = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);
-        n5Exporter = new N5Exporter(exportService, testUser, dataServer, vcDataID);
+        ClientExportEventController oldExportEventCreator = new ClientExportEventController();
+        n5Exporter = new N5Exporter(oldExportEventCreator, testUser, dataServer, vcDataID);
         dataIdentifiers = new ArrayList<>(Arrays.asList(dataServer.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), testUser, vcDataID)));
 
         modelMesh = dataServer.getMesh(testUser, vcDataID);

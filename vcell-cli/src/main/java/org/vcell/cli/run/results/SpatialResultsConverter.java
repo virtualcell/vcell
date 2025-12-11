@@ -99,7 +99,7 @@ public class SpatialResultsConverter extends ResultsConverter {
                 continue;
             }
 
-            List<String> shapes = new LinkedList<>();
+
             Hdf5SedmlResultsSpatial dataSourceSpatial = new Hdf5SedmlResultsSpatial();
             Hdf5SedmlResults hdf5DatasetWrapper = new Hdf5SedmlResults();
 
@@ -116,6 +116,7 @@ public class SpatialResultsConverter extends ResultsConverter {
             if (refinedDataSets.isEmpty()) continue; // Check if we have data to work with.
 
             for (DataSet dataSet : refinedDataSets){
+                List<String> shapes = new LinkedList<>();
                 ValueHolder<LazySBMLDataAccessor> dataSetValuesSource = dataSetValues.get(dataSet);
 
                 dataSourceSpatial.dataItems.put(report, dataSet, new LinkedList<>());

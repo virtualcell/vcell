@@ -1,5 +1,6 @@
 package org.vcell.api.client;
 
+import cbit.vcell.clientdb.ServerRejectedSaveException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.restclient.CustomObjectMapper;
@@ -13,7 +14,7 @@ import org.vcell.util.PermissionException;
 public class ExceptionHandler {
     private static final Logger logger = LogManager.getLogger(ExceptionHandler.class);
 
-    protected static Exception getProperException(ApiException e){
+    public static Exception getProperException(ApiException e){
         int httpCode = e.getCode();
         String message = e.getResponseBody() == null ? e.getMessage() : e.getResponseBody();
         String originalExceptionClassName = e.getClass().getSimpleName();
@@ -35,6 +36,8 @@ public class ExceptionHandler {
             case 500:
                 if (originalExceptionClassName.equals(DataAccessException.class.getSimpleName())){
                     return new DataAccessException(message, e);
+                } else if (originalExceptionClassName.equals(ServerRejectedSaveException.class.getSimpleName())){
+                    return new ServerRejectedSaveException(message);
                 } else return new RuntimeException(message, e);
             case 401, 403:
                 return new PermissionException(message);

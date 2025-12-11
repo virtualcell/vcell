@@ -24,10 +24,7 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCellServerID;
+import org.vcell.util.document.*;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -39,7 +36,7 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 	private AdminDBTopLevel adminDbTopLevel = null;
 	private DatabaseServerImpl databaseServerImpl = null;
 	private Map<KeyValue, FieldDataIdentifierSpec[]> simFieldDataIDMap = Collections.synchronizedMap(new HashMap<KeyValue, FieldDataIdentifierSpec[]>());
-	private Map<String, User.SpecialUser> userMap = Collections.synchronizedMap(new HashMap<>());
+	private Map<String, SpecialUser> userMap = Collections.synchronizedMap(new HashMap<>());
 	private SimpleJobStatusCache cache = null;
 	
 	public static class SimJobStatusKey {
@@ -301,8 +298,8 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 	}
 
 	@Override
-	public User.SpecialUser getUser(String username) throws DataAccessException, SQLException {
-		User.SpecialUser user = null;
+	public SpecialUser getUser(String username) throws DataAccessException, SQLException {
+		SpecialUser user = null;
 
 		synchronized(userMap) {
 			user = userMap.get(username);
@@ -323,7 +320,7 @@ public class SimulationDatabaseDirect implements SimulationDatabase {
 		return user;
 	}
 
-	public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>>  getSpecialUsers() throws DataAccessException, SQLException{
+	public TreeMap<SpecialUser.SPECIAL_CLAIM,TreeMap<User,String>>  getSpecialUsers() throws DataAccessException, SQLException{
 		return databaseServerImpl.getSpecialUsers(null);
 	}
 	

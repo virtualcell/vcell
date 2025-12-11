@@ -22,6 +22,7 @@ import json
 from typing import Any, ClassVar, Dict, List, Optional
 from pydantic import BaseModel, StrictStr
 from pydantic import Field
+from vcell_client.models.specialclaim import SPECIALCLAIM
 try:
     from typing import Self
 except ImportError:
@@ -33,7 +34,8 @@ class User(BaseModel):
     """ # noqa: E501
     user_name: Optional[StrictStr] = Field(default=None, alias="userName")
     key: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["userName", "key"]
+    my_specials: Optional[List[SPECIALCLAIM]] = Field(default=None, alias="mySpecials")
+    __properties: ClassVar[List[str]] = ["userName", "key", "mySpecials"]
 
     model_config = {
         "populate_by_name": True,
@@ -89,7 +91,8 @@ class User(BaseModel):
 
         _obj = cls.model_validate({
             "userName": obj.get("userName"),
-            "key": obj.get("key")
+            "key": obj.get("key"),
+            "mySpecials": obj.get("mySpecials")
         })
         return _obj
 

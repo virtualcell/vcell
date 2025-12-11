@@ -38,6 +38,8 @@ ${generatorCliImage} generate \
     -o /vcell/python-restclient \
     -c /vcell/tools/python-config.yaml
 
+./python-fix.sh
+
 docker run --rm -v ${parentDir}:/vcell \
 ${generatorCliImage} generate \
     -g typescript-angular \

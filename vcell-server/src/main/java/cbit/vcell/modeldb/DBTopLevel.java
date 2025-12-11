@@ -979,7 +979,7 @@ VCImage getVCImage(QueryHashtable dbc, User user, KeyValue key, boolean bCheckPe
  * @return cbit.vcell.modeldb.VCInfoContainer
  * @param user cbit.vcell.server.User
  */
-TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>>  getSpecialUsers(User user,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException{
+TreeMap<SpecialUser.SPECIAL_CLAIM,TreeMap<User,String>>  getSpecialUsers(User user,boolean bEnableRetry) throws DataAccessException, java.sql.SQLException{
 	
 	Object lock = new Object();
 	Connection con = conFactory.getConnection(lock);
@@ -2254,4 +2254,5 @@ public SimulationRep getSimulationRep(KeyValue simKey, boolean bEnableRetry) thr
 		conFactory.release(con,lock);
 	}
 }
+
 }

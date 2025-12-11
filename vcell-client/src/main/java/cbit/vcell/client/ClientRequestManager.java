@@ -33,10 +33,7 @@ import cbit.vcell.client.task.*;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.desktop.ClientLogin;
 import cbit.vcell.desktop.ImageDbTreePanel;
-import cbit.vcell.export.server.ExportFormat;
-import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.export.server.HumanReadableExportData;
-import cbit.vcell.export.server.N5Specs;
+import cbit.vcell.export.server.*;
 import cbit.vcell.field.FieldDataFileConversion;
 import cbit.vcell.field.io.FieldData;
 import cbit.vcell.geometry.*;
@@ -2677,7 +2674,6 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 
 				HumanReadableExportData humanReadableExportData = exportEvent.getHumanReadableData();
 				DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-				double[] exportTimes = exportEvent.getTimeSpecs().getAllTimes();
 
 
 				if (jsonFile.exists()){
@@ -2702,8 +2698,8 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 							humanReadableExportData.simulationName,
 							humanReadableExportData.applicationName,
 							humanReadableExportData.biomodelName,
-                            Arrays.toString(exportEvent.getVariableSpecs().getVariableNames()),
-							exportTimes[exportEvent.getTimeSpecs().getBeginTimeIndex()] + "/" + exportTimes[exportEvent.getTimeSpecs().getEndTimeIndex()],
+                            null,
+							null,
 							humanReadableExportData.differentParameterValues,
 							humanReadableExportData.serverSavedFileName,
 							humanReadableExportData.applicationType,
@@ -2819,7 +2815,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 	}
 
 	public void exportMessage(ExportEvent event) {
-		if (event.getEventTypeID() == ExportEvent.EXPORT_COMPLETE) {
+		if (event.getEventType() == ExportEnums.ExportProgressType.EXPORT_COMPLETE) {
 			// try to download the thing
 			if(!Objects.equals(event.getFormat(), ExportFormat.N5.name())){
 				downloadExportedData(getMdiManager().getFocusedWindowManager().getComponent(), getUserPreferences(), event);

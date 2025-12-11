@@ -16,6 +16,7 @@ import java.io.Serializable;
 
 import javax.imageio.ImageIO;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.vcell.util.ISize;
 
 /**
@@ -51,6 +52,7 @@ public byte[] getGifEncodedData() {
  * This method was created in VisualAge.
  * @return java.awt.Image
  */
+@JsonIgnore
 public BufferedImage getJavaImage() {
 	try {
 		return ImageIO.read(new ByteArrayInputStream(gifEncodedData));

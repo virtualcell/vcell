@@ -43,7 +43,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/SimulationStatusPersistentRecord'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -85,7 +85,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/StatusMessage'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -127,7 +127,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/StatusMessage'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -162,7 +162,7 @@ paths:
                 format: binary
                 type: string
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -222,7 +222,7 @@ paths:
               schema:
                 type: string
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -325,7 +325,7 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -411,6 +411,95 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/export/N5:
+    post:
+      tags:
+      - Export Resource
+      description: "Create an N5 (ImageJ compatible) export. The request must contain\
+        \ the standard export information, exportable data type, dataset name, and\
+        \ sub-volume specifications."
+      operationId: exportN5
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/N5ExportRequest'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                format: int64
+                type: integer
+        "400":
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+      security:
+      - openId:
+        - user
+  /api/v1/export/status:
+    get:
+      tags:
+      - Export Resource
+      description: Get the status of your export jobs past the timestamp (Unix epoch
+        in seconds).
+      operationId: exportStatus
+      parameters:
+      - name: timestamp
+        in: query
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExportEvent'
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+      security:
+      - openId:
+        - user
   /api/v1/fieldData/IDs:
     get:
       tags:
@@ -427,7 +516,7 @@ paths:
                 items:
                   $ref: '#/components/schemas/FieldDataReference'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -507,7 +596,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataSavedResults'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -557,7 +646,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldData'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -601,7 +690,7 @@ paths:
                 additionalProperties:
                   $ref: '#/components/schemas/ExternalDataIdentifier'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -656,7 +745,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataSavedResults'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -701,7 +790,7 @@ paths:
         "201":
           description: Created
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -737,7 +826,7 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -777,7 +866,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataSavedResults'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -820,7 +909,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataShape'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -846,6 +935,198 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/geometry:
+    post:
+      tags:
+      - Geometry Resource
+      description: Save's VCML with <Geometry> as the root element.
+      operationId: saveGeometry
+      parameters:
+      - name: newName
+        in: query
+        description: Name to save new Geometry under. Leave blank if re-saving existing
+          Geometry.
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/xml:
+            schema:
+              type: string
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/xml:
+              schema:
+                type: string
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+      security:
+      - openId:
+        - user
+  /api/v1/geometry/summaries:
+    get:
+      tags:
+      - Geometry Resource
+      description: Return Geometry summaries.
+      operationId: getGeometrySummaries
+      parameters:
+      - name: includePublicAndShared
+        in: query
+        description: Include Geometry summaries that are public and shared with the
+          requester. Default is true.
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GeometrySummary'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/geometry/summary/{id}:
+    get:
+      tags:
+      - Geometry Resource
+      description: "All of the text based information about a Geometry (dimensions,\
+        \ extent, origin, etc...), but not the actual Geometry itself."
+      operationId: getGeometrySummary
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeometrySummary'
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/geometry/{id}:
+    get:
+      tags:
+      - Geometry Resource
+      description: Returns <Geometry> as root element in VCML format.
+      operationId: getGeometryVCML
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/xml:
+              schema:
+                type: string
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+    delete:
+      tags:
+      - Geometry Resource
+      description: Remove specific Geometry.
+      operationId: deleteGeometry
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
   /api/v1/helloworld:
     get:
       tags:
@@ -861,6 +1142,199 @@ paths:
                 $ref: '#/components/schemas/HelloWorldMessage'
         "403":
           description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/image:
+    post:
+      tags:
+      - VC Image Resource
+      description: Save the VCML representation of an image.
+      operationId: saveImageVCML
+      parameters:
+      - name: name
+        in: query
+        description: Name to save new ImageVCML under. Leave blank if re-saving existing
+          ImageVCML.
+        required: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: string
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/image/summaries:
+    get:
+      tags:
+      - VC Image Resource
+      description: Return Image summaries.
+      operationId: getImageSummaries
+      parameters:
+      - name: includePublicAndShared
+        in: query
+        description: Include Image summaries that are public and shared with the requester.
+          Default is true.
+        required: false
+        schema:
+          type: boolean
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/VCImageSummary'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/image/summary/{id}:
+    get:
+      tags:
+      - VC Image Resource
+      description: "All of the miscellaneous information about an Image (Extent, ISize,\
+        \ preview, etc...), but not the actual Image itself."
+      operationId: getImageSummary
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCImageSummary'
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/image/{id}:
+    get:
+      tags:
+      - VC Image Resource
+      description: Get specific image VCML.
+      operationId: getImageVCML
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "422":
+          description: Unprocessable content submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+    delete:
+      tags:
+      - VC Image Resource
+      description: Remove specific image VCML.
+      operationId: deleteImageVCML
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
           content:
             application/json:
               schema:
@@ -900,7 +1374,7 @@ paths:
               schema:
                 type: string
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1041,7 +1515,7 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1103,7 +1577,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Publication'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1142,7 +1616,7 @@ paths:
                 format: int64
                 type: integer
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1204,7 +1678,7 @@ paths:
         "204":
           description: No Content
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1312,7 +1786,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AccesTokenRepresentationRecord'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1390,7 +1864,7 @@ paths:
               schema:
                 type: boolean
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1424,7 +1898,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserIdentityJSONSafe'
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1474,7 +1948,7 @@ paths:
         "200":
           description: "Successful, returning the identity"
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1509,7 +1983,7 @@ paths:
         "400":
           description: Invalid or expired magic link
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1541,7 +2015,7 @@ paths:
         "400":
           description: unable to process request
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1583,7 +2057,7 @@ paths:
               schema:
                 type: boolean
         "401":
-          description: Not Authorized
+          description: Not Authenticated
           content:
             application/json:
               schema:
@@ -1620,6 +2094,49 @@ components:
           type: string
         userKey:
           type: string
+    AnalyticCurve:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/Curve'
+      properties:
+        type:
+          default: AnalyticCurve
+          type: string
+        expX:
+          $ref: '#/components/schemas/Expression'
+        expY:
+          $ref: '#/components/schemas/Expression'
+        expZ:
+          $ref: '#/components/schemas/Expression'
+        offset:
+          $ref: '#/components/schemas/Coordinate'
+        analyticOffset:
+          $ref: '#/components/schemas/Coordinate'
+        defaultNumSamples:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        valid:
+          type: boolean
+    AnnotatedFunctionDTO:
+      type: object
+      properties:
+        functionName:
+          type: string
+        functionExpression:
+          type: string
+        error:
+          type: string
+        domain:
+          $ref: '#/components/schemas/Domain'
+        functionType:
+          $ref: '#/components/schemas/VariableType'
+        category:
+          $ref: '#/components/schemas/FunctionCategory'
     Application:
       type: object
     ApplicationInfo:
@@ -1761,6 +2278,145 @@ components:
         versionFlag:
           format: int32
           type: integer
+    CompositeCurve:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/Curve'
+      properties:
+        type:
+          default: CompositeCurve
+          type: string
+        fieldCurves:
+          type: array
+          items: {}
+        curveCount:
+          format: int32
+          type: integer
+        defaultNumSamples:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        valid:
+          type: boolean
+    ControlPointCurve:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/Curve'
+      properties:
+        type:
+          default: ControlPointCurve
+          type: string
+        controlPoints:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coordinate'
+        controlPointCount:
+          format: int32
+          type: integer
+        controlPointsVector:
+          type: array
+          items:
+            $ref: '#/components/schemas/Coordinate'
+        maxControlPoints:
+          format: int32
+          type: integer
+        minControlPoints:
+          format: int32
+          type: integer
+        controlPointAddable:
+          type: boolean
+        valid:
+          type: boolean
+      discriminator:
+        propertyName: type
+        mapping:
+          Spline: '#/components/schemas/Spline'
+          SampledCurve: '#/components/schemas/SampledCurve'
+    Coordinate:
+      type: object
+      properties:
+        x:
+          format: double
+          type: number
+        "y":
+          format: double
+          type: number
+        z:
+          format: double
+          type: number
+    Curve:
+      required:
+      - type
+      type: object
+      properties:
+        bClosed:
+          type: boolean
+        description:
+          type: string
+        type:
+          type: string
+        beginningCoordinate:
+          $ref: '#/components/schemas/Coordinate'
+        defaultNumSamples:
+          format: int32
+          type: integer
+        endingCoordinate:
+          $ref: '#/components/schemas/Coordinate'
+        numSamplePoints:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        spatialLength:
+          format: double
+          type: number
+        closed:
+          type: boolean
+        valid:
+          type: boolean
+      discriminator:
+        propertyName: type
+        mapping:
+          AnalyticCurve: '#/components/schemas/AnalyticCurve'
+          CompositeCurve: '#/components/schemas/CompositeCurve'
+          ControlPointCurve: '#/components/schemas/ControlPointCurve'
+    CurveSelectionInfo:
+      type: object
+      properties:
+        fieldCurve:
+          $ref: '#/components/schemas/Curve'
+        fieldType:
+          format: int32
+          type: integer
+        fieldControlPoint:
+          format: int32
+          type: integer
+        fieldSegment:
+          format: int32
+          type: integer
+        fieldU:
+          format: double
+          type: number
+        fieldUExtended:
+          format: double
+          type: number
+        fieldControlPointExtended:
+          format: int32
+          type: integer
+        fieldSegmentExtended:
+          format: int32
+          type: integer
+        fieldDirectionNegative:
+          type: boolean
+        crossing:
+          type: boolean
     DataIdentifier:
       type: object
       properties:
@@ -1840,6 +2496,45 @@ components:
       properties:
         name:
           type: string
+    ExportEvent:
+      type: object
+      properties:
+        eventType:
+          $ref: '#/components/schemas/ExportProgressType'
+        progress:
+          format: double
+          type: number
+        format:
+          type: string
+        location:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+        jobID:
+          format: int64
+          type: integer
+        dataKey:
+          $ref: '#/components/schemas/KeyValue'
+        dataIdString:
+          type: string
+        humanReadableData:
+          $ref: '#/components/schemas/HumanReadableExportData'
+    ExportProgressType:
+      enum:
+      - EXPORT_START
+      - EXPORT_COMPLETE
+      - EXPORT_FAILURE
+      - EXPORT_ASSEMBLING
+      - EXPORT_PROGRESS
+      type: string
+    ExportableDataType:
+      enum:
+      - ODE_VARIABLE_DATA
+      - PDE_VARIABLE_DATA
+      - PDE_PARTICLE_DATA
+      type: string
+    Expression:
+      type: string
     Extent:
       type: object
       properties:
@@ -1951,6 +2646,58 @@ components:
           items:
             format: double
             type: number
+    FunctionCategory:
+      enum:
+      - PREDEFINED
+      - OLDUSERDEFINED
+      - OUTPUTFUNCTION
+      - POSTPROCESSFUNCTION
+      type: string
+    GIFImage:
+      type: object
+      properties:
+        gifEncodedData:
+          format: binary
+          type: string
+        size:
+          $ref: '#/components/schemas/ISize'
+    GeometryMode:
+      enum:
+      - GEOMETRY_SELECTIONS
+      - GEOMETRY_SLICE
+      - GEOMETRY_FULL
+      type: string
+    GeometrySpecDTO:
+      type: object
+      properties:
+        selections:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpatialSelection'
+        axis:
+          format: int32
+          type: integer
+        sliceNumber:
+          format: int32
+          type: integer
+        geometryMode:
+          $ref: '#/components/schemas/GeometryMode'
+    GeometrySummary:
+      type: object
+      properties:
+        dimension:
+          format: int32
+          type: integer
+        origin:
+          $ref: '#/components/schemas/Origin'
+        extent:
+          $ref: '#/components/schemas/Extent'
+        imageRef:
+          $ref: '#/components/schemas/KeyValue'
+        version:
+          $ref: '#/components/schemas/Version'
+        softwareVersion:
+          $ref: '#/components/schemas/VCellSoftwareVersion'
     GroupAccess:
       required:
       - groupid
@@ -2035,6 +2782,38 @@ components:
           type: string
         batchSystemType:
           $ref: '#/components/schemas/BatchSystemType'
+    HumanReadableExportData:
+      type: object
+      properties:
+        simulationName:
+          type: string
+        biomodelName:
+          type: string
+        applicationName:
+          type: string
+        differentParameterValues:
+          type: array
+          items:
+            type: string
+        applicationType:
+          type: string
+        serverSavedFileName:
+          type: string
+        nonSpatial:
+          type: boolean
+        subVolume:
+          type: object
+          additionalProperties:
+            type: string
+        zSlices:
+          format: int32
+          type: integer
+        tSlices:
+          format: int32
+          type: integer
+        numChannels:
+          format: int32
+          type: integer
     ISize:
       type: object
       properties:
@@ -2134,6 +2913,19 @@ components:
       - BIOMODEL
       - MATHMODEL
       type: string
+    N5ExportRequest:
+      type: object
+      properties:
+        standardExportInformation:
+          $ref: '#/components/schemas/StandardExportInfo'
+        subVolume:
+          type: object
+          additionalProperties:
+            type: string
+        exportableDataType:
+          $ref: '#/components/schemas/ExportableDataType'
+        datasetName:
+          type: string
     Origin:
       type: object
       properties:
@@ -2221,6 +3013,38 @@ components:
         theHashCode:
           format: int32
           type: integer
+    SPECIAL_CLAIM:
+      enum:
+      - admins
+      - powerUsers
+      - publicationEditors
+      - vcellSupport
+      type: string
+    SampledCurve:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/ControlPointCurve'
+      properties:
+        type:
+          default: SampledCurve
+          type: string
+        defaultNumSamples:
+          format: int32
+          type: integer
+        maxControlPoints:
+          format: int32
+          type: integer
+        minControlPoints:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+        spatialLength:
+          format: double
+          type: number
     SchedulerStatus:
       enum:
       - WAITING
@@ -2314,6 +3138,130 @@ components:
           type: string
         modelType:
           $ref: '#/components/schemas/ModelType'
+    SpatialSelection:
+      required:
+      - type
+      type: object
+      properties:
+        curveSelectionInfo:
+          $ref: '#/components/schemas/CurveSelectionInfo'
+        varType:
+          $ref: '#/components/schemas/VariableType'
+        type:
+          type: string
+        smallestMeshCellDimensionLength:
+          format: double
+          type: number
+        variableType:
+          $ref: '#/components/schemas/VariableType'
+        closed:
+          type: boolean
+        point:
+          type: boolean
+      discriminator:
+        propertyName: type
+        mapping:
+          Membrane: '#/components/schemas/SpatialSelectionMembrane'
+          Contour: '#/components/schemas/SpatialSelectionContour'
+          Volume: '#/components/schemas/SpatialSelectionVolume'
+    SpatialSelectionContour:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/SpatialSelection'
+      properties:
+        type:
+          default: Contour
+          type: string
+        fieldSampledDataIndexes:
+          type: array
+          items:
+            format: int32
+            type: integer
+        indexSamples:
+          type: array
+          items:
+            format: int32
+            type: integer
+        sampledDataIndexes:
+          type: array
+          items:
+            format: int32
+            type: integer
+    SpatialSelectionMembrane:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/SpatialSelection'
+      properties:
+        type:
+          default: Membrane
+          type: string
+        fieldSampledDataIndexes:
+          type: array
+          items:
+            format: int32
+            type: integer
+        selectionSource:
+          $ref: '#/components/schemas/SampledCurve'
+    SpatialSelectionVolume:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/SpatialSelection'
+      properties:
+        type:
+          default: Volume
+          type: string
+        symmetric:
+          type: boolean
+    Spline:
+      required:
+      - type
+      type: object
+      allOf:
+      - $ref: '#/components/schemas/ControlPointCurve'
+      properties:
+        type:
+          default: Spline
+          type: string
+        defaultNumSamples:
+          format: int32
+          type: integer
+        maxControlPoints:
+          format: int32
+          type: integer
+        minControlPoints:
+          format: int32
+          type: integer
+        segmentCount:
+          format: int32
+          type: integer
+    StandardExportInfo:
+      type: object
+      properties:
+        outputContext:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnnotatedFunctionDTO'
+        contextName:
+          type: string
+        simulationName:
+          type: string
+        simulationKey:
+          type: string
+        simulationJob:
+          format: int32
+          type: integer
+        geometrySpecs:
+          $ref: '#/components/schemas/GeometrySpecDTO'
+        timeSpecs:
+          $ref: '#/components/schemas/TimeSpecs'
+        variableSpecs:
+          $ref: '#/components/schemas/VariableSpecs'
     Status:
       enum:
       - UNKNOWN
@@ -2342,6 +3290,27 @@ components:
         timepoint:
           format: double
           type: number
+    TimeMode:
+      enum:
+      - TIME_POINT
+      - TIME_RANGE
+      type: string
+    TimeSpecs:
+      type: object
+      properties:
+        beginTimeIndex:
+          format: int32
+          type: integer
+        endTimeIndex:
+          format: int32
+          type: integer
+        allTimes:
+          type: array
+          items:
+            format: double
+            type: number
+        mode:
+          $ref: '#/components/schemas/TimeMode'
     User:
       type: object
       properties:
@@ -2349,6 +3318,10 @@ components:
           type: string
         key:
           $ref: '#/components/schemas/KeyValue'
+        mySpecials:
+          type: array
+          items:
+            $ref: '#/components/schemas/SPECIAL_CLAIM'
     UserIdentityJSONSafe:
       type: object
       properties:
@@ -2389,6 +3362,19 @@ components:
       - GEOMETRY_DOC
       - EXTERNALFILE_DOC
       type: string
+    VCImageSummary:
+      type: object
+      properties:
+        size:
+          $ref: '#/components/schemas/ISize'
+        extent:
+          $ref: '#/components/schemas/Extent'
+        version:
+          $ref: '#/components/schemas/Version'
+        preview:
+          $ref: '#/components/schemas/GIFImage'
+        softwareVersion:
+          $ref: '#/components/schemas/VCellSoftwareVersion'
     VCSimulationIdentifier:
       type: object
       properties:
@@ -2448,6 +3434,21 @@ components:
       - VARIABLEDOMAIN_NONSPATIAL
       - VARIABLEDOMAIN_POINT
       type: string
+    VariableMode:
+      enum:
+      - VARIABLE_ONE
+      - VARIABLE_MULTI
+      - VARIABLE_ALL
+      type: string
+    VariableSpecs:
+      type: object
+      properties:
+        variableNames:
+          type: array
+          items:
+            type: string
+        mode:
+          $ref: '#/components/schemas/VariableMode'
     VariableType:
       type: object
       properties:

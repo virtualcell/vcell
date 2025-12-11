@@ -18,7 +18,14 @@ import org.vcell.pathway.persistence.BiopaxProxy.RdfObjectProxy;
 public class SequenceSite extends SequenceLocation {
 	private String positionStatus;
 	private Integer sequencePosition;
-	
+
+	public SequenceSite() {
+	}
+	public SequenceSite(Integer sequencePosition, String positionStatus) {
+		this.sequencePosition = sequencePosition;
+		this.positionStatus = positionStatus;
+	}
+
 	public String getPositionStatus() {
 		return positionStatus;
 	}
@@ -36,11 +43,12 @@ public class SequenceSite extends SequenceLocation {
 	public void replace(RdfObjectProxy objectProxy, BioPaxObject concreteObject){
 		super.replace(objectProxy, concreteObject);
 	}
-	
+	@Override
 	public void replace(HashMap<String, BioPaxObject> resourceMap, HashSet<BioPaxObject> replacedBPObjects){
 		super.replace(resourceMap, replacedBPObjects);
 	}
-	
+
+	@Override
 	public void showChildren(StringBuffer sb, int level){
 		super.showChildren(sb, level);
 		printString(sb, "positionStatus",positionStatus,level);

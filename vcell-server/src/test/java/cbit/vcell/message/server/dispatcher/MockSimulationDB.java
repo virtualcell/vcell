@@ -18,8 +18,8 @@ public class MockSimulationDB implements SimulationDatabase{
 
     private HashMap<String, ArrayList<SimulationJobStatus>> dbTable = new HashMap<>();
 
-    public static User.SpecialUser specialAdmin = new User.SpecialUser("Tom", new KeyValue("999"), new User.SPECIAL_CLAIM[User.SPECIAL_CLAIM.admins.ordinal()]);
-    public static User.SpecialUser powerUser = new User.SpecialUser("Tim", new KeyValue("2"), new User.SPECIAL_CLAIM[]{User.SpecialUser.SPECIAL_CLAIM.powerUsers});
+    public static SpecialUser specialAdmin = new SpecialUser("Tom", new KeyValue("999"), new SpecialUser.SPECIAL_CLAIM[SpecialUser.SPECIAL_CLAIM.admins.ordinal()]);
+    public static SpecialUser powerUser = new SpecialUser("Tim", new KeyValue("2"), new SpecialUser.SPECIAL_CLAIM[]{SpecialUser.SPECIAL_CLAIM.powerUsers});
 
     private final HashMap<String, User> users = new HashMap<>(){
         {put(specialAdmin.getName(), specialAdmin); put(DispatcherTestUtils.alice.getName(), DispatcherTestUtils.alice);
@@ -149,21 +149,21 @@ public class MockSimulationDB implements SimulationDatabase{
     }
 
     @Override
-    public User.SpecialUser getUser(String username) throws DataAccessException, SQLException {
+    public SpecialUser getUser(String username) throws DataAccessException, SQLException {
         User user = users.get(username);
-        if (user instanceof User.SpecialUser){
-            return (User.SpecialUser) user;
+        if (user instanceof SpecialUser){
+            return (SpecialUser) user;
         }
-        User.SpecialUser specialUser = new User.SpecialUser(user.getName(), user.getID(), new User.SPECIAL_CLAIM[]{});
+        SpecialUser specialUser = new SpecialUser(user.getName(), user.getID(), new SpecialUser.SPECIAL_CLAIM[]{});
         return specialUser;
     }
 
     @Override
-    public TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> getSpecialUsers() throws DataAccessException, SQLException {
-        TreeMap<User.SPECIAL_CLAIM, TreeMap<User, String>> map = new TreeMap<>();
+    public TreeMap<SpecialUser.SPECIAL_CLAIM, TreeMap<User, String>> getSpecialUsers() throws DataAccessException, SQLException {
+        TreeMap<SpecialUser.SPECIAL_CLAIM, TreeMap<User, String>> map = new TreeMap<>();
         TreeMap<User, String> subMap = new TreeMap<>(new User.UserNameComparator());
         subMap.put(specialAdmin, "f");
-        map.put(User.SPECIAL_CLAIM.admins, subMap);
+        map.put(SpecialUser.SPECIAL_CLAIM.admins, subMap);
         return map;
     }
 

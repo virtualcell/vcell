@@ -51,7 +51,7 @@ public LocalUserMetaDbServer(ConnectionFactory conFactory, KeyFactory keyFactory
 	dbServerImpl = new DatabaseServerImpl(conFactory,keyFactory);
 }
 
-public TreeMap<User.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException{
+public TreeMap<SpecialUser.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException{
 	return dbServerImpl.getSpecialUsers(user);
 }
 /**
