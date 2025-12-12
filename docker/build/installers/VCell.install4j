@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<install4j version="10.0.6" transformSequenceNumber="10">
+<install4j version="10.0.9" transformSequenceNumber="10">
   <directoryPresets config="../target" />
   <application name="The Virtual Cell ${compiler:Site}" applicationId="${compiler:applicationId}" mediaDir="${compiler:outputDir}" compression="9" lzmaCompression="true" shortName="VCell_${compiler:Site}" publisher="University of Connecticut Health Center" publisherWeb="http://vcell.org" version="${compiler:vcellVersion}.${compiler:vcellBuild}" allPathsRelative="true" backupOnSave="true" autoSave="true" macVolumeId="dcbbe26700a89e7f" javaMinVersion="17" allowBetaVM="true">
     <variables>
@@ -314,26 +314,15 @@ java.desktop/sun.awt.image=ALL-UNNAMED
   </launchers>
   <installerGui autoUpdateDescriptorUrl="${compiler:updateSiteBaseUrl}/updates.xml" useAutoUpdateBaseUrl="true" autoUpdateBaseUrl="${compiler:updateSiteBaseUrl}/">
     <applications>
-      <application id="installer" beanClass="com.install4j.runtime.beans.applications.InstallerApplication" actionElevationType="elevated" launchInNewProcess="false">
+      <application id="installer" beanClass="com.install4j.runtime.beans.applications.InstallerApplication" launchInNewProcess="false">
         <serializedBean>
           <property name="splashMessage" type="string">Installing Virtual Cell ${compiler:vcellVersion}</property>
         </serializedBean>
         <startup>
-          <screen id="1" beanClass="com.install4j.runtime.beans.screens.StartupScreen" rollbackBarrierExitCode="0">
-            <actions>
-              <action id="360" beanClass="com.install4j.runtime.beans.actions.misc.RequestPrivilegesAction" actionElevationType="none">
-                <serializedBean>
-                  <property name="failIfNotObtainedMac" type="boolean" value="false" />
-                  <property name="obtainIfAdminMac" type="boolean" value="true" />
-                  <property name="obtainIfNormalMac" type="boolean" value="true" />
-                  <property name="obtainIfNormalWin" type="boolean" value="true" />
-                </serializedBean>
-              </action>
-            </actions>
-          </screen>
+          <screen id="1" beanClass="com.install4j.runtime.beans.screens.StartupScreen" rollbackBarrierExitCode="0" />
         </startup>
         <screens>
-          <screen id="2" beanClass="com.install4j.runtime.beans.screens.WelcomeScreen" styleId="2349">
+          <screen id="2" beanClass="com.install4j.runtime.beans.screens.WelcomeScreen" actionElevationType="none" styleId="2349">
             <actions>
               <action id="3" beanClass="com.install4j.runtime.beans.actions.misc.LoadResponseFileAction" multiExec="true">
                 <serializedBean>
@@ -374,8 +363,22 @@ return console.askOkCancel(message, true);
               </formComponent>
             </formComponents>
           </screen>
-          <screen id="4" beanClass="com.install4j.runtime.beans.screens.InstallationDirectoryScreen">
+          <screen id="4" beanClass="com.install4j.runtime.beans.screens.InstallationDirectoryScreen" actionElevationType="none">
             <condition>!context.getBooleanVariable("sys.confirmedUpdateInstallation")</condition>
+            <preActivation>String pastInstallDir = (String)context.getVariable("sys.installationDir");
+String privilegedAppDir = (String)context.getVariable("sys.programFilesDir");
+String appName =  "VCell_" + context.getCompilerVariable("Site");
+boolean windowsOrMac = Util.isWindows() || Util.isMacOS();
+if (pastInstallDir.contains(privilegedAppDir) &amp;&amp; windowsOrMac){
+    String homeDir = (String)context.getVariable("sys.userHome");
+    if (Util.isMacOS()){
+        context.setInstallationDirectory(new File(homeDir + "/Applications/" + appName));
+    } else{
+        String localAppDataDir = (String)context.getVariable("sys.localAppdataDir");
+        context.setInstallationDirectory(new File(localAppDataDir + "\\Programs\\" + appName));
+    }
+}
+</preActivation>
             <actions>
               <action id="5" beanClass="com.install4j.runtime.beans.actions.misc.LoadResponseFileAction" multiExec="true">
                 <serializedBean>
@@ -412,7 +415,7 @@ return console.askOkCancel(message, true);
               </formComponent>
             </formComponents>
           </screen>
-          <screen id="6" beanClass="com.install4j.runtime.beans.screens.ComponentsScreen">
+          <screen id="6" beanClass="com.install4j.runtime.beans.screens.ComponentsScreen" actionElevationType="none">
             <formComponents>
               <formComponent id="1898" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent">
                 <serializedBean>
@@ -430,13 +433,13 @@ return console.askOkCancel(message, true);
               </formComponent>
             </formComponents>
           </screen>
-          <screen id="7" beanClass="com.install4j.runtime.beans.screens.StandardProgramGroupScreen">
+          <screen id="7" beanClass="com.install4j.runtime.beans.screens.StandardProgramGroupScreen" actionElevationType="none">
             <serializedBean>
               <property name="programGroupName" type="string">${compiler:sys.fullName}</property>
             </serializedBean>
             <condition>!context.getBooleanVariable("sys.confirmedUpdateInstallation")</condition>
           </screen>
-          <screen id="1973" beanClass="com.install4j.runtime.beans.screens.FileAssociationsScreen">
+          <screen id="1973" beanClass="com.install4j.runtime.beans.screens.FileAssociationsScreen" actionElevationType="none">
             <formComponents>
               <formComponent id="1975" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent">
                 <serializedBean>
@@ -454,7 +457,7 @@ return console.askOkCancel(message, true);
               </formComponent>
             </formComponents>
           </screen>
-          <screen id="8" beanClass="com.install4j.runtime.beans.screens.InstallationScreen" rollbackBarrier="true">
+          <screen id="8" beanClass="com.install4j.runtime.beans.screens.InstallationScreen" actionElevationType="none" rollbackBarrier="true">
             <actions>
               <action id="3084" beanClass="com.install4j.runtime.beans.actions.UninstallPreviousAction" actionElevationType="none" rollbackBarrierExitCode="0">
                 <serializedBean>
@@ -465,7 +468,7 @@ return console.askOkCancel(message, true);
                   </property>
                 </serializedBean>
               </action>
-              <action id="9" beanClass="com.install4j.runtime.beans.actions.InstallFilesAction" actionElevationType="elevated" failureStrategy="askRetryQuit" errorMessage="${i18n:FileCorrupted}" />
+              <action id="9" beanClass="com.install4j.runtime.beans.actions.InstallFilesAction" actionElevationType="none" failureStrategy="askRetryQuit" errorMessage="${i18n:FileCorrupted}" />
               <action id="2226" beanClass="com.install4j.runtime.beans.actions.net.DownloadFileAction" enabled="false" actionElevationType="elevated">
                 <serializedBean>
                   <property name="targetFile">
@@ -620,7 +623,95 @@ return bngperlfile.exists();
               </formComponent>
             </formComponents>
           </screen>
-          <screen id="12" beanClass="com.install4j.runtime.beans.screens.FinishedScreen" styleId="2349" finishScreen="true">
+          <screen id="3100" beanClass="com.install4j.runtime.beans.screens.DefaultInfoScreen" actionElevationType="elevated" rollbackBarrierExitCode="0">
+            <condition>import java.io.File;
+File userAgnostic = new File((String)context.getVariable("sys.programFilesDir"));
+String appName =  "VCell_" + context.getCompilerVariable("Site");
+List&lt;File&gt; vcellRelatedAdminDirs = Arrays.stream(userAgnostic.listFiles()).filter(f -&gt; f.toString().contains(appName)).toList();
+boolean existsAdminInstall = vcellRelatedAdminDirs.size() == 1;
+return existsAdminInstall;
+</condition>
+            <actions>
+              <action id="3106" beanClass="com.install4j.runtime.beans.actions.misc.RequestPrivilegesAction" actionElevationType="none" rollbackBarrierExitCode="0">
+                <serializedBean>
+                  <property name="obtainIfAdminMac" type="boolean" value="true" />
+                  <property name="obtainIfNormalMac" type="boolean" value="true" />
+                  <property name="obtainIfNormalWin" type="boolean" value="true" />
+                </serializedBean>
+              </action>
+              <action id="3104" beanClass="com.install4j.runtime.beans.actions.files.DeleteFileAction" actionElevationType="elevated" rollbackBarrierExitCode="0">
+                <serializedBean>
+                  <property name="backupForRollback" type="boolean" value="false" />
+                  <property name="directoryFilter">
+                    <object class="com.install4j.api.beans.ScriptProperty">
+                      <property name="value" type="string">String folderName = "VCell_" + context.getCompilerVariable("Site");
+com.install4j.api.Util.logInfo(null, directory.getAbsolutePath());
+return directory.getAbsolutePath().contains(folderName);
+</property>
+                    </object>
+                  </property>
+                  <property name="fileFilter">
+                    <object class="com.install4j.api.beans.ScriptProperty">
+                      <property name="value" type="string">
+String folderName = "VCell_" + context.getCompilerVariable("Site");
+com.install4j.api.Util.logInfo(null, file.getAbsolutePath());
+return file.getAbsolutePath().contains(folderName);
+
+</property>
+                    </object>
+                  </property>
+                  <property name="files" type="array" class="java.io.File" length="2">
+                    <element index="0">
+                      <object class="java.io.File">
+                        <string>${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}</string>
+                      </object>
+                    </element>
+                    <element index="1">
+                      <object class="java.io.File">
+                        <string>${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}.app</string>
+                      </object>
+                    </element>
+                  </property>
+                  <property name="recursive" type="boolean" value="true" />
+                </serializedBean>
+              </action>
+            </actions>
+            <formComponents>
+              <formComponent id="3101" beanClass="com.install4j.runtime.beans.formcomponents.MultilineLabelComponent">
+                <serializedBean>
+                  <property name="labelText" type="string">${i18n:InfoBeforeClickLabel}</property>
+                </serializedBean>
+                <visibilityScript>!context.isConsole()</visibilityScript>
+              </formComponent>
+              <formComponent id="3102" beanClass="com.install4j.runtime.beans.formcomponents.HtmlDisplayFormComponent" useExternalParametrization="true" externalParametrizationName="HTML or text display" externalParametrizationMode="include">
+                <serializedBean>
+                  <property name="displayedText" type="string">To finish this installation, the admin install of VCell will be removed 
+[${installer:sys.programFilesDir}${installer:sys.fileSeparator}VCell_${compiler:Site}],
+as a user installation now replaces it.</property>
+                  <property name="fillVertical" type="boolean" value="true" />
+                  <property name="textSource" type="enum" class="com.install4j.runtime.beans.screens.components.TextSource" value="DIRECT" />
+                </serializedBean>
+                <externalParametrizationPropertyNames>
+                  <propertyName>textSource</propertyName>
+                  <propertyName>displayedText</propertyName>
+                  <propertyName>displayedTextFile</propertyName>
+                  <propertyName>variableName</propertyName>
+                </externalParametrizationPropertyNames>
+              </formComponent>
+              <formComponent id="3103" beanClass="com.install4j.runtime.beans.formcomponents.ConsoleHandlerFormComponent">
+                <serializedBean>
+                  <property name="consoleScript">
+                    <object class="com.install4j.api.beans.ScriptProperty">
+                      <property name="value" type="string">console.waitForEnter();
+return true;
+</property>
+                    </object>
+                  </property>
+                </serializedBean>
+              </formComponent>
+            </formComponents>
+          </screen>
+          <screen id="12" beanClass="com.install4j.runtime.beans.screens.FinishedScreen" actionElevationType="none" styleId="2349" finishScreen="true">
             <actions>
               <action name="MacOSXExecLauncher" id="1599" beanClass="com.install4j.runtime.beans.actions.finish.ExecuteLauncherAction" actionElevationType="none">
                 <serializedBean>
@@ -679,7 +770,16 @@ return bngperlfile.exists();
           <screen id="14" beanClass="com.install4j.runtime.beans.screens.StartupScreen" rollbackBarrierExitCode="0">
             <actions>
               <action id="20" beanClass="com.install4j.runtime.beans.actions.misc.LoadResponseFileAction" />
-              <action id="21" beanClass="com.install4j.runtime.beans.actions.misc.RequireInstallerPrivilegesAction" actionElevationType="none" />
+              <action id="21" beanClass="com.install4j.runtime.beans.actions.misc.RequireInstallerPrivilegesAction" actionElevationType="none">
+                <condition>import java.io.File;
+File userAgnostic = new File((String)context.getVariable("sys.programFilesDir"));
+String appName =  "VCell_" + context.getCompilerVariable("Site");
+List&lt;File&gt; vcellRelatedAdminDirs = Arrays.stream(userAgnostic.listFiles()).filter(f -&gt; f.toString().contains(appName)).toList();
+boolean existsAdminInstall = vcellRelatedAdminDirs.size() == 1;
+return existsAdminInstall;
+
+</condition>
+              </action>
             </actions>
           </screen>
         </startup>
@@ -707,7 +807,7 @@ return console.askYesNo(message, true);
           </screen>
           <screen id="16" beanClass="com.install4j.runtime.beans.screens.UninstallationScreen">
             <actions>
-              <action id="17" beanClass="com.install4j.runtime.beans.actions.UninstallFilesAction" actionElevationType="elevated" />
+              <action id="17" beanClass="com.install4j.runtime.beans.actions.UninstallFilesAction" />
             </actions>
             <formComponents>
               <formComponent id="2260" beanClass="com.install4j.runtime.beans.formcomponents.ProgressComponent">
@@ -1059,6 +1159,7 @@ context.goForward(1, true, true);
                   <property name="title" type="string">${i18n:updater.FinishTitle}</property>
                 </serializedBean>
                 <actions>
+                  <action id="3089" beanClass="com.install4j.runtime.beans.actions.UninstallFilesAction" actionElevationType="elevated" rollbackBarrierExitCode="0" />
                   <group name="Execute installer" id="145" beanClass="com.install4j.runtime.beans.groups.ActionGroup">
                     <serializedBean>
                       <property name="conditionExpression">
@@ -1397,7 +1498,14 @@ if (context.isUnattended()) {
     </styles>
   </installerGui>
   <mediaSets>
-    <macos name="Mac OS X Single Bundle ${compiler:vcellVersion} ${compiler:Site}" id="105" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" architecture="universal" launcherId="102">
+    <macosFolder name="MacOS ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="105" installDir="VCell_${compiler:Site}" customInstallBaseDir="~/Applications" architecture="universal">
+      <excludedLaunchers>
+        <launcher id="345" />
+        <launcher id="447" />
+        <launcher id="534" />
+        <launcher id="627" />
+        <launcher id="1880" />
+      </excludedLaunchers>
       <excludedBeans>
         <bean refId="1672" />
         <bean refId="1673" />
@@ -1410,13 +1518,9 @@ if (context.isUnattended()) {
         <entry filesetId="1119" />
         <entry filesetId="1121" />
       </exclude>
-      <variables>
-        <variable name="resourceJar" value="../src_macosx_64" />
-        <variable name="resourceDir" value="resources" />
-      </variables>
-      <jreBundle usePack200="false" />
-    </macos>
-    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" downloadURL="${compiler:updateSiteBaseUrl}" architecture="64">
+      <jreBundle jdkProviderId="JBR" release="17/latest" usePack200="false" overrideJdkRelease="true" />
+    </macosFolder>
+    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 64 Bit" id="349" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_64bit" installDir="VCell_${compiler:Site}" downloadURL="${compiler:updateSiteBaseUrl}" customInstallBaseDir="${installer:sys.userHome}\AppData\Local\Programs" architecture="64">
       <excludedLaunchers>
         <launcher id="102" />
         <launcher id="447" />
@@ -1440,7 +1544,7 @@ if (context.isUnattended()) {
       </variables>
       <jreBundle usePack200="false" />
     </windows>
-    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 32 Bit" id="450" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_32bit" installDir="VCell_${compiler:Site}" architecture="32">
+    <windows name="Windows ${compiler:vcellVersion} ${compiler:Site} 32 Bit" id="450" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_32bit" installDir="VCell_${compiler:Site}" customInstallBaseDir="${installer:sys.userHome}\AppData\Local\Programs" architecture="32">
       <excludedLaunchers>
         <launcher id="102" />
         <launcher id="345" />
