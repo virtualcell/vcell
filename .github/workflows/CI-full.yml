@@ -6,10 +6,10 @@ on:
       tag:
         description: "Repository tag (e.g., 7.7.0.37)"
         required: true
-      client_only:
-        description: "Build only client images (true/false)"
-        required: false
-        default: "false"
+#      client_only:
+#        description: "Build only client images (true/false)"
+#        required: false
+#        default: "false"
   release:
     types: [published]
   
@@ -87,26 +87,13 @@ jobs:
         cd docker/build
         echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
         echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        if [ "${{ github.event.inputs.client_only }}" = "true" ]; then
-          echo "Building only client images"
-          export BUILD_IMAGES="clientgen"
-        else
-          echo "Building all images"
-          export BUILD_IMAGES="all"
-        fi
+        export BUILD_IMAGES="all"
         ./build.sh ${BUILD_IMAGES} ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
 
     - name: tag as latest and push to registry
       shell: bash
       run: |
-        if [ "${{ github.event.inputs.client_only }}" = "true" ]; then
-          echo "Building only client images"
-          export CONTAINER_SET="vcell-clientgen"
-        else
-          echo "Building all images"
-          export CONTAINER_SET="vcell-exporter vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-webapp-island vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin"
-        fi
-        
+        export CONTAINER_SET="vcell-exporter vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-webapp-island vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin"
         for CONTAINER in ${CONTAINER_SET};\
            do docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:latest;\
            docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${FRIENDLY_TAG};\
@@ -116,3 +103,20 @@ jobs:
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
       if: ${{ failure() }}
+
+
+#  if [ "${{ github.event.inputs.client_only }}" = "true" ]; then
+#  echo "Building only client images"
+#  export BUILD_IMAGES="clientgen"
+#  else
+#  echo "Building all images"
+#
+#  fi
+
+#  if [ "${{ github.event.inputs.client_only }}" = "true" ]; then
+#  echo "Building only client images"
+#  export CONTAINER_SET="vcell-clientgen"
+#  else
+#  echo "Building all images"
+#  export CONTAINER_SET="vcell-exporter vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-webapp-island vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin"
+#  fi
