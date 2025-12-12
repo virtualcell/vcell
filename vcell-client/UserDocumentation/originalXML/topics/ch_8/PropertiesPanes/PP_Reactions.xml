@@ -4,31 +4,23 @@
 
   <introduction>
   The reaction Properties pane is used to display and edit properties of a reaction.
+  <imgReference target = "PP_Reactions.png"/>
   </introduction>
 		
   <appearance>
-  <imgReference target = "PP_Reactions.png"/>
-  <para>
-  The top of the table shows the Reaction Name,a combobox for Kinetic Type, and a button to convert the rate law either from molecules per 
-  second to micromolar per second or vice versa. Below is a table of the kinetic terms used to define the reaction rate 
-  (J) that includes all mathematical terms referred to in the mathematical expression for J or other kinetic terms.  A link or text bubble icon next to the name indicates that either a link or text annotation is associated with the reaction.  Clicking on the icon will navigate to the Annotations Pane.  Items in brown cannot be edited.
-  </para>
+ The Object Properties for a Reaction shows the Reaction Name,a combobox for Kinetic Type,  and a button to convert the rate law either from molecules per second to micromolar per second or vice versa. A link or text bubble icon next to the reaction name indicates an associated link or text annotation associated with the reaction. Click the icon to navigate to the Annotations Pane. Below is a table of the kinetic terms used to define the reaction rate (J) that includes all terms referred to in the mathematical expression for J or for expressions for other kinetic terms.  Items in brown cannot be edited.
   </appearance>
 	
   <operations>
-    <para>
-    <bold>Edit the reaction name</bold> using the text field. A name already given to another reaction will be rejected.
-   </para>
-   <para><bold>Make reaction reversible</bold> using the check box underneath the reaction name. The check box is only visible when the appropriate kinetic type is selected.
+  <bold>Edit the reaction name</bold> using the text field. A name already given to another reaction will be rejected.
+ <para><bold>Make reaction reversible</bold> using the checkbox underneath the reaction name. The checkbox is only visible when the appropriate kinetic type is selected.
    </para>
     <para>
     <bold>Select a rate law</bold> using the combobox to select one of a few predefined rate laws 
-    (mass action, Michaelis-Menten reversible and irreversible) in micromolar per second or to enter a user-defined 
-    rate law, either in micromolar per second or in molecules per second. 
+    (mass action, Michaelis-Menten reversible and irreversible) in concentration per time (micromolar per second if the model uses the default unit structure) or to enter a user-defined rate law, either in micromolar per second or in molecules per second (again, assuming default units).
     </para>
     <para>
-    <bold>Convert the rate law</bold> from micromolar per second to molecules per second, or vice versa, using the 
-    <bold>Convert to</bold> button. Note that predefined laws are only in micromolar per second, so if they are converted 
+    <bold>Convert the rate law</bold> from micromolar per second to molecules per second, or vice versa, using the <bold>Convert to</bold> button. Note that predefined laws are only in micromolar per second, so if they are converted
     to molecules per second, the user-defined kinetic law will automatically be selected, and remain so even if converted back.
     </para>
     <para>
@@ -44,6 +36,7 @@
     	</list>
      </para>
   <para><bold>Add or Edit Annotations</bold> for the reaction using the <link target= "PP_Annotations">Annotations</link> tab in the Properties Pane.</para>
+  <para>The <link target="PP_Problems">Problems</link>shows warnings and errors in the model.  The Biomodel cannot be saved to the database if Errors indicated, however the model can be exported as a VCML file. </para>
   </operations>
 
 </page>

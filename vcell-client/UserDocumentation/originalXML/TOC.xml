@@ -56,8 +56,8 @@
     			<tocitem target="PathLink" text="Edit Pathway Links"/> 	
     		</tocitem>
     		<tocitem target="Molecules" text="Molecules Table">
-    			<tocitem target="PP_Molecules" text="Edit Molecule"/>
-      		</tocitem>	  			    	
+    			<tocitem target="PP_Molecules" text="Specify Molecular Details"/>
+      		</tocitem>
     		<tocitem target="Observables" text="Observables Table">
     			   <tocitem target="PP_Observables" text="Edit Observable"/>
     		</tocitem>	   
