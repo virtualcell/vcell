@@ -47,7 +47,7 @@
 			<item><bold>Observables</bold> list the functions that define groups of molecular states or species that are created in rule-based models.</item>
 		</list></para>
 		<para>
-		A <link target="PropertiesPaneOverview">Properties Pane</link>) Properties panel) on the bottom right of the VCell document window allows the user to view and edit different properties for an object depending on the tab selected.
+		A <link target="PropertiesPaneOverview">Properties Pane</link> (Panel C) on the bottom right of the VCell document window allows the user to view and edit different properties for an object depending on the tab selected.
 		<list>
 			<item><bold>Object Properties</bold> displays the properties of any entity (<link target="PP_Species">species</link>, <link target="PP_Reactions">reaction</link>, <link target="PP_Structures">structure</link>, <link target="PP_Molecules">molecule</link>) selected in any of the tabs in the "View" panel.</item>
 			<item><link target="PP_Annotations">Annotations</link> displays annotations for any entity (species, reaction, structure, molecule) selected in the "View" panel, or the overall Model if selected in the Navigation Panel </item>
