@@ -9,10 +9,7 @@ import org.jdom2.filter.ElementFilter;
 import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -51,6 +48,11 @@ public class PathwaySearchTest {
     private static final Namespace BP_NS = Namespace.getNamespace("bp",
             "http://www.biopax.org/release/biopax-level2.owl#");
 
+    private static final String reactomeSite = "https://reactome.org";
+    private static final String ncbiSite = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/einfo.fcgi?db=taxonomy";
+    private static final String pathwaysSite = "https://www.pathwaycommons.org";
+
+
     @BeforeAll
     public static void setUp() throws IOException {
 
@@ -74,6 +76,9 @@ public class PathwaySearchTest {
     */
     @Test
     public void pathwayDownloadTest() throws MalformedURLException {
+        // skips the test if the external database is down, no point failing CI over something that's not our fault
+        Assumptions.assumeTrue(isDatabaseAvailable(reactomeSite), "Reactome is down — skipping test");
+
         String pathwayId = "5683177";  // Reactome pathway ID
         pathwayDownload(pathwayId);
         lg.debug("pathwayDownloadTest - done");
@@ -84,6 +89,7 @@ public class PathwaySearchTest {
     // returns the searchResponse.xml resource
     @Test
     public void searchTest() throws IOException {
+        Assumptions.assumeTrue(isDatabaseAvailable(pathwaysSite), "PathwayCommons is down — skipping test");
 
         String searchText = "Insulin";
         String encodedQ = URLEncoder.encode('"' + searchText + '"', StandardCharsets.UTF_8.name());
@@ -117,8 +123,9 @@ public class PathwaySearchTest {
 
     @Test
     public void fetchTaxonomyNameFromIdTest() {
-        String taxonId = "9940"; // Ovis aries (sheep)
+        Assumptions.assumeTrue(isDatabaseAvailable(ncbiSite), "Taxonomy Database is down — skipping test");
 
+        String taxonId = "9940"; // Ovis aries (sheep)
         try {
             HttpResponse<String> response = OrganismLookup.fetchTaxonomyResponse(taxonId);
             assertEquals(200, response.statusCode(), "Unexpected HTTP status");
@@ -398,6 +405,23 @@ public class PathwaySearchTest {
             lg.warn("Failed to write filtered pathway to file", e);
         }
     }
+
+    public static boolean isDatabaseAvailable(String urlString) {
+        try {
+            URL url = new URL(urlString);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setConnectTimeout(3000);   // 3 seconds
+            conn.setReadTimeout(3000);
+            conn.setRequestMethod("GET");   // HEAD is ideal, but some APIs reject it
+            conn.connect();
+
+            int code = conn.getResponseCode();
+            return code == 200;     // true only if return code is HTTP 200 OK
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 
 // ------------------------------------------------------------------------------------------------------------------
 
