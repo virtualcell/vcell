@@ -9,6 +9,8 @@ import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
@@ -267,6 +269,7 @@ public class SlurmProxyTest {
 		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
 	}
 
+	@DisabledOnOs(OS.WINDOWS)
 	@Test
 	public void testSimJobScriptLangevin() throws IOException, XmlParseException, ExpressionException {
 		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_274672135_0__0.simtask.xml";
