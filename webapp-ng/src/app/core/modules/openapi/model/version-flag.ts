@@ -12,7 +12,6 @@
 
 
 export interface VersionFlag { 
-    versionFlag?: number;
     intValue?: number;
     archived?: boolean;
     current?: boolean;

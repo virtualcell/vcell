@@ -9,6 +9,7 @@
  */
 
 package org.vcell.util.document;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.vcell.util.Compare;
 import org.vcell.util.Matchable;
 
@@ -17,7 +18,8 @@ import org.vcell.util.Matchable;
  */
 @SuppressWarnings("serial")
 public class VersionFlag implements java.io.Serializable, Matchable {
-	
+
+	@JsonIgnore
 	private Integer versionFlag = null;
 
 	//
