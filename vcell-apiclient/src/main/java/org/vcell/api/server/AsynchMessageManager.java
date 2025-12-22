@@ -88,7 +88,7 @@ public AsynchMessageManager(ClientServerManager csm) {
  * no-op if already called
  */
 public synchronized void startPolling() {
-	if (!bPoll.get()) {
+	if (!bPoll.get() && !clientServerManager.isVCellClientDevMain()) {
 		bPoll.set(true);
 		if (executorService == null) {
 			executorService = VCellExecutorService.get();

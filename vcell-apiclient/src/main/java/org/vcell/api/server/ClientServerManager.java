@@ -45,7 +45,11 @@ public class ClientServerManager implements ClientServerInterface {
 	private final static Logger lg = LogManager.getLogger(ClientServerManager.class);
 	private final VCellConnectionFactory vcellConnectionFactory;
 	public final Auth0ConnectionUtils auth0ConnectionUtils;
-	
+
+	public boolean isVCellClientDevMain() {
+		return !(vcellConnectionFactory instanceof RemoteProxyVCellConnectionFactory);
+	}
+
 	public interface InteractiveContextDefaultProvider {
 		InteractiveClientServerContext getInteractiveContext();
 	}
