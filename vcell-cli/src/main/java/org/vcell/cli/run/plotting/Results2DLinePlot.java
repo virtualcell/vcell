@@ -84,12 +84,14 @@ public class Results2DLinePlot implements ResultsLinePlot {
      * @throws IllegalArgumentException if the length of data on each axis doesn't match
      */
     public void addXYData(SingleAxisSeries xData, SingleAxisSeries yData){
+        // input validation
         if (xData == null) throw new IllegalArgumentException("Parameter `xData` can not be null!");
         if (yData == null) throw new IllegalArgumentException("Parameter `yData` can not be null!");
         if (xData.data().size() != yData.data().size()) throw new IllegalArgumentException("Data lengths do not match!");
         if (this.xLabels.contains(xData.label()) && !this.dataSetMappings.containsKey(xData))
             throw new IllegalArgumentException("plot already has data for x-axis with the label`" + xData.label() + "` (but it has different values) ");
         if (this.yLabels.contains(yData.label())) throw new IllegalArgumentException("plot already has data for y-axis `" + yData.label() + "`");
+        //
         if (!this.dataSetMappings.containsKey(xData)) this.dataSetMappings.put(xData, new LinkedHashSet<>());
         this.dataSetMappings.get(xData).add(yData);
         this.xLabels.add(xData.label());

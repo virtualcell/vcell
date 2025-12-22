@@ -31,7 +31,7 @@ public class OneStep extends Simulation {
 
     @Override
     public String getElementName() {
-        return SEDMLTags.SIM_OS;
+        return SEDMLTags.SIM_ONE_STEP;
     }
     /**
      * Sets the step.

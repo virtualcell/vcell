@@ -47,6 +47,7 @@ public class PlottingDataExtractor {
             Results2DLinePlot plot = new Results2DLinePlot();
             plot.setTitle(requestedPlot.getName());
 
+
             for (Curve curve : requestedPlot.getListOfCurves()){
                 ValueHolder<LazySBMLNonSpatialDataAccessor> xResults, yResults;
                 BiosimulationLog.instance().updateCurveStatusYml(this.sedmlName, requestedPlot.getId(), curve.getId(), BiosimulationLog.Status.RUNNING);
@@ -68,8 +69,8 @@ public class PlottingDataExtractor {
                     throw this.logBeforeThrowing(exception, requestedPlot.getId(), curve.getId());
                 }
 
-                boolean hasBadXName = requestedXGenerator.getName() == null || "".equals(requestedXGenerator.getName());
-                boolean hasBadYName = requestedYGenerator.getName() == null || "".equals(requestedYGenerator.getName());
+                boolean hasBadXName = requestedXGenerator.getName() == null || requestedXGenerator.getName().isEmpty();
+                boolean hasBadYName = requestedYGenerator.getName() == null || requestedYGenerator.getName().isEmpty();
                 String xLabel = hasBadXName ? requestedXGenerator.getId() : requestedXGenerator.getName();
                 String yLabel = hasBadYName ? requestedYGenerator.getId() : requestedYGenerator.getName();
                 xAxisNames.add(xLabel);

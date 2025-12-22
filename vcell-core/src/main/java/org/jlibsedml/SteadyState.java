@@ -20,7 +20,7 @@ public class SteadyState extends Simulation {
 
     @Override
     public String getElementName() {
-        return SEDMLTags.SIM_SS;
+        return SEDMLTags.SIM_STEADY_STATE;
     }
 
 }

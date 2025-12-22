@@ -71,7 +71,7 @@ class SEDMLWriter {
         // add 'dataGenerators' elements from sedDocument
         tempArrayList = sedmlObject.getDataGenerators();
         Element listOfDataGeneratorElement = new Element(
-                SEDMLTags.DATAGENERATORS); // create list of data generator
+                SEDMLTags.DATA_GENERATORS); // create list of data generator
                                            // element
         for (int i = 0; i < tempArrayList.size(); i++) {
             listOfDataGeneratorElement
@@ -272,7 +272,7 @@ class SEDMLWriter {
                     .toString(((UniformTimeCourse) sedmlSim)
                             .getNumberOfSteps()));
         } else if (sedmlSim.getSimulationKind().equals(SEDMLTags.SIMUL_OS_KIND)) {
-            node = new Element(SEDMLTags.SIM_OS);
+            node = new Element(SEDMLTags.SIM_ONE_STEP);
             addNotesAndAnnotation(sedmlSim, node);
             s = sedmlSim.getId();
             if (s != null)
@@ -280,10 +280,10 @@ class SEDMLWriter {
             s = sedmlSim.getName();
             if (s != null)
                 node.setAttribute(SEDMLTags.SIM_ATTR_NAME, s);
-            node.setAttribute(SEDMLTags.OS_STEP,
+            node.setAttribute(SEDMLTags.ONE_STEP_STEP,
                     Double.toString(((OneStep) sedmlSim).getStep()));
         } else if (sedmlSim.getSimulationKind().equals(SEDMLTags.SIMUL_SS_KIND)) {
-            node = new Element(SEDMLTags.SIM_SS);
+            node = new Element(SEDMLTags.SIM_STEADY_STATE);
             addNotesAndAnnotation(sedmlSim, node);
             s = sedmlSim.getId();
             if (s != null)
@@ -293,7 +293,7 @@ class SEDMLWriter {
                 node.setAttribute(SEDMLTags.SIM_ATTR_NAME, s);
         } else if (sedmlSim.getSimulationKind()
                 .equals(SEDMLTags.SIMUL_ANY_KIND)) {
-            node = new Element(SEDMLTags.SIM_ANY);
+            node = new Element(SEDMLTags.SIM_ANALYSIS);
             addNotesAndAnnotation(sedmlSim, node);
             s = sedmlSim.getId();
             if (s != null)
@@ -453,7 +453,7 @@ class SEDMLWriter {
                 // we avoid recursion by NOT calling here
                 // subTasksListElement.addContent(getXML(st))
                 // otherwise we might show dependent tasks of dependent tasks
-                Element dt = new Element(SEDMLTags.DEPENDENTTASK_TAG);
+                Element dt = new Element(SEDMLTags.DEPENDENT_TASK);
                 String s1 = null;
                 s1 = st.getTaskId();
                 if (s1 != null)
@@ -574,7 +574,7 @@ class SEDMLWriter {
 
     // =============== DataGenerators
     org.jdom2.Element getXML(DataGenerator sedmlDataGen) {
-        Element node = new Element(SEDMLTags.DATAGENERATOR_TAG);
+        Element node = new Element(SEDMLTags.DATA_GENERATOR_TAG);
         String s = null;
         addNotesAndAnnotation(sedmlDataGen, node);
         // Add Attributes to data generators
