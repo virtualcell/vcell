@@ -154,7 +154,7 @@ public final class DataGenerator extends AbstractIdentifiableElement implements
 
 	@Override
 	public String getElementName() {
-		return SEDMLTags.DATAGENERATOR_TAG;
+		return SEDMLTags.DATA_GENERATOR_TAG;
 	}
 	
 	public  boolean accept(SEDMLVisitor visitor){

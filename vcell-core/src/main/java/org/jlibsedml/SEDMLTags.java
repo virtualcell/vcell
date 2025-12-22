@@ -32,7 +32,7 @@ public class SEDMLTags {
     public static final String MODELS					= "listOfModels";
     public static final String SIMS						= "listOfSimulations";
     public static final String TASKS					= "listOfTasks";
-    public static final String DATAGENERATORS			= "listOfDataGenerators";
+    public static final String DATA_GENERATORS = "listOfDataGenerators";
     public static final String OUTPUTS					= "listOfOutputs";
 
     // model attributes
@@ -64,9 +64,9 @@ public class SEDMLTags {
     public static final String SIM_ATTR_ALGORITM		= "algorithm";
     // types of simulations
     public static final String SIM_UTC					= "uniformTimeCourse";
-    public static final String SIM_ANY                  = "anySimulation";
-    public static final String SIM_OS                   = "oneStep";
-    public static final String SIM_SS                   = "steadyState";
+    public static final String SIM_ANALYSIS = "anySimulation";
+    public static final String SIM_ONE_STEP = "oneStep";
+    public static final String SIM_STEADY_STATE = "steadyState";
     
     //algorithm element
     public static final String ALGORITHM_TAG                = "algorithm";
@@ -84,7 +84,7 @@ public class SEDMLTags {
     public static final String UTCA_STEPS_NUM			= "numberOfSteps";
     
     // one step attributes
-    public static final String OS_STEP                  = "step";
+    public static final String ONE_STEP_STEP = "step";
     
     // task attributes
     public static final String TASK_TAG					= "task";
@@ -102,7 +102,7 @@ public class SEDMLTags {
     public static final String SUBTASK_TAG                  = "subTask";
     public static final String SUBTASK_ATTR_ORDER           = "order";
     public static final String SUBTASK_ATTR_TASK            = "task";
-    public static final String DEPENDENTTASK_TAG            = "dependentTask";
+    public static final String DEPENDENT_TASK = "dependentTask";
     public static final String DEPENDENT_TASK_SUBTASKS_LIST = "listOfDependentTasks";
 
     // set value
@@ -130,7 +130,7 @@ public class SEDMLTags {
 
     
     // data generator attributes and children
-    public static final String DATAGENERATOR_TAG            = "dataGenerator";
+    public static final String DATA_GENERATOR_TAG = "dataGenerator";
     public static final String DATAGEN_ATTR_ID              = "id";
     public static final String DATAGEN_ATTR_NAME            = "name";
     public static final String DATAGEN_ATTR_MATH            = "math";

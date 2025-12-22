@@ -11,7 +11,7 @@ public abstract class Output extends AbstractIdentifiableElement{
 	
     public  boolean accept(SEDMLVisitor visitor){
         if(visitor.visit(this)){
-            if(isPlot2d()){
+            if(this.isPlot2d()){
                for (Curve c: ((Plot2D)this).getListOfCurves()) {
                    if(! c.accept(visitor)){
                        return false;
@@ -19,7 +19,7 @@ public abstract class Output extends AbstractIdentifiableElement{
                }
                return true;
             }
-            else  if(isPlot3d()){
+            else  if(this.isPlot3d()){
                 for (Surface sf: ((Plot3D)this).getListOfSurfaces()) {
                     if(! sf.accept(visitor)){
                         return false;
@@ -27,7 +27,7 @@ public abstract class Output extends AbstractIdentifiableElement{
                 }
                 return true;
              }
-            else  if(isReport()){
+            else  if(this.isReport()){
                 for (DataSet sds: ((Report)this).getListOfDataSets()) {
                     if(! sds.accept(visitor)){
                         return false;
@@ -64,7 +64,7 @@ public abstract class Output extends AbstractIdentifiableElement{
     * @return <code>true</code> if this is a Plot2d description, <code>false</code> otherwise.
     */
    public boolean isPlot2d(){
-	   return getKind().equals(SEDMLTags.PLOT2D_KIND);
+	   return this.getKind().equals(SEDMLTags.PLOT2D_KIND);
    }
    
    /**
@@ -72,7 +72,7 @@ public abstract class Output extends AbstractIdentifiableElement{
     * @return <code>true</code> if this is a Plot3d description, <code>false</code> otherwise.
     */
    public boolean isPlot3d(){
-	   return getKind().equals(SEDMLTags.PLOT3D_KIND);
+	   return this.getKind().equals(SEDMLTags.PLOT3D_KIND);
    }
    
    
@@ -81,7 +81,7 @@ public abstract class Output extends AbstractIdentifiableElement{
     * @return <code>true</code> if this is a report description, <code>false</code> otherwise.
     */
    public boolean isReport(){
-	   return getKind().equals(SEDMLTags.REPORT_KIND);
+	   return this.getKind().equals(SEDMLTags.REPORT_KIND);
    }
    
    /**
