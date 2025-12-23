@@ -6,7 +6,7 @@ import io.jhdf.api.Group;
 import io.jhdf.api.Node;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jlibsedml.AbstractTask;
+import org.jlibsedml.components.task.AbstractTask;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.cli.run.hdf5.Hdf5DataSourceSpatialSimMetadata;
 import org.vcell.cli.run.hdf5.Hdf5DataSourceSpatialSimVars;

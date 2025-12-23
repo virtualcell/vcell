@@ -1,7 +1,7 @@
 package org.vcell.cli.run.results;
 
-import org.jlibsedml.DataSet;
-import org.jlibsedml.Report;
+import org.jlibsedml.components.output.DataSet;
+import org.jlibsedml.components.output.Report;
 import org.vcell.sbml.vcell.lazy.LazySBMLDataAccessor;
 
 import java.util.ArrayList;

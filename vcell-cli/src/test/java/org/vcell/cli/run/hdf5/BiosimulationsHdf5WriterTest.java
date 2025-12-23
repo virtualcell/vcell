@@ -2,8 +2,8 @@ package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.resource.PropertyLoader;
 import com.google.common.io.Files;
-import org.jlibsedml.DataSet;
-import org.jlibsedml.Report;
+import org.jlibsedml.components.output.DataSet;
+import org.jlibsedml.components.output.Report;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.vcell.sbml.vcell.SBMLDataRecord;

@@ -6,6 +6,15 @@ import java.util.Map;
 
 import org.jdom2.Element;
 import org.jdom2.Namespace;
+import org.jlibsedml.components.*;
+import org.jlibsedml.components.algorithm.Algorithm;
+import org.jlibsedml.components.algorithm.AlgorithmParameter;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.model.*;
+import org.jlibsedml.components.output.*;
+import org.jlibsedml.components.simulation.Simulation;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
+import org.jlibsedml.components.task.*;
 import org.jmathml.ASTToXMLElementVisitor;
 
 class SEDMLWriter {
@@ -14,7 +23,7 @@ class SEDMLWriter {
         COMPUTE_CHANGE, DATA_GENERATOR
     };
 
-    Element getXML(SedML sedmlObject) {
+    Element getXML(SedMLDataClass sedmlObject) {
         Element sedDocElement = new Element(SEDMLTags.ROOT_NODE_TAG);
         sedDocElement.setAttribute(SEDMLTags.LEVEL_TAG,
                 "" + sedmlObject.getLevel());
@@ -551,7 +560,7 @@ class SEDMLWriter {
         }
     }
 
-    private void addNotesAndAnnotation(SEDBase sedbase, Element node) {
+    private void addNotesAndAnnotation(SedBase sedbase, Element node) {
 
         // add 'notes' elements from sedml
     	Notes note = sedbase.getNote();

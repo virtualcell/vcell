@@ -14,13 +14,13 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JToggleButton.ToggleButtonModel;
 
-import org.jlibsedml.AbstractTask;
-import org.jlibsedml.Change;
-import org.jlibsedml.RepeatedTask;
+import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.components.task.AbstractTask;
+import org.jlibsedml.components.model.Change;
+import org.jlibsedml.components.task.RepeatedTask;
 import org.jlibsedml.SEDMLTags;
-import org.jlibsedml.SedML;
-import org.jlibsedml.SubTask;
-import org.jlibsedml.Task;
+import org.jlibsedml.components.task.SubTask;
+import org.jlibsedml.components.task.Task;
 import org.vcell.sedml.SEDMLUtil;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
@@ -30,7 +30,7 @@ import org.vcell.util.gui.DialogUtils;
 // ask the user to choose one task only (we only support importing of one task)
 public class SEDMLChooserPanel extends JPanel {
 	
-	private SedML sedml;
+	private SedMLDataClass sedml;
 	public ButtonGroup group = new ButtonGroup();
 	
 	public class SEDMLRadioButtonModel extends ToggleButtonModel {
@@ -46,7 +46,7 @@ public class SEDMLChooserPanel extends JPanel {
 		}
 	}
 	
-	public SEDMLChooserPanel(SedML sedml) {
+	public SEDMLChooserPanel(SedMLDataClass sedml) {
 		super();
 		this.sedml = sedml;
 		initialize();
@@ -176,7 +176,7 @@ public class SEDMLChooserPanel extends JPanel {
 		add(new JLabel(""), gbc);
 	}
 	
-	public static AbstractTask chooseTask(SedML sedml, Component requester, String name) {
+	public static AbstractTask chooseTask(SedMLDataClass sedml, Component requester, String name) {
 		
 		SEDMLChooserPanel panel = new SEDMLChooserPanel(sedml);
 		int oKCancel = DialogUtils.showComponentOKCancelDialog(requester, panel, "Import Sed-ML file: " + name);

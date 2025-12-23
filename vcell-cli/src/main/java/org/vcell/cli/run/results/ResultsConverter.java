@@ -3,6 +3,12 @@ package org.vcell.cli.run.results;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
+import org.jlibsedml.components.Variable;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.output.*;
+import org.jlibsedml.components.task.AbstractTask;
+import org.jlibsedml.components.task.RepeatedTask;
+import org.jlibsedml.components.task.SubTask;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.vcell.sbml.vcell.lazy.LazySBMLDataAccessor;
@@ -12,7 +18,7 @@ import java.util.*;
 public abstract class ResultsConverter {
     private final static Logger logger = LogManager.getLogger(ResultsConverter.class);
 
-    protected static List<Output> getValidOutputs(SedML sedml){
+    protected static List<Output> getValidOutputs(SedMLDataClass sedml){
         List<Output> nonPlot3DOutputs = new ArrayList<>();
         List<Plot3D> plot3DOutputs = new ArrayList<>();
         for (Output output : sedml.getOutputs()){
@@ -58,7 +64,7 @@ public abstract class ResultsConverter {
         return s;
     }
 
-    protected static void add2DPlotsAsReports(SedML sedml, Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> organizedNonSpatialResults, List<Report> listToModify){
+    protected static void add2DPlotsAsReports(SedMLDataClass sedml, Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> organizedNonSpatialResults, List<Report> listToModify){
         for (Plot2D plot2D: sedml.getOutputs().stream().filter(Plot2D.class::isInstance).map(Plot2D.class::cast).toList()){
             Set<String> addedDataGenIDs = new LinkedHashSet<>();
             Report fakeReport = new Report(plot2D.getId(), plot2D.getName());
@@ -84,7 +90,7 @@ public abstract class ResultsConverter {
         }
     }
 
-    protected static AbstractTask getBaseTask(AbstractTask task, SedML sedml){
+    protected static AbstractTask getBaseTask(AbstractTask task, SedMLDataClass sedml){
         if (task == null) throw new IllegalArgumentException("task arguement is `null`!");
         while (task instanceof RepeatedTask repeatedTask) { // We need to find the original task burried beneath.
             // We assume that we can never have a sequential repeated task at this point, we check for that in SEDMLImporter

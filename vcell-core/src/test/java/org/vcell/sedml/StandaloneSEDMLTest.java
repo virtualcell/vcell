@@ -6,18 +6,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.jlibsedml.AbstractTask;
-import org.jlibsedml.Algorithm;
+import org.jlibsedml.components.task.AbstractTask;
+import org.jlibsedml.components.algorithm.Algorithm;
 import org.jlibsedml.ArchiveComponents;
-import org.jlibsedml.DataGenerator;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
 import org.jlibsedml.Libsedml;
-import org.jlibsedml.Model;
-import org.jlibsedml.OneStep;
-import org.jlibsedml.Output;
-import org.jlibsedml.SEDMLDocument;
-import org.jlibsedml.SedML;
-import org.jlibsedml.SteadyState;
-import org.jlibsedml.UniformTimeCourse;
+import org.jlibsedml.components.model.Model;
+import org.jlibsedml.components.task.OneStep;
+import org.jlibsedml.components.output.Output;
+import org.jlibsedml.SedMLDocument;
+import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.components.simulation.SteadyState;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
 import org.jlibsedml.execution.ArchiveModelResolver;
 import org.jlibsedml.execution.ModelResolver;
 import org.jlibsedml.modelsupport.BioModelsModelsRetriever;
@@ -35,7 +35,6 @@ import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.MathMappingCallback;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
-import cbit.vcell.resource.ResourceUtil;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.xml.XMLSource;
@@ -98,9 +97,9 @@ public class StandaloneSEDMLTest {
 		ArchiveComponents ac = null;
 		ac = Libsedml.readSEDMLArchive(new FileInputStream(archiveFile));
 		
-		SEDMLDocument sedmlDoc = ac.getSedmlDocuments().get(0);
+		SedMLDocument sedmlDoc = ac.getSedmlDocuments().get(0);
 	
-		SedML sedml = sedmlDoc.getSedMLModel();
+		SedMLDataClass sedml = sedmlDoc.getSedMLModel();
 		if(sedml == null || sedml.getModels().isEmpty()) {
 			throw new RuntimeException("sedml null or empty");
 		}
@@ -115,12 +114,12 @@ public class StandaloneSEDMLTest {
 		//
         // iterate through all the elements and show them at the console
 		//
-        List<org.jlibsedml.Model> mmm = sedml.getModels();
+        List<Model> mmm = sedml.getModels();
         for(Model mm : mmm) {
             System.out.println(mm.toString());
         }
-        List<org.jlibsedml.Simulation> sss = sedml.getSimulations();
-        for(org.jlibsedml.Simulation ss : sss) {
+        List<org.jlibsedml.components.simulation.Simulation> sss = sedml.getSimulations();
+        for(org.jlibsedml.components.simulation.Simulation ss : sss) {
             System.out.println(ss.toString());
         }
         List<AbstractTask> ttt = sedml.getTasks();
@@ -144,13 +143,13 @@ public class StandaloneSEDMLTest {
 		List<AbstractTask> taskList = sedml.getTasks();
         for (AbstractTask task : taskList){
         	String modelReference = task.getModelReference();
-			org.jlibsedml.Model sedmlOriginalModel = sedml.getModelWithId(modelReference);
+			Model sedmlOriginalModel = sedml.getModelWithId(modelReference);
         	
             String sbmlModelString = resolver.getModelString(sedmlOriginalModel);
             
             XMLSource sbmlSource = new XMLSource(sbmlModelString);		// sbmlSource with all the changes applied
             
-            org.jlibsedml.Simulation sedmlSimulation = sedml.getSimulation(task.getSimulationReference());
+            org.jlibsedml.components.simulation.Simulation sedmlSimulation = sedml.getSimulation(task.getSimulationReference());
     		Algorithm algorithm = sedmlSimulation.getAlgorithm();
 			KisaoTerm sedmlKisao = kisaoInstance.getTermById(algorithm.getKisaoID());
 

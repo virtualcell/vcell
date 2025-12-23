@@ -79,7 +79,7 @@ public class SEDMLUtils {
 	 * @param fileName
 	 * @return
 	 */
-	 static SedML readSedDocument(String fileName) {
+	 static SedMLDataClass readSedDocument(String fileName) {
 		try {
 			SAXBuilder builder = new SAXBuilder();
 			Document doc = builder.build(new File(fileName));
@@ -87,7 +87,7 @@ public class SEDMLUtils {
 	
 			SEDMLReader reader = new SEDMLReader();
 			
-			SedML sedDoc = reader.getSedDocument(sedRoot);
+			SedMLDataClass sedDoc = reader.getSedDocument(sedRoot);
 			return sedDoc;
 		} catch (Exception e) {
 			throw new RuntimeException("Could not create SedMLDocument from file '" + fileName + "'", e);

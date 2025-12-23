@@ -45,7 +45,7 @@
 	</xs:complexType>
 
 	<!-- SED ML Top level element -->
-	<xs:element name="sedML">
+	<xs:element name="sedMLDataClass">
 		<xs:complexType>
 			<xs:complexContent>
 				<xs:extension base="SEDBase">

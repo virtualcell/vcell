@@ -147,7 +147,7 @@ public class MathOverrideRoundTipTest {
 //                    System.out.println("parsed: " + constant.getName() + "=" + constant.getExpression().infix());
 //                }
 //            }
-//            Assert.assertTrue("expected math overrides to match", equiv);
+//           SedGeneralClass.assertTrue("expected math overrides to match", equiv);
 //        }
 
 
@@ -184,7 +184,7 @@ public class MathOverrideRoundTipTest {
 //                    System.out.println("parsed: " + constant.getName() + "=" + constant.getExpression().infix());
 //                }
 //            }
-//            Assert.assertTrue("expected math overrides to match", equiv);
+//           SedGeneralClass.assertTrue("expected math overrides to match", equiv);
 //        }
 //        BioModel bioModel_sbmlUnits = ModelUnitConverter.createBioModelWithSBMLUnitSystem(bioModel_vcellUnits);
 //        {
@@ -217,7 +217,7 @@ public class MathOverrideRoundTipTest {
 //                    System.out.println("parsed: " + constant.getName() + "=" + constant.getExpression().flattenSafe().infix());
 //                }
 //            }
-//            Assert.assertTrue("expected math overrides to match", equiv);
+//           SedGeneralClass.assertTrue("expected math overrides to match", equiv);
 //        }
 //
 //    }
