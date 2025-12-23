@@ -178,7 +178,7 @@ public class MathOverrideApplyTest {
 				// for now, if it doesn't throw an exception, then it passes
 				if (knownFaults().contains(filename)){
 					// some applications may pass and others fail, e.g. 'biomodel_55178308.vcml:Spatial 1 - 3D -  electrophysiology' passes but rest fail
-//					Assert.fail("applying math overrides succeeded, but '"+filename_colon_appname+"' in known faults list, remove from known faults list");
+//					SedGeneralClass.fail("applying math overrides succeeded, but '"+filename_colon_appname+"' in known faults list, remove from known faults list");
 				}
 			}catch (Exception e){
 				if (!knownFaults().contains(filename)){

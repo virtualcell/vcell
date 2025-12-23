@@ -8,6 +8,13 @@ import cbit.vcell.solver.TempSimulation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
+import org.jlibsedml.components.Variable;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.output.*;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
+import org.jlibsedml.components.task.AbstractTask;
+import org.jlibsedml.components.task.RepeatedTask;
+import org.jlibsedml.components.task.Task;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.cli.run.hdf5.Hdf5SedmlResults;
 import org.vcell.cli.run.hdf5.Hdf5SedmlResultsNonSpatial;
@@ -24,7 +31,7 @@ import java.util.*;
 public class NonSpatialResultsConverter extends ResultsConverter {
     private final static Logger logger = LogManager.getLogger(NonSpatialResultsConverter.class);
 
-    public static Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizeNonSpatialResultsBySedmlDataGenerator(SedML sedml, Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, SEDMLImportException {
+    public static Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizeNonSpatialResultsBySedmlDataGenerator(SedMLDataClass sedml, Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, SEDMLImportException {
         Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> nonSpatialOrganizedResultsMap = new HashMap<>();
         if (nonSpatialResultsHash.isEmpty()) return nonSpatialOrganizedResultsMap;
 
@@ -56,7 +63,7 @@ public class NonSpatialResultsConverter extends ResultsConverter {
                     AbstractTask task = sedml.getTaskWithId(variable.getReference());
                     AbstractTask derivedTask = ResultsConverter.getBaseTask(task, sedml);
                     if (!(derivedTask instanceof Task baseTask)) throw new SEDMLImportException("Unable to find base task referred to by var `" + variable.getId() + "`");
-                    org.jlibsedml.Simulation sim = sedml.getSimulation(baseTask.getSimulationReference());
+                    org.jlibsedml.components.simulation.Simulation sim = sedml.getSimulation(baseTask.getSimulationReference());
                     if (!(sim instanceof UniformTimeCourse utcSim)) throw new SEDMLImportException("Unable to find utc sim referred to by var `" + variable.getId() + "`");
                     maxTimeLength = Math.max(utcSim.getNumberOfSteps() + 1, maxTimeLength);
                 }
@@ -73,7 +80,7 @@ public class NonSpatialResultsConverter extends ResultsConverter {
     }
 
 
-    public static Map<Report, List<Hdf5SedmlResults>> prepareNonSpatialDataForHdf5(SedML sedml, Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> nonSpatialResultsMapping,
+    public static Map<Report, List<Hdf5SedmlResults>> prepareNonSpatialDataForHdf5(SedMLDataClass sedml, Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> nonSpatialResultsMapping,
                                                                                    Set<DataGenerator> allValidDataGenerators, String sedmlLocation, boolean isBioSimMode) {
         Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
         if (nonSpatialResultsMapping.isEmpty()){
@@ -159,9 +166,9 @@ public class NonSpatialResultsConverter extends ResultsConverter {
         return results;
     }
 
-    private static ValueHolder<LazySBMLNonSpatialDataAccessor> getNonSpatialValueHolderForDataGenerator(SedML sedml, DataGenerator dataGen,
-                                                                                  Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash,
-                                                                                  Map<AbstractTask, TempSimulation> taskToSimulationMap, int padToLength) throws ExpressionException {
+    private static ValueHolder<LazySBMLNonSpatialDataAccessor> getNonSpatialValueHolderForDataGenerator(SedMLDataClass sedml, DataGenerator dataGen,
+                                                                                                        Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash,
+                                                                                                        Map<AbstractTask, TempSimulation> taskToSimulationMap, int padToLength) throws ExpressionException {
         if (dataGen == null) throw new IllegalArgumentException("Provided Data Generator can not be null!");
         Map<Variable, ValueHolder<LazySBMLNonSpatialDataAccessor>> resultsByVariable = new HashMap<>();
 
@@ -172,7 +179,7 @@ public class NonSpatialResultsConverter extends ResultsConverter {
             AbstractTask baseTask = ResultsConverter.getBaseTask(topLevelTask, sedml); // if !RepeatedTask, baseTask == topLevelTask
 
             // from the task we get the sbml model
-            org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(baseTask.getSimulationReference());
+            org.jlibsedml.components.simulation.Simulation sedmlSim = sedml.getSimulation(baseTask.getSimulationReference());
 
             if (!(sedmlSim instanceof UniformTimeCourse utcSim)){
                 logger.error("only uniform time course simulations are supported");

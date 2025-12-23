@@ -30,10 +30,22 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jlibsedml.Model;
-import org.jlibsedml.Parameter;
+import org.jlibsedml.components.AbstractIdentifiableElement;
+import org.jlibsedml.components.algorithm.Algorithm;
+import org.jlibsedml.components.algorithm.AlgorithmParameter;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.model.Change;
+import org.jlibsedml.components.model.ChangeAttribute;
+import org.jlibsedml.components.model.ComputeChange;
+import org.jlibsedml.components.model.Model;
+import org.jlibsedml.components.Parameter;
 import org.jlibsedml.*;
-import org.jlibsedml.UniformRange.UniformType;
+import org.jlibsedml.components.output.DataSet;
+import org.jlibsedml.components.task.UniformRange.UniformType;
+import org.jlibsedml.components.output.Output;
+import org.jlibsedml.components.output.Report;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
+import org.jlibsedml.components.task.*;
 import org.jlibsedml.execution.ArchiveModelResolver;
 import org.jlibsedml.execution.FileModelResolver;
 import org.jlibsedml.execution.ModelResolver;
@@ -63,7 +75,7 @@ import java.util.*;
  */
 public class SEDMLImporter {
 	private final static Logger logger = LogManager.getLogger(SEDMLImporter.class);
-	private SedML sedml;
+	private SedMLDataClass sedml;
 	private final boolean exactMatchOnly;
 	
 	private final VCLogger transLogger;
@@ -94,7 +106,7 @@ public class SEDMLImporter {
 	 * @throws FileNotFoundException if the sedml archive can not be found
 	 * @throws XMLException if the sedml has invalid xml.
 	 */
-	public SEDMLImporter(VCLogger transLogger, File fileWithSedmlToProcess, SedML sedml, boolean exactMatchOnly)
+	public SEDMLImporter(VCLogger transLogger, File fileWithSedmlToProcess, SedMLDataClass sedml, boolean exactMatchOnly)
 			throws XMLException, IOException {
 		this(transLogger, exactMatchOnly);
 		this.initialize(fileWithSedmlToProcess, sedml);
@@ -107,7 +119,7 @@ public class SEDMLImporter {
 	 * @throws IOException if the sedml archive can not be found, or the IO stream reading it failed
 	 * @throws XMLException if the sedml has invalid xml.
 	 */
-	public void initialize(File fileWithSedmlToProcess, SedML sedml) throws XMLException, IOException {
+	public void initialize(File fileWithSedmlToProcess, SedMLDataClass sedml) throws XMLException, IOException {
 		// extract bioModel name from sedml (or sedml) file
 		if (fileWithSedmlToProcess == null) throw new IllegalArgumentException("Source file of SedML can not be null!");
 		if (sedml == null) throw new IllegalArgumentException("Provided SedML can not be null!");
@@ -135,8 +147,8 @@ public class SEDMLImporter {
 	 */
 	public List<BioModel> getBioModels() {
 		List<BioModel> bioModelList = new LinkedList<>();
-		List<org.jlibsedml.Model> modelList;
-		List<org.jlibsedml.Simulation> simulationList;
+		List<Model> modelList;
+		List<org.jlibsedml.components.simulation.Simulation> simulationList;
 		List<AbstractTask> abstractTaskList;
 		List<DataGenerator> dataGeneratorList;
 		List<Output> outputList;
@@ -167,7 +179,7 @@ public class SEDMLImporter {
 				if (!(selectedTask instanceof Task baseTask)) throw new RuntimeException("Unsupported task " + selectedTask);
 
 				// the SedML simulation will become the vCell simulation
-				org.jlibsedml.Simulation sedmlSimulation = this.sedml.getSimulation(baseTask.getSimulationReference());
+				org.jlibsedml.components.simulation.Simulation sedmlSimulation = this.sedml.getSimulation(baseTask.getSimulationReference());
 				if(!(sedmlSimulation instanceof UniformTimeCourse utcSimulation)) { // only UTC sims supported
 					String baseTaskName = String.format("%s(%s)", baseTask.getName() == null ? "" : baseTask.getName(), baseTask.getId());
                     logger.error("task '{}' is being skipped, it references an unsupported simulation type: {}", baseTaskName, sedmlSimulation);
@@ -175,7 +187,7 @@ public class SEDMLImporter {
 				}
 
 				// the "original" model referred to by the task; almost always sbml we can import as physiology
-				org.jlibsedml.Model sedmlModel = this.sedml.getModelWithId(baseTask.getModelReference());
+				Model sedmlModel = this.sedml.getModelWithId(baseTask.getModelReference());
 				if (sedmlModel == null) throw new RuntimeException("We somehow got a null sedml model!!");
 				// can be sbml or vcml
 				String sedmlOriginalModelLanguage = sedmlModel.getLanguage();
@@ -515,9 +527,9 @@ public class SEDMLImporter {
 					}
 					
 					// Substitute SED-ML variables (which reference SBML entities)
-					List<org.jlibsedml.Variable> vars = cc.getListOfVariables();
+					List<org.jlibsedml.components.Variable> vars = cc.getListOfVariables();
 					System.out.println(vars);
-					for (org.jlibsedml.Variable var : vars) {
+					for (org.jlibsedml.components.Variable var : vars) {
 						String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(var.getTarget());
 						vcVar = this.resolveMathVariable(importedSimcontext, convertedSimcontext, sbmlID);
 						if (!isMathVariableConstantValued(vcVar)){
@@ -704,7 +716,7 @@ public class SEDMLImporter {
 							Map<String, AbstractIdentifiableElement> vars = fr.getVariables();
 							System.out.println(vars);
 							for (String varId : vars.keySet()) {
-								String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.Variable)vars.get(varId)).getTarget());
+								String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.components.Variable)vars.get(varId)).getTarget());
 								Variable vcVar = this.resolveMathVariable(importedSimcontext, convertedSimcontext, sbmlID);
 								if (!isMathVariableConstantValued(vcVar)){
 									throw new SEDMLImportException("expecting vcell var '"+constantValuedVar.getName()+"' " +
@@ -734,7 +746,7 @@ public class SEDMLImporter {
 							Map<String, AbstractIdentifiableElement> vars = fr.getVariables();
 							System.out.println(vars);
 							for (String varId : vars.keySet()) {
-								String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.Variable)vars.get(varId)).getTarget());
+								String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.components.Variable)vars.get(varId)).getTarget());
 								Variable vcVar = this.resolveMathVariable(importedSimcontext, convertedSimcontext, sbmlID);
 								if (!isMathVariableConstantValued(vcVar)){
 									throw new SEDMLImportException("expecting vcell var '"+constantValuedVar.getName()+"' " +
@@ -978,14 +990,14 @@ public class SEDMLImporter {
 		}
 	}
 
-	private void printSEDMLSummary(List<org.jlibsedml.Model> mmm, List<org.jlibsedml.Simulation> sss,
-			List<AbstractTask> ttt, List<DataGenerator> ddd, List<Output> ooo) {
+	private void printSEDMLSummary(List<Model> mmm, List<org.jlibsedml.components.simulation.Simulation> sss,
+                                   List<AbstractTask> ttt, List<DataGenerator> ddd, List<Output> ooo) {
 		for(Model mm : mmm) {
 		    logger.trace("sedml model: "+mm.toString());
 		    List<Change> listOfChanges = mm.getListOfChanges();
 		    logger.debug("There are " + listOfChanges.size() + " changes in model "+mm.getId());
 		}
-		for(org.jlibsedml.Simulation ss : sss) {
+		for(org.jlibsedml.components.simulation.Simulation ss : sss) {
 		    logger.trace("sedml simulation: "+ss.toString());
 		}
 		for(AbstractTask tt : ttt) {
@@ -999,7 +1011,7 @@ public class SEDMLImporter {
 		}
 	}
 
-	private void translateTimeBounds(SolverTaskDescription simTaskDesc, org.jlibsedml.Simulation sedmlSimulation) throws PropertyVetoException {
+	private void translateTimeBounds(SolverTaskDescription simTaskDesc, org.jlibsedml.components.simulation.Simulation sedmlSimulation) throws PropertyVetoException {
 		TimeBounds timeBounds;
 		TimeStep timeStep = new TimeStep();
 		double outputTimeStep; // = 0.1;
@@ -1024,7 +1036,7 @@ public class SEDMLImporter {
 
 	}
 	
-	private void translateAlgorithmParams(SolverTaskDescription simTaskDesc, org.jlibsedml.Simulation sedmlSimulation) throws PropertyVetoException {
+	private void translateAlgorithmParams(SolverTaskDescription simTaskDesc, org.jlibsedml.components.simulation.Simulation sedmlSimulation) throws PropertyVetoException {
 		TimeStep timeStep = simTaskDesc.getTimeStep();
 		Algorithm algorithm = sedmlSimulation.getAlgorithm();
 		String kisaoID = algorithm.getKisaoID();
@@ -1126,7 +1138,7 @@ public class SEDMLImporter {
 			for (DataSet ds : report.getListOfDataSets()){
 				for (DataGenerator dataGenerator : this.sedml.getDataGenerators()){
 					if (!ds.getDataReference().equals(dataGenerator.getId())) continue;
-					for (org.jlibsedml.Variable var : dataGenerator.getListOfVariables()){
+					for (org.jlibsedml.components.Variable var : dataGenerator.getListOfVariables()){
 						neededTaskReferences.add(var.getReference());
 					}
 				}

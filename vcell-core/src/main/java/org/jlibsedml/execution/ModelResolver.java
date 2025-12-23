@@ -10,9 +10,9 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jlibsedml.Model;
-import org.jlibsedml.SEDMLDocument;
-import org.jlibsedml.SedML;
+import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.components.model.Model;
+import org.jlibsedml.SedMLDocument;
 
 
 /**
@@ -24,7 +24,7 @@ import org.jlibsedml.SedML;
 public class ModelResolver {
     private final static Logger logger = LogManager.getLogger(ModelResolver.class);
 
-    public ModelResolver(SedML sedml) {
+    public ModelResolver(SedMLDataClass sedml) {
         super();
         this.sedml = sedml;
     }
@@ -32,7 +32,7 @@ public class ModelResolver {
     static final String MODEL_CANNOT_BE_RESOLVED_MSG = " The model could not be resolved from its source reference. ";
     static final String MODEL_SRC_NOT_VALID_URI = "The model 'source' attribute  is not a valid URI.";
 
-    private SedML sedml;
+    private SedMLDataClass sedml;
 	private String message = "";
     private List<IModelResolver> resolvers = new ArrayList<IModelResolver>();
 
@@ -118,7 +118,7 @@ public class ModelResolver {
         try {
             String modelRef = baseModelRef;
             do {
-                org.jlibsedml.Model mod = sedml.getModelWithId(modelRef);
+                Model mod = sedml.getModelWithId(modelRef);
                 URI testURI = new URI("test%20model.xml");
                 String roundTrip = testURI.toASCIIString();
                 roundTrip = testURI.toString();
@@ -163,7 +163,7 @@ public class ModelResolver {
     String applyModelChanges(List<String> modelRefs, String baseModelAsStr) {
         for (int i = 0; i < modelRefs.size(); i++) {
             try {
-                baseModelAsStr = new SEDMLDocument(sedml).getChangedModel(
+                baseModelAsStr = new SedMLDocument(sedml).getChangedModel(
                         modelRefs.get(i), baseModelAsStr);
             } catch (Exception e) {
                 message = "Could not apply XPath changes for model id[" + modelRefs.get(i) + "]";

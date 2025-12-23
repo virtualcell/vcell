@@ -13,6 +13,7 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.filter.ElementFilter;
+import org.jlibsedml.components.task.AbstractTask;
 import org.jlibsedml.execution.IModelResolver;
 import org.jlibsedml.extensions.XMLUtils;
 
@@ -22,16 +23,16 @@ import org.jlibsedml.extensions.XMLUtils;
  class XpathGeneratorHelper {
      private final static Logger lg = LogManager.getLogger(XpathGeneratorHelper.class);
      
-     public XpathGeneratorHelper(SedML sedml) {
+     public XpathGeneratorHelper(SedMLDataClass sedml) {
         super();
         this.sedml = sedml;
     }
 
-    private final SedML sedml;
+    private final SedMLDataClass sedml;
      
 
       boolean addIdentifiersAsDataGenerators (final AbstractTask task, final String attributeIdentifierName,
-             boolean allOrNothing, final IModelResolver modelResolver, final IdName ... idNameList) {
+                                              boolean allOrNothing, final IModelResolver modelResolver, final IdName ... idNameList) {
         XMLUtils utils = new XMLUtils();
        
         try {

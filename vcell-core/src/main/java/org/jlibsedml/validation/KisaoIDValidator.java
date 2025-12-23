@@ -6,7 +6,7 @@ import java.util.List;
 import org.jdom2.Document;
 import org.jlibsedml.SEDMLTags;
 import org.jlibsedml.SedMLError;
-import org.jlibsedml.Simulation;
+import org.jlibsedml.components.simulation.Simulation;
 import org.jlibsedml.modelsupport.KisaoOntology;
 
 /**

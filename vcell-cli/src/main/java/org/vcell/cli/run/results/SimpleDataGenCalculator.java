@@ -6,8 +6,8 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 
-import org.jlibsedml.DataGenerator;
-import org.jlibsedml.Variable;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.Variable;
 
 import java.util.Map;
 import java.util.LinkedHashMap;

@@ -3,8 +3,8 @@ package org.jlibsedml.validation;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jlibsedml.SEDMLDocument;
-import org.jlibsedml.SedML;
+import org.jlibsedml.SedMLDocument;
+import org.jlibsedml.SedMLDataClass;
 import org.jlibsedml.SedMLError;
 import org.jlibsedml.XMLException;
 /**
@@ -14,13 +14,13 @@ import org.jlibsedml.XMLException;
  */
 public class SEDMLSchemaValidator implements ISedMLValidator {
 
-	private final SedML sedml;
+	private final SedMLDataClass sedml;
 
 	/**
-	 * @param sedml A non-null {@link SedML} object.
+	 * @param sedml A non-null {@link SedMLDataClass} object.
 	 * @throws IllegalArgumentException if <code>sedml</code> is null.
 	 */
-	public SEDMLSchemaValidator(SedML sedml) {
+	public SEDMLSchemaValidator(SedMLDataClass sedml) {
 		super();
 		if( sedml ==null){
 			throw new IllegalArgumentException();
@@ -34,7 +34,7 @@ public class SEDMLSchemaValidator implements ISedMLValidator {
 	 */
 	public List<SedMLError> validate() throws XMLException {
 		final List<SedMLError> errors = new ArrayList<SedMLError>();
-		String xmlAsString = new SEDMLDocument(sedml).writeDocumentToString();
+		String xmlAsString = new SedMLDocument(sedml).writeDocumentToString();
 		new SchemaValidatorImpl().validateSedMLString(errors, xmlAsString);
 		return errors;
 	}   

@@ -14,8 +14,12 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jlibsedml.DataSet;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.output.DataSet;
 import org.jlibsedml.*;
+import org.jlibsedml.components.output.Output;
+import org.jlibsedml.components.output.Report;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
 import org.vcell.cli.run.results.ValueHolder;
 import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
 import org.vcell.util.DataAccessException;
@@ -146,7 +150,7 @@ public class RunUtils {
         return yi;
     }
 
-    public static HashMap<String, File> generateReportsAsCSV(SedML sedml, Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults, File outDirForCurrentSedml) {
+    public static HashMap<String, File> generateReportsAsCSV(SedMLDataClass sedml, Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults, File outDirForCurrentSedml) {
         // finally, the real work
         HashMap<String, File> reportsHash = new HashMap<>();
         for (Output sedmlOutput : sedml.getOutputs()) {

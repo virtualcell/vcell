@@ -8,6 +8,13 @@ import cbit.vcell.solver.TempSimulation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
+import org.jlibsedml.components.Variable;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.output.*;
+import org.jlibsedml.components.simulation.Simulation;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
+import org.jlibsedml.components.task.AbstractTask;
+import org.jlibsedml.components.task.RepeatedTask;
 import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.cli.run.hdf5.Hdf5SedmlResults;
@@ -25,7 +32,7 @@ import java.util.*;
 public class SpatialResultsConverter extends ResultsConverter {
     private final static Logger logger = LogManager.getLogger(SpatialResultsConverter.class);
 
-    public static Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> organizeSpatialResultsBySedmlDataGenerator(SedML sedml, Map<TaskJob, SpatialSBMLSimResults> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, MathException, IOException, ExecutionException, DataAccessException {
+    public static Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> organizeSpatialResultsBySedmlDataGenerator(SedMLDataClass sedml, Map<TaskJob, SpatialSBMLSimResults> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, MathException, IOException, ExecutionException, DataAccessException {
         Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> spatialOrganizedResultsMap = new HashMap<>();
         if (spatialResultsHash.isEmpty()) return spatialOrganizedResultsMap;
 
@@ -61,8 +68,8 @@ public class SpatialResultsConverter extends ResultsConverter {
         return spatialOrganizedResultsMap;
     }
 
-    public static Map<Report, List<Hdf5SedmlResults>> prepareSpatialDataForHdf5(SedML sedml, Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> spatialResultsMapping,
-                                                                                   Set<DataGenerator> allValidDataGenerators, String sedmlLocation, boolean isBioSimMode) {
+    public static Map<Report, List<Hdf5SedmlResults>> prepareSpatialDataForHdf5(SedMLDataClass sedml, Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> spatialResultsMapping,
+                                                                                Set<DataGenerator> allValidDataGenerators, String sedmlLocation, boolean isBioSimMode) {
         Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
         if (spatialResultsMapping.isEmpty()){
             logger.debug("No spatial data generated; No need to prepare non-existent data!");
@@ -157,9 +164,9 @@ public class SpatialResultsConverter extends ResultsConverter {
         return results;
     }
 
-    private static ValueHolder<LazySBMLSpatialDataAccessor> getSpatialValueHolderForDataGenerator(SedML sedml, DataGenerator dataGen,
-                                                                                  Map<TaskJob, SpatialSBMLSimResults> spatialResultsHash,
-                                                                                  Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, ExecutionException, MathException, IOException, DataAccessException {
+    private static ValueHolder<LazySBMLSpatialDataAccessor> getSpatialValueHolderForDataGenerator(SedMLDataClass sedml, DataGenerator dataGen,
+                                                                                                  Map<TaskJob, SpatialSBMLSimResults> spatialResultsHash,
+                                                                                                  Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, ExecutionException, MathException, IOException, DataAccessException {
         if (dataGen == null) throw new IllegalArgumentException("Provided Data Generator can not be null!");
         Map<Variable, ValueHolder<LazySBMLSpatialDataAccessor>> resultsByVariable = new HashMap<>();
         int maxLengthOfData = 0;
@@ -171,7 +178,7 @@ public class SpatialResultsConverter extends ResultsConverter {
             AbstractTask baseTask = ResultsConverter.getBaseTask(topLevelTask, sedml); // if !RepeatedTask, baseTask == topLevelTask
 
             // from the task we get the sbml model
-            org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(baseTask.getSimulationReference());
+            Simulation sedmlSim = sedml.getSimulation(baseTask.getSimulationReference());
 
             if (!(sedmlSim instanceof UniformTimeCourse utcSim)){
                 logger.error("only uniform time course simulations are supported");
