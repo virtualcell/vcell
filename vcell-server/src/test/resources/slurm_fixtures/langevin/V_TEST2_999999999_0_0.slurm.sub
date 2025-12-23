@@ -1,0 +1,345 @@
+#!/usr/bin/bash
+#SBATCH --partition=vcell
+#SBATCH --reservation=
+#SBATCH --qos=vcell
+#SBATCH -J V_TEST2_999999999_0_0
+#SBATCH -o /share/apps/vcell3/htclogs/V_TEST2_999999999_0_.slurm.log
+#SBATCH -e /share/apps/vcell3/htclogs/V_TEST2_999999999_0_.slurm.log
+#SBATCH --ntasks=3			# number of concurrent tasks
+#SBATCH --cpus-per-task=1
+#SBATCH --mem-per-cpu=4096M
+#SBATCH --nodes=1
+#SBATCH --time=52:49:00		# timeout for the entire job
+#SBATCH --no-kill
+#SBATCH --no-requeue
+
+set -o errexit
+set -o pipefail
+set -o nounset
+set +e
+
+# Script-controlled variables (populated by generator in real use)
+USERID=danv
+SIM_ID=999999999
+TOTAL_JOBS=8            # to be set by generator to lso.getTotalNumberOfJobs()
+JOB_TIMEOUT_SECONDS=28800  # per-job timeout (seconds), adjust per generator
+LOG_FILE="/share/apps/vcell3/htclogs/V_TEST2_999999999_0_.submit.log"
+MESSAGING_CONFIG_FILE="/share/apps/vcell3/users/danv/SimID_999999999_0_.langevinMessagingConfig"
+
+# Truncate / delete various logs and the solver input file, to start clean
+: > /share/apps/vcell3/htclogs/V_TEST2_${SIM_ID}_0_.slurm.log
+rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_*.log
+rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0__*.ida
+rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0__*.json
+rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.functions
+rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.langevinInput
+rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.langevinMessagingConfig
+
+echo "=== Singularity check BEFORE module load ==="
+if command -v singularity >/dev/null 2>&1; then
+    echo "Singularity found at: $(command -v singularity)"
+    singularity --version
+else
+    echo "Singularity not found before module load"
+fi
+
+TMPDIR=/scratch/vcell
+if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi
+echo `hostname`
+export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles
+if [ -f /usr/share/modules/init/bash ]; then
+    source /usr/share/modules/init/bash
+    module load singularity/vcell-3.10.0
+else
+    echo "[Warning] Module init script not found - skipping module setup"
+fi
+export SINGULARITY_CACHEDIR=/share/apps/vcell3/singularity/cachdir
+export SINGULARITY_PULLFOLDER=/share/apps/vcell3/singularity/pullfolder
+
+echo "=== Singularity check AFTER module load ==="
+if command -v singularity >/dev/null 2>&1; then
+    echo "Singularity found at: $(command -v singularity)"
+    singularity --version
+else
+    echo "Singularity not found after module load"
+    exit 127
+fi
+
+# Compute memory per task and per job
+MEM_TASK=$(( SLURM_MEM_PER_CPU * SLURM_CPUS_PER_TASK ))
+MEM_JOB=$(( MEM_TASK * SLURM_NTASKS ))
+
+echo "======= SLURM job started ======="
+echo "Hostname       : $(hostname -f)"
+echo "User           : $USERID"
+echo "Sim ID         : $SIM_ID"
+echo "id             : $(id)"
+echo "Total Jobs     : $TOTAL_JOBS"
+echo "Job Timeout    : $JOB_TIMEOUT_SECONDS"
+echo "Slurm Job ID   : $SLURM_JOB_ID"
+echo "Slurm Job Name : $SLURM_JOB_NAME"
+echo "Start Time     : $(date)"
+echo "Working Dir    : $(pwd)"
+echo "Node List      : $SLURM_NODELIST"
+echo "CPUs per task  : $SLURM_CPUS_PER_TASK"
+echo "Mem. per task  : ${MEM_TASK} MB total"
+echo "Mem. per job   : ${MEM_JOB} MB total"
+echo "Environment snapshot:"
+env
+echo "================================="
+
+container_bindings="--bind /share/apps/vcell3/users:/simdata "
+container_bindings+="--bind /share/apps/vcell7/users:/simdata_secondary "
+container_bindings+="--bind /share/apps/vcell12/users:/share/apps/vcell12/users "
+container_bindings+="--bind /share/apps/vcell3/htclogs:/htclogs "
+container_bindings+="--bind /scratch/vcell:/solvertmp "
+
+container_env="--env java_mem_Xmx=3600M "
+container_env+="--env jmshost_sim_internal=k8s-wn-01.cam.uchc.edu "
+container_env+="--env jmsport_sim_internal=31618 "
+container_env+="--env jmsrestport_sim_internal=30163 "
+container_env+="--env jmsuser=clientUser "
+container_env+="--env jmspswd=dummy "
+container_env+="--env jmsblob_minsize=100000 "
+container_env+="--env mongodbhost_internal=rke-wn-01.cam.uchc.edu "
+container_env+="--env mongodbport_internal=30019 "
+container_env+="--env mongodb_database=test "
+container_env+="--env primary_datadir_external=/share/apps/vcell3/users "
+container_env+="--env secondary_datadir_external=/share/apps/vcell7/users "
+container_env+="--env htclogdir_external=/share/apps/vcell3/htclogs "
+container_env+="--env softwareVersion=Rel_Version_7.7.0_build_39 "
+container_env+="--env serverid=TEST2 "
+
+# Full solver command
+solver_docker_name=ghcr.io/virtualcell/vcell-batch:7.7.0.39
+solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} docker://${solver_docker_name}"
+batch_docker_name=ghcr.io/virtualcell/vcell-batch:7.7.0.39
+batch_container_prefix="singularity run --containall ${container_bindings} ${container_env} docker://${batch_docker_name}"
+slurm_prefix="srun -N1 -n1 -c${SLURM_CPUS_PER_TASK}"
+
+# === From here down, the code is identical for all jobs and should be copied from a resource file ===
+
+echo "Job Execution Log" > "${LOG_FILE}"
+echo "------------------" >> "${LOG_FILE}"
+echo "=== [$(date)] === SLURM job ${SLURM_JOB_ID} started on $(hostname)" | tee -a "${LOG_FILE}"
+
+SIMXML="/simdata/${USERID}/SimID_${SIM_ID}_0__0.simtask.xml"  # preprocessor XML path (per-user)
+echo "[Preprocess] Running JavaPreprocessor64 ${SIMXML}" | tee -a "${LOG_FILE}"
+
+# run JavaPreprocessor64 inside batch container (use generated batch prefix)
+${batch_container_prefix} JavaPreprocessor64 "${SIMXML}" "/simdata/${USERID}"
+stat=$?
+echo "JavaPreprocessor64 returned ${stat}" | tee -a "${LOG_FILE}"
+if [ $stat -ne 0 ]; then
+  ${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 $stat "/htclogs/${SLURM_JOB_NAME}.slurm.sub" || true
+  echo "Preprocessor failed; exiting ${stat}" | tee -a "${LOG_FILE}"
+  exit $stat
+fi
+
+# ----------------------------------------------------------------------------------------------
+
+echo "Parse the messaging config file"
+broker_host=""; broker_port=""; broker_username=""; broker_password=""
+vc_username=""; simKey=""; taskID=""; jobIndex=""
+while IFS="=" read -r key value; do
+  case "$key" in
+    broker_host)       broker_host="$value" ;;
+    broker_port)       broker_port="$value" ;;
+    broker_username)   broker_username="$value" ;;
+    broker_password)   broker_password="$value" ;;
+    vc_username)       vc_username="$value" ;;
+    simKey)            simKey="$value" ;;
+    taskID)            taskID="$value" ;;
+    jobIndex)          jobIndex="$value" ;;
+  esac
+done < "$MESSAGING_CONFIG_FILE"
+
+echo "Parsed configuration:"
+echo "  broker_host     = $broker_host"
+echo "  broker_port     = $broker_port"
+echo "  broker_username = $broker_username"
+echo "  broker_password = $broker_password"
+echo "  vc_username     = $vc_username"
+echo "  simKey          = $simKey"
+echo "  taskID          = $taskID"
+echo "  jobIndex        = $jobIndex"
+
+statusCode=1001
+statusMsg="Running"
+# Immutable part, built once
+BASE_PROPERTIES="JMSDeliveryMode=persistent&JMSTimeToLive=3000"
+BASE_PROPERTIES+="&SimKey=${simKey}"
+BASE_PROPERTIES+="&JobIndex=${jobIndex}"
+BASE_PROPERTIES+="&TaskID=${taskID}"
+BASE_PROPERTIES+="&UserName=${vc_username}"
+BASE_PROPERTIES+="&MessageType=WorkerEvent"
+BASE_PROPERTIES+="&HostName=$(hostname)"
+
+INPUT_DIR="/simdata/${USERID}"  # on singularity, each solver instance reads inputs from here
+LOG_DIR="/simdata/${USERID}"    # on singularity, each solver instance writes logs here
+declare -A job_pid_map
+job_pids=()
+running_jobs=0
+any_fail=0
+max_concurrent_jobs=${SLURM_NTASKS:-4}    # actually these are tasks
+echo "max_concurrent_jobs: ${max_concurrent_jobs}" >> "${LOG_FILE}"
+echo "TOTAL_JOBS to launch: ${TOTAL_JOBS}" >> "${LOG_FILE}"
+
+finished_jobs=0           # messaging counters
+last_notify_time=0
+MIN_NOTIFY_INTERVAL=10    # seconds
+
+for ((i = 0; i < TOTAL_JOBS; i++)); do
+    echo "Task $i starting at $(date)" >> "${LOG_FILE}"    # log task start
+
+    (   # run each task in parallel
+        timeout "${JOB_TIMEOUT_SECONDS}s" \
+        ${slurm_prefix} ${solver_container_prefix} \
+        langevin_x64 simulate \
+        --output-log="${LOG_DIR}/SimID_${SIM_ID}_0_${i}.log" \
+        "${INPUT_DIR}/SimID_${SIM_ID}_0_.langevinInput" \
+        "$i" \
+        -tid 0
+    ) &
+    pid=$!                # capture the task PID
+    echo "PID is $pid" >> "${LOG_FILE}"
+    job_pids+=($pid)      # store the PID
+    job_pid_map[$pid]=$i  # map task index to PID
+    ((running_jobs++))    # increment running task count
+    echo "currently running jobs: ${running_jobs}" >> "${LOG_FILE}"
+
+    # wait for a finished task before launching a new one if we hit the concurrency limit
+    while (( running_jobs >= max_concurrent_jobs )); do
+        for idx in "${!job_pids[@]}"; do
+            pid="${job_pids[$idx]}"
+            if [[ -z "${pid}" ]]; then continue; fi
+            if ! kill -0 "$pid" 2>/dev/null; then   # check if process is still running
+                wait "$pid"       #
+                exit_code=$?
+                job_index=${job_pid_map[$pid]:-unknown}  # retrieve original task index
+                echo "Task $job_index with pid ${pid} finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
+                unset "job_pids[$idx]"        # remove PID from active PID list
+                unset "job_pid_map[$pid]"     # remove mapping
+                ((running_jobs--))
+                ((finished_jobs++))
+                progress=$(awk "BEGIN {print ${finished_jobs}/(${TOTAL_JOBS}+1)}")  # compute progress
+                timepoint=$(date +%s)
+                if (( timepoint - last_notify_time >= MIN_NOTIFY_INTERVAL )); then
+                  last_notify_time=$timepoint
+                  statusCode=1001
+                  statusMsg="Running"
+                  RUNTIME_PROPERTIES="&WorkerEvent_Status=${statusCode}"
+                  RUNTIME_PROPERTIES+="&WorkerEvent_StatusMsg=${statusMsg}"
+                  RUNTIME_PROPERTIES+="&WorkerEvent_TimePoint=${timepoint}"
+                  RUNTIME_PROPERTIES+="&WorkerEvent_Progress=${progress}"
+                  PROPERTIES="${BASE_PROPERTIES}${RUNTIME_PROPERTIES}"
+                  msgCommand="set -o errexit; set -o pipefail; set -o nounset"
+                  msgCommand+="
+                  curl -v -XPOST \"http://${broker_username}:${broker_password}@${broker_host}:${broker_port}/api/message/workerEvent?type=queue&${PROPERTIES}\""
+                  ${solver_container_prefix} /bin/bash -c "$msgCommand"   # execute inside singularity
+                  echo "progress notification sent, ${progress} done" >> "${LOG_FILE}"
+                fi
+                if [[ $exit_code -ne 0 ]]; then any_fail=1; fi
+                break                # exit for-loop once we free up a slot
+            fi
+        done
+        sleep 1     # allow brief pause before rechecking
+    done
+done
+
+# Final wait for remaining tasks
+for pid in "${job_pids[@]}"; do
+    if [[ -z "${pid}" ]]; then continue; fi
+    wait "$pid"
+    exit_code=$?
+    job_index=${job_pid_map[$pid]:-unknown}
+    echo "Task $job_index finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
+    ((finished_jobs++))
+    progress=$(awk "BEGIN {print ${finished_jobs}/(${TOTAL_JOBS}+1)}")  # compute progress
+    timepoint=$(date +%s)
+    if (( timepoint - last_notify_time >= MIN_NOTIFY_INTERVAL )); then
+      last_notify_time=$timepoint
+      statusCode=1001
+      statusMsg="Running"
+      RUNTIME_PROPERTIES="&WorkerEvent_Status=${statusCode}"
+      RUNTIME_PROPERTIES+="&WorkerEvent_StatusMsg=${statusMsg}"
+      RUNTIME_PROPERTIES+="&WorkerEvent_TimePoint=${timepoint}"
+      RUNTIME_PROPERTIES+="&WorkerEvent_Progress=${progress}"
+      PROPERTIES="${BASE_PROPERTIES}${RUNTIME_PROPERTIES}"
+      msgCommand="set -o errexit; set -o pipefail; set -o nounset"
+      msgCommand+="
+      curl -v -XPOST \"http://${broker_username}:${broker_password}@${broker_host}:${broker_port}/api/message/workerEvent?type=queue&${PROPERTIES}\""
+      ${solver_container_prefix} /bin/bash -c "$msgCommand"   # execute inside singularity
+      echo "progress notification sent, ${progress} done" >> "${LOG_FILE}"
+    fi
+    if [[ $exit_code -ne 0 ]]; then any_fail=1; fi
+done
+echo "Batch job completed at $(date)" >> "${LOG_FILE}"
+
+# ----------------------------------------------------------------------------------------------
+# postprocess solver invocation (runs after all simulations finish)
+echo "Starting the last job (postprocess) at $(date)" >> "${LOG_FILE}"
+timeout "${JOB_TIMEOUT_SECONDS}s" \
+        ${slurm_prefix} ${solver_container_prefix} \
+        langevin_x64 postprocess \
+        "${INPUT_DIR}/SimID_${SIM_ID}_0_.langevinInput" \
+        ${TOTAL_JOBS} \
+        --output-log="${LOG_DIR}/SimID_${SIM_ID}_0_P.log" \
+        --vc-print-status &
+
+last_pid=$!
+wait $last_pid
+exit_code=$?
+echo "Task 'Last' with PID $last_pid finished with exit code $exit_code at $(date)" >> "${LOG_FILE}"
+timepoint=$(date +%s)
+progress="1.0"
+statusCode=1001
+statusMsg="Running"
+RUNTIME_PROPERTIES="&WorkerEvent_Status=${statusCode}"
+RUNTIME_PROPERTIES+="&WorkerEvent_StatusMsg=${statusMsg}"
+RUNTIME_PROPERTIES+="&WorkerEvent_TimePoint=${timepoint}"
+RUNTIME_PROPERTIES+="&WorkerEvent_Progress=${progress}"
+PROPERTIES="${BASE_PROPERTIES}${RUNTIME_PROPERTIES}"
+msgCommand="set -o errexit; set -o pipefail; set -o nounset"
+msgCommand+="
+curl -v -XPOST \"http://${broker_username}:${broker_password}@${broker_host}:${broker_port}/api/message/workerEvent?type=queue&${PROPERTIES}\""
+${solver_container_prefix} /bin/bash -c "$msgCommand"   # execute inside singularity
+echo "progress notification sent, ${progress} done" >> "${LOG_FILE}"
+statusCode=1003
+statusMsg="Finished"
+RUNTIME_PROPERTIES="&WorkerEvent_Status=${statusCode}"
+RUNTIME_PROPERTIES+="&WorkerEvent_StatusMsg=${statusMsg}"
+RUNTIME_PROPERTIES+="&WorkerEvent_TimePoint=${timepoint}"
+RUNTIME_PROPERTIES+="&WorkerEvent_Progress=${progress}"
+PROPERTIES="${BASE_PROPERTIES}${RUNTIME_PROPERTIES}"
+msgCommand="set -o errexit; set -o pipefail; set -o nounset"
+msgCommand+="
+curl -v -XPOST \"http://${broker_username}:${broker_password}@${broker_host}:${broker_port}/api/message/workerEvent?type=queue&${PROPERTIES}\""
+${solver_container_prefix} /bin/bash -c "$msgCommand"   # execute inside singularity
+echo "FINISHED notification sent" >> "${LOG_FILE}"
+echo "The final task finished at $(date)" >> "${LOG_FILE}"
+echo "All tasks completed at $(date)" >> "${LOG_FILE}"
+
+# ----------------------------------------------------------------------------------------------
+# run JavaPostprocessor64 inside batch container
+echo "[Postprocess] Running JavaPostprocessor64..." | tee -a "${LOG_FILE}"
+timeout 20s ${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 "${TOTAL_JOBS}" "/htclogs/${SLURM_JOB_NAME}.slurm.sub"
+post_exit=$?
+set -e
+
+# final exit decision
+if [[ "${any_fail}" -ne 0 ]]; then
+  echo "One or more simulation tasks failed; exiting non-zero" | tee -a "${LOG_FILE}"
+  exit 1
+fi
+
+if [[ "${post_exit}" -eq 124 ]]; then
+  echo "JavaPostprocessor64 timed out after 20 seconds; exiting with code 124" | tee -a "${LOG_FILE}"
+  exit 124
+elif [[ "${post_exit}" -ne 0 ]]; then
+  echo "JavaPostprocessor64 failed with exit code ${post_exit}; exiting ${post_exit}" | tee -a "${LOG_FILE}"
+  exit "${post_exit}"
+fi
+
+echo "=== [$(date)] === SLURM job completed successfully" | tee -a "${LOG_FILE}"
+exit 0

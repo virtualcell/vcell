@@ -1,0 +1,170 @@
+#!/usr/bin/bash
+#SBATCH --partition=vcell
+#SBATCH --reservation=
+#SBATCH --qos=vcell
+#SBATCH -J V_TEST2_888888888_0_0
+#SBATCH -o /share/apps/vcell3/htclogs/V_TEST2_888888888_0_.slurm.log
+#SBATCH -e /share/apps/vcell3/htclogs/V_TEST2_888888888_0_.slurm.log
+#SBATCH --ntasks=3			# number of concurrent tasks
+#SBATCH --cpus-per-task=1
+#SBATCH --mem-per-cpu=4096M
+#SBATCH --nodes=1
+#SBATCH --time=00:33:00		# timeout for the entire job
+#SBATCH --no-kill
+#SBATCH --no-requeue
+
+set -o errexit
+set -o pipefail
+set -o nounset
+set +e
+
+# Script-controlled variables (populated by generator in real use)
+USERID=danv
+SIM_ID=888888888
+TOTAL_JOBS=8            # to be set by generator to lso.getTotalNumberOfJobs()
+JOB_TIMEOUT_SECONDS=300  # per-job timeout (seconds), adjust per generator
+
+# Truncate / delete various logs and the solver input file, to start clean
+: > /share/apps/vcell3/htclogs/V_TEST2_${SIM_ID}_0_.slurm.log
+
+echo "=== Singularity check BEFORE module load ==="
+if command -v singularity >/dev/null 2>&1; then
+    echo "Singularity found at: $(command -v singularity)"
+    singularity --version
+else
+    echo "Singularity not found before module load"
+fi
+
+TMPDIR=/scratch/vcell
+if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi
+echo `hostname`
+export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles
+if [ -f /usr/share/modules/init/bash ]; then
+    source /usr/share/modules/init/bash
+    module load singularity/vcell-3.10.0
+else
+    echo "[Warning] Module init script not found - skipping module setup"
+fi
+export SINGULARITY_CACHEDIR=/share/apps/vcell3/singularity/cachdir
+export SINGULARITY_PULLFOLDER=/share/apps/vcell3/singularity/pullfolder
+
+echo "=== Singularity check AFTER module load ==="
+if command -v singularity >/dev/null 2>&1; then
+    echo "Singularity found at: $(command -v singularity)"
+    singularity --version
+else
+    echo "Singularity not found after module load"
+    exit 127
+fi
+
+# Compute memory per task and per job
+MEM_TASK=$(( SLURM_MEM_PER_CPU * SLURM_CPUS_PER_TASK ))
+MEM_JOB=$(( MEM_TASK * SLURM_NTASKS ))
+
+echo "======= SLURM job started ======="
+echo "Hostname       : $(hostname -f)"
+echo "User           : $USERID"
+echo "Sim ID         : $SIM_ID"
+echo "id             : $(id)"
+echo "Total Jobs     : $TOTAL_JOBS"
+echo "Job Timeout    : $JOB_TIMEOUT_SECONDS"
+echo "Slurm Job ID   : $SLURM_JOB_ID"
+echo "Slurm Job Name : $SLURM_JOB_NAME"
+echo "Start Time     : $(date)"
+echo "Working Dir    : $(pwd)"
+echo "Node List      : $SLURM_NODELIST"
+echo "CPUs per task  : $SLURM_CPUS_PER_TASK"
+echo "Mem. per task  : ${MEM_TASK} MB total"
+echo "Mem. per job   : ${MEM_JOB} MB total"
+echo "Environment snapshot:"
+env
+echo "================================="
+
+container_bindings="--bind /share/apps/vcell3/users:/simdata "
+container_bindings+="--bind /share/apps/vcell7/users:/simdata_secondary "
+container_bindings+="--bind /share/apps/vcell12/users:/share/apps/vcell12/users "
+container_bindings+="--bind /share/apps/vcell3/htclogs:/htclogs "
+container_bindings+="--bind /scratch/vcell:/solvertmp "
+
+container_env="--env java_mem_Xmx=3600M "
+container_env+="--env jmshost_sim_internal=rke-wn-01.cam.uchc.edu "
+container_env+="--env jmsport_sim_internal=31618 "
+container_env+="--env jmsrestport_sim_internal=30163 "
+container_env+="--env jmsuser=clientUser "
+container_env+="--env jmspswd=dummy "
+container_env+="--env jmsblob_minsize=100000 "
+container_env+="--env mongodbhost_internal=rke-wn-01.cam.uchc.edu "
+container_env+="--env mongodbport_internal=30019 "
+container_env+="--env mongodb_database=test "
+container_env+="--env primary_datadir_external=/share/apps/vcell3/users "
+container_env+="--env secondary_datadir_external=/share/apps/vcell7/users "
+container_env+="--env htclogdir_external=/share/apps/vcell3/htclogs "
+container_env+="--env softwareVersion=Rel_Version_7.7.0_build_34 "
+container_env+="--env serverid=TEST2 "
+
+# Container image path
+sif_path="/share/apps/vcell3/singularity/cachdir/sif/vcell-batch-7.7.0.34.sif"
+# Full solver command
+batch_container_prefix="singularity run --containall ${container_bindings} ${container_env} ${sif_path}"
+solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} ${sif_path}"
+slurm_prefix="srun -N1 -n1 -c${SLURM_CPUS_PER_TASK}"
+
+echo "Job Execution Log"
+echo "------------------"
+echo "=== [$(date)] === SLURM job ${SLURM_JOB_ID} started on $(hostname)"
+
+INPUT_DIR="/simdata/${USERID}"
+CONFIG_FILE="/share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.langevinMessagingConfig"
+
+echo "Parse config file once"
+broker_host=""; broker_port=""; broker_username=""; broker_password=""
+vc_username=""; simKey=""; taskID=""; jobIndex=""
+while IFS="=" read -r key value; do
+  case "$key" in
+    broker_host)       broker_host="$value" ;;
+    broker_port)       broker_port="$value" ;;
+    broker_username)   broker_username="$value" ;;
+    broker_password)   broker_password="$value" ;;
+    vc_username)       vc_username="$value" ;;
+    simKey)            simKey="$value" ;;
+    taskID)            taskID="$value" ;;
+    jobIndex)          jobIndex="$value" ;;
+  esac
+done < "$CONFIG_FILE"
+echo "Parsed configuration:"
+echo "  broker_host     = $broker_host"
+echo "  broker_port     = $broker_port"
+echo "  broker_username = $broker_username"
+echo "  broker_password = $broker_password"
+echo "  vc_username     = $vc_username"
+echo "  simKey          = $simKey"
+echo "  taskID          = $taskID"
+echo "  jobIndex        = $jobIndex"
+
+statusCode=1001
+statusMsg="Running"
+# Immutable part, built once
+BASE_PROPERTIES="JMSDeliveryMode=persistent&JMSTimeToLive=3000"
+BASE_PROPERTIES+="&SimKey=${simKey}"
+BASE_PROPERTIES+="&JobIndex=${jobIndex}"
+BASE_PROPERTIES+="&TaskID=${taskID}"
+BASE_PROPERTIES+="&UserName=${vc_username}"
+BASE_PROPERTIES+="&MessageType=WorkerEvent"
+BASE_PROPERTIES+="&WorkerEvent_Status=${statusCode}"
+BASE_PROPERTIES+="&WorkerEvent_StatusMsg=${statusMsg}"
+BASE_PROPERTIES+="&HostName=$(hostname)"
+
+# --------------------------------------------------------------------------------
+
+# Build only the execution command (after each task in the production code)
+timepoint=$(date +%s)
+progress=0.5
+PROPERTIES="${BASE_PROPERTIES}&WorkerEvent_TimePoint=${timepoint}&WorkerEvent_Progress=${progress}"
+
+msgCommand="set -o errexit; set -o pipefail; set -o nounset"
+msgCommand+="
+curl -v -XPOST \"http://${broker_username}:${broker_password}@${broker_host}:${broker_port}/api/message/workerEvent?type=queue&${PROPERTIES}\""
+${solver_container_prefix} /bin/bash -c "$msgCommand"   # Execute inside singularity
+
+echo "=== [$(date)] === MESSAGING job completed successfully"
+exit 0

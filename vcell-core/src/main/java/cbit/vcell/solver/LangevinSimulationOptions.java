@@ -27,7 +27,8 @@ import cbit.vcell.math.VCML;
 
 public class LangevinSimulationOptions implements Serializable, Matchable, VetoableChangeListener {
 
-	// TODO: add the partition definitions in the LangevinOptionsPanel
+	public final static int DefaultNumberOfConcurrentJobs = 20;	// used for multiple runs on the cluster
+	public final static int DefaultTotalNumberOfJobs = 100;
 
 	public final static String Partition_Nx = "Partition Nx: ";
 	public final static String Partition_Ny = "Partition Ny: ";
@@ -46,7 +47,11 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	// randomSeed may be null, in which case the solver will generate its own randomSeed as it already does
 	protected BigInteger randomSeed = null;
 
-	protected int numOfParallelLocalRuns = 1;	// how many instances of the solver run in parallel
+	// both initialized to 1 - only one job will be run on the cluster
+	protected int totalNumberOfJobs	= 1;			// how many jobs will be run on the cluster
+	protected int numberOfConcurrentJobs = 1;		// how many instances of the solver may run concurrently on the cluster
+//	@Deprecated
+	protected int numOfParallelLocalRuns = 1;		// replaced by numberOfConcurrentJobs but kept for backward compatibility
 
 	protected double intervalSpring = 1.00E-9;	// default: dtspring: 1.00E-9	- from advanced
 	protected double intervalImage = 1.00E-4;	// default: dtimage: 1.00E-4	- from advanced
@@ -63,7 +68,9 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	public LangevinSimulationOptions(LangevinSimulationOptions langevinSimulationOptions) {
 		this();
 		randomSeed = langevinSimulationOptions.randomSeed;
-		numOfParallelLocalRuns = langevinSimulationOptions.numOfParallelLocalRuns;
+//		numOfParallelLocalRuns = langevinSimulationOptions.numOfParallelLocalRuns;
+		totalNumberOfJobs = langevinSimulationOptions.totalNumberOfJobs;
+		numberOfConcurrentJobs = langevinSimulationOptions.numberOfConcurrentJobs;
 		intervalSpring = langevinSimulationOptions.intervalSpring;
 		intervalImage = langevinSimulationOptions.intervalImage;
 		npart[0] = langevinSimulationOptions.npart[0];
@@ -84,7 +91,10 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		if(randomSeed != langevinSimulationOptions.randomSeed) {
 			return false;
 		}
-		if(numOfParallelLocalRuns != langevinSimulationOptions.numOfParallelLocalRuns) {
+		if(totalNumberOfJobs != langevinSimulationOptions.totalNumberOfJobs) {
+			return false;
+		}
+		if(numberOfConcurrentJobs != langevinSimulationOptions.numberOfConcurrentJobs) {
 			return false;
 		}
 		if(intervalSpring != langevinSimulationOptions.intervalSpring) {
@@ -102,10 +112,17 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 	}
 // -----------------------------------------------------------------------------------
 
-	// can be between 0 and numOfTrials-1
-	public int getNumOfParallelLocalRuns() {
-		return numOfParallelLocalRuns;
+//	@Deprecated
+//	public int getNumOfParallelLocalRuns() {	// // can be between 0 and numOfTrials-1
+//		return numOfParallelLocalRuns;
+//	}
+	public int getTotalNumberOfJobs() {
+		return totalNumberOfJobs;
 	}
+	public int getNumberOfConcurrentJobs() {	// // can be between 0 and totalNumberOfJobs-1
+		return numberOfConcurrentJobs;
+	}
+
 	public double getIntervalSpring() {
 		return intervalSpring;
 	}
@@ -122,8 +139,15 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		return randomSeed;
 	}
 
-	public final void setNumOfParallelLocalRuns(int newValue) {
-		this.numOfParallelLocalRuns = newValue;
+//	@Deprecated
+//	public final void setNumOfParallelLocalRuns(int newValue) {
+//		this.numOfParallelLocalRuns = newValue;
+//	}
+public final void setTotalNumberOfJobs(int newValue) {
+	this.totalNumberOfJobs = newValue;
+}
+	public final void setNumberOfConcurrentJobs(int newValue) {
+		this.numberOfConcurrentJobs = newValue;
 	}
 	public final void setIntervalSpring(double newValue) {
 		this.intervalSpring = newValue;
@@ -187,7 +211,8 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Nx + " " + npart[0] + "\n");
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Ny + " " + npart[1] + "\n");
 		buffer.append("\t\t" + VCML.LangevinSimulationOptions_Partition_Nz + " " + npart[2] + "\n");
-		buffer.append("\t\t" + VCML.LangevinSimulationOptions_numOfParallelLocalRuns + " " + numOfParallelLocalRuns + "\n");
+		buffer.append("\t\t" + VCML.LangevinSimulationOptions_numberOfConcurrentJobs + " " + numberOfConcurrentJobs + "\n");
+		buffer.append("\t\t" + VCML.LangevinSimulationOptions_totalNumberOfJobs + " " + totalNumberOfJobs + "\n");
 		buffer.append("\t" + VCML.EndBlock + "\n");
 		return buffer.toString();
 	}
@@ -211,7 +236,13 @@ public class LangevinSimulationOptions implements Serializable, Matchable, Vetoa
 				randomSeed = new BigInteger(token);
 			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_numOfParallelLocalRuns)) {
 				token = tokens.nextToken();
-				numOfParallelLocalRuns = Integer.parseInt(token);
+				numOfParallelLocalRuns = Integer.parseInt(token);	// not in use anymore, may be present in some old VCML files
+			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_totalNumberOfJobs)) {
+				token = tokens.nextToken();
+				totalNumberOfJobs = Integer.parseInt(token);
+			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_numberOfConcurrentJobs)) {
+				token = tokens.nextToken();
+				numberOfConcurrentJobs = Integer.parseInt(token);
 			} else if(token.equalsIgnoreCase(VCML.LangevinSimulationOptions_intervalSpring)) {
 				token = tokens.nextToken();
 				intervalSpring = Double.parseDouble(token);

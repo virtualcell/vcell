@@ -4,27 +4,33 @@ import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.PortableCommand;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solvers.ExecutableCommand;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static cbit.vcell.message.server.htc.HtcProxy.toUnixStyleText;
 
 
 @Tag("Fast")
 public class SlurmProxyTest {
 
-	private final HashMap<String,String> originalProperties = new HashMap<>();
+	private final HashMap<String,String> originalProperties = new LinkedHashMap<>();
 
 	private void setProperty(String key, String value) {
-		originalProperties.put(key, System.getProperty(key));
+		originalProperties.putIfAbsent(key, System.getProperty(key));
 		System.setProperty(key, value);
 	}
 
@@ -92,11 +98,20 @@ public class SlurmProxyTest {
 
 	public String createScriptForNativeSolvers(String simTaskResourcePath, String[] command, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
 
+		String os = System.getProperty("os.name").toLowerCase();
+		boolean isWindows = os.startsWith("windows");
+
 		SimulationTask simTask = XmlHelper.XMLToSimTask(readTextFileFromResource(simTaskResourcePath));
 		KeyValue simKey = simTask.getSimKey();
 
 		SlurmProxy slurmProxy = new SlurmProxy(null, "vcell");
 		File subFileExternal = new File("/share/apps/vcell3/htclogs/V_REL_"+simKey+"_0_0.slurm.sub");
+		String subFileExternalPath = subFileExternal.getAbsolutePath();
+		if(isWindows) {
+			subFileExternalPath = subFileExternalPath
+					.replaceAll("[A-Za-z]:", "")   // remove drive letter, keep the leading backslash
+					.replace("\\", "/");           // normalize separators
+		}
 
 		User simOwner = simTask.getSimulation().getVersion().getOwner();
 		final int jobId = simTask.getSimulationJob().getJobIndex();
@@ -104,10 +119,17 @@ public class SlurmProxyTest {
 		// preprocessor
 		String simTaskFilePathExternal = "/share/apps/vcell3/users/schaff/SimID_"+simKey+"_0__0.simtask.xml";
 		File primaryUserDirExternal = new File("/share/apps/vcell3/users/schaff");
+		String primaryUserDirExternalPath = primaryUserDirExternal.getAbsolutePath();
+		if(isWindows) {
+			primaryUserDirExternalPath = primaryUserDirExternalPath
+					.replaceAll("[A-Za-z]:", "")
+					.replace("\\", "/");
+		}
+
 		List<String> args = new ArrayList<>( 4 );
 		args.add( PropertyLoader.getRequiredProperty(PropertyLoader.simulationPreprocessor) );
 		args.add( simTaskFilePathExternal );
-		args.add( primaryUserDirExternal.getAbsolutePath() );
+		args.add( primaryUserDirExternalPath );
 		ExecutableCommand preprocessorCmd = new ExecutableCommand(null, false, false,args);
 
 		ExecutableCommand.LibraryPath libraryPath = new ExecutableCommand.LibraryPath("/usr/local/app/localsolvers/linux64");
@@ -123,7 +145,7 @@ public class SlurmProxyTest {
 				Integer.toString(jobId),
 				Integer.toString(simTask.getTaskID()),
 				SOLVER_EXIT_CODE_REPLACE_STRING,
-				subFileExternal.getAbsolutePath());
+				subFileExternalPath);
 		postprocessorCmd.setExitCodeToken(SOLVER_EXIT_CODE_REPLACE_STRING);
 
 		ExecutableCommand.Container commandSet = new ExecutableCommand.Container();
@@ -134,8 +156,18 @@ public class SlurmProxyTest {
 		int NUM_CPUs = 1;
 		int MEM_SIZE_MB = 1000;
 		ArrayList<PortableCommand> postProcessingCommands = new ArrayList<>();
-		return slurmProxy.createJobScriptText(JOB_NAME, commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
+
+		SolverTaskDescription std = simTask.getSimulationJob().getSimulation().getSolverTaskDescription();
+		String scriptText;
+		if(std.getSolverDescription().isLangevinSolver() && std.getLangevinSimulationOptions().getTotalNumberOfJobs() > 1) {
+			scriptText = slurmProxy.createBatchJobScriptText(JOB_NAME, commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
+		} else {
+			scriptText = slurmProxy.createJobScriptText(JOB_NAME, commandSet, NUM_CPUs, MEM_SIZE_MB, postProcessingCommands, simTask);
+		}
+		return scriptText;
 	}
+
+
 
 	public String createScriptForJavaSolvers(String simTaskResourcePath, String JOB_NAME) throws IOException, XmlParseException, ExpressionException {
 
@@ -237,6 +269,7 @@ public class SlurmProxyTest {
 		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
 	}
 
+	@DisabledOnOs(OS.WINDOWS)
 	@Test
 	public void testSimJobScriptLangevin() throws IOException, XmlParseException, ExpressionException {
 		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_274672135_0__0.simtask.xml";
@@ -252,6 +285,34 @@ public class SlurmProxyTest {
 		String slurmScript = createScriptForNativeSolvers(simTaskResourcePath, command, JOB_NAME);
 		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/V_REL_274672135_0_0.slurm.sub");
 		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
+	}
+
+	@Test
+	public void testSimJobScriptLangevinBatch() throws IOException, XmlParseException, ExpressionException {
+		setProperty(PropertyLoader.htc_vcellopt_docker_name, "ghcr.io/virtualcell/vcell-opt:7.7.0.39");
+		setProperty(PropertyLoader.vcellSoftwareVersion, "Rel_Version_7.7.0_build_39");
+		setProperty(PropertyLoader.vcellServerIDProperty,"TEST2");
+		setProperty(PropertyLoader.jmsSimHostExternal, "k8s-wn-01.cam.uchc.edu");
+		setProperty(PropertyLoader.htc_vcellbatch_docker_name, "ghcr.io/virtualcell/vcell-batch:7.7.0.39");
+
+		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_999999999_0__0.simtask.xml";
+		String JOB_NAME = "V_TEST2_999999999_0_0";
+
+		String executable = "/usr/local/app/localsolvers/linux64/langevin_x64";
+		String outputLog = "/share/apps/vcell3/users/danv/SimID_999999999_0_.log";
+		String messagingConfig = "/share/apps/vcell3/users/danv/SimID_999999999_0_.langevinMessagingConfig";
+		String inputFilePath = "/share/apps/vcell3/users/danv/SimID_999999999_0_.langevinInput";
+		String[] command = new String[] { executable, "simulate", "--output-log="+outputLog,
+				"--vc-send-status-config="+messagingConfig, inputFilePath, "0", "-tid", "0" };
+
+		String actualSlurmScript = createScriptForNativeSolvers(simTaskResourcePath, command, JOB_NAME);
+		actualSlurmScript = toUnixStyleText(actualSlurmScript);
+
+		// this is the source of truth
+		String expectedSlurmScript = readTextFileFromResource("slurm_fixtures/langevin/V_TEST2_999999999_0_0.slurm.sub");
+		expectedSlurmScript = toUnixStyleText(expectedSlurmScript);
+
+		Assertions.assertEquals(expectedSlurmScript.trim(), actualSlurmScript.trim(), "Strings should be equal");
 	}
 
 	@Test

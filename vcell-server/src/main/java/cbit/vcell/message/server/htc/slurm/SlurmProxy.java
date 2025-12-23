@@ -14,19 +14,22 @@ import cbit.vcell.server.HtcJobID;
 import cbit.vcell.server.HtcJobID.BatchSystemType;
 import cbit.vcell.simdata.PortableCommand;
 import cbit.vcell.simdata.PortableCommandWrapper;
+import cbit.vcell.solver.LangevinSimulationOptions;
 import cbit.vcell.solver.SolverDescription;
+import cbit.vcell.solver.SolverTaskDescription;
 import cbit.vcell.solvers.AbstractSolver;
 import cbit.vcell.solvers.ExecutableCommand;
 import edu.uchc.connjur.wb.LineStringBuilder;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.exe.ExecutableException;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SlurmProxy extends HtcProxy {
 	
@@ -416,6 +419,282 @@ public class SlurmProxy extends HtcProxy {
 		
 	}
 
+	private static int getRoundedMemoryLimit(long memPerTaskMB) {
+		int rawLimit = (int)(memPerTaskMB * 0.9);
+		// Round down to nearest 100 MB
+		return (rawLimit / 100) * 100;
+	}
+	private static String extractUser(ExecutableCommand.Container commandSet) {
+		for (ExecutableCommand ec: commandSet.getExecCommands()) {
+			ExecutableCommand.Container commandSet2 = new ExecutableCommand.Container();
+			if(ec.getCommands().get(0).equals("JavaPreprocessor64")) {
+				continue;
+			}else {
+				for(String command : ec.getCommands()) {
+					if(command.startsWith("-Duser=")) {
+						return command.substring(7);
+					}
+					else if(command.contains("langevinInput")) {
+						// Langevin input file is of the form /some/path/users/...
+						String[] pathParts = command.split("/");
+						for(int i=0; i<pathParts.length; i++) {
+							String part = pathParts[i];
+							if(part.contains("users")) {
+								return pathParts[i+1];
+							}
+						}
+					}
+				}
+			}
+		}
+		throw new RuntimeException("Could not extract user from command set: "+commandSet);
+	}
+
+
+	/**
+	 * Compute SBATCH --time
+	 * as HH:MM:00 (seconds fixed to "00").
+	 * or as D-HH:MM:00 (if over 99 hours).
+	 *
+	 * Uses integer math only and adds a 10% cushion, rounded up to whole minutes.
+	 *
+	 * totalNumberOfJobs: total simulation tasks
+	 * numberOfConcurrentTasks: parallel slots (SLURM_NTASKS)
+	 * timeoutSeconds: per-task timeout in seconds
+	 */
+	public static String computeSlurmTimeLimit(int totalNumberOfJobs,
+														  int numberOfConcurrentTasks,
+														  int timeoutSeconds) {
+		if (totalNumberOfJobs < 0) throw new IllegalArgumentException("totalNumberOfJobs >= 0 required");
+		if (numberOfConcurrentTasks <= 0) throw new IllegalArgumentException("numberOfConcurrentTasks > 0 required");
+		if (timeoutSeconds <= 0) throw new IllegalArgumentException("timeoutSeconds > 0 required");
+
+		int perTaskMinutes = (timeoutSeconds + 59) / 60; // ceiling(timeoutSeconds/60)
+		int batches = (totalNumberOfJobs + numberOfConcurrentTasks - 1) / numberOfConcurrentTasks;
+		long workMinutes = (long) batches * perTaskMinutes;
+		long extraMinutes = 3L * perTaskMinutes;
+		long totalMinutes = workMinutes + extraMinutes;
+		long cushionedMinutes = (long) Math.ceil(totalMinutes * 1.10);
+
+		long totalHours = cushionedMinutes / 60;
+		long minutes = cushionedMinutes % 60;
+
+		if (totalHours < 100) {
+			return String.format("%02d:%02d:00", totalHours, minutes);
+		} else {
+			long days = totalHours / 24;
+			long hours = totalHours % 24;
+			return String.format("%d-%02d:%02d:00", days, hours, minutes);
+		}
+	}
+	private void writeScriptControlledVariables(LineStringBuilder lsb, String jobName, String userId,
+												SimulationTask simTask, int jobTimeoutSeconds) {
+		String simId = simTask.getSimulationInfo().getSimulationVersion().getVersionKey().toString();
+		int totalJobs = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions().getTotalNumberOfJobs();
+		String htcLogDir = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
+		String simDataDir = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
+		int lastUnderscore = jobName.lastIndexOf('_');
+		String trimmedJobName = (lastUnderscore >= 0) ? jobName.substring(0, lastUnderscore + 1) : jobName;
+		String logFilePath = htcLogDir + "/" + trimmedJobName + ".submit.log";
+		String messagingConfigFilePath = simDataDir + "/" + userId + "/SimID_" + simId + "_0_.langevinMessagingConfig";
+
+		lsb.write("# Script-controlled variables (populated by generator in real use)");
+		lsb.write("USERID=" + userId);
+		lsb.write("SIM_ID=" + simId);
+		lsb.write("TOTAL_JOBS=" + totalJobs + "            # to be set by generator to lso.getTotalNumberOfJobs()");
+		lsb.write("JOB_TIMEOUT_SECONDS=" + jobTimeoutSeconds + "  # per-job timeout (seconds), adjust per generator");
+		lsb.write("LOG_FILE=\"" + logFilePath + "\"");
+		lsb.write("MESSAGING_CONFIG_FILE=\"" + messagingConfigFilePath + "\"");
+		lsb.write("");
+
+		lsb.write("# Truncate / delete various logs and the solver input file, to start clean");
+		lsb.write(": > " + htcLogDir + "/V_TEST2_${SIM_ID}_0_.slurm.log");
+		lsb.write("rm -f " + simDataDir + "/${USERID}/SimID_${SIM_ID}_0_*.log");
+		lsb.write("rm -f " + simDataDir + "/${USERID}/SimID_${SIM_ID}_0__*.ida");
+		lsb.write("rm -f " + simDataDir + "/${USERID}/SimID_${SIM_ID}_0__*.json");
+		lsb.write("rm -f " + simDataDir + "/${USERID}/SimID_${SIM_ID}_0_.functions");
+		lsb.write("rm -f " + simDataDir + "/${USERID}/SimID_${SIM_ID}_0_.langevinInput");
+		lsb.write("rm -f " + simDataDir + "/${USERID}/SimID_${SIM_ID}_0_.langevinMessagingConfig");
+		lsb.write("");
+	}
+	private void writeSingularitySetup(LineStringBuilder lsb) {
+		String slurmTmpDir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
+		String singularityCachedir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_cachedir);
+		String singularityPullfolder = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_pullfolder);
+		String singularityModuleName = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_module_name);
+
+		lsb.write("echo \"=== Singularity check BEFORE module load ===\"");
+		lsb.write("if command -v singularity >/dev/null 2>&1; then");
+		lsb.write("    echo \"Singularity found at: $(command -v singularity)\"");
+		lsb.write("    singularity --version");
+		lsb.write("else");
+		lsb.write("    echo \"Singularity not found before module load\"");
+		lsb.write("fi");
+		lsb.write("");
+
+		lsb.write("TMPDIR=" + slurmTmpDir);
+		lsb.write("if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi");
+		lsb.write("echo `hostname`");
+		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles");
+		lsb.write("if [ -f /usr/share/modules/init/bash ]; then");
+		lsb.write("    source /usr/share/modules/init/bash");
+		lsb.write("    module load " + singularityModuleName);
+		lsb.write("else");
+		lsb.write("    echo \"[Warning] Module init script not found - skipping module setup\"");
+		lsb.write("fi");
+		lsb.write("export SINGULARITY_CACHEDIR=" + singularityCachedir);
+		lsb.write("export SINGULARITY_PULLFOLDER=" + singularityPullfolder);
+		lsb.write("");
+
+		lsb.write("echo \"=== Singularity check AFTER module load ===\"");
+		lsb.write("if command -v singularity >/dev/null 2>&1; then");
+		lsb.write("    echo \"Singularity found at: $(command -v singularity)\"");
+		lsb.write("    singularity --version");
+		lsb.write("else");
+		lsb.write("    echo \"Singularity not found after module load\"");
+		lsb.write("    exit 127");
+		lsb.write("fi");
+		lsb.write("");
+	}
+	private void writeSlurmJobMetadata(LineStringBuilder lsb) {
+		lsb.write("# Compute memory per task and per job");
+		lsb.write("MEM_TASK=$(( SLURM_MEM_PER_CPU * SLURM_CPUS_PER_TASK ))");
+		lsb.write("MEM_JOB=$(( MEM_TASK * SLURM_NTASKS ))");
+		lsb.write("");
+
+		lsb.write("echo \"======= SLURM job started =======\"");
+		lsb.write("echo \"Hostname       : $(hostname -f)\"");
+		lsb.write("echo \"User           : $USERID\"");
+		lsb.write("echo \"Sim ID         : $SIM_ID\"");
+		lsb.write("echo \"id             : $(id)\"");
+		lsb.write("echo \"Total Jobs     : $TOTAL_JOBS\"");
+		lsb.write("echo \"Job Timeout    : $JOB_TIMEOUT_SECONDS\"");
+		lsb.write("echo \"Slurm Job ID   : $SLURM_JOB_ID\"");
+		lsb.write("echo \"Slurm Job Name : $SLURM_JOB_NAME\"");
+		lsb.write("echo \"Start Time     : $(date)\"");
+		lsb.write("echo \"Working Dir    : $(pwd)\"");
+		lsb.write("echo \"Node List      : $SLURM_NODELIST\"");
+		lsb.write("echo \"CPUs per task  : $SLURM_CPUS_PER_TASK\"");
+		lsb.write("echo \"Mem. per task  : ${MEM_TASK} MB total\"");
+		lsb.write("echo \"Mem. per job   : ${MEM_JOB} MB total\"");
+		lsb.write("echo \"Environment snapshot:\"");
+		lsb.write("env");
+		lsb.write("echo \"=================================\"");
+		lsb.write("");
+	}
+	private void writeContainerBindingsAndEnv(LineStringBuilder lsb, int javaMemXmx) {
+		String primaryDataDir = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
+		String secondaryDataDir = PropertyLoader.getRequiredProperty(PropertyLoader.secondarySimDataDirExternalProperty);
+		String archiveDataDirHost = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveExternal);
+		String archiveDataDirContainer = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveInternal);
+		String htclogDir = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
+		String scratchDir = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_tmpdir);
+
+		lsb.write("container_bindings=\"--bind " + primaryDataDir + ":/simdata \"");
+		lsb.write("container_bindings+=\"--bind " + secondaryDataDir + ":/simdata_secondary \"");
+		lsb.write("container_bindings+=\"--bind " + archiveDataDirHost + ":" + archiveDataDirContainer + " \"");
+		lsb.write("container_bindings+=\"--bind " + htclogDir + ":/htclogs \"");
+		lsb.write("container_bindings+=\"--bind " + scratchDir + ":/solvertmp \"");
+		lsb.write("");
+
+		String jmsHost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimHostExternal);
+		String jmsPort = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimPortExternal);
+		String jmsRestPort = PropertyLoader.getRequiredProperty(PropertyLoader.jmsSimRestPortExternal);
+		String jmsUser = PropertyLoader.getRequiredProperty(PropertyLoader.jmsUser);
+		String jmsPswd = PropertyLoader.getSecretValue(PropertyLoader.jmsPasswordValue, PropertyLoader.jmsPasswordFile);
+		String jmsBlobMinSize = PropertyLoader.getProperty(PropertyLoader.jmsBlobMessageMinSize, "100000");
+		String mongoHost = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbHostExternal);
+		String mongoPort = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbPortExternal);
+		String mongoDB = PropertyLoader.getRequiredProperty(PropertyLoader.mongodbDatabase);
+		String softwareVersion = PropertyLoader.getRequiredProperty(PropertyLoader.vcellSoftwareVersion);
+		String serverId = PropertyLoader.getRequiredProperty(PropertyLoader.vcellServerIDProperty);
+
+		lsb.write("container_env=\"--env java_mem_Xmx=" + javaMemXmx + "M \"");
+		lsb.write("container_env+=\"--env jmshost_sim_internal=" + jmsHost + " \"");
+		lsb.write("container_env+=\"--env jmsport_sim_internal=" + jmsPort + " \"");
+		lsb.write("container_env+=\"--env jmsrestport_sim_internal=" + jmsRestPort + " \"");
+		lsb.write("container_env+=\"--env jmsuser=" + jmsUser + " \"");
+		lsb.write("container_env+=\"--env jmspswd=" + jmsPswd + " \"");
+		lsb.write("container_env+=\"--env jmsblob_minsize=" + jmsBlobMinSize + " \"");
+		lsb.write("container_env+=\"--env mongodbhost_internal=" + mongoHost + " \"");
+		lsb.write("container_env+=\"--env mongodbport_internal=" + mongoPort + " \"");
+		lsb.write("container_env+=\"--env mongodb_database=" + mongoDB + " \"");
+		lsb.write("container_env+=\"--env primary_datadir_external=" + primaryDataDir + " \"");
+		lsb.write("container_env+=\"--env secondary_datadir_external=" + secondaryDataDir + " \"");
+		lsb.write("container_env+=\"--env htclogdir_external=" + htclogDir + " \"");
+		lsb.write("container_env+=\"--env softwareVersion=" + softwareVersion + " \"");
+		lsb.write("container_env+=\"--env serverid=" + serverId + " \"");
+		lsb.write("");
+	}
+	private void writeContainerImageAndPrefixes(LineStringBuilder lsb) {
+		// Resolve docker image names
+		final String batchDockerName = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_docker_name);
+		final String solverDockerName = batchDockerName;
+
+		// Write out docker names and prefixes
+		lsb.write("# Full solver command");
+		lsb.write("solver_docker_name=" + solverDockerName);
+		lsb.write("solver_container_prefix=\"singularity run --containall " +
+				"${container_bindings} ${container_env} docker://${solver_docker_name}\"");
+
+		if (batchDockerName != null && !batchDockerName.isEmpty()) {
+			lsb.write("batch_docker_name=" + batchDockerName);
+			lsb.write("batch_container_prefix=\"singularity run --containall " +
+					"${container_bindings} ${container_env} docker://${batch_docker_name}\"");
+		}
+
+		lsb.write("slurm_prefix=\"srun -N1 -n1 -c${SLURM_CPUS_PER_TASK}\"");
+		lsb.write("");
+	}
+	String  generateLangevinBatchScript(String jobName, ExecutableCommand.Container commandSet, double memSizeMB,
+										Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
+
+		// TODO: extractUser is very unrobust, must be fixed
+		// it may be the userName can be obtained like so: String vcellUserid = simTask.getUser().getName();
+		String userName = extractUser(commandSet);
+		String vcellUserid = simTask.getUser().getName();
+		KeyValue simID = simTask.getSimulationInfo().getSimulationVersion().getVersionKey();
+		SolverTaskDescription std = simTask.getSimulation().getSolverTaskDescription();
+		LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
+		int totalNumberOfJobs = lso.getTotalNumberOfJobs();
+		int numberOfConcurrentTasks = lso.getNumberOfConcurrentJobs();
+		SolverDescription solverDescription = std.getSolverDescription();
+		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid, simID, solverDescription, memSizeMB, simTask.isPowerUser());
+
+		int timeoutPerTaskSeconds = 28800;		// 8 hours TODO: do we hardcode this? Should it be part of LangevinSimulationOptions?
+		String slurmJobTimeout = computeSlurmTimeLimit(totalNumberOfJobs, numberOfConcurrentTasks, timeoutPerTaskSeconds);
+		int javaMemXmx = getRoundedMemoryLimit(memoryMBAllowed.getMemLimit());
+
+		// -------------------------------------------------------------
+
+		LineStringBuilder lsb = new LineStringBuilder();
+		slurmBatchScriptInit(jobName, simTask.isPowerUser(), memoryMBAllowed, numberOfConcurrentTasks, slurmJobTimeout, lsb);
+		writeScriptControlledVariables(lsb, jobName, userName, simTask, timeoutPerTaskSeconds);
+		writeSingularitySetup(lsb);
+		writeSlurmJobMetadata(lsb);
+		writeContainerBindingsAndEnv(lsb, javaMemXmx);
+		writeContainerImageAndPrefixes(lsb);
+
+		String langevinFixture;
+		try {
+			langevinFixture = readTextFileFromResource("slurm/templates/langevinFixture.slurm.sub");
+		} catch (IOException ex) {
+			throw new IllegalStateException("Failed to load orchestration fixture", ex);
+		}
+		lsb.write(langevinFixture);
+
+		Charset asciiCharset = StandardCharsets.US_ASCII;
+		CharsetEncoder encoder = asciiCharset.newEncoder();
+		String langevinBatchString = lsb.sb.toString();
+		for (int i = 0; i < langevinBatchString.length(); i++) {
+			char c = langevinBatchString.charAt(i);
+			if (!encoder.canEncode(c)) {
+				System.err.printf("Unmappable character at index %d: U+%04X (%c)%n", i, (int) c, c);
+			}
+		}
+		return langevinBatchString;
+	}
+
 	SbatchSolverComponents generateScript(String jobName, ExecutableCommand.Container commandSet, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
 
 		//SlurmProxy ultimately instantiated from {vcellroot}/docker/build/Dockerfile-submit-dev by way of cbit.vcell.message.server.batch.sim.HtcSimulationWorker
@@ -537,7 +816,6 @@ public class SlurmProxy extends HtcProxy {
 		return new SbatchSolverComponents(slurmCommands.sb.toString(), lsb.sb.toString(),preProcessLSB.sb.toString(),singularityLSB.sb.toString(),callExitLSB.sb.toString(),sendFailMsgLSB.sb.toString(),exitLSB.sb.toString(),postProcessLSB.sb.toString());
 	}
 
-
 	private void callExitScript(ExecutableCommand.Container commandSet, LineStringBuilder lsb) {
 		lsb.newline();
 		ExecutableCommand exitCmd = commandSet.getExitCodeCommand();
@@ -656,8 +934,16 @@ public class SlurmProxy extends HtcProxy {
 
 	private void slurmScriptInit(String jobName, boolean bPowerUser, MemLimitResults memoryMBAllowed,
 			LineStringBuilder lsb) {
+		String os = System.getProperty("os.name").toLowerCase();
+		boolean isWindows = os.startsWith("windows");
+
 		lsb.write("#!/usr/bin/bash");
 		File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
+		String logPath = new File(htcLogDirExternal, jobName + ".slurm.log").getAbsolutePath();
+		if(isWindows) {
+			logPath = logPath.replaceAll("[A-Za-z]:", "").replace("\\", "/");
+		}
+
 		if(bPowerUser) {
 			String partition_pu = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition_pu);
 			String reservation_pu = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_reservation_pu);
@@ -674,8 +960,8 @@ public class SlurmProxy extends HtcProxy {
 			lsb.write("#SBATCH --qos=" +qos);
 		}
 		lsb.write("#SBATCH -J " + jobName);
-		lsb.write("#SBATCH -o " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
-		lsb.write("#SBATCH -e " + new File(htcLogDirExternal, jobName+".slurm.log").getAbsolutePath());
+		lsb.write("#SBATCH -o " + logPath);
+		lsb.write("#SBATCH -e " + logPath);
 		lsb.write("#SBATCH --mem="+memoryMBAllowed.getMemLimit()+"M");
 		lsb.write("#SBATCH --no-kill");
 		lsb.write("#SBATCH --no-requeue");
@@ -686,33 +972,94 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("# VCell SlurmProxy memory limit source='"+memoryMBAllowed.getMemLimitSource()+"'");
 	}
 
+	private void slurmBatchScriptInit(String jobName, boolean isPowerUser, MemLimitResults memoryMBAllowed,
+									  int numberOfConcurrentTasks, String jobTimeout, LineStringBuilder lsb) {
+		lsb.write("#!/usr/bin/bash");
+
+		if (isPowerUser) {
+			String partitionPU = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition_pu);
+			String qosPU = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_qos_pu);
+			lsb.write("#SBATCH --partition=" + partitionPU);
+			lsb.write("#SBATCH --reservation="); // intentionally blank
+			lsb.write("#SBATCH --qos=" + qosPU);
+		} else {
+			String partition = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_partition);
+			String reservation = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_reservation);
+			String qos = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_qos);
+			lsb.write("#SBATCH --partition=" + partition);
+			lsb.write("#SBATCH --reservation=" + reservation);
+			lsb.write("#SBATCH --qos=" + qos);
+		}
+
+		lsb.write("#SBATCH -J " + jobName);
+
+		String htcLogDir = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
+		int lastUnderscore = jobName.lastIndexOf('_');
+		String trimmedJobName = (lastUnderscore >= 0) ? jobName.substring(0, lastUnderscore + 1) : jobName;
+		String logPath = new File(htcLogDir, trimmedJobName + ".slurm.log").getPath().replace("\\", "/");
+
+		lsb.write("#SBATCH -o " + logPath);
+		lsb.write("#SBATCH -e " + logPath);
+		lsb.write("#SBATCH --ntasks=" + numberOfConcurrentTasks + "\t\t\t# number of concurrent tasks");
+		// TODO: hardcoded for now, adjust if needed
+		lsb.write("#SBATCH --cpus-per-task=1");
+		// TODO: mem per cpu needs to be adjusted, 2M should be enough for most Langevin tasks
+		lsb.write("#SBATCH --mem-per-cpu=" + memoryMBAllowed.getMemLimit() + "M");
+		lsb.write("#SBATCH --nodes=1");
+		lsb.write("#SBATCH --time=" + jobTimeout + "\t\t# timeout for the entire job");
+		lsb.write("#SBATCH --no-kill");
+		lsb.write("#SBATCH --no-requeue");
+
+		lsb.write(""); // blank line before shell options
+		lsb.write("set -o errexit");
+		lsb.write("set -o pipefail");
+		lsb.write("set -o nounset");
+		lsb.write("set +e");
+		lsb.write("");
+	}
+
 	@Override
 	public HtcJobID submitJob(String jobName, File sub_file_as_internal_path, File sub_file_with_external_path, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask,File primaryUserDirExternal) throws ExecutableException, IOException {
-		String scriptText = createJobScriptText(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
+		SolverTaskDescription std = simTask.getSimulationJob().getSimulation().getSolverTaskDescription();
+		String scriptText;
+		if(std.getSolverDescription().isLangevinSolver() && std.getLangevinSimulationOptions().getTotalNumberOfJobs() > 1) {
+			scriptText = createBatchJobScriptText(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
+		} else {
+			scriptText = createJobScriptText(jobName, commandSet, ncpus, memSizeMB, postProcessingCommands, simTask);
+		}
 		Files.writeString(sub_file_as_internal_path.toPath(), scriptText);
 		return submitJobFile(sub_file_with_external_path);
 	}
 
 	String createJobScriptText(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) throws IOException {
-			if (LG.isDebugEnabled()) {
-				LG.debug("generating local SLURM submit script for jobName="+jobName);
-			}
-			SlurmProxy.SbatchSolverComponents sbatchSolverComponents = generateScript(jobName, commandSet, memSizeMB, postProcessingCommands, simTask);
+		if (LG.isDebugEnabled()) {
+			LG.debug("generating local SLURM submit script for jobName="+jobName);
+		}
+		SlurmProxy.SbatchSolverComponents sbatchSolverComponents = generateScript(jobName, commandSet, memSizeMB, postProcessingCommands, simTask);
 
-			StringBuilder scriptContent = new StringBuilder();
-			scriptContent.append(sbatchSolverComponents.getSingularityCommands());
-			scriptContent.append(sbatchSolverComponents.getSendFailureMsgCommands());
-			scriptContent.append(sbatchSolverComponents.getCallExitCommands());
-			scriptContent.append(sbatchSolverComponents.getPreProcessCommands());
-			scriptContent.append(sbatchSolverComponents.solverCommands);
-			scriptContent.append(sbatchSolverComponents.getExitCommands());
-			String substitutedSbatchCommands = sbatchSolverComponents.getSbatchCommands();
-			String origScriptText =  substitutedSbatchCommands+"\n\n"+
-					scriptContent.toString()+"\n\n"+
-					"#Following commands (if any) are read by JavaPostProcessor64\n"+
-					sbatchSolverComponents.postProcessCommands+"\n";
-			String scriptText = toUnixStyleText(origScriptText);
-			return scriptText;
+		StringBuilder scriptContent = new StringBuilder();
+		scriptContent.append(sbatchSolverComponents.getSingularityCommands());
+		scriptContent.append(sbatchSolverComponents.getSendFailureMsgCommands());
+		scriptContent.append(sbatchSolverComponents.getCallExitCommands());
+		scriptContent.append(sbatchSolverComponents.getPreProcessCommands());
+		scriptContent.append(sbatchSolverComponents.solverCommands);
+		scriptContent.append(sbatchSolverComponents.getExitCommands());
+		String substitutedSbatchCommands = sbatchSolverComponents.getSbatchCommands();
+		String origScriptText =  substitutedSbatchCommands+"\n\n"+
+				scriptContent.toString()+"\n\n"+
+				"#Following commands (if any) are read by JavaPostProcessor64\n"+
+				sbatchSolverComponents.postProcessCommands+"\n";
+		String scriptText = toUnixStyleText(origScriptText);
+		return scriptText;
+	}
+
+	String createBatchJobScriptText(String jobName, ExecutableCommand.Container commandSet, int ncpus, double memSizeMB, Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) throws IOException {
+		if (LG.isDebugEnabled()) {
+			LG.debug("generating local SLURM submit script for jobName="+jobName);
+		}
+		String origScriptText = generateLangevinBatchScript(jobName, commandSet, memSizeMB, postProcessingCommands, simTask);
+		String scriptText = toUnixStyleText(origScriptText);
+		return scriptText;
 	}
 
 	HtcJobID submitJobFile(File sub_file_external) throws ExecutableException {
@@ -806,5 +1153,16 @@ public class SlurmProxy extends HtcProxy {
         return toUnixStyleText(lsb.toString());
 	}
 
+	private String readTextFileFromResource(String filename) throws IOException {
+		InputStream inputStream = getClass().getClassLoader().getResourceAsStream(filename);
+		if (inputStream == null) {
+			throw new IOException("Resource not found: " + filename);
+		}
+		String xmlString;
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+			xmlString = reader.lines().collect(Collectors.joining(System.lineSeparator()));
+		}
+		return xmlString;
+	}
 
 }

@@ -467,7 +467,7 @@ interface SolverLongDesc {
 			"LangevinNoVis is a free, open-source, particle-based, stochastic, simulator platform suitable " +
 			"for modeling mesoscopic systems, which are far too large to be modeled with molecular dynamics " +
 			"but which require more detail than obtainable with macroscopic continuum models. Molecules are " +
-			"modeled as a collection of impenetrable spheres (called “sites”) linked by stiff springs." +
+			"modeled as a collection of impenetrable spheres (called 'sites') linked by stiff springs." +
      	     "</html>";
 
     static final String COMSOL =

@@ -806,8 +806,11 @@ public class XMLTags {
     public final static String LangevinSO_Partition_Nx      = "PartitionNx";
     public final static String LangevinSO_Partition_Ny      = "PartitionNy";
     public final static String LangevinSO_Partition_Nz      = "PartitionNz";
-    public final static String LangevinSO_numOfParallelLocalRuns	= "NumOfParallelLocalRuns";
+    public final static String LangevinSO_numberOfConcurrentJobs	= "NumberOfConcurrentJobs";
+    public final static String LangevinSO_totalNumberOfJobs	= "TotalNumberOfJobs";
     public final static String LangevinSO_randomSeed        = "LangevinRandomSeed";
+//    @Deprecated
+//    public final static String LangevinSO_numOfParallelLocalRuns	= "NumOfParallelLocalRuns";
 
 	public final static String ParticleInitialConcentrationTag			= "ParticleInitialConcentration"; // particle
 	public final static String ParticleDistributionTag			= "ParticleDistribution"; // particle
