@@ -8,10 +8,9 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import org.jlibsedml.UniformTimeCourse;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
 import org.sbml.jsbml.SBase;
 import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
-import org.vcell.util.Pair;
 
 import java.util.Arrays;
 import java.util.HashMap;

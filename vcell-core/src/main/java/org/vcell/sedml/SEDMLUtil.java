@@ -1,6 +1,6 @@
 package org.vcell.sedml;
 
-import org.jlibsedml.AbstractIdentifiableElement;
+import org.jlibsedml.components.AbstractIdentifiableElement;
 
 public class SEDMLUtil {
 	

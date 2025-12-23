@@ -3,10 +3,22 @@ package org.vcell.cli.run;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.xml.ExternalDocInfo;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.model.Model;
+import org.jlibsedml.components.output.Output;
+import org.jlibsedml.components.output.Plot2D;
+import org.jlibsedml.components.output.Plot3D;
+import org.jlibsedml.components.output.Report;
+import org.jlibsedml.components.simulation.Simulation;
+import org.jlibsedml.components.simulation.SteadyState;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
+import org.jlibsedml.components.task.AbstractTask;
+import org.jlibsedml.components.task.OneStep;
+import org.jlibsedml.components.task.RepeatedTask;
+import org.jlibsedml.components.task.SetValue;
 import org.vcell.cli.messaging.CLIRecordable;
 import org.vcell.cli.exceptions.ExecutionException;
 import org.vcell.cli.exceptions.PreProcessingException;
@@ -22,7 +34,6 @@ import org.vcell.sbml.vcell.lazy.LazySBMLSpatialDataAccessor;
 import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.trace.Span;
 import org.vcell.trace.Tracer;
-import org.vcell.util.DataAccessException;
 import org.vcell.util.FileUtils;
 import org.vcell.util.Pair;
 
@@ -32,7 +43,6 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +61,7 @@ public class SedmlJob {
     private final CLIRecordable CLI_RECORDER;
     private boolean somethingFailed, hasScans, hasOverrides;
     private String logDocumentMessage, logDocumentError;
-    private SedML sedml;
+    private SedMLDataClass sedml;
 
 
     private final static Logger logger = LogManager.getLogger(SedmlJob.class);
@@ -380,13 +390,13 @@ public class SedmlJob {
     }
 
     // This method is a bit weird; it uses a temp file as a reference to compare against while getting the file straight from the archive.
-    private static SedML getSedMLFile(String[] tokenizedPathToSedml, File inputFile) throws XMLException, IOException {
+    private static SedMLDataClass getSedMLFile(String[] tokenizedPathToSedml, File inputFile) throws XMLException, IOException {
         Path convertedPath = SedmlJob.getRelativePath(tokenizedPathToSedml);
         if (convertedPath == null) throw new RuntimeException("Was not able to get relative path to " + inputFile.getName());
         String identifyingPath = FilenameUtils.separatorsToUnix(convertedPath.toString());
         try (FileInputStream omexStream = new FileInputStream(inputFile)) {
-            for (SEDMLDocument doc : Libsedml.readSEDMLArchive(omexStream).getSedmlDocuments()){
-                SedML potentiallyCorrectFile = doc.getSedMLModel();
+            for (SedMLDocument doc : Libsedml.readSEDMLArchive(omexStream).getSedmlDocuments()){
+                SedMLDataClass potentiallyCorrectFile = doc.getSedMLModel();
                 String potentiallyCorrectPath = potentiallyCorrectFile.getPathForURI() + potentiallyCorrectFile.getFileName();
                 if (!identifyingPath.equals(potentiallyCorrectPath)) continue;
                 return potentiallyCorrectFile;

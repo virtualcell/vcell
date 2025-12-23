@@ -4,6 +4,9 @@ import cbit.vcell.resource.OperatingSystemInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.output.Curve;
+import org.jlibsedml.components.output.Plot2D;
 import org.vcell.cli.run.results.NonSpatialResultsConverter;
 import org.vcell.cli.run.results.ValueHolder;
 import org.vcell.sbml.vcell.SBMLDataRecord;
@@ -15,7 +18,7 @@ import org.vcell.util.Pair;
 import java.util.*;
 
 public class PlottingDataExtractor {
-    private final SedML sedml;
+    private final SedMLDataClass sedml;
     private final String sedmlName;
 
     private final static Logger logger = LogManager.getLogger(PlottingDataExtractor.class);
@@ -25,7 +28,7 @@ public class PlottingDataExtractor {
      *
      * @param sedml the sedml object to get outputs, datasets, and data generators from.
      */
-    public PlottingDataExtractor(SedML sedml, String sedmlName){
+    public PlottingDataExtractor(SedMLDataClass sedml, String sedmlName){
         this.sedml = sedml;
         this.sedmlName = sedmlName;
     }

@@ -26,6 +26,9 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.jdom2.Namespace;
 import org.jdom2.output.XMLOutputter;
+import org.jlibsedml.components.model.Change;
+import org.jlibsedml.components.model.ChangeAttribute;
+import org.jlibsedml.components.model.NewXML;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;

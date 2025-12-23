@@ -30,9 +30,20 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
-import org.jlibsedml.Model;
+import org.jlibsedml.components.Notes;
+import org.jlibsedml.components.Variable;
+import org.jlibsedml.components.VariableSymbol;
+import org.jlibsedml.components.algorithm.Algorithm;
+import org.jlibsedml.components.algorithm.AlgorithmParameter;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.model.ChangeAttribute;
+import org.jlibsedml.components.model.ComputeChange;
+import org.jlibsedml.components.model.Model;
 import org.jlibsedml.*;
-import org.jlibsedml.UniformRange.UniformType;
+import org.jlibsedml.components.output.*;
+import org.jlibsedml.components.task.UniformRange.UniformType;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
+import org.jlibsedml.components.task.*;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jlibsedml.modelsupport.SBMLSupport.CompartmentAttribute;
 import org.jlibsedml.modelsupport.SBMLSupport.ParameterAttribute;
@@ -71,7 +82,7 @@ public class SEDMLExporter {
 
 	private int sedmlLevel = 1;
 	private int sedmlVersion = 2;
-	private  SedML sedmlModel = null;
+	private SedMLDataClass sedmlModel = null;
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
 	private String jobId = null;
 	private ArrayList<String> modelFilePathStrAbsoluteList = new ArrayList<String>();
@@ -115,13 +126,13 @@ public class SEDMLExporter {
 		}
 	}
 
-	public SEDMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat,
-				boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter) {
+	public SedMLDocument getSEDMLDocument(String sPath, String sBaseFileName, ModelFormat modelFormat,
+                                          boolean bRoundTripSBMLValidation, Predicate<SimulationContext> simContextExportFilter) {
 		
 		double start = System.currentTimeMillis();
 
 		// Create an SEDMLDocument and create the SEDMLModel from the document, so that other details can be added to it in translateBioModel()
-		SEDMLDocument sedmlDocument = new SEDMLDocument(this.sedmlLevel, this.sedmlVersion);
+		SedMLDocument sedmlDocument = new SedMLDocument(this.sedmlLevel, this.sedmlVersion);
 
 		final String VCML_NS = "http://sourceforge.net/projects/vcell/vcml";
 		final String VCML_NS_PREFIX = "vcml";
@@ -417,7 +428,7 @@ public class SEDMLExporter {
 			// add one DataGenerator for 'time'
 			String timeDataGenPrefix = DATAGENERATOR_TIME_NAME + "_" + taskRef;
 			DataGenerator timeDataGen = sedmlModel.getDataGeneratorWithId(timeDataGenPrefix);
-			org.jlibsedml.Variable timeVar = new org.jlibsedml.Variable(DATAGENERATOR_TIME_SYMBOL + "_" + taskRef, DATAGENERATOR_TIME_SYMBOL, taskRef, VariableSymbol.TIME);
+			Variable timeVar = new Variable(DATAGENERATOR_TIME_SYMBOL + "_" + taskRef, DATAGENERATOR_TIME_SYMBOL, taskRef, VariableSymbol.TIME);
 			ASTNode math = Libsedml.parseFormulaString(DATAGENERATOR_TIME_SYMBOL + "_" + taskRef);
 			timeDataGen = new DataGenerator(timeDataGenPrefix, timeDataGenPrefix, math);
 			timeDataGen.addVariable(timeVar);
@@ -442,11 +453,11 @@ public class SEDMLExporter {
 			}
 			for (String varName : varNamesList) {
 				String varId = TokenMangler.mangleToSName(varName) + "_" + taskRef;
-				org.jlibsedml.Variable sedmlVar = null;
+				Variable sedmlVar = null;
 				if (sbmlString != null) {
-					sedmlVar = new org.jlibsedml.Variable(varId, varName, taskRef, sbmlSupport.getXPathForSpecies(varName));
+					sedmlVar = new Variable(varId, varName, taskRef, sbmlSupport.getXPathForSpecies(varName));
 				} else {
-					sedmlVar = new org.jlibsedml.Variable(varId, varName, taskRef, VCMLSupport.getXPathForSpeciesContextSpec(simContext.getName(), varName));
+					sedmlVar = new Variable(varId, varName, taskRef, VCMLSupport.getXPathForSpeciesContextSpec(simContext.getName(), varName));
 				}
 				ASTNode varMath = Libsedml.parseFormulaString(varId);
 				String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName); //"dataGen_" + varCount; - old code
@@ -482,11 +493,11 @@ public class SEDMLExporter {
 			}
 			for (String varName : varNamesList) {
 				String varId = TokenMangler.mangleToSName(varName) + "_" + taskRef;
-				org.jlibsedml.Variable sedmlVar;
+				Variable sedmlVar;
 				if (sbmlString != null) {
-					sedmlVar = new org.jlibsedml.Variable(varId, varName, taskRef, sbmlSupport.getXPathForGlobalParameter(varName));
+					sedmlVar = new Variable(varId, varName, taskRef, sbmlSupport.getXPathForGlobalParameter(varName));
 				} else {
-					sedmlVar = new org.jlibsedml.Variable(varId, varName, taskRef, VCMLSupport.getXPathForOutputFunction(simContext.getName(),varName));					
+					sedmlVar = new Variable(varId, varName, taskRef, VCMLSupport.getXPathForOutputFunction(simContext.getName(),varName));
 				}
 				ASTNode varMath = Libsedml.parseFormulaString(varId);
 				String dataGenId = dataGenIdPrefix + "_" + TokenMangler.mangleToSName(varName); //"dataGen_" + varCount; - old code

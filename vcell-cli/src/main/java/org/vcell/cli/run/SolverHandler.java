@@ -23,19 +23,19 @@ import cbit.vcell.solver.stoch.HybridSolver;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.xml.ExternalDocInfo;
 
-import org.jlibsedml.AbstractTask;
-import org.jlibsedml.DataGenerator;
-import org.jlibsedml.DataSet;
-import org.jlibsedml.Output;
-import org.jlibsedml.Range;
-import org.jlibsedml.RepeatedTask;
-import org.jlibsedml.Report;
-import org.jlibsedml.SedML;
-import org.jlibsedml.SetValue;
-import org.jlibsedml.SubTask;
-import org.jlibsedml.Task;
-import org.jlibsedml.UniformTimeCourse;
-import org.jlibsedml.Variable;
+import org.jlibsedml.components.task.AbstractTask;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.output.DataSet;
+import org.jlibsedml.components.output.Output;
+import org.jlibsedml.components.task.Range;
+import org.jlibsedml.components.task.RepeatedTask;
+import org.jlibsedml.components.output.Report;
+import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.components.task.SetValue;
+import org.jlibsedml.components.task.SubTask;
+import org.jlibsedml.components.task.Task;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
+import org.jlibsedml.components.Variable;
 import org.jlibsedml.XPathTarget;
 import org.jlibsedml.XMLException;
 import org.jlibsedml.modelsupport.SBMLSupport;
@@ -96,7 +96,7 @@ public class SolverHandler {
         }
     }
 
-    public void initialize(List<BioModel> bioModelList, SedML sedml) throws ExpressionException {
+    public void initialize(List<BioModel> bioModelList, SedMLDataClass sedml) throws ExpressionException {
 		Set <AbstractTask> topmostTasks = new LinkedHashSet<> ();
         for(BioModel bioModel : bioModelList) {
 			Simulation[] sims = bioModel.getSimulations();
@@ -308,9 +308,9 @@ public class SolverHandler {
 		}
 	}
 
-    public Map<AbstractTask, BiosimulationLog.Status> simulateAllTasks(ExternalDocInfo externalDocInfo, SedML sedmlRequested, CLIRecordable cliLogger,
-                                 File outputDirForSedml, String outDir, String sedmlLocation,
-                                 boolean keepTempFiles, boolean exactMatchOnly, boolean bSmallMeshOverride)
+    public Map<AbstractTask, BiosimulationLog.Status> simulateAllTasks(ExternalDocInfo externalDocInfo, SedMLDataClass sedmlRequested, CLIRecordable cliLogger,
+                                                                       File outputDirForSedml, String outDir, String sedmlLocation,
+                                                                       boolean keepTempFiles, boolean exactMatchOnly, boolean bSmallMeshOverride)
 			throws XMLException, IOException, SEDMLImportException, ExpressionException, PropertyVetoException {
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
 		Map<AbstractTask, BiosimulationLog.Status> biosimStatusMap = new LinkedHashMap<>();
@@ -405,7 +405,7 @@ public class SolverHandler {
 							if (SolverStatus.SOLVER_FINISHED == abstractJavaSolver.getSolverStatus().getStatus()){
 								odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
 								// must interpolate data for uniform time course which is not supported natively by the Java solvers
-								org.jlibsedml.Simulation sedmlSim = sedmlRequested.getSimulation(task.getSimulationReference());
+								org.jlibsedml.components.simulation.Simulation sedmlSim = sedmlRequested.getSimulation(task.getSimulationReference());
 								if (sedmlSim instanceof UniformTimeCourse utcSedmlSim) {
 									odeSolverResultSet = RunUtils.interpolate(odeSolverResultSet, utcSedmlSim);
 									logTaskMessage += "done. Interpolating... ";

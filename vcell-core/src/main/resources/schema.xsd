@@ -44,7 +44,7 @@
 		-->
 		<xs:attribute name="metaid" type="xs:ID" use="optional"></xs:attribute>
 	</xs:complexType>
-	<xs:element name="sedML">
+	<xs:element name="sedMLDataClass">
 		<xs:complexType>
 			<xs:complexContent>
 				<xs:extension base="SEDBase">

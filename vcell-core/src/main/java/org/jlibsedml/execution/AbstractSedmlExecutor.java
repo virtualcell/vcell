@@ -9,15 +9,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.jlibsedml.AbstractTask;
-import org.jlibsedml.DataGenerator;
-import org.jlibsedml.Model;
-import org.jlibsedml.Output;
-import org.jlibsedml.SedML;
-import org.jlibsedml.Simulation;
-import org.jlibsedml.Task;
-import org.jlibsedml.UniformTimeCourse;
-import org.jlibsedml.Variable;
+import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.components.task.AbstractTask;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.model.Model;
+import org.jlibsedml.components.output.Output;
+import org.jlibsedml.components.simulation.Simulation;
+import org.jlibsedml.components.task.Task;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
+import org.jlibsedml.components.Variable;
 import org.jlibsedml.execution.ExecutionStatusElement.ExecutionStatusType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public abstract class AbstractSedmlExecutor {
-    protected final SedML sedml;
+    protected final SedMLDataClass sedml;
     private final Output output;
 
     private List<ExecutionStatusElement> failureMessages = new ArrayList<ExecutionStatusElement>();
@@ -65,13 +65,13 @@ public abstract class AbstractSedmlExecutor {
     /**
      * 
      * @param model
-     *            A non-null {@link SedML} model
+     *            A non-null {@link SedMLDataClass} model
      * @param output
      *            An {@link Output} which we want to reproduce.
      * @throws IllegalArgumentException
      *             if <code>model == null</code> or <code>output == null</code>.
      */
-    public AbstractSedmlExecutor(SedML model, Output output) {
+    public AbstractSedmlExecutor(SedMLDataClass model, Output output) {
         if (model == null || output == null) {
             throw new IllegalArgumentException();
         }
@@ -86,13 +86,13 @@ public abstract class AbstractSedmlExecutor {
      * a single time-course and return all variables.
      * 
      * @param model
-     *            A non-null {@link SedML} model
+     *            A non-null {@link SedMLDataClass} model
      * @param task
      *            An {@link Task} which we want to run.
      * @throws IllegalArgumentException
      *             if <code>model == null</code> or <code>output == null</code>.
      */
-    public AbstractSedmlExecutor(SedML model, AbstractTask task) {
+    public AbstractSedmlExecutor(SedMLDataClass model, AbstractTask task) {
         if (model == null || task == null) {
             throw new IllegalArgumentException();
         }

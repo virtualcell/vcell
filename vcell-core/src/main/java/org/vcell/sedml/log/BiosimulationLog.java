@@ -7,6 +7,8 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
+import org.jlibsedml.components.output.*;
+import org.jlibsedml.components.task.AbstractTask;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -275,11 +277,11 @@ public class BiosimulationLog implements AutoCloseable {
     private static ArchiveLog initializeLogFromOmex(String omexFile) throws IOException, XMLException {
         // read sedml files from omex
         ArchiveComponents ac = Libsedml.readSEDMLArchive(new FileInputStream(omexFile));
-        List<SEDMLDocument> sedmlDocs = ac.getSedmlDocuments();
+        List<SedMLDocument> sedmlDocs = ac.getSedmlDocuments();
 
         List<SedDocumentLog> sedDocumentLogs = new ArrayList<>();
-        for (SEDMLDocument sedmlDoc : sedmlDocs) {
-            SedML sedmlModel = sedmlDoc.getSedMLModel();
+        for (SedMLDocument sedmlDoc : sedmlDocs) {
+            SedMLDataClass sedmlModel = sedmlDoc.getSedMLModel();
 
             SedDocumentLog sedDocumentLog = new SedDocumentLog();
             sedDocumentLog.location = sedmlModel.getFileName();

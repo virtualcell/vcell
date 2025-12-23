@@ -2,15 +2,15 @@ package org.vcell.cli.run.hdf5;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jlibsedml.SedML;
+import org.jlibsedml.SedMLDataClass;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class HDF5ExecutionResults implements Iterable<SedML>{
+public class HDF5ExecutionResults implements Iterable<SedMLDataClass>{
     private final static Logger logger = LogManager.getLogger(HDF5ExecutionResults.class);
-    private final Map<SedML, Hdf5DataContainer> executionResultsMapping;
+    private final Map<SedMLDataClass, Hdf5DataContainer> executionResultsMapping;
     public boolean isBioSimHdf5;
 
     public HDF5ExecutionResults(boolean isBioSimHdf5){
@@ -18,18 +18,18 @@ public class HDF5ExecutionResults implements Iterable<SedML>{
         this.isBioSimHdf5 = isBioSimHdf5;
     }
 
-    public void addResults(SedML sedml, Hdf5DataContainer dataContainer){
+    public void addResults(SedMLDataClass sedml, Hdf5DataContainer dataContainer){
         if (this.executionResultsMapping.containsKey(sedml)) logger.warn("Overwriting Results...");
         this.executionResultsMapping.put(sedml, dataContainer);
     }
 
-    public Hdf5DataContainer getData(SedML sedml){
+    public Hdf5DataContainer getData(SedMLDataClass sedml){
         if (!this.executionResultsMapping.containsKey(sedml)) throw new RuntimeException("No data for requested SED-ML!");
         return this.executionResultsMapping.get(sedml);
     }
 
     @Override
-    public Iterator<SedML> iterator() {
+    public Iterator<SedMLDataClass> iterator() {
         return this.executionResultsMapping.keySet().iterator();
     }
 }

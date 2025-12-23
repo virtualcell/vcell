@@ -5,7 +5,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jlibsedml.Model;
+import org.jlibsedml.components.model.Model;
 import org.jlibsedml.SedMLError;
 import org.jlibsedml.SedMLError.ERROR_SEVERITY;
 /**

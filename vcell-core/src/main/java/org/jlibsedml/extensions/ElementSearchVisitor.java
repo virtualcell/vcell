@@ -1,30 +1,30 @@
 package org.jlibsedml.extensions;
 
-import org.jlibsedml.AbstractIdentifiableElement;
-import org.jlibsedml.AddXML;
-import org.jlibsedml.Algorithm;
-import org.jlibsedml.ChangeAttribute;
-import org.jlibsedml.ChangeXML;
-import org.jlibsedml.ComputeChange;
-import org.jlibsedml.Curve;
-import org.jlibsedml.DataGenerator;
-import org.jlibsedml.DataSet;
-import org.jlibsedml.FunctionalRange;
-import org.jlibsedml.Model;
-import org.jlibsedml.Output;
-import org.jlibsedml.Parameter;
-import org.jlibsedml.RemoveXML;
-import org.jlibsedml.RepeatedTask;
-import org.jlibsedml.SEDBase;
+import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.components.AbstractIdentifiableElement;
+import org.jlibsedml.components.model.AddXML;
+import org.jlibsedml.components.algorithm.Algorithm;
+import org.jlibsedml.components.model.ChangeAttribute;
+import org.jlibsedml.components.model.ChangeXML;
+import org.jlibsedml.components.model.ComputeChange;
+import org.jlibsedml.components.output.Curve;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.output.DataSet;
+import org.jlibsedml.components.task.FunctionalRange;
+import org.jlibsedml.components.model.Model;
+import org.jlibsedml.components.output.Output;
+import org.jlibsedml.components.Parameter;
+import org.jlibsedml.components.model.RemoveXML;
+import org.jlibsedml.components.task.RepeatedTask;
+import org.jlibsedml.components.SedBase;
 import org.jlibsedml.SEDMLVisitor;
-import org.jlibsedml.SedML;
-import org.jlibsedml.SetValue;
-import org.jlibsedml.Simulation;
-import org.jlibsedml.Surface;
-import org.jlibsedml.Task;
-import org.jlibsedml.UniformRange;
-import org.jlibsedml.Variable;
-import org.jlibsedml.VectorRange;
+import org.jlibsedml.components.task.SetValue;
+import org.jlibsedml.components.simulation.Simulation;
+import org.jlibsedml.components.output.Surface;
+import org.jlibsedml.components.task.Task;
+import org.jlibsedml.components.task.UniformRange;
+import org.jlibsedml.components.Variable;
+import org.jlibsedml.components.task.VectorRange;
 /**
  * This class searches the object structure for an element with its value of an id attribute
  *  equal to that passed into this object's constructor.
@@ -43,9 +43,9 @@ public class ElementSearchVisitor extends SEDMLVisitor {
     }
 
     String searchTerm;
-    SEDBase foundElement;
+    SedBase foundElement;
     @Override
-    public boolean visit(SedML sedml) {
+    public boolean visit(SedMLDataClass sedml) {
        return true;
     }
 
@@ -122,9 +122,9 @@ public class ElementSearchVisitor extends SEDMLVisitor {
      * Gets either the found element, or <code>null</code> if no element was found
      *  with the ID specified in the constructor.<br/>
      *  Before calling <code>accept()</code>, this method will always return <code>null</code>.
-     * @return A {@link SEDBase} or <code>null</code>.
+     * @return A {@link SedBase} or <code>null</code>.
      */
-    public SEDBase getFoundElement(){
+    public SedBase getFoundElement(){
         return foundElement;
     }
     

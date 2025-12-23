@@ -11,7 +11,17 @@ import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
 import org.jdom2.input.SAXBuilder;
-import org.jlibsedml.UniformRange.UniformType;
+import org.jlibsedml.components.*;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.task.UniformRange.UniformType;
+import org.jlibsedml.components.algorithm.Algorithm;
+import org.jlibsedml.components.algorithm.AlgorithmParameter;
+import org.jlibsedml.components.model.*;
+import org.jlibsedml.components.output.*;
+import org.jlibsedml.components.simulation.Simulation;
+import org.jlibsedml.components.simulation.SteadyState;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
+import org.jlibsedml.components.task.*;
 import org.jlibsedml.mathsymbols.SedMLSymbolFactory;
 import org.jmathml.ASTNode;
 import org.jmathml.ASTRootNode;
@@ -27,8 +37,8 @@ class SEDMLReader {
      * returns a SedML model given an Element of xml for a complete model non -
      * api method
      */
-    public SedML getSedDocument(Element sedRoot) throws XMLException {
-        SedML sedDoc;
+    public SedMLDataClass getSedDocument(Element sedRoot) throws XMLException {
+        SedMLDataClass sedDoc;
         SymbolRegistry.getInstance().addSymbolFactory(new SedMLSymbolFactory());
         try {
             Namespace sedNS = sedRoot.getNamespace();
@@ -37,9 +47,9 @@ class SEDMLReader {
             if (verStr != null && lvlStr != null) {
                 int sedVersion = Integer.parseInt(verStr);
                 int sedLevel = Integer.parseInt(lvlStr);
-                sedDoc = new SedML(sedLevel, sedVersion, sedNS);
+                sedDoc = new SedMLDataClass(sedLevel, sedVersion, sedNS);
             } else {
-                sedDoc = new SedML(sedNS);
+                sedDoc = new SedMLDataClass(sedNS);
             }
 
             // Get additional namespaces if mentioned : mathml, sbml, etc.
@@ -106,16 +116,16 @@ class SEDMLReader {
         return sedDoc;
     }
 
-    public static SedML readFile(File file) throws JDOMException, IOException, XMLException {
+    public static SedMLDataClass readFile(File file) throws JDOMException, IOException, XMLException {
         SAXBuilder builder = new SAXBuilder();
         Document doc = builder.build(file);
         Element sedRoot = doc.getRootElement();
         try {
-            SEDMLElementFactory.getInstance().setStrictCreation(false);
+            SedMLElementFactory.getInstance().setStrictCreation(false);
             SEDMLReader reader = new SEDMLReader();
             return reader.getSedDocument(sedRoot);
         } finally {
-            SEDMLElementFactory.getInstance().setStrictCreation(true);
+            SedMLElementFactory.getInstance().setStrictCreation(true);
         }
     }
 
@@ -236,7 +246,7 @@ class SEDMLReader {
     }
 
 
-    private void addNotesAndAnnotation(SEDBase sedbase, Element xmlElement) {
+    private void addNotesAndAnnotation(SedBase sedbase, Element xmlElement) {
         // TODO: Do notes and annotations need their independent passes?
         List<Element> children = xmlElement.getChildren();
 

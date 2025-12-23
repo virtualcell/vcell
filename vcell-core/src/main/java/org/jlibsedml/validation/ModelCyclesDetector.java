@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.jdom2.Document;
-import org.jlibsedml.Model;
+import org.jlibsedml.components.model.Model;
 import org.jlibsedml.SEDMLTags;
-import org.jlibsedml.SedML;
+import org.jlibsedml.SedMLDataClass;
 import org.jlibsedml.SedMLError;
 import org.jlibsedml.SedMLError.ERROR_SEVERITY;
 import org.jlibsedml.XMLException;
@@ -25,9 +25,9 @@ import org.jlibsedml.XMLException;
  * is invalid as both models use each other as source references.
  */
 public class ModelCyclesDetector extends AbstractDocumentValidator {
-    private SedML sedml;
+    private SedMLDataClass sedml;
 
-    public ModelCyclesDetector(SedML sedml, Document doc) {
+    public ModelCyclesDetector(SedMLDataClass sedml, Document doc) {
         super(doc);
         this.sedml = sedml;
     }

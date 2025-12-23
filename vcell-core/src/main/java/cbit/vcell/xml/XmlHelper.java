@@ -463,12 +463,12 @@ public class XmlHelper {
 		// iterate through one or more SEDML objects
 		ArchiveComponents ac = null;
 		ac = Libsedml.readSEDMLArchive(new FileInputStream(omexFile));
-		List<SEDMLDocument> sedmlDocs = ac.getSedmlDocuments();
+		List<SedMLDocument> sedmlDocs = ac.getSedmlDocuments();
 
 
-		List<SedML> sedmls = new ArrayList<>();
-		for (SEDMLDocument sedmlDoc : sedmlDocs) {
-			SedML sedml = sedmlDoc.getSedMLModel();
+		List<SedMLDataClass> sedmls = new ArrayList<>();
+		for (SedMLDocument sedmlDoc : sedmlDocs) {
+			SedMLDataClass sedml = sedmlDoc.getSedMLModel();
 			if (sedml == null) {
 				throw new RuntimeException("Failed importing " + omexFile.getName());
 			}
@@ -477,7 +477,7 @@ public class XmlHelper {
 			}
 			sedmls.add(sedml);
 		}
-		for (SedML sedml : sedmls) {
+		for (SedMLDataClass sedml : sedmls) {
 			// default to import all tasks
 			ExternalDocInfo externalDocInfo = new ExternalDocInfo(omexFile,true);
 			List<BioModel> biomodels = importSEDML(vcLogger, externalDocInfo, sedml, false);
@@ -490,7 +490,7 @@ public class XmlHelper {
 
 
 	public static List<BioModel> importSEDML(VCLogger transLogger, ExternalDocInfo externalDocInfo,
-	   SedML sedml, boolean exactMatchOnly) throws Exception {
+                                             SedMLDataClass sedml, boolean exactMatchOnly) throws Exception {
 		SEDMLImporter sedmlImporter = new SEDMLImporter(transLogger, externalDocInfo.getFile(),
 				sedml, exactMatchOnly);
 		return sedmlImporter.getBioModels();
