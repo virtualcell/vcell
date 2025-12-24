@@ -16,6 +16,7 @@ import { Observable }                                        from 'rxjs';
 import { BioModel } from '../model/models';
 import { BioModelSummary } from '../model/models';
 import { VCellHTTPError } from '../model/models';
+import { VCellSummaryContainer } from '../model/models';
 
 
 import { Configuration }                                     from '../configuration';
@@ -60,6 +61,12 @@ export interface BioModelResourceServiceInterface {
      * @param bioModelID 
      */
     getBioModelVCML(bioModelID: string, extraHttpRequestParams?: any): Observable<string>;
+
+    /**
+     * 
+     * All of the summary objects for this particular user.
+     */
+    getSummariesContainer(extraHttpRequestParams?: any): Observable<VCellSummaryContainer>;
 
     /**
      * Save\&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.

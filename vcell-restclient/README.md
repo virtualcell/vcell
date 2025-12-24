@@ -117,6 +117,8 @@ Class | Method | HTTP request | Description
 *BioModelResourceApi* | [**getBioModelSummaryWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelSummaryWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/summary | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
 *BioModelResourceApi* | [**getBioModelVCML**](docs/BioModelResourceApi.md#getBioModelVCML) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
 *BioModelResourceApi* | [**getBioModelVCMLWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelVCMLWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
+*BioModelResourceApi* | [**getSummariesContainer**](docs/BioModelResourceApi.md#getSummariesContainer) | **GET** /api/v1/bioModel/summariesContainer | 
+*BioModelResourceApi* | [**getSummariesContainerWithHttpInfo**](docs/BioModelResourceApi.md#getSummariesContainerWithHttpInfo) | **GET** /api/v1/bioModel/summariesContainer | 
 *BioModelResourceApi* | [**saveBioModel**](docs/BioModelResourceApi.md#saveBioModel) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 *BioModelResourceApi* | [**saveBioModelWithHttpInfo**](docs/BioModelResourceApi.md#saveBioModelWithHttpInfo) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 *ExportResourceApi* | [**exportN5**](docs/ExportResourceApi.md#exportN5) | **POST** /api/v1/export/N5 | 
@@ -296,6 +298,7 @@ Class | Method | HTTP request | Description
  - [VCellHTTPError](docs/VCellHTTPError.md)
  - [VCellSite](docs/VCellSite.md)
  - [VCellSoftwareVersion](docs/VCellSoftwareVersion.md)
+ - [VCellSummaryContainer](docs/VCellSummaryContainer.md)
  - [VariableDomain](docs/VariableDomain.md)
  - [VariableMode](docs/VariableMode.md)
  - [VariableSpecs](docs/VariableSpecs.md)

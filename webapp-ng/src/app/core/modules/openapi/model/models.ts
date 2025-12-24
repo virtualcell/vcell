@@ -77,6 +77,7 @@ export * from './vc-simulation-identifier';
 export * from './v-cell-http-error';
 export * from './v-cell-site';
 export * from './v-cell-software-version';
+export * from './v-cell-summary-container';
 export * from './variable-domain';
 export * from './variable-mode';
 export * from './variable-specs';
