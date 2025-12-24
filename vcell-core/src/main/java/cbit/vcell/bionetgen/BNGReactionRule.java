@@ -186,4 +186,20 @@ public String writeReaction() {
 
 	return reactionStr;
 }
+
+    public BNGReactionRule deepClone() {
+		BNGParameter[] bngParamsClone = new BNGParameter[parameters.length];
+		for (int i = 0; i < parameters.length; i++) {
+			bngParamsClone[i] = parameters[i].deepClone();
+		}
+		BNGSpecies[] bngReactantsClone = new BNGSpecies[reactants.length];
+		for (int i = 0; i < reactants.length; i++) {
+			bngReactantsClone[i] = reactants[i].deepClone();
+		}
+		BNGSpecies[] bngProductsClone = new BNGSpecies[products.length];
+		for (int i = 0; i < products.length; i++) {
+			bngProductsClone[i] = products[i].deepClone();
+		}
+		return new BNGReactionRule(bngParamsClone, bngReactantsClone, bngProductsClone, isReversible());
+    }
 }
