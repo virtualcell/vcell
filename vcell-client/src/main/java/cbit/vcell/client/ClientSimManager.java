@@ -277,7 +277,7 @@ public void postProcessLangevinResults(Simulation sim) {
 			if(failure) {	// just open some dialog for now; eventually we'll have some unobtrusive visual notification
 				PopupGenerator.showErrorDialog(ClientSimManager.this.getDocumentWindowManager(), "PostProcessing failed");
 			} else {
-				PopupGenerator.showInfoDialog(ClientSimManager.this.getDocumentWindowManager(), "PostProcessing successful");
+//				PopupGenerator.showInfoDialog(ClientSimManager.this.getDocumentWindowManager(), "PostProcessing successful");
 			}
 		}
 	};

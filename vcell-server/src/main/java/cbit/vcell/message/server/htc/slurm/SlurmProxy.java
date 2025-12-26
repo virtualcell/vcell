@@ -419,10 +419,10 @@ public class SlurmProxy extends HtcProxy {
 		
 	}
 
-	private static int getRoundedMemoryLimit(long memPerTaskMB) {
-		int rawLimit = (int)(memPerTaskMB * 0.9);
-		// Round down to nearest 100 MB
-		return (rawLimit / 100) * 100;
+	private static int roundUpToBlock(long memPerTaskMB, int blockSizeMB) {
+		long block = blockSizeMB; // promote to long for safe math
+		long rounded = ((memPerTaskMB + block - 1) / block) * block;
+		return (int) rounded;
 	}
 	private static String extractUser(ExecutableCommand.Container commandSet) {
 		for (ExecutableCommand ec: commandSet.getExecCommands()) {
@@ -661,9 +661,14 @@ public class SlurmProxy extends HtcProxy {
 		SolverDescription solverDescription = std.getSolverDescription();
 		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid, simID, solverDescription, memSizeMB, simTask.isPowerUser());
 
-		int timeoutPerTaskSeconds = 28800;		// 8 hours TODO: do we hardcode this? Should it be part of LangevinSimulationOptions?
+		// TODO: do we hardcode these? Should it be part of LangevinSimulationOptions? Or, even better, properties?
+		int timeoutPerTaskSeconds = 86400;			// seconds. 24 hours
+		long hardbBtchMemoryLimitPerTask = 1024;	// MB. we hard limit mem to 1G for langevin batch jobs
+		int blockSizeMB = 256; 						// MB. SLURM memory allocation granularity
 		String slurmJobTimeout = computeSlurmTimeLimit(totalNumberOfJobs, numberOfConcurrentTasks, timeoutPerTaskSeconds);
-		int javaMemXmx = getRoundedMemoryLimit(memoryMBAllowed.getMemLimit());
+		long batchMemoryLimitPerTask = memoryMBAllowed.getMemLimit();
+		batchMemoryLimitPerTask = Math.min(batchMemoryLimitPerTask, hardbBtchMemoryLimitPerTask);
+		int javaMemXmx = roundUpToBlock(batchMemoryLimitPerTask, blockSizeMB) + blockSizeMB;	// add extra block for overhead
 
 		// -------------------------------------------------------------
 
