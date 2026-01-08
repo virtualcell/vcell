@@ -2,71 +2,79 @@ package org.jlibsedml;
 /**
  * This class contains all the XML tags and attribute names in a SEDML document.
  */
-public class SEDMLTags {
+public class SedMLTags {
     
-    private SEDMLTags(){}
+    private SedMLTags(){}
     
 	// SBML, MathML, SEDML namespaces
 	public static final String SEDML_L1V1_NS = "http://sed-ml.org/";
 	public static final String SEDML_L1V2_NS = "http://sed-ml.org/sed-ml/level1/version2";
 	public static final String SEDML_L1V3_NS = "http://sed-ml.org/sed-ml/level1/version3";
 	public static final String SEDML_L1V4_NS = "http://sed-ml.org/sed-ml/level1/version4";
+    public static final String SEDML_L1V5_NS = "http://sed-ml.org/sed-ml/level1/version5";
 	public static final String SBML_NS = "http://www.sbml.org/sbml/level2";
 	public static final String SBML_NS_L2V4 = "http://www.sbml.org/sbml/level2/version4";
 	public static final String MATHML_NS = "http://www.w3.org/1998/Math/MathML";
 	public static final String XHTML_NS = "http://www.w3.org/1999/xhtml";
 	
 	// namespace prefixes:
-	public static final String MATHML_NS_PREFIX = "math";
-	public static final String SBML_NS_PREFIX = "sbml";
+	public static final String MATHML_NS_PREFIX             = "math";
+	public static final String SBML_NS_PREFIX               = "sbml";
 	
-    public static final String ROOT_NODE_TAG			= "sedML";
-    public static final String SED						= "Sed";
-    public static final String VERSION_TAG				= "version";
-	public static final String LEVEL_TAG 				= "level";
+    public static final String SED_ML_ROOT                  = "sedML";
+    public static final String SED						    = "Sed";
+    public static final String VERSION_TAG				    = "version";
+	public static final String LEVEL_TAG 				    = "level";
 
     
-    public static final String NOTES					= "notes";
-    public static final String ANNOTATION				= "annotation";
-    public static final String META_ID_ATTR_NAME		= "metaid";
-    public static final String MODELS					= "listOfModels";
-    public static final String SIMS						= "listOfSimulations";
-    public static final String TASKS					= "listOfTasks";
-    public static final String DATA_GENERATORS = "listOfDataGenerators";
-    public static final String OUTPUTS					= "listOfOutputs";
+    public static final String NOTES					    = "notes";
+    public static final String ANNOTATION				    = "annotation";
+    public static final String META_ID_ATTR_NAME		    = "metaid";
+    public static final String DATA_DESCRIPTIONS		    = "listOfDataDescriptions";
+    public static final String MODELS					    = "listOfModels";
+    public static final String SIMS						    = "listOfSimulations";
+    public static final String TASKS					    = "listOfTasks";
+    public static final String DATA_GENERATORS              = "listOfDataGenerators";
+    public static final String OUTPUTS					    = "listOfOutputs";
+    public static final String STYLES					    = "listOfStyles";
+    public static final String ALGORITHM_PARAMETERS	        = "listOfAlgorithmParameters";
+    public static final String PARAMETERS					= "listOfParameters";
+    public static final String VARIABLES					= "listOfVariables";
+
+
 
     // model attributes
-    public static final String MODEL_TAG				= "model";
-    public static final String MODEL_ATTR_ID			= "id";
-    public static final String MODEL_ATTR_NAME			= "name";
-    public static final String MODEL_ATTR_LANGUAGE		= "language";
-    public static final String MODEL_ATTR_SOURCE		= "source";
+    public static final String MODEL_TAG				    = "model";
+    public static final String MODEL_ATTR_ID			    = "id";
+    public static final String MODEL_ATTR_NAME			    = "name";
+    public static final String MODEL_ATTR_LANGUAGE		    = "language";
+    public static final String MODEL_ATTR_SOURCE		    = "source";
     // types of model changes
-    public static final String CHANGES					= "listOfChanges";
-    public static final String CHANGE_ATTRIBUTE			= "changeAttribute";
-    public static final String CHANGE_XML				= "changeXML";
-    public static final String ADD_XML					= "addXML";
-    public static final String REMOVE_XML				= "removeXML";
-    public static final String NEW_XML                  = "newXML";
-    public static final String COMPUTE_CHANGE			= "computeChange";
-    public static final String COMPUTE_CHANGE_VARS      = "listOfVariables";
-    public static final String COMPUTE_CHANGE_PARAMS    = "listOfParameters";
+    public static final String CHANGES					    = "listOfChanges";
+    public static final String CHANGE_ATTRIBUTE			    = "changeAttribute";
+    public static final String CHANGE_XML				    = "changeXML";
+    public static final String ADD_XML					    = "addXML";
+    public static final String REMOVE_XML				    = "removeXML";
+    public static final String NEW_XML                      = "newXML";
+    public static final String COMPUTE_CHANGE			    = "computeChange";
+    public static final String COMPUTE_CHANGE_VARS          = "listOfVariables";
+    public static final String COMPUTE_CHANGE_PARAMS        = "listOfParameters";
 
     // change attributes
-    public static final String CHANGE_ATTR_TARGET		= "target";
-    public static final String CHANGE_ATTR_NEWVALUE		= "newValue";
-    public static final String CHANGE_ATTR_NEWXML		= "newXML";
-    public static final String CHANGE_ATTR_MATH			= "math";
+    public static final String CHANGE_ATTR_TARGET		    = "target";
+    public static final String CHANGE_ATTR_NEWVALUE		    = "newValue";
+    public static final String CHANGE_ATTR_NEWXML		    = "newXML";
+    public static final String CHANGE_ATTR_MATH			    = "math";
 
     // simulation attributes
-    public static final String SIM_ATTR_ID				= "id";
-    public static final String SIM_ATTR_NAME			= "name";
-    public static final String SIM_ATTR_ALGORITM		= "algorithm";
+    public static final String SIM_ATTR_ID				    = "id";
+    public static final String SIM_ATTR_NAME			    = "name";
+    public static final String SIM_ATTR_ALGORITM		    = "algorithm";
     // types of simulations
-    public static final String SIM_UTC					= "uniformTimeCourse";
-    public static final String SIM_ANALYSIS = "anySimulation";
-    public static final String SIM_ONE_STEP = "oneStep";
-    public static final String SIM_STEADY_STATE = "steadyState";
+    public static final String SIM_UTC					    = "uniformTimeCourse";
+    public static final String SIM_ANALYSIS                 = "anySimulation";
+    public static final String SIM_ONE_STEP                 = "oneStep";
+    public static final String SIM_STEADY_STATE             = "steadyState";
     
     //algorithm element
     public static final String ALGORITHM_TAG                = "algorithm";
@@ -77,23 +85,23 @@ public class SEDMLTags {
     public static final String ALGORITHM_PARAMETER_VALUE    = "value";
     
     // uniform time course attributes
-    public static final String UTCA_INIT_T				= "initialTime";
-    public static final String UTCA_OUT_START_T			= "outputStartTime";
-    public static final String UTCA_OUT_END_T			= "outputEndTime";
-    public static final String UTCA_POINTS_NUM			= "numberOfPoints";
-    public static final String UTCA_STEPS_NUM			= "numberOfSteps";
+    public static final String UTCA_INIT_T				    = "initialTime";
+    public static final String UTCA_OUT_START_T			    = "outputStartTime";
+    public static final String UTCA_OUT_END_T			    = "outputEndTime";
+    public static final String UTCA_POINTS_NUM			    = "numberOfPoints";
+    public static final String UTCA_STEPS_NUM			    = "numberOfSteps";
     
     // one step attributes
-    public static final String ONE_STEP_STEP = "step";
+    public static final String ONE_STEP_STEP                = "step";
     
     // task attributes
-    public static final String TASK_TAG					= "task";
-    public static final String TASK_ATTR_ID				= "id";
-    public static final String TASK_ATTR_NAME			= "name";
-    public static final String TASK_ATTR_MODELREF		= "modelReference";
-    public static final String TASK_ATTR_SIMREF			= "simulationReference";
+    public static final String TASK_TAG					    = "task";
+    public static final String TASK_ATTR_ID				    = "id";
+    public static final String TASK_ATTR_NAME			    = "name";
+    public static final String TASK_ATTR_MODELREF		    = "modelReference";
+    public static final String TASK_ATTR_SIMREF			    = "simulationReference";
     // repeated task attributes
-    public static final String REPEATED_TASK_TAG        = "repeatedTask";
+    public static final String REPEATED_TASK_TAG            = "repeatedTask";
     public static final String REPEATED_TASK_RESET_MODEL    = "resetModel";
     public static final String REPEATED_TASK_ATTR_RANGE     = "range";      // should be REPEATED_TASK_ATTR_RANGEREF
     public static final String REPEATED_TASK_RANGES_LIST    = "listOfRanges";
@@ -102,7 +110,7 @@ public class SEDMLTags {
     public static final String SUBTASK_TAG                  = "subTask";
     public static final String SUBTASK_ATTR_ORDER           = "order";
     public static final String SUBTASK_ATTR_TASK            = "task";
-    public static final String DEPENDENT_TASK = "dependentTask";
+    public static final String DEPENDENT_TASK               = "dependentTask";
     public static final String DEPENDENT_TASK_SUBTASKS_LIST = "listOfDependentTasks";
 
     // set value
@@ -130,7 +138,7 @@ public class SEDMLTags {
 
     
     // data generator attributes and children
-    public static final String DATA_GENERATOR_TAG = "dataGenerator";
+    public static final String DATA_GENERATOR_TAG           = "dataGenerator";
     public static final String DATAGEN_ATTR_ID              = "id";
     public static final String DATAGEN_ATTR_NAME            = "name";
     public static final String DATAGEN_ATTR_MATH            = "math";
@@ -149,6 +157,7 @@ public class SEDMLTags {
     public static final String OUTPUT_CURVES_LIST			= "listOfCurves";
     public static final String OUTPUT_SURFACES_LIST			= "listOfSurfaces";
     public static final String OUTPUT_DATASETS_LIST			= "listOfDataSets";
+    public static final String OUTPUT_AXIS                  = "axis";
     public static final String OUTPUT_CURVE					= "curve";
     public static final String OUTPUT_SURFACE				= "surface";
     public static final String OUTPUT_DATASET				= "dataSet";
@@ -185,15 +194,10 @@ public class SEDMLTags {
 	public static final String DATAGEN_VARIABLE_KIND 		= "DataGenVariable";		// refers to a task
 	public static final String CHANGE_MATH_VARIABLE_KIND 	= "ChangeMathVariable";		// refers to a model
 	public static final String PLOT2D_KIND 					= "SedPlot2D";					// refers to a data generator
-	public static final String PLOT3D_KIND 					= "SedPlot3D";
+	public static final String PLOT3D_KIND                  = "SedPlot3D";
 	public static final String REPORT_KIND 					= "SedReport";
     public static final String SIMUL_UTC_KIND               = "uniformTimeCourse";
     public static final String SIMUL_OS_KIND                = "oneStep";
     public static final String SIMUL_SS_KIND                = "steadyState";
     public static final String SIMUL_ANY_KIND				= "anySimulation";
-    
-    
-	
-	
-
 }

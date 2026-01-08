@@ -1,11 +1,17 @@
 package org.jlibsedml.components.task;
 
-import org.jlibsedml.components.AbstractIdentifiableElement;
+import org.jlibsedml.SedMLElementFactory;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
+import org.jlibsedml.components.SedGeneralClass;
 
-public abstract class AbstractTask extends AbstractIdentifiableElement {
+public abstract class AbstractTask extends SedBase {
 
-    public AbstractTask(String id, String name) {
+    public AbstractTask(SId id, String name) {
         super(id, name);
+        if(SedMLElementFactory.getInstance().isStrictCreation()){
+            SedGeneralClass.checkNoNullArgs(id);
+        }
     }
     public abstract String getModelReference() ;
     public abstract String getSimulationReference() ;

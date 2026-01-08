@@ -18,7 +18,7 @@ import java.util.*;
 public abstract class ResultsConverter {
     private final static Logger logger = LogManager.getLogger(ResultsConverter.class);
 
-    protected static List<Output> getValidOutputs(SedMLDataClass sedml){
+    protected static List<Output> getValidOutputs(SedMLDataContainer sedml){
         List<Output> nonPlot3DOutputs = new ArrayList<>();
         List<Plot3D> plot3DOutputs = new ArrayList<>();
         for (Output output : sedml.getOutputs()){
@@ -64,7 +64,7 @@ public abstract class ResultsConverter {
         return s;
     }
 
-    protected static void add2DPlotsAsReports(SedMLDataClass sedml, Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> organizedNonSpatialResults, List<Report> listToModify){
+    protected static void add2DPlotsAsReports(SedMLDataContainer sedml, Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> organizedNonSpatialResults, List<Report> listToModify){
         for (Plot2D plot2D: sedml.getOutputs().stream().filter(Plot2D.class::isInstance).map(Plot2D.class::cast).toList()){
             Set<String> addedDataGenIDs = new LinkedHashSet<>();
             Report fakeReport = new Report(plot2D.getId(), plot2D.getName());
@@ -90,13 +90,13 @@ public abstract class ResultsConverter {
         }
     }
 
-    protected static AbstractTask getBaseTask(AbstractTask task, SedMLDataClass sedml){
+    protected static AbstractTask getBaseTask(AbstractTask task, SedMLDataContainer sedml){
         if (task == null) throw new IllegalArgumentException("task arguement is `null`!");
         while (task instanceof RepeatedTask repeatedTask) { // We need to find the original task burried beneath.
             // We assume that we can never have a sequential repeated task at this point, we check for that in SEDMLImporter
             SubTask st = repeatedTask.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
-            task = sedml.getTaskWithId(st.getTaskId());
-            if (task == null) throw new IllegalArgumentException("Bad SedML formatting; task with id " + st.getTaskId() +" not found");
+            task = sedml.getTaskWithId(st.getTask());
+            if (task == null) throw new IllegalArgumentException("Bad SedML formatting; task with id " + st.getTask() +" not found");
         }
         return task;
     }

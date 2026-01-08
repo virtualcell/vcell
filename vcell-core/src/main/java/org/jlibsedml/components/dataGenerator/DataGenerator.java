@@ -5,12 +5,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jlibsedml.*;
-import org.jlibsedml.components.AbstractIdentifiableElement;
-import org.jlibsedml.components.Parameter;
-import org.jlibsedml.components.SedGeneralClass;
-import org.jlibsedml.components.Variable;
+import org.jlibsedml.components.*;
+import org.jlibsedml.components.listOfConstructs.ListOfParameters;
+import org.jlibsedml.components.listOfConstructs.ListOfVariables;
 import org.jmathml.ASTNode;
 import org.jmathml.FormulaFormatter;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 /**
  * Encapsulates a DataGenerator element in SED-ML.
@@ -18,14 +19,12 @@ import org.jmathml.FormulaFormatter;
  * @author anu/radams
  * 
  */
-public final class DataGenerator extends AbstractIdentifiableElement implements
-        IMathContainer {
+public final class DataGenerator extends SedBase implements Calculation {
+    private final static FormulaFormatter formulaFormatter = new FormulaFormatter();
 
 	private ASTNode math = null;
-
-	private ArrayList<Variable> listOfVariables = new ArrayList<Variable>();
-	private ArrayList<Parameter> listOfParameters = new ArrayList<Parameter>();
-	private FormulaFormatter formulaFormatter=new FormulaFormatter();
+	private final ListOfVariables listOfVariables = new ListOfVariables();
+	private final ListOfParameters listOfParameters = new ListOfParameters();
 
 	/**
 	 * 
@@ -37,7 +36,7 @@ public final class DataGenerator extends AbstractIdentifiableElement implements
 	 * @throws IllegalArgumentException
 	 *             if id is null or empty string, or <code>math</code> is null.
 	 */
-	public DataGenerator(String id, String name, ASTNode math) {
+	public DataGenerator(SId id, String name, ASTNode math) {
 		super(id, name);
 		if (SedMLElementFactory.getInstance().isStrictCreation()) {
             SedGeneralClass.checkNoNullArgs(math);
@@ -48,14 +47,8 @@ public final class DataGenerator extends AbstractIdentifiableElement implements
 	/*
 	 * Package scoped constructor for reading from XML
 	 */
-    public DataGenerator(String id, String name) {
+    public DataGenerator(SId id, String name) {
 		super(id, name);
-	}
-
-	@Override
-	public String toString() {
-		return "DataGenerator [math=" + math + ", name=" + getName()
-				+ ", getId()=" + getId() + "]";
 	}
 
 	/**
@@ -65,8 +58,8 @@ public final class DataGenerator extends AbstractIdentifiableElement implements
 	 * @return A possibly empty but non-null List</code> of {@link Variable}
 	 *         objects.
 	 */
-	public List<Variable> getListOfVariables() {
-		return Collections.unmodifiableList(listOfVariables);
+	public ListOfVariables getListOfVariables() {
+		return this.listOfVariables;
 	}
 
 	/**
@@ -75,13 +68,9 @@ public final class DataGenerator extends AbstractIdentifiableElement implements
 	 * 
 	 * @param variable
 	 *            A non-null {@link Variable} element
-	 * @return <code>true</code> if variable added, <code>false </code>
-	 *         otherwise.
 	 */
-	public boolean addVariable(Variable variable) {
-		if (!listOfVariables.contains(variable))
-			return listOfVariables.add(variable);
-		return false;
+	public void addVariable(Variable variable) {
+		this.listOfVariables.addContent(variable);
 	}
 
 	/**
@@ -89,13 +78,9 @@ public final class DataGenerator extends AbstractIdentifiableElement implements
 	 * 
 	 * @param variable
 	 *            A non-null {@link Variable} element
-	 * @return <code>true</code> if variable removed, <code>false </code>
-	 *         otherwise.
 	 */
-	public boolean removeVariable(Variable variable) {
-
-		return listOfVariables.remove(variable);
-
+	public void removeVariable(Variable variable) {
+        this.listOfVariables.removeContent(variable);
 	}
 
 	/**
@@ -104,8 +89,8 @@ public final class DataGenerator extends AbstractIdentifiableElement implements
 	 * @return A possibly empty but non-null List</code> of {@link Parameter}
 	 *         objects.
 	 */
-	public List<Parameter> getListOfParameters() {
-		return Collections.unmodifiableList(listOfParameters);
+	public ListOfParameters getListOfParameters() {
+		return this.listOfParameters;
 	}
 
 	/**
@@ -114,13 +99,9 @@ public final class DataGenerator extends AbstractIdentifiableElement implements
 	 * 
 	 * @param parameter
 	 *            A non-null {@link Parameter} element
-	 * @return <code>true</code> if parameter added, <code>false </code>
-	 *         otherwise.
 	 */
-	public boolean addParameter(Parameter parameter) {
-		if (!listOfParameters.contains(parameter))
-			return listOfParameters.add(parameter);
-		return false;
+	public void addParameter(Parameter parameter) {
+		this.listOfParameters.addContent(parameter);
 	}
 
 	/**
@@ -128,17 +109,10 @@ public final class DataGenerator extends AbstractIdentifiableElement implements
 	 * 
 	 * @param parameter
 	 *            A non-null {@link Parameter} element.
-	 * @return <code>true</code> if parameter removed, <code>false </code>
-	 *         otherwise.
 	 */
-	public boolean removeParameter(Parameter parameter) {
+	public void removeParameter(Parameter parameter) {
+		this.listOfParameters.removeContent(parameter);
 
-		return listOfParameters.remove(parameter);
-
-	}
-
-	public void setMathML(ASTNode math) {
-		this.math = math;
 	}
 
 	/**
@@ -146,41 +120,48 @@ public final class DataGenerator extends AbstractIdentifiableElement implements
 	 * @return an {@link ASTNode}.
 	 */
 	public ASTNode getMath() {
-		return math;
+		return this.math;
     }
-	
-	/**
+
+    @Override
+    public void setMath(ASTNode math) {
+        this.math = math;
+    }
+
+    /**
 	 * Convenience function to return the maths expression as a C-style string.
 	 * @return A <code>String</code> representation of the maths of this DataGenerator.
 	 */
 	public String getMathAsString(){
-	    return formulaFormatter.formulaToString(math);
+	    return DataGenerator.formulaFormatter.formulaToString(this.math);
 	}
 
 	@Override
 	public String getElementName() {
-		return SEDMLTags.DATA_GENERATOR_TAG;
+		return SedMLTags.DATA_GENERATOR_TAG;
 	}
 	
 	public  boolean accept(SEDMLVisitor visitor){
-	    if(visitor.visit(this)){
-	        for (Variable var :getListOfVariables()){
-	           if( !var.accept(visitor)) {
-                   return false;
-               }
-	        
-	        }
-	        for (Parameter p :getListOfParameters()){
-	               if(! p.accept(visitor)){
-	                   return false;
-	               }
-	         }
-	        return true;
-        }else {
-            return false;
+        if (!visitor.visit(this)) return false;
+        for (Variable var : this.getListOfVariables().getContents()){
+            if(!var.accept(visitor)) return false;
         }
-	    
-        
+        for (Parameter p : this.getListOfParameters().getContents()){
+            if(!p.accept(visitor)) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
+     * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
+     * <br\>
+     * e.g.: `super.parametersToString() + ", " + String.format(...)`
+     * @return the parameters and their values, listed in string form
+     */
+    @OverridingMethodsMustInvokeSuper
+    public String parametersToString(){
+        return super.parametersToString() + ", " + String.join(", ", this.getMathParamsAndVarsAsStringParams());
     }
 
 }

@@ -44,7 +44,7 @@
 		-->
 		<xs:attribute name="metaid" type="xs:ID" use="optional"></xs:attribute>
 	</xs:complexType>
-	<xs:element name="sedMLDataClass">
+	<xs:element name="sedMLDataContainer">
 		<xs:complexType>
 			<xs:complexContent>
 				<xs:extension base="SEDBase">
@@ -63,7 +63,7 @@
 			</xs:complexContent>
 		</xs:complexType>
 	</xs:element>
-	<!-- notes and annotations -->
+	<!-- notes and annotation -->
 	<xs:element name="notes">
 		<xs:complexType>
 			<xs:sequence>

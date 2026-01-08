@@ -1,9 +1,12 @@
 package org.jlibsedml.components;
 
 import org.jlibsedml.SedMLElementFactory;
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
 import org.jlibsedml.SEDMLVisitor;
 import org.jlibsedml.components.task.Task;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Encapsulates a SED-ML Variable element. A variable can have EITHER a
@@ -24,10 +27,10 @@ import org.jlibsedml.components.task.Task;
  * </p>
  *
  */
-public final class Variable extends AbstractIdentifiableElement {
+public final class Variable extends SedBase {
 
     private String targetXPathStr = null;
-    private String reference = null; // task OR model ID
+    private String reference; // task OR model ID
     private VariableSymbol symbol;
 
     /**
@@ -47,7 +50,7 @@ public final class Variable extends AbstractIdentifiableElement {
      *             id <code>id</code>,<code>reference</code>, or
      *             <code>targetXPath</code> is null.
      */
-    public Variable(String id, String name, String reference, String targetXPath) {
+    public Variable(SId id, String name, String reference, String targetXPath) {
         super(id, name);
         if (SedMLElementFactory.getInstance().isStrictCreation()) {
            SedGeneralClass.checkNoNullArgs(reference, targetXPath);
@@ -69,7 +72,7 @@ public final class Variable extends AbstractIdentifiableElement {
      *             id <code>id</code>,<code>reference</code>, or
      *             <code>symbol</code> is null.
      */
-    public Variable(String id, String name, String reference,
+    public Variable(SId id, String name, String reference,
             VariableSymbol symbol) {
         super(id, name);
        SedGeneralClass.checkNoNullArgs(reference, symbol);
@@ -139,14 +142,16 @@ public final class Variable extends AbstractIdentifiableElement {
     }
 
     @Override
-    public String toString() {
-        return "Variable [name=" + getName() + ", reference=" + reference
-                + ", symbol=" + symbol + ", targetXPathStr=" + targetXPathStr
-                + ", getId()=" + getId() + "]";
+    public String parametersToString(){
+        List<String> params = new ArrayList<>();
+        params.add(String.format("reference=%s", this.reference));
+        params.add(String.format("symbol=%s", this.symbol));
+        params.add(String.format("targetXPathStr=%s", this.targetXPathStr));
+        return super.parametersToString() + ", " + String.join(", ", params);
     }
 
     /**
-     * Boolean test for whether or not this object represents a SEDML variable.
+     * Boolean test for whether this object represents a SEDML variable.
      * @return <code>true</code> if this object represents a SEDML variable,
      *         <code>false</code> otherwise.
      */
@@ -189,7 +194,7 @@ public final class Variable extends AbstractIdentifiableElement {
 
     @Override
     public String getElementName() {
-        return SEDMLTags.DATAGEN_ATTR_VARIABLE;
+        return SedMLTags.DATAGEN_ATTR_VARIABLE;
     }
 
     public boolean accept(SEDMLVisitor visitor) {

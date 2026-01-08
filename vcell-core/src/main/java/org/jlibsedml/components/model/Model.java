@@ -7,9 +7,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jlibsedml.*;
-import org.jlibsedml.components.AbstractIdentifiableElement;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.SedGeneralClass;
+import org.jlibsedml.components.listOfConstructs.ListOfChanges;
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 import static org.jlibsedml.execution.ArchiveModelResolver.SPACE_URI_ESCAPE_SEQUENCE;
 
@@ -21,10 +25,10 @@ import static org.jlibsedml.execution.ArchiveModelResolver.SPACE_URI_ESCAPE_SEQU
  * @author anu/radams
  * 
  */
-public final class Model extends AbstractIdentifiableElement {
+public final class Model extends SedBase {
 	private String language;
 	private final String source_path_or_URI_string;
-    private final List<Change> listOfChanges = new ArrayList<>();
+    private final ListOfChanges listOfChanges = new ListOfChanges();
 
 	/**
      * Standard Constructor for Models
@@ -44,11 +48,12 @@ public final class Model extends AbstractIdentifiableElement {
 	 *             if any argument except <code>name</code> is null or an empty
 	 *             string.
 	 */
-	public Model(String id, String name, String language, String source_path_or_URI_string) {
+	public Model(SId id, String name, String language, String source_path_or_URI_string) {
 		super(id, name);
+        if (this.getId() == null) throw new IllegalArgumentException("id is required for SedML class `" + this.getClass().getSimpleName() + "`");
 		if (SedMLElementFactory.getInstance().isStrictCreation()) {
-            SedGeneralClass.checkNoNullArgs(source_path_or_URI_string);
-            SedGeneralClass.stringsNotEmpty(source_path_or_URI_string);
+            SedGeneralClass.checkNoNullArgs(language, source_path_or_URI_string);
+            SedGeneralClass.stringsNotEmpty(language, source_path_or_URI_string);
 		}
 		this.language = language;
 		this.source_path_or_URI_string = source_path_or_URI_string;
@@ -67,7 +72,7 @@ public final class Model extends AbstractIdentifiableElement {
 	 * @throws IllegalArgumentException
 	 *             if any argument is null
 	 */
-	public Model(Model toCopy, String id) {
+	public Model(Model toCopy, SId id) {
 		this(id, toCopy.getName(), toCopy.getLanguage(), toCopy.getSourcePathOrURIString());
 	}
 
@@ -98,7 +103,7 @@ public final class Model extends AbstractIdentifiableElement {
 	 * @return List<Change>
 	 */
 	public List<Change> getListOfChanges() {
-		return Collections.unmodifiableList(this.listOfChanges);
+		return this.listOfChanges.getContents();
 	}
 
 	/**
@@ -118,9 +123,7 @@ public final class Model extends AbstractIdentifiableElement {
      *            A non-null {@link Change} element to add
      */
 	public void addChange(Change change) {
-        if (this.listOfChanges.contains(change)) return;
-        this.listOfChanges.add(change);
-        this.listOfChanges.sort(new Change.ChangeComparator());
+        this.listOfChanges.addContent(change);
     }
 
 	/**
@@ -130,14 +133,12 @@ public final class Model extends AbstractIdentifiableElement {
      *            If the change is not found in the list of changes, the function returns early.
 	 */
 	public void removeChange(Change change) {
-        if (!this.listOfChanges.contains(change)) return;
-        this.listOfChanges.remove(change);
-        // no need to re-sort on removal
+        this.listOfChanges.removeContent(change);
 	}
 
 	/**
-	 * Returns the model's source, as a URI from where it can retrieved. This
-	 * can be be a file location or a stable database identifier, for example.
+	 * Returns the model's source, as a URI from where it can be retrieved. This
+	 * can be a file location or a stable database identifier, for example.
 	 * 
 	 * @return A <code>String</code>
 	 */
@@ -226,7 +227,7 @@ public final class Model extends AbstractIdentifiableElement {
 	 * 
 	 * @return A {@link URI} object
 	 * @throws URISyntaxException
-	 *             if the value of the the 'source' attribute of a model element
+	 *             if the value of the 'source' attribute of a model element
 	 *             cannot be converted to a URI.
 	 */
 	public URI getSourceURI() throws URISyntaxException {
@@ -273,17 +274,24 @@ public final class Model extends AbstractIdentifiableElement {
 		return true;
 	}
 
-	/**
-	 * @see Object#toString()
-	 */
-	public String toString() {
-        String formatString = "Model [id=%s, name=%s, language=%s, src=%s]";
-        return String.format(formatString, this.getId(), this.getName(), this.language, this.source_path_or_URI_string);
-	}
+    /**
+     * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
+     * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
+     * <br\>
+     * e.g.: `super.parametersToString() + ", " + String.format(...)`
+     * @return the parameters and their values, listed in string form
+     */
+    @OverridingMethodsMustInvokeSuper
+    public String parametersToString(){
+        List<String> params = new ArrayList<>();
+        if (this.language != null) params.add(String.format("language=%s", this.language));
+        if (this.source_path_or_URI_string != null) params.add(String.format("src=%s", this.source_path_or_URI_string));
+        return super.parametersToString() + ", " + String.join(", ", params);
+    }
 
 	@Override
 	public String getElementName() {
-		return SEDMLTags.MODEL_TAG;
+		return SedMLTags.MODEL_TAG;
 	}
 
 	public boolean accept(SEDMLVisitor visitor){

@@ -142,10 +142,10 @@ public class Libsedml {
         } catch (XMLException e) {
             return false;
         }
-        return SEDMLTags.SEDML_L1V1_NS.equalsIgnoreCase(doc.getRootElement()
-                .getNamespaceURI()) || SEDMLTags.SEDML_L1V2_NS.equalsIgnoreCase(doc.getRootElement()
-                        .getNamespaceURI()) || SEDMLTags.SEDML_L1V3_NS.equalsIgnoreCase(doc.getRootElement()
-                                .getNamespaceURI()) || SEDMLTags.SEDML_L1V4_NS.equalsIgnoreCase(doc.getRootElement()
+        return SedMLTags.SEDML_L1V1_NS.equalsIgnoreCase(doc.getRootElement()
+                .getNamespaceURI()) || SedMLTags.SEDML_L1V2_NS.equalsIgnoreCase(doc.getRootElement()
+                        .getNamespaceURI()) || SedMLTags.SEDML_L1V3_NS.equalsIgnoreCase(doc.getRootElement()
+                                .getNamespaceURI()) || SedMLTags.SEDML_L1V4_NS.equalsIgnoreCase(doc.getRootElement()
                                 		.getNamespaceURI());
 
     }
@@ -194,8 +194,8 @@ public class Libsedml {
         SEDMLReader reader = new SEDMLReader();
         try {
             SedMLElementFactory.getInstance().setStrictCreation(false);
-            SedMLDataClass sedMLDataClass = reader.getSedDocument(sedRoot);
-            SedMLDocument sedmlDoc = new SedMLDocument(sedMLDataClass, errs);
+            SedMLDataContainer sedMLDataContainer = reader.getSedDocument(sedRoot);
+            SedMLDocument sedmlDoc = new SedMLDocument(sedMLDataContainer, errs);
             sedmlDoc.validate();
             return sedmlDoc;
         } finally {

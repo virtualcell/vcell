@@ -1,29 +1,38 @@
 package org.jlibsedml.components.simulation;
 
+import org.jlibsedml.components.SId;
 import org.jlibsedml.components.algorithm.Algorithm;
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SteadyState extends Simulation {
 
-    public SteadyState(String id, String name, Algorithm algorithm) {
+    public SteadyState(SId id, String name, Algorithm algorithm) {
         super(id, name, algorithm);
     }
 
+    /**
+     * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
+     * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
+     * <br\>
+     * e.g.: `super.parametersToString() + ", " + String.format(...)`
+     * @return the parameters and their values, listed in string form
+     */
     @Override
-    public String toString() {
-        return "SteadyState [" + getAlgorithm()
-            + ", name=" + getName()
-            + ", getId()=" + getId() 
-            + "]";
+    public String parametersToString(){
+        return super.parametersToString();
     }
+
     @Override
     public String getSimulationKind() {
-        return SEDMLTags.SIMUL_SS_KIND;
+        return SedMLTags.SIMUL_SS_KIND;
     }
 
     @Override
     public String getElementName() {
-        return SEDMLTags.SIM_STEADY_STATE;
+        return SedMLTags.SIM_STEADY_STATE;
     }
 
 }

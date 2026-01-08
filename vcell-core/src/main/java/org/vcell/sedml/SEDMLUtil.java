@@ -1,10 +1,10 @@
 package org.vcell.sedml;
 
-import org.jlibsedml.components.AbstractIdentifiableElement;
+import org.jlibsedml.components.SedBase;
 
 public class SEDMLUtil {
 	
-	public static String getName(AbstractIdentifiableElement thing) {
+	public static String getName(SedBase thing) {
 		if(thing == null) {
 			return null;
 		}

@@ -1,30 +1,8 @@
 package org.jlibsedml.extensions;
 
-import org.jlibsedml.SedMLDataClass;
-import org.jlibsedml.components.AbstractIdentifiableElement;
-import org.jlibsedml.components.model.AddXML;
-import org.jlibsedml.components.algorithm.Algorithm;
-import org.jlibsedml.components.model.ChangeAttribute;
-import org.jlibsedml.components.model.ChangeXML;
-import org.jlibsedml.components.model.ComputeChange;
-import org.jlibsedml.components.output.Curve;
-import org.jlibsedml.components.dataGenerator.DataGenerator;
-import org.jlibsedml.components.output.DataSet;
-import org.jlibsedml.components.task.FunctionalRange;
-import org.jlibsedml.components.model.Model;
-import org.jlibsedml.components.output.Output;
-import org.jlibsedml.components.Parameter;
-import org.jlibsedml.components.model.RemoveXML;
-import org.jlibsedml.components.task.RepeatedTask;
 import org.jlibsedml.components.SedBase;
 import org.jlibsedml.SEDMLVisitor;
-import org.jlibsedml.components.task.SetValue;
-import org.jlibsedml.components.simulation.Simulation;
-import org.jlibsedml.components.output.Surface;
-import org.jlibsedml.components.task.Task;
-import org.jlibsedml.components.task.UniformRange;
-import org.jlibsedml.components.Variable;
-import org.jlibsedml.components.task.VectorRange;
+
 /**
  * This class searches the object structure for an element with its value of an id attribute
  *  equal to that passed into this object's constructor.
@@ -33,6 +11,8 @@ import org.jlibsedml.components.task.VectorRange;
  */
 
 public class ElementSearchVisitor extends SEDMLVisitor {
+    String searchTerm;
+    SedBase foundElement;
 
     /**
      * @param searchTerm A non-null <code>String</code> of an element identifier with which  to search the object structure
@@ -42,82 +22,6 @@ public class ElementSearchVisitor extends SEDMLVisitor {
         this.searchTerm = searchTerm;
     }
 
-    String searchTerm;
-    SedBase foundElement;
-    @Override
-    public boolean visit(SedMLDataClass sedml) {
-       return true;
-    }
-
-    @Override
-    public boolean visit(Simulation sim) {
-        return checkID(sim);
-    }
-
-    @Override
-    public boolean visit(Model model) {
-        return checkID(model);
-    }
-
-    @Override
-    public boolean visit(Task task) {
-        return checkID(task);
-    }
-
-
-    @Override
-    public boolean visit(DataGenerator dg) {
-        return checkID(dg);
-        
-        
-    }
-
-    @Override
-    public boolean visit(Variable var) {
-        return checkID(var);
-    }
-
-    @Override
-    public boolean visit(Parameter param) {
-        return checkID(param);
-    }
-
-    @Override
-    public boolean visit(Output output) {
-        return checkID(output);
-    }
-    
-    // returns boolean to  visit() methods - 'true' means 'keep searching'
-    // false means ' found element with that id, stop search'
-    boolean checkID(AbstractIdentifiableElement aie) {
-       if(searchTerm.equals(aie.getId())){
-           foundElement=aie;
-           return false;
-       }
-       return true;
-    }
-
-    @Override
-    public boolean visit(Algorithm algorithm) {
-        // TODO Auto-generated method stub
-        return true;
-    }
-
-    @Override
-    public boolean visit(Curve curve) {
-        return checkID(curve);
-    }
-
-    @Override
-    public boolean visit(DataSet dataSet) {
-        return checkID(dataSet);
-    }
-
-    @Override
-    public boolean visit(Surface surface) {
-        return checkID(surface);
-    }
-    
     /**
      * Gets either the found element, or <code>null</code> if no element was found
      *  with the ID specified in the constructor.<br/>
@@ -125,73 +29,153 @@ public class ElementSearchVisitor extends SEDMLVisitor {
      * @return A {@link SedBase} or <code>null</code>.
      */
     public SedBase getFoundElement(){
-        return foundElement;
+        return this.foundElement;
     }
-    
+
+    // returns boolean to  visit() methods
+    boolean checkID(SedBase aie) {
+        // `true`   => 'keep searching'
+        // `false`  => 'found element with that id, stop search'
+        if(!this.searchTerm.equals(aie.getId())) return true;
+        this.foundElement = aie;
+        return false;
+    }
+
     /**
-     * Resets the search. After calling this method, 
+     * Resets the search. After calling this method,
      * <pre>
      * getFoundElement()
      * </pre>
      * will return <code>null</code>.
      */
     public void clear(){
-        foundElement=null;
+        this.foundElement = null;
     }
 
-    @Override
-    public boolean visit(AddXML change) {
-        // TODO Auto-generated method stub
-        return true;
+    public boolean visit(SedBase sedBase){
+        return this.checkID(sedBase);
     }
 
-    @Override
-    public boolean visit(RemoveXML change) {
-        // TODO Auto-generated method stub
-        return true;
-    }
-
-    @Override
-    public boolean visit(ChangeXML change) {
-        // TODO Auto-generated method stub
-        return true;
-    }
-
-    @Override
-    public boolean visit(ChangeAttribute change) {
-        // TODO Auto-generated method stub
-        return true;
-    }
-
-    @Override
-    public boolean visit(ComputeChange change) {
-        // TODO Auto-generated method stub
-        return true;
-    }
-
-    @Override
-    public boolean visit(SetValue setValue) {
-        // TODO Auto-generated method stub
-        return true;
-    }
-    @Override
-    public boolean visit(RepeatedTask repeatedTask) {
-        return checkID(repeatedTask);
-    }
-
-    @Override
-    public boolean visit(UniformRange uniformRange) {
-        return checkID(uniformRange);
-    }
-
-    @Override
-    public boolean visit(VectorRange vectorRange) {
-        return checkID(vectorRange);
-    }
-
-    @Override
-    public boolean visit(FunctionalRange functionalRange) {
-        return checkID(functionalRange);
-    }
+//    @Override
+//    public boolean visit(SedMLDataClass sedml) {
+//       return true;
+//    }
+//
+//    @Override
+//    public boolean visit(Simulation sim) {
+//        return checkID(sim);
+//    }
+//
+//    @Override
+//    public boolean visit(Model model) {
+//        return checkID(model);
+//    }
+//
+//    @Override
+//    public boolean visit(Task task) {
+//        return checkID(task);
+//    }
+//
+//
+//    @Override
+//    public boolean visit(DataGenerator dg) {
+//        return checkID(dg);
+//    }
+//
+//    @Override
+//    public boolean visit(Variable var) {
+//        return checkID(var);
+//    }
+//
+//    @Override
+//    public boolean visit(Parameter param) {
+//        return checkID(param);
+//    }
+//
+//    @Override
+//    public boolean visit(Output output) {
+//        return checkID(output);
+//    }
+//
+//
+//    @Override
+//    public boolean visit(Algorithm algorithm) {
+//        return this.checkID(algorithm);
+//    }
+//
+//    @Override
+//    public boolean visit(AlgorithmParameter algorithmParameter){
+//        return checkID(algorithmParameter);
+//    }
+//
+//    @Override
+//    public boolean visit(Curve curve) {
+//        return checkID(curve);
+//    }
+//
+//    @Override
+//    public boolean visit(DataSet dataSet) {
+//        return checkID(dataSet);
+//    }
+//
+//    @Override
+//    public boolean visit(Surface surface) {
+//        return checkID(surface);
+//    }
+//
+//    @Override
+//    public boolean visit(AddXML change) {
+//        // TODO Auto-generated method stub
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean visit(RemoveXML change) {
+//        // TODO Auto-generated method stub
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean visit(ChangeXML change) {
+//        // TODO Auto-generated method stub
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean visit(ChangeAttribute change) {
+//        // TODO Auto-generated method stub
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean visit(ComputeChange change) {
+//        // TODO Auto-generated method stub
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean visit(SetValue setValue) {
+//        // TODO Auto-generated method stub
+//        return true;
+//    }
+//    @Override
+//    public boolean visit(RepeatedTask repeatedTask) {
+//        return checkID(repeatedTask);
+//    }
+//
+//    @Override
+//    public boolean visit(UniformRange uniformRange) {
+//        return checkID(uniformRange);
+//    }
+//
+//    @Override
+//    public boolean visit(VectorRange vectorRange) {
+//        return checkID(vectorRange);
+//    }
+//
+//    @Override
+//    public boolean visit(FunctionalRange functionalRange) {
+//        return checkID(functionalRange);
+//    }
 
 }

@@ -26,8 +26,7 @@ public final  class XPathTarget {
 	 */
 	public XPathTarget(String xPathStr) {
 		super();
-        SedGeneralClass.checkNoNullArgs(xPathStr);
-        SedGeneralClass.stringsNotEmpty(xPathStr);
+        if (xPathStr == null || xPathStr.isEmpty()) throw new IllegalArgumentException("xPathStr is null or empty");
 		this.xPathStr = xPathStr;
 	}
 

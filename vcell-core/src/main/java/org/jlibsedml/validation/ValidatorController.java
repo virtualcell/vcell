@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jdom2.Document;
+import org.jlibsedml.SedMLDataContainer;
 import org.jlibsedml.SedMLDocument;
-import org.jlibsedml.SedMLDataClass;
 import org.jlibsedml.SedMLError;
 import org.jlibsedml.XMLException;
 
@@ -21,13 +21,13 @@ public class ValidatorController {
     /**
      * 
      * @param sedml
-     *            A non-null {@link SedMLDataClass} object
+     *            A non-null {@link SedMLDataContainer} object
      * @param doc
      *            An org.doc
      * @return A possibly empty but non-null <code>List</code> of SedML errors.
      * @throws XMLException
      */
-    public List<SedMLError> validate(SedMLDataClass sedml, Document doc)
+    public List<SedMLError> validate(SedMLDataContainer sedml, Document doc)
             throws XMLException {
         List<SedMLError> errors = new ArrayList<SedMLError>();
         // should be first validation

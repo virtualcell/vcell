@@ -84,7 +84,7 @@ class ModelTransformationUtils {
 			for (int i = 0; i < nodes.getLength(); i++) {
 				Node parent = nodes.item(i).getParentNode();
 				removeChild(nodes);
-				for (org.jdom2.Element el : newXML.getXml()) {
+				for (org.jdom2.Element el : newXML.xml()) {
 				    el.setNamespace(Namespace.NO_NAMESPACE);
 					String elAsString = new XMLOutputter().outputString(el);
 					Node imported = doc.importNode(

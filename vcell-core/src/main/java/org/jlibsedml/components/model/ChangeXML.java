@@ -1,69 +1,84 @@
 package org.jlibsedml.components.model;
 
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
 import org.jlibsedml.SEDMLVisitor;
 import org.jlibsedml.XPathTarget;
+import org.jlibsedml.components.SId;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
 /**
- *  Encapsulates a changeXML element in SED-ML.  Currently this is achieved by replacing 
- *  the 'target' content element with the 'newXML' content. 
+ * Encapsulates a changeXML element in SED-ML.  Currently this is achieved by replacing
+ * the 'target' content element with the 'newXML' content.
  * * @author anu/radams
  *
  */
 public final class ChangeXML extends Change {
-	   @Override
-	public String toString() {
-		return "ChangeXML [newXML=" + newXML + ", getTarget()=" + getTargetXPath()
-				+ "]";
-	}
 
-	/**
-	 * Setter for  the {@link NewXML} for this object.
-	 * @param newXML A non-null {@link NewXML} object.
-	 * @throws IllegalArgumentException if <code>newXML</code> is <code>null</code>.
-	 * @since 1.2.0
-	 */
-	public void setNewXML(NewXML newXML) {
+    /**
+     * Setter for  the {@link NewXML} for this object.
+     *
+     * @param newXML A non-null {@link NewXML} object.
+     * @throws IllegalArgumentException if <code>newXML</code> is <code>null</code>.
+     * @since 1.2.0
+     */
+    public void setNewXML(NewXML newXML) {
         this.newXML = newXML;
     }
 
     private NewXML newXML = null;
 
-	   
-	   /**
-	    * 
-	    * @param target A <code>XPathTarget</code>object
-	    * @param newXML A <code>String</code> of new XML
-	    */
-	   public ChangeXML(XPathTarget target, NewXML newXML) {
-		   super(target);
-		   this.newXML = newXML;
-	   }
-	   
-	   public boolean accept(SEDMLVisitor visitor) {
-	        
-           return visitor.visit(this);
-       
-     }
-	   /**
-        * Getter for the change kind.
-        * @return SEDMLTags.CHANGE_XML_KIND;
-        */
-	   @Override
-	   public String getChangeKind() {
-		   return SEDMLTags.CHANGE_XML_KIND;
-	   }
-	   
-	   /**
-	    * Getter for the new XML that replaces the old XML.
-	    * @return a NewXML object
-	    */
-	   public NewXML getNewXML() {
-		   return newXML;
-	   }
 
-	@Override
-	public String getElementName() {
-		return SEDMLTags.CHANGE_XML;
-	}
+    /**
+     *
+     * @param target A <code>XPathTarget</code>object
+     * @param newXML A <code>String</code> of new XML
+     */
+    public ChangeXML(SId id, String name, XPathTarget target, NewXML newXML) {
+        super(id, name, target);
+        this.newXML = newXML;
+    }
+
+
+
+    /**
+     * Getter for the change kind.
+     *
+     * @return SEDMLTags.CHANGE_XML_KIND;
+     */
+    @Override
+    public String getChangeKind() {
+        return SedMLTags.CHANGE_XML_KIND;
+    }
+
+    /**
+     * Getter for the new XML that replaces the old XML.
+     *
+     * @return a NewXML object
+     */
+    public NewXML getNewXML() {
+        return this.newXML;
+    }
+
+    @Override
+    public String getElementName() {
+        return SedMLTags.CHANGE_XML;
+    }
+
+    public boolean accept(SEDMLVisitor visitor) {
+        return visitor.visit(this);
+    }
+
+    /**
+     * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
+     * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
+     * <br\>
+     * e.g.: `super.parametersToString() + ", " + String.format(...)`
+     * @return the parameters and their values, listed in string form
+     */
+    @OverridingMethodsMustInvokeSuper
+    public String parametersToString(){
+        if (this.newXML == null) return super.parametersToString();
+        else return super.parametersToString() + ", newXML=[" + this.newXML.toString() + ']';
+    }
 }

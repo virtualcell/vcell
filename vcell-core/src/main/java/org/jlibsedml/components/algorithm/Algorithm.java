@@ -1,10 +1,12 @@
 package org.jlibsedml.components.algorithm;
 
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
 import org.jlibsedml.SEDMLVisitor;
+import org.jlibsedml.components.SId;
 import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.SedGeneralClass;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +18,7 @@ import java.util.List;
  */
 public final class Algorithm extends SedBase {
 	private String kisaoID;
-	private List<AlgorithmParameter> listOfAlgorithmParameters = new ArrayList<AlgorithmParameter>();
+	private final List<AlgorithmParameter> listOfAlgorithmParameters = new ArrayList<>();
 	
 	public boolean accept(SEDMLVisitor visitor) {
 	    return visitor.visit(this);
@@ -26,8 +28,8 @@ public final class Algorithm extends SedBase {
 	 * Getter for the KisaoID of the algorithm.
 	 * @return the Kisao ID
 	 */
-	public final String getKisaoID() {
-		return kisaoID;
+	public String getKisaoID() {
+		return this.kisaoID;
 	}
 	
     public void addAlgorithmParameter(AlgorithmParameter algorithmParameter) {
@@ -43,8 +45,8 @@ public final class Algorithm extends SedBase {
 	 * @param kisaoID A <code>String</code>.
 	 * @throws IllegalArgumentException if kisaoID is null or empty.
 	 */
-	public Algorithm(String kisaoID) {
-		super();
+	public Algorithm(SId id, String name, String kisaoID) {
+		super(id, name);
         SedGeneralClass.checkNoNullArgs(kisaoID);
         SedGeneralClass.stringsNotEmpty(kisaoID);
 		this.kisaoID = kisaoID;
@@ -61,36 +63,36 @@ public final class Algorithm extends SedBase {
 	// We'll assume that Algorithms with the same kisaoID are equal regardless of the list of parameters
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Algorithm other = (Algorithm) obj;
-		if (kisaoID == null) {
-			if (other.kisaoID != null)
-				return false;
-		} else if (!kisaoID.equals(other.kisaoID))
-			return false;
-		return true;
-	}
+		if (this == obj) return true;
+		if (obj == null) return false;
+        if (!(obj instanceof Algorithm otherAlg)) return false;
+		if (this.kisaoID == null) return otherAlg.kisaoID == null;
+        else return this.kisaoID.equals(otherAlg.kisaoID);
+    }
 
-	@Override
-	public String toString() {
-	    String s = "Algorithm [kisaoID=" + kisaoID;
-	    for(AlgorithmParameter ap : listOfAlgorithmParameters) {
-	        s += " " + ap.toString() + " ";
-	    }
-	    s += "]";
-	    return s;
-	}
-
+    /**
+     * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
+     * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
+     * <br\>
+     * e.g.: `super.parametersToString() + ", " + String.format(...)`
+     * @return the parameters and their values, listed in string form
+     */
+    @OverridingMethodsMustInvokeSuper
+    public String parametersToString(){
+        List<String> params = new ArrayList<>(), paramParams = new ArrayList<>();
+        if (this.kisaoID != null)
+            params.add(String.format("kisaoID=%s", this.kisaoID));
+        for (AlgorithmParameter ap : this.listOfAlgorithmParameters)
+            paramParams.add(ap.getId() != null ? ap.getIdAsString() : '[' + ap.parametersToString() + ']');
+        if (!this.listOfAlgorithmParameters.isEmpty())
+            params.add(String.format("algParams={%s}", String.join(", ", paramParams)));
+        return super.parametersToString() + ", " + String.join(", ", params);
+    }
 
 
 	@Override
 	public String getElementName() {
-		return SEDMLTags.ALGORITHM_TAG;
+		return SedMLTags.ALGORITHM_TAG;
 	}
 
 	

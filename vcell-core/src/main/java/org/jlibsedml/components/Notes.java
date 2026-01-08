@@ -1,9 +1,12 @@
 package org.jlibsedml.components;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.ArrayList;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 import org.jlibsedml.SedMLElementFactory;
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
 
 /**
  * Contains notes elements to display human readable information to the user.
@@ -23,29 +26,40 @@ import org.jlibsedml.SEDMLTags;
  * Clients do not have to set the namespace of the XHTML contents, this is performed by this class.
  * 
  */
-public final class Notes extends SedGeneralClass {
+public final class Notes implements SedGeneralClass {
 
-	private Element notesElement = null;
+    private final List<Element> elements;
 
 	/**
 	 * @param argNotesElement
-	 *            A non-null Element. This element will have its namespace set
+	 *            A non-null Element contains XHTM. The children will be detached and have its namespace set
 	 *            to "http://www.w3.org/1999/xhtml"
 	 */
 	public Notes(Element argNotesElement) {
-		if (SedMLElementFactory.getInstance().isStrictCreation()) {
-            SedGeneralClass.checkNoNullArgs(argNotesElement);
-		}
-		this.notesElement = argNotesElement;
-		notesElement.setNamespace(Namespace.getNamespace(SEDMLTags.XHTML_NS));
+        this.elements = new ArrayList<>();
+		if (SedMLElementFactory.getInstance().isStrictCreation()) SedGeneralClass.checkNoNullArgs(argNotesElement);
+
+        for (Element element : argNotesElement.getChildren()) {
+            this.elements.add(element.detach().setNamespace(Namespace.getNamespace(SedMLTags.XHTML_NS)));
+        }
 	}
 
 	/**
-	 * Get the Notes element for this object, will not return null.
+	 * Get an unmodifiable list of sub element for this Notes object, will not return null.
 	 * 
-	 * @return An {@link Element}
+	 * @return An {@link List} of {@link Element}s
 	 */
-	public Element getNotesElement() {
-		return notesElement;
+	public List<Element> getNotesElements() {
+		return Collections.unmodifiableList(this.elements);
 	}
+
+    /**
+     * Provides a link between the object model and the XML element names
+     *
+     * @return A non-null <code>String</code> of the XML element name of the object.
+     */
+    @Override
+    public String getElementName() {
+        return SedMLTags.NOTES;
+    }
 }

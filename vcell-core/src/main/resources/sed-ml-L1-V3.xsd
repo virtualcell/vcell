@@ -45,7 +45,7 @@
 	</xs:complexType>
 
 	<!-- SED ML Top level element -->
-	<xs:element name="sedMLDataClass">
+	<xs:element name="sedMLDataContainer">
 		<xs:complexType>
 			<xs:complexContent>
 				<xs:extension base="SEDBase">
@@ -64,7 +64,7 @@
 		</xs:complexType>
 	</xs:element>
 
-	<!-- notes and annotations -->
+	<!-- notes and annotation -->
 	<xs:element name="notes">
 		<xs:complexType>
 			<xs:sequence>

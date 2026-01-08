@@ -1,133 +1,204 @@
 package org.jlibsedml.components.output;
 
-
-import org.jlibsedml.*;
-import org.jlibsedml.components.AbstractIdentifiableElement;
+import org.jlibsedml.SedMLTags;
+import org.jlibsedml.SEDMLVisitor;
+import org.jlibsedml.SedMLElementFactory;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.SedGeneralClass;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Encapsulates the {@link Surface} element in SED-ML for representing an element of a 3-dimensional plot.
  *
  */
-public final class Surface extends AbstractIdentifiableElement {
-    @Override
-	public String toString() {
-		return "Surface [logZ=" + logZ + ", zDataReference=" + zDataReference
-				+ ", getId()=" + getId() + ", getLogX()=" + getLogX()
-				+ ", getLogY()=" + getLogY() + ", getXDataReference()="
-				+ getXDataReference() + ", getYDataReference()="
-				+ getYDataReference() + "]";
-	}
+public final class Surface extends SedBase {
+    public enum Type {
+        PARAMETRIC_CURVE,
+        SURFACE_MESH,
+        SURFACE_CONTOUR,
+        CONTOUR,
+        HEATMAP,
+        BAR
+    }
 
-/**
- * Sets the x and y axes for this surface, using a <code>Curve</code>object.
- * @param curve A non-null <code>Curve</code>.
- * @since 1.2.0
- */
-    public void setCurve(Curve curve) {
-        this.curve = curve;
+    private SId xDataReference;
+    @Deprecated private Boolean logScaleXAxis;
+    private SId yDataReference;
+    @Deprecated private Boolean logScaleYAxis;
+    private SId zDataReference;
+    @Deprecated private Boolean logScaleZAxis;
+    private Integer order;
+    private SId style;
+    private Type type;
+
+
+
+    /**
+     *
+     * @param id A <code>String</code> identifier that is unique in this document.
+     * @param name An optional <code>String</code> name
+     * @param xDataReference A {@link SId} reference to the {@link DataGenerator} for the x-axis.
+     * @param yDataReference  A {@link SId} reference to the {@link DataGenerator} for the y-axis.
+     * @param zDataReference  A {@link SId} reference to the {@link DataGenerator} for the z-axis.
+     * @param logScaleXAxis  <code>boolean</code> as to whether x-axis is a log scale.
+     * @param logScaleYAxis	<code>boolean</code> as to whether y-axis is a log scale.
+     * @param logScaleZAxis	<code>boolean</code> as to whether z-axis is a log scale.
+     *
+     * @throws IllegalArgumentException if any argument except <code>name</code> is null or empty.
+     */
+    public Surface(SId id, String name, SId xDataReference, SId yDataReference, SId zDataReference,
+                   Boolean logScaleXAxis, Boolean logScaleYAxis, Boolean logScaleZAxis) {
+        super(id, name);
+        if(SedMLElementFactory.getInstance().isStrictCreation()){
+            SedGeneralClass.checkNoNullArgs(xDataReference, yDataReference, zDataReference);
+        }
+        this.xDataReference = xDataReference;
+        this.logScaleXAxis = logScaleXAxis;
+        this.yDataReference = yDataReference;
+        this.logScaleYAxis = logScaleYAxis;
+        this.zDataReference = zDataReference;
+        this.logScaleZAxis = logScaleZAxis;
+    }
+
+    @Override
+    public String parametersToString() {
+        List<String> params = new ArrayList<>();
+        params.add(String.format("xDataReference=%s", this.xDataReference.string()));
+        params.add(String.format("yDataReference=%s", this.yDataReference.string()));
+        params.add(String.format("zDataReference=%s", this.zDataReference.string()));
+        if (null != this.logScaleXAxis) params.add(String.format("logX=%s", this.logScaleXAxis));
+        if (null != this.logScaleYAxis) params.add(String.format("logY=%s", this.logScaleYAxis));
+        if (null != this.logScaleYAxis) params.add(String.format("logZ=%s", this.logScaleZAxis));
+        if (null != this.order) params.add(String.format("order=%s", this.order));
+        if (null != this.style) params.add(String.format("style=%s", this.style.string()));
+        return super.parametersToString() + ", " + String.join(", ", params);
+    }
+
+    public SId getXDataReference() {
+        return this.xDataReference;
+    }
+
+    public void setXDataReference(SId xDataReference) {
+        if(SedMLElementFactory.getInstance().isStrictCreation()){
+            SedGeneralClass.checkNoNullArgs( xDataReference);
+        }
+        this.xDataReference = xDataReference;
     }
 
     /**
-     * Setter for whether the z-axis of this object should be on a log scale, or not.
-     * @param logZ A <code>boolean</code>.
+     * @return the reference to the {@link DataGenerator} for the y-axis
+     */
+    public SId getYDataReference() {
+        return this.yDataReference;
+    }
+
+    /**
+     * Setter for the y-axis  data generator.
+     * @param yDataReference A non-null <code>String</code> that is an identifier of a {@link DataGenerator}
+     *  element.
      * @since 1.2.0
      */
-    public void setLogZ(boolean logZ) {
-        this.logZ = logZ;
+    public void setyDataReference(SId yDataReference) {
+        this.yDataReference = yDataReference;
+    }
+
+    public SId getZDataReference() {
+        return this.zDataReference;
     }
 
     /**
      * Sets the z Data Reference for this object.
-     * @param zDataReference A non-null, non empty <code>String</code> that should 
+     * @param zDataReference A non-null, non empty <code>String</code> that should
      *  refer to a {@link DataGenerator} identifier.
      *  @since 1.2.0
      */
-    public void setZDataReference(String zDataReference) {
+    public void setzDataReference(SId zDataReference) {
         this.zDataReference = zDataReference;
     }
 
-    /**
-     * Getter for the reference to the {@link DataGenerator} for the y-axis.
-     * @return A <code>non-null String</code>
-     */
-    public String getYDataReference() {
-		return curve.getYDataReference();
-	}
-    
-    /**
-     * Getter for the reference to the {@link DataGenerator} for the x-axis.
-     * @return A <code>non-null String</code>
-     */
-    public String getXDataReference() {
-		return curve.getXDataReference();
-	}
+    public Boolean getLogScaleXAxis() {
+        return this.logScaleXAxis;
+    }
+
+    public void setLogScaleXAxis(Boolean logScaleXAxis) {
+        this.logScaleXAxis = logScaleXAxis;
+    }
 
     /**
-     * Boolean test for whether the y-axis is on a log scale.
-     * @return <code>true</code> if it is in a log-scale, <code>false</code> otherwise.
+     * @return <code>true</code> if the y-axis is a log scale, <code>false</code> otherwise.
      */
-    public boolean getLogY() {
-		return curve.getLogY();
-	}
+    public Boolean getLogScaleYAxis() {
+        return this.logScaleYAxis;
+    }
 
     /**
-     * Boolean test for whether the x-axis is on a log scale.
-     * @return <code>true</code> if it is in a log-scale, <code>false</code> otherwise.
+     * Setter for whether the y-axis of this curve is on a log scale.
+     * @param logScaleYAxis A <code>boolean</code>.
+     * @since 1.2.0
      */
-    public boolean getLogX() {
-		return curve.getLogX();
-	}
+    public void setLogScaleYAxis(Boolean logScaleYAxis) {
+        this.logScaleYAxis = logScaleYAxis;
+    }
+
+    /**
+     * @return <code>true</code> if the y-axis is a log scale, <code>false</code> otherwise.
+     */
+    public Boolean getLogScaleZAxis() {
+        return this.logScaleYAxis;
+    }
+
+    /**
+     * Setter for whether the y-axis of this curve is on a log scale.
+     * @param logScaleYAxis A <code>boolean</code>.
+     * @since 1.2.0
+     */
+    public void setLogScaleZAxis(Boolean logScaleYAxis) {
+        this.logScaleYAxis = logScaleYAxis;
+    }
+
+    public Integer getOrder() {
+        return this.order;
+    }
+
+    public void setOrder(Integer order) {
+        if (order != null && order < 0) throw new IllegalArgumentException("order must be >= 0");
+        this.order = order;
+    }
+
+    public SId getStyle() {
+        return this.style;
+    }
+
+    public void setStyle(SId style) {
+        this.style = style;
+    }
+
+    public Type getType() {
+        return this.type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
+    }
+
     
     @Override
 	public String getElementName() {
-		return SEDMLTags.OUTPUT_SURFACE;
+		return SedMLTags.OUTPUT_SURFACE;
 	}
 
 
-	private Curve curve =null;
-	private boolean logZ = false;
-   
-    private String zDataReference = null;	// DataGenerator.id
-
-    /**
-	 * 
-	 * @param argId A <code>String</code> identifier that is unique in this document.
-	 * @param argName An optional <code>String</code> name
-	 * @param logX  <code>boolean</code> as to whether x-axis is a log scale.
-	 * @param logY	<code>boolean</code> as to whether y-axis is a log scale.
-	 * @param logZ	<code>boolean</code> as to whether z-axis is a log scale.
-	 * @param xDataReference A <code>String</code> reference to the {@link DataGenerator} for the x-axis.
-	 * @param yDataReference  A <code>String</code> reference to the {@link DataGenerator} for the y-axis.
-	 * @param zDataReference  A <code>String</code> reference to the {@link DataGenerator} for the z-axis.
-	 * @throws IllegalArgumentException if any argument except <code>name</code> is null or empty.
-	 */
-	public Surface(String argId, String argName, boolean logX, boolean logY, boolean logZ, String xDataReference, String yDataReference, String zDataReference) {
-		super(argId,argName);
-		curve = new Curve(argId, argName,logX, logY, xDataReference, yDataReference);
-		if(SedMLElementFactory.getInstance().isStrictCreation()){
-            SedGeneralClass.checkNoNullArgs(zDataReference,logZ);
-            SedGeneralClass.stringsNotEmpty(zDataReference);
-		}
-		this.logZ=logZ;
-		this.zDataReference=zDataReference;
-	}
-
-   
 	/**
 	 * @return the reference to the {@link DataGenerator} for the z-axis
 	 */
-    public final String getZDataReference () {
-	   return zDataReference;
+    public SId getzDataReference() {
+	   return this.zDataReference;
 	}
-    
-    /**
-	 * @return <code>true</code> if the z-axis should be displayed on a  log scale, <code>false</code> otherwise.
-	 */
-	public boolean getLogZ() {
-		return logZ;
-	}
+
 	
 	public boolean accept(SEDMLVisitor visitor) {
         return visitor.visit(this);

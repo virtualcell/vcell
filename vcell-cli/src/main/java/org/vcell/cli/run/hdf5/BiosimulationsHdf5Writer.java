@@ -6,7 +6,7 @@ import io.jhdf.WritableHdfFile;
 import io.jhdf.api.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.SedMLDataContainer;
 import org.jlibsedml.components.output.Report;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.trees.GenericStringTree;
@@ -42,7 +42,7 @@ public class BiosimulationsHdf5Writer {
         try {
             try (WritableHdfFile hdf5File = HdfFile.write(tempFile.toPath())){
                 // Sanity Check
-                for (SedMLDataClass sedml : hdf5ExecutionResults){
+                for (SedMLDataContainer sedml : hdf5ExecutionResults){
                     Hdf5DataContainer hdf5DataWrapper = hdf5ExecutionResults.getData(sedml);
                     Set<Report> uriKeySet = hdf5DataWrapper.reportToUriMap.keySet(),
                             resultsSet = hdf5DataWrapper.reportToResultsMap.keySet();

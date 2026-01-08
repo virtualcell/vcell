@@ -1,50 +1,49 @@
 package org.jlibsedml.components.task;
 
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
 import org.jlibsedml.SEDMLVisitor;
+import org.jlibsedml.components.SId;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class VectorRange extends Range {
 
-    private List<Double> values = new ArrayList<Double> ();
+    private final List<Double> values;
     
-    public VectorRange(String id, List<Double> values) {
-        super(id);
-        if(values != null) {
-            this.values = values;
-        }
+    public VectorRange(SId id, List<Double> values) {
+        this(id);
+        if (values == null) return;
+        this.values.addAll(values);
     }
-    public VectorRange(String id) {
+    public VectorRange(SId id) {
         super(id);
+        this.values = new ArrayList<>();
     }
     
     public void addValue(Double value) {
-        values.add(value);
+        this.values.add(value);
     }
     
     @Override
     public int getNumElements() {
-        return values.size();
+        return this.values.size();
     }
 
     @Override
     public double getElementAt(int index) {
-        return values.get(index);
+        return this.values.get(index);
     }
 
     @Override
-    public String toString() {
-        return "Vector Range ["
-        + "getId()=" + getId()
-        + ", values.size()=" + values.size()
-        + "]";
+    public String parametersToString(){
+        List<String> valueStrings = this.values.stream().map(Object::toString).toList();
+        return super.parametersToString() + ", " + String.format("values=[%s]", String.join(", ", valueStrings));
     }
 
     @Override
     public String getElementName() {
-        return SEDMLTags.VECTOR_RANGE_TAG;
+        return SedMLTags.VECTOR_RANGE_TAG;
     }
 
     @Override

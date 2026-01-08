@@ -1,22 +1,64 @@
 package org.jlibsedml.components.output;
 
 import org.jlibsedml.*;
-import org.jlibsedml.components.AbstractIdentifiableElement;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.SedGeneralClass;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Encapsulates the representation of a data set output from a task. * @author
  * anu/radams
  * 
  */
-public final class DataSet extends AbstractIdentifiableElement {
+public final class DataSet extends SedBase {
 
-	@Override
-	public String toString() {
-		return "DataSet [dataReference=" + dataReference + ", id=" + getId()
-				+ ", label=" + label + ", name=" + getName() + "]";
-	}
+    private String label;
+    private SId dataReference; // DataGenerator.id
+
+    /**
+     *
+     * @param id
+     *            An identifier that is unique in this document.
+     * @param name
+     *            An optional name.
+     * @param label
+     *            to identify the data set in a report.
+     * @param dataRef
+     *            A <code>String</code> reference to the {@link DataGenerator}
+     *            for this data set.
+     * @throws IllegalArgumentException
+     *             if any argument except <code>name</code> is null or empty.
+     */
+    public DataSet(SId id, String name, String label, SId dataRef) {
+        super(id, name);
+        if (SedMLElementFactory.getInstance().isStrictCreation()) {
+            SedGeneralClass.checkNoNullArgs(id, label, dataRef);
+            SedGeneralClass.stringsNotEmpty(label);
+        }
+        this.dataReference = dataRef;
+
+        this.label = label;
+
+    }
+
+    @Override
+    public String parametersToString() {
+        List<String> params = new ArrayList<>();
+        params.add(String.format("label=%s", this.dataReference));
+        params.add(String.format("dataReference=%s", this.dataReference));
+        return super.parametersToString() + ", " + String.join(", ", params);
+    }
+
+    /**
+     * @return the label for this element.
+     */
+    public String getLabel() {
+        return this.label;
+    }
 
 	/**
 	 * Sets the label used to identify this DataSet.
@@ -27,68 +69,29 @@ public final class DataSet extends AbstractIdentifiableElement {
         this.label = label;
     }
 
+    /**
+     * @return the reference to the {@link DataGenerator} used to create this
+     *         data set.
+     */
+    public SId getDataReference() {
+        return this.dataReference;
+    }
+
 	/**
 	 * Sets the dataReference. This should be a DataGenerator reference.
 	 * @param dataReference A non-null<code>String</code>.
 	 * @since 1.2.0 
 	 */
-    public void setDataReference(String dataReference) {
+    public void setDataReference(SId dataReference) {
         this.dataReference = dataReference;
     }
 
-    private String label = null;
-	private String dataReference = null; // DataGenerator.id
-
-	/**
-	 * 
-	 * @param argId
-	 *            An identifier that is unique in this document.
-	 * @param argName
-	 *            An optional name.
-	 * @param label
-	 *            to identify the data set in a report.
-	 * @param dataRef
-	 *            A <code>String</code> reference to the {@link DataGenerator}
-	 *            for this data set.
-	 * @throws IllegalArgumentException
-	 *             if any argument except <code>name</code> is null or empty.
-	 */
-	public DataSet(String argId, String argName, String label, String dataRef) {
-		super(argId, argName);
-		if (SedMLElementFactory.getInstance().isStrictCreation()) {
-            SedGeneralClass.checkNoNullArgs(argId, label, dataRef);
-            SedGeneralClass.stringsNotEmpty(argId, label, dataRef);
-		}
-		this.dataReference = dataRef;
-
-		this.label = label;
-
-	}
-
-	/**
-	 * @return the label for this element.
-	 */
-	public String getLabel() {
-		return label;
-	}
-
-	/**
-	 * @return the reference to the {@link DataGenerator} used to create this
-	 *         data set.
-	 */
-	public final String getDataReference() {
-		return dataReference;
-	}
-
 	@Override
 	public String getElementName() {
-		return SEDMLTags.OUTPUT_DATASET;
+		return SedMLTags.OUTPUT_DATASET;
 	}
 	
 	public boolean accept(SEDMLVisitor visitor) {
         return visitor.visit(this);
     }
-	
-	
-
 }
