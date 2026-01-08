@@ -1,101 +1,95 @@
 package org.jlibsedml.components.task;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.jlibsedml.*;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.listOfConstructs.ListOfRanges;
+import org.jlibsedml.components.listOfConstructs.ListOfRepeatedTaskChanges;
+import org.jlibsedml.components.listOfConstructs.ListOfSubTasks;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class RepeatedTask extends AbstractTask {
     private static final Logger logger = LoggerFactory.getLogger(RepeatedTask.class);
-    private boolean resetModel = false;
-    private String range = new String();
-    
-    private Map<String, Range> ranges = new HashMap<String, Range> ();
-    private List<SetValue> changes = new ArrayList<SetValue> ();
-    private Map<String, SubTask> subTasks = new HashMap<String, SubTask> ();
-    
-    public boolean getResetModel() {
-        return resetModel;
-    }
-    public void setResetModel(boolean resetModel) {
-        this.resetModel = resetModel;
-    }
-    public String getRange() {
-        return range;
-    }
-    public void setRange(String range) {
-        this.range = range;
-    }
-    public Range getRange(String rangeId) {
-        return ranges.get(rangeId);
-    }
-    public void addRange(Range range) {
-        if(!ranges.containsKey(range.getId())) {
-            ranges.put(range.getId(), range);
-        } else {
-            logger.warn("range already in ranges list");
-            logger.warn("   ...range " + range.getId() + " not added to list");
-        }
-    }
-    
-    public Map<String, Range> getRanges() {
-        return ranges;
-    }
-    public void addChange(SetValue change) {
-        changes.add(change);
-    }
-    public List<SetValue> getChanges() {
-        return changes;
-    }
-    public void addSubtask(SubTask subTask) {
-        if(subTask == null || subTask.getTaskId() == null || subTask.getTaskId().equals("")) {
-            logger.warn("subtask cant't be null, key can't be null, key can't be empty string");
-            logger.warn("   ...subtask " + subTask.getTaskId() + " not added to list");
-            return;     // subtask can't be null, key can't be null, key can't be ""
-        }
-        if(this.getId().equals(subTask.getTaskId())) {
-            logger.warn("'this' repeated task cannot be a subtask for itself");
-            logger.warn("   ...subtask " + subTask.getTaskId() + " not added to list");
-            return;     // "this" repeated task cannot be a subtask for itself
-        }
-        if(!subTasks.containsKey(subTask.getTaskId())) {        // no duplicates
-            subTasks.put(subTask.getTaskId(), subTask);
-            subTask.removeOwnerFromDependentTasksList(this);    // this repeated task cannot depend on itself
-        } else {
-            logger.warn("subtask already in subtasks list");
-            logger.warn("...subtask {} not added to list",subTask.getTaskId());
-            return;
-        }
-    }
-    public Map<String, SubTask> getSubTasks() {
-        return subTasks;
-    }
+    private boolean resetModel;
+    private SId range;
 
-    public RepeatedTask(String id, String name, boolean resetModel, String range) {
+    private final ListOfRanges ranges = new ListOfRanges();
+    private final ListOfRepeatedTaskChanges changes = new ListOfRepeatedTaskChanges();
+    private final ListOfSubTasks subTasks = new ListOfSubTasks();
+
+    public RepeatedTask(SId id, String name, boolean resetModel, SId range) {
         super(id, name);
         this.resetModel = resetModel;
         this.range = range;
     }
-    
+
+    public boolean getResetModel() {
+        return this.resetModel;
+    }
+    public void setResetModel(boolean resetModel) {
+        this.resetModel = resetModel;
+    }
+
+    public SId getRange() {
+        return this.range;
+    }
+    public void setRange(SId range) {
+        this.range = range;
+    }
+
+    public Range getRange(SId rangeId) {
+        return this.ranges.getContentById(rangeId);
+    }
+
+    public void addRange(Range range) {
+        this.ranges.addContent(range);
+    }
+
+    public List<SetValue> getChanges() {
+        return this.changes.getContents();
+    }
+    public void addChange(SetValue change) {
+        this.changes.addContent(change);
+    }
+
+    public ListOfSubTasks getSubTasks() {
+        return this.subTasks;
+    }
+    public void addSubtask(SubTask subTask) {
+        if (subTask == null ) throw new IllegalArgumentException("subTask cannot be null");
+        if (subTask.getTask() == null || subTask.getTask().string().isEmpty()) {
+            logger.warn("subtask cant't be null, key can't be null, key can't be empty string");
+            logger.warn("   ...subtask " + subTask.getTask().string() + " not added to list");
+            return;     // subtask can't be null, key can't be null, key can't be ""
+        }
+        if(this.getId().equals(subTask.getTask())) {
+            logger.warn("'this' repeated task cannot be a subtask for itself");
+            logger.warn("   ...subtask " + subTask.getTask() + " not added to list");
+            return;     // "this" repeated task cannot be a subtask for itself
+        }
+        this.subTasks.addContent(subTask);
+    }
+
     @Override
-    public String toString() {
-        return "Repeated Task ["
-        + "name=" + getName()
-        + ", getId()=" + getId()
-        + ", resetModel=" + resetModel
-        + ", ranges.size()=" + ranges.size()
-        + ", changes.size()=" + changes.size()
-        + ", subTasks.size()=" + subTasks.size()
-        + "]";
+    public String parametersToString() {
+        List<String> params = new ArrayList<>(), rangeParams = new ArrayList<>(),
+                changesParams = new ArrayList<>(), subTasksParams = new ArrayList<>();
+        params.add(String.format("resetModel=%b", this.getResetModel()));
+        for (Range r : this.ranges.getContents()) rangeParams.add(r.toString());
+        for (SetValue setVal : this.changes.getContents()) changesParams.add(setVal.toString());
+        for (SubTask subTask : this.subTasks.getContents()) subTasksParams.add(subTask.toString());
+        params.add(String.format("ranges={%s}", String.join(", ",  rangeParams)));
+        params.add(String.format("changes={%s}", String.join(", ",  changesParams)));
+        params.add(String.format("subTasks={%s}", String.join(", ",  subTasksParams)));
+        return super.parametersToString() + ", " + String.join(", ", params);
     }
     
      @Override
     public String getElementName() {
-        return SEDMLTags.REPEATED_TASK_TAG;
+        return SedMLTags.REPEATED_TASK_TAG;
     }
 
     @Override

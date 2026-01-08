@@ -1,28 +1,23 @@
 package org.jlibsedml.components;
 
-public class SId {
+import javax.annotation.Nonnull;
 
-    private final String string;
-    
-    public SId(String string) {
-        if(!isValidSId(string)) {
+public record SId(String string) {
+
+    public SId {
+        if (!isValidSId(string)) {
             throw new IllegalArgumentException("Invalid SId: " + string);
         }
-        this.string = string;
     }
-    
-    public String getString() {
-        return string;
-    }
+
     public static String unwrap(SId sid) {
-        if(sid == null) {
-            return null;
-        }
-        return sid.getString();
+        return sid == null ? null : sid.string();
     }
+
     public int length() {
-        return string.length();
+        return this.string.length();
     }
+
     /*
      *      letter ::= 'a'..'z','A'..'Z'
      *      digit  ::= '0'..'9'
@@ -30,44 +25,25 @@ public class SId {
      *      SId    ::= ( letter | '_' ) idChar*
      */
     public static boolean isValidSId(String string) {
-        if(string == null) {
-            return false;
-        }
-        if(string.equals("")) {
-            return false;
-        }
-        if(!string.substring(0,1).matches("[a-zA-Z_]")) {
-            return false;
-        }
-        if(string.length() > 1) {
-            if(!string.substring(1).matches("[\\da-zA-Z_]*")) {
-                return false;
-            }
-        }
-        return true;
+        if (string == null) return false;
+        return string.matches("[a-zA-Z_]\\w*");
     }
-    
+
     @Override
+    @Nonnull
     public String toString() {
-        return "SId ["
-        + "getString()=" + getString()
-        + "]";
+        return "SId [" + this.string() + "]";
     }
+
     @Override
     public boolean equals(Object other) {
-        if(other == null) {
-            return false;
-        }
-        if(other instanceof SId) {
-            return getString().equals(((SId) other).getString());
-        } else {
-            return false;
-        }
+        if (other == null) return false;
+        if (!(other instanceof SId sid)) return false;
+        return this.string().equals(sid.string());
     }
+
     @Override
     public int hashCode() {
-        return getString().hashCode();
+        return this.string().hashCode();
     }
-    
-
 }

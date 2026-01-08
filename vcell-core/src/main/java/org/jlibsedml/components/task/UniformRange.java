@@ -1,9 +1,12 @@
 package org.jlibsedml.components.task;
 
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
 import org.jlibsedml.SEDMLVisitor;
+import org.jlibsedml.components.SId;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UniformRange extends Range {
 
@@ -36,7 +39,7 @@ public class UniformRange extends Range {
     private int numberOfPoints;
     private UniformType type;
 
-    public UniformRange(String id, double start, double end, int numberOfPoints) {
+    public UniformRange(SId id, double start, double end, int numberOfPoints) {
         super(id);
         this.start = start;
         this.end = end;
@@ -44,7 +47,7 @@ public class UniformRange extends Range {
         this.type = UniformType.LINEAR;
     }
 
-    public UniformRange(String id, double start, double end,
+    public UniformRange(SId id, double start, double end,
             int numberOfPoints, UniformType type) {
         super(id);
         this.start = start;
@@ -115,12 +118,15 @@ public class UniformRange extends Range {
         return type;
     }
 
+
     @Override
-    public String toString() {
-        return "Uniform Range [" + "getId()=" + getId() + ", getStart()="
-                + getStart() + ", getEnd()=" + getEnd()
-                + ", getNumberOfPoints()=" + getNumberOfPoints()
-                + ", getType()=" + getType() + "]";
+    public String parametersToString() {
+        List<String> params = new ArrayList<>();
+        params.add(String.format("start=%f", this.start));
+        params.add(String.format("end=%f", this.end));
+        params.add(String.format("numberOfPoints=%d", this.numberOfPoints));
+        params.add(String.format("type=%s", this.type));
+        return super.parametersToString() + ", " + String.join(", ", params);
     }
 
     @Override
@@ -148,7 +154,7 @@ public class UniformRange extends Range {
 
     @Override
     public String getElementName() {
-        return SEDMLTags.UNIFORM_RANGE_TAG;
+        return SedMLTags.UNIFORM_RANGE_TAG;
     }
 
     @Override

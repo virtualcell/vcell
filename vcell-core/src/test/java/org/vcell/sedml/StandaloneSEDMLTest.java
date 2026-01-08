@@ -6,16 +6,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.jlibsedml.SedMLDataContainer;
 import org.jlibsedml.components.task.AbstractTask;
 import org.jlibsedml.components.algorithm.Algorithm;
 import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
 import org.jlibsedml.Libsedml;
 import org.jlibsedml.components.model.Model;
-import org.jlibsedml.components.task.OneStep;
+import org.jlibsedml.components.simulation.OneStep;
 import org.jlibsedml.components.output.Output;
 import org.jlibsedml.SedMLDocument;
-import org.jlibsedml.SedMLDataClass;
 import org.jlibsedml.components.simulation.SteadyState;
 import org.jlibsedml.components.simulation.UniformTimeCourse;
 import org.jlibsedml.execution.ArchiveModelResolver;
@@ -99,7 +99,7 @@ public class StandaloneSEDMLTest {
 		
 		SedMLDocument sedmlDoc = ac.getSedmlDocuments().get(0);
 	
-		SedMLDataClass sedml = sedmlDoc.getSedMLModel();
+		SedMLDataContainer sedml = sedmlDoc.getSedMLModel();
 		if(sedml == null || sedml.getModels().isEmpty()) {
 			throw new RuntimeException("sedml null or empty");
 		}

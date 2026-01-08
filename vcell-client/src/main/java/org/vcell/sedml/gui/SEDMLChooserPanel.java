@@ -14,11 +14,11 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JToggleButton.ToggleButtonModel;
 
-import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.SedMLDataContainer;
 import org.jlibsedml.components.task.AbstractTask;
 import org.jlibsedml.components.model.Change;
 import org.jlibsedml.components.task.RepeatedTask;
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
 import org.jlibsedml.components.task.SubTask;
 import org.jlibsedml.components.task.Task;
 import org.vcell.sedml.SEDMLUtil;
@@ -30,7 +30,7 @@ import org.vcell.util.gui.DialogUtils;
 // ask the user to choose one task only (we only support importing of one task)
 public class SEDMLChooserPanel extends JPanel {
 	
-	private SedMLDataClass sedml;
+	private SedMLDataContainer sedml;
 	public ButtonGroup group = new ButtonGroup();
 	
 	public class SEDMLRadioButtonModel extends ToggleButtonModel {
@@ -46,7 +46,7 @@ public class SEDMLChooserPanel extends JPanel {
 		}
 	}
 	
-	public SEDMLChooserPanel(SedMLDataClass sedml) {
+	public SEDMLChooserPanel(SedMLDataContainer sedml) {
 		super();
 		this.sedml = sedml;
 		initialize();
@@ -85,7 +85,7 @@ public class SEDMLChooserPanel extends JPanel {
 				// Verify that all the changes are supported (setValue only, for now) and if anything else is found
 				// add an error message to the list of errors and skip the task
 				for(Change c : rt.getChanges()) {
-					if(!c.getChangeKind().equals(SEDMLTags.SET_VALUE_KIND)) {
+					if(!c.getChangeKind().equals(SedMLTags.SET_VALUE_KIND)) {
 						issues.add("The '" + c.getChangeKind() + "' change kind is not supported.");
 						issueFound = true;
 					}
@@ -97,7 +97,7 @@ public class SEDMLChooserPanel extends JPanel {
 					issueFound = true;
 				case 1:
 					SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue();		// first (and only) element
-					String taskId = st.getTaskId();
+					String taskId = st.getTask();
 					AbstractTask t = sedml.getTaskWithId(taskId);
 					text = " Repeated task '" + rt.getId() + "' - " + 
 							sedml.getModelWithId(t.getModelReference()).getClass().getSimpleName() + " '" +		// model class
@@ -176,7 +176,7 @@ public class SEDMLChooserPanel extends JPanel {
 		add(new JLabel(""), gbc);
 	}
 	
-	public static AbstractTask chooseTask(SedMLDataClass sedml, Component requester, String name) {
+	public static AbstractTask chooseTask(SedMLDataContainer sedml, Component requester, String name) {
 		
 		SEDMLChooserPanel panel = new SEDMLChooserPanel(sedml);
 		int oKCancel = DialogUtils.showComponentOKCancelDialog(requester, panel, "Import Sed-ML file: " + name);

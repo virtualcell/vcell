@@ -29,7 +29,7 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Document;
-import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.SedMLDataContainer;
 import org.jlibsedml.SedMLDocument;
 import org.jlibsedml.SedMLError;
 import org.jlibsedml.SedMLError.ERROR_SEVERITY;
@@ -50,10 +50,10 @@ public class SchematronValidator extends AbstractDocumentValidator {
 
     private static final String SVRL_NS_PREFIX = "svrl";
     private static final String SCHEMATRON_NS_URI = "http://purl.oclc.org/dsdl/svrl";
-    private SedMLDataClass sedml;
+    private SedMLDataContainer sedml;
     XPathFactory xpf = XPathFactory.newInstance();
 
-    public SchematronValidator(Document doc, SedMLDataClass sedml) {
+    public SchematronValidator(Document doc, SedMLDataContainer sedml) {
         super(doc);
         this.sedml = sedml;
     }

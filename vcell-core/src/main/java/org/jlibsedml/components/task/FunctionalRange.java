@@ -1,38 +1,39 @@
 package org.jlibsedml.components.task;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
 import org.jlibsedml.SEDMLVisitor;
-import org.jlibsedml.components.AbstractIdentifiableElement;
+import org.jlibsedml.components.*;
+import org.jlibsedml.components.listOfConstructs.ListOfParameters;
+import org.jlibsedml.components.listOfConstructs.ListOfVariables;
 import org.jmathml.ASTNode;
+import org.jmathml.FormulaFormatter;
 
-public class FunctionalRange extends Range {
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 
-    private String range = "";
-    private Map<String, AbstractIdentifiableElement> variables = new HashMap<String, AbstractIdentifiableElement> ();
-    private Map<String, AbstractIdentifiableElement> parameters = new HashMap<String, AbstractIdentifiableElement> ();
-    private ASTNode math = null;
+public class FunctionalRange extends Range implements Calculation {
+    private final static FormulaFormatter formulaFormatter = new FormulaFormatter();
+
+    private final SId range;
+    private final ListOfVariables variables;
+    private final ListOfParameters parameters;
+    private ASTNode math;
 
 
-    public FunctionalRange(String id, String range) {
+    public FunctionalRange(SId id, SId range) {
         super(id);
-        if(range != null) {
-            this.range = range;
-        }
+        this.range = range;
+        this.variables = new ListOfVariables();
+        this.parameters = new ListOfParameters();
+        this.math = null;
     }
-    public FunctionalRange(String id, String index, Map<String, AbstractIdentifiableElement> variables, Map<String, AbstractIdentifiableElement> parameters, ASTNode mathAsNode) {
-        super(id);
-        if(index != null) {
-            this.range = index;
-        }
-        if(variables != null) {
-            this.variables = variables;
-        }
-        if(parameters != null) {
-            this.parameters = parameters;
-        }
+    public FunctionalRange(SId id, SId range, Map<SId, Variable> variables, Map<SId, Parameter> parameters, ASTNode mathAsNode) {
+        this(id, range);
+        if(variables != null) for (SId varKey : variables.keySet()) this.variables.addContent(variables.get(varKey));
+        if(parameters != null) for (SId paramKey : parameters.keySet()) this.parameters.addContent(parameters.get(paramKey));
         this.math = mathAsNode;
     }
 
@@ -52,51 +53,80 @@ public class FunctionalRange extends Range {
     </function>
 </functionalRange>
 */
-    public String getRange() {
-        return range;
+    public SId getRange() {
+        return this.range;
     }
-    public void addVariable(AbstractIdentifiableElement var) {
-        if(!variables.containsKey(var.getId())) {
-            variables.put(var.getId(), var);
-        }
-    }
-    // can be Variable or Parameter
-    public Map<String, AbstractIdentifiableElement> getVariables() {
-        return variables;
-    }
-    public void addParameter(AbstractIdentifiableElement var) {
-        if(!parameters.containsKey(var.getId())) {
-            parameters.put(var.getId(), var);
-        }
-    }
-    // can be Variable or Parameter
-    public Map<String, AbstractIdentifiableElement> getParameters() {
-        return parameters;
-    }
+
     public void setMath(ASTNode math) {
         this.math = math;
     }
-    public ASTNode getMath() {
-        return math;
+
+    @Override
+    public ListOfParameters getListOfParameters() {
+        return this.parameters;
     }
 
     @Override
-    public String toString() {
-        return "Functional Range ["
-        + "getId()=" + getId()
-        + ", getIndex()=" + getRange()
-        + ", getMath()=" + getMath()
-        + ", variables.size()=" + variables.size()
-        + ", parameters.size()=" + parameters.size()
-        + "]";
+    public void addParameter(Parameter parameter) {
+        this.parameters.addContent(parameter);
     }
+
+    @Override
+    public void removeParameter(Parameter parameter) {
+        this.parameters.removeContent(parameter);
+    }
+
+    @Override
+    public ListOfVariables getListOfVariables() {
+        return this.variables;
+    }
+
+    @Override
+    public void addVariable(Variable variable) {
+        this.variables.addContent(variable);
+    }
+
+    @Override
+    public void removeVariable(Variable variable) {
+        this.variables.removeContent(variable);
+    }
+
+    /**
+     * Convenience function to return the maths expression as a C-style string.
+     *
+     * @return A <code>String</code> representation of the maths of this DataGenerator.
+     */
+    @Override
+    public String getMathAsString() {
+        return FunctionalRange.formulaFormatter.formulaToString(this.math);
+    }
+
+    public ASTNode getMath() {
+        return this.math;
+    }
+
+    /**
+     * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
+     * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
+     * <br\>
+     * e.g.: `super.parametersToString() + ", " + String.format(...)`
+     * @return the parameters and their values, listed in string form
+     */
+    @OverridingMethodsMustInvokeSuper
+    public String parametersToString(){
+        List<String> params = new ArrayList<>();
+        params.add(String.format("range=%s", this.getRange()));
+        params.addAll(this.getMathParamsAndVarsAsStringParams());
+        return super.parametersToString() + ", " + String.join(", ", params);
+    }
+
     /**
      * This method is not supported yet.
      * @throws UnsupportedOperationException
      */
     @Override
     public int getNumElements() {
-        throw new UnsupportedOperationException("Unsupported method getNumElements() for " + getElementName());
+        throw new UnsupportedOperationException("Unsupported method getNumElements() for " + this.getElementName());
     }
 
     /**
@@ -110,7 +140,7 @@ public class FunctionalRange extends Range {
 
     @Override
     public String getElementName() {
-        return SEDMLTags.FUNCTIONAL_RANGE_TAG;
+        return SedMLTags.FUNCTIONAL_RANGE_TAG;
     }
 
     @Override

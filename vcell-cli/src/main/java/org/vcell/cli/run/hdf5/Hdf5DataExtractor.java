@@ -4,7 +4,7 @@ import cbit.vcell.solver.TempSimulation;
 
 import org.jlibsedml.components.dataGenerator.DataGenerator;
 import org.jlibsedml.components.output.Report;
-import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.SedMLDataContainer;
 import org.jlibsedml.components.task.AbstractTask;
 import org.vcell.cli.run.results.*;
 import org.apache.logging.log4j.LogManager;
@@ -19,7 +19,7 @@ import java.util.*;
  * Factory class to create Hdf5DataWrappers from a sedml object and simulation data.
  */
 public class Hdf5DataExtractor {
-    private final SedMLDataClass sedml;
+    private final SedMLDataContainer sedml;
     private final Map<AbstractTask, TempSimulation> taskToSimulationMap;
     private final String sedmlLocation;
 
@@ -31,7 +31,7 @@ public class Hdf5DataExtractor {
      * @param sedml the sedml object to get outputs, datasets, and data generators from.
      * @param taskToSimulationMap mapping of task to its simulation data
      */
-    public Hdf5DataExtractor(SedMLDataClass sedml, Map<AbstractTask, TempSimulation> taskToSimulationMap){
+    public Hdf5DataExtractor(SedMLDataContainer sedml, Map<AbstractTask, TempSimulation> taskToSimulationMap){
         this.sedml = sedml;
         this.taskToSimulationMap = taskToSimulationMap;
         this.sedmlLocation = Paths.get(sedml.getPathForURI(), sedml.getFileName()).toString();

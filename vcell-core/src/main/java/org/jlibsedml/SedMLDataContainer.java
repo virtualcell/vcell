@@ -25,70 +25,10 @@ import org.jlibsedml.extensions.ElementSearchVisitor;
 import org.jmathml.ASTNode;
 
 /**
- * The top level object in a SED-ML document.
- * <p/>
- * To create a SedML object, create a SED-ML document first.
- * <p/>
- * 
- * <p/>
- * This class is basically a container element for the 5 different parts of the
- * SED-ML - the model, simulation, task description, data generator, and output.
- * </p>
- * 
- * Elements can be added in two ways:
- * <ul>
- * <li>Either pass in a previously created list, e.g.,
- * 
- * <pre>
- * List&lt;Simulation&gt; simulations = createListOfSimulationsSomewhereElse();
- * sedml.setSimulations(simulations);
- * </pre>
- * 
- * or
- * <li>Add simulations one at a time:
- * 
- * <pre>
- * Simulation sim = createASimulation();
- * sedml.addSimulation(sim);
- * </pre>
- * 
- * </ul>
- * 
- * Elements can be added to a list that has previously been set, however setting
- * in a list will overwrite any collections generated from either of the two
- * approaches above. </p>
- * 
- * All getListOfXXX() methods will return read-only lists. Attempting to modify
- * these lists will generate runtime exceptions. To manipulate the lists, then,
- * use the add/remove/set methods.
- * <p/>
- * 
- * <p>
- * Elements can be searched for by the getXXXWithId() methods. E.g.,
- * </p>
- * 
- * <pre>
- * Model model = sedml.getModelWithId(&quot;myModel&quot;);
- * if (model != null) {
- *     // do something.
- * }
- * </pre>
- * <p>
- * It should be noted that all collections held in this object, and elsewhere in
- * SEDML, are mutable from outside the object. So, if you pass in a collection
- * of Simulations into this class, then modify the collection outside this
- * object, then this collection will be modified.
- * </p>
- * 
- * @author anu/radams
- *
+ * This class serves a bridge between the implementations of SedML classes / components, and all the utility work
+ * and surrounding XML needed to make a reproducible description.
  */
-public final class SedMLDataClass extends SedGeneralClass {
-
-    @Override
-    public String toString() {
-        return "SedML [level=" + level + "]";
-    }
+public final class SedMLDataContainer {
     
     // added for import
     private String pathForURI = "";
@@ -100,36 +40,14 @@ public final class SedMLDataClass extends SedGeneralClass {
 
     private List<Namespace> additionalNamespaces = new ArrayList<>();
 
-    private List<Model> models = new ArrayList<Model>();
-    private List<Simulation> simulations = new ArrayList<Simulation>();
-    private List<AbstractTask> tasks = new ArrayList<AbstractTask>();
-    private List<DataGenerator> dataGenerators = new ArrayList<DataGenerator>();
-    private List<Output> outputs = new ArrayList<Output>();
+//    private List<Model> models = new ArrayList<Model>();
+//    private List<Simulation> simulations = new ArrayList<Simulation>();
+//    private List<AbstractTask> tasks = new ArrayList<AbstractTask>();
+//    private List<DataGenerator> dataGenerators = new ArrayList<DataGenerator>();
+//    private List<Output> outputs = new ArrayList<Output>();
 
-    /**
-     * Sorts a list of Outputs into the correct order specified in the schema.
-     * 
-     * @author radams
-     *
-     */
-    static class OutputComparator implements Comparator<Output> {
-        static Map<String, Integer> changeKindOrder;
-        static {
-            changeKindOrder = new HashMap<String, Integer>();
-            changeKindOrder.put(SEDMLTags.PLOT2D_KIND, 1);
-            changeKindOrder.put(SEDMLTags.PLOT3D_KIND, 2);
-            changeKindOrder.put(SEDMLTags.REPORT_KIND, 3);
 
-        }
-
-        public int compare(Output o1, Output o2) {
-            return changeKindOrder.get(o1.getKind()).compareTo(
-                    changeKindOrder.get(o2.getKind()));
-        }
-
-    }
-
-    SedMLDataClass(int aLevel, int aVersion, Namespace aNameSpace) {
+    SedMLDataContainer(int aLevel, int aVersion, Namespace aNameSpace) {
         if (aLevel != 1) {
             throw new IllegalArgumentException(MessageFormat.format(
                     "Invalid level {0}, valid level is {1}", aLevel, "1"));
@@ -144,65 +62,10 @@ public final class SedMLDataClass extends SedGeneralClass {
         this.xmlns = aNameSpace;
     }
 
-    SedMLDataClass(Namespace aNamespace) {
+    SedMLDataContainer(Namespace aNamespace) {
         this.xmlns = aNamespace;
         this.level = 1;
         this.version = 1;
-    }
-
-    /**
-     * Returns a read-only list of models in SedDocument
-     * 
-     * @return list of {@link Model}s
-     */
-    public List<Model> getModels() {
-        return Collections.unmodifiableList(models);
-    }
-
-    /**
-     * Returns a read-only list of simulations in SedML
-     * 
-     * @return list of simulations
-     */
-    public List<Simulation> getSimulations() {
-        return Collections.unmodifiableList(simulations);
-    }
-
-    /**
-     * Returns a read-only list of tasks in SedMl
-     * 
-     * @return list of tasks
-     */
-    public List<AbstractTask> getTasks() {
-        return Collections.unmodifiableList(tasks);
-    }
-
-    @Override
-    public String getElementName() {
-        return SEDMLTags.ROOT_NODE_TAG;
-    }
-
-    /**
-     * Returns a read-only list of data generators in SedML
-     * 
-     * @return list of datagenerators
-     */
-    public List<DataGenerator> getDataGenerators() {
-        return Collections.unmodifiableList(dataGenerators);
-    }
-
-    /**
-     * Returns a read-only list of outputs in SedDocument. This method does not
-     * return the list in the order by whic Outputs were added. Instead, it
-     * orders the outputs by types to agree with the schema. I.e., Plot2D
-     * ,Plot3d, Reports. <br
-     * /
-     * 
-     * @return A possibly empty but non-null <code>List</code> of Outputs.
-     */
-    public List<Output> getOutputs() {
-        Collections.sort(outputs, new OutputComparator());
-        return Collections.unmodifiableList(outputs);
     }
 
     /**
@@ -210,42 +73,6 @@ public final class SedMLDataClass extends SedGeneralClass {
      */
     public void setAdditionalNamespaces(List<Namespace> additionalNamespaces) {
         this.additionalNamespaces = additionalNamespaces;
-    }
-
-    /**
-     * Sets list of models on SedDocument
-     * 
-     * @param models
-     *            list of Model objects
-     */
-    public void setModels(List<Model> models) {
-        this.models = models;
-    }
-
-    /**
-     * Adds a {@link Model} to this object's list of Models, if not already
-     * present.
-     * 
-     * @param model
-     *            A non-null {@link Model} element
-     * @return <code>true</code> if model added, <code>false </code> otherwise.
-     */
-    public boolean addModel(Model model) {
-        if (!models.contains(model))
-            return models.add(model);
-        return false;
-    }
-
-    /**
-     * Removes a {@link Model} from this object's list of Models.
-     * 
-     * @param model
-     *            A non-null {@link Model} element
-     * @return <code>true</code> if model removed, <code>false </code>
-     *         otherwise.
-     */
-    public boolean removeModel(Model model) {
-        return models.remove(model);
     }
 
     /**
@@ -647,7 +474,7 @@ public final class SedMLDataClass extends SedGeneralClass {
             // create the SEDML objects
             DataGenerator dg = new DataGenerator(dgID, name);
             ASTNode node = Libsedml.parseFormulaString(newID);
-            dg.setMathML(node);
+            dg.setMath(node);
             Variable var = new Variable(newID, name, task.getId(),
                     xpath.getTargetAsString());
             dg.addVariable(var);

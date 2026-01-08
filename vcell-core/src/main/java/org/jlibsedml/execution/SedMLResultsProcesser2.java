@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.SedMLDataContainer;
 import org.jlibsedml.components.task.AbstractTask;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
 import org.jlibsedml.components.output.Output;
@@ -66,7 +66,7 @@ public class SedMLResultsProcesser2 {
     static final String COULD_NOT_RESOLVE_MATHML_MSG = "Could not resolve the variables in the Mathml required for generating ";
     static final String NO_DG_INOUTPUT_MSG = "No data generators listed in output";
     static final String COULD_NOT_EXECUTE_MATHML_FOR = "Math could not be executed for data generator ";
-    private SedMLDataClass sedml;
+    private SedMLDataContainer sedml;
     private Output output;
     private IProcessedSedMLSimulationResults toReturn;
     private ProcessReport report = new ProcessReport();
@@ -104,10 +104,10 @@ public class SedMLResultsProcesser2 {
      *            <code>sedml</code> argument.
      * @throws IllegalArgumentException
      *             if any argument is <code>null</code> or if the output does
-     *             not belong to the {@link SedMLDataClass} object ( based on the output
+     *             not belong to the {@link SedMLDataContainer} object ( based on the output
      *             id ).
      */
-    public SedMLResultsProcesser2(final SedMLDataClass sedml, final Output output) {
+    public SedMLResultsProcesser2(final SedMLDataContainer sedml, final Output output) {
         super();
         if (sedml == null || output == null) {
             throw new IllegalArgumentException();

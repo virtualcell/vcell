@@ -16,7 +16,7 @@ import org.jlibsedml.components.simulation.Simulation;
 import org.jlibsedml.components.simulation.SteadyState;
 import org.jlibsedml.components.simulation.UniformTimeCourse;
 import org.jlibsedml.components.task.AbstractTask;
-import org.jlibsedml.components.task.OneStep;
+import org.jlibsedml.components.simulation.OneStep;
 import org.jlibsedml.components.task.RepeatedTask;
 import org.jlibsedml.components.task.SetValue;
 import org.vcell.cli.messaging.CLIRecordable;
@@ -61,7 +61,7 @@ public class SedmlJob {
     private final CLIRecordable CLI_RECORDER;
     private boolean somethingFailed, hasScans, hasOverrides;
     private String logDocumentMessage, logDocumentError;
-    private SedMLDataClass sedml;
+    private SedMLDataContainer sedml;
 
 
     private final static Logger logger = LogManager.getLogger(SedmlJob.class);
@@ -390,13 +390,13 @@ public class SedmlJob {
     }
 
     // This method is a bit weird; it uses a temp file as a reference to compare against while getting the file straight from the archive.
-    private static SedMLDataClass getSedMLFile(String[] tokenizedPathToSedml, File inputFile) throws XMLException, IOException {
+    private static SedMLDataContainer getSedMLFile(String[] tokenizedPathToSedml, File inputFile) throws XMLException, IOException {
         Path convertedPath = SedmlJob.getRelativePath(tokenizedPathToSedml);
         if (convertedPath == null) throw new RuntimeException("Was not able to get relative path to " + inputFile.getName());
         String identifyingPath = FilenameUtils.separatorsToUnix(convertedPath.toString());
         try (FileInputStream omexStream = new FileInputStream(inputFile)) {
             for (SedMLDocument doc : Libsedml.readSEDMLArchive(omexStream).getSedmlDocuments()){
-                SedMLDataClass potentiallyCorrectFile = doc.getSedMLModel();
+                SedMLDataContainer potentiallyCorrectFile = doc.getSedMLModel();
                 String potentiallyCorrectPath = potentiallyCorrectFile.getPathForURI() + potentiallyCorrectFile.getFileName();
                 if (!identifyingPath.equals(potentiallyCorrectPath)) continue;
                 return potentiallyCorrectFile;
