@@ -1,12 +1,10 @@
 package org.jlibsedml.components.output;
 
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.listOfConstructs.ListOfSurfaces;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Encapsulates the information required for a 3d plot in SED-ML.
@@ -14,19 +12,9 @@ import java.util.TreeSet;
  * @author anu/radams
  * 
  */
-public class Plot3D extends Output {
+public class Plot3D extends Plot {
 
-    @Override
-    public String getElementName() {
-        return SEDMLTags.OUTPUT_P3D;
-    }
-
-    @Override
-    public String toString() {
-        return "Plot3D [listOfSurfaces=" + listOfSurfaces + "]";
-    }
-
-    private ArrayList<Surface> listOfSurfaces;
+    private final ListOfSurfaces listOfSurfaces;
 
     /**
      * 
@@ -35,9 +23,9 @@ public class Plot3D extends Output {
      * @param name
      *            An optional name.
      */
-    public Plot3D(String id, String name) {
+    public Plot3D(SId id, String name) {
         super(id, name);
-        listOfSurfaces = new ArrayList<Surface>();
+        this.listOfSurfaces = new ListOfSurfaces();
     }
 
     /**
@@ -45,7 +33,7 @@ public class Plot3D extends Output {
      * @return list of {@link Surface}
      */
     public List<Surface> getListOfSurfaces() {
-        return Collections.unmodifiableList(listOfSurfaces);
+        return this.listOfSurfaces.getContents();
     }
 
     /**
@@ -54,13 +42,9 @@ public class Plot3D extends Output {
      * 
      * @param surface
      *            A non-null {@link Surface} element
-     * @return <code>true</code> if surface added, <code>false </code>
-     *         otherwise.
      */
-    public boolean addSurface(Surface surface) {
-        if (!listOfSurfaces.contains(surface))
-            return listOfSurfaces.add(surface);
-        return false;
+    public void addSurface(Surface surface) {
+        this.listOfSurfaces.addContent(surface);
     }
 
     /**
@@ -69,13 +53,9 @@ public class Plot3D extends Output {
      * 
      * @param surface
      *            A non-null {@link Surface} element
-     * @return <code>true</code> if surface removed, <code>false </code>
-     *         otherwise.
      */
-    public boolean removeSurface(Surface surface) {
-
-        return listOfSurfaces.remove(surface);
-
+    public void removeSurface(Surface surface) {
+        this.listOfSurfaces.removeContent(surface);
     }
 
     /**
@@ -84,37 +64,23 @@ public class Plot3D extends Output {
      * @return SEDMLTags.PLOT3D_KIND
      */
     public String getKind() {
-        return SEDMLTags.PLOT3D_KIND;
+        return SedMLTags.PLOT3D_KIND;
     }
 
     @Override
-    public List<String> getAllDataGeneratorReferences() {
-
-        Set<String> rc = new TreeSet<String>();
-        for (Surface c : listOfSurfaces) {
+    public Set<SId> getAllDataGeneratorReferences() {
+        Set<SId> rc = new LinkedHashSet<>();
+        for (Surface c : this.listOfSurfaces.getContents()) {
             rc.add(c.getXDataReference());
             rc.add(c.getYDataReference());
-            rc.add(c.getZDataReference());
+            rc.add(c.getzDataReference());
         }
-        List<String> rc2 = new ArrayList<String>();
-        for (String id : rc) {
-            rc2.add(id);
-        }
-        return rc2;
-
+        return rc;
     }
 
     @Override
-    public List<String> getAllIndependentDataGeneratorReferences() {
-        Set<String> rc = new TreeSet<String>();
-        for (Surface c : listOfSurfaces) {
-            rc.add(c.getXDataReference());
-        }
-        List<String> rc2 = new ArrayList<String>();
-        for (String id : rc) {
-            rc2.add(id);
-        }
-        return rc2;
+    public String getElementName() {
+        return SedMLTags.OUTPUT_P3D;
     }
 
 }

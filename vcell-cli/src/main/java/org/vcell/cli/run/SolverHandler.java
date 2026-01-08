@@ -30,7 +30,7 @@ import org.jlibsedml.components.output.Output;
 import org.jlibsedml.components.task.Range;
 import org.jlibsedml.components.task.RepeatedTask;
 import org.jlibsedml.components.output.Report;
-import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.SedMLDataContainer;
 import org.jlibsedml.components.task.SetValue;
 import org.jlibsedml.components.task.SubTask;
 import org.jlibsedml.components.task.Task;
@@ -96,7 +96,7 @@ public class SolverHandler {
         }
     }
 
-    public void initialize(List<BioModel> bioModelList, SedMLDataClass sedml) throws ExpressionException {
+    public void initialize(List<BioModel> bioModelList, SedMLDataContainer sedml) throws ExpressionException {
 		Set <AbstractTask> topmostTasks = new LinkedHashSet<> ();
         for(BioModel bioModel : bioModelList) {
 			Simulation[] sims = bioModel.getSimulations();
@@ -148,7 +148,7 @@ public class SolverHandler {
 				rt = repeatedTask;
 				do {
 					SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
-					String taskId = st.getTaskId();
+					String taskId = st.getTask();
 					referredTask = sedml.getTaskWithId(taskId);
 					if (referredTask instanceof RepeatedTask repeatedReferredTask) rt = repeatedReferredTask;
 					subTasksList.add(referredTask);                // last entry added will be a instanceof Task
@@ -308,7 +308,7 @@ public class SolverHandler {
 		}
 	}
 
-    public Map<AbstractTask, BiosimulationLog.Status> simulateAllTasks(ExternalDocInfo externalDocInfo, SedMLDataClass sedmlRequested, CLIRecordable cliLogger,
+    public Map<AbstractTask, BiosimulationLog.Status> simulateAllTasks(ExternalDocInfo externalDocInfo, SedMLDataContainer sedmlRequested, CLIRecordable cliLogger,
                                                                        File outputDirForSedml, String outDir, String sedmlLocation,
                                                                        boolean keepTempFiles, boolean exactMatchOnly, boolean bSmallMeshOverride)
 			throws XMLException, IOException, SEDMLImportException, ExpressionException, PropertyVetoException {

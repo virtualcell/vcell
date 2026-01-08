@@ -1,12 +1,12 @@
 package org.jlibsedml.components.model;
 
 import org.jlibsedml.*;
+import org.jlibsedml.components.SId;
 import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.SedGeneralClass;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.util.*;
 
 /**
  * Abstract class for ChangeXXX classes that manipulate a {@link Model}. 
@@ -15,40 +15,32 @@ import java.util.Map;
  *
  */
 public abstract class Change extends SedBase {
-	   private XPathTarget target = null;
-	   
-	   /**
-	    * Sorts a list of Changes into the correct order specified in the schema. 
-	    * @author radams
-	    *
-	    */
-	   static class ChangeComparator implements Comparator<Change>{
-	       static Map<String, Integer> changeKindOrder;
-	       static {
-          changeKindOrder = new HashMap<String, Integer>();
-          changeKindOrder.put(SEDMLTags.CHANGE_ATTRIBUTE_KIND, 1);
-          changeKindOrder.put(SEDMLTags.CHANGE_XML_KIND, 2);
-          changeKindOrder.put(SEDMLTags.ADD_XML_KIND, 3);
-          changeKindOrder.put(SEDMLTags.REMOVE_XML_KIND, 4);
-          changeKindOrder.put(SEDMLTags.COMPUTE_CHANGE_KIND, 5);
-          changeKindOrder.put(SEDMLTags.SET_VALUE_KIND, 6);
-	       }
-        public int compare(Change o1, Change o2) {
-            return changeKindOrder.get(o1.getChangeKind()).compareTo(changeKindOrder.get(o2.getChangeKind()));
-        }
-	   }
+	   private XPathTarget target;
 
 	   /**
 	    * 
 	    * @param target  A non-null, non-empty <code>String</code>
 	    *   that identifies an XPath expression to change.
 	    */
-	   public   Change(XPathTarget target) {
+	   public Change(SId id, String name, XPathTarget target) {
+           super(id, name);
 		   if(SedMLElementFactory.getInstance().isStrictCreation())
 			  SedGeneralClass.checkNoNullArgs(target);
 		  
 		   this.target = target;
 	   }
+
+        /**
+         * Setter for the target XPath expression that identifies where the change should be
+         *  applied.
+         * @param target A non-null {@link XPathTarget}
+         * @since 1.2.0
+         */
+        public void setTarget(XPathTarget target) {
+            if(SedMLElementFactory.getInstance().isStrictCreation())
+                SedGeneralClass.checkNoNullArgs(target);
+            this.target = target;
+        }
 	   
 	   /**
 	    * Gets the XPath expression that identifies the target XML to which the change will be applied.
@@ -78,50 +70,53 @@ public abstract class Change extends SedBase {
 	    * @return a boolean
 	    */
 	   public boolean isChangeAttribute(){
-	       return SEDMLTags.CHANGE_ATTRIBUTE_KIND.equals(getChangeKind());
+	       return SedMLTags.CHANGE_ATTRIBUTE_KIND.equals(getChangeKind());
 	   }
 	   /**
         * Boolean test for whether this object is of type <code>ChangeXML</code>.
         * @return a boolean
         */
 	   public boolean isChangeXML(){
-           return SEDMLTags.CHANGE_XML_KIND.equals(getChangeKind());
+           return SedMLTags.CHANGE_XML_KIND.equals(getChangeKind());
        }
 	   /**
         * Boolean test for whether this object is of type <code>AddXML</code>.
         * @return a boolean
         */
 	   public boolean isAddXML(){
-           return SEDMLTags.ADD_XML_KIND.equals(getChangeKind());
+           return SedMLTags.ADD_XML_KIND.equals(getChangeKind());
        }
 	   /**
         * Boolean test for whether this object is of type <code>RemoveXML</code>.
         * @return a boolean
         */
 	   public boolean isRemoveXML(){
-           return SEDMLTags.REMOVE_XML_KIND.equals(getChangeKind());
+           return SedMLTags.REMOVE_XML_KIND.equals(getChangeKind());
        }
 	   /**
         * Boolean test for whether this object is of type <code>ComputeChange</code>.
         * @return a boolean
         */
 	   public boolean isComputeChange(){
-           return SEDMLTags.COMPUTE_CHANGE_KIND.equals(getChangeKind());
+           return SedMLTags.COMPUTE_CHANGE_KIND.equals(getChangeKind());
        }
 	   public boolean isSetValue() {
-	       return SEDMLTags.SET_VALUE_KIND.equals(getChangeKind());
+	       return SedMLTags.SET_VALUE_KIND.equals(getChangeKind());
 	   }
    
-	/**
-	 * Setter for the target XPath expression that identifies where the change should be
-	 *  applied.
-	 * @param target A non-null {@link XPathTarget}
-	 * @since 1.2.0
-	 */
-    public void setTarget(XPathTarget target) {
-        if(SedMLElementFactory.getInstance().isStrictCreation())
-           SedGeneralClass.checkNoNullArgs(target);
-        this.target = target;
+
+
+    /**
+     * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
+     * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
+     * <br\>
+     * e.g.: `super.parametersToString() + ", " + String.format(...)`
+     * @return the parameters and their values, listed in string form
+     */
+    @OverridingMethodsMustInvokeSuper
+    public String parametersToString(){
+        if (this.target == null) return super.parametersToString();
+        else return super.parametersToString() + ", target=[" + this.target.toString() + ']';
     }
 	   
 	   

@@ -10,7 +10,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.SedMLDataContainer;
 import org.jlibsedml.components.model.Model;
 import org.jlibsedml.SedMLDocument;
 
@@ -24,7 +24,7 @@ import org.jlibsedml.SedMLDocument;
 public class ModelResolver {
     private final static Logger logger = LogManager.getLogger(ModelResolver.class);
 
-    public ModelResolver(SedMLDataClass sedml) {
+    public ModelResolver(SedMLDataContainer sedml) {
         super();
         this.sedml = sedml;
     }
@@ -32,7 +32,7 @@ public class ModelResolver {
     static final String MODEL_CANNOT_BE_RESOLVED_MSG = " The model could not be resolved from its source reference. ";
     static final String MODEL_SRC_NOT_VALID_URI = "The model 'source' attribute  is not a valid URI.";
 
-    private SedMLDataClass sedml;
+    private SedMLDataContainer sedml;
 	private String message = "";
     private List<IModelResolver> resolvers = new ArrayList<IModelResolver>();
 

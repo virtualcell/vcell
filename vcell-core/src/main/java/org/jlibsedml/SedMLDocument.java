@@ -16,7 +16,6 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 import org.jdom2.output.XMLOutputter;
-import org.jlibsedml.components.SedGeneralClass;
 import org.jlibsedml.components.Version;
 import org.jlibsedml.components.model.AddXML;
 import org.jlibsedml.components.model.Change;
@@ -28,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Encapsulates a {@link SedMLDataClass} model and provides additional validation
+ * Encapsulates a {@link SedMLDataContainer} model and provides additional validation
  * services.<br/>
  * E.g., typical usage might be:
  * 
@@ -53,7 +52,7 @@ public class SedMLDocument {
     Logger log = LoggerFactory.getLogger(SedMLDocument.class);
     private List<SedMLError> errors = new ArrayList<SedMLError>();
 
-    private SedMLDataClass sedml;
+    private SedMLDataContainer sedml;
 
     private boolean isValidationPerformed;
 
@@ -71,8 +70,12 @@ public class SedMLDocument {
      * @throws IllegalArgumentException
      *             if any arg is null.
      */
-    public SedMLDocument(SedMLDataClass model, List<SedMLError> errors) {
-       SedGeneralClass.checkNoNullArgs(model, errors);
+    public SedMLDocument(SedMLDataContainer model, List<SedMLError> errors) {
+        if (null == model) throw new IllegalArgumentException("Cannot create SedMLDocument with a null Model");
+        if (null == errors) errors = Collections.emptyList();
+        for (SedMLError error : errors) {
+            if (null == error) throw new IllegalArgumentException("Sed Errors reported, but Error itself is `null`");
+        }
         this.sedml = model;
         this.errors = errors;
     }
@@ -80,13 +83,13 @@ public class SedMLDocument {
     /**
      * Alternative constructor for creating a {@link SedMLDocument}
      * 
-     * @param sedMLDataClass
+     * @param sedMLDataContainer
      *            An already created SED-ML model object.
      * @throws IllegalArgumentException
      *             if any arg is null.
      */
-    public SedMLDocument(SedMLDataClass sedMLDataClass) {
-        this(sedMLDataClass, new ArrayList<SedMLError>());
+    public SedMLDocument(SedMLDataContainer sedMLDataContainer) {
+        this(sedMLDataContainer, new ArrayList<SedMLError>());
     }
 
     /**
@@ -107,14 +110,14 @@ public class SedMLDocument {
     */
     public SedMLDocument(int level, int version) {
         if(version == 1) {
-            this.sedml = new SedMLDataClass(level, version, Namespace.getNamespace(SEDMLTags.SEDML_L1V1_NS));
+            this.sedml = new SedMLDataContainer(level, version, Namespace.getNamespace(SedMLTags.SEDML_L1V1_NS));
         } else if (version == 2) {
-            this.sedml = new SedMLDataClass(level, version, Namespace.getNamespace(SEDMLTags.SEDML_L1V2_NS));
+            this.sedml = new SedMLDataContainer(level, version, Namespace.getNamespace(SedMLTags.SEDML_L1V2_NS));
         } else {
             throw new IllegalArgumentException("Invalid version must be 1 or 2");
         }     
         sedml.setAdditionalNamespaces(Arrays.asList(new Namespace[] { Namespace
-                .getNamespace(SEDMLTags.MATHML_NS_PREFIX, SEDMLTags.MATHML_NS) }));
+                .getNamespace(SedMLTags.MATHML_NS_PREFIX, SedMLTags.MATHML_NS) }));
     }
 
     /**
@@ -157,9 +160,9 @@ public class SedMLDocument {
     /**
      * Gets the SED-ML model contained in this document.
      * 
-     * @return A non-null {@link SedMLDataClass} object
+     * @return A non-null {@link SedMLDataContainer} object
      */
-    public SedMLDataClass getSedMLModel() {
+    public SedMLDataContainer getSedMLModel() {
         return sedml;
     }
 
@@ -195,7 +198,7 @@ public class SedMLDocument {
      * @see Object#toString()
      */
     public String toString() {
-        return "SEDML Document for " + sedml.getNotes();
+        return String.format("SedML Document for SedML L%dV%d", this.sedml.getLevel(), this.sedml.getVersion());
     }
 
     /**
@@ -210,7 +213,7 @@ public class SedMLDocument {
      *             if <code>file</code> argument is null
      */
     public void writeDocument(File file) {
-       SedGeneralClass.checkNoNullArgs(file);
+       if (null == file) throw new IllegalArgumentException("A valid file must be provided to write a document to!");
 
         String xmlString = getSedMLDocumentAsString(sedml);
         try {
@@ -222,7 +225,7 @@ public class SedMLDocument {
         }
     }
 
-    static String getSedMLDocumentAsString(SedMLDataClass sedRoot) {
+    static String getSedMLDocumentAsString(SedMLDataContainer sedRoot) {
         SEDMLWriter producer = new SEDMLWriter();
         Element root = producer.getXML(sedRoot);
 
@@ -272,7 +275,7 @@ public class SedMLDocument {
      * </code> in this class provides a test as to whether prefixes can be
      * resolved.
      * <p/>
-     * @param model_ID
+     * @param modelID
      *            The id of the SEDML Model element containing the description
      *            whose changes are to be applied.
      * @param originalModel
@@ -310,13 +313,13 @@ public class SedMLDocument {
                 NamespaceContextHelper nc = new NamespaceContextHelper(docj);
                 nc.process(change.getTargetXPath());
                 xpath.setNamespaceContext(nc);
-                if (change.getChangeKind().equals(SEDMLTags.CHANGE_ATTRIBUTE_KIND)) {
+                if (change.getChangeKind().equals(SedMLTags.CHANGE_ATTRIBUTE_KIND)) {
                     ModelTransformationUtils.applyAttributeChange(doc, xpath, change);
-                } else if (change.getChangeKind().equals(SEDMLTags.REMOVE_XML_KIND)) {
+                } else if (change.getChangeKind().equals(SedMLTags.REMOVE_XML_KIND)) {
                     ModelTransformationUtils.deleteXMLElement(doc, change.getTargetXPath().getTargetAsString(), xpath);
-                } else if (change.getChangeKind().equals(SEDMLTags.ADD_XML_KIND)) {
+                } else if (change.getChangeKind().equals(SedMLTags.ADD_XML_KIND)) {
                     AddXML addXML = (AddXML) change;
-                    for (Element el : addXML.getNewXML().getXml()) {
+                    for (Element el : addXML.getNewXML().xml()) {
                         el.setNamespace(Namespace.NO_NAMESPACE);
                         String elAsString = new XMLOutputter().outputString(el);
                         log.debug(elAsString);
@@ -325,7 +328,7 @@ public class SedMLDocument {
                                 xpath);
                     }
                 } else if (change.getChangeKind().equals(
-                        SEDMLTags.CHANGE_XML_KIND)) {
+                        SedMLTags.CHANGE_XML_KIND)) {
                     ChangeXML changeXML = (ChangeXML) change;
                     ModelTransformationUtils.changeXMLElement(doc, changeXML
                             .getNewXML(), changeXML.getTargetXPath()

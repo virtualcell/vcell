@@ -30,7 +30,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jlibsedml.components.AbstractIdentifiableElement;
+import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.algorithm.Algorithm;
 import org.jlibsedml.components.algorithm.AlgorithmParameter;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
@@ -75,7 +75,7 @@ import java.util.*;
  */
 public class SEDMLImporter {
 	private final static Logger logger = LogManager.getLogger(SEDMLImporter.class);
-	private SedMLDataClass sedml;
+	private SedMLDataContainer sedml;
 	private final boolean exactMatchOnly;
 	
 	private final VCLogger transLogger;
@@ -106,7 +106,7 @@ public class SEDMLImporter {
 	 * @throws FileNotFoundException if the sedml archive can not be found
 	 * @throws XMLException if the sedml has invalid xml.
 	 */
-	public SEDMLImporter(VCLogger transLogger, File fileWithSedmlToProcess, SedMLDataClass sedml, boolean exactMatchOnly)
+	public SEDMLImporter(VCLogger transLogger, File fileWithSedmlToProcess, SedMLDataContainer sedml, boolean exactMatchOnly)
 			throws XMLException, IOException {
 		this(transLogger, exactMatchOnly);
 		this.initialize(fileWithSedmlToProcess, sedml);
@@ -119,7 +119,7 @@ public class SEDMLImporter {
 	 * @throws IOException if the sedml archive can not be found, or the IO stream reading it failed
 	 * @throws XMLException if the sedml has invalid xml.
 	 */
-	public void initialize(File fileWithSedmlToProcess, SedMLDataClass sedml) throws XMLException, IOException {
+	public void initialize(File fileWithSedmlToProcess, SedMLDataContainer sedml) throws XMLException, IOException {
 		// extract bioModel name from sedml (or sedml) file
 		if (fileWithSedmlToProcess == null) throw new IllegalArgumentException("Source file of SedML can not be null!");
 		if (sedml == null) throw new IllegalArgumentException("Provided SedML can not be null!");
@@ -705,7 +705,7 @@ public class SEDMLImporter {
 							frExpMax.substituteInPlace(new Expression(ur.getId()), new Expression(ur.getEnd()));
 
 							// Substitute SED-ML parameters
-							Map<String, AbstractIdentifiableElement> params = fr.getParameters();
+							Map<String, SedBase> params = fr.getParameters();
 							System.out.println(params);
 							for (String paramId : params.keySet()) {
 								frExpMin.substituteInPlace(new Expression(params.get(paramId).getId()), new Expression(((Parameter)params.get(paramId)).getValue()));
@@ -713,7 +713,7 @@ public class SEDMLImporter {
 							}
 
 							// Substitute SED-ML variables (which reference SBML entities)
-							Map<String, AbstractIdentifiableElement> vars = fr.getVariables();
+							Map<String, SedBase> vars = fr.getVariables();
 							System.out.println(vars);
 							for (String varId : vars.keySet()) {
 								String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.components.Variable)vars.get(varId)).getTarget());
@@ -737,13 +737,13 @@ public class SEDMLImporter {
 							ASTNode frMath = fr.getMath();
 							Expression expFact = new ExpressionMathMLParser(null).fromMathML(frMath, "t");
 							// Substitute SED-ML parameters
-							Map<String, AbstractIdentifiableElement> params = fr.getParameters();
+							Map<String, SedBase> params = fr.getParameters();
 							System.out.println(params);
 							for (String paramId : params.keySet()) {
 								expFact.substituteInPlace(new Expression(params.get(paramId).getId()), new Expression(((Parameter)params.get(paramId)).getValue()));
 							}
 							// Substitute SED-ML variables (which reference SBML entities)
-							Map<String, AbstractIdentifiableElement> vars = fr.getVariables();
+							Map<String, SedBase> vars = fr.getVariables();
 							System.out.println(vars);
 							for (String varId : vars.keySet()) {
 								String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(((org.jlibsedml.components.Variable)vars.get(varId)).getTarget());
@@ -1114,7 +1114,7 @@ public class SEDMLImporter {
 		// then couldn't there be more than one base Task?
 		AbstractTask referredTask;
 		SubTask st = repeatedTask.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
-		String taskId = st.getTaskId();
+		String taskId = st.getTask();
 
 		// find the base-task, by recursively checking the task being referenced until it's not a repeated task
 		referredTask = this.sedml.getTaskWithId(taskId);

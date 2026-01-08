@@ -1,23 +1,29 @@
 package org.jlibsedml.components.algorithm;
 
+import org.jlibsedml.SEDMLVisitor;
+import org.jlibsedml.SedMLTags;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.SedGeneralClass;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * An ALgorithm Parameter for a specific simulation algorithm.
+ * An Algorithm Parameter for a specific Algorithm.
  * <br/>
  * This class does not currently verify the validity of a parameter for the
  *  given algorithm. 
  */
-public class AlgorithmParameter {
-
-   
+public class AlgorithmParameter extends SedBase {
     private String kisaoID;
     private String value;
     
-    public AlgorithmParameter(String kisaoID, String value) {
-        super();
-       SedGeneralClass.checkNoNullArgs(kisaoID);
-       SedGeneralClass.stringsNotEmpty(kisaoID);
+    public AlgorithmParameter(SId id, String name, String kisaoID, String value) {
+        super(id, name);
+        SedGeneralClass.checkNoNullArgs(kisaoID);
+        SedGeneralClass.stringsNotEmpty(kisaoID);
         this.kisaoID = kisaoID;
         this.setValue(value);
     }
@@ -34,12 +40,20 @@ public class AlgorithmParameter {
     public String getValue() {
         return value;
     }
-    public String toString() {
-        String s = "AlgorithmParameter [";
-        s += "kisaoID=" + kisaoID; 
-        s += " value=" + value; 
-        s += "]";
-        return s;
+
+    /**
+     * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
+     * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
+     * <br\>
+     * e.g.: `super.parametersToString() + ", " + String.format(...)`
+     * @return the parameters and their values, listed in string form
+     */
+    @OverridingMethodsMustInvokeSuper
+    public String parametersToString(){
+        List<String> params = new ArrayList<>(), paramParams = new ArrayList<>();
+        if (this.kisaoID != null) params.add(String.format("kisaoID=%s", this.kisaoID));
+        if (this.value != null) params.add(String.format("value=%s", this.value));
+        return super.parametersToString() + ", " + String.join(", ", params);
     }
     
     @Override
@@ -65,5 +79,20 @@ public class AlgorithmParameter {
         } else if (!kisaoID.equals(other.kisaoID))
             return false;
         return true;
+    }
+
+    /**
+     * Provides a link between the object model and the XML element names
+     *
+     * @return A non-null <code>String</code> of the XML element name of the object.
+     */
+    @Override
+    public String getElementName() {
+        return SedMLTags.ALGORITHM_PARAMETER_TAG;
+    }
+
+    @Override
+    public boolean accept(SEDMLVisitor visitor) {
+        return visitor.visit(this);
     }
 }

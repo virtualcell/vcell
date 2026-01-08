@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jdom2.Document;
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
 import org.jlibsedml.SedMLError;
 import org.jlibsedml.components.simulation.Simulation;
 import org.jlibsedml.modelsupport.KisaoOntology;
@@ -31,7 +31,7 @@ public class KisaoIDValidator  extends AbstractDocumentValidator implements ISed
 		for (Simulation sim: sims){
 			String kisaoID = sim.getAlgorithm().getKisaoID();
 			if(KisaoOntology.getInstance().getTermById(kisaoID) == null){
-				 int line = getLineNumberOfError(SEDMLTags.SIMUL_UTC_KIND,sim);
+				 int line = getLineNumberOfError(SedMLTags.SIMUL_UTC_KIND, sim);
 				errs.add(new SedMLError(line, " The supplied KisaoID [" + kisaoID +"] for simulation [" + sim.getId() +"]  is not a recognized KISAO identifier.\n" +
 						     " Identifiers should be the format 'KISAO:0000001' ", SedMLError.ERROR_SEVERITY.WARNING));
 			}

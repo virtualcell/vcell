@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jdom2.Document;
-import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.SedMLDataContainer;
 import org.jlibsedml.SedMLError;
 
 /**
@@ -28,9 +28,9 @@ import org.jlibsedml.SedMLError;
  *
  */
   class SemanticValidationManager implements ISedMLValidator{
-	private SedMLDataClass sedml;
+	private SedMLDataContainer sedml;
 	private Document doc;
-	public SemanticValidationManager(SedMLDataClass sedml, Document doc) {
+	public SemanticValidationManager(SedMLDataContainer sedml, Document doc) {
 		this.sedml=sedml;
 		this.doc=doc;
 	}

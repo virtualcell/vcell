@@ -18,7 +18,7 @@ import org.vcell.util.Pair;
 import java.util.*;
 
 public class PlottingDataExtractor {
-    private final SedMLDataClass sedml;
+    private final SedMLDataContainer sedml;
     private final String sedmlName;
 
     private final static Logger logger = LogManager.getLogger(PlottingDataExtractor.class);
@@ -28,7 +28,7 @@ public class PlottingDataExtractor {
      *
      * @param sedml the sedml object to get outputs, datasets, and data generators from.
      */
-    public PlottingDataExtractor(SedMLDataClass sedml, String sedmlName){
+    public PlottingDataExtractor(SedMLDataContainer sedml, String sedmlName){
         this.sedml = sedml;
         this.sedmlName = sedmlName;
     }

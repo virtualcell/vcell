@@ -1,12 +1,14 @@
 package org.jlibsedml.components.task;
 
+import org.jlibsedml.components.SId;
 import org.jlibsedml.components.model.ComputeChange;
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
 import org.jlibsedml.SEDMLVisitor;
 import org.jlibsedml.XPathTarget;
 import org.jmathml.ASTNode;
 
-public class SetValue extends ComputeChange {
+import java.util.ArrayList;
+import java.util.List;
 
 /*
 <listOfChanges>
@@ -25,55 +27,56 @@ public class SetValue extends ComputeChange {
     </setValue>
 </listOfChanges>
 */
-    private String modelReference = null;
+
+public class SetValue extends ComputeChange {
+
+    private SId modelReference = null;
     // as for functionalRange, variable references always retrieve the current value of the
     // model variable or range at the current iteration of the enclosing repeatedTask. For a model not being
     // simulated by any subTask, the initial state of the model is used.
-    private String rangeReference = null;
+    private SId rangeReference;
 
     // Remember to set the math separately
-    public SetValue(XPathTarget target, String rangeReference, String modelReference) {
-        super(target);
+    public SetValue(SId id, String name, XPathTarget target, SId rangeReference, SId modelReference) {
+        super(id, name, target);
         this.rangeReference = rangeReference;
         this.setModelReference(modelReference);
     };
-    public SetValue(XPathTarget target, ASTNode math, String rangeReference, String modelReference) {
-        super(target, math);
+    public SetValue(SId id, String name, XPathTarget target, ASTNode math, SId rangeReference, SId modelReference) {
+        super(id, name, target, math);
         this.rangeReference = rangeReference;
         this.setModelReference(modelReference);
     };
     
-    public void setRangeReference(String rangeReference) {
+    public void setRangeReference(SId rangeReference) {
         this.rangeReference = rangeReference;
     }
-    public String getRangeReference() {
-        return rangeReference;
+    public SId getRangeReference() {
+        return this.rangeReference;
     }
-    public void setModelReference(String modelReference) {
+    public void setModelReference(SId modelReference) {
         this.modelReference = modelReference;
     }
-    public String getModelReference() {
-        return modelReference;
+    public SId getModelReference() {
+        return this.modelReference;
     }
 
     @Override
-    public String toString() {
-        return "SetValue [getTargetXPath()=" + getTargetXPath()
-        + ", getRangeReference()=" + getRangeReference()
-        + ", getModelReference()=" + getModelReference()
-        + ", getListOfVariables().size()=" + getListOfVariables().size()
-        + ", getListOfParameters().size()=" + getListOfParameters().size()
-                 + "]";
+    public String parametersToString(){
+        List<String> params = new ArrayList<>();
+        params.add(String.format("rangeId=%s", this.rangeReference.string()));
+        params.add(String.format("modelId=%s", this.modelReference.string()));
+        return super.parametersToString() + ", " + String.join(", ", params);
     }
 
     @Override
     public String getChangeKind() {
-        return SEDMLTags.SET_VALUE_KIND;
+        return SedMLTags.SET_VALUE_KIND;
     }
 
     @Override
     public String getElementName() {
-        return SEDMLTags.SET_VALUE;
+        return SedMLTags.SET_VALUE;
     }
 
     @Override

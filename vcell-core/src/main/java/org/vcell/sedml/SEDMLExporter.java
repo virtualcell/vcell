@@ -82,7 +82,7 @@ public class SEDMLExporter {
 
 	private int sedmlLevel = 1;
 	private int sedmlVersion = 2;
-	private SedMLDataClass sedmlModel = null;
+	private SedMLDataContainer sedmlModel = null;
 	private cbit.vcell.biomodel.BioModel vcBioModel = null;
 	private String jobId = null;
 	private ArrayList<String> modelFilePathStrAbsoluteList = new ArrayList<String>();
@@ -138,7 +138,7 @@ public class SEDMLExporter {
 		final String VCML_NS_PREFIX = "vcml";
 		
 		List<Namespace> nsList = new ArrayList<>();
-		Namespace ns = Namespace.getNamespace(SEDMLTags.MATHML_NS_PREFIX, SEDMLTags.MATHML_NS);
+		Namespace ns = Namespace.getNamespace(SedMLTags.MATHML_NS_PREFIX, SedMLTags.MATHML_NS);
 		nsList.add(ns);
 		ns = Namespace.getNamespace(VCML_NS_PREFIX, VCML_NS);
 		nsList.add(ns);
@@ -354,8 +354,8 @@ public class SEDMLExporter {
 			Plot2D sedmlPlot2d = new Plot2D(plot2dId, plotName);
 			Report sedmlReport = new Report(reportId, plotName);
 
-			sedmlPlot2d.setNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-			sedmlReport.setNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+			sedmlPlot2d.setNotes(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+			sedmlReport.setNotes(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
 			DataGenerator dgtime = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef);
 			String xDataRef = dgtime.getId();
 			String xDatasetXId = "__data_set__" + plot2dId + dgtime.getId();
@@ -393,8 +393,8 @@ public class SEDMLExporter {
 				Plot3D sedmlPlot3d = new Plot3D(plot3dId, plotName);
 				Report sedmlReport = new Report(reportId, plotName);
 
-				sedmlPlot3d.setNote(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-				sedmlReport.setNote(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+				sedmlPlot3d.setNotes(createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
+				sedmlReport.setNotes(createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
 				DataGenerator dgtime = sedmlModel.getDataGeneratorWithId(DATAGENERATOR_TIME_NAME + "_" + taskRef);
 				String xDataRef = dgtime.getId();
 				String xDatasetXId = "__data_set__" + plot3dId + dgtime.getId();
@@ -517,7 +517,7 @@ public class SEDMLExporter {
 		Algorithm sedmlAlgorithm = new Algorithm(kiSAOIdStr);
 		Notes an = createNotesElement("");	// we show the description of kisao terms for AlgorithmParameters as notes
 											// for L1V4 and up, AlgorithmParameters has a "name" field we can use instead
-		sedmlAlgorithm.setNote(an);
+		sedmlAlgorithm.setNotes(an);
 		TimeBounds vcSimTimeBounds = simTaskDesc.getTimeBounds();
 		double startingTime = vcSimTimeBounds.getStartingTime();
 		String simName = simTaskDesc.getSimulation().getName();
@@ -659,7 +659,7 @@ public class SEDMLExporter {
 
 		// add a note to utcSim to indicate actual solver name
 		String simNotesStr = "Actual Solver Name : '" + vcSolverDesc.getDisplayLabel() + "'.";  
-		utcSim.setNote(createNotesElement(simNotesStr));
+		utcSim.setNotes(createNotesElement(simNotesStr));
 		sedmlModel.addSimulation(utcSim);
 		return utcSim;
 	}
@@ -1060,7 +1060,7 @@ public class SEDMLExporter {
 	private void addNotesChild(Notes note, String kisao, String desc) {
 		Element sub = new Element("AlgoritmParameter", "http://www.biomodels.net/kisao/KISAO_FULL#");
 		sub.setAttribute(TokenMangler.mangleToSName(kisao), desc);
-		note.getNotesElement().addContent(sub);
+		note.getNotesElements().addContent(sub);
 	}
 
 	public static SymbolTableEntry getSymbolTableEntryForModelEntity(MathSymbolMapping mathSymbolMapping, String paramName) throws MappingException {

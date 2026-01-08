@@ -1,7 +1,7 @@
 package org.jlibsedml.components;
 
 import org.jlibsedml.SedMLElementFactory;
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
 import org.jlibsedml.SEDMLVisitor;
 
 /**
@@ -9,13 +9,13 @@ import org.jlibsedml.SEDMLVisitor;
  *  either ComputeChange or Variable elements.
  *
  */
-public final class Parameter extends AbstractIdentifiableElement {
-	
-	@Override
-	public String toString() {
-		return "Parameter [name=" + getName() + ", value=" + value + ", getId()="
-				+ getId() + "]";
-	}
+public final class Parameter extends SedBase {
+
+
+    @Override
+    public String parametersToString() {
+        return super.parametersToString() + ", value=" + value;
+    }
 	
 	public  boolean accept(SEDMLVisitor visitor){
         return visitor.visit(this);
@@ -41,11 +41,10 @@ public final class Parameter extends AbstractIdentifiableElement {
 	 * @param value the Parameter value.
 	 * @throws IllegalArgumentException if id or value is null or the empty string.
 	 */
-	public Parameter(String id, String name, double value) {
+	public Parameter(SId id, String name, double value) {
 		super(id,name);
 		if(SedMLElementFactory.getInstance().isStrictCreation()){
             SedGeneralClass.checkNoNullArgs(value);
-            SedGeneralClass.stringsNotEmpty(id);
 		}		
 		this.value = value;
 	}
@@ -78,6 +77,6 @@ public final class Parameter extends AbstractIdentifiableElement {
 
 	@Override
 	public String getElementName() {
-		return SEDMLTags.DATAGEN_ATTR_PARAMETER;
+		return SedMLTags.DATAGEN_ATTR_PARAMETER;
 	}
 }

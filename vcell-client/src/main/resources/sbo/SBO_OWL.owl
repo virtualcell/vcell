@@ -4755,7 +4755,7 @@ reactants. The enzyme-inhibitor complex does retain some basal level of activity
     <rdfs:subClassOf>
       <owl:Class rdf:about="SBO_0000557"/>
     </rdfs:subClassOf>
-    <rdfs:comment>Annotation which does not comply with, or is not restricted by, any rules in its construction. Examples would include free text annotations.</rdfs:comment>
+    <rdfs:comment>Annotation which does not comply with, or is not restricted by, any rules in its construction. Examples would include free text annotation.</rdfs:comment>
     <rdfs:label>uncontrolled annotation</rdfs:label>
   </owl:Class>
   <owl:Class rdf:about="SBO_0000154">

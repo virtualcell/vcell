@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.jdom2.Document;
+import org.jlibsedml.SedMLDataContainer;
 import org.jlibsedml.components.model.Model;
-import org.jlibsedml.SEDMLTags;
-import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.SedMLTags;
 import org.jlibsedml.SedMLError;
 import org.jlibsedml.SedMLError.ERROR_SEVERITY;
 import org.jlibsedml.XMLException;
@@ -25,9 +25,9 @@ import org.jlibsedml.XMLException;
  * is invalid as both models use each other as source references.
  */
 public class ModelCyclesDetector extends AbstractDocumentValidator {
-    private SedMLDataClass sedml;
+    private SedMLDataContainer sedml;
 
-    public ModelCyclesDetector(SedMLDataClass sedml, Document doc) {
+    public ModelCyclesDetector(SedMLDataContainer sedml, Document doc) {
         super(doc);
         this.sedml = sedml;
     }
@@ -46,7 +46,7 @@ public class ModelCyclesDetector extends AbstractDocumentValidator {
             while (sedml.getModelWithId(src) != null) {
                 String newID = sedml.getModelWithId(src).getId();
                 if (ids.contains(newID)) {
-                    int line = getLineNumberOfError(SEDMLTags.MODEL_TAG, model);
+                    int line = getLineNumberOfError(SedMLTags.MODEL_TAG, model);
                     errs.add(new SedMLError(line,
                             "Cycles detected in source references for model "
                                     + newID + " and "

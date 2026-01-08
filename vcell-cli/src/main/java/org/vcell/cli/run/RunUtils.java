@@ -150,7 +150,7 @@ public class RunUtils {
         return yi;
     }
 
-    public static HashMap<String, File> generateReportsAsCSV(SedMLDataClass sedml, Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults, File outDirForCurrentSedml) {
+    public static HashMap<String, File> generateReportsAsCSV(SedMLDataContainer sedml, Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults, File outDirForCurrentSedml) {
         // finally, the real work
         HashMap<String, File> reportsHash = new HashMap<>();
         for (Output sedmlOutput : sedml.getOutputs()) {

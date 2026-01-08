@@ -195,7 +195,7 @@ a biological device demonstrating desired behaviour.
       <listOfFunctionDefinitions>
       <functionDefinition id="rateOf" metaid="ec33b9b5-838e-4560-af2b-f2014752795c">
         <annotation>
-          <symbols xmlns="http://sbml.org/annotations/symbols" definition="http://en.wikipedia.org/wiki/Derivative"/>
+          <symbols xmlns="http://sbml.org/annotation/symbols" definition="http://en.wikipedia.org/wiki/Derivative"/>
         </annotation>
         <math xmlns="http://www.w3.org/1998/Math/MathML">        
           <lambda>

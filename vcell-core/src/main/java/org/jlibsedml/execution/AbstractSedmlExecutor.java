@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.jlibsedml.SedMLDataClass;
+import org.jlibsedml.SedMLDataContainer;
 import org.jlibsedml.components.task.AbstractTask;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
 import org.jlibsedml.components.model.Model;
@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public abstract class AbstractSedmlExecutor {
-    protected final SedMLDataClass sedml;
+    protected final SedMLDataContainer sedml;
     private final Output output;
 
     private List<ExecutionStatusElement> failureMessages = new ArrayList<ExecutionStatusElement>();
@@ -65,13 +65,13 @@ public abstract class AbstractSedmlExecutor {
     /**
      * 
      * @param model
-     *            A non-null {@link SedMLDataClass} model
+     *            A non-null {@link SedMLDataContainer} model
      * @param output
      *            An {@link Output} which we want to reproduce.
      * @throws IllegalArgumentException
      *             if <code>model == null</code> or <code>output == null</code>.
      */
-    public AbstractSedmlExecutor(SedMLDataClass model, Output output) {
+    public AbstractSedmlExecutor(SedMLDataContainer model, Output output) {
         if (model == null || output == null) {
             throw new IllegalArgumentException();
         }
@@ -86,13 +86,13 @@ public abstract class AbstractSedmlExecutor {
      * a single time-course and return all variables.
      * 
      * @param model
-     *            A non-null {@link SedMLDataClass} model
+     *            A non-null {@link SedMLDataContainer} model
      * @param task
      *            An {@link Task} which we want to run.
      * @throws IllegalArgumentException
      *             if <code>model == null</code> or <code>output == null</code>.
      */
-    public AbstractSedmlExecutor(SedMLDataClass model, AbstractTask task) {
+    public AbstractSedmlExecutor(SedMLDataContainer model, AbstractTask task) {
         if (model == null || task == null) {
             throw new IllegalArgumentException();
         }

@@ -32,7 +32,7 @@ import java.util.*;
 public class SpatialResultsConverter extends ResultsConverter {
     private final static Logger logger = LogManager.getLogger(SpatialResultsConverter.class);
 
-    public static Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> organizeSpatialResultsBySedmlDataGenerator(SedMLDataClass sedml, Map<TaskJob, SpatialSBMLSimResults> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, MathException, IOException, ExecutionException, DataAccessException {
+    public static Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> organizeSpatialResultsBySedmlDataGenerator(SedMLDataContainer sedml, Map<TaskJob, SpatialSBMLSimResults> spatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, MathException, IOException, ExecutionException, DataAccessException {
         Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> spatialOrganizedResultsMap = new HashMap<>();
         if (spatialResultsHash.isEmpty()) return spatialOrganizedResultsMap;
 
@@ -68,7 +68,7 @@ public class SpatialResultsConverter extends ResultsConverter {
         return spatialOrganizedResultsMap;
     }
 
-    public static Map<Report, List<Hdf5SedmlResults>> prepareSpatialDataForHdf5(SedMLDataClass sedml, Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> spatialResultsMapping,
+    public static Map<Report, List<Hdf5SedmlResults>> prepareSpatialDataForHdf5(SedMLDataContainer sedml, Map<DataGenerator, ValueHolder<LazySBMLSpatialDataAccessor>> spatialResultsMapping,
                                                                                 Set<DataGenerator> allValidDataGenerators, String sedmlLocation, boolean isBioSimMode) {
         Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
         if (spatialResultsMapping.isEmpty()){
@@ -164,7 +164,7 @@ public class SpatialResultsConverter extends ResultsConverter {
         return results;
     }
 
-    private static ValueHolder<LazySBMLSpatialDataAccessor> getSpatialValueHolderForDataGenerator(SedMLDataClass sedml, DataGenerator dataGen,
+    private static ValueHolder<LazySBMLSpatialDataAccessor> getSpatialValueHolderForDataGenerator(SedMLDataContainer sedml, DataGenerator dataGen,
                                                                                                   Map<TaskJob, SpatialSBMLSimResults> spatialResultsHash,
                                                                                                   Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, ExecutionException, MathException, IOException, DataAccessException {
         if (dataGen == null) throw new IllegalArgumentException("Provided Data Generator can not be null!");

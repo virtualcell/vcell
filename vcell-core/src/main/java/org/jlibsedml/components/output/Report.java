@@ -1,87 +1,98 @@
 package org.jlibsedml.components.output;
 
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.listOfConstructs.ListOfDataSets;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * Represents the SED-ML 'Report' element for describing textual output of 
- *  a simulation.
+ * Represents the SED-ML 'Report' element for describing textual output of
+ * a simulation.
+ *
  * @author radams
  *
  */
 public final class Report extends Output {
 
-	private ArrayList<DataSet> listOfDataSets;
+    private final ListOfDataSets listOfDataSets;
 
-		/**
-		 * 
-		 * @param id A unique <code>String</code> identifier for this object.
-		 * @param name An optional <code>String</code> name for this object.
-		 */
-	   public Report(String id, String name) {
-		   super(id, name);
-		   listOfDataSets = new ArrayList<DataSet>();
-	   }
-	   
-	   @Override
-		public String getElementName() {
-			return SEDMLTags.OUTPUT_REPORT;
-		}
-	   
-	   /**
-	    * Getter for a read-only list of {@link DataSet} objects contained in this report.
-	    * @return non-null but possibly empty List<DataSet> .
-	    */
-	   public List<DataSet> getListOfDataSets() {
-		   return Collections.unmodifiableList(listOfDataSets);
-	   }
-	   
-	   /**
-		 * Adds a {@link DataSet} to this object's list of DataSets, if not already present.
-		 * @param dataSet A non-null {@link DataSet} element
-		 * @return <code>true</code> if dataSet added, <code>false </code> otherwise.
-		 */
-		public boolean addDataSet(DataSet dataSet ){
-			if(!listOfDataSets.contains(dataSet))
-				return listOfDataSets.add(dataSet);
-			return false;
-		}
-		
-		  /**
-		 * Removes a {@link DataSet} from this object's list of DataSets.
-		 * @param dataSet A non-null {@link DataSet} element
-		 * @return <code>true</code> if dataSet removed, <code>false </code> otherwise.
-		 */
-		public boolean removeDataSet(DataSet dataSet ){
-			
-				return listOfDataSets.remove(dataSet);
-			
-		}
-	   
-		/**
-	     * Gets the type of this output.
-	     * 
-	     * @return SEDMLTags.REPORT_KIND
-	     */
-	   public String getKind() {
-		   return SEDMLTags.REPORT_KIND;
-	   }
+    /**
+     *
+     * @param id   A unique <code>String</code> identifier for this object.
+     * @param name An optional <code>String</code> name for this object.
+     */
+    public Report(SId id, String name) {
+        super(id, name);
+        this.listOfDataSets = new ListOfDataSets();
+    }
 
-	@Override
-	public List<String>  getAllDataGeneratorReferences() {
-		List<String> rc = new ArrayList<String>();
-		for (DataSet d : listOfDataSets){
-			rc.add(d.getDataReference());
-		}
-		return rc;
-	}
+    @Override
+    public String getElementName() {
+        return SedMLTags.OUTPUT_REPORT;
+    }
 
-	@Override
-	public List<String> getAllIndependentDataGeneratorReferences() {
-		return Collections.emptyList();
-	}
-	   
+    /**
+     * Getter for a read-only list of {@link DataSet} objects contained in this report.
+     *
+     * @return non-null but possibly empty List<DataSet> .
+     */
+    public List<DataSet> getListOfDataSets() {
+        return this.listOfDataSets.getContents();
+    }
+
+    /**
+     * Adds a {@link DataSet} to this object's list of DataSets, if not already present.
+     *
+     * @param dataSet A non-null {@link DataSet} element
+     */
+    public void addDataSet(DataSet dataSet) {
+        this.listOfDataSets.addContent(dataSet);
+    }
+
+    /**
+     * Removes a {@link DataSet} from this object's list of DataSets.
+     *
+     * @param dataSet A non-null {@link DataSet} element
+     */
+    public void removeDataSet(DataSet dataSet) {
+        this.listOfDataSets.removeContent(dataSet);
+    }
+
+    /**
+     * Gets the type of this output.
+     *
+     * @return SEDMLTags.REPORT_KIND
+     */
+    public String getKind() {
+        return SedMLTags.REPORT_KIND;
+    }
+
+    @Override
+    public Set<SId> getAllDataGeneratorReferences() {
+        return this.listOfDataSets.getContents().stream().map(DataSet::getDataReference).collect(Collectors.toSet());
+    }
+
+
+    /**
+     * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
+     * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
+     * <br\>
+     * e.g.: `super.parametersToString() + ", " + String.format(...)`
+     *
+     * @return the parameters and their values, listed in string form
+     */
+    @Override
+    public String parametersToString() {
+        // SEE ORIGINAL PARENT!!
+        List<String> params = new ArrayList<>();
+        List<String> dataSetParams = new ArrayList<>();
+        for (DataSet dataSet : this.getListOfDataSets())
+            dataSetParams.add(dataSet.getId() != null ? dataSet.getIdAsString() : '[' + dataSet.parametersToString() + ']');
+        params.add(String.format("dataSets={%s}", String.join(",", dataSetParams)));
+        return super.parametersToString() + ", " + String.join(", ", params);
+    }
 }

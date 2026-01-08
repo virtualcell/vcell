@@ -5,7 +5,7 @@ import java.util.Iterator;
 import org.jdom2.Document;
 import org.jdom2.filter.ElementFilter;
 import org.jdom2.located.LocatedElement;
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
 
 class LineFinderUtil {
 	private Document doc;
@@ -24,8 +24,8 @@ class LineFinderUtil {
 				.hasNext();) {
 			LocatedElement e = (LocatedElement) iter.next();
 			if (e.getName().equals(elName)
-					&& e.getAttribute(SEDMLTags.MODEL_ATTR_ID) != null
-					&& e.getAttribute(SEDMLTags.MODEL_ATTR_ID).getValue().equals(elID)) {
+					&& e.getAttribute(SedMLTags.MODEL_ATTR_ID) != null
+					&& e.getAttribute(SedMLTags.MODEL_ATTR_ID).getValue().equals(elID)) {
 				return e.getLine();
 			}
 
@@ -39,8 +39,8 @@ for (Iterator iter = doc.getDescendants(new ElementFilter()); iter
 		.hasNext();) {
 	LocatedElement e = (LocatedElement) iter.next();
 	if (e.getName().equals(elName)
-			&& e.getAttribute(SEDMLTags.MODEL_ATTR_ID) != null
-			&& e.getAttribute(SEDMLTags.MODEL_ATTR_ID).getValue().equals(elID)) {
+			&& e.getAttribute(SedMLTags.MODEL_ATTR_ID) != null
+			&& e.getAttribute(SedMLTags.MODEL_ATTR_ID).getValue().equals(elID)) {
 		return e.getLine();
 	}
 

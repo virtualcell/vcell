@@ -281,7 +281,7 @@ public class BiosimulationLog implements AutoCloseable {
 
         List<SedDocumentLog> sedDocumentLogs = new ArrayList<>();
         for (SedMLDocument sedmlDoc : sedmlDocs) {
-            SedMLDataClass sedmlModel = sedmlDoc.getSedMLModel();
+            SedMLDataContainer sedmlModel = sedmlDoc.getSedMLModel();
 
             SedDocumentLog sedDocumentLog = new SedDocumentLog();
             sedDocumentLog.location = sedmlModel.getFileName();

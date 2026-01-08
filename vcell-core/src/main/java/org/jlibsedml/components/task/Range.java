@@ -1,11 +1,16 @@
 package org.jlibsedml.components.task;
 
-import org.jlibsedml.components.AbstractIdentifiableElement;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
 
-public abstract class Range extends AbstractIdentifiableElement {
+public abstract class Range extends SedBase {
 
-    public Range(String id) {
-        super(id, "");
+    public Range(SId id) {
+        this(id, "");
+    }
+
+    public Range(SId id, String name) {
+        super(id, name);
     }
     /**
      * Gets the number of elements in this range
