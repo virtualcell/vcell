@@ -769,8 +769,15 @@ public class SsldUtils {
             boolean reversible = false;
             Molecule ssldTransitionMolecule = ssldReaction.getMolecule();
             Molecule ssldConditionalMolecule = ssldReaction.getConditionalMolecule();   //
-            String location = ssldTransitionMolecule.getLocation(); // reaction happens in the same structure, no transport
-            Structure structure = model.getStructure(location);
+            String transitionalMoleculeLocation = ssldTransitionMolecule.getLocation();
+            String conditionalMoleculeLocation = ssldConditionalMolecule != null ? ssldConditionalMolecule.getLocation() : null;
+            Structure structure;
+            if(conditionalMoleculeLocation != null && conditionalMoleculeLocation.contentEquals(SystemGeometry.MEMBRANE)) {
+                // if the conditional molecule is on the membrane, the reaction must happen on the membrane
+                structure = model.getStructure(SystemGeometry.MEMBRANE);
+            } else {
+                structure = model.getStructure(transitionalMoleculeLocation);
+            }
 
             double ssldKf = ssldReaction.getRate();
             Expression kf = new Expression(ssldKf);     // the unit is s-1

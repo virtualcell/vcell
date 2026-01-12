@@ -990,9 +990,12 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 		}
 
 		// all compartmental reactions must have all reactants, all products and the reaction located in the same compartment
+		// things are different with membrane participants when reaction must be on membrane too, we deal with that elsewhere
+		boolean hasMembraneParticipants = false;
 		Set<Structure> participantStructureSet = new LinkedHashSet<>();
 		for(ReactionRuleParticipant rrp : reactionRule.getReactionRuleParticipants()) {
 			if(SpringStructureEnum.Membrane.columnName.equals(rrp.getStructure().getName())) {
+				hasMembraneParticipants = true;
 				break;	// we deal with membrane participants reactions separately
 			}
 			participantStructureSet.add(rrp.getStructure());
@@ -1002,7 +1005,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 			String tip = msg;
 			issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 			return;
-		} else if(participantStructureSet.size() == 1) {	// reaction must also be here
+		} else if(participantStructureSet.size() == 1 && !hasMembraneParticipants) {	// reaction must also be here
 			if(!participantStructureSet.contains(reactionRule.getStructure())) {
 				String msg = SpringSaLaDMsgEachReactionMust;
 				String tip = msg;
@@ -1025,7 +1028,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 						if(SpeciesContextSpec.AnchorSiteString.equals(mcReactant.getName())) {
 							String msg = SpringSaLaDMsgAnchorCannotBePart;
 							String tip = msg;
-							issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+							issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 							return;
 						}
 					}

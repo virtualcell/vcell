@@ -1010,7 +1010,7 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 				if(!mt.getAnchors().contains(rp.getStructure())) {
 					// we check the location of the reactants' structure (not the structure where the reaction rule is located)
 					String message = "The Structure " + rp.getStructure().getName() + " is not allowed for the Molecule " + mt.getDisplayName();
-					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
 				}
 			}
 		}
@@ -1023,7 +1023,7 @@ public class ReactionRule implements RbmObject, Serializable, ModelProcess, Prop
 				}
 				if(!mt.getAnchors().contains(pp.getStructure())) {
 					String message = "The Structure " + pp.getStructure().getName() + " is not allowed for the Molecule " + mt.getDisplayName();
-					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.ERROR));
+					issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, message, Issue.Severity.WARNING));
 				}
 			}
 		}	// ----------------------------------------------------------------------------------------------------
