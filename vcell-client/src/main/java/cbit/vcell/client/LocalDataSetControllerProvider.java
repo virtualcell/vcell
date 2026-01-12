@@ -86,6 +86,11 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 			return dataServerImpl.getODEData(user, vcdataID);
 		}
 
+		@Override
+		public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException {
+			return dataServerImpl.getLangevinBatchResultSet(user, vcdataID);
+		}
+
 		public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdataID, double time) throws DataAccessException {
 			return dataServerImpl.getParticleDataBlock(user, vcdataID, time);
 		}

@@ -244,7 +244,12 @@ public class DisplayTimeSeriesOp {
 			public ODESimData getODEData(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException {
 				return null;
 			}
-			
+
+			@Override
+			public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException {
+				return null;
+			}
+
 			@Override
 			public CartesianMesh getMesh(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException {
 				return mesh;

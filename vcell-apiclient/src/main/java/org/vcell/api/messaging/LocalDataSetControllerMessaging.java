@@ -217,8 +217,22 @@ public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throw
 	}
 }
 
+	@Override
+	public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException {
+		if (lg.isTraceEnabled()) lg.trace("LocalDataSetControllerMessaging.getODEData(vcdID=" + vcdataID + ")");
+		try {
+			return dataServerProxy.getLangevinBatchResultSet(vcdataID);
+		} catch (DataAccessException e){
+			lg.error(e.getMessage(),e);
+			throw e;
+		} catch (Throwable e){
+			lg.error(e.getMessage(),e);
+			throw new RuntimeException(e.getMessage());
+		}
+	}
 
-/**
+
+	/**
  * This method was created by a SmartGuide.
  * @return double[]
  * @param time double

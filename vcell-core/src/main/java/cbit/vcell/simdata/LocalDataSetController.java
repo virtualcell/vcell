@@ -15,6 +15,7 @@ import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.io.FieldData;
 import cbit.vcell.field.io.FieldDataShape;
 import cbit.vcell.field.io.FieldDataSpec;
+import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.server.DataSetController;
 import cbit.vcell.server.VCellConnection;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -125,8 +126,13 @@ public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throw
 	return dataServerImpl.getODEData(user, vcdID);
 }
 
+	@Override
+	public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException {
+		return dataServerImpl.getLangevinBatchResultSet(user, vcdataID);
+	}
 
-/**
+
+	/**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.server.DataSet
  * @param time double

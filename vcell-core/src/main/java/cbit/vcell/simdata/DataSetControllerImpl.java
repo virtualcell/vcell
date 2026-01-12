@@ -36,6 +36,7 @@ import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePoi
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
+import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
@@ -2398,6 +2399,26 @@ public ODEDataBlock getODEDataBlock(VCDataIdentifier vcdID) throws DataAccessExc
 	}
 }
 
+public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) throws DataAccessException {
+	if (lg.isTraceEnabled()) lg.trace("DataSetControllerImpl.getLangevinBatchResultSet()");
+	try {
+		VCData simData = getVCData(vcdID);
+		File mean_file = null;
+		File max_file = null;
+		File min_file = null;
+		File stddev_file = null;
+		int keepAtMost = 10000;
+		File functionsFile = null;
+		ODESimData odeSimData_mean = ODESimData.readIDADataFile(vcdID, mean_file, keepAtMost, functionsFile);
+		ODESimData odeSimData_max = ODESimData.readIDADataFile(vcdID, max_file, keepAtMost, functionsFile);
+		ODESimData odeSimData_std = ODESimData.readIDADataFile(vcdID, stddev_file, keepAtMost, functionsFile);
+		ODESimData odeSimData_min = ODESimData.readIDADataFile(vcdID, min_file, keepAtMost, functionsFile);
+		return new LangevinBatchResultSet(odeSimData_mean, odeSimData_max, odeSimData_min, odeSimData_std);
+
+	} catch (IOException e){
+		throw new DataAccessException(e.getMessage(), e);
+	}
+}
 public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double time) throws DataAccessException {
 	if (lg.isTraceEnabled()) lg.trace("DataSetControllerImpl.getParticleDataBlock(" + time + ")");
 
