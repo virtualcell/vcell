@@ -50,8 +50,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -1262,19 +1264,19 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 } catch (Exception e) {
                     code = HttpURLConnection.HTTP_INTERNAL_ERROR;
                 }
-
                 if (code != HttpURLConnection.HTTP_OK) {
                     getIconBar().setEnabled(false);
                     getIconBar().setVisible(false);
                     return;
                 }
 
+                fetchNotificationTitleAsync();
                 getIconBar().setEnabled(true);
                 getIconBar().setVisible(true);
 
                 Timer blinkTimer = new Timer(500, new ActionListener() {
                     private int count = 0;
-                    private final int maxCount = 110;      // 110 (55 seconds)
+                    private final int maxCount = 90;      // 110 (55 seconds)
 
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -1298,7 +1300,59 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
             }
         }.execute();
     }
+    private void fetchNotificationTitleAsync() {
+        new SwingWorker<String, Void>() {
 
+            @Override
+            protected String doInBackground() {
+                try {
+                    URL url = new URL(notificationsUrl);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("GET");   // need GET to read body
+                    conn.setConnectTimeout(5000);
+                    conn.setReadTimeout(5000);
+
+                    try (BufferedReader br = new BufferedReader(
+                            new InputStreamReader(conn.getInputStream()))) {
+
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            sb.append(line);
+                        }
+                        String html = sb.toString();
+                        return extractTitle(html);   // may return null
+                    }
+                } catch (Exception ignored) {
+                    return null;   // swallow silently
+                }
+            }
+            @Override
+            protected void done() {
+                try {
+                    String title = get();
+                    if (title != null && !title.isEmpty()) {
+                        iconTextString = title;
+                    }
+                } catch (Exception ignored) {
+                    // swallow silently
+                }
+            }
+        }.execute();
+    }
+    private String extractTitle(String html) {
+        if (html == null) return null;
+
+        String lower = html.toLowerCase();      // case-insensitive search for <title>...</title>
+        int start = lower.indexOf("<title>");
+        int end   = lower.indexOf("</title>");
+
+        if (start == -1 || end == -1 || end <= start) {
+            return null;
+        }
+        // extract the actual title text
+        return html.substring(start + "<title>".length(), end).trim();
+    }
     private void fadeOutIconText(JLabel label) {
         final int steps = 20;          // number of fade increments
         final int delay = 50;          // ms between steps (total ~1 second)
