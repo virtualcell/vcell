@@ -1175,7 +1175,7 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 gbc = new GridBagConstraints();
                 gbc.gridx = gridx;
                 gbc.gridy = 0;
-                gbc.insets = new Insets(2, 5, 2, 2);
+                gbc.insets = new Insets(2, 5, 2, 10);
                 this.ivjStatusBarPane.add(this.getIconBar(), gbc);
 
                 gridx++;
@@ -1207,7 +1207,8 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         if (this.warningText == null) {
             try {
                 this.warningText = new JLabel();
-                this.warningText.setName("");
+                this.warningText.setName("WarningBar");
+                this.warningText.setText("");
             } catch (java.lang.Throwable ivjExc) {
                 this.handleException(ivjExc);
             }
@@ -1215,13 +1216,19 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         return this.warningText;
     }
 
+    private String iconTextString = "Administrator Notification";
+    private String iconToolTipString = "View VCell Administrator Notification";
+    private Color darkRed = new Color(139, 0, 0);
     public JLabel getIconBar() {
         if (this.iconText == null) {
             try {
                 this.iconText = new JLabel();
-                this.iconText.setName("");
+                this.iconText.setName("IconBarLabel");
                 this.iconText.setIcon(VCellIcons.noteRedIcon);
-                this.iconText.setToolTipText("View VCell Administrator Notification");
+                this.iconText.setText(iconTextString);
+                this.iconText.setForeground(darkRed);
+                this.iconText.setHorizontalTextPosition(SwingConstants.RIGHT);
+                this.iconText.setToolTipText(iconToolTipString);
             } catch (java.lang.Throwable ivjExc) {
                 this.handleException(ivjExc);
             }
@@ -1229,47 +1236,94 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
         return this.iconText;
     }
 
-    //private static final String notificationsUrl = "//cfs05.cam.uchc.edu/vcell/apache_webroot/htdocs/webstart/VCell_alert/VCell_Alert.html";
     private void checkForNotifications() {
-        int code = HttpURLConnection.HTTP_BAD_REQUEST;
-        try {
-            URL u = new URL(notificationsUrl);
-            HttpURLConnection huc = (HttpURLConnection) u.openConnection();
-            huc.setRequestMethod("HEAD");  // probably cheaper than  huc.setRequestMethod ("GET");
-            huc.connect();
-            code = huc.getResponseCode();
-        } catch (IOException e) {
-            // we just eat the exception
-//		e.printStackTrace();
-            code = HttpURLConnection.HTTP_INTERNAL_ERROR;
-        }
-        if (code != HttpURLConnection.HTTP_OK) {
-            this.getIconBar().setEnabled(false);
-            this.getIconBar().setVisible(false);
-        } else {
-            this.getIconBar().setEnabled(true);
-            this.getIconBar().setVisible(true);
+        new SwingWorker<Integer, Void>() {
 
-            Timer blinkTimer = new Timer(500, new ActionListener() {
-                private int count = 0;
-                private final int maxCount = 110;                                // 55 seconds
-
-                public void actionPerformed(ActionEvent e) {
-                    if (this.count >= this.maxCount) {
-                        DocumentWindow.this.getIconBar().setIcon(VCellIcons.noteRedIcon);    // must remain on the noteRedIcon
-                        ((Timer) e.getSource()).stop();
-                    } else {
-                        if (this.count % 2 == 0) {
-                            DocumentWindow.this.getIconBar().setIcon(VCellIcons.noteRedIcon);
-                        } else {
-                            DocumentWindow.this.getIconBar().setIcon(VCellIcons.noteWhiteIcon);
-                        }
-                        this.count++;
-                    }
+            @Override
+            protected Integer doInBackground() {
+                int code = HttpURLConnection.HTTP_BAD_REQUEST;
+                try {
+                    URL u = new URL(notificationsUrl);
+                    HttpURLConnection huc = (HttpURLConnection) u.openConnection();
+                    huc.setRequestMethod("HEAD");
+                    huc.connect();
+                    code = huc.getResponseCode();
+                } catch (IOException e) {
+                    code = HttpURLConnection.HTTP_INTERNAL_ERROR;
                 }
-            });
-            blinkTimer.start();
-        }
+                return code;
+            }
+
+            @Override
+            protected void done() {
+                int code;
+                try {
+                    code = get();
+                } catch (Exception e) {
+                    code = HttpURLConnection.HTTP_INTERNAL_ERROR;
+                }
+
+                if (code != HttpURLConnection.HTTP_OK) {
+                    getIconBar().setEnabled(false);
+                    getIconBar().setVisible(false);
+                    return;
+                }
+
+                getIconBar().setEnabled(true);
+                getIconBar().setVisible(true);
+
+                Timer blinkTimer = new Timer(500, new ActionListener() {
+                    private int count = 0;
+                    private final int maxCount = 110;      // 110 (55 seconds)
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        getIconBar().setText(iconTextString);
+                        if (count >= maxCount) {    // end of blinking, keep the icon, remove the text
+//                            getIconBar().setText("");
+                            getIconBar().setIcon(VCellIcons.noteRedIcon);
+                            fadeOutIconText(getIconBar());
+                            ((Timer) e.getSource()).stop();
+                            return;
+                        }
+                        if (count % 2 == 0) {
+                            getIconBar().setIcon(VCellIcons.noteRedIcon);
+                        } else {
+                            getIconBar().setIcon(VCellIcons.noteWhiteIcon);
+                        }
+                        count++;
+                    }
+                });
+                blinkTimer.start();
+            }
+        }.execute();
+    }
+
+    private void fadeOutIconText(JLabel label) {
+        final int steps = 20;          // number of fade increments
+        final int delay = 50;          // ms between steps (total ~1 second)
+        final int r = darkRed.getRed();
+        final int g = darkRed.getGreen();
+        final int b = darkRed.getBlue();
+
+        Timer fadeTimer = new Timer(delay, null);
+        fadeTimer.addActionListener(new ActionListener() {
+            int step = 0;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                float alpha = 1.0f - (float) step / steps;
+                if (alpha <= 0f) {
+                    label.setText("");     // remove text completely
+                    fadeTimer.stop();
+                    return;
+                }
+                Color faded = new Color(r, g, b, (int) (alpha * 255));  // create same color with decreasing alpha
+                label.setForeground(faded);
+                step++;
+            }
+        });
+        fadeTimer.start();
     }
 
     private javax.swing.JMenuItem getTestingFrameworkMenuItem() {
