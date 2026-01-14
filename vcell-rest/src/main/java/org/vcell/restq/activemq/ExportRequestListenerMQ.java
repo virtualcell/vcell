@@ -82,6 +82,7 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
 
     public void addExportJobToQueue(ExportJob exportJob) {
         logger.debug("Export job added to queue: {} for user: {}", exportJob.id(), exportJob.user().getName());
+        logger.debug("Export job details: {}", exportJob);
         try{
             exportStatusCreator.addServerExportListener(exportJob);
             exportJobEmitter.send(mapper.writeValueAsString(exportJob));
@@ -132,6 +133,7 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
     }
 
     private ExportSpecs getExportSpecs(ExportJob exportJob) throws SQLException, DataAccessException {
+        logger.debug("Geometry specs: {}", exportJob.geometrySpecs());
         GeometrySpecs geometrySpecs = new GeometrySpecs(exportJob.geometrySpecs().selections(), exportJob.geometrySpecs().axis(),
                 exportJob.geometrySpecs().sliceNumber(), exportJob.geometrySpecs().geometryMode());
         Map<Integer, String> subVolume = exportJob.formatSpecificSpecs() instanceof N5Specs n5ExportRequest ?
