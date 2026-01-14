@@ -134,8 +134,12 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
 
     private ExportSpecs getExportSpecs(ExportJob exportJob) throws SQLException, DataAccessException {
         logger.debug("Geometry specs: {}", exportJob.geometrySpecs());
-        GeometrySpecs geometrySpecs = new GeometrySpecs(exportJob.geometrySpecs().selections(), exportJob.geometrySpecs().axis(),
-                exportJob.geometrySpecs().sliceNumber(), exportJob.geometrySpecs().geometryMode());
+        GeometrySpecs geometrySpecs = null;
+        if (exportJob.geometrySpecs() != null) {
+            geometrySpecs = new GeometrySpecs(exportJob.geometrySpecs().selections(), exportJob.geometrySpecs().axis(),
+                    exportJob.geometrySpecs().sliceNumber(), exportJob.geometrySpecs().geometryMode());
+        }
+        
         Map<Integer, String> subVolume = exportJob.formatSpecificSpecs() instanceof N5Specs n5ExportRequest ?
                 n5ExportRequest.getSubVolumeMapping() : null;
         HumanReadableExportData humanReadableExportData = new HumanReadableExportData(null,
