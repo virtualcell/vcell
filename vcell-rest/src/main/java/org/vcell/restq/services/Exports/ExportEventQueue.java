@@ -25,10 +25,11 @@ class ExportEventQueue {
 
     public List<MessageExportEvent> getExportEventsPastSpecificTime(User user, Instant time) {
         if (!exportEventQueue.containsKey(user)) {
+            lg.debug("No export events for user {}", user.getName());
             return new ArrayList<>();
         }
         ArrayList<MessageExportEvent> events = exportEventQueue.get(user);
-        lg.debug("All events for user {}: {}", user.getName(), events);
+        lg.debug("All export events for user {}: {}", user.getName(), events);
         int rp = events.size() - 1;
         int lp = 0;
         int middle = rp / 2;
