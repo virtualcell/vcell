@@ -12,6 +12,8 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.*;
 import org.vcell.restclient.ApiClient;
@@ -21,6 +23,7 @@ import org.vcell.restclient.model.*;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
+import org.vcell.restq.handlers.AdminResource;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
@@ -42,6 +45,8 @@ public class ExportRequestTest {
     Integer testPort;
     @Inject
     AgroalConnectionFactory agroalConnectionFactory;
+
+    private static final Logger lg = LogManager.getLogger(ExportRequestTest.class);
 
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
@@ -88,12 +93,15 @@ public class ExportRequestTest {
                 while (allEvents.isEmpty()){
                     Thread.sleep(100);
                     allEvents = exportResourceApi.exportStatus(time);
+                    lg.debug("The number of events found for time {} is 0. Retrying...", time);
                 }
                 ExportEvent eventUnderInspection = allEvents.stream().toList().get(0);
                 Assertions.assertEquals(ExportEnums.ExportProgressType.EXPORT_ASSEMBLING, ExportEnums.ExportProgressType.valueOf(eventUnderInspection.getEventType().getValue()));
                 while (ExportEnums.ExportProgressType.valueOf(eventUnderInspection.getEventType().getValue()) != ExportEnums.ExportProgressType.EXPORT_COMPLETE){
                     allEvents = exportResourceApi.exportStatus(time);
+                    lg.debug("The events retrieved are: {}", allEvents);
                     eventUnderInspection = allEvents.stream().toList().get(allEvents.size() - 1);
+                    lg.debug("The event under inspection is: {}", eventUnderInspection);
                     Thread.sleep(500);
                 }
                 Assertions.assertEquals(ExportProgressType.COMPLETE, eventUnderInspection.getEventType());
