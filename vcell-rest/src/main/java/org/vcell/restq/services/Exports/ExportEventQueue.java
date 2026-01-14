@@ -1,6 +1,9 @@
 package org.vcell.restq.services.Exports;
 
 import cbit.rmi.event.ExportEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.restq.handlers.AdminResource;
 import org.vcell.util.document.User;
 
 import java.time.Instant;
@@ -9,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 class ExportEventQueue {
+    private static final Logger lg = LogManager.getLogger(ExportEventQueue.class);
     private final ConcurrentHashMap<User, ArrayList<MessageExportEvent>> exportEventQueue = new ConcurrentHashMap<>();
 
     public void addExportEvent(ExportEvent exportEvent) {
@@ -21,9 +25,11 @@ class ExportEventQueue {
 
     public List<MessageExportEvent> getExportEventsPastSpecificTime(User user, Instant time) {
         if (!exportEventQueue.containsKey(user)) {
+            lg.trace("No export events for user {}", user.getName());
             return new ArrayList<>();
         }
         ArrayList<MessageExportEvent> events = exportEventQueue.get(user);
+        lg.trace("All export events for user {}: {}", user.getName(), events);
         int rp = events.size() - 1;
         int lp = 0;
         int middle = rp / 2;
