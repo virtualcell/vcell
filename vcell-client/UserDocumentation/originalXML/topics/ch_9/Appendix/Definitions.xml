@@ -36,6 +36,9 @@ Changing the parameter is one context will change the parameter where ever it is
 similar parameter name in a different context will have a unique value.
 </def>
 
+<def target = "def_LangevinDynamics" defLabel = "Langevin Dynamics"> A particle-based, stochastic, simulation method suitable for modeling mesoscopic systems, which are far too large to be modeled with molecular dynamics but which require more detail than obtainable with macroscopic continuum models. Molecules are modeled as a collection of impenetrable spheres (called “sites”) linked by stiff springs.
+</def>
+
 <def target = "def_Mesh" defLabel = "Mesh">
 A VCell mesh is a set of discrete elements (1, 2, or 3 dimensional) defining the spatial domain on which mathematical operations of spatial solvers occur.  
 VCell meshs are regular grids created by dividing space (geometry size) in each dimension for form a lattice of cells (mesh size).  
