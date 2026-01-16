@@ -65,9 +65,9 @@ public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throw
 	return (cbit.vcell.solver.ode.ODESimData)rpc("getODEData",new Object[]{userLoginInfo.getUser(), vcdID});
 }
 
-	public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) throws org.vcell.util.DataAccessException {
-		return (LangevinBatchResultSet)rpc("getLangevinBatchData",new Object[]{userLoginInfo.getUser(), vcdID});
-	}
+public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) throws org.vcell.util.DataAccessException {
+	return (LangevinBatchResultSet)rpc("getLangevinBatchResultSet",new Object[]{userLoginInfo.getUser(), vcdID});
+}
 
 public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double time) throws org.vcell.util.DataAccessException {
 	return (ParticleDataBlock)rpc("getParticleDataBlock",new Object[]{userLoginInfo.getUser(), vcdID,time});

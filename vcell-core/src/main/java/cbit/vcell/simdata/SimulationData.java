@@ -801,6 +801,23 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 	return new ODEDataBlock(odeDataInfo, odeSimData);
 }
 
+	public synchronized File getLangevinFile(LangevinBatchResultSet.LangevinFileType type) throws DataAccessException {
+		refreshLogFile();
+		if (dataFilenames == null) {
+			throw new DataAccessException("Langevin base data filename not read from logfile");
+		}
+
+		String baseFilename = dataFilenames[0];		// SimID_301441123_0_.ida
+
+
+
+		File odeFile = amplistorHelper.getFile(dataFilenames[0]);
+		if (odeFile.exists()) {
+			return odeFile;
+		}
+		throw new DataAccessException("no results are available yet, please wait and try again...");
+	}
+
 
 private synchronized File getODEDataFile() throws DataAccessException {
 	refreshLogFile();

@@ -2399,21 +2399,24 @@ public ODEDataBlock getODEDataBlock(VCDataIdentifier vcdID) throws DataAccessExc
 	}
 }
 
+
 public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) throws DataAccessException {
 	if (lg.isTraceEnabled()) lg.trace("DataSetControllerImpl.getLangevinBatchResultSet()");
 	try {
 		VCData simData = getVCData(vcdID);
-		File mean_file = null;
+		ODEDataInfo odeDataInfo = new ODEDataInfo(vcdID.getOwner(), vcdID.getID(), simData.getDataBlockTimeStamp(ODE_DATA, 0));
+
+		File avg_file = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.Avg);
 		File max_file = null;
 		File min_file = null;
-		File stddev_file = null;
+		File std_file = null;
 		int keepAtMost = 10000;
 		File functionsFile = null;
-		ODESimData odeSimData_mean = ODESimData.readIDADataFile(vcdID, mean_file, keepAtMost, functionsFile);
+		ODESimData odeSimData_avg = ODESimData.readIDADataFile(vcdID, avg_file, keepAtMost, functionsFile);
 		ODESimData odeSimData_max = ODESimData.readIDADataFile(vcdID, max_file, keepAtMost, functionsFile);
-		ODESimData odeSimData_std = ODESimData.readIDADataFile(vcdID, stddev_file, keepAtMost, functionsFile);
+		ODESimData odeSimData_std = ODESimData.readIDADataFile(vcdID, std_file, keepAtMost, functionsFile);
 		ODESimData odeSimData_min = ODESimData.readIDADataFile(vcdID, min_file, keepAtMost, functionsFile);
-		return new LangevinBatchResultSet(odeSimData_mean, odeSimData_max, odeSimData_min, odeSimData_std);
+		return new LangevinBatchResultSet(odeDataInfo, odeSimData_avg, odeSimData_max, odeSimData_min, odeSimData_std);
 
 	} catch (IOException e){
 		throw new DataAccessException(e.getMessage(), e);
