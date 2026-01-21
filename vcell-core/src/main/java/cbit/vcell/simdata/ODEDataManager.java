@@ -180,7 +180,7 @@ private void connect() throws DataAccessException {
 	// clone, so we can operate safely on it (adding/removing user-defined functions) - real remote data is being cached...
 	odeSolverResultSet = new ODESimData(getVCDataIdentifier(),getVCDataManager().getODEData(getVCDataIdentifier()));
 	nFSimMolecularConfigurations = getVCDataManager().getNFSimMolecularConfigurations(getVCDataIdentifier());
-	langevinBatchResultSet = getVCDataManager().getLangevinBatchResultSet(getVCDataIdentifier());
+//	langevinBatchResultSet = getVCDataManager().getLangevinBatchResultSet(getVCDataIdentifier());
 }
 
 private void addOutputFunction(AnnotatedFunction function, ODESolverResultSet odeRS) {
