@@ -11,6 +11,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 
+// post-processing for langevin batch runs is now being handled server-side in the langevin solver
+@Deprecated
 public class LangevinPostProcessor {
 
     public static final String FAILURE_KEY = "FAILURE_KEY";

@@ -3,6 +3,8 @@ package cbit.vcell.simdata;
 import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.solver.*;
 
+// post-processing for langevin batch runs is now being handled server-side in the langevin solver
+@Deprecated
 public class LangevinPostProcessorOutput {
 
     private final Simulation sim;
