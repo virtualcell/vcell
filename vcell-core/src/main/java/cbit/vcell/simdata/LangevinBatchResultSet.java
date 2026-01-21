@@ -14,6 +14,7 @@ public class LangevinBatchResultSet implements Serializable {
     private ODESimData odeSimDataStd;
 
     public enum LangevinFileType {
+
         Avg("_Avg", ".ida"),
         Max("_Max", ".ida"),
         Min("_Min", ".ida"),
@@ -22,33 +23,31 @@ public class LangevinBatchResultSet implements Serializable {
         ClusterMean("_clusters_mean", ".csv"),
         ClusterOverall("_clusters_overall", ".csv");
 
-        private final String type;
+        private final String suffix;
         private final String extension;
 
-        LangevinFileType(String type, String extension) {
-            this.type = type;
+        LangevinFileType(String suffix, String extension) {
+            this.suffix = suffix;
             this.extension = extension;
         }
-
-        public String type() {
-            return type;
+        public String suffix() {
+            return suffix;
         }
-
         public String extension() {
             return extension;
         }
-
         public String buildFilename(String baseName) {
-            return baseName + type + extension;
+            return baseName + suffix + extension;
         }
     }
 
     public LangevinBatchResultSet(
-        ODEDataInfo odeDataInfo,
-        ODESimData odeSimDataAvg,
-        ODESimData odeSimDataMax,
-        ODESimData odeSimDataMin,
-        ODESimData odeSimDataStd) {
+            ODEDataInfo odeDataInfo,
+            ODESimData odeSimDataAvg,
+            ODESimData odeSimDataMax,
+            ODESimData odeSimDataMin,
+            ODESimData odeSimDataStd) {
+
         this.odeDataInfo = odeDataInfo;
         this.odeSimDataAvg = odeSimDataAvg;
         this.odeSimDataMax = odeSimDataMax;
@@ -56,4 +55,40 @@ public class LangevinBatchResultSet implements Serializable {
         this.odeSimDataStd = odeSimDataStd;
     }
 
+    public LangevinBatchResultSet(ODEDataInfo odeDataInfo) {
+        this(odeDataInfo, null, null, null, null);
+    }
+
+    public ODEDataInfo getOdeDataInfo() {
+        return odeDataInfo;
+    }
+
+    public ODESimData getOdeSimDataAvg() {
+        return odeSimDataAvg;
+    }
+    public void setOdeSimDataAvg(ODESimData odeSimDataAvg) {
+        this.odeSimDataAvg = odeSimDataAvg;
+    }
+
+    public ODESimData getOdeSimDataMax() {
+        return odeSimDataMax;
+    }
+    public void setOdeSimDataMax(ODESimData odeSimDataMax) {
+        this.odeSimDataMax = odeSimDataMax;
+    }
+
+    public ODESimData getOdeSimDataMin() {
+        return odeSimDataMin;
+    }
+    public void setOdeSimDataMin(ODESimData odeSimDataMin) {
+        this.odeSimDataMin = odeSimDataMin;
+    }
+
+    public ODESimData getOdeSimDataStd() {
+        return odeSimDataStd;
+    }
+    public void setOdeSimDataStd(ODESimData odeSimDataStd) {
+        this.odeSimDataStd = odeSimDataStd;
+    }
 }
+

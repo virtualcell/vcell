@@ -809,13 +809,21 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 
 		String baseFilename = dataFilenames[0];		// SimID_301441123_0_.ida
 
-
-
-		File odeFile = amplistorHelper.getFile(dataFilenames[0]);
-		if (odeFile.exists()) {
-			return odeFile;
+		// parse base filename, keep the part before the extension
+		int dotIndex = baseFilename.lastIndexOf('.');
+		if (dotIndex <= 0) {
+			throw new DataAccessException("Invalid base filename: " + baseFilename);
 		}
-		throw new DataAccessException("no results are available yet, please wait and try again...");
+		String baseNameWithoutExt = baseFilename.substring(0, dotIndex);
+
+		// add to it the Langevin file type suffix and extension
+		String ourFilename = baseNameWithoutExt + type.suffix() + type.extension();
+
+		File odeFile = amplistorHelper.getFile(ourFilename);
+		if (!odeFile.exists()) {
+			return null;
+		}
+		return odeFile;
 	}
 
 
