@@ -290,6 +290,7 @@ public class SlurmProxyTest {
 	@Test
 	public void testSimJobScriptLangevinBatch() throws IOException, XmlParseException, ExpressionException {
 		setProperty(PropertyLoader.htc_vcellopt_docker_name, "ghcr.io/virtualcell/vcell-opt:7.7.0.39");
+		setProperty(PropertyLoader.htcNodeList, "mantis-040");
 		setProperty(PropertyLoader.vcellSoftwareVersion, "Rel_Version_7.7.0_build_39");
 		setProperty(PropertyLoader.vcellServerIDProperty,"TEST2");
 		setProperty(PropertyLoader.jmsSimHostExternal, "k8s-wn-01.cam.uchc.edu");

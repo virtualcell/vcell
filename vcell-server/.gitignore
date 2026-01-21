@@ -1,1 +1,4 @@
 /.apt_generated_tests/
+/src/test/resources/slurm_fixtures/langevin/scratch/301441123-good.slurm.sub
+/src/test/resources/slurm_fixtures/langevin/scratch/V_ALPHA_302958906_0_0.slurm.sub
+/src/test/resources/slurm_fixtures/langevin/scratch/302561729-bad.slurm.sub
