@@ -1,13 +1,15 @@
 package org.jlibsedml.components.task;
 
-
-import org.jlibsedml.SEDMLVisitor;
 import org.jlibsedml.SedMLTags;
 import org.jlibsedml.components.SId;
 import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.SedGeneralClass;
+import org.jlibsedml.components.model.Change;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
 <listOfSubTasks>
@@ -24,7 +26,7 @@ public class SubTask extends SedBase {
     private static final Logger log = LoggerFactory.getLogger(SubTask.class);
 
     private final SId task;     // SubTask is basically a pointer to another task to run repeatedly; `this.task` is the id of that task.
-    private String order;
+    private final Integer order;
     
     public SubTask(SId task) {
         this(null, null, null, task);
@@ -34,34 +36,23 @@ public class SubTask extends SedBase {
         this(id, name, null, task);
     }
 
-    public SubTask(String order, SId task) {
+    public SubTask(Integer order, SId task) {
         this(null, null, order, task);
     }
 
-    public SubTask(SId id, String name, String order, SId task) {
+    public SubTask(SId id, String name, Integer order, SId task) {
         super(id, name);
         this.order = order;
         SedGeneralClass.checkNoNullArgs(task);
         this.task = task;
         if(order == null) return;
-        try {
-            Integer i = Integer.parseInt(order);    // we just check whether it can be parsed to an int
-            this.order = order;
-        } catch (NumberFormatException e) {
-            log.warn("SubTask: order is not an Integer: " + order);
-            this.order = null;
-        }
-    }
 
-    @Override
-    public boolean accept(SEDMLVisitor visitor) {
-        return true;
     }
 
     public SId getTask() {
         return this.task;
     }
-    public String getOrder() {
+    public Integer getOrder() {
         return this.order;
     }
 
@@ -80,47 +71,6 @@ public class SubTask extends SedBase {
                 this.getTask().string()+ "::" + this.getOrder()).hashCode();
     }
 
-//    public void addDependentTask(SubTask dependentTask) {
-//        if(dependentTask == null || dependentTask.getTask() == null || dependentTask.getTask().equals("")) {
-//            log.warn("dependentTask cant't be null, key can't be null, key can't be empty string");
-//            log.warn("   ...dependent task not added to list");
-//            return;     // dependentTask cant't be null, key can't be null, key can't be ""
-//        }
-//        if(this.getTask().equals(dependentTask.getTask())) {
-//            log.warn("'this' subTask cannot be a dependentTask for itself");
-//            log.warn("   ...dependent task " + dependentTask.getTask() + " not added to list");
-//            return;     // "this" subTask cannot be a dependentTask for itself
-//        }
-//        if(ownerTask != null && ownerTask.getId().equals(dependentTask.getTask())) {
-//            log.warn("the RepeatedTask which owns this subTask cannot be a dependentTask for itself");
-//            log.warn("   ...dependent task " + dependentTask.getTask() + " not added to list");
-//            return;     // the RepeatedTask which owns this subTask cannot be a dependentTask for itself
-//        }
-//        if(!dependentTasks.containsKey(dependentTask.getTask())) {  // no duplicates
-//            dependentTasks.put(dependentTask.getTask(), dependentTask);
-//        } else {
-//            log.warn("dependent task already in dependent task list");
-//            log.warn("   ...dependent task " + dependentTask.getTask() + " not added to list");
-//            return;
-//        }
-//    }
-//    public Map<String, SubTask> getDependentTasks() {
-//        return dependentTasks;
-//    }
-//    public void removeOwnerFromDependentTasksList(RepeatedTask repeatedTask) {
-//        this.ownerTask = repeatedTask;
-//        if(dependentTasks != null && !dependentTasks.isEmpty()) {
-//            for(SubTask dt : dependentTasks.values()) {
-//                if(ownerTask.getId().equals(dt.getTask())) {
-//                    dependentTasks.remove(dt.getTask());
-//                    log.warn("the RepeatedTask which owns this subTask cannot be a dependentTask for itself");
-//                    log.warn("   ...dependent task " + dt.getTask() + " removed from list");
-//                    return;
-//                }
-//            }
-//        }
-//    }
-
     /**
      * Provides a link between the object model and the XML element names
      *
@@ -129,5 +79,18 @@ public class SubTask extends SedBase {
     @Override
     public String getElementName() {
         return SedMLTags.SUBTASK_TAG;
+    }
+
+    @Override
+    public String parametersToString() {
+        List<String> params = new ArrayList<>();
+        if (this.order != null) params.add(String.format("order={%s}", this.order));
+        params.add(String.format("task={%s}", this.task.string()));
+        return super.parametersToString() + ", " + String.join(", ", params);
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        return super.searchFor(idOfElement);
     }
 }

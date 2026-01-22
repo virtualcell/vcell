@@ -14,6 +14,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
+import org.jlibsedml.components.SedML;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
 import org.jlibsedml.components.output.DataSet;
 import org.jlibsedml.*;
@@ -150,10 +153,11 @@ public class RunUtils {
         return yi;
     }
 
-    public static HashMap<String, File> generateReportsAsCSV(SedMLDataContainer sedml, Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults, File outDirForCurrentSedml) {
+    public static HashMap<SId, File> generateReportsAsCSV(SedMLDataContainer sedmlContainer, Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults, File outDirForCurrentSedml) {
         // finally, the real work
-        HashMap<String, File> reportsHash = new HashMap<>();
-        for (Output sedmlOutput : sedml.getOutputs()) {
+        SedML sedML = sedmlContainer.getSedML();
+        HashMap<SId, File> reportsHash = new HashMap<>();
+        for (Output sedmlOutput : sedML.getOutputs()) {
             // We only want Reports
             if (!(sedmlOutput instanceof Report sedmlReport)) {
                 if (logger.isDebugEnabled()) logger.info("Ignoring unsupported output `" + sedmlOutput.getId() + "` while CSV generation.");
@@ -172,11 +176,11 @@ public class RunUtils {
              * * we search the sbml model to find the vcell variable name associated with the urn
              */
             try {
-                List<DataSet> datasets = sedmlReport.getListOfDataSets();
+                List<DataSet> datasets = sedmlReport.getDataSets();
                 Map<DataSet, DataGenerator> dataGeneratorMapping = new LinkedHashMap<>();
                 for (DataSet dataset : datasets) {
-                    DataGenerator referencedGenerator = sedml.getDataGeneratorWithId(dataset.getDataReference());
-                    if (referencedGenerator == null) throw new NullPointerException("SedML DataGenerator referenced by report is missing!");
+                    SedBase maybeDataGenerator = sedML.searchInDataGeneratorsFor(dataset.getDataReference());
+                    if (!(maybeDataGenerator instanceof DataGenerator referencedGenerator)) throw new RuntimeException("SedML DataGenerator referenced by report is missing!");
                     if (!organizedNonSpatialResults.containsKey(referencedGenerator)) break;
                     dataGeneratorMapping.put(dataset, referencedGenerator);
                 }
@@ -188,7 +192,7 @@ public class RunUtils {
 
                 for (DataSet validDataSet: dataGeneratorMapping.keySet()) {
                     DataGenerator referencedGenerator = dataGeneratorMapping.get(validDataSet);
-                    boolean isReservedVCellPrefix = validDataSet.getId().startsWith("__vcell_reserved_data_set_prefix__");
+                    boolean isReservedVCellPrefix = validDataSet.getId().string().startsWith("__vcell_reserved_data_set_prefix__");
                     ValueHolder<LazySBMLNonSpatialDataAccessor> dataHolder = organizedNonSpatialResults.get(referencedGenerator);
 
 
@@ -196,14 +200,14 @@ public class RunUtils {
                     int numTrials = dataHolder.listOfResultSets.size();
                     for(int i = 0; i < numTrials; i++) {
                         if (timeAlreadyIncluded) break;
-                        if (validDataSet.getId().contains("time_")) timeAlreadyIncluded = true;
+                        if (validDataSet.getId().string().contains("time_")) timeAlreadyIncluded = true;
                         LazySBMLNonSpatialDataAccessor data = dataHolder.listOfResultSets.get(i);
 
-                        String formattedId = isReservedVCellPrefix ? "VCell::" + validDataSet.getId().substring(34) : validDataSet.getId();
+                        String formattedId = isReservedVCellPrefix ? "VCell::" + validDataSet.getId().string().substring(34) : validDataSet.getId().string();
                         sb.append(RunUtils.generateCsvItem(formattedId, ',', false, i, numTrials));
                         sb.append(RunUtils.generateCsvItem(validDataSet.getLabel(), ',', true, i, numTrials));
                         String referencedGeneratorName = referencedGenerator.getName() == null ? "" : referencedGenerator.getName();
-                        sb.append(RunUtils.generateCsvItem(referencedGeneratorName.isEmpty() ? referencedGenerator.getId() : referencedGenerator.getName(), ',', true, i, numTrials));
+                        sb.append(RunUtils.generateCsvItem(referencedGeneratorName.isEmpty() ? referencedGenerator.getId().string() : referencedGenerator.getName(), ',', true, i, numTrials));
                         String[] dataStrings = Arrays.stream(data.getData().data()).boxed().map(String::valueOf).toArray(String[]::new);
                         sb.append(String.join(",", dataStrings)).append('\n');
                     } // end of trials loop
@@ -244,9 +248,9 @@ public class RunUtils {
 
         // TODO: Add SED-ML name as base dirFile to avoid zipping all available CSV, PDF
         // Map for naming to extension
-        Map<String, String> extensionListMap = new HashMap<String, String>() {{
-            put("csv", "reports.zip");
-            put("pdf", "plots.zip");
+        Map<String, String> extensionListMap = new HashMap<>() {{
+            this.put("csv", "reports.zip");
+            this.put("pdf", "plots.zip");
         }};
 
         for (String ext : extensionListMap.keySet()) {

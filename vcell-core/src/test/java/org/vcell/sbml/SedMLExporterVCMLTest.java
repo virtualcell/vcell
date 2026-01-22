@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Tag("SEDML_VCML_IT")
-public class SEDMLExporterVCMLTest extends SEDMLExporterCommon {
+public class SedMLExporterVCMLTest extends SEDMLExporterCommon {
 
 	static Set<String> slowTestSet(){
 		Set<String> slowModels = new HashSet<>();

@@ -13,6 +13,4 @@ public abstract class AbstractTask extends SedBase {
             SedGeneralClass.checkNoNullArgs(id);
         }
     }
-    public abstract String getModelReference() ;
-    public abstract String getSimulationReference() ;
 }

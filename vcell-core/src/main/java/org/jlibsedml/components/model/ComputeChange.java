@@ -1,16 +1,11 @@
 package org.jlibsedml.components.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
 import org.jlibsedml.SedMLTags;
-import org.jlibsedml.SEDMLVisitor;
 import org.jlibsedml.XPathTarget;
-import org.jlibsedml.components.Calculation;
-import org.jlibsedml.components.Parameter;
-import org.jlibsedml.components.SId;
-import org.jlibsedml.components.Variable;
+import org.jlibsedml.components.*;
 import org.jlibsedml.components.listOfConstructs.ListOfParameters;
 import org.jlibsedml.components.listOfConstructs.ListOfVariables;
 import org.jmathml.ASTNode;
@@ -36,6 +31,35 @@ public class ComputeChange extends Change implements Calculation {
      *
      * @param target A non-null XPathTarget to which the change should be
      *               applied.
+     */
+    public ComputeChange(XPathTarget target) {
+        this(null, null, target);
+    }
+
+    /**
+     *
+     * @param target A non-null XPathTarget to which the change should be
+     *               applied.
+     * @param math   An {@link ASTRootNode} used  to compute the new value of the target element.
+     */
+    public ComputeChange(XPathTarget target, ASTNode math) {
+        this(null, null, target, math);
+    }
+
+    /**
+     *
+     * @param id id of the element
+     * @param name name of the element
+     * @param target A non-null XPathTarget to which the change should be applied.
+     */
+    public ComputeChange(SId id, String name, XPathTarget target) {
+        this(id, name, target, null);
+    }
+
+    /**
+     *
+     * @param target A non-null XPathTarget to which the change should be
+     *               applied.
      * @param math   An {@link ASTRootNode} used  to compute the new value of the target element.
      */
     public ComputeChange(SId id, String name, XPathTarget target, ASTNode math) {
@@ -43,10 +67,6 @@ public class ComputeChange extends Change implements Calculation {
         this.setMath(math);
         this.listOfVariables = new ListOfVariables();
         this.listOfParameters = new ListOfParameters();
-    }
-
-    public ComputeChange(SId id, String name, XPathTarget target) {
-        this(id, name, target, null);
     }
 
     public ASTNode getMath() {
@@ -77,13 +97,18 @@ public class ComputeChange extends Change implements Calculation {
          for (Parameter parameter : listOfParameters) this.listOfParameters.addContent(parameter);
     }
 
+    @Override
+    public ListOfParameters getListOfParameters() {
+        return this.listOfParameters;
+    }
+
     /**
      * Returns a possible empty but non-null list of {@link Parameter} objects
      *
      * @return a list of {@link Parameter}
      */
-    public ListOfParameters getListOfParameters() {
-        return this.listOfParameters;
+    public List<Parameter> getParameters() {
+        return this.listOfParameters.getContents();
     }
 
     /**
@@ -100,13 +125,18 @@ public class ComputeChange extends Change implements Calculation {
 
     }
 
+    @Override
+    public ListOfVariables getListOfVariables() {
+        return this.listOfVariables;
+    }
+
     /**
      * Returns a possible empty but non-null list of {@link Variable} objects
      *
      * @return a list of {@link Variable}
      */
-    public ListOfVariables getListOfVariables() {
-        return this.listOfVariables;
+    public List<Variable> getVariables() {
+        return this.listOfVariables.getContents();
     }
 
     /**
@@ -128,23 +158,27 @@ public class ComputeChange extends Change implements Calculation {
         return SedMLTags.COMPUTE_CHANGE;
     }
 
-    public boolean accept(SEDMLVisitor visitor) {
-        if (!visitor.visit(this)) return false;
-        for (Variable var : this.getListOfVariables().getContents()) {
-            if (!var.accept(visitor)) return false;
-        }
-        for (Parameter p : this.getListOfParameters().getContents()) {
-            if (!p.accept(visitor)) return false;
-        }
-        return true;
-    }
-
     /**
      * Convenience function to return the maths expression as a C-style string.
      * @return A <code>String</code> representation of the maths of this DataGenerator.
      */
     public String getMathAsString(){
         return ComputeChange.formulaFormatter.formulaToString(this.math);
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        SedBase elementFound = super.searchFor(idOfElement);
+        if (elementFound != null) return elementFound;
+        for (Variable var : this.getVariables()) {
+            elementFound = var.searchFor(idOfElement);
+            if (elementFound != null) return elementFound;
+        }
+        for (Parameter p : this.getParameters()) {
+            elementFound = p.searchFor(idOfElement);
+            if (elementFound != null) return elementFound;
+        }
+        return elementFound;
     }
 
     /**

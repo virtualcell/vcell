@@ -1,8 +1,6 @@
 package org.jlibsedml.components;
 
-import org.jlibsedml.SEDMLVisitor;
 import org.jdom2.Namespace;
-import org.jlibsedml.SedMLDataContainer;
 import org.jlibsedml.SedMLTags;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
 import org.jlibsedml.components.listOfConstructs.*;
@@ -74,21 +72,11 @@ import java.util.*;
  *
  */
 public class SedML extends SedBase {
-    private final int level;
-    private final int version;
-    private final Map<String, Namespace> xmlPrefixToNamespaceMap = new HashMap<>();
-
     private final static int DEFAULT_LEVEL = 1;
     private final static int DEFAULT_VERSION = 5;
-    private static List<Namespace> getDefaultNamespaces(int sedmlLevel, int sedmlVersion){
-        String sedmlURI = String.format("http://sed-ml.org/sed-ml/level%d/version%d", sedmlLevel, sedmlVersion);
-        return Arrays.asList(
-                Namespace.getNamespace(sedmlURI),
-                Namespace.getNamespace("math", "http://www.w3.org/1998/Math/MathML"),
-                Namespace.getNamespace("sbml", "http://www.sbml.org/sbml/level3/version2/core")
-        );
-    }
 
+    private final int level;
+    private final int version;
     private final ListOfModels models;
     private final ListOfSimulations simulations;
     private final ListOfTasks tasks;
@@ -100,11 +88,7 @@ public class SedML extends SedBase {
     }
 
     public SedML(int level, int version) {
-        this(level, version, SedML.getDefaultNamespaces(level, version));
-    }
-
-    public SedML(int level, int version, List<Namespace> xmlNameSpaces) {
-        this(null, null,  level, version, xmlNameSpaces);
+        this(null, null, level, version);
     }
 
     public SedML(SId id, String name) {
@@ -112,14 +96,9 @@ public class SedML extends SedBase {
     }
 
     public SedML(SId id, String name, int level, int version) {
-        this(id, name, level, version,  SedML.getDefaultNamespaces(level, version));
-    }
-
-    public SedML(SId id, String name, int level, int version, List<Namespace> xmlNameSpaces) {
         super(id, name);
         this.level = level;
         this.version = version;
-        for (Namespace namespace : xmlNameSpaces) this.addNamespace(namespace);
         this.models = new ListOfModels();
         this.simulations = new ListOfSimulations();
         this.tasks = new ListOfTasks();
@@ -135,27 +114,17 @@ public class SedML extends SedBase {
         return this.version;
     }
 
-    /**
-     * Fetches the namespaces associated with this <code>SedML</code> object
-     * @return an unmodifiable {@link List} of {@link Namespace}
-     */
-    public List<Namespace> getNamespaces() {
-        return this.xmlPrefixToNamespaceMap.keySet().stream().map(this.xmlPrefixToNamespaceMap::get).toList();
+    public Namespace getSedMLNamespace(){
+        return Namespace.getNamespace("", this.getSedMLNamespaceURI());
     }
 
-    public void addNamespace(Namespace namespace) {
-        String prefix = namespace.getPrefix();
-        if (prefix == null) prefix = "";
-        if (this.xmlPrefixToNamespaceMap.containsKey(prefix))
-            throw new IllegalStateException(String.format("Namespace already exists for prefix %s", prefix.isEmpty() ? "<no_prefix>": "\"" + prefix + "\"" ));
-        this.xmlPrefixToNamespaceMap.put(prefix, namespace);
+    public String getSedMLNamespaceURI(){
+        return String.format("http://sed-ml.org/sed-ml/level%d/version%d", this.level, this.version);
     }
 
-    public void removeNamespace(Namespace namespace) {
-        String prefix = namespace.getPrefix();
-        if (prefix == null) prefix = "";
-        if (!this.xmlPrefixToNamespaceMap.containsKey(prefix)) return;
-        this.xmlPrefixToNamespaceMap.remove(prefix);
+    public ListOfModels getListOfModels() {
+        return this.models;
+
     }
 
     /**
@@ -185,6 +154,11 @@ public class SedML extends SedBase {
         this.models.removeContent(model);
     }
 
+    public ListOfSimulations getListOfSimulations() {
+        return this.simulations;
+
+    }
+
     /**
      * Returns a read-only list of simulations in SedML
      *
@@ -192,6 +166,28 @@ public class SedML extends SedBase {
      */
     public List<Simulation> getSimulations() {
         return this.simulations.getContents();
+    }
+
+    /**
+     * Adds a {@link Simulation} to this object's {@link ListOfSimulations}, if not already present.
+     *
+     * @param sim A non-null {@link Simulation} element
+     */
+    public void addSimulation(Simulation sim) {
+        this.simulations.addContent(sim);
+    }
+
+    /**
+     * Removes a {@link Simulation} from this object's {@link ListOfSimulations}, if it is present.
+     *
+     * @param sim A non-null {@link Simulation} element
+     */
+    public void removeSimulation(Simulation sim) {
+        this.simulations.removeContent(sim);
+    }
+
+    public ListOfTasks getListOfTasks() {
+        return this.tasks;
     }
 
     /**
@@ -204,12 +200,65 @@ public class SedML extends SedBase {
     }
 
     /**
+     * Adds a {@link AbstractTask} to this object's {@link ListOfTasks}, if not already present.
+     *
+     * @param task A non-null {@link AbstractTask} element
+     */
+    public void addTask(AbstractTask task) {
+        this.tasks.addContent(task);
+    }
+
+    /**
+     * Removes an {@link AbstractTask} from this object's {@link ListOfTasks}, if it is present.
+     *
+     * @param task A non-null {@link AbstractTask} element
+     */
+    public void removeTask(AbstractTask task) {
+        this.tasks.removeContent(task);
+    }
+
+    public ListOfDataGenerators getListOfDataGenerators() {
+        return this.dataGenerators;
+    }
+
+    /**
      * Returns a read-only list of data generators in SedML
      *
      * @return unmodifiable list of {@link DataGenerator}s
      */
     public List<DataGenerator> getDataGenerators() {
         return this.dataGenerators.getContents();
+    }
+
+    /**
+     * Adds a {@link DataGenerator} to this object's {@link ListOfDataGenerators}, if not already present.
+     *
+     * @param dataGenerator A non-null {@link DataGenerator} element
+     */
+    public void addDataGenerator(DataGenerator dataGenerator) {
+        this.dataGenerators.addContent(dataGenerator);
+    }
+
+    /**
+     * Removes a {@link DataGenerator} from this object's {@link ListOfDataGenerators}, if it is present.
+     *
+     * @param dataGenerator A non-null {@link DataGenerator} element
+     */
+    public void removeDataGenerator(DataGenerator dataGenerator) {
+        this.dataGenerators.removeContent(dataGenerator);
+    }
+
+    /**
+     * Ease-of-use function to help when auto-creating "identity" DataGenerators
+     * @param var a variable to potentially be referenced by a new data generator
+     * @return true, if an identity data-generator already exists, else false
+     */
+    public boolean appropriateIdentityDataGeneratorAlreadyExistsFor(Variable var){
+        return this.dataGenerators.appropriateIdentityDataGeneratorAlreadyExistsFor(var);
+    }
+
+    public ListOfOutputs getListOfOutputs() {
+        return this.outputs;
     }
 
     /**
@@ -225,9 +274,22 @@ public class SedML extends SedBase {
         return this.outputs.getContents();
     }
 
-    @Override
-    public boolean accept(SEDMLVisitor visitor) {
-        return true; // keep searching
+    /**
+     * Adds a {@link Output} to this object's {@link ListOfOutputs}, if not already present.
+     *
+     * @param output A non-null {@link Output} element
+     */
+    public void addOutput(Output output) {
+        this.outputs.addContent(output);
+    }
+
+    /**
+     * Removes a {@link Output} from this object's {@link ListOfOutputs}, if it is present.
+     *
+     * @param output A non-null {@link Output} element
+     */
+    public void removeOutput(Output output) {
+        this.outputs.removeContent(output);
     }
 
     /**
@@ -238,5 +300,53 @@ public class SedML extends SedBase {
     @Override
     public String getElementName() {
         return SedMLTags.SED_ML_ROOT;
+    }
+
+    @Override
+    public String parametersToString(){
+        List<String> params = new ArrayList<>();
+        params.add(String.format("level=%d", this.level));
+        params.add(String.format("version=%d", this.version));
+        if (this.models != null) params.add(String.format("models=%s", this.models.getId() != null ? this.models.getIdAsString() : '{' + this.models.parametersToString() +'}'));
+        if (this.simulations != null) params.add(String.format("simulations=%s", this.simulations.getId() != null ? this.simulations.getIdAsString() : '{' + this.simulations.parametersToString() +'}'));
+        if (this.tasks != null) params.add(String.format("tasks=%s", this.tasks.getId() != null ? this.tasks.getIdAsString() : '{' + this.tasks.parametersToString() +'}'));
+        if (this.dataGenerators != null) params.add(String.format("dataGenerators=%s", this.dataGenerators.getId() != null ? this.dataGenerators.getIdAsString() : '{' + this.dataGenerators.parametersToString() +'}'));
+        if (this.outputs != null) params.add(String.format("outputs=%s", this.outputs.getId() != null ? this.outputs.getIdAsString() : '{' + this.outputs.parametersToString() +'}'));
+        return super.parametersToString() + ", " + String.join(", ", params);
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        SedBase elementFound = super.searchFor(idOfElement);
+        if (elementFound != null) return elementFound;
+        elementFound = this.models.searchFor(idOfElement);
+        if (elementFound != null) return elementFound;
+        elementFound = this.simulations.searchFor(idOfElement);
+        if (elementFound != null) return elementFound;
+        elementFound = this.tasks.searchFor(idOfElement);
+        if (elementFound != null) return elementFound;
+        elementFound = this.dataGenerators.searchFor(idOfElement);
+        if (elementFound != null) return elementFound;
+        return this.outputs.searchFor(idOfElement);
+    }
+
+    public SedBase searchInModelsFor(SId idOfElement){
+        return this.models.searchFor(idOfElement);
+    }
+
+    public SedBase searchInSimulationsFor(SId idOfElement){
+        return this.simulations.searchFor(idOfElement);
+    }
+
+    public SedBase searchInTasksFor(SId idOfElement){
+        return this.tasks.searchFor(idOfElement);
+    }
+
+    public SedBase searchInDataGeneratorsFor(SId idOfElement){
+        return this.dataGenerators.searchFor(idOfElement);
+    }
+
+    public SedBase searchInOutputsFor(SId idOfElement){
+        return this.outputs.searchFor(idOfElement);
     }
 }

@@ -2,6 +2,7 @@ package org.jlibsedml.components.simulation;
 
 import org.jlibsedml.SedMLElementFactory;
 import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.SedGeneralClass;
 import org.jlibsedml.components.algorithm.Algorithm;
 import org.jlibsedml.SedMLTags;
@@ -124,14 +125,6 @@ public final class UniformTimeCourse extends Simulation {
         return SedMLTags.SIM_UTC;
     }
 
-//    @Override
-//    public String toString() {
-//        return "UniformTimeCourse [initialTime=" + this.initialTime
-//                + ", numberOfSteps=" + this.numberOfSteps + ", outputEndTime="
-//                + this.outputEndTime + ", outputStartTime=" + this.outputStartTime
-//                + ", " + this.getAlgorithm() + ", getId()=" + this.getId()
-//                + "]";
-//    }
 
     /**
      * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
@@ -149,5 +142,10 @@ public final class UniformTimeCourse extends Simulation {
         params.add(String.format("outputEndTime=%f", this.outputEndTime));
         params.add(String.format("numberOfSteps=%d", this.numberOfSteps));
         return super.parametersToString() + ", " + String.join(", ", params);
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement){
+        return super.searchFor(idOfElement);
     }
 }	   

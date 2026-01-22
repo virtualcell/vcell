@@ -2,6 +2,7 @@ package org.vcell.cli.run.hdf5;
 
 import cbit.vcell.resource.PropertyLoader;
 import com.google.common.io.Files;
+import org.jlibsedml.components.SId;
 import org.jlibsedml.components.output.DataSet;
 import org.jlibsedml.components.output.Report;
 import org.junit.jupiter.api.Tag;
@@ -22,12 +23,12 @@ public class BiosimulationsHdf5WriterTest {
 
     public static HDF5ExecutionResults createExampleData() {
 
-        Report plotReport = new Report("report0", "Plot Report");
-        Report reportReport = new Report("report1", "Report Report");
+        Report plotReport = new Report(new SId("report0"), "Plot Report");
+        Report reportReport = new Report(new SId("report1"), "Report Report");
 
-        DataSet t = new DataSet("t","t","t","#null");
-        DataSet s0 = new DataSet("s0","s0","s0","#null");
-        DataSet s1 = new DataSet("s1", "s1", "s1","#null");
+        DataSet t = new DataSet(new SId("t"),"t","t",new SId("#null"));
+        DataSet s0 = new DataSet(new SId("s0"),"s0","s0",new SId("#null"));
+        DataSet s1 = new DataSet(new SId("s1"), "s1", "s1",new SId("#null"));
         plotReport.addDataSet(t); plotReport.addDataSet(s0); plotReport.addDataSet(s1);
         reportReport.addDataSet(t); reportReport.addDataSet(s0); reportReport.addDataSet(s1);
 

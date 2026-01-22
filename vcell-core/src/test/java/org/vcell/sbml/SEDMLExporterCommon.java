@@ -155,7 +155,7 @@ public abstract class SEDMLExporterCommon {
 		boolean bWriteOmexArchive = true;
 		File omexFile = new File(outputDir, test_case_name + ".omex");
 		Optional<PublicationMetadata> publicationMetadata = Optional.empty();
-		Set<UnsupportedApplication> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, testCase.modelFormat)
+		Set<UnsupportedApplication> unsupportedApplications = SedMLExporter.getUnsupportedApplicationMap(bioModel, testCase.modelFormat)
 				.entrySet().stream().map(e -> new UnsupportedApplication(testCase.filename, e.getKey(), e.getValue())).collect(Collectors.toSet());
 		Set<UnsupportedApplication> declaredUnsupportedApplications = unsupportedApplications().stream()
 				.filter(ua -> ua.filename.equals(testCase.filename)).collect(Collectors.toSet());
@@ -171,7 +171,7 @@ public abstract class SEDMLExporterCommon {
 				"declared unsupported applications for model "+test_case_name+" do not match actual:\ndeclared:\n"+declaredUnsupportedApplications+"\nfound\n"+unsupportedApplications);
 		Predicate<SimulationContext> simContextFilter = (SimulationContext sc) -> unsupportedApplications.stream().noneMatch(ua -> ua.applicationName.equals(sc.getName()));
 		try {
-			List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(
+			List<SEDMLTaskRecord> sedmlTaskRecords = SedMLExporter.writeBioModel(
 					bioModel, publicationMetadata, omexFile, testCase.modelFormat, simContextFilter, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive);
 
 			boolean bAnyFailures = false;
@@ -248,7 +248,7 @@ public abstract class SEDMLExporterCommon {
 				assertNotNull(simRoundTripped, "roundtripped simulation not found with name '" + simName + "'");
 				boolean mathOverrideEquiv = simToExport.getMathOverrides().compareEquivalent(simRoundTripped.getMathOverrides());
 				if (simToExport.getNumTrials()>1){
-					throw new SEDMLExporter.SEDMLExportException("trials not suppported for SEDML export");
+					throw new SedMLExporter.SEDMLExportException("trials not suppported for SEDML export");
 				}
 				if (!mathOverrideEquiv){
 					//

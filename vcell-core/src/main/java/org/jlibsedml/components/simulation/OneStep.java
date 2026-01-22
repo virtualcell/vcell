@@ -1,8 +1,10 @@
 package org.jlibsedml.components.simulation;
 
 import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.algorithm.Algorithm;
 import org.jlibsedml.SedMLTags;
+import org.jlibsedml.components.output.DataSet;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,28 +16,11 @@ import java.util.List;
  * @since 2.1.0
  */
 public class OneStep extends Simulation {
-
-    
     private double step;
     
     public OneStep(SId id, String name, Algorithm algorithm, double step) {
         super(id, name, algorithm);
         this.setStep(step);
-    }
-
-    /**
-     * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
-     * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
-     * <br\>
-     * e.g.: `super.parametersToString() + ", " + String.format(...)`
-     * @return the parameters and their values, listed in string form
-     */
-    @Override
-    public String parametersToString(){
-        // SEE ORIGINAL PARENT!!
-        List<String> params = new ArrayList<>();
-        params.add(String.format("stepLength=%f", this.getStep()));
-        return super.parametersToString() + ", " + String.join(", ", params);
     }
 
     @Override
@@ -61,5 +46,25 @@ public class OneStep extends Simulation {
      */
     public double getStep() {
         return this.step;
+    }
+
+    /**
+     * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
+     * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
+     * <br\>
+     * e.g.: `super.parametersToString() + ", " + String.format(...)`
+     * @return the parameters and their values, listed in string form
+     */
+    @Override
+    public String parametersToString(){
+        // SEE ORIGINAL PARENT!!
+        List<String> params = new ArrayList<>();
+        params.add(String.format("stepLength=%f", this.getStep()));
+        return super.parametersToString() + ", " + String.join(", ", params);
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement){
+        return super.searchFor(idOfElement);
     }
 }

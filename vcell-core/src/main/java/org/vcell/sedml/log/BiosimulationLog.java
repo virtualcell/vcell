@@ -7,6 +7,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
+import org.jlibsedml.components.SedML;
 import org.jlibsedml.components.output.*;
 import org.jlibsedml.components.task.AbstractTask;
 
@@ -282,39 +283,40 @@ public class BiosimulationLog implements AutoCloseable {
         List<SedDocumentLog> sedDocumentLogs = new ArrayList<>();
         for (SedMLDocument sedmlDoc : sedmlDocs) {
             SedMLDataContainer sedmlModel = sedmlDoc.getSedMLModel();
+            SedML sedml = sedmlModel.getSedML();
 
             SedDocumentLog sedDocumentLog = new SedDocumentLog();
             sedDocumentLog.location = sedmlModel.getFileName();
             sedDocumentLog.status = Status.QUEUED;
 
-            List<AbstractTask> tasks = sedmlModel.getTasks();
+            List<AbstractTask> tasks = sedml.getTasks();
             for (AbstractTask task : tasks) {
                 TaskLog taskItem = new TaskLog();
-                taskItem.id = task.getId();
+                taskItem.id = task.getIdAsString();
                 taskItem.status = Status.QUEUED;
                 sedDocumentLog.tasks.add(taskItem);
             }
 
-            List<Output> outputs = sedmlModel.getOutputs();
+            List<Output> outputs = sedml.getOutputs();
             for (Output output : outputs) {
                 OutputLog outputItem = new OutputLog();
-                outputItem.id = output.getId();
+                outputItem.id = output.getIdAsString();
                 outputItem.status = Status.QUEUED;
 
-                if (output instanceof Plot2D) {
-                    for (Curve curve : ((Plot2D) output).getListOfCurves()) {
+                if (output instanceof Plot2D p2d) {
+                    for (AbstractCurve curve : p2d.getCurves()) {
                         CurveLog curveItem = new CurveLog();
-                        curveItem.id = curve.getId();
+                        curveItem.id = curve.getIdAsString();
                         curveItem.status = Status.QUEUED;
                         if (outputItem.curves == null) {
                             outputItem.curves = new ArrayList<>();
                         }
                         outputItem.curves.add(curveItem);
                     }
-                } else if (output instanceof Report) {
-                    for (DataSet dataSet : ((Report) output).getListOfDataSets()) {
+                } else if (output instanceof Report report) {
+                    for (DataSet dataSet : report.getDataSets()) {
                         DataSetLog dataSetItem = new DataSetLog();
-                        dataSetItem.id = dataSet.getId();
+                        dataSetItem.id = dataSet.getIdAsString();
                         dataSetItem.status = Status.QUEUED;
                         if (outputItem.dataSets == null) {
                             outputItem.dataSets = new ArrayList<>();

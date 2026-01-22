@@ -11,7 +11,6 @@ import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.ExpressionMathMLParser;
 import cbit.vcell.solver.*;
-import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.ode.AbstractJavaSolver;
 import cbit.vcell.solver.ode.ODESolver;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -23,6 +22,9 @@ import cbit.vcell.solver.stoch.HybridSolver;
 import cbit.vcell.solvers.AbstractCompiledSolver;
 import cbit.vcell.xml.ExternalDocInfo;
 
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
+import org.jlibsedml.components.SedML;
 import org.jlibsedml.components.task.AbstractTask;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
 import org.jlibsedml.components.output.DataSet;
@@ -47,7 +49,7 @@ import org.vcell.sedml.SEDMLImportException;
 import org.vcell.sedml.log.BiosimulationLog;
 import org.vcell.trace.Span;
 import org.vcell.trace.Tracer;
-import org.vcell.sedml.SEDMLImporter;
+import org.vcell.sedml.SedMLImporter;
 import org.vcell.util.ISize;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.logging.log4j.LogManager;
@@ -64,7 +66,7 @@ public class SolverHandler {
 	public int countBioModels = 0;        // number of biomodels in this sedml file
 	public int countSuccessfulSimulationRuns = 0;    // number of simulations that we ran successfully for this sedml file
 
-	private SEDMLImporter sedmlImporter;
+	private SedMLImporter sedmlImporter;
 	Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResults = new LinkedHashMap<>();
     Map<TaskJob, SpatialSBMLSimResults> spatialResults = new LinkedHashMap<>();
 
@@ -75,7 +77,7 @@ public class SolverHandler {
     Map<AbstractTask, List<Variable>> taskToVariableMap = new LinkedHashMap<AbstractTask, List<Variable>> ();    // key = AbstractTask, value = list of variables calculated by this task
     Map<RepeatedTask, Set<String>> taskToChangeTargetMap = new LinkedHashMap<RepeatedTask, Set<String>> ();    // key = RepeatedTask, value = list of the parameters that are being changed
     Map<Task, Set<RepeatedTask>> taskToChildRepeatedTasks = new LinkedHashMap<Task, Set<RepeatedTask>> ();    // key = Task, value = list of RepeatedTasks ending with this task
-    Map<String, Task> topTaskToBaseTask = new LinkedHashMap<String, Task> ();                // key = TopmostTaskId, value = Tasks at the bottom of the SubTasks chain OR the topmost task itself if instanceof Task
+    Map<SId, Task> topTaskToBaseTask = new LinkedHashMap<> ();                // key = TopmostTaskId, value = Tasks at the bottom of the SubTasks chain OR the topmost task itself if instanceof Task
 
     private static void sanityCheck(BioModel bioModel) throws SEDMLImportException {
         if (bioModel == null) throw new SEDMLImportException("Imported BioModel is null.");
@@ -96,8 +98,9 @@ public class SolverHandler {
         }
     }
 
-    public void initialize(List<BioModel> bioModelList, SedMLDataContainer sedml) throws ExpressionException {
-		Set <AbstractTask> topmostTasks = new LinkedHashSet<> ();
+    public void initialize(List<BioModel> bioModelList, SedMLDataContainer sedmlContainer) throws ExpressionException {
+        SedML sedML = sedmlContainer.getSedML();
+        Set <AbstractTask> topmostTasks = new LinkedHashSet<> ();
         for(BioModel bioModel : bioModelList) {
 			Simulation[] sims = bioModel.getSimulations();
 			for(Simulation sim : sims) {
@@ -106,30 +109,30 @@ public class SolverHandler {
 				}
 				TempSimulation tempSimulation = new TempSimulation(sim,false);
 				String importedTaskId = tempSimulation.getImportedTaskID();
-				AbstractTask at = sedml.getTaskWithId(importedTaskId);
-				tempSimulationToTaskMap.put(tempSimulation, at);
-				taskToTempSimulationMap.put(at,  tempSimulation);
-				origSimulationToTempSimulationMap.put(sim, tempSimulation);
+                SedBase foundElement = sedML.searchInTasksFor(new SId(importedTaskId));
+                if (!(foundElement instanceof AbstractTask at)) throw new RuntimeException("Imported task id " + importedTaskId + " is not an AbstractTask.");
+				this.tempSimulationToTaskMap.put(tempSimulation, at);
+				this.taskToTempSimulationMap.put(at,  tempSimulation);
+				this.origSimulationToTempSimulationMap.put(sim, tempSimulation);
 				topmostTasks.add(at);    // all the tasks referred by an importedTaskId are supposed to be topmost
 			}
         }
         
         {
-    	// we first make a list of all the sub tasks (sub tasks themselves may be instanceof Task or another RepeatedTask)
+    	// we first make a list of all the subtasks (subtasks themselves may be instanceof Task or another RepeatedTask)
         Set <AbstractTask> subTasks = new LinkedHashSet<> ();
-        for(AbstractTask at : sedml.getTasks()) {
+        for(AbstractTask at : sedML.getTasks()) {
         	if(!(at instanceof RepeatedTask rt)) continue;
-            Map<String, SubTask> subTasksOfRepeatedTask = rt.getSubTasks();
-			for (Map.Entry<String, SubTask> entry : subTasksOfRepeatedTask.entrySet()) {
-				String subTaskId = entry.getKey();
-				AbstractTask subTask = sedml.getTaskWithId(subTaskId);
-				subTasks.add(subTask);
+			for (SubTask entry : rt.getSubTasks()) {
+                SedBase foundElement = sedML.searchInTasksFor(entry.getTask());
+                if (!(foundElement instanceof AbstractTask subTaskTarget)) throw new RuntimeException("Subtask (id=" + entry.getId().string() + " ) does not reference an AbstractTask.");
+				subTasks.add(subTaskTarget);
 			}
         }
         // then we make a list of all topmost tasks (Task or RepeatedTask that are not a subtask)
     	// the topmost task is the "actual" task at the end of a chain  of subtasks
         Set <AbstractTask> topmostTasks2 = new LinkedHashSet<> ();	// topmost tasks, different way to calculate (they are not in the list of subtasks above)
-        for(AbstractTask at : sedml.getTasks()) {
+        for (AbstractTask at : sedML.getTasks()) {
 			if(!subTasks.contains(at)) {
 				topmostTasks2.add(at);
 			}
@@ -138,32 +141,25 @@ public class SolverHandler {
             logger.error("TopmostTasks lists sizes are different.");
 //        	throw new RuntimeException("TopmostTasks lists sizes are different.");
         }
-        for (AbstractTask task : topmostTasks) {        // we have higher confidence that topmostTask is correct
+        for (AbstractTask abstractTask : topmostTasks) {        // we have higher confidence that topmostTask is correct
 			List<AbstractTask> subTasksList = new ArrayList<> ();
-			AbstractTask referredTask;
-			RepeatedTask rt;
-			Task actualTask;
-			// find the actual Task and extract the simulation
-			if(task instanceof RepeatedTask repeatedTask) {
-				rt = repeatedTask;
-				do {
-					SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue(); // single subtask
-					String taskId = st.getTask();
-					referredTask = sedml.getTaskWithId(taskId);
-					if (referredTask instanceof RepeatedTask repeatedReferredTask) rt = repeatedReferredTask;
-					subTasksList.add(referredTask);                // last entry added will be a instanceof Task
-				} while (referredTask instanceof RepeatedTask);
-				actualTask = (Task)referredTask;
+			Task baseTask;
+			if(abstractTask instanceof RepeatedTask repeatedTask) {
+				baseTask = sedmlContainer.getBaseTask(repeatedTask.getId());
+                if (baseTask == null) throw new RuntimeException("Unable to find base task of repeated task: " + repeatedTask.getId().string() + ".");
+			} else if (abstractTask instanceof Task task) {
+				baseTask = task;
 			} else {
-				actualTask = (Task)task;
-			}
-			taskToListOfSubTasksMap.put(task, subTasksList);    // subTasksList may be empty if task instanceof Task
-			topTaskToBaseTask.put(task.getId(), actualTask);
+                throw new RuntimeException(String.format("Task (id=%s) has unknown type: %s.", abstractTask.getId().string(), abstractTask.getClass().getName()));
+            }
+
+			this.taskToListOfSubTasksMap.put(abstractTask, subTasksList);    // subTasksList may be empty if task instanceof Task
+			this.topTaskToBaseTask.put(abstractTask.getId(), baseTask);
 
 			Set<RepeatedTask> childRepeatedTasks = new LinkedHashSet<> ();
-			taskToChildRepeatedTasks.put(actualTask, childRepeatedTasks);    // list of all Tasks, the set is only initialized here
+			taskToChildRepeatedTasks.put(baseTask, childRepeatedTasks);    // list of all Tasks, the set is only initialized here
         }
-        for(Map.Entry<AbstractTask, List<AbstractTask>> entry : taskToListOfSubTasksMap.entrySet()) {    // populate the taskToChildRepeatedTasks map
+        for(Map.Entry<AbstractTask, List<AbstractTask>> entry : this.taskToListOfSubTasksMap.entrySet()) {    // populate the taskToChildRepeatedTasks map
 			AbstractTask topmostTask = entry.getKey();
 			List<AbstractTask> dependingTasks = entry.getValue();
 			if(topmostTask instanceof Task) {
@@ -182,7 +178,7 @@ public class SolverHandler {
 					}
 				}
 //        		assert rootTask != null;
-				Set<RepeatedTask> childRepeatedTasks = taskToChildRepeatedTasks.get(actualTask);
+				Set<RepeatedTask> childRepeatedTasks = this.taskToChildRepeatedTasks.get(actualTask);
 //        		assert childRepeatedTasks.isEmpty() == true;
 				childRepeatedTasks.add((RepeatedTask)topmostTask);
 				for(AbstractTask dependingTask : dependingTasks) {
@@ -195,48 +191,41 @@ public class SolverHandler {
         }
         
         {
-        // 
-        // key = tasks that are used for generating some output
-        //
-        Map<Variable, AbstractTask> variableToTaskMap = new LinkedHashMap<> ();        // temporary use
-        List<Output> ooo = sedml.getOutputs();
-        for(Output oo : ooo) {
-			if(oo instanceof Report) {
-				// TODO: check if multiple reports may use different tasks for the same variable
-				// here we assume that each variable may only be the result of one task
-				// the variable id we produce in vcell is definitely correct since the
-				// variable id is constructed based on the task id
-                List<DataSet> datasets = ((Report) oo).getListOfDataSets();
-                for (DataSet dataset : datasets) {
-                    DataGenerator datagen = sedml.getDataGeneratorWithId(dataset.getDataReference());
-//                    assert datagen != null;
-                    List<Variable> vars = new ArrayList<>(datagen.getListOfVariables());
-                    for(Variable var : vars) {
-						AbstractTask task = sedml.getTaskWithId(var.getReference());
-						variableToTaskMap.put(var, task);
+            //
+            // key = tasks that are used for generating some output
+            //
+            Map<Variable, AbstractTask> variableToTaskMap = new LinkedHashMap<> ();        // temporary use
+            for(Output oo : sedML.getOutputs()) {
+                if(oo instanceof Report) {
+                    // TODO: check if multiple reports may use different tasks for the same variable
+                    // here we assume that each variable may only be the result of one task
+                    // the variable id we produce in vcell is definitely correct since the
+                    // variable id is constructed based on the task id
+                    List<DataSet> datasets = ((Report) oo).getDataSets();
+                    for (DataSet dataset : datasets) {
+                        SedBase foundDataGen = sedML.searchInDataGeneratorsFor(dataset.getDataReference());
+                        if (!(foundDataGen instanceof DataGenerator dataGen)) throw new IllegalArgumentException("Unable to find data generator referenced in dataset: " + dataset.getDataReference());
+                        for(Variable var : dataGen.getVariables()) {
+                            SedBase foundAbstractTask = sedML.searchInTasksFor(var.getTaskReference());
+                            if (!(foundAbstractTask instanceof AbstractTask task)) throw new IllegalArgumentException("Unable to find task referenced by variable: " + var.getTaskReference());
+                            variableToTaskMap.put(var, task);
+                        }
                     }
                 }
-			}
-        }
-        for(Map.Entry<Variable, AbstractTask> entry : variableToTaskMap.entrySet()) {
-			Variable var = entry.getKey();
-			AbstractTask task = entry.getValue();
-			if(!taskToVariableMap.containsKey(task)) {
-				List<Variable> vars = new ArrayList<> ();
-				vars.add(var);
-				taskToVariableMap.put(task, vars);
-			} else {
-				List<Variable> vars = taskToVariableMap.get(task);
-				vars.add(var);
-				taskToVariableMap.put(task, vars);
-			}
-        }
+            }
+            for (Map.Entry<Variable, AbstractTask> entry : variableToTaskMap.entrySet()) {
+                Variable var = entry.getKey();
+                AbstractTask task = entry.getValue();
+                List<Variable> vars = this.taskToVariableMap.containsKey(task) ? this.taskToVariableMap.get(task) : new ArrayList<>();
+                vars.add(var);
+                this.taskToVariableMap.put(task, vars);
+            }
         }
         
-        for (Map.Entry<AbstractTask, List<AbstractTask>> entry : taskToListOfSubTasksMap.entrySet()) {
+        for (Map.Entry<AbstractTask, List<AbstractTask>> entry : this.taskToListOfSubTasksMap.entrySet()) {
 			AbstractTask topTask = entry.getKey();
-			Task actualTask = topTaskToBaseTask.get(topTask.getId());
-			TempSimulation tempSimulation = taskToTempSimulationMap.get(topTask);
+			Task baseTask = this.topTaskToBaseTask.get(topTask.getId());
+			TempSimulation tempSimulation = this.taskToTempSimulationMap.get(topTask);
 			int scanCount = tempSimulation.getScanCount();
 
 			if(scanCount > 1) {        // we know that topTask is a RepeatedTask
@@ -256,7 +245,7 @@ public class SolverHandler {
 					Range range = rt.getRange(change.getRangeReference());
 					ASTNode math = change.getMath();
 					Expression exp = new ExpressionMathMLParser(null).fromMathML(math, "t");
-					if (exp.infix().equals(range.getId())) {
+					if (exp.infix().equals(range.getId().string())) {
 						String targetID = sbmlSupport.getIdFromXPathIdentifer(starget);
 						Enumeration<String> overridesHashKeys = tempSimulation.getMathOverrides().getOverridesHashKeys();
 						boolean found = false;
@@ -271,7 +260,7 @@ public class SolverHandler {
 //						assert found == true;
 					}
 				}
-				taskToChangeTargetMap.put(rt, targetIdSet);
+                this.taskToChangeTargetMap.put(rt, targetIdSet);
 			}
         }
 		if (logger.isDebugEnabled()){
@@ -319,7 +308,7 @@ public class SolverHandler {
         String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
 
         //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
-		this.sedmlImporter = new SEDMLImporter(sedmlImportLogger, externalDocInfo.getFile(), sedmlRequested, exactMatchOnly);
+		this.sedmlImporter = new SedMLImporter(sedmlImportLogger, externalDocInfo.getFile(), sedmlRequested, exactMatchOnly);
 		List<BioModel> bioModelList;
 		try {
 			bioModelList = this.sedmlImporter.getBioModels();
@@ -345,9 +334,9 @@ public class SolverHandler {
 				Map<TempSimulation, BiosimulationLog.Status> vCellTempSimStatusMap = new LinkedHashMap<>();
 				Map<TempSimulation, Integer> simDurationMap_ms = new LinkedHashMap<>();
 
-				List<TempSimulationJob> simJobsList = preProcessTempSimulations(sedmlLocation, bSmallMeshOverride, bioModel, vCellTempSimStatusMap, simDurationMap_ms);
+				List<TempSimulationJob> simJobsList = this.preProcessTempSimulations(sedmlLocation, bSmallMeshOverride, bioModel, vCellTempSimStatusMap, simDurationMap_ms);
 				for (TempSimulationJob tempSimulationJob : simJobsList) {
-					AbstractTask task = tempSimulationToTaskMap.get(tempSimulationJob.getTempSimulation());
+					AbstractTask task = this.tempSimulationToTaskMap.get(tempSimulationJob.getTempSimulation());
 					biosimStatusMap.put(task, BiosimulationLog.Status.QUEUED);
 					String paramScanIndex = task instanceof RepeatedTask ? ":" + tempSimulationJob.getJobIndex() : "";
 					String tempSimJobLabel = tempSimulationJob.getSimulationJobID() + tempSimulationJob.getJobIndex();
@@ -405,7 +394,10 @@ public class SolverHandler {
 							if (SolverStatus.SOLVER_FINISHED == abstractJavaSolver.getSolverStatus().getStatus()){
 								odeSolverResultSet = ((ODESolver) solver).getODESolverResultSet();
 								// must interpolate data for uniform time course which is not supported natively by the Java solvers
-								org.jlibsedml.components.simulation.Simulation sedmlSim = sedmlRequested.getSimulation(task.getSimulationReference());
+                                Task baseTask = sedmlRequested.getBaseTask(task.getId());
+                                if (baseTask == null) throw new RuntimeException("Unable to find base task");
+                                SedBase elementFound = sedmlRequested.getSedML().searchInSimulationsFor(baseTask.getId());
+                                if (!(elementFound instanceof org.jlibsedml.components.simulation.Simulation sedmlSim)) throw new RuntimeException("Unable to find simulation for base task");
 								if (sedmlSim instanceof UniformTimeCourse utcSedmlSim) {
 									odeSolverResultSet = RunUtils.interpolate(odeSolverResultSet, utcSedmlSim);
 									logTaskMessage += "done. Interpolating... ";
@@ -447,7 +439,7 @@ public class SolverHandler {
 
                             logger.info("Successful execution ({}s): Model '{}' Task '{}' ({}).",
 									((double)elapsedTime_ms)/1000, bioModel.getName(), tempSimulationJobSim.getDescription(), simTask.getSimulation().getName());
-							countSuccessfulSimulationRuns++;    // we only count the number of simulations (tasks) that succeeded
+                            this.countSuccessfulSimulationRuns++;    // we only count the number of simulations (tasks) that succeeded
 							if (vCellTempSimStatusMap.get(originalSim) != BiosimulationLog.Status.ABORTED && vCellTempSimStatusMap.get(originalSim) != BiosimulationLog.Status.FAILED) {
 								vCellTempSimStatusMap.put(originalSim, BiosimulationLog.Status.SUCCEEDED);
 							}
@@ -538,11 +530,11 @@ public class SolverHandler {
 					SolverTaskDescription std = tempSimulation.getSolverTaskDescription();
 					SolverDescription sd = std.getSolverDescription();
 					String kisao = sd.getKisao();
-					BiosimulationLog.instance().updateTaskStatusYml(sedmlLocation, task.getId(), status, duration_s, kisao);
+					BiosimulationLog.instance().updateTaskStatusYml(sedmlLocation, task.getId().string(), status, duration_s, kisao);
 
 					List<AbstractTask> children = taskToListOfSubTasksMap.get(task);
 					for (AbstractTask rt : children) {
-						BiosimulationLog.instance().updateTaskStatusYml(sedmlLocation, rt.getId(), status, duration_s, kisao);
+						BiosimulationLog.instance().updateTaskStatusYml(sedmlLocation, rt.getId().string(), status, duration_s, kisao);
 					}
 				}
 				bioModelCount++;
@@ -570,7 +562,7 @@ public class SolverHandler {
 
 			AbstractTask task = tempSimulationToTaskMap.get(tempSimulation);
 			vCellTempSimStatusMap.put(tempSimulation, BiosimulationLog.Status.RUNNING);
-			BiosimulationLog.instance().updateTaskStatusYml(sedmlLocation, task.getId(), BiosimulationLog.Status.RUNNING,
+			BiosimulationLog.instance().updateTaskStatusYml(sedmlLocation, task.getId().string(), BiosimulationLog.Status.RUNNING,
 					0.0, tempSimulation.getSolverTaskDescription().getSolverDescription().getKisao());
 			simDurationMap_ms.put(tempSimulation, 0);
 

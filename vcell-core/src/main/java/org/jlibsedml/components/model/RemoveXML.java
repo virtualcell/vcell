@@ -4,6 +4,7 @@ import org.jlibsedml.SedMLTags;
 import org.jlibsedml.SEDMLVisitor;
 import org.jlibsedml.XPathTarget;
 import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -19,9 +20,16 @@ public class RemoveXML extends Change {
      *
      * @param target A non-null {@link XPathTarget} object
      */
+    public RemoveXML(XPathTarget target) {
+        this(null, null, target);
+    }
+
+    /**
+     *
+     * @param target A non-null {@link XPathTarget} object
+     */
     public RemoveXML(SId id, String name, XPathTarget target) {
         super(id, name, target);
-        // TODO Auto-generated constructor stub
     }
 
     @Override
@@ -34,12 +42,6 @@ public class RemoveXML extends Change {
         return SedMLTags.REMOVE_XML_KIND;
     }
 
-    public boolean accept(SEDMLVisitor visitor) {
-
-        return visitor.visit(this);
-
-    }
-
     /**
      * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
      * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
@@ -50,5 +52,10 @@ public class RemoveXML extends Change {
     @OverridingMethodsMustInvokeSuper
     public String parametersToString(){
         return super.parametersToString();
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        return super.searchFor(idOfElement);
     }
 }

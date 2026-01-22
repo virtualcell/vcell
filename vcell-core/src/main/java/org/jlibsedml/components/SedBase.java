@@ -1,7 +1,6 @@
 package org.jlibsedml.components;
 
 import org.jlibsedml.IIdentifiable;
-import org.jlibsedml.SEDMLVisitor;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.util.ArrayList;
@@ -28,7 +27,19 @@ public abstract class SedBase implements SedGeneralClass, IIdentifiable, Compara
         this.name = name;
     }
 
-    public abstract boolean accept(SEDMLVisitor visitor);
+    /**
+     * Attempts to search <code>this</code> and relevant children for the object with the matching id
+     * @param idOfElement ID to look for
+     * @return null if the element could not be found, otherwise, returns the element itself
+     * @throws IllegalArgumentException if null is provided as an argument
+     */
+    @OverridingMethodsMustInvokeSuper
+    public SedBase searchFor(SId idOfElement){
+        if (idOfElement == null) throw new IllegalArgumentException("`null` is not a valid id to search for.");
+        if (idOfElement.equals(this.id)) return this;
+        return null;
+    }
+
     /**
      * Getter for the metaid attribute of this element.
      * @return If present, a non-empty string. Otherwise, null is returned
@@ -123,7 +134,8 @@ public abstract class SedBase implements SedGeneralClass, IIdentifiable, Compara
     @OverridingMethodsMustInvokeSuper
     public String parametersToString(){
         List<String> params = new ArrayList<>();
-        if (this.id != null) params.add(String.format("id=%s", this.id.string()));
+        String idStr = this.id != null ? this.id.string() : "<none>";
+        params.add(String.format("id=%s", idStr));
         if (this.name != null) params.add(String.format("name=%s", this.name));
         if (this.metaId != null) params.add(String.format("metaId=%s", this.metaId));
         return String.join(", ", params); // We're the top level call! No super call to make here!
@@ -131,7 +143,7 @@ public abstract class SedBase implements SedGeneralClass, IIdentifiable, Compara
 
     @Override
     public String toString(){
-        return String.format("%s [%s]", this.getClass().getSimpleName(), this.parametersToString());
+        return String.format("%s {%s}", this.getClass().getSimpleName(), this.parametersToString());
     }
 
     @Override

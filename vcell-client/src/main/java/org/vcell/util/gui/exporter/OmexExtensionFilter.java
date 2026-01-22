@@ -6,7 +6,7 @@ import cbit.vcell.mapping.SimulationContext;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.sedml.PublicationMetadata;
-import org.vcell.sedml.SEDMLExporter;
+import org.vcell.sedml.SedMLExporter;
 import org.vcell.util.FileUtils;
 import org.vcell.util.document.BioModelInfo;
 
@@ -46,9 +46,9 @@ public class OmexExtensionFilter extends SedmlExtensionFilter {
 					}
 				}
 			}
-			Map<String, String> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);
+			Map<String, String> unsupportedApplications = SedMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);
 			Predicate<SimulationContext> simContextFilter = (SimulationContext sc) -> !unsupportedApplications.containsKey(sc.getName());
-			SEDMLExporter.writeBioModel(bioModel, publicationInfo, exportFile, modelFormat, simContextFilter, bHasPython, bRoundTripSBMLValidation, bCreateOmexArchive);
+			SedMLExporter.writeBioModel(bioModel, publicationInfo, exportFile, modelFormat, simContextFilter, bHasPython, bRoundTripSBMLValidation, bCreateOmexArchive);
 		}
 	}
 }

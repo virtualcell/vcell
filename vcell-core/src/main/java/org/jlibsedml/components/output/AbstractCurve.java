@@ -5,16 +5,31 @@ import org.jlibsedml.components.SId;
 import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.SedGeneralClass;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public abstract class AbstractCurve extends SedBase {
 
     public enum YAxisAlignment {
-        NOT_APPLICABLE,
-        LEFT,
-        RIGHT
+        NOT_APPLICABLE(null),
+        LEFT("left"),
+        RIGHT("right");
+
+        private final String tag;
+        YAxisAlignment(String tag){
+            this.tag = tag;
+        }
+
+        public String getTag() { return this.tag; }
+
+        public static YAxisAlignment fromTag(String tag) {
+            if (tag == null) return NOT_APPLICABLE;
+            return switch (tag) {
+                case "left" -> LEFT;
+                case "right" -> RIGHT;
+                default -> throw new IllegalArgumentException("Unknown tag " + tag);
+            };
+        }
     }
+
+
 
     protected SId xDataReference;
     @Deprecated protected Boolean logScaleXAxis;
@@ -79,5 +94,10 @@ public abstract class AbstractCurve extends SedBase {
 
     public void setYAxis(YAxisAlignment yAxis) {
         this.yAxis = yAxis;
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        return super.searchFor(idOfElement);
     }
 }

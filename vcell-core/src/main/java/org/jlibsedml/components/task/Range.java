@@ -6,7 +6,7 @@ import org.jlibsedml.components.SedBase;
 public abstract class Range extends SedBase {
 
     public Range(SId id) {
-        this(id, "");
+        this(id, null);
     }
 
     public Range(SId id, String name) {

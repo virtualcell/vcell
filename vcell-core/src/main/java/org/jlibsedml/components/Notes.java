@@ -44,6 +44,10 @@ public final class Notes implements SedGeneralClass {
         }
 	}
 
+    public void addNote(Element note) {
+        this.elements.add(note);
+    }
+
 	/**
 	 * Get an unmodifiable list of sub element for this Notes object, will not return null.
 	 * 

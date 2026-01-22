@@ -1,8 +1,8 @@
 package org.jlibsedml.components.task;
 
 import org.jlibsedml.SedMLTags;
-import org.jlibsedml.SEDMLVisitor;
 import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -23,12 +23,10 @@ public class UniformRange extends Range {
         }
 
         public static UniformType fromString(String text) {
-            if (text != null) {
-                for (UniformType b : UniformType.values()) {
-                    if (text.equalsIgnoreCase(b.text)) {
-                        return b;
-                    }
-                }
+            if (text == null) return null;
+            for (UniformType b : UniformType.values()) {
+                if (!text.equalsIgnoreCase(b.text)) continue;
+                return b;
             }
             return null;
         }
@@ -36,14 +34,14 @@ public class UniformRange extends Range {
 
     private double start;
     private double end;
-    private int numberOfPoints;
+    private int numberOfSteps;
     private UniformType type;
 
     public UniformRange(SId id, double start, double end, int numberOfPoints) {
         super(id);
         this.start = start;
         this.end = end;
-        this.numberOfPoints = numberOfPoints;
+        this.numberOfSteps = numberOfPoints;
         this.type = UniformType.LINEAR;
     }
 
@@ -52,7 +50,7 @@ public class UniformRange extends Range {
         super(id);
         this.start = start;
         this.end = end;
-        this.numberOfPoints = numberOfPoints;
+        this.numberOfSteps = numberOfPoints;
         if (type == null) {
             this.type = UniformType.LINEAR;
         } else if (type == UniformType.LINEAR) {
@@ -74,7 +72,7 @@ public class UniformRange extends Range {
         long temp;
         temp = Double.doubleToLongBits(end);
         result = prime * result + (int) (temp ^ (temp >>> 32));
-        result = prime * result + numberOfPoints;
+        result = prime * result + numberOfSteps;
         temp = Double.doubleToLongBits(start);
         result = prime * result + (int) (temp ^ (temp >>> 32));
         result = prime * result + ((type == null) ? 0 : type.hashCode());
@@ -92,7 +90,7 @@ public class UniformRange extends Range {
         UniformRange other = (UniformRange) obj;
         if (Double.doubleToLongBits(end) != Double.doubleToLongBits(other.end))
             return false;
-        if (numberOfPoints != other.numberOfPoints)
+        if (numberOfSteps != other.numberOfSteps)
             return false;
         if (Double.doubleToLongBits(start) != Double
                 .doubleToLongBits(other.start))
@@ -110,45 +108,39 @@ public class UniformRange extends Range {
         return end;
     }
 
+    @Deprecated
     public int getNumberOfPoints() {
-        return numberOfPoints;
+        return this.numberOfSteps;
+    }
+
+    public int getNumberOfSteps(){
+        return this.numberOfSteps;
     }
 
     public UniformType getType() {
         return type;
     }
 
-
-    @Override
-    public String parametersToString() {
-        List<String> params = new ArrayList<>();
-        params.add(String.format("start=%f", this.start));
-        params.add(String.format("end=%f", this.end));
-        params.add(String.format("numberOfPoints=%d", this.numberOfPoints));
-        params.add(String.format("type=%s", this.type));
-        return super.parametersToString() + ", " + String.join(", ", params);
-    }
-
     @Override
     public int getNumElements() {
-        return numberOfPoints;
+        return numberOfSteps;
     }
 
     @Override
     public double getElementAt(int index) {
-        if (index < 0 || index > numberOfPoints - 1) {
+        if (index < 0 || index > numberOfSteps - 1) {
             throw new IllegalArgumentException(MessageFormat.format(
                     "{0} is an invalid index. It must be between 0 and {1}.",
-                    index, numberOfPoints - 1));
+                    index, numberOfSteps - 1));
         }
         
         if (type == UniformType.LINEAR) {
-            return start + ((end - start) / (numberOfPoints - 1))
+            return start + ((end - start) / (numberOfSteps - 1))
                     * ((double) index);
         } else {
             return start
                     * Math.pow(end / start, ((double) index)
-                            / (numberOfPoints - 1));
+                            / (numberOfSteps - 1));
         }
     }
 
@@ -158,7 +150,17 @@ public class UniformRange extends Range {
     }
 
     @Override
-    public boolean accept(SEDMLVisitor visitor) {
-        return visitor.visit(this);
+    public String parametersToString() {
+        List<String> params = new ArrayList<>();
+        params.add(String.format("start=%f", this.start));
+        params.add(String.format("end=%f", this.end));
+        params.add(String.format("numberOfPoints=%d", this.numberOfSteps));
+        params.add(String.format("type=%s", this.type));
+        return super.parametersToString() + ", " + String.join(", ", params);
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        return super.searchFor(idOfElement);
     }
 }

@@ -1,7 +1,5 @@
 package org.jlibsedml.components.dataGenerator;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.jlibsedml.*;
@@ -51,6 +49,10 @@ public final class DataGenerator extends SedBase implements Calculation {
 		super(id, name);
 	}
 
+    public ListOfVariables getListOfVariables() {
+        return this.listOfVariables;
+    }
+
 	/**
 	 * Returns a read-only list of this element's <code>List</code> of
 	 * variables.
@@ -58,9 +60,13 @@ public final class DataGenerator extends SedBase implements Calculation {
 	 * @return A possibly empty but non-null List</code> of {@link Variable}
 	 *         objects.
 	 */
-	public ListOfVariables getListOfVariables() {
-		return this.listOfVariables;
+	public List<Variable> getVariables() {
+		return this.listOfVariables.getContents();
 	}
+
+    public boolean containsVariable(Variable variable) {
+        return this.listOfVariables.containsContent(variable.getId());
+    }
 
 	/**
 	 * Adds a {@link Variable} to this object's list of Variables, if not
@@ -83,15 +89,24 @@ public final class DataGenerator extends SedBase implements Calculation {
         this.listOfVariables.removeContent(variable);
 	}
 
+    public ListOfParameters getListOfParameters() {
+        return this.listOfParameters;
+    }
+
 	/**
 	 * Getter for a read-only list of parameters.
 	 * 
 	 * @return A possibly empty but non-null List</code> of {@link Parameter}
 	 *         objects.
 	 */
-	public ListOfParameters getListOfParameters() {
-		return this.listOfParameters;
+	public List<Parameter> getParameters() {
+		return this.listOfParameters.getContents();
 	}
+
+
+    public boolean containsParameter(Variable variable) {
+        return this.listOfParameters.containsContent(variable.getId());
+    }
 
 	/**
 	 * Adds a {@link Parameter} to this object's list of Parameters, if not
@@ -140,17 +155,6 @@ public final class DataGenerator extends SedBase implements Calculation {
 	public String getElementName() {
 		return SedMLTags.DATA_GENERATOR_TAG;
 	}
-	
-	public  boolean accept(SEDMLVisitor visitor){
-        if (!visitor.visit(this)) return false;
-        for (Variable var : this.getListOfVariables().getContents()){
-            if(!var.accept(visitor)) return false;
-        }
-        for (Parameter p : this.getListOfParameters().getContents()){
-            if(!p.accept(visitor)) return false;
-        }
-        return true;
-    }
 
     /**
      * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
@@ -162,6 +166,21 @@ public final class DataGenerator extends SedBase implements Calculation {
     @OverridingMethodsMustInvokeSuper
     public String parametersToString(){
         return super.parametersToString() + ", " + String.join(", ", this.getMathParamsAndVarsAsStringParams());
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        SedBase elementFound = super.searchFor(idOfElement);
+        if (elementFound != null) return elementFound;
+        for (Variable var : this.getVariables()) {
+            elementFound = var.searchFor(idOfElement);
+            if (elementFound != null) return elementFound;
+        }
+        for (Parameter p : this.getParameters()) {
+            elementFound = p.searchFor(idOfElement);
+            if (elementFound != null) return elementFound;
+        }
+        return elementFound;
     }
 
 }

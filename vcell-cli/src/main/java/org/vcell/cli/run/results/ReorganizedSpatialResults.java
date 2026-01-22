@@ -6,6 +6,7 @@ import io.jhdf.api.Group;
 import io.jhdf.api.Node;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jlibsedml.components.SId;
 import org.jlibsedml.components.task.AbstractTask;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.cli.run.hdf5.Hdf5DataSourceSpatialSimMetadata;
@@ -19,8 +20,8 @@ import java.util.*;
 public class ReorganizedSpatialResults {
     private final static Logger lg = LogManager.getLogger(Hdf5DataSourceSpatialSimVars.class);
 
-    private final Map<String, Hdf5DataSourceSpatialSimMetadata> taskGroupToMetadata;
-    private final Map<String, Hdf5DataSourceSpatialSimVars> taskGroupToMapOfVariableNameToListOfLocations;
+    private final Map<SId, Hdf5DataSourceSpatialSimMetadata> taskGroupToMetadata;
+    private final Map<SId, Hdf5DataSourceSpatialSimVars> taskGroupToMapOfVariableNameToListOfLocations;
 
     public ReorganizedSpatialResults(Map<TaskJob, File> spatialVcellJobToResultsMap, Map<AbstractTask, TempSimulation> sedmlTaskToVCellSim) {
         this.taskGroupToMetadata = new HashMap<>();
@@ -28,17 +29,17 @@ public class ReorganizedSpatialResults {
         this.populate(spatialVcellJobToResultsMap, sedmlTaskToVCellSim);
     }
 
-    public Set<String> getTaskGroupSet(){
+    public Set<SId> getTaskGroupSet(){
         return this.taskGroupToMetadata.keySet();
     }
 
-    public Hdf5DataSourceSpatialSimMetadata getMetadataFromTaskGroup(String taskGroup){
+    public Hdf5DataSourceSpatialSimMetadata getMetadataFromTaskGroup(SId taskGroup){
         if (this.taskGroupToMetadata.containsKey(taskGroup))
             return this.taskGroupToMetadata.get(taskGroup);
         throw new IllegalArgumentException("`" + taskGroup + "` is not a valid task group (key miss)");
     }
 
-    public Hdf5DataSourceSpatialSimVars getVarsFromTaskGroup(String taskGroup){
+    public Hdf5DataSourceSpatialSimVars getVarsFromTaskGroup(SId taskGroup){
         if (this.taskGroupToMapOfVariableNameToListOfLocations.containsKey(taskGroup))
             return this.taskGroupToMapOfVariableNameToListOfLocations.get(taskGroup);
         throw new IllegalArgumentException("`" + taskGroup + "` is not a valid task group (key miss)");
@@ -109,7 +110,7 @@ public class ReorganizedSpatialResults {
 
             } // End of File Access
         } // End of Task Loop
-        Set<String> taskJobSet1, taskJobSet2;
+        Set<SId> taskJobSet1, taskJobSet2;
         taskJobSet1 = new HashSet<>(this.taskGroupToMapOfVariableNameToListOfLocations.keySet());
         taskJobSet2 = new HashSet<>(this.taskGroupToMetadata.keySet());
         // If they're not the same size, we have a mismatch; that's a problem
@@ -118,7 +119,7 @@ public class ReorganizedSpatialResults {
         if (taskJobSet1.size() != taskJobSet2.size()) throw new RuntimeException("Mismatched keysets detected");
     }
 
-    private void mapSimVars(String taskJobName, Hdf5DataSourceSpatialSimVars vars){
+    private void mapSimVars(SId taskJobName, Hdf5DataSourceSpatialSimVars vars){
         if (taskJobName == null) throw new IllegalArgumentException("`taskJobName` can not be null!");
         if (vars == null) throw new IllegalArgumentException("`vars` can not be null!");
         this.taskGroupToMapOfVariableNameToListOfLocations.put(taskJobName, vars);

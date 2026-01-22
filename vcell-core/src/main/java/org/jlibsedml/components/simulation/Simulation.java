@@ -6,6 +6,7 @@ import org.jlibsedml.SedMLElementFactory;
 import org.jlibsedml.SEDMLVisitor;
 import org.jlibsedml.components.SedGeneralClass;
 import org.jlibsedml.components.SedBase;
+import org.jlibsedml.components.output.DataSet;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.util.ArrayList;
@@ -55,10 +56,6 @@ public abstract class Simulation extends SedBase {
 	 * @return A <code>String</code>
 	 */
 	public abstract String getSimulationKind();
-	
-	public boolean accept(SEDMLVisitor visitor){
-        return visitor.visit(this);
-    }
 
     /**
      * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
@@ -69,7 +66,15 @@ public abstract class Simulation extends SedBase {
      */
     @OverridingMethodsMustInvokeSuper
     public String parametersToString(){
-        String algoString = String.format("algorithm=%s", this.algorithm.getId() != null ? this.algorithm.getId() : '[' + this.algorithm.parametersToString() + ']') ;
+        String algoString = String.format("algorithm=%s", this.algorithm.getId() != null ? this.algorithm.getId() : '{' + this.algorithm.parametersToString() + '}') ;
         return super.parametersToString() + ", " + algoString;
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement){
+        SedBase elementFound = super.searchFor(idOfElement);
+        if (elementFound != null) return elementFound;
+        elementFound = this.algorithm.searchFor(idOfElement);
+        return elementFound;
     }
 }

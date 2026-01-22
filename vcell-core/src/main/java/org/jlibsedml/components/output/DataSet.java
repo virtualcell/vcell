@@ -5,6 +5,7 @@ import org.jlibsedml.components.SId;
 import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.SedGeneralClass;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.model.Change;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,16 +41,15 @@ public final class DataSet extends SedBase {
             SedGeneralClass.stringsNotEmpty(label);
         }
         this.dataReference = dataRef;
-
-        this.label = label;
+        this.label = label == null ? "" : label;
 
     }
 
     @Override
     public String parametersToString() {
         List<String> params = new ArrayList<>();
-        params.add(String.format("label=%s", this.dataReference));
-        params.add(String.format("dataReference=%s", this.dataReference));
+        if (this.label != null) params.add(String.format("label=%s", this.label));
+        params.add(String.format("dataReference=%s", this.dataReference.string()));
         return super.parametersToString() + ", " + String.join(", ", params);
     }
 
@@ -90,8 +90,9 @@ public final class DataSet extends SedBase {
 	public String getElementName() {
 		return SedMLTags.OUTPUT_DATASET;
 	}
-	
-	public boolean accept(SEDMLVisitor visitor) {
-        return visitor.visit(this);
+
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        return super.searchFor(idOfElement);
     }
 }

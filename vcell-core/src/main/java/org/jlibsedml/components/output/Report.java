@@ -2,6 +2,7 @@ package org.jlibsedml.components.output;
 
 import org.jlibsedml.SedMLTags;
 import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.listOfConstructs.ListOfDataSets;
 
 import java.util.ArrayList;
@@ -40,7 +41,16 @@ public final class Report extends Output {
      *
      * @return non-null but possibly empty List<DataSet> .
      */
-    public List<DataSet> getListOfDataSets() {
+    public ListOfDataSets getListOfDataSets() {
+        return this.listOfDataSets;
+    }
+
+    /**
+     * Getter for a read-only list of {@link DataSet} objects contained in this report.
+     *
+     * @return non-null but possibly empty List<DataSet> .
+     */
+    public List<DataSet> getDataSets() {
         return this.listOfDataSets.getContents();
     }
 
@@ -76,6 +86,16 @@ public final class Report extends Output {
         return this.listOfDataSets.getContents().stream().map(DataSet::getDataReference).collect(Collectors.toSet());
     }
 
+    @Override
+    public SedBase searchFor(SId idOfElement){
+        SedBase elementFound = super.searchFor(idOfElement);
+        if (elementFound != null) return elementFound;
+        for (DataSet var : this.getDataSets()) {
+            elementFound = var.searchFor(idOfElement);
+            if (elementFound != null) return elementFound;
+        }
+        return elementFound;
+    }
 
     /**
      * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
@@ -88,11 +108,10 @@ public final class Report extends Output {
     @Override
     public String parametersToString() {
         // SEE ORIGINAL PARENT!!
-        List<String> params = new ArrayList<>();
-        List<String> dataSetParams = new ArrayList<>();
-        for (DataSet dataSet : this.getListOfDataSets())
-            dataSetParams.add(dataSet.getId() != null ? dataSet.getIdAsString() : '[' + dataSet.parametersToString() + ']');
-        params.add(String.format("dataSets={%s}", String.join(",", dataSetParams)));
+        List<String> params = new ArrayList<>(), dataSetParams = new ArrayList<>();
+        for (DataSet dataSet : this.getDataSets())
+            dataSetParams.add(dataSet.getId() != null ? dataSet.getIdAsString() : '{' + dataSet.parametersToString() + '}');
+        params.add(String.format("dataSets=[%s]", String.join(",", dataSetParams)));
         return super.parametersToString() + ", " + String.join(", ", params);
     }
 }

@@ -1,10 +1,10 @@
 package org.jlibsedml.components.algorithm;
 
 import org.jlibsedml.SedMLTags;
-import org.jlibsedml.SEDMLVisitor;
 import org.jlibsedml.components.SId;
 import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.SedGeneralClass;
+import org.jlibsedml.components.listOfConstructs.ListOfAlgorithmParameters;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 import java.util.ArrayList;
@@ -18,11 +18,7 @@ import java.util.List;
  */
 public final class Algorithm extends SedBase {
 	private String kisaoID;
-	private final List<AlgorithmParameter> listOfAlgorithmParameters = new ArrayList<>();
-	
-	public boolean accept(SEDMLVisitor visitor) {
-	    return visitor.visit(this);
-	}
+	private final ListOfAlgorithmParameters listOfAlgorithmParameters = new ListOfAlgorithmParameters();
 
 	/**
 	 * Getter for the KisaoID of the algorithm.
@@ -31,14 +27,28 @@ public final class Algorithm extends SedBase {
 	public String getKisaoID() {
 		return this.kisaoID;
 	}
-	
+
+    public ListOfAlgorithmParameters getListOfAlgorithmParameters() {
+        return this.listOfAlgorithmParameters;
+    }
+
+    public List<AlgorithmParameter> getAlgorithmParameters() {
+        return this.listOfAlgorithmParameters.getContents();
+    }
+
     public void addAlgorithmParameter(AlgorithmParameter algorithmParameter) {
-        listOfAlgorithmParameters.add(algorithmParameter);
+        this.listOfAlgorithmParameters.addContent(algorithmParameter);
     }
-    public List<AlgorithmParameter> getListOfAlgorithmParameters() {
-        return listOfAlgorithmParameters;
+
+
+    /**
+     * Takes a non-null, non empty KisaoID.
+     * @param kisaoID A <code>String</code>.
+     * @throws IllegalArgumentException if kisaoID is null or empty.
+     */
+    public Algorithm(String kisaoID) {
+        this(null, null, kisaoID);
     }
-	
 
 	/**
 	 * Takes a non-null, non empty KisaoID. 
@@ -70,6 +80,12 @@ public final class Algorithm extends SedBase {
         else return this.kisaoID.equals(otherAlg.kisaoID);
     }
 
+    @Override
+    public String getElementName() {
+        return SedMLTags.ALGORITHM_TAG;
+    }
+
+
     /**
      * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
      * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
@@ -82,20 +98,21 @@ public final class Algorithm extends SedBase {
         List<String> params = new ArrayList<>(), paramParams = new ArrayList<>();
         if (this.kisaoID != null)
             params.add(String.format("kisaoID=%s", this.kisaoID));
-        for (AlgorithmParameter ap : this.listOfAlgorithmParameters)
-            paramParams.add(ap.getId() != null ? ap.getIdAsString() : '[' + ap.parametersToString() + ']');
+        for (AlgorithmParameter ap : this.getAlgorithmParameters())
+            paramParams.add(ap.getId() != null ? ap.getIdAsString() : '{' + ap.parametersToString() + '}');
         if (!this.listOfAlgorithmParameters.isEmpty())
-            params.add(String.format("algParams={%s}", String.join(", ", paramParams)));
+            params.add(String.format("algParams=[%s]", String.join(", ", paramParams)));
         return super.parametersToString() + ", " + String.join(", ", params);
     }
 
-
-	@Override
-	public String getElementName() {
-		return SedMLTags.ALGORITHM_TAG;
-	}
-
-	
-	
-
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        SedBase elementFound = super.searchFor(idOfElement);
+        if (elementFound != null) return elementFound;
+        for (AlgorithmParameter ap : this.getAlgorithmParameters()) {
+            elementFound = ap.searchFor(idOfElement);
+            if (elementFound != null) return elementFound;
+        }
+        return elementFound;
+    }
 }
