@@ -14,11 +14,29 @@ import java.util.List;
  */
 public class Curve extends AbstractCurve {
     public enum Type {
-        POINTS,
-        BAR,
-        BAR_STACKED,
-        HORIZONTAL_BAR,
-        HORIZONTAL_BAR_STACKED,
+        POINTS("points"),
+        BAR("bar"),
+        BAR_STACKED("barStacked"),
+        HORIZONTAL_BAR("horizontalBar"),
+        HORIZONTAL_BAR_STACKED("horizontalBarStacked"),;
+
+        private final String tag;
+        Type(String tag){
+            this.tag = tag;
+        }
+
+        public String getTag() { return this.tag; }
+
+        public static Type fromTag(String tag) {
+            return switch (tag) {
+                case "points" -> POINTS;
+                case "bar" -> BAR;
+                case "barStacked" -> BAR_STACKED;
+                case "horizontalBar" -> HORIZONTAL_BAR;
+                case "horizontalBarStacked" -> HORIZONTAL_BAR_STACKED;
+                default -> throw new IllegalArgumentException("Unknown tag " + tag);
+            };
+        }
     }
 
     @Deprecated protected Boolean logScaleYAxis; // now a capital-B Boolean because deprecated
@@ -53,7 +71,7 @@ public class Curve extends AbstractCurve {
      */
     public Curve(SId id, String name, SId xDataReference, SId yDataReference, Boolean logScaleXAxis, Boolean logScaleYAxis, Type type, Integer order, SId style, YAxisAlignment yAxis, SId xErrorUpper, SId xErrorLower, SId yErrorUpper, SId yErrorLower) {
         super(id, name, xDataReference, logScaleXAxis, order, style, yAxis);
-        if (SedMLElementFactory.getInstance().isStrictCreation()) SedGeneralClass.checkNoNullArgs(xDataReference, yDataReference);
+        if (SedMLElementFactory.getInstance().isStrictCreation()) SedGeneralClass.checkNoNullArgs(xDataReference, yDataReference, type);
         this.logScaleYAxis = logScaleYAxis;
         this.yDataReference = yDataReference;
         this.type = type;
@@ -66,7 +84,7 @@ public class Curve extends AbstractCurve {
     /**
      * @return <code>true</code> if the y-axis is a log scale, <code>false</code> otherwise.
      */
-    public Boolean getLogY() {
+    public Boolean getLogScaleYAxis() {
         return this.logScaleYAxis;
     }
     
@@ -75,7 +93,7 @@ public class Curve extends AbstractCurve {
      * @param logScaleYAxis A <code>boolean</code>.
      * @since 1.2.0
      */
-    public void setLogY(Boolean logScaleYAxis) {
+    public void setLogScaleYAxis(Boolean logScaleYAxis) {
         this.logScaleYAxis = logScaleYAxis;
     }
 
@@ -104,45 +122,41 @@ public class Curve extends AbstractCurve {
         this.type = type;
     }
 
-    public SId getxErrorUpper() {
+    public SId getXErrorUpper() {
         return this.xErrorUpper;
     }
 
-    public void setxErrorUpper(SId xErrorUpper) {
+    public void setXErrorUpper(SId xErrorUpper) {
         this.xErrorUpper = xErrorUpper;
     }
 
-    public SId getxErrorLower() {
+    public SId getXErrorLower() {
         return this.xErrorLower;
     }
 
-    public void setxErrorLower(SId xErrorLower) {
+    public void setXErrorLower(SId xErrorLower) {
         this.xErrorLower = xErrorLower;
     }
 
-    public SId getyErrorUpper() {
+    public SId getYErrorUpper() {
         return this.yErrorUpper;
     }
 
-    public void setyErrorUpper(SId yErrorUpper) {
+    public void setYErrorUpper(SId yErrorUpper) {
         this.yErrorUpper = yErrorUpper;
     }
 
-    public SId getyErrorLower() {
+    public SId getYErrorLower() {
         return this.yErrorLower;
     }
 
-    public void setyErrorLower(SId yErrorLower) {
+    public void setYErrorLower(SId yErrorLower) {
         this.yErrorLower = yErrorLower;
     }
 
 	@Override
 	public String getElementName() {
 		return SedMLTags.OUTPUT_CURVE;
-	}
-	
-	public boolean accept(SEDMLVisitor visitor) {
-	    return visitor.visit(this);
 	}
     
     @Override
@@ -160,5 +174,10 @@ public class Curve extends AbstractCurve {
         if (null != this.yErrorUpper) params.add(String.format("yErrorUpper=%s", this.yErrorUpper.string()));
         if (null != this.yErrorLower) params.add(String.format("yErrorLower=%s", this.yErrorLower.string()));
         return super.parametersToString() + ", " + String.join(", ", params);
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        return super.searchFor(idOfElement);
     }
 }

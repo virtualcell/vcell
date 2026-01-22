@@ -3,13 +3,10 @@ package org.jlibsedml.components.model;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.jlibsedml.*;
-import org.jlibsedml.components.SId;
-import org.jlibsedml.components.SedBase;
-import org.jlibsedml.components.SedGeneralClass;
+import org.jlibsedml.components.*;
 import org.jlibsedml.components.listOfConstructs.ListOfChanges;
 import org.jlibsedml.modelsupport.SUPPORTED_LANGUAGE;
 
@@ -73,7 +70,7 @@ public final class Model extends SedBase {
 	 *             if any argument is null
 	 */
 	public Model(Model toCopy, SId id) {
-		this(id, toCopy.getName(), toCopy.getLanguage(), toCopy.getSourcePathOrURIString());
+		this(id, toCopy.getName(), toCopy.getLanguage(), toCopy.getSourceAsString());
 	}
 
     /**
@@ -96,13 +93,18 @@ public final class Model extends SedBase {
         this.language = language;
     }
 
+
+    public ListOfChanges getListOfChanges() {
+        return this.listOfChanges;
+    }
+
 	/**
 	 * Gets a possibly empty but non-null unmodifiable <code>List</code> of
 	 * {@link Change} objects.
 	 * 
 	 * @return List<Change>
 	 */
-	public List<Change> getListOfChanges() {
+	public List<Change> getChanges() {
 		return this.listOfChanges.getContents();
 	}
 
@@ -142,7 +144,7 @@ public final class Model extends SedBase {
 	 * 
 	 * @return A <code>String</code>
 	 */
-	public String getSourcePathOrURIString() {
+	public String getSourceAsString() {
 		return this.source_path_or_URI_string;
 	}
 
@@ -294,12 +296,14 @@ public final class Model extends SedBase {
 		return SedMLTags.MODEL_TAG;
 	}
 
-	public boolean accept(SEDMLVisitor visitor){
-        if (!visitor.visit(this)) return false;
-        for (Change c: this.getListOfChanges()){
-            if(c.accept(visitor)) continue;
-            return false;
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        SedBase elementFound = super.searchFor(idOfElement);
+        if (elementFound != null) return elementFound;
+        for (Change var : this.getChanges()) {
+            elementFound = var.searchFor(idOfElement);
+            if (elementFound != null) return elementFound;
         }
-        return true;
+        return elementFound;
     }
 }

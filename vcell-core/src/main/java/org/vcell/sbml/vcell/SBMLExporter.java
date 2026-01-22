@@ -61,9 +61,12 @@ import cbit.vcell.xml.XMLTags;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 import org.sbml.jsbml.AssignmentRule;
@@ -97,7 +100,18 @@ public class SBMLExporter {
 
 	static {
 		// set the log level to warn to avoid debug logging which causes runtime errors in JSBML
-		org.apache.log4j.Logger.getLogger(ASTNode.class).setLevel(Level.WARN);
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration config = context.getConfiguration();
+        Logger logger = LogManager.getLogger(ASTNode.class);
+        LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
+        // If this logger doesn't have its own config, create one
+        if (!loggerConfig.getName().equals(logger.getName())) {
+            loggerConfig = new LoggerConfig(logger.getName(), Level.WARN, true);
+            config.addLogger(logger.getName(), loggerConfig);
+        } else {
+            loggerConfig.setLevel(Level.WARN);
+        }
+        context.updateLoggers();
 	}
 
 	public static boolean bWriteDebugFiles = false;
@@ -1697,7 +1711,23 @@ private static ASTNode getFormulaFromExpression(Expression expression, MathType 
 	}
 
 	// Use libSBMl routines to convert MathML string to MathML document and a libSBML-readable formula string
-	org.apache.log4j.Logger.getLogger(ASTNode.class).setLevel(Level.WARN); // NEEDED TO SUPPRESS JSBML DEBUG LOGGER ERROR
+	// NEEDED TO SUPPRESS JSBML DEBUG LOGGER ERROR
+    Logger logger = LogManager.getLogger(ASTNode.class);
+    if (logger.getLevel() != Level.WARN){
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration config = context.getConfiguration();
+
+        LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
+        // If this logger doesn't have its own config, create one
+        if (!loggerConfig.getName().equals(logger.getName())) {
+            loggerConfig = new LoggerConfig(logger.getName(), Level.WARN, true);
+            config.addLogger(logger.getName(), loggerConfig);
+        } else {
+            loggerConfig.setLevel(Level.WARN);
+        }
+        context.updateLoggers();
+    }
+
 	ASTNode mathNode = ASTNode.readMathMLFromString(expMathMLStr);
 	return mathNode;
 }
@@ -2259,7 +2289,22 @@ private void addGeometry() throws SbmlException {
 				Expression expr = ((AnalyticSubVolume)vcGeomClasses[i]).getExpression();
 				try {
 					String mathMLStr = ExpressionMathMLPrinter.getMathML(expr, true, MathType.BOOLEAN, ExpressionMathMLPrinter.Dialect.SBML_SUBSET);
-					org.apache.log4j.Logger.getLogger(ASTNode.class).setLevel(Level.WARN); // NEEDED TO SUPPRESS JSBML DEBUG LOGGER ERROR
+                    // NEEDED TO SUPPRESS JSBML DEBUG LOGGER ERROR
+                    Logger logger = LogManager.getLogger(ASTNode.class);
+                    if (logger.getLevel() != Level.WARN){
+                        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+                        Configuration config = context.getConfiguration();
+
+                        LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
+                        // If this logger doesn't have its own config, create one
+                        if (!loggerConfig.getName().equals(logger.getName())) {
+                            loggerConfig = new LoggerConfig(logger.getName(), Level.WARN, true);
+                            config.addLogger(logger.getName(), loggerConfig);
+                        } else {
+                            loggerConfig.setLevel(Level.WARN);
+                        }
+                        context.updateLoggers();
+                    }
 					ASTNode mathMLNode = ASTNode.readMathMLFromString(mathMLStr);
 					analyticVol.setMath(mathMLNode);
 				} catch (Exception e) {

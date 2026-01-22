@@ -20,9 +20,12 @@ import java.util.Iterator;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
 import org.sbml.jsbml.ASTNode;
 import org.sbml.jsbml.AssignmentRule;
 import org.sbml.jsbml.Compartment;
@@ -38,6 +41,7 @@ import org.sbml.jsbml.SBMLWriter;
 import org.sbml.jsbml.Trigger;
 import org.sbml.jsbml.ext.spatial.*;
 import org.sbml.jsbml.validator.SBMLValidator.CHECK_CATEGORY;
+import org.slf4j.LoggerFactory;
 import org.vcell.sbml.SBMLUtils;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
@@ -320,8 +324,23 @@ public static ASTNode getFormulaFromExpression(Expression expression, MathType m
 		throw new RuntimeException("Error converting expression to MathML string :" + e1.getMessage(), e1);
 	}
 	
-	// Use libSBMl routines to convert MathML string to MathML document and a libSBML-readable formula string
-	org.apache.log4j.Logger.getLogger(ASTNode.class).setLevel(Level.WARN); // NEEDED TO SUPPRESS JSBML DEBUG LOGGER ERROR
+	// Use libSBML routines to convert MathML string to MathML document and a libSBML-readable formula string
+    // NEEDED TO SUPPRESS JSBML DEBUG LOGGER ERROR
+    Logger logger = LogManager.getLogger(ASTNode.class);
+    if (logger.getLevel() != Level.WARN){
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration config = context.getConfiguration();
+
+        LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
+        // If this logger doesn't have its own config, create one
+        if (!loggerConfig.getName().equals(logger.getName())) {
+            loggerConfig = new LoggerConfig(logger.getName(), Level.WARN, true);
+            config.addLogger(logger.getName(), loggerConfig);
+        } else {
+            loggerConfig.setLevel(Level.WARN);
+        }
+        context.updateLoggers();
+    }
 	ASTNode mathNode = ASTNode.readMathMLFromString(expMathMLStr);
 	return mathNode;
 }
@@ -555,7 +574,22 @@ private static void addGeometry(Model sbmlModel, MathModel vcMathModel) {
 				Expression expr = ((AnalyticSubVolume)vcGeomClasses[i]).getExpression();
 				try {
 					String mathMLStr = ExpressionMathMLPrinter.getMathML(expr, true);
-					org.apache.log4j.Logger.getLogger(ASTNode.class).setLevel(Level.WARN); // NEEDED TO SUPPRESS JSBML DEBUG LOGGER ERROR
+                    // NEEDED TO SUPPRESS JSBML DEBUG LOGGER ERROR
+                    Logger logger = LogManager.getLogger(ASTNode.class);
+                    if (logger.getLevel() != Level.WARN){
+                        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+                        Configuration config = context.getConfiguration();
+
+                        LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
+                        // If this logger doesn't have its own config, create one
+                        if (!loggerConfig.getName().equals(logger.getName())) {
+                            loggerConfig = new LoggerConfig(logger.getName(), Level.WARN, true);
+                            config.addLogger(logger.getName(), loggerConfig);
+                        } else {
+                            loggerConfig.setLevel(Level.WARN);
+                        }
+                        context.updateLoggers();
+                    }
 					ASTNode mathMLNode = ASTNode.readMathMLFromString(mathMLStr);
 					analyticVol.setMath(mathMLNode);
 				} catch (Exception e) {

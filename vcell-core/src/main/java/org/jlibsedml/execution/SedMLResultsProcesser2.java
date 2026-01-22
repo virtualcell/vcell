@@ -9,13 +9,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.jlibsedml.SedMLDataContainer;
+import org.jlibsedml.components.*;
 import org.jlibsedml.components.task.AbstractTask;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
 import org.jlibsedml.components.output.Output;
-import org.jlibsedml.components.Parameter;
-import org.jlibsedml.components.Variable;
-import org.jlibsedml.components.VariableSymbol;
 import org.jlibsedml.execution.ExecutionStatusElement.ExecutionStatusType;
 import org.jlibsedml.modelsupport.SBMLSupport;
 import org.jmathml.ASTCi;
@@ -60,16 +60,18 @@ import org.jmathml.EvaluationContext;
  *
  */
 public class SedMLResultsProcesser2 {
+    private static final Logger logger = LogManager.getLogger(SedMLResultsProcesser2.class);
 
-    static final String MISSING_DG_MESSAGE = "Could not identify a data generator for dataset - missing out this data set: ";
-    static final String NO_DATACOLuMN_FORID_MSG = "Could not identify a data column for variable ";
+    static final String MISSING_DG_MESSAGE = "Could not find a matching data generator for dataset when searching for data generator: ";
+    static final String MISSING_TASK_MESSAGE = "Could not find a matching task for data generator when searching for task: ";
+    static final String NO_DATA_COLUMN_FOR_ID_MSG = "Could not identify a data column for variable ";
     static final String COULD_NOT_RESOLVE_MATHML_MSG = "Could not resolve the variables in the Mathml required for generating ";
-    static final String NO_DG_INOUTPUT_MSG = "No data generators listed in output";
+    static final String NO_DG_IN_OUTPUT_MSG = "No data generators listed in output";
     static final String COULD_NOT_EXECUTE_MATHML_FOR = "Math could not be executed for data generator ";
-    private SedMLDataContainer sedml;
-    private Output output;
+    private final SedMLDataContainer sedml;
+    private final Output output;
     private IProcessedSedMLSimulationResults toReturn;
-    private ProcessReport report = new ProcessReport();
+    private final ProcessReport report = new ProcessReport();
     private IXPathToVariableIDResolver variable2IDResolver = new SBMLSupport();
 
     /**
@@ -78,8 +80,8 @@ public class SedMLResultsProcesser2 {
      * @author radams
      *
      */
-    public class ProcessReport {
-        List<ExecutionStatusElement> messages = new ArrayList<ExecutionStatusElement>();
+    public static class ProcessReport {
+        List<ExecutionStatusElement> messages = new ArrayList<>();
 
         /**
          * Returns an unmodifiable <code>List</code> of messages. This list may
@@ -88,7 +90,7 @@ public class SedMLResultsProcesser2 {
          * @return A <code>List</code>String of messages.
          */
         public List<ExecutionStatusElement> getMessages() {
-            return Collections.unmodifiableList(messages);
+            return Collections.unmodifiableList(this.messages);
         }
     }
 
@@ -114,16 +116,8 @@ public class SedMLResultsProcesser2 {
         }
         this.sedml = sedml;
         this.output = output;
-        boolean found = false;
-        for (Output o : sedml.getOutputs()) {
-            if (o.getId().equals(output.getId())) {
-                found = true;
-            }
-        }
-        if (!found) {
-            throw new IllegalArgumentException("Output [" + output.getId()
-                    + "] does not belong the SED-ML object. ");
-        }
+        if (this.sedml.getSedML().searchInOutputsFor(output.getId()) instanceof Output) return;
+        throw new IllegalArgumentException("Output [" + output.getId() + "] does not belong the SED-ML object. ");
     }
 
     /**
@@ -146,67 +140,65 @@ public class SedMLResultsProcesser2 {
      *             if results is <code>null</code>.
      */
     public void process(Map<AbstractTask, IRawSedmlSimulationResults> results) {
-        if (results == null) {
-            throw new IllegalArgumentException();
-        }
-        Map<AbstractTask, double[][]> rawTask2Results = new HashMap<AbstractTask, double[][]>();
-        int numRows = 0;
-        numRows = makeDefensiveCopyOfData(results, rawTask2Results, numRows);
+        if (results == null) throw new IllegalArgumentException();
 
-        List<double[]> processed = new ArrayList<double[]>();
-        if (output.getAllDataGeneratorReferences().isEmpty()) {
-            report.messages.add(new ExecutionStatusElement(null,
-                    NO_DG_INOUTPUT_MSG, ExecutionStatusType.ERROR));
+        Map<AbstractTask, double[][]> rawTask2Results = new HashMap<>();
+        int numRows = this.makeDefensiveCopyOfData(results, rawTask2Results, 0);
+
+        List<double[]> processed = new ArrayList<>();
+        if (this.output.getAllDataGeneratorReferences().isEmpty()) {
+            this.report.messages.add(new ExecutionStatusElement(null,
+                    NO_DG_IN_OUTPUT_MSG, ExecutionStatusType.ERROR));
             return;
         }
-        for (String dgId : output.getAllDataGeneratorReferences()) {
+        for (SId dgId : this.output.getAllDataGeneratorReferences()) {
             double[] mutated = new double[numRows];
             processed.add(mutated);
-            DataGenerator dg = sedml.getDataGeneratorWithId(dgId);
-            if (dg == null) {
-                report.messages.add(new ExecutionStatusElement(null,
-                        MISSING_DG_MESSAGE + dgId, ExecutionStatusType.ERROR));
+            SedBase dgBase = this.sedml.getSedML().searchInDataGeneratorsFor(dgId);
+            if (!(dgBase instanceof DataGenerator dg)){
+                this.report.messages.add(new ExecutionStatusElement(null, MISSING_DG_MESSAGE + dgId.string(), ExecutionStatusType.ERROR));
                 return;
             }
-            List<Variable> vars = dg.getListOfVariables();
-            List<Parameter> params = dg.getListOfParameters();
-            Map<String, String> Var2Model = new HashMap<String, String>();
-            Map<String, IRawSedmlSimulationResults> var2Result = new HashMap<String, IRawSedmlSimulationResults>();
-            Map<String, double[][]> var2Data = new HashMap<String, double[][]>();
-            String timeID = "";
+            List<Variable> vars = dg.getVariables();
+            List<Parameter> params = dg.getParameters();
+            Map<SId, String> variableToTargetSource = new HashMap<>();
+            Map<SId, IRawSedmlSimulationResults> variableToResults = new HashMap<>();
+            Map<SId, double[][]> variableToData = new HashMap<>();
+            SId timeID = null;
             // map varIds to result, based upon task reference
             for (Variable variable : vars) {
                 String modelID;
 
-                if (variable.isVariable()) {
+                if (variable.referencesXPath()) {
                     // get the task from which this result variable was
                     // generated.
-                    modelID = variable2IDResolver.getIdFromXPathIdentifer(variable
-                            .getTarget());
-                    String taskRef = variable.getReference();
-                    AbstractTask t = sedml.getTaskWithId(taskRef);
+                    modelID = this.variable2IDResolver.getIdFromXPathIdentifer(variable.getTarget());
+                    SId taskRef = variable.getTaskReference();
+                    SedBase taskBase = this.sedml.getSedML().searchInTasksFor(taskRef);
+                    if (!(taskBase instanceof AbstractTask t)){
+                        this.report.messages.add(new ExecutionStatusElement(null, MISSING_TASK_MESSAGE + taskRef.string(), ExecutionStatusType.ERROR));
+                        return;
+                    }
+                    
 
                     // get results for this task
                     IRawSedmlSimulationResults res = results.get(t);
                     // set up lookups to results, raw data and model ID
-                    var2Result.put(variable.getId(), res);
-                    var2Data.put(variable.getId(), rawTask2Results.get(t));
-                    Var2Model.put(variable.getId(), modelID);
+                    variableToResults.put(variable.getId(), res);
+                    variableToData.put(variable.getId(), rawTask2Results.get(t));
+                    variableToTargetSource.put(variable.getId(), modelID);
                     // it's a symbol
-                } else if (variable.isSymbol()
-                        && variable.getSymbol().equals(VariableSymbol.TIME)) {
+                } else if (variable.isSymbol() && variable.getSymbol().equals(VariableSymbol.TIME)) {
                     timeID = variable.getId();
-                    var2Data.put(variable.getId(), rawTask2Results.values().iterator()
-                            .next());
-                    Var2Model.put(variable.getId(), variable.getId());
-
+                    variableToData.put(variable.getId(), rawTask2Results.values().iterator().next());
+                    variableToTargetSource.put(variable.getId(), variable.getId().toString());
                 }
 
             }
             // get Parameter values
-            Map<String, Double> Param2Value = new HashMap<String, Double>();
+            Map<SId, Double> parameterToValue = new HashMap<>();
             for (Parameter p : params) {
-                Param2Value.put(p.getId(), p.getValue());
+                parameterToValue.put(p.getId(), p.getValue());
             }
             // now parse maths, and replace raw simulation results with
             // processed results.
@@ -214,28 +206,22 @@ public class SedMLResultsProcesser2 {
             Set<ASTCi> identifiers = node.getIdentifiers();
             for (ASTCi var : identifiers) {
                 if (var.isVector()) {
-                    String varName = var.getName();
-                    IModel2DataMappings coll = var2Result.get(varName)
-                            .getMappings();
-                    int otherVarInx = coll.getColumnIndexFor(Var2Model
-                            .get(varName));
-                    if (otherVarInx < 0
-                            || otherVarInx >= var2Result.get(varName)
-                                    .getNumColumns()) {
-                        report.messages.add(new ExecutionStatusElement(null,
-                                NO_DATACOLuMN_FORID_MSG + var,
-                                ExecutionStatusType.ERROR));
+                    SId varId = new SId(var.getName());
+                    IModel2DataMappings coll = variableToResults.get(varId).getMappings();
+                    int otherVarInx = coll.getColumnIndexFor(variableToTargetSource.get(varId));
+                    if (otherVarInx < 0 || otherVarInx >= variableToResults.get(varId).getNumColumns()) {
+                        this.report.messages.add(new ExecutionStatusElement(null, NO_DATA_COLUMN_FOR_ID_MSG + var, ExecutionStatusType.ERROR));
                         return;
                     }
                     EvaluationContext con = new EvaluationContext();
-                    Double[] data = var2Result.get(varName)
+                    Double[] data = variableToResults.get(varId)
                             .getDataByColumnIndex(otherVarInx);
 
-                    con.setValueFor(varName, Arrays.asList(data));
+                    con.setValueFor(varId.string(), Arrays.asList(data));
 
                     if (var.getParentNode() == null
                             || var.getParentNode().getParentNode() == null) {
-                        report.messages
+                        this.report.messages
                                 .add(new ExecutionStatusElement(
                                         null,
                                         "Could not evaluate ["
@@ -245,7 +231,7 @@ public class SedMLResultsProcesser2 {
                         return;
                     }
                     if (!var.getParentNode().canEvaluate(con)) {
-                        report.messages.add(new ExecutionStatusElement(null,
+                        this.report.messages.add(new ExecutionStatusElement(null,
                                 "Could not evaluate [" + var + "] ",
                                 ExecutionStatusType.ERROR));
                         return;
@@ -257,38 +243,38 @@ public class SedMLResultsProcesser2 {
                 }
             }
             // identifiers.add(var.getSpId());
-            if (identifiersMapToData(identifiers, Var2Model, Param2Value,
-                    var2Result, timeID)) {
+            if (this.identifiersMapToData(identifiers, variableToTargetSource, parameterToValue,
+                    variableToResults, timeID == null ? "" : timeID.string())) {
 
                 for (int i = 0; i < numRows; i++) {
                     EvaluationContext con = new EvaluationContext();
 
-                    for (String id : Param2Value.keySet()) {
-                        con.setValueFor(id, Param2Value.get(id));
+                    for (SId id : parameterToValue.keySet()) {
+                        con.setValueFor(id.string(), parameterToValue.get(id));
                     }
 
                     for (ASTCi var : identifiers) {
                         // we've already resolved parameters
-                        if (Param2Value.get(var.getName()) != null) {
+                        if (parameterToValue.get(var.getName()) != null) {
                             continue;
                         }
                         int otherVarInx = 0;
                         if (!var.getName().equals(timeID)) {
-                            IModel2DataMappings coll = var2Result.get(
+                            IModel2DataMappings coll = variableToResults.get(
                                     var.getName()).getMappings();
-                            otherVarInx = coll.getColumnIndexFor(Var2Model
+                            otherVarInx = coll.getColumnIndexFor(variableToTargetSource
                                     .get(var.getName()));
                             if (otherVarInx < 0
-                                    || otherVarInx >= var2Result.get(
+                                    || otherVarInx >= variableToResults.get(
                                             var.getName()).getNumColumns()) {
                                 report.messages.add(new ExecutionStatusElement(
-                                        null, NO_DATACOLuMN_FORID_MSG + var,
+                                        null, NO_DATA_COLUMN_FOR_ID_MSG + var,
                                         ExecutionStatusType.ERROR));
                                 return;
                             }
                         }
                         con.setValueFor(var.getName(),
-                                var2Data.get(var.getName())[i][otherVarInx]);
+                                variableToData.get(var.getName())[i][otherVarInx]);
                     }
 
                     if (node.canEvaluate(con)) {
@@ -350,9 +336,8 @@ public class SedMLResultsProcesser2 {
 
         String[] hdrs = new String[processed.size()];
         int colInd = 0;
-        for (Iterator<String> it = output.getAllDataGeneratorReferences()
-                .iterator(); it.hasNext();) {
-            hdrs[colInd++] = it.next();
+        for (SId dgRef : this.output.getAllDataGeneratorReferences()){
+            hdrs[colInd++] = dgRef.string();
         }
 
         double[][] data = new double[NumRows][hdrs.length];
@@ -367,8 +352,8 @@ public class SedMLResultsProcesser2 {
     }
 
     private boolean identifiersMapToData(Set<ASTCi> identifiers,
-            Map<String, String> Var2Model, Map<String, Double> Param2Value,
-            Map<String, IRawSedmlSimulationResults> var2Result, String timeID) {
+            Map<SId, String> Var2Model, Map<SId, Double> Param2Value,
+            Map<SId, IRawSedmlSimulationResults> var2Result, String timeID) {
 
         for (ASTCi var : identifiers) {
             boolean seen = false;

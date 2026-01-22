@@ -6,6 +6,7 @@ import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SimpleSymbolTable;
 import cbit.vcell.parser.SymbolTable;
 
+import org.jlibsedml.components.SId;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
 import org.jlibsedml.components.Variable;
 
@@ -17,19 +18,19 @@ import java.util.stream.Stream;
 
 public class SimpleDataGenCalculator {
     private final double EMPTY_VALUE = Double.NaN;
-    private Expression equation;
-    private Map<String, Double> bindingMap;
+    private final Expression equation;
+    private final Map<String, Double> bindingMap;
 
     public SimpleDataGenCalculator(DataGenerator dataGen) throws ExpressionException {
         this.equation = new Expression(dataGen.getMathAsString());
         this.bindingMap = new LinkedHashMap<>(); // LinkedHashMap preserves insertion order
 
-        String[] variableArray = dataGen.getListOfVariables().stream().map(Variable::getId).toArray(String[]::new);
+        String[] variableArray = dataGen.getVariables().stream().map(Variable::getId).map(SId::string).toArray(String[]::new);
         SymbolTable symTable = new SimpleSymbolTable(variableArray);
         this.equation.bindExpression(symTable);
 
         for (String var : variableArray){
-            bindingMap.put(var, this.EMPTY_VALUE);
+            this.bindingMap.put(var, this.EMPTY_VALUE);
         }
     }
 
@@ -47,7 +48,7 @@ public class SimpleDataGenCalculator {
     public double evaluateWithCurrentArguments(boolean shouldClear) throws ExpressionException, DivideByZeroException {
         Double[] args = this.bindingMap.values().toArray(new Double[0]);
         double answer = this.equation.evaluateVector(Stream.of(args).mapToDouble(Double::doubleValue).toArray());
-        if (shouldClear) for (String key : this.bindingMap.keySet()) this.bindingMap.put(key, EMPTY_VALUE);
+        if (shouldClear) this.bindingMap.replaceAll((k, v) -> this.EMPTY_VALUE);
         return answer;
     }
 

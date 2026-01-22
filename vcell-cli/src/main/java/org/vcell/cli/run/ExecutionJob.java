@@ -141,7 +141,8 @@ public class ExecutionJob {
 
     private void executeSedmlDocument(String sedmlLocation, HDF5ExecutionResults cumulativeHdf5Results) throws IOException, PreProcessingException, ExecutionException {
         BiosimulationLog.instance().updateSedmlDocStatusYml(sedmlLocation, BiosimulationLog.Status.QUEUED);
-        SedmlJob job = new SedmlJob(sedmlLocation, this.omexHandler, this.inputFile, this.outputDir, this.sedmlPath2d3d.toString(), this.cliRecorder, this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride, this.logOmexMessage);
+        SedmlJob job = new SedmlJob(sedmlLocation, this.omexHandler, this.inputFile, this.outputDir, this.sedmlPath2d3d.toString(), this.cliRecorder, this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride);
+        this.logOmexMessage.append("Processing ").append(job.SEDML_NAME).append(". ");
         SedmlStatistics stats = job.preProcessDoc();
         boolean hasSucceeded = job.simulateSedml(cumulativeHdf5Results);
         this.anySedmlDocumentHasSucceeded |= hasSucceeded;

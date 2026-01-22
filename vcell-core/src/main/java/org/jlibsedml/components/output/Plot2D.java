@@ -1,13 +1,17 @@
 package org.jlibsedml.components.output;
 
 import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
 import org.jlibsedml.SedMLTags;
 import org.jlibsedml.components.listOfConstructs.ListOfCurves;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Encapsulates the Plot2d Sed-ML element.
@@ -16,7 +20,7 @@ import java.util.Set;
  *
  */
 public class Plot2D extends Plot {
-    private Axis rightYAxis;
+    private RightYAxis rightYAxis;
     private final ListOfCurves listOfCurves;
 
     /**
@@ -43,7 +47,7 @@ public class Plot2D extends Plot {
      * @param id   A unique id for this element in the document.
      * @param name An optional name for this element.
      */
-    public Plot2D(SId id, String name, Boolean useLegend, Double plotHeight, Double plotWidth, Axis xAxis, Axis yAxis){
+    public Plot2D(SId id, String name, Boolean useLegend, Double plotHeight, Double plotWidth, XAxis xAxis, YAxis yAxis){
         this(id, name, null, new ListOfCurves(), useLegend, plotHeight, plotWidth, xAxis, yAxis);
     }
 
@@ -52,7 +56,7 @@ public class Plot2D extends Plot {
      * @param id   A unique id for this element in the document.
      * @param name An optional name for this element.
      */
-    public Plot2D(SId id, String name, Axis rightYAxis, ListOfCurves listOfCurves) {
+    public Plot2D(SId id, String name, RightYAxis rightYAxis, ListOfCurves listOfCurves) {
         super(id, name);
         this.rightYAxis = rightYAxis;
         this.listOfCurves = listOfCurves;
@@ -63,7 +67,7 @@ public class Plot2D extends Plot {
      * @param id   A unique id for this element in the document.
      * @param name An optional name for this element.
      */
-    public Plot2D(SId id, String name, Axis rightYAxis, ListOfCurves listOfCurves, Boolean useLegend, Double plotHeight, Double plotWidth) {
+    public Plot2D(SId id, String name, RightYAxis rightYAxis, ListOfCurves listOfCurves, Boolean useLegend, Double plotHeight, Double plotWidth) {
         super(id, name, useLegend, plotHeight, plotWidth);
         this.rightYAxis = rightYAxis;
         this.listOfCurves = listOfCurves;
@@ -74,10 +78,18 @@ public class Plot2D extends Plot {
      * @param id   A unique id for this element in the document.
      * @param name An optional name for this element.
      */
-    public Plot2D(SId id, String name, Axis rightYAxis, ListOfCurves listOfCurves, Boolean useLegend, Double plotHeight, Double plotWidth, Axis xAxis, Axis yAxis) {
+    public Plot2D(SId id, String name, RightYAxis rightYAxis, ListOfCurves listOfCurves, Boolean useLegend, Double plotHeight, Double plotWidth, XAxis xAxis, YAxis yAxis) {
         super(id, name, useLegend, plotHeight, plotWidth, xAxis, yAxis);
         this.rightYAxis = rightYAxis;
         this.listOfCurves = listOfCurves;
+    }
+
+    public RightYAxis getRightYAxis() {
+        return this.rightYAxis;
+    }
+
+    public void setRightYAxis(RightYAxis rightYAxis) {
+        this.rightYAxis = rightYAxis;
     }
 
     /**
@@ -85,7 +97,16 @@ public class Plot2D extends Plot {
      *
      * @return A possibly empty but non-null {@link List} of {@link Curve} elements.
      */
-    public List<AbstractCurve> getListOfCurves() {
+    public ListOfCurves getListOfCurves() {
+        return this.listOfCurves;
+    }
+
+    /**
+     * Gets a read-only list of Curves contained in this element.
+     *
+     * @return A possibly empty but non-null {@link List} of {@link Curve} elements.
+     */
+    public List<AbstractCurve> getCurves() {
         return this.listOfCurves.getContents();
     }
 
@@ -108,14 +129,14 @@ public class Plot2D extends Plot {
     @Override
     public Set<SId> getAllDataGeneratorReferences() {
         Set<SId> refs = new LinkedHashSet<>();
-        for (AbstractCurve absCurve : this.getListOfCurves()) {
+        for (AbstractCurve absCurve : this.getCurves()) {
             refs.add(absCurve.getXDataReference());
             if (absCurve instanceof Curve curve) {
                 refs.add(curve.getYDataReference());
-                refs.add(curve.getxErrorUpper());
-                refs.add(curve.getxErrorLower());
-                refs.add(curve.getyErrorUpper());
-                refs.add(curve.getyErrorLower());
+                refs.add(curve.getXErrorUpper());
+                refs.add(curve.getXErrorLower());
+                refs.add(curve.getYErrorUpper());
+                refs.add(curve.getYErrorLower());
             }
             // TODO: Add code here if other type of Curve
         }
@@ -140,9 +161,50 @@ public class Plot2D extends Plot {
         this.listOfCurves.removeContent(curve);
     }
 
+    @OverridingMethodsMustInvokeSuper
+    public Boolean xAxisShouldBeLogarithmic(){
+        Boolean superResult = super.xAxisShouldBeLogarithmic();
+        if (superResult != null) return superResult;
+        Set<Boolean> logRequestInCurves = this.listOfCurves.getContents().stream().map(AbstractCurve::getLogScaleXAxis).collect(Collectors.toSet());
+        if (logRequestInCurves.size() != 1) throw new IllegalArgumentException("Inconsistent curve requests");
+        Boolean request = logRequestInCurves.stream().toList().get(0);
+        return request != null && request;
+    }
+
+    @OverridingMethodsMustInvokeSuper
+    public Boolean yAxisShouldBeLogarithmic(){
+        Boolean superResult = super.yAxisShouldBeLogarithmic();
+        if (superResult != null) return superResult;
+        Set<Boolean> logRequestInCurves = this.listOfCurves.getContents().stream().filter(Curve.class::isInstance).map(Curve.class::cast).map(Curve::getLogScaleYAxis).collect(Collectors.toSet());
+        if (logRequestInCurves.size() != 1) throw new IllegalArgumentException("Inconsistent curve requests");
+        Boolean request = logRequestInCurves.stream().toList().get(0);
+        return request != null && request;
+    }
+
     @Override
     public String getElementName() {
         return SedMLTags.OUTPUT_P2D;
+    }
+
+    @Override
+    public String parametersToString() {
+        List<String> params = new ArrayList<>(), curveParams =  new ArrayList<>();
+        if (this.rightYAxis != null) params.add(String.format("rightYAxis=%s", this.rightYAxis.getId() != null ? this.rightYAxis.getId().string() : '{' + this.rightYAxis.parametersToString() + '}'));
+        for (AbstractCurve curve: this.getCurves())
+            curveParams.add(String.format("%s", curve.getId() != null ? curve.getId().string() : '{' + curve.parametersToString() + '}'));
+        params.add(String.format("curves=[%s]", String.join(", ", curveParams)));
+        return super.parametersToString() + ", " + String.join(", ", params);
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        SedBase elementFound = super.searchFor(idOfElement);
+        if (elementFound != null) return elementFound;
+        for (AbstractCurve var : this.getCurves()) {
+            elementFound = var.searchFor(idOfElement);
+            if (elementFound != null) return elementFound;
+        }
+        return elementFound;
     }
 
 }

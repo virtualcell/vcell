@@ -10,19 +10,7 @@ import org.jlibsedml.SEDMLVisitor;
  *
  */
 public final class Parameter extends SedBase {
-
-
-    @Override
-    public String parametersToString() {
-        return super.parametersToString() + ", value=" + value;
-    }
-	
-	public  boolean accept(SEDMLVisitor visitor){
-        return visitor.visit(this);
-    }
-
-	
-	private double value;
+    private double value;
 
 	/**
 	 * Copy constructor
@@ -79,4 +67,14 @@ public final class Parameter extends SedBase {
 	public String getElementName() {
 		return SedMLTags.DATAGEN_ATTR_PARAMETER;
 	}
+
+    @Override
+    public String parametersToString() {
+        return super.parametersToString() + ", value=" + this.value;
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement){
+        return super.searchFor(idOfElement);
+    }
 }

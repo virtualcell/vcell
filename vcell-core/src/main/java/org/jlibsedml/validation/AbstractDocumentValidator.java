@@ -11,21 +11,19 @@ import org.jlibsedml.IIdentifiable;
  *
  */
 abstract class AbstractDocumentValidator implements ISedMLValidator {
+    private final Document doc;
 
     AbstractDocumentValidator(Document doc) {
         super();
         this.doc = doc;
     }
 
-    private Document doc;
-
     Document getDoc() {
-        return doc;
+        return this.doc;
     }
 
     int getLineNumberOfError(String elementKind, IIdentifiable identifiable) {
-        int line = new LineFinderUtil().getLineForElement(elementKind,
-                identifiable.getId(), getDoc());
-        return line;
+        return new LineFinderUtil().getLineForElement(elementKind,
+                identifiable.getId(), this.getDoc());
     }
 }

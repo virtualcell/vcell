@@ -1,6 +1,5 @@
 package org.jlibsedml.components;
 
-import org.jlibsedml.SEDMLVisitor;
 import org.jlibsedml.components.listOfConstructs.ListOfParameters;
 import org.jlibsedml.components.listOfConstructs.ListOfVariables;
 import org.jmathml.ASTNode;
@@ -14,10 +13,12 @@ public interface Calculation extends SedGeneralClass {
     SId getId(); // This should end up being implemented through `SedBase`
 
     ListOfParameters getListOfParameters();
+    List<Parameter> getParameters();
     void addParameter(Parameter parameter);
     void removeParameter(Parameter parameter);
 
     ListOfVariables getListOfVariables();
+    List<Variable> getVariables();
     void addVariable(Variable variable);
     void removeVariable(Variable variable);
 
@@ -40,10 +41,10 @@ public interface Calculation extends SedGeneralClass {
      default List<String> getMathParamsAndVarsAsStringParams(){
         List<String> params = new ArrayList<>(), paramParams = new ArrayList<>(), varParams = new ArrayList<>();
         if (this.getMath() != null) params.add(String.format("math=%s", this.getMathAsString()));
-        for (Parameter p : this.getListOfParameters().getContents()) paramParams.add(p.getId() != null ? p.getIdAsString() : '[' + p.parametersToString() + ']');
-        for (Variable var : this.getListOfVariables().getContents()) varParams.add(var.getId() != null ? var.getIdAsString() : '[' + var.parametersToString() + ']');
-        params.add(String.format("parameters={%s}", String.join(",", paramParams)));
-        params.add(String.format("variables={%s}", String.join(",", varParams)));
+        for (Parameter p : this.getParameters()) paramParams.add(p.getId() != null ? p.getIdAsString() : '{' + p.parametersToString() + '}');
+        for (Variable var : this.getVariables()) varParams.add(var.getId() != null ? var.getIdAsString() : '{' + var.parametersToString() + '}');
+        params.add(String.format("parameters=[%s]", String.join(",", paramParams)));
+        params.add(String.format("variables=[%s]", String.join(",", varParams)));
         return params;
     }
 }

@@ -1,6 +1,7 @@
 package org.jlibsedml.components.simulation;
 
 import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.algorithm.Algorithm;
 import org.jlibsedml.SedMLTags;
 
@@ -11,6 +12,16 @@ public class SteadyState extends Simulation {
 
     public SteadyState(SId id, String name, Algorithm algorithm) {
         super(id, name, algorithm);
+    }
+
+    @Override
+    public String getSimulationKind() {
+        return SedMLTags.SIMUL_SS_KIND;
+    }
+
+    @Override
+    public String getElementName() {
+        return SedMLTags.SIM_STEADY_STATE;
     }
 
     /**
@@ -26,13 +37,8 @@ public class SteadyState extends Simulation {
     }
 
     @Override
-    public String getSimulationKind() {
-        return SedMLTags.SIMUL_SS_KIND;
-    }
-
-    @Override
-    public String getElementName() {
-        return SedMLTags.SIM_STEADY_STATE;
+    public SedBase searchFor(SId idOfElement){
+        return super.searchFor(idOfElement);
     }
 
 }

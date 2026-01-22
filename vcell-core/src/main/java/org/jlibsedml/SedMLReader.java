@@ -5,11 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jdom2.DataConversionException;
-import org.jdom2.Document;
-import org.jdom2.Element;
-import org.jdom2.JDOMException;
-import org.jdom2.Namespace;
+import org.jdom2.*;
 import org.jdom2.input.SAXBuilder;
 import org.jlibsedml.components.*;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
@@ -31,91 +27,8 @@ import org.jmathml.SymbolRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class SEDMLReader {
-    static Logger lg = LoggerFactory.getLogger(SEDMLReader.class);
-
-    /*
-     * returns a SedML model given an Element of xml for a complete model non -
-     * api method
-     */
-    public SedMLDataContainer getSedDocument(Element sedRoot) throws XMLException {
-        SedMLDataContainer sedDoc;
-        SymbolRegistry.getInstance().addSymbolFactory(new SedMLSymbolFactory());
-        try {
-            Namespace sedNS = sedRoot.getNamespace();
-            String verStr = sedRoot.getAttributeValue(SedMLTags.VERSION_TAG);
-            String lvlStr = sedRoot.getAttributeValue(SedMLTags.LEVEL_TAG);
-            if (verStr != null && lvlStr != null) {
-                int sedVersion = Integer.parseInt(verStr);
-                int sedLevel = Integer.parseInt(lvlStr);
-                sedDoc = new SedMLDataContainer(sedLevel, sedVersion, sedNS);
-            } else {
-                sedDoc = new SedMLDataContainer(sedNS);
-            }
-
-            // Get additional namespaces if mentioned : mathml, sbml, etc.
-            sedDoc.setAdditionalNamespaces(sedRoot.getAdditionalNamespaces());
-
-            // notes and annotations
-            this.addNotesAndAnnotation(sedDoc, sedRoot);
-
-            // models
-            Element modelElementsParent;
-            if (null != (modelElementsParent = sedRoot.getChild(SedMLTags.MODELS, sedNS))) {
-                for (Element modelElement : modelElementsParent.getChildren()) {
-                    if (!SedMLTags.MODEL_TAG.equals(modelElement.getName())) continue;
-                    sedDoc.addModel(this.getModel(modelElement));
-                }
-            }
-
-            // simulations
-            Element simulationElementsParent;
-            if (null != (simulationElementsParent = sedRoot.getChild(SedMLTags.SIMS, sedNS))) {
-                for (Element simElement : simulationElementsParent.getChildren()){
-                    sedDoc.addSimulation(this.getSimulation(simElement));
-                }
-            }
-
-            // Tasks
-            Element taskElementsParent;
-            if (null != (taskElementsParent = sedRoot.getChild(SedMLTags.TASKS, sedNS))) {
-                for (Element taskElement : taskElementsParent.getChildren()){
-                    if (taskElement.getName().equals(SedMLTags.TASK_TAG)) {
-                        sedDoc.addTask(this.getTask(taskElement));
-                    } else if (taskElement.getName().equals(SedMLTags.REPEATED_TASK_TAG)) {
-                        sedDoc.addTask(this.getRepeatedTask(taskElement));
-                    }
-                    //TODO: Add Parameter Estimation Task parsing here!
-                }
-            }
-
-            // Data Generators
-            Element dataGeneratorElementsParent;
-            if (null != (dataGeneratorElementsParent = sedRoot.getChild(SedMLTags.DATA_GENERATORS, sedNS))) {
-                for (Element dataGeneratorElement : dataGeneratorElementsParent.getChildren()){
-                    if (!SedMLTags.DATA_GENERATOR_TAG.equals(dataGeneratorElement.getName())) continue;
-                    sedDoc.addDataGenerator(this.getDataGenerator(dataGeneratorElement));
-                }
-            }
-
-            // Outputs
-            Element outputElementsParent;
-            if (null != (outputElementsParent = sedRoot.getChild(SedMLTags.OUTPUTS, sedNS))) {
-                for (Element outputElement : outputElementsParent.getChildren()){
-                    switch (outputElement.getName()) {
-                        case SedMLTags.OUTPUT_P2D -> sedDoc.addOutput(this.getPlot2D(outputElement));
-                        case SedMLTags.OUTPUT_P3D -> sedDoc.addOutput(this.getPlot3D(outputElement));
-                        case SedMLTags.OUTPUT_REPORT -> sedDoc.addOutput(this.getReport(outputElement));
-                        default -> lg.warn("Unknown output element name: {}", outputElement.getName());
-                    }
-                }
-            }
-
-        } catch (Exception e) {
-            throw new XMLException("Error loading sed-ml document : " + e.getMessage(), e);
-        }
-        return sedDoc;
-    }
+class SedMLReader {
+    static final Logger lg = LoggerFactory.getLogger(SedMLReader.class);
 
     public static SedMLDataContainer readFile(File file) throws JDOMException, IOException, XMLException {
         SAXBuilder builder = new SAXBuilder();
@@ -123,22 +36,139 @@ class SEDMLReader {
         Element sedRoot = doc.getRootElement();
         try {
             SedMLElementFactory.getInstance().setStrictCreation(false);
-            SEDMLReader reader = new SEDMLReader();
-            return reader.getSedDocument(sedRoot);
+            SedMLReader reader = new SedMLReader();
+            return reader.getSedDocument(sedRoot, file.getName());
         } finally {
             SedMLElementFactory.getInstance().setStrictCreation(true);
         }
     }
 
+    /*
+     * returns a SedML model given an Element of xml for a complete model non -
+     * api method
+     */
+    public SedMLDataContainer getSedDocument(Element sedRoot) throws XMLException{
+        return this.getSedDocument(sedRoot, null);
+    }
+
+    /*
+     * returns a SedML model given an Element of xml for a complete model non -
+     * api method
+     */
+    public SedMLDataContainer getSedDocument(Element sedRoot, String filename) throws XMLException {
+        Namespace sedNS;
+        SedMLDataContainer sedDoc;
+        SedML sedML;
+        SymbolRegistry.getInstance().addSymbolFactory(new SedMLSymbolFactory());
+        try {
+            sedNS = sedRoot.getNamespace();
+            Attribute idAttr = sedRoot.getAttribute(SedMLTags.ATTRIBUTE_ID);
+            SId idStr = SedMLReader.parseId(idAttr == null ? null : idAttr.getValue(), filename);
+            String nameStr = sedRoot.getAttributeValue(SedMLTags.ATTRIBUTE_NAME);
+            String lvlStr = sedRoot.getAttributeValue(SedMLTags.LEVEL_TAG);
+            String verStr = sedRoot.getAttributeValue(SedMLTags.VERSION_TAG);
+            int level = Integer.parseInt(lvlStr);
+            int version = Integer.parseInt(verStr);
+            sedML = new SedML(idStr, nameStr, level, version);
+            if (!sedML.getSedMLNamespaceURI().equals(sedNS.getURI()))
+                throw new XMLException(String.format("SedML namespace mismatch;'%s' != '%s' (expected)", sedNS.getURI(), sedML.getSedMLNamespaceURI()));
+        } catch (Exception e) {
+            throw new XMLException("Error loading start of SedML document : ", e);
+        }
+        sedDoc = new SedMLDataContainer(sedML);
+
+        try {
+            // Get additional namespaces if mentioned : mathml, sbml, etc.
+            sedDoc.addAllAdditionalNamespaces(sedRoot.getAdditionalNamespaces());
+            // notes and annotations
+            this.addNotesAndAnnotation(sedML, sedRoot);
+        } catch (Exception e) {
+            throw new XMLException("Error loading basics of SedML document : ", e);
+        }
+
+        try {
+            // models
+            Element modelElementsParent;
+            if (null != (modelElementsParent = sedRoot.getChild(SedMLTags.MODELS, sedNS))) {
+                for (Element modelElement : modelElementsParent.getChildren()) {
+                    if (!SedMLTags.MODEL_TAG.equals(modelElement.getName())) continue;
+                    sedML.addModel(this.getModel(modelElement));
+                }
+            }
+        } catch (Exception e) {
+            throw new XMLException("Error loading models of SedML document : ", e);
+        }
+
+        try {
+            // simulations
+            Element simulationElementsParent;
+            if (null != (simulationElementsParent = sedRoot.getChild(SedMLTags.SIMS, sedNS))) {
+                for (Element simElement : simulationElementsParent.getChildren()){
+                    sedML.addSimulation(this.getSimulation(simElement));
+                }
+            }
+        } catch (Exception e) {
+            throw new XMLException("Error loading simulations of SedML document : ", e);
+        }
+
+        try {
+            // Tasks
+            Element taskElementsParent;
+            if (null != (taskElementsParent = sedRoot.getChild(SedMLTags.TASKS, sedNS))) {
+                for (Element taskElement : taskElementsParent.getChildren()){
+                    if (taskElement.getName().equals(SedMLTags.TASK_TAG)) {
+                        sedML.addTask(this.getTask(taskElement));
+                    } else if (taskElement.getName().equals(SedMLTags.REPEATED_TASK_TAG)) {
+                        sedML.addTask(this.getRepeatedTask(taskElement));
+                    }
+                    //TODO: Add Parameter Estimation Task parsing here!
+                }
+            }
+        } catch (Exception e) {
+            throw new XMLException("Error loading tasks of SedML document : ", e);
+        }
+
+        try {
+            // Data Generators
+            Element dataGeneratorElementsParent;
+            if (null != (dataGeneratorElementsParent = sedRoot.getChild(SedMLTags.DATA_GENERATORS, sedNS))) {
+                for (Element dataGeneratorElement : dataGeneratorElementsParent.getChildren()){
+                    if (!SedMLTags.DATA_GENERATOR_TAG.equals(dataGeneratorElement.getName())) continue;
+                    sedML.addDataGenerator(this.getDataGenerator(dataGeneratorElement));
+                }
+            }
+        } catch (Exception e) {
+            throw new XMLException("Error loading data generators of SedML document : ", e);
+        }
+
+        try {
+            // Outputs
+            Element outputElementsParent;
+            if (null != (outputElementsParent = sedRoot.getChild(SedMLTags.OUTPUTS, sedNS))) {
+                for (Element outputElement : outputElementsParent.getChildren()){
+                    switch (outputElement.getName()) {
+                        case SedMLTags.OUTPUT_P2D -> sedML.addOutput(this.getPlot2D(outputElement));
+                        case SedMLTags.OUTPUT_P3D -> sedML.addOutput(this.getPlot3D(outputElement));
+                        case SedMLTags.OUTPUT_REPORT -> sedML.addOutput(this.getReport(outputElement));
+                        default -> lg.warn("Unknown output element name: {}", outputElement.getName());
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            throw new XMLException("Error loading outputs of sed-ml document : " + e.getMessage(), e);
+        }
+        return sedDoc;
+    }
+
     Model getModel(Element xmlEncodedModel) throws DataConversionException {
-        Model sedmlModel = new Model(
-                xmlEncodedModel.getAttributeValue(SedMLTags.MODEL_ATTR_ID),
-                xmlEncodedModel.getAttributeValue(SedMLTags.MODEL_ATTR_NAME),
-                xmlEncodedModel.getAttributeValue(SedMLTags.MODEL_ATTR_LANGUAGE),
-                xmlEncodedModel.getAttributeValue(SedMLTags.MODEL_ATTR_SOURCE)
-        );
-        List<Element> lModelChildren = xmlEncodedModel.getChildren();
-        for (Element eModelChild : lModelChildren) {
+        SId modelId = SedMLReader.parseId(xmlEncodedModel.getAttributeValue(SedMLTags.MODEL_ATTR_ID));
+        String modelNameStr = xmlEncodedModel.getAttributeValue(SedMLTags.MODEL_ATTR_NAME);
+        String languageStr = xmlEncodedModel.getAttributeValue(SedMLTags.MODEL_ATTR_LANGUAGE);
+        String sourceStr = xmlEncodedModel.getAttributeValue(SedMLTags.MODEL_ATTR_SOURCE);
+
+        Model sedmlModel = new Model(modelId, modelNameStr, languageStr, sourceStr);
+        for (Element eModelChild : xmlEncodedModel.getChildren()) {
             if (!eModelChild.getName().equals(SedMLTags.CHANGES)) continue;
             for (Element aChange : eModelChild.getChildren()) {
                 sedmlModel.addChange(this.getChange(aChange));
@@ -181,7 +211,7 @@ class SEDMLReader {
                         case SedMLTags.DATAGEN_ATTR_VARS_LIST -> {
                             for (Element eVariable : el.getChildren()) {
                                 if (!SedMLTags.DATAGEN_ATTR_VARIABLE.equals(eVariable.getName())) continue;
-                                vars.add(this.createVariable(eVariable, true));
+                                vars.add(this.createVariableWithinComputeChange(eVariable));
                             }
                         }
                         case SedMLTags.DATAGEN_ATTR_PARAMS_LIST -> {
@@ -206,15 +236,12 @@ class SEDMLReader {
 
     // The Change within a repeated task (SetChange)
     private void addChanges(RepeatedTask t, Element element) throws DataConversionException {
-        SetValue sv;
         for (Element eChild : element.getChildren()) {
-            if (!SedMLTags.SET_VALUE.equals(eChild.getName())) {
-                lg.warn("Unexpected " + eChild); continue;
-            }
-            sv = new SetValue(
-                    new XPathTarget(eChild.getAttributeValue(SedMLTags.SET_VALUE_ATTR_TARGET)),
-                    eChild.getAttributeValue(SedMLTags.SET_VALUE_ATTR_RANGE_REF),
-                    eChild.getAttributeValue(SedMLTags.SET_VALUE_ATTR_MODEL_REF));
+            if (!SedMLTags.SET_VALUE.equals(eChild.getName())) { lg.warn("Unexpected non-SetValue encountered:" + eChild); continue; }
+            XPathTarget target = new XPathTarget(eChild.getAttributeValue(SedMLTags.SET_VALUE_ATTR_TARGET));
+            SId rangeId = SedMLReader.parseId(eChild.getAttributeValue(SedMLTags.SET_VALUE_ATTR_RANGE_REF));
+            SId modelId = SedMLReader.parseId(eChild.getAttributeValue(SedMLTags.SET_VALUE_ATTR_MODEL_REF));
+            SetValue sv = new SetValue(target, rangeId, modelId);
             this.setValueContent(sv, eChild);
             t.addChange(sv);
         }
@@ -231,7 +258,7 @@ class SEDMLReader {
                     List<Element> lVariables = eChild.getChildren();
                     for (Element eVariable : lVariables) {
                         if (!SedMLTags.DATAGEN_ATTR_VARIABLE.equals(eVariable.getName())) continue;
-                        c.addVariable(this.createVariable(eVariable, true));
+                        c.addVariable(this.createVariableWithinSetValue(eVariable));
                     }
                 }
                 case SedMLTags.DATAGEN_ATTR_PARAMS_LIST -> {
@@ -278,7 +305,7 @@ class SEDMLReader {
                 if (null == attributeValue) throw new IllegalArgumentException("Number of UTC Time points cannot be determined.");
 
                 s = new UniformTimeCourse(
-                        simElement.getAttributeValue(SedMLTags.SIM_ATTR_ID),
+                        SedMLReader.parseId(simElement.getAttributeValue(SedMLTags.SIM_ATTR_ID)),
                         simElement.getAttributeValue(SedMLTags.SIM_ATTR_NAME),
                         Double.parseDouble(simElement.getAttributeValue(SedMLTags.UTCA_INIT_T)),
                         Double.parseDouble(simElement.getAttributeValue(SedMLTags.UTCA_OUT_START_T)),
@@ -288,13 +315,13 @@ class SEDMLReader {
                 );
             }
             case SedMLTags.SIM_ONE_STEP -> s = new OneStep(
-                    simElement.getAttributeValue(SedMLTags.SIM_ATTR_ID),
+                    SedMLReader.parseId(simElement.getAttributeValue(SedMLTags.SIM_ATTR_ID)),
                     simElement.getAttributeValue(SedMLTags.SIM_ATTR_NAME),
                     requestedAlgorithm,
                     Double.parseDouble(simElement.getAttributeValue(SedMLTags.ONE_STEP_STEP))
             );
             case SedMLTags.SIM_STEADY_STATE -> s = new SteadyState(
-                    simElement.getAttributeValue(SedMLTags.SIM_ATTR_ID),
+                    SedMLReader.parseId(simElement.getAttributeValue(SedMLTags.SIM_ATTR_ID)),
                     simElement.getAttributeValue(SedMLTags.SIM_ATTR_NAME),
                     requestedAlgorithm
             );
@@ -339,10 +366,10 @@ class SEDMLReader {
     Task getTask(Element taskElement) {
         Task t;
         t = new Task(
-                taskElement.getAttributeValue(SedMLTags.TASK_ATTR_ID),
+                SedMLReader.parseId(taskElement.getAttributeValue(SedMLTags.TASK_ATTR_ID)),
                 taskElement.getAttributeValue(SedMLTags.TASK_ATTR_NAME),
-                taskElement.getAttributeValue(SedMLTags.TASK_ATTR_MODELREF),
-                taskElement.getAttributeValue(SedMLTags.TASK_ATTR_SIMREF)
+                SedMLReader.parseId(taskElement.getAttributeValue(SedMLTags.TASK_ATTR_MODELREF)),
+                SedMLReader.parseId(taskElement.getAttributeValue(SedMLTags.TASK_ATTR_SIMREF))
         );
         // notes and annotations
         this.addNotesAndAnnotation(t, taskElement);
@@ -350,16 +377,16 @@ class SEDMLReader {
         return t;
     }
 
-    RepeatedTask getRepeatedTask(Element taskElement)
-            throws DataConversionException {
+    RepeatedTask getRepeatedTask(Element taskElement) throws DataConversionException, XMLException {
         RepeatedTask t;
         String resetModel = taskElement.getAttributeValue(SedMLTags.REPEATED_TASK_RESET_MODEL);
         boolean bResetModel = resetModel == null || resetModel.equals("true");
         t = new RepeatedTask(
-                taskElement.getAttributeValue(SedMLTags.TASK_ATTR_ID),
+                SedMLReader.parseId(taskElement.getAttributeValue(SedMLTags.TASK_ATTR_ID)),
                 taskElement.getAttributeValue(SedMLTags.TASK_ATTR_NAME),
                 bResetModel,
-                taskElement.getAttributeValue(SedMLTags.REPEATED_TASK_ATTR_RANGE));
+                SedMLReader.parseId(taskElement.getAttributeValue(SedMLTags.REPEATED_TASK_ATTR_RANGE))
+        );
 
         this.addNotesAndAnnotation(t, taskElement);  // notes and annotations
 
@@ -378,40 +405,22 @@ class SEDMLReader {
         return t;
     }
 
-    private void addSubTasks(RepeatedTask t, Element element) {
-        SubTask s = null;
-
-        List<Element> children = element.getChildren();
-        for (Element eChild : children) {
+    private void addSubTasks(RepeatedTask t, Element element) throws XMLException {
+        for (Element eChild : element.getChildren()) {
             if (!SedMLTags.SUBTASK_TAG.equals(eChild.getName())) {
                 lg.warn("Unexpected " + eChild); continue;
             }
-            s = new SubTask(
-                    eChild.getAttributeValue(SedMLTags.SUBTASK_ATTR_ORDER),
-                    eChild.getAttributeValue(SedMLTags.SUBTASK_ATTR_TASK)
-            );
-            this.addDependTasks(s, eChild);
+            Attribute orderAttr = eChild.getAttribute(SedMLTags.SUBTASK_ATTR_ORDER);
+            SubTask s;
+            try {
+                s = new SubTask(
+                        orderAttr == null ? null : Integer.parseInt(orderAttr.getValue()),
+                        SedMLReader.parseId(eChild.getAttributeValue(SedMLTags.SUBTASK_ATTR_TASK))
+                );
+            } catch (NumberFormatException e) {
+                throw new XMLException("Invalid type for SubTask: order cannot be parsed into an integer");
+            }
             t.addSubtask(s);
-        }
-    }
-
-    private void addDependTasks(SubTask t, Element element) {
-        List<Element> children = element.getChildren();
-        for (Element eChild : children) {
-            if (!SedMLTags.DEPENDENT_TASK_SUBTASKS_LIST.equals(eChild.getName())) {
-                lg.warn("Unexpected " + eChild); continue;
-            }
-            this.addDependTask(t, eChild);
-        }
-    }
-
-    private void addDependTask(SubTask t, Element element) {
-        for (Element eChild : element.getChildren()) {
-            if (!SedMLTags.DEPENDENT_TASK.equals(eChild.getName())) {
-                lg.warn("Unexpected " + eChild); continue;
-            }
-            String taskId = eChild.getAttributeValue(SedMLTags.SUBTASK_ATTR_TASK);
-            t.addDependentTask(new SubTask(taskId));
         }
     }
 
@@ -422,8 +431,7 @@ class SEDMLReader {
             Range range;
             switch (childName) {
                 case SedMLTags.VECTOR_RANGE_TAG -> {
-                    String id = eChild.getAttributeValue(SedMLTags.RANGE_ATTR_ID);
-                    range = new VectorRange(id);
+                    range = new VectorRange(SedMLReader.parseId(eChild.getAttributeValue(SedMLTags.RANGE_ATTR_ID)));
                     this.addVectorRangeValues((VectorRange)range, eChild);
                 }
                 case SedMLTags.UNIFORM_RANGE_TAG -> {
@@ -432,7 +440,7 @@ class SEDMLReader {
                     if (numRangePointsAsString == null) throw new IllegalArgumentException("Number of Range points cannot be determined.");
 
                     range = new UniformRange(
-                            eChild.getAttributeValue(SedMLTags.RANGE_ATTR_ID),
+                            SedMLReader.parseId(eChild.getAttributeValue(SedMLTags.RANGE_ATTR_ID)),
                             Double.parseDouble(eChild.getAttributeValue(SedMLTags.UNIFORM_RANGE_ATTR_START)),
                             Double.parseDouble(eChild.getAttributeValue(SedMLTags.UNIFORM_RANGE_ATTR_END)),
                             Integer.parseInt(numRangePointsAsString),
@@ -441,8 +449,8 @@ class SEDMLReader {
 
                 }
                 case SedMLTags.FUNCTIONAL_RANGE_TAG -> {
-                    String id = eChild.getAttributeValue(SedMLTags.RANGE_ATTR_ID);
-                    String index = eChild.getAttributeValue(SedMLTags.FUNCTIONAL_RANGE_INDEX);
+                    SId id = SedMLReader.parseId(eChild.getAttributeValue(SedMLTags.RANGE_ATTR_ID));
+                    SId index = SedMLReader.parseId(eChild.getAttributeValue(SedMLTags.FUNCTIONAL_RANGE_INDEX));
                     range = new FunctionalRange(id, index);
                     this.addFunctionalRangeLists((FunctionalRange)range, eChild);
                 }
@@ -478,7 +486,7 @@ class SEDMLReader {
             if (!SedMLTags.DATAGEN_ATTR_VARIABLE.equals(eChild.getName())) {
                 lg.warn("Unexpected " + eChild); continue;
             }
-            fr.addVariable(this.createVariable(eChild, true));
+            fr.addVariable(this.createVariableWithinFunctionalRange(eChild));
         }
     }
 
@@ -500,11 +508,10 @@ class SEDMLReader {
         }
     }
 
-    DataGenerator getDataGenerator(Element dataGenElement)
-            throws DataConversionException {
+    DataGenerator getDataGenerator(Element dataGenElement) throws DataConversionException {
         ASTNode math = null;
         DataGenerator d = new DataGenerator(
-                dataGenElement.getAttributeValue(SedMLTags.DATAGEN_ATTR_ID),
+                SedMLReader.parseId(dataGenElement.getAttributeValue(SedMLTags.DATAGEN_ATTR_ID)),
                 dataGenElement.getAttributeValue(SedMLTags.DATAGEN_ATTR_NAME)
         );
         // eDataGenerator.getAttributeValue(MiaseMLTags.DGA_MATH));
@@ -513,7 +520,7 @@ class SEDMLReader {
                 case SedMLTags.DATAGEN_ATTR_VARS_LIST -> {
                     for (Element eVariable : eDataGeneratorChild.getChildren()) {
                         if (!SedMLTags.DATAGEN_ATTR_VARIABLE.equals(eVariable.getName())) continue;
-                        d.addVariable(this.createVariable(eVariable, false));
+                        d.addVariable(this.createVariableWithinDataGenerator(eVariable));
                     }
                 }
                 case SedMLTags.DATAGEN_ATTR_PARAMS_LIST -> {
@@ -534,7 +541,7 @@ class SEDMLReader {
 
     Parameter createParameter(Element eParameter) throws DataConversionException {
         Parameter p = new Parameter(
-                eParameter.getAttributeValue(SedMLTags.PARAMETER_ID),
+                SedMLReader.parseId(eParameter.getAttributeValue(SedMLTags.PARAMETER_ID)),
                 eParameter.getAttributeValue(SedMLTags.PARAMETER_NAME),
                 eParameter.getAttribute(SedMLTags.PARAMETER_VALUE).getDoubleValue()
         );
@@ -542,40 +549,66 @@ class SEDMLReader {
         return p;
     }
 
-    Variable createVariable(Element eVariable, boolean isModel) {
-        Variable v;
-        // Can't condense; these use two different signatures
-        if (null != eVariable.getAttribute(SedMLTags.VARIABLE_SYMBOL)) {
-            v = new Variable(
-                    eVariable.getAttributeValue(SedMLTags.VARIABLE_ID),
-                    eVariable.getAttributeValue(SedMLTags.VARIABLE_NAME),
-                    eVariable.getAttributeValue(isModel ? SedMLTags.VARIABLE_MODEL : SedMLTags.VARIABLE_TASK),
-                    VariableSymbol.getVariableSymbolFor(eVariable.getAttributeValue(SedMLTags.VARIABLE_SYMBOL))
-            );
-        } else {
-            v = new Variable(
-                    eVariable.getAttributeValue(SedMLTags.VARIABLE_ID),
-                    eVariable.getAttributeValue(SedMLTags.VARIABLE_NAME),
-                    eVariable.getAttributeValue(isModel ? SedMLTags.VARIABLE_MODEL : SedMLTags.VARIABLE_TASK),
-                    eVariable.getAttributeValue(SedMLTags.VARIABLE_TARGET)
-            );
-        }
+    Variable createVariableWithinDataGenerator(Element eVariable) {
+        return this.createVariable(eVariable, false, true);
+    }
+
+    Variable createVariableWithinComputeChange(Element eVariable) {
+        return this.createVariable(eVariable, true, false);
+    }
+
+    Variable createVariableWithinFunctionalRange(Element eVariable) {
+        return this.createVariable(eVariable, false, false);
+    }
+
+    Variable createVariableWithinSetValue(Element eVariable) {
+        return this.createVariable(eVariable, false, false);
+    }
+
+
+    private Variable createVariable(Element eVariable, boolean requireModelRef, boolean requireTaskRef) {
+        SId varId = SedMLReader.parseId(eVariable.getAttributeValue(SedMLTags.VARIABLE_ID));
+        String varName = eVariable.getAttributeValue(SedMLTags.VARIABLE_NAME);
+        Attribute symbolAttr = eVariable.getAttribute(SedMLTags.VARIABLE_SYMBOL);
+        boolean hasSymbol = symbolAttr != null;
+        Attribute targetAttr =  eVariable.getAttribute(SedMLTags.VARIABLE_TARGET);
+        SId modelRef = SedMLReader.parseId(eVariable.getAttributeValue(SedMLTags.VARIABLE_MODEL));
+        if (requireModelRef && modelRef == null) throw new IllegalArgumentException("maskRef attribute is null; either the document is invalid, or this is the incorrect method to call.");
+        SId taskRef = SedMLReader.parseId(eVariable.getAttributeValue(SedMLTags.VARIABLE_TASK));
+        if (requireTaskRef && taskRef == null) throw new IllegalArgumentException("taskRef attribute is null; either the document is invalid, or this is the incorrect method to call.");
+
+        Variable v; // Can't condense; these use two different signatures
+        if (hasSymbol) v = new Variable(varId, varName, modelRef, taskRef, VariableSymbol.getVariableSymbolFor(symbolAttr.getValue()));
+        else v = new Variable(varId, varName, modelRef, taskRef, targetAttr.getValue());
 
         this.addNotesAndAnnotation(v, eVariable);
         return v;
     }
 
-
     private Plot2D getPlot2D(Element ePlot2D) {
         Plot2D p2d = new Plot2D(
-                ePlot2D.getAttributeValue(SedMLTags.OUTPUT_ID),
+                SedMLReader.parseId(ePlot2D.getAttributeValue(SedMLTags.OUTPUT_ID)),
                 ePlot2D.getAttributeValue(SedMLTags.OUTPUT_NAME)
         );
+        Attribute showLegendAttr = ePlot2D.getAttribute(SedMLTags.OUTPUT_LEGEND);
+        if (showLegendAttr != null) p2d.setUseLegend(Boolean.parseBoolean(showLegendAttr.getValue()));
+        Attribute plotHeightAttr = ePlot2D.getAttribute(SedMLTags.OUTPUT_HEIGHT);
+        if (plotHeightAttr != null) p2d.setPlotHeight(Double.parseDouble(plotHeightAttr.getValue()));
+        Attribute plotWidthAttr = ePlot2D.getAttribute(SedMLTags.OUTPUT_WIDTH);
+        if (plotWidthAttr != null) p2d.setPlotWidth(Double.parseDouble(plotWidthAttr.getValue()));
+
         for (Element ePlot2DChild : ePlot2D.getChildren()) {
-            if (!SedMLTags.OUTPUT_CURVES_LIST.equals(ePlot2DChild.getName())) continue;
-            for (Element aCurve : ePlot2DChild.getChildren()) {
-                if (!SedMLTags.OUTPUT_CURVE.equals(aCurve.getName())) continue;
-                p2d.addCurve(this.getCurve(aCurve));
+            if (SedMLTags.OUTPUT_CURVES_LIST.equals(ePlot2DChild.getName())){
+                for (Element aCurve : ePlot2DChild.getChildren()) {
+                    if (!SedMLTags.OUTPUT_CURVE.equals(aCurve.getName())) continue;
+                    p2d.addCurve(this.getCurve(aCurve));
+                }
+            } else if (SedMLTags.AXIS_X.equals(ePlot2DChild.getName())){
+                p2d.setXAxis(this.getXAxis(ePlot2DChild));
+            } else if (SedMLTags.AXIS_Y.equals(ePlot2DChild.getName())){
+                p2d.setYAxis(this.getYAxis(ePlot2DChild));
+            } else if (SedMLTags.AXIS_RIGHT_Y.equals(ePlot2DChild.getName())){
+                p2d.setRightYAxis(this.getRightYAxis(ePlot2DChild));
             }
         }
         this.addNotesAndAnnotation(p2d, ePlot2D);
@@ -584,23 +617,92 @@ class SEDMLReader {
 
     private Plot3D getPlot3D(Element ePlot3D) {
         Plot3D p3d = new Plot3D(
-                ePlot3D.getAttributeValue(SedMLTags.OUTPUT_ID),
+                SedMLReader.parseId(ePlot3D.getAttributeValue(SedMLTags.OUTPUT_ID)),
                 ePlot3D.getAttributeValue(SedMLTags.OUTPUT_NAME)
         );
+
+        Attribute showLegendAttr = ePlot3D.getAttribute(SedMLTags.OUTPUT_LEGEND);
+        if (showLegendAttr != null) p3d.setUseLegend(Boolean.parseBoolean(showLegendAttr.getValue()));
+        Attribute plotHeightAttr = ePlot3D.getAttribute(SedMLTags.OUTPUT_HEIGHT);
+        if (plotHeightAttr != null) p3d.setPlotHeight(Double.parseDouble(plotHeightAttr.getValue()));
+        Attribute plotWidthAttr = ePlot3D.getAttribute(SedMLTags.OUTPUT_WIDTH);
+        if (plotWidthAttr != null) p3d.setPlotWidth(Double.parseDouble(plotWidthAttr.getValue()));
+
         for (Element ePlot3DChild : ePlot3D.getChildren()) {
-            if (!SedMLTags.OUTPUT_SURFACES_LIST.equals(ePlot3DChild.getName())) continue;
-            for (Element aSurface : ePlot3DChild.getChildren()) {
-                if (!SedMLTags.OUTPUT_SURFACE.equals(aSurface.getName())) continue;
-                p3d.addSurface(this.getSurface(aSurface));
+            if (SedMLTags.OUTPUT_SURFACES_LIST.equals(ePlot3DChild.getName())) {
+                for (Element aSurface : ePlot3DChild.getChildren()) {
+                    if (!SedMLTags.OUTPUT_SURFACE.equals(aSurface.getName())) continue;
+                    p3d.addSurface(this.getSurface(aSurface));
+                }
+            } else if (SedMLTags.AXIS_X.equals(ePlot3DChild.getName())){
+                p3d.setXAxis(this.getXAxis(ePlot3DChild));
+            } else if (SedMLTags.AXIS_Y.equals(ePlot3DChild.getName())){
+                p3d.setYAxis(this.getYAxis(ePlot3DChild));
+            } else if (SedMLTags.AXIS_RIGHT_Y.equals(ePlot3DChild.getName())){
+                p3d.setZAxis(this.getZAxis(ePlot3DChild));
             }
+
         }
         this.addNotesAndAnnotation(p3d, ePlot3D);
         return p3d;
     }
 
+    private XAxis getXAxis(Element eXAxis) {
+        XAxis xAxis = new XAxis(
+                SedMLReader.parseId(eXAxis.getAttributeValue(SedMLTags.AXIS_ID)),
+                eXAxis.getAttributeValue(SedMLTags.AXIS_NAME),
+                Axis.Type.fromTag(eXAxis.getAttributeValue(SedMLTags.AXIS_TYPE))
+        );
+        this.updateGeneralAxis(xAxis, eXAxis);
+        return xAxis;
+    }
+
+    private YAxis getYAxis(Element eYAxis) {
+        YAxis yAxis = new YAxis(
+                SedMLReader.parseId(eYAxis.getAttributeValue(SedMLTags.AXIS_ID)),
+                eYAxis.getAttributeValue(SedMLTags.AXIS_NAME),
+                Axis.Type.fromTag(eYAxis.getAttributeValue(SedMLTags.AXIS_TYPE))
+        );
+        this.updateGeneralAxis(yAxis, eYAxis);
+        return yAxis;
+    }
+
+    private ZAxis getZAxis(Element eZAxis) {
+        ZAxis zAxis = new ZAxis(
+                SedMLReader.parseId(eZAxis.getAttributeValue(SedMLTags.AXIS_ID)),
+                eZAxis.getAttributeValue(SedMLTags.AXIS_NAME),
+                Axis.Type.fromTag(eZAxis.getAttributeValue(SedMLTags.AXIS_TYPE))
+        );
+        this.updateGeneralAxis(zAxis, eZAxis);
+        return zAxis;
+    }
+
+    private RightYAxis getRightYAxis(Element eRightYAxis) {
+        RightYAxis rightYAxis = new RightYAxis(
+                SedMLReader.parseId(eRightYAxis.getAttributeValue(SedMLTags.AXIS_ID)),
+                eRightYAxis.getAttributeValue(SedMLTags.AXIS_NAME),
+                Axis.Type.fromTag(eRightYAxis.getAttributeValue(SedMLTags.AXIS_TYPE))
+        );
+        this.updateGeneralAxis(rightYAxis, eRightYAxis);
+        return rightYAxis;
+    }
+
+    private void updateGeneralAxis(Axis axis, Element eAxis){
+        Attribute minAttr = eAxis.getAttribute(SedMLTags.AXIS_MIN);
+        if (minAttr != null) axis.setMin(Double.parseDouble(minAttr.getValue()));
+        Attribute maxAttr = eAxis.getAttribute(SedMLTags.AXIS_MAX);
+        if (maxAttr != null) axis.setMax(Double.parseDouble(maxAttr.getValue()));
+        Attribute gridAttr = eAxis.getAttribute(SedMLTags.AXIS_GRID);
+        if (gridAttr != null) axis.setGrid(Boolean.parseBoolean(gridAttr.getValue()));
+        //Attribute styleAttr = eAxis.getAttribute(SedMLTags.AXIS_STYLE);
+        // Not implemented yet...
+        Attribute reverseAttr = eAxis.getAttribute(SedMLTags.AXIS_REVERSE);
+        if (reverseAttr != null) axis.setReverse(Boolean.parseBoolean(reverseAttr.getValue()));
+    }
+
     private Report getReport(Element eReport) {
         Report r = new Report(
-                eReport.getAttributeValue(SedMLTags.OUTPUT_ID),
+                SedMLReader.parseId(eReport.getAttributeValue(SedMLTags.OUTPUT_ID)),
                 eReport.getAttributeValue(SedMLTags.OUTPUT_NAME)
         );
         for (Element eReportDChild : eReport.getChildren()) {
@@ -617,40 +719,71 @@ class SEDMLReader {
 
     DataSet getDataset(Element aDataSet) {
         DataSet ds = new DataSet(
-                aDataSet.getAttributeValue(SedMLTags.OUTPUT_ID),
+                SedMLReader.parseId(aDataSet.getAttributeValue(SedMLTags.OUTPUT_ID)),
                 aDataSet.getAttributeValue(SedMLTags.OUTPUT_NAME),
                 aDataSet.getAttributeValue(SedMLTags.OUTPUT_DATASET_LABEL),
-                aDataSet.getAttributeValue(SedMLTags.OUTPUT_DATA_REFERENCE)
+                SedMLReader.parseId(aDataSet.getAttributeValue(SedMLTags.OUTPUT_DATA_REFERENCE))
         );
         this.addNotesAndAnnotation(ds, aDataSet);
         return ds;
     }
 
     Curve getCurve(Element aCurve) {
-        Curve c = new Curve(
-                aCurve.getAttributeValue(SedMLTags.OUTPUT_ID),
-                aCurve.getAttributeValue(SedMLTags.OUTPUT_NAME),
-                Boolean.parseBoolean(aCurve.getAttributeValue(SedMLTags.OUTPUT_LOG_X)),
-                Boolean.parseBoolean(aCurve.getAttributeValue(SedMLTags.OUTPUT_LOG_Y)),
-                aCurve.getAttributeValue(SedMLTags.OUTPUT_DATA_REFERENCE_X),
-                aCurve.getAttributeValue(SedMLTags.OUTPUT_DATA_REFERENCE_Y)
-        );
+        SId id = SedMLReader.parseId(aCurve.getAttributeValue(SedMLTags.OUTPUT_ID));
+        String name = aCurve.getAttributeValue(SedMLTags.OUTPUT_NAME);
+        SId xDataReference = SedMLReader.parseId(aCurve.getAttributeValue(SedMLTags.OUTPUT_DATA_REFERENCE_X));
+        SId yDataReference = SedMLReader.parseId(aCurve.getAttributeValue(SedMLTags.OUTPUT_DATA_REFERENCE_Y));
+
+        Attribute logXAttr = aCurve.getAttribute(SedMLTags.OUTPUT_LOG_X);
+        Attribute logYAttr = aCurve.getAttribute(SedMLTags.OUTPUT_LOG_Y);
+        Attribute typeAttr = aCurve.getAttribute(SedMLTags.OUTPUT_TYPE);
+        Attribute orderAttr = aCurve.getAttribute(SedMLTags.OUTPUT_ORDER);
+        //Attribute styleAttr = ...; //Not Yet Implemented
+        Attribute yAxisAttr = aCurve.getAttribute(SedMLTags.OUTPUT_RIGHT_Y_AXIS);
+        Attribute xErrUpAttr = aCurve.getAttribute(SedMLTags.OUTPUT_ERROR_X_UPPER);
+        Attribute xErrLowAttr = aCurve.getAttribute(SedMLTags.OUTPUT_ERROR_X_LOWER);
+        Attribute yErrUpAttr = aCurve.getAttribute(SedMLTags.OUTPUT_ERROR_Y_UPPER);
+        Attribute yErrLowAttr = aCurve.getAttribute(SedMLTags.OUTPUT_ERROR_Y_LOWER);
+
+        Boolean logScaleXAxis = null == logXAttr ? null: Boolean.valueOf(logXAttr.getValue());
+        Boolean logScaleYAxis = null == logYAttr ? null: Boolean.valueOf(logYAttr.getValue());
+        Curve.Type type = null == typeAttr ? Curve.Type.POINTS: Curve.Type.fromTag(typeAttr.getValue());
+        Integer order = null == orderAttr ? null: Integer.valueOf(orderAttr.getValue());
+        // SId style; Not Yet Implemented
+        AbstractCurve.YAxisAlignment yAxis = null == yAxisAttr ? AbstractCurve.YAxisAlignment.NOT_APPLICABLE : AbstractCurve.YAxisAlignment.fromTag(yAxisAttr.getValue()) ;
+        SId xErrorUpper = null == xErrUpAttr ? null: SedMLReader.parseId(xErrUpAttr.getValue());
+        SId xErrorLower = null == xErrLowAttr ? null: SedMLReader.parseId(xErrLowAttr.getValue());
+        SId yErrorUpper = null == yErrUpAttr ? null: SedMLReader.parseId(yErrUpAttr.getValue());
+        SId yErrorLower = null == yErrLowAttr ? null: SedMLReader.parseId(yErrLowAttr.getValue());
+
+        Curve c = new Curve(id, name, xDataReference, yDataReference, logScaleXAxis, logScaleYAxis, type, order,
+                null, yAxis, xErrorUpper, xErrorLower, yErrorUpper, yErrorLower);
         this.addNotesAndAnnotation(c, aCurve);
         return c;
 
     }
 
     Surface getSurface(Element aSurface) {
-        Surface s = new Surface(
-                aSurface.getAttributeValue(SedMLTags.OUTPUT_ID),
-                aSurface.getAttributeValue(SedMLTags.OUTPUT_NAME),
-                Boolean.parseBoolean(aSurface.getAttributeValue(SedMLTags.OUTPUT_LOG_X)),
-                Boolean.parseBoolean(aSurface.getAttributeValue(SedMLTags.OUTPUT_LOG_Y)),
-                Boolean.parseBoolean(aSurface.getAttributeValue(SedMLTags.OUTPUT_LOG_Z)),
-                aSurface.getAttributeValue(SedMLTags.OUTPUT_DATA_REFERENCE_X),
-                aSurface.getAttributeValue(SedMLTags.OUTPUT_DATA_REFERENCE_Y),
-                aSurface.getAttributeValue(SedMLTags.OUTPUT_DATA_REFERENCE_Z)
-        );
+        SId id = SedMLReader.parseId(aSurface.getAttributeValue(SedMLTags.OUTPUT_ID));
+        String name = aSurface.getAttributeValue(SedMLTags.OUTPUT_NAME);
+        SId xDataReference = SedMLReader.parseId(aSurface.getAttributeValue(SedMLTags.OUTPUT_DATA_REFERENCE_X));
+        SId yDataReference = SedMLReader.parseId(aSurface.getAttributeValue(SedMLTags.OUTPUT_DATA_REFERENCE_Y));
+        SId zDataReference = SedMLReader.parseId(aSurface.getAttributeValue(SedMLTags.OUTPUT_DATA_REFERENCE_Z));
+
+        Attribute logXAttr = aSurface.getAttribute(SedMLTags.OUTPUT_LOG_X);
+        Attribute logYAttr = aSurface.getAttribute(SedMLTags.OUTPUT_LOG_Y);
+        Attribute logZAttr = aSurface.getAttribute(SedMLTags.OUTPUT_LOG_Z);
+        Attribute typeAttr = aSurface.getAttribute(SedMLTags.OUTPUT_TYPE);
+        Attribute orderAttr = aSurface.getAttribute(SedMLTags.OUTPUT_ORDER);
+        //Attribute styleAttr = ...; //Not Yet Implemented
+
+        Boolean logScaleXAxis = null == logXAttr ? null: Boolean.valueOf(logXAttr.getValue());
+        Boolean logScaleYAxis = null == logYAttr ? null: Boolean.valueOf(logYAttr.getValue());
+        Boolean logScaleZAxis = null == logZAttr ? null: Boolean.valueOf(logZAttr.getValue());
+        Surface.Type type = null == typeAttr ? null: Surface.Type.fromTag(typeAttr.getValue());
+        Integer order = null == orderAttr ? null: Integer.valueOf(orderAttr.getValue());
+        // SId style; Not Yet Implemented
+        Surface s = new Surface(id, name, xDataReference, yDataReference, zDataReference, logScaleXAxis, logScaleYAxis, logScaleZAxis, null, type, order);
         this.addNotesAndAnnotation(s, aSurface);
         return s;
     }
@@ -667,4 +800,16 @@ class SEDMLReader {
         return new Annotation(annotationElement.getChildren().get(0).detach());
     }
 
+    private static SId parseId(String id) {
+        return null == id ? null : new SId(id);
+    }
+
+    // This one attempts to create an id if one doesn't exist, but a file name is provided!
+    private static SId parseId(String id, String filename){
+        if (null != id) return new SId(id);
+        if (filename == null) return null;
+        String alternativeFilename = filename.substring(0, filename.lastIndexOf("."));
+        if (!alternativeFilename.matches("[a-zA-z0-9_]+")) return null;
+        return new SId(alternativeFilename);
+    }
 }

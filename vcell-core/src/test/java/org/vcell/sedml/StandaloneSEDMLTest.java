@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.jlibsedml.SedMLDataContainer;
+import org.jlibsedml.components.SedBase;
+import org.jlibsedml.components.SedML;
 import org.jlibsedml.components.task.AbstractTask;
 import org.jlibsedml.components.algorithm.Algorithm;
 import org.jlibsedml.ArchiveComponents;
@@ -18,6 +20,7 @@ import org.jlibsedml.components.output.Output;
 import org.jlibsedml.SedMLDocument;
 import org.jlibsedml.components.simulation.SteadyState;
 import org.jlibsedml.components.simulation.UniformTimeCourse;
+import org.jlibsedml.components.task.Task;
 import org.jlibsedml.execution.ArchiveModelResolver;
 import org.jlibsedml.execution.ModelResolver;
 import org.jlibsedml.modelsupport.BioModelsModelsRetriever;
@@ -99,12 +102,14 @@ public class StandaloneSEDMLTest {
 		
 		SedMLDocument sedmlDoc = ac.getSedmlDocuments().get(0);
 	
-		SedMLDataContainer sedml = sedmlDoc.getSedMLModel();
-		if(sedml == null || sedml.getModels().isEmpty()) {
-			throw new RuntimeException("sedml null or empty");
-		}
+		SedMLDataContainer sedmlContainer = sedmlDoc.getSedMLModel();
+		if(sedmlContainer == null) throw new RuntimeException("sedml container null");
+
+        SedML sedml = sedmlContainer.getSedML();
+        if(sedml == null || sedml.getModels().isEmpty()) throw new RuntimeException("sedml container null or empty");
+
 		
-        ModelResolver resolver = new ModelResolver(sedml);
+        ModelResolver resolver = new ModelResolver(sedmlContainer);
        // resolver.add(new FileModelResolver());
         resolver.add(new ArchiveModelResolver(ac));
         resolver.add(new BioModelsModelsRetriever());
@@ -142,14 +147,17 @@ public class StandaloneSEDMLTest {
 //        HashMap<String,Model> flattenedModels = new HashMap<String, Model>();
 		List<AbstractTask> taskList = sedml.getTasks();
         for (AbstractTask task : taskList){
-        	String modelReference = task.getModelReference();
-			Model sedmlOriginalModel = sedml.getModelWithId(modelReference);
+            Task baseTask = sedmlContainer.getBaseTask(task.getId());
+            if (baseTask == null) throw new RuntimeException("baseTask is null");
+        	SedBase maybeModel = sedml.searchInModelsFor(baseTask.getModelReference());
+            if (!(maybeModel instanceof Model sedmlOriginalModel)) throw new RuntimeException("Unable to determine source model");
         	
-            String sbmlModelString = resolver.getModelString(sedmlOriginalModel);
+            String sbmlModelString = resolver.getXMLStringRepresentationOfModel(sedmlOriginalModel);
             
             XMLSource sbmlSource = new XMLSource(sbmlModelString);		// sbmlSource with all the changes applied
-            
-            org.jlibsedml.components.simulation.Simulation sedmlSimulation = sedml.getSimulation(task.getSimulationReference());
+
+            SedBase maybeSim = sedml.searchInSimulationsFor(baseTask.getSimulationReference());
+            if (!(maybeSim instanceof org.jlibsedml.components.simulation.Simulation sedmlSimulation)) throw new RuntimeException("Unable to determine simulation");
     		Algorithm algorithm = sedmlSimulation.getAlgorithm();
 			KisaoTerm sedmlKisao = kisaoInstance.getTermById(algorithm.getKisaoID());
 

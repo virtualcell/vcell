@@ -63,7 +63,7 @@ public abstract class ListOf<T extends SedBase> extends SedBase {
         return this.contents.isEmpty();
     }
 
-    public int size(){
+    public int size() {
         return this.contents.size();
     }
 
@@ -101,12 +101,18 @@ public abstract class ListOf<T extends SedBase> extends SedBase {
     }
 
     @Override
-    public boolean accept(SEDMLVisitor visitor) {
-//        for (T element : this.getContents()) {
-//            if (element.accept(visitor)) continue;
-//
-//        }
-        return true;
+    public SedBase searchFor(SId idOfElement) {
+        SedBase elementFound = super.searchFor(idOfElement);
+        if (elementFound != null) return elementFound;
+        // shortcut check to save time
+        if (this.contentIdMapping.containsKey(idOfElement))
+            return this.contentIdMapping.get(idOfElement);
+        // Now we have to check children
+        for (SId key : this.contentIdMapping.keySet()) {
+            elementFound = this.contentIdMapping.get(key).searchFor(idOfElement);
+            if (elementFound != null) return elementFound;
+        }
+        return null;
     }
 
     /**
@@ -123,9 +129,9 @@ public abstract class ListOf<T extends SedBase> extends SedBase {
         List<String> params = new ArrayList<>();
         for (T content : this.getContents()) {
             if (content.getId() != null) params.add(content.getIdAsString());
-            else params.add('[' + content.parametersToString() + ']');
+            else params.add(content.toString());
         }
-        return super.parametersToString() + ", " + String.join(", ", params);
+        return super.parametersToString() + ", values=[" + String.join(", ", params) + ']';
     }
 
     protected static class GeneralListOfComparator<N extends SedBase> implements Comparator<N> {

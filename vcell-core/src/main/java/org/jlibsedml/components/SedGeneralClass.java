@@ -9,7 +9,7 @@ public interface SedGeneralClass {
      static void checkNoNullArgs (Object ... args) {
         for (Object o : args) {
             if (o == null){
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("SedGeneralClass: null args passed");
             }
         }
     }
@@ -20,7 +20,7 @@ public interface SedGeneralClass {
      static void stringsNotEmpty(String ...args) {
         for (String o : args) {
             if (o.isEmpty()){
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("SedGeneralClass: empty args passed");
             }
         }
 

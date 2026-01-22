@@ -4,8 +4,13 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.*;
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.core.config.Configuration;
+import org.apache.logging.log4j.core.config.LoggerConfig;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -26,7 +31,29 @@ public class SBMLSpatialTest {
 	@BeforeAll
 	public static void before() throws IOException {
 		PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
-		Logger.getLogger(SBMLExporter.class).addAppender(new ConsoleAppender());
+        PropertyLoader.setProperty(PropertyLoader.installationRoot, "..");
+        Logger logger = LogManager.getLogger(SBMLExporter.class);
+        LoggerContext context = (LoggerContext) LogManager.getContext(false);
+        Configuration config = context.getConfiguration();
+        LoggerConfig loggerConfig = config.getLoggerConfig(logger.getName());
+
+        // If this logger doesn't have its own config, create one
+        if (!loggerConfig.getName().equals(logger.getName())) {
+            loggerConfig = new LoggerConfig(logger.getName(), Level.DEBUG, true);
+            config.addLogger(logger.getName(), loggerConfig);
+        }
+        // Make a Console Appender
+        org.apache.logging.log4j.core.appender.ConsoleAppender appender = org.apache.logging.log4j.core.appender.ConsoleAppender.newBuilder()
+                .setName("DefaultConsole")
+                .setTarget(org.apache.logging.log4j.core.appender.ConsoleAppender.Target.SYSTEM_OUT)
+                .setLayout(PatternLayout.newBuilder().withPattern("%d{HH:mm:ss} %-5level %c - %msg%n").withConfiguration(config).build())
+                .setConfiguration(config)
+                .build();
+        appender.start();
+
+        loggerConfig.addAppender(appender, logger.getLevel(), null);
+        // Update loggers
+        context.updateLoggers();
 		// create temporary working directory
 		workingDir = Files.createTempDirectory("sbml-test-suite-working-dir-").toFile();
 	}

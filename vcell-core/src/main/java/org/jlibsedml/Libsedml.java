@@ -191,7 +191,7 @@ public class Libsedml {
     private static SedMLDocument buildDocumentFromXMLTree(Document doc,
                                                           List<SedMLError> errs) throws XMLException {
         Element sedRoot = doc.getRootElement();
-        SEDMLReader reader = new SEDMLReader();
+        SedMLReader reader = new SedMLReader();
         try {
             SedMLElementFactory.getInstance().setStrictCreation(false);
             SedMLDataContainer sedMLDataContainer = reader.getSedDocument(sedRoot);
@@ -293,17 +293,15 @@ public class Libsedml {
             throw new IllegalArgumentException();
         }
 
-        ZipInputStream zis = new ZipInputStream(archive);
-        ZipEntry entry = null;
-
-        int read;
-        List<IModelContent> contents = new ArrayList<IModelContent>();
-        List<SedMLDocument> docs = new ArrayList<SedMLDocument>();
-        try {
+        try (ZipInputStream zis = new ZipInputStream(archive)) {
+            ZipEntry entry;
+            int read;
+            List<IModelContent> contents = new ArrayList<>();
+            List<SedMLDocument> docs = new ArrayList<>();
             while ((entry = zis.getNextEntry()) != null) {
-            	if(entry.getName().endsWith(".rdf")) {
-            		continue;		// we skip rdf files, otherwise isSEDML() below fails
-            	}
+                if (entry.getName().endsWith(".rdf")) {
+                    continue;        // we skip rdf files, otherwise isSEDML() below fails
+                }
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 byte[] buf = new byte[4096];
                 while ((read = zis.read(buf)) != -1) {
@@ -326,12 +324,9 @@ public class Libsedml {
             }
             return new ArchiveComponents(contents, docs);
         } catch (Exception e) {
-            throw new XMLException("Error reading archive: " + e.getMessage());
-        } finally {
-            try {
-                zis.close();
-            } catch (IOException e) {}// ignore
+            throw new XMLException("Error reading archive: ", e);
         }
+        // ignore
     }
 
     /**

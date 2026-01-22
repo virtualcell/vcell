@@ -40,7 +40,7 @@ import org.vcell.rest.rpc.RpcSimServerProxy;
 import org.vcell.sbml.OmexPythonUtils;
 import org.vcell.sedml.ModelFormat;
 import org.vcell.sedml.PublicationMetadata;
-import org.vcell.sedml.SEDMLExporter;
+import org.vcell.sedml.SedMLExporter;
 import org.vcell.util.*;
 import org.vcell.util.document.*;
 
@@ -466,7 +466,7 @@ public class RestDatabaseService {
 		return vcmlBigString.toString();
 	}
 
-	public ByteArrayRepresentation query(BiomodelOMEXServerResource resource, User vcellUser, boolean bSkipUnsupported, StringBuffer suggestedProjectName) throws SQLException, DataAccessException, XmlParseException, IOException, SEDMLExporter.SEDMLExportException, OmexPythonUtils.OmexValidationException {
+	public ByteArrayRepresentation query(BiomodelOMEXServerResource resource, User vcellUser, boolean bSkipUnsupported, StringBuffer suggestedProjectName) throws SQLException, DataAccessException, XmlParseException, IOException, SedMLExporter.SEDMLExportException, OmexPythonUtils.OmexValidationException {
 		if (vcellUser == null) {
 			vcellUser = VCellApiApplication.DUMMY_USER;
 		}
@@ -487,7 +487,7 @@ public class RestDatabaseService {
 
 		Predicate<SimulationContext> simContextFilter = (SimulationContext sc) -> true;
 		if (bSkipUnsupported) {
-			Map<String, String> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);
+			Map<String, String> unsupportedApplications = SedMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);
 			simContextFilter = (SimulationContext sc) -> !unsupportedApplications.containsKey(sc.getName());
 		}
 		String filenamePrefix = "VCDB_"+bioModelKey;
@@ -498,7 +498,7 @@ public class RestDatabaseService {
 		suggestedProjectName.append(filenamePrefix);
 		try {
 			boolean bCreateOmexArchive = true;
-			SEDMLExporter.writeBioModel(bioModel, publicationMetadata, exportOmexFile, modelFormat, simContextFilter,
+			SedMLExporter.writeBioModel(bioModel, publicationMetadata, exportOmexFile, modelFormat, simContextFilter,
 					bHasPython, bRoundTripSBMLValidation, bCreateOmexArchive);
 			byte[] omexFileBytes = Files.readAllBytes(exportOmexFile.toPath());
 			return new ByteArrayRepresentation(omexFileBytes, BiomodelOMEXResource.OMEX_MEDIATYPE);

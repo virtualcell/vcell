@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -13,7 +14,13 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.JDOMException;
 import org.jdom2.filter.ElementFilter;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
+import org.jlibsedml.components.Variable;
+import org.jlibsedml.components.model.Model;
 import org.jlibsedml.components.task.AbstractTask;
+import org.jlibsedml.components.task.SubTask;
+import org.jlibsedml.components.task.Task;
 import org.jlibsedml.execution.IModelResolver;
 import org.jlibsedml.extensions.XMLUtils;
 
@@ -36,19 +43,23 @@ public class XpathGeneratorHelper {
         XMLUtils utils = new XMLUtils();
 
         try {
-            String model = modelResolver.getModelXMLFor(this.sedml.getModelWithId(task.getModelReference()).getSourceURI());
-            if (model == null) {
-                return false;
-            }
-            Document doc = utils.readDoc(new ByteArrayInputStream(model.getBytes()));
+            Set<Task> potentialBaseTasks = this.sedml.getBaseTasks(task.getId());
+            if (potentialBaseTasks.size() != 1) throw new IllegalArgumentException("Cannot make data generators for repeated task with multiple different base tasks!");
+            Task baseTask = potentialBaseTasks.stream().findFirst().orElse(null);
+            SedBase elementFound = this.sedml.getSedML().searchInModelsFor(baseTask.getModelReference());
+            if (!(elementFound instanceof Model modelFound)) throw new IllegalArgumentException("provided task has invalid model reference!");
+            String modelStrRep = modelResolver.getModelXMLFor(modelFound.getSourceURI());
+            if (modelStrRep == null) return false;
 
-            List<AllOrNothingConfig> configs = new ArrayList<AllOrNothingConfig>();
+            Document doc = utils.readDoc(new ByteArrayInputStream(modelStrRep.getBytes()));
+
+            List<AllOrNothingConfig> configs = new ArrayList<>();
             for (IdName idn : idNameList) {
                 String id = idn.getId();
                 Element toIdentify = this.findElement(doc, id);
                 if (toIdentify == null && !allOrNothing) {
                     continue;
-                } else if (toIdentify == null && allOrNothing) {
+                } else if (toIdentify == null) {
                     return false;
                 }
 
@@ -59,9 +70,8 @@ public class XpathGeneratorHelper {
                 configs.add(new AllOrNothingConfig(targ, idn));
             }
             for (AllOrNothingConfig cfg : configs) {
-                this.sedml.addSimpleSpeciesAsOutput(cfg.targ, cfg.id.getId(), cfg.id.getName(), task, true);
+                this.sedml.createIdentityDataGeneratorForSpecies(new Variable(new SId(cfg.id.getId()), cfg.id.getName(), task.getId(), cfg.targ.toString()));
             }
-
 
         } catch (URISyntaxException | JDOMException | IOException e) {
             lg.error(e);

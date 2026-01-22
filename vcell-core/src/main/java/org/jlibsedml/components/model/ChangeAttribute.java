@@ -2,6 +2,7 @@ package org.jlibsedml.components.model;
 
 import org.jlibsedml.*;
 import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.SedGeneralClass;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -14,6 +15,15 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
  */
 public final class ChangeAttribute extends Change {
     private String newValue;
+
+    /**
+     * @param target   An {@link XPathTarget} to an attribute whose value is to be changed.
+     * @param newValue The new value of  <code>target</code> attribute.
+     * @throws IllegalArgumentException if either argument is null or empty.
+     */
+    public ChangeAttribute(XPathTarget target, String newValue) {
+        this(null, null, target, newValue);
+    }
 
     /**
      *
@@ -72,8 +82,9 @@ public final class ChangeAttribute extends Change {
         return SedMLTags.CHANGE_ATTRIBUTE;
     }
 
-    public boolean accept(SEDMLVisitor visitor) {
-        return visitor.visit(this);
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        return super.searchFor(idOfElement);
     }
 
     /**

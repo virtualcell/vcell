@@ -38,7 +38,7 @@ public class VcmlOmexConverter {
 									  boolean bValidateOmex,
 									  boolean bSkipUnsupportedApps,
 									  boolean bAddPublicationInfo)
-			throws SEDMLExporter.SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException {
+			throws SedMLExporter.SEDMLExportException, OmexPythonUtils.OmexValidationException, IOException {
 
 		if (input == null || !input.isFile() || !input.toString().endsWith(".vcml")) {
 			throw new RuntimeException("expecting inputFilePath '"+input+"' to be an existing .vcml file");
@@ -53,7 +53,7 @@ public class VcmlOmexConverter {
 			sedmlEventLog = (String entry) -> {};
 		}
 		boolean bHasPython = true;
-		List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(
+		List<SEDMLTaskRecord> sedmlTaskRecords = SedMLExporter.writeBioModel(
 				input,
 				bioModelInfo,
 				outputDir,
@@ -104,7 +104,7 @@ public class VcmlOmexConverter {
 			Span omexExportSpan = Tracer.startSpan(Span.ContextType.OMEX_EXPORT, "convertOneFile for "+inputFileName, null);
 			try {
 				boolean bHasPython = true;
-				List<SEDMLTaskRecord> sedmlTaskRecords = SEDMLExporter.writeBioModel(
+				List<SEDMLTaskRecord> sedmlTaskRecords = SedMLExporter.writeBioModel(
 						inputFile,
 						bioModelInfo,
 						outputDir,

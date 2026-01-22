@@ -21,9 +21,9 @@ import com.google.gson.GsonBuilder;
 /**
  * Sedml-specific recorder class
  */
-public class SEDMLRecorder extends Recorder {
+public class SedMLRecorder extends Recorder {
 
-	private final static Logger logger = LogManager.getLogger(SEDMLRecorder.class);
+	private final static Logger logger = LogManager.getLogger(SedMLRecorder.class);
 	
 	private String identifier; 
 	private SEDMLConversion operation;
@@ -38,7 +38,7 @@ public class SEDMLRecorder extends Recorder {
 	 * @param jobName name of the job this recorder is recording
 	 * @param conversion whether the sedml is imported or exported
 	 */
-	public SEDMLRecorder(String jobName, SEDMLConversion conversion) {
+	public SedMLRecorder(String jobName, SEDMLConversion conversion) {
 		this(jobName, conversion, null);
 	}
 
@@ -49,8 +49,8 @@ public class SEDMLRecorder extends Recorder {
 	 * @param conversion whether the sedml is imported or exported
 	 * @param jsonFilePath path to the json file to be created.
 	 */
-	public SEDMLRecorder(String jobName, SEDMLConversion conversion, String jsonFilePath) {
-		super(SEDMLRecorder.class);
+	public SedMLRecorder(String jobName, SEDMLConversion conversion, String jsonFilePath) {
+		super(SedMLRecorder.class);
 		this.identifier = jobName;
 		this.operation = conversion;
 		this.exceptionTypes = new HashSet<>();
