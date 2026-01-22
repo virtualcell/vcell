@@ -85,7 +85,7 @@ public class SEDMLUtils {
 			Document doc = builder.build(new File(fileName));
 			Element sedRoot = doc.getRootElement();
 	
-			SEDMLReader reader = new SEDMLReader();
+			SedMLReader reader = new SedMLReader();
 			
 			SedMLDataContainer sedDoc = reader.getSedDocument(sedRoot);
 			return sedDoc;

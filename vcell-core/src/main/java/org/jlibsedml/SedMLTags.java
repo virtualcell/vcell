@@ -25,6 +25,8 @@ public class SedMLTags {
     public static final String SED						    = "Sed";
     public static final String VERSION_TAG				    = "version";
 	public static final String LEVEL_TAG 				    = "level";
+    public static final String ATTRIBUTE_ID			        = "id";
+    public static final String ATTRIBUTE_NAME				= "name";
 
     
     public static final String NOTES					    = "notes";
@@ -154,10 +156,12 @@ public class SedMLTags {
     // outputs attributes and children
     public static final String OUTPUT_ID					= "id";
     public static final String OUTPUT_NAME					= "name";
+    public static final String OUTPUT_LEGEND				= "legend";
+    public static final String OUTPUT_HEIGHT				= "height";
+    public static final String OUTPUT_WIDTH				    = "width";
     public static final String OUTPUT_CURVES_LIST			= "listOfCurves";
     public static final String OUTPUT_SURFACES_LIST			= "listOfSurfaces";
     public static final String OUTPUT_DATASETS_LIST			= "listOfDataSets";
-    public static final String OUTPUT_AXIS                  = "axis";
     public static final String OUTPUT_CURVE					= "curve";
     public static final String OUTPUT_SURFACE				= "surface";
     public static final String OUTPUT_DATASET				= "dataSet";
@@ -169,7 +173,26 @@ public class SedMLTags {
     public static final String OUTPUT_DATA_REFERENCE_Y		= "yDataReference";
     public static final String OUTPUT_DATA_REFERENCE_Z		= "zDataReference";
     public static final String OUTPUT_DATASET_LABEL		    = "label";
-    
+    public static final String OUTPUT_TYPE                  = "type";
+    public static final String OUTPUT_ORDER     		    = "order";
+    public static final String OUTPUT_ERROR_X_UPPER		    = "xErrorUpper";
+    public static final String OUTPUT_ERROR_X_LOWER		    = "xErrorLower";
+    public static final String OUTPUT_ERROR_Y_UPPER		    = "yErrorUpper";
+    public static final String OUTPUT_ERROR_Y_LOWER		    = "yErrorLower";
+    public static final String OUTPUT_RIGHT_Y_AXIS		    = "yAxis";
+
+    // axis attributes
+    public static final String AXIS_ID			            = "id";
+    public static final String AXIS_NAME					= "name";
+    public static final String AXIS_TYPE                    = "type";
+    public static final String AXIS_X                       = "xAxis";
+    public static final String AXIS_Y                       = "yAxis";
+    public static final String AXIS_Z                       = "zAxis";
+    public static final String AXIS_RIGHT_Y                 = "rightYAxis";
+    public static final String AXIS_MIN                     = "min";
+    public static final String AXIS_MAX                     = "max";
+    public static final String AXIS_GRID                    = "grid";
+    public static final String AXIS_REVERSE                 = "reverse";
     
     // variable attributes
     public static final String VARIABLE_ID					= "id";
@@ -199,5 +222,5 @@ public class SedMLTags {
     public static final String SIMUL_UTC_KIND               = "uniformTimeCourse";
     public static final String SIMUL_OS_KIND                = "oneStep";
     public static final String SIMUL_SS_KIND                = "steadyState";
-    public static final String SIMUL_ANY_KIND				= "anySimulation";
+    public static final String SIMUL_ANALYSIS               = "analysis";
 }

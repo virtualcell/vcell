@@ -1,10 +1,8 @@
 package org.jlibsedml.components.task;
 
 import org.jlibsedml.*;
-import org.jlibsedml.components.Parameter;
-import org.jlibsedml.components.SId;
-import org.jlibsedml.components.SedGeneralClass;
-import org.jlibsedml.components.Variable;
+import org.jlibsedml.components.*;
+import org.jlibsedml.components.model.Change;
 import org.jlibsedml.components.model.Model;
 import org.jlibsedml.components.simulation.Simulation;
 
@@ -17,8 +15,8 @@ import java.util.List;
  *
  */
 public class Task extends AbstractTask {
-    private String modelReference;
-    private String simulationReference;
+    private SId modelReference;
+    private SId simulationReference;
 	
 	 @Override
 	 public String getElementName() {
@@ -32,16 +30,23 @@ public class Task extends AbstractTask {
 	 * @param simulationReference
 	 * @throws IllegalArgumentException if any argument except name is null or empty string.
 	 */
-	public Task(SId id, String name, String modelReference, String simulationReference) {
+	public Task(SId id, String name, SId modelReference, SId simulationReference) {
 		super(id,name);
 		if(SedMLElementFactory.getInstance().isStrictCreation()){
-            SedGeneralClass.checkNoNullArgs(modelReference, simulationReference);
-            SedGeneralClass.stringsNotEmpty(modelReference, simulationReference);
+            SedGeneralClass.checkNoNullArgs(id, modelReference, simulationReference);
 		}
 		// store and initialize	
 		this.modelReference = modelReference;
 		this.simulationReference = simulationReference;
 	}
+
+    /**
+     * Getter for the model reference.
+     * @return A <code>String</code> that should correspond to a model's <code>id</code> attribute.
+     */
+    public SId getModelReference() {
+        return this.modelReference;
+    }
 
 	/**
 	 * Sets the model reference for this task. This should be the value of the 'id'
@@ -49,8 +54,16 @@ public class Task extends AbstractTask {
 	 * @param modelReference A non-null <code>String</code>.
 	 * @since 1.2.0 
 	 */
-	public void setModelReference(String modelReference) {
+	public void setModelReference(SId modelReference) {
         this.modelReference = modelReference;
+    }
+
+    /**
+     * Getter for the simulation reference.
+     * @return A <code>String</code> that should correspond to a simulation's <code>id</code> attribute.
+     */
+    public SId getSimulationReference() {
+        return this.simulationReference;
     }
 
 	/**
@@ -59,30 +72,8 @@ public class Task extends AbstractTask {
 	 * @param simulationReference  A non-null <code>String</code>.
 	 * @since 1.2.0
 	 */
-    public void setSimulationReference(String simulationReference) {
+    public void setSimulationReference(SId simulationReference) {
         this.simulationReference = simulationReference;
-    }
-
-    /**
-	 * Getter for the model reference.
-	 * @return A <code>String</code> that should correspond to a model's <code>id</code> attribute.
-	 */
-    @Override
-	public String getModelReference() {
-		return this.modelReference;
-	}
-	
-	/**
-	 * Getter for the simulation reference.
-	 * @return A <code>String</code> that should correspond to a simulation's <code>id</code> attribute.
-	 */
-    @Override
-	public String getSimulationReference() {
-		return this.simulationReference;
-	}
-	
-	public  boolean accept(SEDMLVisitor visitor){
-        return visitor.visit(this);
     }
 
     /**
@@ -98,5 +89,10 @@ public class Task extends AbstractTask {
         if (this.modelReference != null) params.add(String.format("modelReference=%s", this.modelReference));
         if (this.simulationReference != null) params.add(String.format("simulationReference=%s", this.simulationReference));
         return super.parametersToString() + ", " + String.join(", ", params);
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        return super.searchFor(idOfElement);
     }
 }

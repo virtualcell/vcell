@@ -1,18 +1,31 @@
 package org.jlibsedml.components.output;
 
-import org.jlibsedml.SEDMLVisitor;
-import org.jlibsedml.SedMLTags;
 import org.jlibsedml.components.SId;
 import org.jlibsedml.components.SedBase;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Axis extends SedBase {
+public abstract class Axis extends SedBase {
 
     public enum Type {
-        LINEAR,
-        LOG10
+        LINEAR("linear"),
+        LOG10("log10");
+
+        private final String tagStr;
+        Type(String tagStr){
+            this.tagStr = tagStr;
+        }
+
+        public String getTag() {
+            return this.tagStr;
+        }
+
+        public static Type fromTag(String tagStr) {
+            if ("linear".equals(tagStr)) return LINEAR;
+            if ("log10".equals(tagStr)) return LOG10;
+            throw new IllegalArgumentException("invalid tag: " + (tagStr == null ? "null" : tagStr));
+        }
     }
 
     private Type type;
@@ -85,11 +98,6 @@ public class Axis extends SedBase {
     }
 
     @Override
-    public boolean accept(SEDMLVisitor visitor) {
-        return false;
-    }
-
-    @Override
     public String parametersToString() {
         List<String> params = new ArrayList<>();
         params.add(String.format("type=%s", this.type));
@@ -101,6 +109,8 @@ public class Axis extends SedBase {
         return super.parametersToString() + ", " + String.join(", ", params);
     }
 
+    public abstract String getAxisTagName();
+
     /**
      * Provides a link between the object model and the XML element names
      *
@@ -108,6 +118,11 @@ public class Axis extends SedBase {
      */
     @Override
     public String getElementName() {
-        return SedMLTags.OUTPUT_AXIS;
+        return this.getAxisTagName();
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        return super.searchFor(idOfElement);
     }
 }

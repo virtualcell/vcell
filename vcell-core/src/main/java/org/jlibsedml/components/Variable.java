@@ -2,8 +2,6 @@ package org.jlibsedml.components;
 
 import org.jlibsedml.SedMLElementFactory;
 import org.jlibsedml.SedMLTags;
-import org.jlibsedml.SEDMLVisitor;
-import org.jlibsedml.components.task.Task;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,90 +27,213 @@ import java.util.List;
  */
 public final class Variable extends SedBase {
 
-    private String targetXPathStr = null;
-    private String reference; // task OR model ID
+    private String targetXPathStr; // maybe make: `private XPathTarget targetXPathStr;` ?
+    private SId modelReference;
+    private SId taskReference;
     private VariableSymbol symbol;
+//    private XPathTarget target2; // Not used yet
+//    private VariableSymbol symbol2; // Not used yet
+//    private String anyURI; // Not used yet
+//    private String dimensionTerm; // Not used yet
 
     /**
-     * Standard constructor.
+     * Case 1: Variable references a target-only value (ex: DataSource [not currently implemented])
+     *
+     * @param id
+     *            A non-null ID
+     * @param name
+     *            An optional name ( can be null or empty string)
+     * @param targetXPath
+     *            An XPath expression identifying the variable in the data
+     * @throws IllegalArgumentException
+     *            <code>id</code> or <code>targetXPath</code> is null.
+     */
+    public Variable(SId id, String name, String targetXPath) {
+        super(id, name);
+        if (SedMLElementFactory.getInstance().isStrictCreation()) {
+            SedGeneralClass.checkNoNullArgs(id, targetXPath);
+        }
+        this.targetXPathStr = targetXPath;
+        this.modelReference = null;
+        this.taskReference = null;
+        this.symbol = null;
+    }
+
+    /**
+     * Case 2a: Variable references a model by target; note that argument order matters!!
      * 
      * @param id
      *            A non-null ID
      * @param name
      *            An optional name ( can be null or empty string)
-     * @param reference
-     *            A non-null, non-empty<code>String</code> reference, to either
-     *            a taskId or a model Id ( see class documentation )
      * @param targetXPath
-     *            An XPath expression identifying the variable in the model
-     *            referenced by the {@link Task} element.
+     *            An XPath expression identifying the variable in the model referenced.
+     * @param modelReference
+     *            A non-null {@link SId} to a model Id ( see class documentation )
      * @throws IllegalArgumentException
-     *             id <code>id</code>,<code>reference</code>, or
+     *             <code>id</code>,<code>modelReference</code>, or
      *             <code>targetXPath</code> is null.
      */
-    public Variable(SId id, String name, String reference, String targetXPath) {
+    public Variable(SId id, String name, String targetXPath, SId modelReference) {
         super(id, name);
         if (SedMLElementFactory.getInstance().isStrictCreation()) {
-           SedGeneralClass.checkNoNullArgs(reference, targetXPath);
+           SedGeneralClass.checkNoNullArgs(id, modelReference, targetXPath);
         }
         this.targetXPathStr = targetXPath;
-        this.reference = reference;
-    }
-
-    /**
-     * Alternative constructor for use when this object refers to an implicit
-     * variable such as time.
-     * 
-     * @param id
-     * @param name
-     * @param reference
-     * @param symbol
-     *            A non-null {@link VariableSymbol} object.
-     * @throws IllegalArgumentException
-     *             id <code>id</code>,<code>reference</code>, or
-     *             <code>symbol</code> is null.
-     */
-    public Variable(SId id, String name, String reference,
-            VariableSymbol symbol) {
-        super(id, name);
-       SedGeneralClass.checkNoNullArgs(reference, symbol);
-        this.symbol = symbol;
-        this.reference = reference;
-    }
-
-    /**
-     * Gets the symbol for this variable, if isSymbol() ==true.
-     * 
-     * @return Gets a {@link VariableSymbol}, or <code>null</code> if
-     *         <code>isVariable()==true</code>.
-     */
-    public VariableSymbol getSymbol() {
-        return symbol;
-    }
-
-    /**
-     * Boolean query for whether or not this object represents a SEDML implicit
-     * variable, such as time.
-     * 
-     * @return <code>true</code> if this object represents a SEDML implicit
-     *         variable, <code>false</code> otherwise.
-     */
-    public boolean isSymbol() {
-        return symbol != null;
-    }
-
-    /**
-     * Sets the target XPath for this object. This method will have the
-     * side-effect of setting any symbol reference to <code>null</code>, since a
-     * Variable can only refer to a symbol or a model variable, but not both.
-     * 
-     * @param targetXPathStr
-     *            A non-null <code></code>representing an XPath statement.
-     * @since 1.2.0
-     */
-    public void setTargetXPathStr(String targetXPathStr) {
-        this.targetXPathStr = targetXPathStr;
+        this.modelReference = null;
+        this.taskReference = null;
         this.symbol = null;
+    }
+
+    /**
+     * Case 2b: Variable references a model by symbol; note that argument order matters!!
+     *
+     * @param id
+     *            A non-null ID
+     * @param name
+     *            An optional name ( can be null or empty string)
+     * @param symbol
+     *            An {@link VariableSymbol} identifying the variable in the model referenced
+     * @param modelReference
+     *            A non-null {@link SId} to a model Id ( see class documentation )
+     * @throws IllegalArgumentException
+     *             <code>id</code>,<code>modelReference</code>, or
+     *             <code>targetXPath</code> is null.
+     */
+    public Variable(SId id, String name, VariableSymbol symbol, SId modelReference) {
+        super(id, name);
+        SedGeneralClass.checkNoNullArgs(id, modelReference, symbol);
+        this.targetXPathStr = null;
+        this.modelReference = modelReference;
+        this.taskReference = null;
+        this.symbol = symbol;
+    }
+
+    /**
+     * Case 3a: Variable references a task by target; note that argument order matters!!
+     *
+     * @param id
+     *            A non-null ID
+     * @param name
+     *            An optional name ( can be null or empty string)
+     * @param targetXPath
+     *            An XPath expression identifying the variable in the task referenced.
+     * @param taskReference
+     *            A non-null {@link SId} to a taskId
+     * @throws IllegalArgumentException
+     *             <code>id</code>,<code>taskReference</code>, or
+     *             <code>targetXPath</code> is null.
+     */
+    public Variable(SId id, String name, SId taskReference, String targetXPath) {
+        super(id, name);
+        if (SedMLElementFactory.getInstance().isStrictCreation()) {
+            SedGeneralClass.checkNoNullArgs(id, taskReference, targetXPath);
+        }
+        this.targetXPathStr = targetXPath;
+        this.modelReference = null;
+        this.taskReference = taskReference;
+        this.symbol = null;
+    }
+
+    /**
+     * Case 3b: Variable references a task by symbol; note that argument order matters!!
+     *
+     * @param id
+     *            A non-null ID
+     * @param name
+     *            An optional name ( can be null or empty string)
+     * @param symbol
+     *            An {@link VariableSymbol} identifying the variable in the task referenced.
+     * @param taskReference
+     *            A non-null {@link SId} to a taskId ( see class documentation )
+     * @throws IllegalArgumentException
+     *             <code>id</code>,<code>taskReference</code>, or
+     *             <code>targetXPath</code> is null.
+     */
+    public Variable(SId id, String name, SId taskReference, VariableSymbol symbol) {
+        super(id, name);
+        SedGeneralClass.checkNoNullArgs(id, taskReference, symbol);
+        this.targetXPathStr = null;
+        this.modelReference = null;
+        this.taskReference = taskReference;
+        this.symbol = symbol;
+    }
+
+    /**
+     * Case 4a: Variable references a task AND model by symbol; note that argument order matters!!
+     *
+     * @param id
+     *            A non-null ID
+     * @param name
+     *            An optional name ( can be null or empty string)
+     * @param targetXPath
+     *            An XPath expression identifying the variable in the task + model referenced.
+     * @param modelReference
+     *            A non-null {@link SId} to a modelId ( see class documentation )
+     * @param taskReference
+     *            A non-null {@link SId} to a taskId ( see class documentation )
+     * @throws IllegalArgumentException
+     *             <code>id</code>,<code>taskReference</code>, or
+     *             <code>targetXPath</code> is null.
+     */
+    public Variable(SId id, String name, SId modelReference, SId taskReference, String targetXPath) {
+        super(id, name);
+        SId oneRefNotNull = (modelReference != null) ? modelReference : taskReference;
+        SedGeneralClass.checkNoNullArgs(id, oneRefNotNull, targetXPath);
+        this.targetXPathStr = targetXPath;
+        this.modelReference = modelReference;
+        this.taskReference = taskReference;
+        this.symbol = null;
+    }
+
+    /**
+     * Case 4b: Variable references a task AND model by symbol; note that argument order matters!!
+     *
+     * @param id
+     *            A non-null ID
+     * @param name
+     *            An optional name ( can be null or empty string)
+     * @param symbol
+     *            An {@link VariableSymbol} identifying the variable in the task + model referenced.
+     * @param modelReference
+     *            A non-null {@link SId} to a modelId ( see class documentation )
+     * @param taskReference
+     *            A non-null {@link SId} to a taskId ( see class documentation )
+     * @throws IllegalArgumentException
+     *             <code>id</code>,<code>taskReference</code>, or
+     *             <code>targetXPath</code> is null.
+     */
+    public Variable(SId id, String name, SId modelReference, SId taskReference, VariableSymbol symbol) {
+        super(id, name);
+        SId oneRefNotNull = (modelReference != null) ? modelReference : taskReference;
+        SedGeneralClass.checkNoNullArgs(id, oneRefNotNull, symbol);
+        this.targetXPathStr = null;
+        this.modelReference = modelReference;
+        this.taskReference = taskReference;
+        this.symbol = symbol;
+    }
+
+    /**
+     * Getter for the XPath string which identifies this variable in the model.
+     * If isSymbol() == true, this will return null.
+     *
+     * @return An XPath string
+     */
+    public String getTarget() {
+        return this.targetXPathStr;
+    }
+
+    public void setTarget(String target) {
+        this.targetXPathStr = target;
+    }
+
+    /**
+     * Gets the cross-reference for this variable.
+     *
+     * @return the reference ID.
+     */
+    public SId getModelReference() {
+        return this.modelReference;
     }
 
     /**
@@ -122,9 +243,38 @@ public final class Variable extends SedBase {
      *            A <code>non-null</code>String.
      * @since 1.2.0
      */
-    public void setReference(String reference) {
-        this.reference = reference;
+    public void setModelReference(SId reference) {
+        this.modelReference = reference;
+    }
 
+    /**
+     * Gets the cross-reference for this variable.
+     *
+     * @return the reference ID.
+     */
+    public SId getTaskReference() {
+        return this.taskReference;
+    }
+
+    /**
+     * Sets the task reference for this variable.
+     *
+     * @param reference
+     *            A <code>non-null</code>String.
+     * @since 1.2.0
+     */
+    public void setTaskReference(SId reference) {
+        this.taskReference = reference;
+    }
+
+    /**
+     * Gets the symbol for this variable, if isSymbol() ==true.
+     *
+     * @return Gets a {@link VariableSymbol}, or <code>null</code> if
+     *         <code>isVariable()==true</code>.
+     */
+    public VariableSymbol getSymbol() {
+        return this.symbol;
     }
 
     /**
@@ -141,13 +291,15 @@ public final class Variable extends SedBase {
         this.targetXPathStr = null;
     }
 
-    @Override
-    public String parametersToString(){
-        List<String> params = new ArrayList<>();
-        params.add(String.format("reference=%s", this.reference));
-        params.add(String.format("symbol=%s", this.symbol));
-        params.add(String.format("targetXPathStr=%s", this.targetXPathStr));
-        return super.parametersToString() + ", " + String.join(", ", params);
+    /**
+     * Boolean query for whether this object represents a SEDML implicit
+     * variable, such as time.
+     *
+     * @return <code>true</code> if this object represents a SEDML implicit
+     *         variable, <code>false</code> otherwise.
+     */
+    public boolean isSymbol() {
+        return this.symbol != null;
     }
 
     /**
@@ -155,49 +307,39 @@ public final class Variable extends SedBase {
      * @return <code>true</code> if this object represents a SEDML variable,
      *         <code>false</code> otherwise.
      */
-    public boolean isVariable() {
-        return targetXPathStr != null;
+    public boolean referencesXPath() {
+        return this.targetXPathStr != null;
     }
 
     /**
-     * Boolean test for whether or not this object represents the SEDML implicit
+     * Boolean test for whether this object represents the SEDML implicit
      * variable for <em>urn:sedml:symbol:time</em>. 
      * @return <code>true</code> if this object represents the SEDML implicit
      *         variable <em>urn:sedml:symbol:time</em>, <code>false</code>
      *         otherwise.
      */
     public boolean isTime() {
-        return isSymbol() && symbol.equals(VariableSymbol.TIME);
+        return this.isSymbol() && this.symbol.equals(VariableSymbol.TIME);
     }
 
-    /**
-     * Getter for the XPath string which identifies this variable in the model.
-     * If isSymbol() == true, this will return null.
-     * 
-     * @return An XPath string
-     */
-    public final String getTarget() {
-        return targetXPathStr;
-    }
-
-    /**
-     * Gets the cross-reference for this variable. If this variable is defined
-     * inside a DataGenerator element, this cross-reference will refer to a
-     * <code>task</code> id. If it occurs in a <code>ComputeChange</code>
-     * element, it will refer to a <code>Model</code> id.
-     * 
-     * @return the reference ID.
-     */
-    public final String getReference() {
-        return reference;
-    }
 
     @Override
     public String getElementName() {
         return SedMLTags.DATAGEN_ATTR_VARIABLE;
     }
 
-    public boolean accept(SEDMLVisitor visitor) {
-        return visitor.visit(this);
+    @Override
+    public String parametersToString(){
+        List<String> params = new ArrayList<>();
+        if (this.modelReference != null) params.add(String.format("modelReference=%s", this.modelReference.string()));
+        if (this.modelReference != null)params.add(String.format("taskReference=%s", this.taskReference.string()));
+        if (this.symbol != null) params.add(String.format("symbol=%s", this.symbol));
+        if (this.targetXPathStr != null) params.add(String.format("targetXPathStr=%s", this.targetXPathStr));
+        return super.parametersToString() + ", " + String.join(", ", params);
+    }
+
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        return super.searchFor(idOfElement);
     }
 }

@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Tag("SEDML_SBML_IT")
-public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
+public class SedMLExporterSBMLTest extends SEDMLExporterCommon {
 
 	/**
 	 * 	each file in the slowTestSet takes > 10s on disk and is not included in the unit test (move to integration testing)

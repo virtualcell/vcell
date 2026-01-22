@@ -47,7 +47,7 @@ import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLAnnotationUtil;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
-import org.vcell.sedml.SEDMLImporter;
+import org.vcell.sedml.SedMLImporter;
 import org.vcell.util.Extent;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
@@ -462,7 +462,7 @@ public class XmlHelper {
 			if (sedml == null) {
 				throw new RuntimeException("Failed importing " + omexFile.getName());
 			}
-			if (sedml.getModels().isEmpty()) {
+			if (sedml.getSedML().getModels().isEmpty()) {
 				throw new RuntimeException("There are no models in " + omexFile.getName());
 			}
 			sedmls.add(sedml);
@@ -481,7 +481,7 @@ public class XmlHelper {
 
 	public static List<BioModel> importSEDML(VCLogger transLogger, ExternalDocInfo externalDocInfo,
                                              SedMLDataContainer sedml, boolean exactMatchOnly) throws Exception {
-		SEDMLImporter sedmlImporter = new SEDMLImporter(transLogger, externalDocInfo.getFile(),
+		SedMLImporter sedmlImporter = new SedMLImporter(transLogger, externalDocInfo.getFile(),
 				sedml, exactMatchOnly);
 		return sedmlImporter.getBioModels();
 	}

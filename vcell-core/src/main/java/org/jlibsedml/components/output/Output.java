@@ -52,7 +52,7 @@ public abstract class Output extends SedBase {
      * @return <code>true</code> if this is a Plot3d description, <code>false</code> otherwise.
      */
     public boolean isPlot3d() {
-        return this.getKind().equals(SedMLTags.PLOT3D);
+        return this.getKind().equals(SedMLTags.PLOT3D_KIND);
     }
 
 
@@ -73,36 +73,4 @@ public abstract class Output extends SedBase {
      * @return A possibly empty but non-null {@link List} of {@link DataGenerator} id values.
      */
     public abstract Set<SId> getAllDataGeneratorReferences();
-
-    public boolean accept(SEDMLVisitor visitor) {
-        if (visitor.visit(this)) {
-            if (this.isPlot2d()) {
-                for (AbstractCurve c : ((Plot2D) this).getListOfCurves()) {
-                    if (!c.accept(visitor)) {
-                        return false;
-                    }
-                }
-                return true;
-            } else if (this.isPlot3d()) {
-                for (Surface sf : ((Plot3D) this).getListOfSurfaces()) {
-                    if (!sf.accept(visitor)) {
-                        return false;
-                    }
-                }
-                return true;
-            } else if (this.isReport()) {
-                for (DataSet sds : ((Report) this).getListOfDataSets()) {
-                    if (!sds.accept(visitor)) {
-                        return false;
-                    }
-                }
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
-
 }

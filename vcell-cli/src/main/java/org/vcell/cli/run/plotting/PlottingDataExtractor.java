@@ -4,8 +4,14 @@ import cbit.vcell.resource.OperatingSystemInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
+import org.jlibsedml.components.SedML;
+import org.jlibsedml.components.Variable;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.output.AbstractCurve;
 import org.jlibsedml.components.output.Curve;
+import org.jlibsedml.components.output.Plot;
 import org.jlibsedml.components.output.Plot2D;
 import org.vcell.cli.run.results.NonSpatialResultsConverter;
 import org.vcell.cli.run.results.ValueHolder;
@@ -40,28 +46,30 @@ public class PlottingDataExtractor {
      * @see NonSpatialResultsConverter ::convertNonspatialResultsToSedmlFormat
      * @see org.vcell.cli.run.results.SpatialResultsConverter ::collectSpatialDatasets
      */
-    public Map<Results2DLinePlot, Pair<String, String>> extractPlotRelevantData(Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults) {
-        Map<Results2DLinePlot, Pair<String, String>> plots = new LinkedHashMap<>();
-        Set<String> xAxisNames = new LinkedHashSet<>();
+    public Map<Results2DLinePlot, Pair<String, SId>> extractPlotRelevantData(Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults) {
+        Map<Results2DLinePlot, Pair<String, SId>> plots = new LinkedHashMap<>();
+        Set<String> xLabelNames = new LinkedHashSet<>();
         if (organizedNonSpatialResults.isEmpty()) return plots;
 
-        for (Plot2D requestedPlot : this.sedml.getOutputs().stream().filter(Plot2D.class::isInstance).map(Plot2D.class::cast).toList()){
-            BiosimulationLog.instance().updatePlotStatusYml(this.sedmlName, requestedPlot.getId(), BiosimulationLog.Status.RUNNING);
+        SedML sedML = this.sedml.getSedML();
+        for (Plot2D requestedPlot : sedML.getOutputs().stream().filter(Plot2D.class::isInstance).map(Plot2D.class::cast).toList()){
+            BiosimulationLog.instance().updatePlotStatusYml(this.sedmlName, requestedPlot.getIdAsString(), BiosimulationLog.Status.RUNNING);
             Results2DLinePlot plot = new Results2DLinePlot();
             plot.setTitle(requestedPlot.getName());
 
 
-            for (Curve curve : requestedPlot.getListOfCurves()){
+            for (AbstractCurve abstractCurve: requestedPlot.getCurves()){
+                if (!(abstractCurve instanceof Curve curve )) continue;
                 ValueHolder<LazySBMLNonSpatialDataAccessor> xResults, yResults;
-                BiosimulationLog.instance().updateCurveStatusYml(this.sedmlName, requestedPlot.getId(), curve.getId(), BiosimulationLog.Status.RUNNING);
-                DataGenerator requestedXGenerator = this.sedml.getDataGeneratorWithId(curve.getXDataReference());
-                DataGenerator requestedYGenerator = this.sedml.getDataGeneratorWithId(curve.getYDataReference());
-                if (requestedXGenerator == null || requestedYGenerator == null)
-                    throw this.logBeforeThrowing(new RuntimeException("Unexpected null returns"), requestedPlot.getId(), curve.getId());
+                BiosimulationLog.instance().updateCurveStatusYml(this.sedmlName, requestedPlot.getIdAsString(), curve.getIdAsString(), BiosimulationLog.Status.RUNNING);
+                SedBase maybeXGenerator = sedML.searchInDataGeneratorsFor(curve.getXDataReference());
+                if (!(maybeXGenerator instanceof DataGenerator requestedXGenerator)) throw new RuntimeException("Unable to retrieve x data reference!");
+                SedBase maybeYGenerator = sedML.searchInDataGeneratorsFor(curve.getYDataReference());
+                if (!(maybeYGenerator instanceof DataGenerator requestedYGenerator)) throw new RuntimeException("Unable to retrieve y data reference!");
                 if (null == (xResults = PlottingDataExtractor.simplifyRedundantSets(organizedNonSpatialResults.get(requestedXGenerator))))
-                    throw this.logBeforeThrowing(new RuntimeException("Unexpected lack of x-axis results!"), requestedPlot.getId(), curve.getId());
+                    throw this.logBeforeThrowing(new RuntimeException("Unexpected lack of x-axis results!"), requestedPlot.getIdAsString(), curve.getIdAsString());
                 if (null == (yResults = organizedNonSpatialResults.get(requestedYGenerator)))
-                    throw this.logBeforeThrowing(new RuntimeException("Unexpected lack of y-axis results!"), requestedPlot.getId(), curve.getId());
+                    throw this.logBeforeThrowing(new RuntimeException("Unexpected lack of y-axis results!"), requestedPlot.getIdAsString(), curve.getIdAsString());
 
                 // There's two cases: 1 x-axis, n y-axes; or n x-axes, n y-axes.
                 final boolean hasSingleXSeries = xResults.listOfResultSets.size() == 1;
@@ -69,14 +77,11 @@ public class PlottingDataExtractor {
                 boolean hasPairsOfSeries = xResults.listOfResultSets.size() == yResults.listOfResultSets.size();
                 if (!hasSingleXSeries && !hasPairsOfSeries){
                     RuntimeException exception = new RuntimeException("Unexpected mismatch between number of x data sets, and y data sets!");
-                    throw this.logBeforeThrowing(exception, requestedPlot.getId(), curve.getId());
+                    throw this.logBeforeThrowing(exception, requestedPlot.getIdAsString(), curve.getIdAsString());
                 }
 
-                boolean hasBadXName = requestedXGenerator.getName() == null || requestedXGenerator.getName().isEmpty();
-                boolean hasBadYName = requestedYGenerator.getName() == null || requestedYGenerator.getName().isEmpty();
-                String xLabel = hasBadXName ? requestedXGenerator.getId() : requestedXGenerator.getName();
-                String yLabel = hasBadYName ? requestedYGenerator.getId() : requestedYGenerator.getName();
-                xAxisNames.add(xLabel);
+                Pair<String, String> labelPair = this.getXYAxisLabel(curve);
+                xLabelNames.add(labelPair.one);
 
                 for (int i = 0; i < yResults.listOfResultSets.size(); i++){
                     SBMLDataRecord xLazyResults, yLazyResults;
@@ -93,16 +98,16 @@ public class PlottingDataExtractor {
                     List<Double> xData = Arrays.stream(xDataArray).boxed().toList();
                     List<Double> yData = Arrays.stream(yDataArray).boxed().toList();
 
-                    String xSeriesLabel = xLabel + (hasSingleXSeries ? "" : " (" + i + ")");
-                    String ySeriesLabel = yLabel + (hasSingleYSeries ? "" : " (" + i + ")");
+                    String xSeriesLabel = labelPair.one + (hasSingleXSeries ? "" : " (" + i + ")");
+                    String ySeriesLabel = labelPair.two + (hasSingleYSeries ? "" : " (" + i + ")");
                     SingleAxisSeries xSeries = new SingleAxisSeries(xSeriesLabel, xData);
                     SingleAxisSeries ySeries = new SingleAxisSeries(ySeriesLabel, yData);
                     plot.addXYData(xSeries, ySeries);
                 }
-                BiosimulationLog.instance().updateCurveStatusYml(this.sedmlName, requestedPlot.getId(), curve.getId(), BiosimulationLog.Status.SUCCEEDED);
+                BiosimulationLog.instance().updateCurveStatusYml(this.sedmlName, requestedPlot.getIdAsString(), curve.getIdAsString(), BiosimulationLog.Status.SUCCEEDED);
             }
 
-            plot.setXAxisTitle(String.join("/", xAxisNames));
+            plot.setXAxisTitle(PlottingDataExtractor.getXAxisName(xLabelNames, requestedPlot));
             String plotFileName = getValidPlotName(requestedPlot);
             plots.put(plot, new Pair<>(plotFileName, requestedPlot.getId()));
         }
@@ -115,7 +120,7 @@ public class PlottingDataExtractor {
         String illegalRegex = ".*[" + illegalChars + "].*"; // Need to make sure the file can be made in the OS
         String requestedPlotName = requestedPlot.getName();
         boolean hasBadPlotName = requestedPlotName == null || requestedPlotName.isBlank() || requestedPlotName.matches(illegalRegex);
-        return hasBadPlotName ? requestedPlot.getId() : requestedPlot.getName();
+        return hasBadPlotName ? requestedPlot.getIdAsString() : requestedPlot.getName();
     }
 
     private RuntimeException logBeforeThrowing(RuntimeException e, String plotId, String curveId) {
@@ -137,5 +142,37 @@ public class PlottingDataExtractor {
         ValueHolder<LazySBMLNonSpatialDataAccessor> adjustedSets = startingValues.createEmptySetWithSameVCsim();
         adjustedSets.listOfResultSets.addAll(setOfData);
         return adjustedSets;
+    }
+
+    private static String getXAxisName(Set<String> xLabelNames, Plot plot){
+        if (plot.getXAxis() != null){
+            if (plot.getXAxis().getName() != null) return plot.getXAxis().getName();
+            if (plot.getXAxis().getId() != null) return plot.getXAxis().getId().string();
+        }
+        String allXNames = String.join("/", xLabelNames);
+        return (allXNames.length() > 50) ? allXNames.substring(0, 50) + "..." : allXNames;
+    }
+
+    private Pair<String, String> getXYAxisLabel(Curve curve){
+        String yLabel;
+        SedBase xRef = this.sedml.getSedML().searchInDataGeneratorsFor(curve.getXDataReference());
+        String xLabel = xRef instanceof DataGenerator dataGenerator ? PlottingDataExtractor.getBestLabel(dataGenerator) : "";
+        if (curve.getName() != null) yLabel = curve.getName();
+        else if (curve.getId() != null) yLabel = curve.getId().string();
+        else {
+            SedBase yRef = this.sedml.getSedML().searchInDataGeneratorsFor(curve.getYDataReference());
+            yLabel = yRef instanceof DataGenerator dataGenerator ? PlottingDataExtractor.getBestLabel(dataGenerator) : "";
+        }
+        return new Pair<>(xLabel, yLabel);
+    }
+
+    private static String getBestLabel(DataGenerator dataGenerator){
+        // Check if time first
+        if (dataGenerator.getVariables().size() == 1){
+            Variable targetVar = dataGenerator.getVariables().get(0);
+            if (targetVar.isSymbol() && "urn:sedml:symbol:time".equals(targetVar.getSymbol().getUrn())) return "Time";
+        }
+        if (dataGenerator.getName() != null) return dataGenerator.getName();
+        return dataGenerator.getIdAsString();
     }
 }

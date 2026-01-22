@@ -4,6 +4,7 @@ import org.jlibsedml.SedMLTags;
 import org.jlibsedml.SEDMLVisitor;
 import org.jlibsedml.XPathTarget;
 import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
@@ -14,6 +15,7 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
  *
  */
 public final class ChangeXML extends Change {
+    private NewXML newXML;
 
     /**
      * Setter for  the {@link NewXML} for this object.
@@ -26,8 +28,14 @@ public final class ChangeXML extends Change {
         this.newXML = newXML;
     }
 
-    private NewXML newXML = null;
-
+    /**
+     *
+     * @param target A <code>XPathTarget</code>object
+     * @param newXML A <code>String</code> of new XML
+     */
+    public ChangeXML(XPathTarget target, NewXML newXML) {
+        this(null, null, target, newXML);
+    }
 
     /**
      *
@@ -38,8 +46,6 @@ public final class ChangeXML extends Change {
         super(id, name, target);
         this.newXML = newXML;
     }
-
-
 
     /**
      * Getter for the change kind.
@@ -65,8 +71,9 @@ public final class ChangeXML extends Change {
         return SedMLTags.CHANGE_XML;
     }
 
-    public boolean accept(SEDMLVisitor visitor) {
-        return visitor.visit(this);
+    @Override
+    public SedBase searchFor(SId idOfElement) {
+        return super.searchFor(idOfElement);
     }
 
     /**

@@ -1,7 +1,6 @@
 package org.jlibsedml.components.output;
 
 import org.jlibsedml.SedMLTags;
-import org.jlibsedml.SEDMLVisitor;
 import org.jlibsedml.SedMLElementFactory;
 import org.jlibsedml.components.SId;
 import org.jlibsedml.components.SedBase;
@@ -17,12 +16,31 @@ import java.util.List;
  */
 public final class Surface extends SedBase {
     public enum Type {
-        PARAMETRIC_CURVE,
-        SURFACE_MESH,
-        SURFACE_CONTOUR,
-        CONTOUR,
-        HEATMAP,
-        BAR
+        PARAMETRIC_CURVE("parametricCurve"),
+        SURFACE_MESH("surfaceMesh"),
+        SURFACE_CONTOUR("surfaceContour"),
+        CONTOUR("contour"),
+        HEATMAP("heatMap"),
+        BAR("bar");
+
+        private final String tag;
+        Type(String tag){
+            this.tag = tag;
+        }
+
+        public String getTag() { return this.tag; }
+
+        public static Type fromTag(String tag) {
+            return switch (tag) {
+                case "parametricCurve" -> PARAMETRIC_CURVE;
+                case "surfaceMesh" -> SURFACE_MESH;
+                case "surfaceContour" -> SURFACE_CONTOUR;
+                case "contour" -> CONTOUR;
+                case "heatMap" -> HEATMAP;
+                case "bar" -> BAR;
+                default -> throw new IllegalArgumentException("Unknown tag " + tag);
+            };
+        }
     }
 
     private SId xDataReference;
@@ -31,9 +49,9 @@ public final class Surface extends SedBase {
     @Deprecated private Boolean logScaleYAxis;
     private SId zDataReference;
     @Deprecated private Boolean logScaleZAxis;
-    private Integer order;
     private SId style;
     private Type type;
+    private Integer order;
 
 
 
@@ -51,7 +69,8 @@ public final class Surface extends SedBase {
      * @throws IllegalArgumentException if any argument except <code>name</code> is null or empty.
      */
     public Surface(SId id, String name, SId xDataReference, SId yDataReference, SId zDataReference,
-                   Boolean logScaleXAxis, Boolean logScaleYAxis, Boolean logScaleZAxis) {
+                   Boolean logScaleXAxis, Boolean logScaleYAxis, Boolean logScaleZAxis,
+                   SId style, Surface.Type type, Integer order) {
         super(id, name);
         if(SedMLElementFactory.getInstance().isStrictCreation()){
             SedGeneralClass.checkNoNullArgs(xDataReference, yDataReference, zDataReference);
@@ -62,20 +81,9 @@ public final class Surface extends SedBase {
         this.logScaleYAxis = logScaleYAxis;
         this.zDataReference = zDataReference;
         this.logScaleZAxis = logScaleZAxis;
-    }
-
-    @Override
-    public String parametersToString() {
-        List<String> params = new ArrayList<>();
-        params.add(String.format("xDataReference=%s", this.xDataReference.string()));
-        params.add(String.format("yDataReference=%s", this.yDataReference.string()));
-        params.add(String.format("zDataReference=%s", this.zDataReference.string()));
-        if (null != this.logScaleXAxis) params.add(String.format("logX=%s", this.logScaleXAxis));
-        if (null != this.logScaleYAxis) params.add(String.format("logY=%s", this.logScaleYAxis));
-        if (null != this.logScaleYAxis) params.add(String.format("logZ=%s", this.logScaleZAxis));
-        if (null != this.order) params.add(String.format("order=%s", this.order));
-        if (null != this.style) params.add(String.format("style=%s", this.style.string()));
-        return super.parametersToString() + ", " + String.join(", ", params);
+        this.style = style;
+        this.type = type;
+        this.order = order;
     }
 
     public SId getXDataReference() {
@@ -191,17 +199,33 @@ public final class Surface extends SedBase {
 		return SedMLTags.OUTPUT_SURFACE;
 	}
 
-
-	/**
-	 * @return the reference to the {@link DataGenerator} for the z-axis
-	 */
-    public SId getzDataReference() {
-	   return this.zDataReference;
-	}
-
-	
-	public boolean accept(SEDMLVisitor visitor) {
-        return visitor.visit(this);
+    @Override
+    public SedBase searchFor(SId idOfElement){
+        return super.searchFor(idOfElement);
     }
+
+    /**
+     * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
+     * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
+     * <br\>
+     * e.g.: `super.parametersToString() + ", " + String.format(...)`
+     *
+     * @return the parameters and their values, listed in string form
+     */
+    @Override
+    public String parametersToString() {
+        List<String> params = new ArrayList<>();
+        params.add(String.format("xDataReference=%s", this.xDataReference.string()));
+        params.add(String.format("yDataReference=%s", this.yDataReference.string()));
+        params.add(String.format("zDataReference=%s", this.zDataReference.string()));
+        if (null != this.logScaleXAxis) params.add(String.format("logX=%s", this.logScaleXAxis));
+        if (null != this.logScaleYAxis) params.add(String.format("logY=%s", this.logScaleYAxis));
+        if (null != this.logScaleYAxis) params.add(String.format("logZ=%s", this.logScaleZAxis));
+        if (null != this.order) params.add(String.format("order=%s", this.order));
+        if (null != this.style) params.add(String.format("style=%s", this.style.string()));
+        return super.parametersToString() + ", " + String.join(", ", params);
+    }
+	
+
 }
 

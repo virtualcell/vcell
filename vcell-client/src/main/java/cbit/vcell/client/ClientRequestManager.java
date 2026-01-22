@@ -3285,7 +3285,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 						if (sedml == null) {
 							throw new RuntimeException("Failed importing " + file.getName());
 						}
-						if (sedml.getModels().isEmpty()) {
+						if (sedml.getSedML().getModels().isEmpty()) {
 							throw new RuntimeException("Unable to find any model in " + file.getName());
 						}
 						sedmls.add(sedml);
@@ -3481,7 +3481,7 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 								if (sedml == null) {
 									throw new RuntimeException("Failed importing " + file.getName());
 								}
-								if (sedml.getModels().isEmpty()) {
+								if (sedml.getSedML().getModels().isEmpty()) {
 									throw new RuntimeException("Unable to find any model in " + file.getName());
 								}
 								List<SedMLDataContainer> sedmls = new ArrayList<>();

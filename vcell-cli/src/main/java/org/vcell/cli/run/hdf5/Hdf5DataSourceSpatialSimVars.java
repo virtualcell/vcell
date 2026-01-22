@@ -162,8 +162,8 @@ public class Hdf5DataSourceSpatialSimVars {
      */
     private String parseDataGen(DataGenerator dataGen){
         if (this.sedmlDatasetToVarName.containsKey(dataGen)) return this.sedmlDatasetToVarName.get(dataGen);
-        if (dataGen.getListOfVariables().size() != 1) throw new IllegalArgumentException("Multi-variable generator detected.");
-        this.sedmlDatasetToVarName.put(dataGen, dataGen.getListOfVariables().get(0).getName());
+        if (dataGen.getVariables().size() != 1) throw new IllegalArgumentException("Multi-variable generator detected.");
+        this.sedmlDatasetToVarName.put(dataGen, dataGen.getVariables().get(0).getName());
         return this.sedmlDatasetToVarName.get(dataGen);
     }
 }

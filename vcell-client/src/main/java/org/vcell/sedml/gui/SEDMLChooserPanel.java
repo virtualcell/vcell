@@ -15,13 +15,16 @@ import javax.swing.JRadioButton;
 import javax.swing.JToggleButton.ToggleButtonModel;
 
 import org.jlibsedml.SedMLDataContainer;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
+import org.jlibsedml.components.model.Model;
 import org.jlibsedml.components.task.AbstractTask;
 import org.jlibsedml.components.model.Change;
 import org.jlibsedml.components.task.RepeatedTask;
 import org.jlibsedml.SedMLTags;
 import org.jlibsedml.components.task.SubTask;
 import org.jlibsedml.components.task.Task;
-import org.vcell.sedml.SEDMLUtil;
+import org.vcell.sedml.SedMLUtil;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.gui.DialogUtils;
 
@@ -61,26 +64,33 @@ public class SEDMLChooserPanel extends JPanel {
 		
 		// build and present to the user all the tasks that we can import; we skip those that we can't import for some reason 
 		// (incompatibility with vCell for example) and for them we create a list of problems which we show to the user 
-		for(AbstractTask at : sedml.getTasks()) {
+		for(AbstractTask at : this.sedml.getSedML().getTasks()) {
 			
 			String text = "";
 			String tooltip = "";
 			boolean issueFound = false;
 			
-			if(at instanceof Task) {
-				Task t = (Task)at;
-				text = " Simple task '" + t.getId() + "' - " + 
-						sedml.getModelWithId(t.getModelReference()).getClass().getSimpleName() + " '" +		// model class
-						SEDMLUtil.getName(sedml.getModelWithId(t.getModelReference())) + "' : " + 
-						sedml.getSimulation(t.getSimulationReference()).getClass().getSimpleName() + " '" +	// simulation class
-						SEDMLUtil.getName(sedml.getSimulation(t.getSimulationReference())) + "' ";
-				tooltip = "The model has " + sedml.getModelWithId(t.getModelReference()).getListOfChanges().size() + " changes.";
-			} else if(at instanceof RepeatedTask) {
-				RepeatedTask rt = (RepeatedTask)at;
-				
-				// TODO: we issue warning that importing repeated task is not implemented yet
+			if(at instanceof Task t) {
+                SedBase maybeModel = this.sedml.getSedML().searchInModelsFor(t.getModelReference());
+                SedBase maybeSim = this.sedml.getSedML().searchInSimulationsFor(t.getSimulationReference());
+                String modelSimpleName = maybeModel == null ? "<unknown>" : maybeModel.getClass().getSimpleName();
+                String simSimpleName = maybeSim == null ? "<unknown>" : maybeSim.getClass().getSimpleName();
+                text = " Simple task '" + t.getId() + "' - " +
+                        modelSimpleName + " '" +		// model class
+						SedMLUtil.getName(maybeModel) + "' : " +
+                        simSimpleName + " '" +	// simulation class
+						SedMLUtil.getName(maybeSim) + "' ";
+                if (maybeModel instanceof Model model){
+                    tooltip = "The model has " + model.getListOfChanges().size() + " changes.";
+                } else {
+                    tooltip = "";
+                }
+
+			} else if(at instanceof RepeatedTask rt) {
+
+                // TODO: we issue warning that importing repeated task is not implemented yet
 				// but we have still can import it as simple task, so we don't set issueFound to true
-				issues.add("Importing a RepeatedTask is not implemented yet, '" + SEDMLUtil.getName(rt) + "' may be imported as SimpleTask.");
+				issues.add("Importing a RepeatedTask is not implemented yet, '" + SedMLUtil.getName(rt) + "' may be imported as SimpleTask.");
 				
 				// Verify that all the changes are supported (setValue only, for now) and if anything else is found
 				// add an error message to the list of errors and skip the task
@@ -96,22 +106,34 @@ public class SEDMLChooserPanel extends JPanel {
 					issues.add("At least one subtask is required within a repeated task: " + rt.getId());
 					issueFound = true;
 				case 1:
-					SubTask st = rt.getSubTasks().entrySet().iterator().next().getValue();		// first (and only) element
-					String taskId = st.getTask();
-					AbstractTask t = sedml.getTaskWithId(taskId);
-					text = " Repeated task '" + rt.getId() + "' - " + 
-							sedml.getModelWithId(t.getModelReference()).getClass().getSimpleName() + " '" +		// model class
-							SEDMLUtil.getName(sedml.getModelWithId(t.getModelReference())) + "' : " + 
-							sedml.getSimulation(t.getSimulationReference()).getClass().getSimpleName() + " '" +	// simulation class
-							SEDMLUtil.getName(sedml.getSimulation(t.getSimulationReference())) + "' ";
-					tooltip = "The repeated task has " + rt.getChanges().size() + " changes and " + rt.getRanges().size() + " ranges.";
+					SubTask st = rt.getSubTasks().iterator().next();		// first (and only) element
+					SId taskId = st.getTask();
+                    SedBase maybeAbstractTask = this.sedml.getSedML().searchInModelsFor(taskId);
+                    Task rtBaseTask;
+					if (maybeAbstractTask instanceof AbstractTask abstractTask && null != (rtBaseTask = this.sedml.getBaseTask(abstractTask.getId()))){
+                        SedBase maybeRTModel = this.sedml.getSedML().searchInModelsFor(rtBaseTask.getModelReference());
+                        SedBase maybeRTSim =  this.sedml.getSedML().searchInSimulationsFor(rtBaseTask.getSimulationReference());
+                        String rtModelSimpleName = maybeRTModel == null ? "<unknown>" : maybeRTModel.getClass().getSimpleName();
+                        String rtSimSimpleName = maybeRTSim == null ? "<unknown>" : maybeRTSim.getClass().getSimpleName();
+                        text = " Repeated task '" + rt.getId() + "' - " +
+                                rtModelSimpleName + " '" +		// model class
+                                SedMLUtil.getName(maybeRTModel) + "' : " +
+                                rtSimSimpleName + " '" +	// simulation class
+                                SedMLUtil.getName(maybeRTSim) + "' ";
+                        tooltip = "The repeated task has " + rt.getChanges().size() + " changes and " + rt.getRanges().size() + " ranges.";
+                    } else {
+                        text = "Unknown task";
+                        tooltip = "Unable to determine task type or details";
+                    }
+
+
 					break;
 				default:
 					issues.add("Multiple subtasks within a repeated task '" + rt.getId() + "' are not supported.");
 					issueFound = true;
 				}
 			} else {
-				issues.add("The task class '" + SEDMLUtil.getName(at) + "' is not supported.");
+				issues.add("The task class '" + SedMLUtil.getName(at) + "' is not supported.");
 				issueFound = true;
 			}
 			

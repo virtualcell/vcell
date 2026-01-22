@@ -6,6 +6,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedML;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
 import org.jlibsedml.components.model.Model;
 import org.jlibsedml.components.output.Output;
@@ -50,12 +52,12 @@ import java.util.Map;
  * Class that deals with the processing quest of a sedml file.
  */
 public class SedmlJob {
+    private final static Logger logger = LogManager.getLogger(SedmlJob.class);
 
     private final boolean SHOULD_KEEP_TEMP_FILES,
             ACCEPT_EXACT_MATCH_ONLY, SHOULD_OVERRIDE_FOR_SMALL_MESH;
-    private final String SEDML_NAME, SEDML_LOCATION, BIOMODEL_BASE_NAME, RESULTS_DIRECTORY_PATH;
+    private final String SEDML_LOCATION, BIOMODEL_BASE_NAME, RESULTS_DIRECTORY_PATH;
     private final String[] SEDML_NAME_SPLIT;
-    private final StringBuilder LOG_OMEX_MESSAGE;
     private final SedmlStatistics DOC_STATISTICS; // We keep this in object memory for debugging
     private final File MASTER_OMEX_ARCHIVE, PLOTS_DIRECTORY, OUTPUT_DIRECTORY_FOR_CURRENT_SEDML;
     private final CLIRecordable CLI_RECORDER;
@@ -63,8 +65,8 @@ public class SedmlJob {
     private String logDocumentMessage, logDocumentError;
     private SedMLDataContainer sedml;
 
+    public final String SEDML_NAME;
 
-    private final static Logger logger = LogManager.getLogger(SedmlJob.class);
 
     /**
      * Constructor to provide all needed info for a SedML processing job.
@@ -73,17 +75,15 @@ public class SedmlJob {
      * @param omexHandler object to deal with omex archive related utilities
      * @param masterOmexArchive the archive containing the sedml file
      * @param resultsDirPath path to where the results should be placed
-     * @param sedmlPath2d3dString path to where 2D and 3D plots are stored
+     * @param pathToPlotsDirectory path to where 2D and 3D plots are stored
      * @param cliRecorder recorder object used for CLI applications
      * @param bKeepTempFiles whether temp files shouldn't be deleted, or should.
      * @param bExactMatchOnly enforces a KISAO match, with no substitution
      * @param bSmallMeshOverride whether to use small meshes or standard meshes.
-     * @param logOmexMessage a string-builder to contain progress updates of omex execution
      */
     public SedmlJob(String sedmlLocation, OmexHandler omexHandler, File masterOmexArchive,
-                    String resultsDirPath, String sedmlPath2d3dString, CLIRecordable cliRecorder,
-                    boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride,
-                    StringBuilder logOmexMessage){
+                    String resultsDirPath, String pathToPlotsDirectory, CLIRecordable cliRecorder,
+                    boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride){
         final String SAFE_WINDOWS_FILE_SEPARATOR = "\\\\";
         final String SAFE_UNIX_FILE_SEPARATOR = "/";
         this.MASTER_OMEX_ARCHIVE = masterOmexArchive;
@@ -95,8 +95,7 @@ public class SedmlJob {
         this.DOC_STATISTICS = new SedmlStatistics(this.SEDML_NAME);
         this.BIOMODEL_BASE_NAME = FileUtils.getBaseName(masterOmexArchive.getName());
         this.RESULTS_DIRECTORY_PATH = resultsDirPath;
-        this.LOG_OMEX_MESSAGE = logOmexMessage;
-        this.PLOTS_DIRECTORY = new File(sedmlPath2d3dString);
+        this.PLOTS_DIRECTORY = new File(pathToPlotsDirectory);
         this.CLI_RECORDER = cliRecorder;
         this.SHOULD_KEEP_TEMP_FILES = bKeepTempFiles;
         this.ACCEPT_EXACT_MATCH_ONLY = bExactMatchOnly;
@@ -117,81 +116,84 @@ public class SedmlJob {
     public SedmlStatistics preProcessDoc() throws IOException, PreProcessingException {
         BiosimulationLog biosimLog = BiosimulationLog.instance();
 
-        Span span = Tracer.startSpan(Span.ContextType.PROCESSING_SEDML, "preProcessDoc", null);
-        RunUtils.removeAndMakeDirs(this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML);
-
-        this.LOG_OMEX_MESSAGE.append("Processing ").append(this.SEDML_NAME).append(". ");
-
-        // Load SedML
-        logger.info("Initializing and Pre-Processing SedML document: {}", this.SEDML_NAME);
-        biosimLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.RUNNING);
+        Span span = null;
         try {
-            this.sedml = SedmlJob.getSedMLFile(this.SEDML_NAME_SPLIT, this.MASTER_OMEX_ARCHIVE);
-        } catch (Exception e) {
-            String prefix = "SedML pre-processing for " + this.SEDML_LOCATION + " failed";
-            this.logDocumentError = prefix + ": " + e.getMessage();
-            Tracer.failure(e, prefix);
-            this.reportProblem(e);
-            this.somethingFailed = SedmlJob.somethingDidFail();
-            biosimLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.FAILED);
-            span.close();
-            throw new PreProcessingException(prefix, e);
+            span = Tracer.startSpan(Span.ContextType.PROCESSING_SEDML, "preProcessDoc", null);
+            RunUtils.removeAndMakeDirs(this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML);
+
+            // Load SedML
+            logger.info("Initializing and Pre-Processing SedML document: {}", this.SEDML_NAME);
+            biosimLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.RUNNING);
+            try {
+                this.sedml = SedmlJob.getSedMLFile(this.SEDML_NAME_SPLIT, this.MASTER_OMEX_ARCHIVE);
+            } catch (Exception e) {
+                String prefix = "SedML pre-processing for " + this.SEDML_LOCATION + " failed";
+                this.logDocumentError = prefix + ": " + e.getMessage();
+                Tracer.failure(e, prefix);
+                this.reportProblem(e);
+                this.somethingFailed = SedmlJob.somethingDidFail();
+                biosimLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.FAILED);
+                span.close();
+                throw new PreProcessingException(prefix, e);
+            }
+
+            // If we got here, we have a successful load!!
+            SedML sedML = this.sedml.getSedML();
+            this.logDocumentMessage += "done. ";
+            String resultString = String.format("Successfully loaded and translated SED-ML file: %s.\n", this.SEDML_NAME);
+            this.logDocumentMessage += resultString;
+
+            // Generate Doc Statistics
+            this.DOC_STATISTICS.setNumModels(sedML.getModels().size());
+            this.DOC_STATISTICS.setNumSimulations(sedML.getSimulations().size());
+            for (Simulation simulation : sedML.getSimulations()){
+                boolean isUTC = simulation instanceof UniformTimeCourse;
+                if (isUTC) this.DOC_STATISTICS.setNumUniformTimeCourseSimulations(this.DOC_STATISTICS.getNumUniformTimeCourseSimulations() + 1);
+                else if (simulation instanceof OneStep) this.DOC_STATISTICS.setNumOneStepSimulations(this.DOC_STATISTICS.getNumOneStepSimulations() + 1);
+                else if (simulation instanceof SteadyState) this.DOC_STATISTICS.setNumSteadyStateSimulations(this.DOC_STATISTICS.getNumSteadyStateSimulations() + 1);
+                else this.DOC_STATISTICS.setNumAnalysisSimulations(this.DOC_STATISTICS.getNumAnalysisSimulations() + 1);
+            }
+            this.DOC_STATISTICS.setNumTasks(sedML.getTasks().size());
+            this.DOC_STATISTICS.setNumOutputs(sedML.getOutputs().size());
+            for (Output output : sedML.getOutputs()) {
+                if (output instanceof Report) this.DOC_STATISTICS.setReportsCount(this.DOC_STATISTICS.getReportsCount() + 1);
+                if (output instanceof Plot2D) this.DOC_STATISTICS.setPlots2DCount(this.DOC_STATISTICS.getPlots2DCount() + 1);
+                if (output instanceof Plot3D) this.DOC_STATISTICS.setPlots3DCount(this.DOC_STATISTICS.getPlots3DCount() + 1);
+            }
+
+            // Check for overrides
+            for(Model m : sedML.getModels()) {
+                if (m.getChanges().isEmpty()) continue;
+                this.DOC_STATISTICS.setHasOverrides(this.hasOverrides = true);
+                break;
+            }
+
+            // Check for parameter scans
+            for(AbstractTask at : sedML.getTasks()) {
+                if (!(at instanceof RepeatedTask rt)) continue;
+                List<SetValue> changes = rt.getChanges();
+                if(changes == null || changes.isEmpty()) continue;
+                this.DOC_STATISTICS.setHasScans(this.hasScans = true);
+                break;
+            }
+
+            logger.info("{}{}", resultString, this.DOC_STATISTICS.toFormattedString());
+
+
+            // Before we leave, we need to throw an exception if we have any VCell Sims we can't run.
+            if (this.DOC_STATISTICS.getNumUniformTimeCourseSimulations() != this.DOC_STATISTICS.getNumSimulations()){
+                biosimLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.SKIPPED);
+                PreProcessingException exception = new PreProcessingException("There are SedML simulations VCell is not capable of running at this time!");
+                Tracer.failure(exception, "Fatal discovery encountered while processing SedML: non-compatible SedML Simulations found.");
+                throw exception;
+            }
+
+
+        } catch(Exception e){
+            throw e;
+        } finally {
+            if (span != null) span.close();
         }
-
-        // If we got here, we have a successful load!!
-        this.logDocumentMessage += "done. ";
-        String resultString = String.format("Successfully loaded and translated SED-ML file: %s.\n", this.SEDML_NAME);
-        this.logDocumentMessage += resultString;
-
-        // Generate Doc Statistics
-        this.DOC_STATISTICS.setNumModels(this.sedml.getModels().size());
-
-        this.DOC_STATISTICS.setNumSimulations(this.sedml.getSimulations().size());
-        for (Simulation simulation : this.sedml.getSimulations()){
-            boolean isUTC = simulation instanceof UniformTimeCourse;
-            if (isUTC) this.DOC_STATISTICS.setNumUniformTimeCourseSimulations(this.DOC_STATISTICS.getNumUniformTimeCourseSimulations() + 1);
-            else if (simulation instanceof OneStep) this.DOC_STATISTICS.setNumOneStepSimulations(this.DOC_STATISTICS.getNumOneStepSimulations() + 1);
-            else if (simulation instanceof SteadyState) this.DOC_STATISTICS.setNumSteadyStateSimulations(this.DOC_STATISTICS.getNumSteadyStateSimulations() + 1);
-            else this.DOC_STATISTICS.setNumAnalysisSimulations(this.DOC_STATISTICS.getNumAnalysisSimulations() + 1);
-        }
-
-        this.DOC_STATISTICS.setNumTasks(this.sedml.getTasks().size());
-
-        this.DOC_STATISTICS.setNumOutputs(this.sedml.getOutputs().size());
-        for (Output output : this.sedml.getOutputs()) {
-            if (output instanceof Report) this.DOC_STATISTICS.setReportsCount(this.DOC_STATISTICS.getReportsCount() + 1);
-            if (output instanceof Plot2D) this.DOC_STATISTICS.setPlots2DCount(this.DOC_STATISTICS.getPlots2DCount() + 1);
-            if (output instanceof Plot3D) this.DOC_STATISTICS.setPlots3DCount(this.DOC_STATISTICS.getPlots3DCount() + 1);
-        }
-
-        // Check for overrides
-        for(Model m : this.sedml.getModels()) {
-            if (m.getListOfChanges().isEmpty()) continue;
-            this.DOC_STATISTICS.setHasOverrides(this.hasOverrides = true);
-            break;
-        }
-
-        // Check for parameter scans
-        for(AbstractTask at : this.sedml.getTasks()) {
-            if (!(at instanceof RepeatedTask rt)) continue;
-            List<SetValue> changes = rt.getChanges();
-            if(changes == null || changes.isEmpty()) continue;
-            this.DOC_STATISTICS.setHasScans(this.hasScans = true);
-            break;
-        }
-
-        logger.info("{}{}", resultString, this.DOC_STATISTICS.toFormattedString());
-
-
-        // Before we leave, we need to throw an exception if we have any VCell Sims we can't run.
-        if (this.DOC_STATISTICS.getNumUniformTimeCourseSimulations() != this.DOC_STATISTICS.getNumSimulations()){
-            biosimLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.SKIPPED);
-            PreProcessingException exception = new PreProcessingException("There are SedML simulations VCell is not capable of running at this time!");
-            Tracer.failure(exception, "Fatal discovery encountered while processing SedML: non-compatible SedML Simulations found.");
-            throw exception;
-        }
-
-        span.close();
         return this.DOC_STATISTICS;
     }
 
@@ -201,14 +203,14 @@ public class SedmlJob {
      *
      * @throws IOException if there are system I/O issues
      */
-    public boolean simulateSedml(HDF5ExecutionResults masterHdf5File) throws ExecutionException, IOException {
+    public boolean simulateSedml(HDF5ExecutionResults resultsCollection) throws ExecutionException, IOException {
         /*
          * - Run solvers and generate outputs
          * - XmlHelper code uses two types of resolvers to handle absolute or relative paths
          */
         SolverHandler solverHandler = new SolverHandler();
         this.runSimulations(solverHandler);
-        this.processOutputs(solverHandler, masterHdf5File);
+        this.processOutputs(solverHandler, resultsCollection);
         return this.evaluateResults();
     }
 
@@ -234,7 +236,7 @@ public class SedmlJob {
             int numSimulationsUnsuccessful = 0;
             StringBuilder executionSummary = new StringBuilder("Summary of Task Results\n");
             for (AbstractTask sedmlTask : taskResults.keySet()){
-                String sedmlTaskName = (sedmlTask.getName() == null || sedmlTask.getName().isBlank()) ? sedmlTask.getId() : sedmlTask.getName() + " (" + sedmlTask.getId() + ")" ;
+                String sedmlTaskName = (sedmlTask.getName() == null || sedmlTask.getName().isBlank()) ? sedmlTask.getId().string() : sedmlTask.getName() + " (" + sedmlTask.getId() + ")" ;
                 executionSummary.append("\t> ").append(sedmlTaskName).append("::").append(taskResults.get(sedmlTask).name()).append("\n");
                 if (!taskResults.get(sedmlTask).equals(BiosimulationLog.Status.SUCCEEDED)) numSimulationsUnsuccessful++;
             }
@@ -278,8 +280,8 @@ public class SedmlJob {
                     SpatialResultsConverter.organizeSpatialResultsBySedmlDataGenerator(
                         this.sedml, solverHandler.spatialResults, solverHandler.taskToTempSimulationMap);
 
-            boolean hasReports = !this.sedml.getOutputs().stream().filter(Report.class::isInstance).map(Report.class::cast).toList().isEmpty();
-            boolean has2DPlots = !this.sedml.getOutputs().stream().filter(Plot2D.class::isInstance).map(Plot2D.class::cast).toList().isEmpty();
+            boolean hasReports = !this.sedml.getSedML().getOutputs().stream().filter(Report.class::isInstance).map(Report.class::cast).toList().isEmpty();
+            boolean has2DPlots = !this.sedml.getSedML().getOutputs().stream().filter(Plot2D.class::isInstance).map(Plot2D.class::cast).toList().isEmpty();
             if (!solverHandler.nonSpatialResults.isEmpty()) {
                 if (hasReports) this.generateCSV(organizedNonSpatialResults);
                 if (has2DPlots) this.generatePlots(organizedNonSpatialResults);
@@ -346,7 +348,7 @@ public class SedmlJob {
     }
 
     private void generateCSV(Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizedNonSpatialResults) {
-        Map<String, File> csvReports;
+        Map<SId, File> csvReports;
         this.logDocumentMessage += "Generating CSV file... ";
         logger.info("Generating CSV file... ");
 
@@ -366,12 +368,12 @@ public class SedmlJob {
         logger.info("Generating Plots... ");
         // We assume if no exception is returned that the plots pass
         PlottingDataExtractor plotExtractor = new PlottingDataExtractor(this.sedml, this.SEDML_NAME);
-        Map<Results2DLinePlot, Pair<String, String>> plot2Ds = plotExtractor.extractPlotRelevantData(organizedNonSpatialResults);
+        Map<Results2DLinePlot, Pair<String, SId>> plot2Ds = plotExtractor.extractPlotRelevantData(organizedNonSpatialResults);
         for (Results2DLinePlot plotToExport : plot2Ds.keySet()){
             try {
                 plotToExport.generatePng(plot2Ds.get(plotToExport).one + ".png", this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML);
                 plotToExport.generatePdf(plot2Ds.get(plotToExport).one + ".pdf", this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML);
-                BiosimulationLog.instance().updatePlotStatusYml(this.SEDML_NAME, plot2Ds.get(plotToExport).two, BiosimulationLog.Status.SUCCEEDED);
+                BiosimulationLog.instance().updatePlotStatusYml(this.SEDML_NAME, plot2Ds.get(plotToExport).two.string(), BiosimulationLog.Status.SUCCEEDED);
             } catch (ChartCouldNotBeProducedException e){
                 logger.error("Failed creating plot:", e);
                 throw new ExecutionException("Failed to create plot: " + plotToExport.getTitle(), e);

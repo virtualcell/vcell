@@ -7,6 +7,9 @@ import java.util.Set;
 
 import org.jdom2.Document;
 import org.jlibsedml.SedMLDataContainer;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
+import org.jlibsedml.components.SedML;
 import org.jlibsedml.components.model.Model;
 import org.jlibsedml.SedMLTags;
 import org.jlibsedml.SedMLError;
@@ -25,7 +28,7 @@ import org.jlibsedml.XMLException;
  * is invalid as both models use each other as source references.
  */
 public class ModelCyclesDetector extends AbstractDocumentValidator {
-    private SedMLDataContainer sedml;
+    private final SedMLDataContainer sedml;
 
     public ModelCyclesDetector(SedMLDataContainer sedml, Document doc) {
         super(doc);
@@ -36,29 +39,29 @@ public class ModelCyclesDetector extends AbstractDocumentValidator {
      * @see ISedMLValidator
      */
     public List<SedMLError> validate() throws XMLException {
-        List<SedMLError> errs = new ArrayList<SedMLError>();
-        List<Model> models = sedml.getModels();
+        SedML sedML = this.sedml.getSedML();
+        List<SedMLError> errs = new ArrayList<>();
+        List<Model> models = sedML.getModels();
         for (Model model : models) {
-            String src = model.getSourcePathOrURIString();
-            String id = model.getId();
-            Set<String> ids = new HashSet<String>();
-            ids.add(id);
-            while (sedml.getModelWithId(src) != null) {
-                String newID = sedml.getModelWithId(src).getId();
-                if (ids.contains(newID)) {
-                    int line = getLineNumberOfError(SedMLTags.MODEL_TAG, model);
-                    errs.add(new SedMLError(line,
-                            "Cycles detected in source references for model "
-                                    + newID + " and "
-                                    + sedml.getModelWithId(newID).getSourcePathOrURIString(),
-                            ERROR_SEVERITY.ERROR));
-                    return errs;
-                } else {
-                    ids.add(newID);
-                    src = sedml.getModelWithId(src).getSourcePathOrURIString();
-                }
-            }
+            SedMLError err = this.detectCycles(model);
+            if (err == null) continue;
+            errs.add(err);
         }
         return errs;
+    }
+
+    private SedMLError detectCycles(Model model) {
+        Set<SId> ids = new HashSet<>();
+        Model currentModel = model;
+        while (currentModel != null) {
+            if (ids.contains(currentModel.getId())){
+                int line = this.getLineNumberOfError(SedMLTags.MODEL_TAG, model);
+                String message = "Cycle detected with model: " + currentModel.getIdAsString();
+                return new SedMLError(line, message, ERROR_SEVERITY.ERROR);
+            }
+            ids.add(currentModel.getId());
+            currentModel = this.sedml.getSubModel(model.getId());
+        }
+        return null;
     }
 }

@@ -19,7 +19,11 @@ import java.util.List;
 public class AlgorithmParameter extends SedBase {
     private String kisaoID;
     private String value;
-    
+
+    public AlgorithmParameter(String kisaoID, String value) {
+        this(null, null, kisaoID, value);
+    }
+
     public AlgorithmParameter(SId id, String name, String kisaoID, String value) {
         super(id, name);
         SedGeneralClass.checkNoNullArgs(kisaoID);
@@ -39,21 +43,6 @@ public class AlgorithmParameter extends SedBase {
     }
     public String getValue() {
         return value;
-    }
-
-    /**
-     * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
-     * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
-     * <br\>
-     * e.g.: `super.parametersToString() + ", " + String.format(...)`
-     * @return the parameters and their values, listed in string form
-     */
-    @OverridingMethodsMustInvokeSuper
-    public String parametersToString(){
-        List<String> params = new ArrayList<>(), paramParams = new ArrayList<>();
-        if (this.kisaoID != null) params.add(String.format("kisaoID=%s", this.kisaoID));
-        if (this.value != null) params.add(String.format("value=%s", this.value));
-        return super.parametersToString() + ", " + String.join(", ", params);
     }
     
     @Override
@@ -91,8 +80,23 @@ public class AlgorithmParameter extends SedBase {
         return SedMLTags.ALGORITHM_PARAMETER_TAG;
     }
 
+    /**
+     * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
+     * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
+     * <br\>
+     * e.g.: `super.parametersToString() + ", " + String.format(...)`
+     * @return the parameters and their values, listed in string form
+     */
+    @OverridingMethodsMustInvokeSuper
+    public String parametersToString(){
+        List<String> params = new ArrayList<>();
+        if (this.kisaoID != null) params.add(String.format("kisaoID=%s", this.kisaoID));
+        if (this.value != null) params.add(String.format("value=%s", this.value));
+        return super.parametersToString() + ", " + String.join(", ", params);
+    }
+
     @Override
-    public boolean accept(SEDMLVisitor visitor) {
-        return visitor.visit(this);
+    public SedBase searchFor(SId idOfElement) {
+        return super.searchFor(idOfElement);
     }
 }

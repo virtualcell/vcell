@@ -9,9 +9,9 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
 
-public class GsonSEDMLRecorderSerializer implements JsonSerializer<SEDMLRecorder> {
+public class GsonSEDMLRecorderSerializer implements JsonSerializer<SedMLRecorder> {
     @Override
-    public JsonElement serialize(SEDMLRecorder src, Type typeOfSrc, JsonSerializationContext context){
+    public JsonElement serialize(SedMLRecorder src, Type typeOfSrc, JsonSerializationContext context){
 
         JsonObject jsonObj = new JsonObject();
         jsonObj.add("identifier", new JsonPrimitive(src.getIdentifier()));

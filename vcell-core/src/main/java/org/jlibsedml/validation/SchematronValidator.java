@@ -34,6 +34,7 @@ import org.jlibsedml.SedMLDocument;
 import org.jlibsedml.SedMLError;
 import org.jlibsedml.SedMLError.ERROR_SEVERITY;
 import org.jlibsedml.XMLException;
+import org.jlibsedml.components.SId;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -111,12 +112,12 @@ public class SchematronValidator extends AbstractDocumentValidator {
     }
 
     private String getSchematronXSL() {
-        if (sedml.isL1V1()) {
+        if (this.sedml.isL1V1()) {
             return "validatorl1v1.xsl";
-        } else if (sedml.isL1V2()) {
+        } else if (this.sedml.isL1V2()) {
             return "validatorl1v2.xsl";
         } else {
-        	lg.warn("Unsupported sedml version `L{}V{}` detected, validating as L1V2", sedml.getLevel(), sedml.getVersion());
+        	lg.warn("Unsupported sedml version `L{}V{}` detected, validating as L1V2", this.sedml.getSedML().getLevel(), this.sedml.getSedML().getVersion());
         	return "validatorl1v2.xsl";
 //            throw new UnsupportedOperationException(MessageFormat.format(
 //                    "Invalid level and version -  {0}-{1}", sedml.getLevel(),
@@ -138,9 +139,7 @@ public class SchematronValidator extends AbstractDocumentValidator {
 
     int getLineNumber(Node sedmlNode) {
         LineFinderUtil util = new LineFinderUtil();
-        int num = util.getLineForElement(sedmlNode.getLocalName(), sedmlNode
-                .getAttributes().getNamedItem("id").getNodeValue(), getDoc());
-        return num;
+        return util.getLineForElement(sedmlNode.getLocalName(), new SId(sedmlNode.getAttributes().getNamedItem("id").getNodeValue()), this.getDoc());
     }
 
     private NodeList getSedmlNodes(String locationInSEDMLXPath, String st) {

@@ -64,11 +64,11 @@ public class MathMLValidator extends AbstractDocumentValidator implements ISedML
         List<SedMLError> errors = new ArrayList<SedMLError>();
         ASTNode node = this.sedCalculation.getMath();
         EvaluationContext cont = new EvaluationContext();
-        for (IIdentifiable id : this.sedCalculation.getListOfParameters().getContents()) {
-            cont.setValueFor(id.getId(), 0.0);
+        for (IIdentifiable id : this.sedCalculation.getParameters()) {
+            cont.setValueFor(id.getId().string(), 0.0);
         }
-        for (IIdentifiable id : this.sedCalculation.getListOfVariables().getContents()) {
-            cont.setValueFor(id.getId(), 0.0);
+        for (IIdentifiable id : this.sedCalculation.getVariables()) {
+            cont.setValueFor(id.getId().string(), 0.0);
         }
 
         if (!node.canEvaluate(cont)) {
@@ -81,8 +81,8 @@ public class MathMLValidator extends AbstractDocumentValidator implements ISedML
     private List<SedMLError> checkMathIds() {
         List<SedMLError> errors = new ArrayList<SedMLError>();
 
-        List<? extends IIdentifiable> vars = this.sedCalculation.getListOfVariables().getContents();
-        List<? extends IIdentifiable> params = this.sedCalculation.getListOfParameters().getContents();
+        List<? extends IIdentifiable> vars = this.sedCalculation.getVariables();
+        List<? extends IIdentifiable> params = this.sedCalculation.getParameters();
         Set<ASTCi> identifiers = this.sedCalculation.getMath().getIdentifiers();
         for (ASTCi var : identifiers) {
             if (!(this.check(var, vars) || this.check(
@@ -102,7 +102,7 @@ public class MathMLValidator extends AbstractDocumentValidator implements ISedML
 
     private boolean check(ASTCi var2, List<? extends IIdentifiable> vars) {
         for (IIdentifiable var : vars) {
-            if (var.getId().equals(var2.getName())) {
+            if (var.getId().string().equals(var2.getName())) {
                 return true;
             }
         }

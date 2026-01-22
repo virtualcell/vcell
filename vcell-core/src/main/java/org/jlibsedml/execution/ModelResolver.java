@@ -3,7 +3,6 @@ package org.jlibsedml.execution;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +10,7 @@ import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.SedMLDataContainer;
+import org.jlibsedml.components.SId;
 import org.jlibsedml.components.model.Model;
 import org.jlibsedml.SedMLDocument;
 
@@ -29,12 +29,15 @@ public class ModelResolver {
         this.sedml = sedml;
     }
 
+    static final String BASE_MODEL_CANNOT_BE_FOUND = "Provided model `%s` could not resolve to a \"base\" model.";
+    static final String SUB_MODEL_CANNOT_BE_FOUND = "Could not resolve provided model `%s`to its \"sub\" model.";
     static final String MODEL_CANNOT_BE_RESOLVED_MSG = " The model could not be resolved from its source reference. ";
     static final String MODEL_SRC_NOT_VALID_URI = "The model 'source' attribute  is not a valid URI.";
 
-    private SedMLDataContainer sedml;
+    private final SedMLDataContainer sedml;
 	private String message = "";
-    private List<IModelResolver> resolvers = new ArrayList<IModelResolver>();
+    private final List<IModelResolver> resolvers = new ArrayList<>();
+    private final Map<SId, String> modelCache = new HashMap<>();
 
     /**
      * Adds an {@link IModelResolver} to the list of those to be used to obtain
@@ -43,12 +46,12 @@ public class ModelResolver {
      * @param modelResolver
      */
     public void add(IModelResolver modelResolver) {
-        resolvers.add(modelResolver);
+        this.resolvers.add(modelResolver);
 
     }
 
     String getMessage() {
-        return message;
+        return this.message;
     }
 
     /**
@@ -64,114 +67,73 @@ public class ModelResolver {
      * @return A <code> String</code> of the model or <code>null</code> if no
      *         model could be resolved
      */
-    public String getReferenceModelString(Model m) {
-        List<String> modelRefs = new ArrayList<String>();
-
-        String baseModelRef = getBaseModelRef(m, modelRefs);
-        if (baseModelRef == null) {
-            return null;
-        }
-        // resolve base model if we've not already done so
-        URI srcURI = null;
+    public String getReferenceModelAsXMLString(Model m) {
+        this.sedml.getBaseModel(m.getId());
+        String baseModelAsStr;
         try {
-            srcURI = sedml.getModelWithId(baseModelRef).getSourceURI();
-        } catch (URISyntaxException e) {
-
-            message = MODEL_SRC_NOT_VALID_URI;
-            return null;
-        }
-
-        String baseModelAsStr = getBaseModel(srcURI);
-        if (baseModelAsStr == null) {
-            message = MODEL_CANNOT_BE_RESOLVED_MSG + "(Using uri: " + srcURI
-                    + ")";
+            baseModelAsStr = this.resolveURIToModelXMLAsString(m.getSourceURI());
+            if (baseModelAsStr == null) throw new URISyntaxException(m.getSourceAsString(), "Unable to determine base model");
+        } catch (URISyntaxException e){
+            this.message = MODEL_CANNOT_BE_RESOLVED_MSG + "(Model queried: " + m + ")";
             return null;
         }
         return baseModelAsStr;
-    }
-
-    String getBaseModelRef(Model m, List<String> modelRefs) {
-        getModelModificationTree(m, modelRefs);
-        if (modelRefs.isEmpty()) {
-            message = MODEL_CANNOT_BE_RESOLVED_MSG;
-            return null;
-        }
-        String baseModelRef = modelRefs.get(0);
-        return baseModelRef;
     }
 
     /**
      * The main public method of this class.
      * 
-     * @param m
+     * @param startingModel
      *            A SED-ML model element whose model we want to resolve
      * @return The model, with changes applied, or <code>null</code> if the
      *         model could not be found.
      */
-    public String getModelString(Model m) {
-        List<String> modelRefs = new ArrayList<String>();
-        Map<String, String> modelID2ModelStr = new HashMap<String, String>();
+    public String getXMLStringRepresentationOfModel(Model startingModel) {
+        // We need to do this level by level
+        SId modelID = startingModel.getId();
+        // First, did we already do this?
+        if (this.modelCache.containsKey(modelID)) return this.modelCache.get(modelID);
 
-        String baseModelRef = getBaseModelRef(m, modelRefs);
-        // resolve base model if we've not already done so
-        URI srcURI = null;
-        try {
-            String modelRef = baseModelRef;
-            do {
-                Model mod = sedml.getModelWithId(modelRef);
-                URI testURI = new URI("test%20model.xml");
-                String roundTrip = testURI.toASCIIString();
-                roundTrip = testURI.toString();
-                srcURI = mod.getSourceURI();
-                // If we need to recurse to the next level:
-                modelRef = sedml.getModelWithId(modelRef.startsWith("#") ?
-                        modelRef.substring(1): modelRef).getSourcePathOrURIString();
-            } while (srcURI != null && srcURI.toString().contains("#"));
-        } catch (URISyntaxException e) {
-            logger.error(MODEL_SRC_NOT_VALID_URI+": "+e.getMessage(), e);
-            message = MODEL_SRC_NOT_VALID_URI;
-            return null;
+        String resolvedModelStr;
+        // Okay, is this a base model? If so, we can just process it right away
+        if (!startingModel.getSourceAsString().startsWith("#")){
+            resolvedModelStr = this.attemptToResolveModel(startingModel);
+        } else {
+            // Not a base model? Then we need to go one deeper!
+            Model subModel = this.sedml.getSubModel(modelID);
+            if (subModel == null) {
+                this.message = String.format(SUB_MODEL_CANNOT_BE_FOUND, modelID.string());
+                logger.error(this.message);
+                return null;
+            }
+            resolvedModelStr = this.getXMLStringRepresentationOfModel(subModel);
         }
-        if (!modelID2ModelStr.containsKey(baseModelRef)) {
-
-            String baseModelAsStr = getBaseModel(srcURI);
-            if (baseModelAsStr == null) {
-            	// try again with relative path to sedml
-            	try {
-					srcURI = new URI(sedml.getPathForURI() + srcURI.toString());
-				} catch (URISyntaxException e) {
-		            message = MODEL_SRC_NOT_VALID_URI;
-		            return null;
-				}
-            	baseModelAsStr = getBaseModel(srcURI);
-	            if (baseModelAsStr == null) {
-	                message = MODEL_CANNOT_BE_RESOLVED_MSG + "(Using uri: "
-	                        + srcURI + ")";
-	                return null;
-	            }
-	        }
-            modelID2ModelStr.put(srcURI.toString(), baseModelAsStr);
-        }
-
-        // now apply model changes sequentially
-        String changedModel = applyModelChanges(modelRefs,
-                modelID2ModelStr.get(srcURI.toString()));
+        String changedModel = this.applyModelChanges(modelID, resolvedModelStr);
+        this.modelCache.put(modelID, changedModel);
         return changedModel;
-
     }
 
-    String applyModelChanges(List<String> modelRefs, String baseModelAsStr) {
-        for (int i = 0; i < modelRefs.size(); i++) {
-            try {
-                baseModelAsStr = new SedMLDocument(sedml).getChangedModel(
-                        modelRefs.get(i), baseModelAsStr);
-            } catch (Exception e) {
-                message = "Could not apply XPath changes for model id[" + modelRefs.get(i) + "]";
-                logger.error(message, e);
-                throw new RuntimeException(message, e);   
-            }
+    /**
+     * Order of model refs must be from base to top!
+     * @param modelRefs
+     * @param unChangedModelAsXMLStr
+     * @return
+     */
+    String applyModelChanges(List<SId> modelRefs, String unChangedModelAsXMLStr) {
+        for (SId modelRef : modelRefs) {
+            unChangedModelAsXMLStr = this.applyModelChanges(modelRef, unChangedModelAsXMLStr);
         }
-        return baseModelAsStr;
+        return unChangedModelAsXMLStr;
+    }
+
+    String applyModelChanges(SId modelRef, String unChangedModelAsXMLStr) {
+        try {
+            return SedMLDocument.getChangedModel(this.sedml, modelRef, unChangedModelAsXMLStr);
+        } catch (Exception e) {
+            String message = "Could not apply XPath changes for model id[" + modelRef + "]";
+            logger.error( message, e);
+            throw new RuntimeException(message, e);
+        }
     }
 
     /**
@@ -180,25 +142,36 @@ public class ModelResolver {
      * @return A <code>String</code> of the model XML, or <code>null</code> if
      *         the model could not be found.
      */
-    final String getBaseModel(URI modelSrc) {
-        for (IModelResolver resolver : resolvers) {
+    final String resolveURIToModelXMLAsString(URI modelSrc) {
+        for (IModelResolver resolver : this.resolvers) {
             String modelAsXML = resolver.getModelXMLFor(modelSrc);
-            if (modelAsXML != null) {
-                return modelAsXML;
-            }
+            if (modelAsXML == null) continue;
+            return modelAsXML;
         }
         return null;
     }
 
-    void getModelModificationTree(Model m, List<String> modelRefs2) {
-        String modelSrcRef = m.getSourcePathOrURIString();
-
-        modelRefs2.add(m.getId());
-        if (sedml.getModelWithId(modelSrcRef) != null) {
-            getModelModificationTree(sedml.getModelWithId(modelSrcRef),
-                    modelRefs2);
-        } else {
-            Collections.reverse(modelRefs2);
+    private String attemptToResolveModel(Model m) {
+        URI source, relativeSource;
+        try {
+            source = m.getSourceURI();
+        } catch (URISyntaxException ignored) {
+            this.message = MODEL_SRC_NOT_VALID_URI;
+            return null;
         }
+
+        String baseModelAsStr = this.resolveURIToModelXMLAsString(source);
+        if (baseModelAsStr != null) return baseModelAsStr;
+        // try again with relative path to sedml
+        try {
+            relativeSource = new URI(this.sedml.getPathForURI() + source);
+        } catch (URISyntaxException e) {
+            this.message = MODEL_SRC_NOT_VALID_URI;
+            return null;
+        }
+        baseModelAsStr = this.resolveURIToModelXMLAsString(relativeSource);
+        if (baseModelAsStr != null) return baseModelAsStr;
+        this.message = MODEL_CANNOT_BE_RESOLVED_MSG + "(Using uri: " + source + ")";
+        return null;
     }
 }

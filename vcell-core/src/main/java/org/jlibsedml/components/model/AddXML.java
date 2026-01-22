@@ -2,6 +2,7 @@ package org.jlibsedml.components.model;
 
 import org.jlibsedml.*;
 import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.SedGeneralClass;
 
 import javax.annotation.OverridingMethodsMustInvokeSuper;
@@ -16,6 +17,17 @@ import java.util.List;
  */
 public final class AddXML extends Change {
     private NewXML newXML;
+
+
+    /**
+     *
+     * @param target A non-null <code>XPathTarget</code> of the XPath target
+     * @param newXML A non-null <code>NewXML</code> of new XML
+     * @throws IllegalArgumentException if either argument is <code>null</code>.
+     */
+    public AddXML(XPathTarget target, NewXML newXML) {
+        this(null, null, target, newXML);
+    }
 
     /**
      *
@@ -65,9 +77,11 @@ public final class AddXML extends Change {
     }
 
     @Override
-    public boolean accept(SEDMLVisitor visitor) {
-        return visitor.visit(this);
+    public SedBase searchFor(SId idOfElement) {
+        return super.searchFor(idOfElement);
     }
+
+
     /**
      * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.
      * Needs to be returned as `member_name=value.toString(), ` segments, and it should be appended to a `super` call to this function.
