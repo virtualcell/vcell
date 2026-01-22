@@ -4,10 +4,10 @@ import cbit.vcell.publish.PDFWriter;
 
 import com.lowagie.text.DocumentException;
 
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.JFreeChart;
+import org.jfree.chart.*;
 import org.jfree.chart.labels.StandardXYItemLabelGenerator;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.title.LegendTitle;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -212,7 +212,7 @@ public class Results2DLinePlot implements ResultsLinePlot {
     }
 
     public int getNumXSeries(){
-        return this.dataSetMappings.keySet().size();
+        return this.dataSetMappings.size();
     }
 
     public int getNumYSeries(){
@@ -285,6 +285,20 @@ public class Results2DLinePlot implements ResultsLinePlot {
         String yAxisLabel = "";
         XYDataset dataset2D = this.generateChartLibraryDataset();
         JFreeChart chart = ChartFactory.createXYLineChart(this.plotTitle, this.xAxisTitle, yAxisLabel, dataset2D);
+
+        // Attempt to manage legend so that it doesn't take up the whole plot
+        LegendTitle legend = chart.getLegend();
+        Font legendFont = legend.getItemFont();
+        int fontSize = legendFont.getSize();
+        int totalChars = 0;
+        for (LegendItemSource itemSource : legend.getSources()){
+            Iterator<LegendItem> legendItemsIterator = itemSource.getLegendItems().iterator();
+            while (legendItemsIterator.hasNext()) {
+                totalChars += legendItemsIterator.next().getLabel().length();
+            }
+        }
+        int adjustedFontSize = Math.max(fontSize - (totalChars / 100), 8); // for every 100 characters, we scale down by 1pt; minimum of 8pt.
+        legend.setItemFont(new Font(legendFont.getName(), legendFont.getStyle(), adjustedFontSize));
 
         // Tweak Chart so it looks better
         chart.setBorderVisible(true);
