@@ -4,10 +4,7 @@ import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.*;
 import java.util.LinkedHashMap;
@@ -17,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("Fast")
+@Disabled("Deprecated: Langevin postprocessing now handled in solver")
 public class LangevinPostProcessorTest {
 
     // the .IDA files are in vcell-core/src/test/resources  /cbit/vcell/simdata
@@ -48,6 +46,7 @@ public class LangevinPostProcessorTest {
     }
 
     @Test
+    @Disabled("Deprecated: postprocessing moved to solver")
     public void testRead() throws IOException {
 
         // read the input data (3 .IDA files)
@@ -65,6 +64,7 @@ public class LangevinPostProcessorTest {
         lppInput.setOdeSolverResultSetMap(odeSolverResultSetMap);
 
         // compute primary statistics
+        // note: LangevinPostProcessor is deprecated, but this test is kept for it contains some reusable code
         LangevinPostProcessor lpp = new LangevinPostProcessor();
         LangevinPostProcessorOutput lppOutput = lpp.postProcessLangevinResults(lppInput);
 

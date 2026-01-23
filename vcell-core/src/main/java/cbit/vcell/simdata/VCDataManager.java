@@ -284,6 +284,19 @@ public synchronized ODESimData getODEData(VCDataIdentifier vcdID) throws DataAcc
 	}
 }
 
+public synchronized LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) throws DataAccessException {
+	try {
+		return getDataSetController().getLangevinBatchResultSet(vcdID);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
+		try {
+			return getDataSetController().getLangevinBatchResultSet(vcdID);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
+			throw new RuntimeException(e2.getMessage());
+		}
+	}
+}
 
 public synchronized NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdID) throws DataAccessException {
 	try {

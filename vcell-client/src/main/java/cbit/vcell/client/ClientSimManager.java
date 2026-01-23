@@ -199,8 +199,9 @@ public void showSimulationResults(OutputContext outputContext, Simulation[] simu
 	ClientTaskDispatcher.dispatch(getDocumentWindowManager().getComponent(), hashTable, taskArray, false, true, null);
 }
 /*
-		TODO: postProcessLangevinResults
+		Deprecated: Langevin post-processing is now handled server-side
  */
+@Deprecated
 public void postProcessLangevinResults(Simulation sim) {
 	SimulationOwner simOwner = getSimWorkspace().getSimulationOwner();
 	Hashtable<String, Object> hashTable = new Hashtable<> ();

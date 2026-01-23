@@ -9,6 +9,7 @@
  */
 
 package cbit.vcell.simdata;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -92,6 +93,8 @@ public abstract CartesianMesh getMesh() throws DataAccessException, MathExceptio
  * @throws IOException 
  */
 public abstract ODEDataBlock getODEDataBlock() throws DataAccessException, IOException;
+
+public abstract File getLangevinFile(LangevinBatchResultSet.LangevinFileType type) throws DataAccessException, IOException;
 
 
 /**

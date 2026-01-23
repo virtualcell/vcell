@@ -36,6 +36,7 @@ import cbit.vcell.simdata.DataOperation.DataProcessingOutputDataValuesOP.TimePoi
 import cbit.vcell.simdata.DataOperationResults.DataProcessingOutputDataValues;
 import cbit.vcell.solver.*;
 import cbit.vcell.solver.AnnotatedFunction.FunctionCategory;
+import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.test.MathTestingUtilities;
 import cbit.vcell.solvers.CartesianMesh;
 import cbit.vcell.solvers.FVSolverStandalone;
@@ -2394,6 +2395,42 @@ public ODEDataBlock getODEDataBlock(VCDataIdentifier vcdID) throws DataAccessExc
 			}
 		}
 	}catch (IOException e){
+		throw new DataAccessException(e.getMessage(), e);
+	}
+}
+
+public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) throws DataAccessException {
+	if (lg.isTraceEnabled()) lg.trace("DataSetControllerImpl.getLangevinBatchResultSet()");
+	try {
+		VCData simData = getVCData(vcdID);
+		ODEDataInfo odeDataInfo = new ODEDataInfo(vcdID.getOwner(), vcdID.getID(),
+									simData.getDataBlockTimeStamp(ODE_DATA, 0));
+		int keepAtMost = 10000;
+		File functionsFile = null;
+		LangevinBatchResultSet lbrs = new LangevinBatchResultSet(odeDataInfo);
+
+		File avg_file = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.Avg);
+		if (avg_file != null && avg_file.exists()) {
+			ODESimData odeSimData_avg = ODESimData.readIDADataFile(vcdID, avg_file, keepAtMost, functionsFile);
+			lbrs.setOdeSimDataAvg(odeSimData_avg);
+		}
+		File max_file = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.Max);
+		if (max_file != null && max_file.exists()) {
+			ODESimData odeSimData_max = ODESimData.readIDADataFile(vcdID, max_file, keepAtMost, functionsFile);
+			lbrs.setOdeSimDataMax(odeSimData_max);
+		}
+		File min_file = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.Min);
+		if (min_file != null && min_file.exists()) {
+			ODESimData odeSimData_min = ODESimData.readIDADataFile(vcdID, min_file, keepAtMost, functionsFile);
+			lbrs.setOdeSimDataMin(odeSimData_min);
+		}
+		File std_file = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.Std);
+		if (std_file != null && std_file.exists()) {
+			ODESimData odeSimData_std = ODESimData.readIDADataFile(vcdID, std_file, keepAtMost, functionsFile);
+			lbrs.setOdeSimDataStd(odeSimData_std);
+		}
+		return lbrs;
+	} catch (IOException e) {
 		throw new DataAccessException(e.getMessage(), e);
 	}
 }

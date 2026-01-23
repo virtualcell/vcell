@@ -201,7 +201,8 @@ public void propertyChange(java.beans.PropertyChangeEvent evt) {
 				if (sd.isLangevinSolver() && simulationStatus.isCompleted()) {
 					System.out.println("SimulationListTableModel: simIndex: " + simIndex + ", row: " + row);
 					System.out.println("SimulationListTableModel: status changed: " + simulationStatus.getStatusString());
-					getSimulationWorkspace().postProcessLangevinResults(simulation);
+					// Langevin post-processing is now being executed server-side, within the solver
+//					getSimulationWorkspace().postProcessLangevinResults(simulation);
 				}
 			}
 			fireTableRowsUpdated(row, row);
