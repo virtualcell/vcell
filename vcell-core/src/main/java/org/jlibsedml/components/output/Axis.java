@@ -49,6 +49,17 @@ public abstract class Axis extends SedBase {
         this.reverse = reverse;
     }
 
+    public Axis clone() throws CloneNotSupportedException {
+        Axis newAxis = (Axis) super.clone();
+        newAxis.type = this.type;
+        newAxis.min = this.min;
+        newAxis.max = this.max;
+        newAxis.grid = this.grid;
+        newAxis.styleId = this.styleId;
+        newAxis.reverse = this.reverse;
+        return newAxis;
+    }
+
     public Type getType() {
         return this.type;
     }

@@ -213,6 +213,15 @@ public final class Variable extends SedBase {
         this.symbol = symbol;
     }
 
+    public Variable clone() throws CloneNotSupportedException {
+        Variable clone = (Variable) super.clone();
+        clone.targetXPathStr = this.targetXPathStr;
+        clone.modelReference = new SId(this.modelReference.string());
+        clone.taskReference = new SId(this.taskReference.string());
+        clone.symbol = this.symbol;
+        return clone;
+    }
+
     /**
      * Getter for the XPath string which identifies this variable in the model.
      * If isSymbol() == true, this will return null.

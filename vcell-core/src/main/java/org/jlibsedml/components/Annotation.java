@@ -16,9 +16,9 @@ import org.jlibsedml.SedMLElementFactory;
  * Elements added to this Annotation should be in their own XML namespace. 
  *
  */
-public final class Annotation implements SedGeneralClass {
+public final class Annotation implements SedGeneralClass, Cloneable{
 	
-	private final List<Element> elements;
+	private List<Element> elements;
 	
 
 	/**
@@ -34,6 +34,12 @@ public final class Annotation implements SedGeneralClass {
         }
         this.elements.add(0, argAnnotElement);
 	}
+
+    public Annotation clone() throws CloneNotSupportedException {
+        Annotation clone = (Annotation) super.clone();
+        clone.elements = new ArrayList<>(this.elements);
+        return clone;
+    }
 
 
 

@@ -13,6 +13,10 @@ public class RightYAxis extends Axis {
         super(id, name, type, min, max, grid, styleId, reverse);
     }
 
+    public RightYAxis clone() throws CloneNotSupportedException {
+        return (RightYAxis) super.clone();
+    }
+
     @Override
     public String getAxisTagName() {
         return SedMLTags.AXIS_RIGHT_Y;

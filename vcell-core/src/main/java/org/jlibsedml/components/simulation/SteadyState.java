@@ -14,6 +14,10 @@ public class SteadyState extends Simulation {
         super(id, name, algorithm);
     }
 
+    public SteadyState clone() throws CloneNotSupportedException {
+        return (SteadyState) super.clone();
+    }
+
     @Override
     public String getSimulationKind() {
         return SedMLTags.SIMUL_SS_KIND;

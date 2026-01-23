@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VectorRange extends Range {
-    private final List<Double> values;
+    private List<Double> values;
 
     public VectorRange(SId id) {
         this(id, List.of());
@@ -27,6 +27,12 @@ public class VectorRange extends Range {
     public VectorRange(SId id, String name, List<Double> values) {
         super(id, name);
         this.values = new ArrayList<>(values);
+    }
+
+    public VectorRange clone() throws CloneNotSupportedException {
+        VectorRange clone = (VectorRange) super.clone();
+        clone.values = new ArrayList<>(this.values);
+        return clone;
     }
     
     public void addValue(Double value) {

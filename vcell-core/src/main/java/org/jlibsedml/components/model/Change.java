@@ -31,6 +31,12 @@ public abstract class Change extends SedBase {
         this.target = target;
     }
 
+    public Change clone() throws CloneNotSupportedException {
+        Change clone = (Change) super.clone();
+        clone.target = this.target;
+        return clone;
+    }
+
     /**
      * Setter for the target XPath expression that identifies where the change should be
      * applied.

@@ -2,6 +2,7 @@ package org.jlibsedml;
 
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import org.jdom2.Namespace;
 import org.jlibsedml.components.*;
@@ -21,7 +22,7 @@ public final class SedMLDataContainer {
     // added for import
     private String pathForURI;
     private String fileName;
-    private final Map<String, Namespace> xmlPrefixToNamespaceMap = new HashMap<>();
+    private final Map<String, Namespace> xmlPrefixToNamespaceMap;
     private final SedML sedml;
 
     private static List<Namespace> getDefaultNamespaces(int sedmlLevel, int sedmlVersion){
@@ -43,6 +44,21 @@ public final class SedMLDataContainer {
             throw new IllegalArgumentException(message);
         }
         this.sedml = sedml;
+        this.xmlPrefixToNamespaceMap = new HashMap<>();
+    }
+
+    public SedMLDataContainer(SedMLDataContainer containerToCopy, boolean deepCopySedml) throws CloneNotSupportedException{
+        this.sedml = deepCopySedml ? containerToCopy.sedml.clone() : containerToCopy.sedml;
+        this.pathForURI = containerToCopy.pathForURI;
+        this.fileName = containerToCopy.fileName;
+        this.xmlPrefixToNamespaceMap = new HashMap<>(containerToCopy.xmlPrefixToNamespaceMap);
+    }
+
+    public SedMLDataContainer(SedMLDataContainer containerToCopy, SedML sedMLToReplaceWith){
+        this.sedml = sedMLToReplaceWith;
+        this.pathForURI = containerToCopy.pathForURI;
+        this.fileName = containerToCopy.fileName;
+        this.xmlPrefixToNamespaceMap = new HashMap<>(containerToCopy.xmlPrefixToNamespaceMap);
     }
 
     public SedML getSedML() {
@@ -209,6 +225,37 @@ public final class SedMLDataContainer {
         foundBase = this.sedml.searchInModelsFor(nextLevelDownId);
         if (!(foundBase instanceof Model subModel)) return null;
         return subModel;
+    }
+
+    /**
+     * Attempts to find a subtask task
+     * @param startingTaskID
+     * @return
+     */
+    public AbstractTask getActualSubTask(SId startingTaskID) {
+        SedBase foundBase = this.sedml.searchInTasksFor(startingTaskID);
+        if (!(foundBase instanceof RepeatedTask rTask)) throw new IllegalArgumentException("provided id does not correspond to a repeated Task");
+        return this.getActualSubTask(rTask);
+    }
+
+    public AbstractTask getActualSubTask(RepeatedTask repeatedTask){
+        if (repeatedTask.getSubTasks().size() != 1) return null;
+        SedBase foundSubTask = this.sedml.searchInModelsFor(repeatedTask.getSubTasks().get(0).getTask());
+        if (foundSubTask instanceof AbstractTask desiredTask) return desiredTask;
+        throw new IllegalArgumentException(String.format("provided repeated task `%s` corresponds to an unknown type of Task (%s) as a subtask", repeatedTask.getId().string(), foundSubTask.getClass().getSimpleName()));
+    }
+
+    public Set<AbstractTask> getActualSubTasks(SId startingTaskID) {
+        SedBase foundBase = this.sedml.searchInTasksFor(startingTaskID);
+        if (!(foundBase instanceof RepeatedTask rTask)) throw new IllegalArgumentException("provided id does not correspond to a repeated Task");
+        return this.getActualSubTasks(rTask);
+    }
+
+    public Set<AbstractTask> getActualSubTasks(RepeatedTask repeatedTask) {
+        List<SedBase> subTaskBases = repeatedTask.getSubTasks().stream().map(SubTask::getTask).map(this.sedml::searchInTasksFor).toList();
+        List<AbstractTask> tasks = subTaskBases.stream().filter(AbstractTask.class::isInstance).map(AbstractTask.class::cast).toList();
+        if (tasks.size() != subTaskBases.size()) throw new RuntimeException("Non-tasks were filtered out of list of subtasks!");
+        return new HashSet<>(tasks);
     }
 
 

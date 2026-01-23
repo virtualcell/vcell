@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  */
 public final class Report extends Output {
 
-    private final ListOfDataSets listOfDataSets;
+    private ListOfDataSets listOfDataSets;
 
     /**
      *
@@ -29,6 +29,12 @@ public final class Report extends Output {
     public Report(SId id, String name) {
         super(id, name);
         this.listOfDataSets = new ListOfDataSets();
+    }
+
+    public Report clone() throws CloneNotSupportedException {
+        Report clone = (Report) super.clone();
+        clone.listOfDataSets =  this.listOfDataSets.clone();
+        return clone;
     }
 
     @Override

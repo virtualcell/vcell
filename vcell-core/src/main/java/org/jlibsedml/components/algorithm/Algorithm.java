@@ -18,27 +18,7 @@ import java.util.List;
  */
 public final class Algorithm extends SedBase {
 	private String kisaoID;
-	private final ListOfAlgorithmParameters listOfAlgorithmParameters = new ListOfAlgorithmParameters();
-
-	/**
-	 * Getter for the KisaoID of the algorithm.
-	 * @return the Kisao ID
-	 */
-	public String getKisaoID() {
-		return this.kisaoID;
-	}
-
-    public ListOfAlgorithmParameters getListOfAlgorithmParameters() {
-        return this.listOfAlgorithmParameters;
-    }
-
-    public List<AlgorithmParameter> getAlgorithmParameters() {
-        return this.listOfAlgorithmParameters.getContents();
-    }
-
-    public void addAlgorithmParameter(AlgorithmParameter algorithmParameter) {
-        this.listOfAlgorithmParameters.addContent(algorithmParameter);
-    }
+	private ListOfAlgorithmParameters listOfAlgorithmParameters;
 
 
     /**
@@ -59,8 +39,36 @@ public final class Algorithm extends SedBase {
 		super(id, name);
         SedGeneralClass.checkNoNullArgs(kisaoID);
         SedGeneralClass.stringsNotEmpty(kisaoID);
+        this.listOfAlgorithmParameters = new ListOfAlgorithmParameters();
 		this.kisaoID = kisaoID;
 	}
+
+    public Algorithm clone() throws CloneNotSupportedException {
+        Algorithm clone = (Algorithm) super.clone();
+        clone.kisaoID = this.kisaoID;
+        clone.listOfAlgorithmParameters = this.listOfAlgorithmParameters.clone();
+        return clone;
+    }
+
+    /**
+     * Getter for the KisaoID of the algorithm.
+     * @return the Kisao ID
+     */
+    public String getKisaoID() {
+        return this.kisaoID;
+    }
+
+    public ListOfAlgorithmParameters getListOfAlgorithmParameters() {
+        return this.listOfAlgorithmParameters;
+    }
+
+    public List<AlgorithmParameter> getAlgorithmParameters() {
+        return this.listOfAlgorithmParameters.getContents();
+    }
+
+    public void addAlgorithmParameter(AlgorithmParameter algorithmParameter) {
+        this.listOfAlgorithmParameters.addContent(algorithmParameter);
+    }
 
 	@Override
 	public int hashCode() {

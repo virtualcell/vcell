@@ -52,6 +52,16 @@ public abstract class AbstractCurve extends SedBase {
         this.yAxis = yAxis;
     }
 
+    public AbstractCurve clone() throws CloneNotSupportedException {
+        AbstractCurve copy = (AbstractCurve) super.clone();
+        copy.xDataReference = this.xDataReference;
+        copy.logScaleXAxis = this.logScaleXAxis;
+        copy.order = this.order;
+        copy.style = this.style;
+        copy.yAxis = this.yAxis;
+        return copy;
+    }
+
     public SId getXDataReference() {
         return this.xDataReference;
     }

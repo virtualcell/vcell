@@ -13,4 +13,8 @@ public class ListOfRanges extends ListOf<Range> {
     public String getElementName() {
         return SedMLTags.REPEATED_TASK_RANGES_LIST;
     }
+
+    public ListOfRanges clone() throws CloneNotSupportedException {
+        return (ListOfRanges) super.clone();
+    }
 }

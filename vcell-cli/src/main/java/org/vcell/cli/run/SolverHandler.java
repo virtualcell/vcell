@@ -66,8 +66,7 @@ public class SolverHandler {
 	public int countBioModels = 0;        // number of biomodels in this sedml file
 	public int countSuccessfulSimulationRuns = 0;    // number of simulations that we ran successfully for this sedml file
 
-	private SedMLImporter sedmlImporter;
-	Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResults = new LinkedHashMap<>();
+    Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResults = new LinkedHashMap<>();
     Map<TaskJob, SpatialSBMLSimResults> spatialResults = new LinkedHashMap<>();
 
     Map<TempSimulation, AbstractTask> tempSimulationToTaskMap = new LinkedHashMap<> ();    // key = vcell simulation, value = sedml topmost task (the imported task id)
@@ -76,7 +75,6 @@ public class SolverHandler {
     Map<AbstractTask, List<AbstractTask>> taskToListOfSubTasksMap = new LinkedHashMap<AbstractTask, List<AbstractTask>> ();    // key = topmost AbstractTask, value = recursive list of subtasks
     Map<AbstractTask, List<Variable>> taskToVariableMap = new LinkedHashMap<AbstractTask, List<Variable>> ();    // key = AbstractTask, value = list of variables calculated by this task
     Map<RepeatedTask, Set<String>> taskToChangeTargetMap = new LinkedHashMap<RepeatedTask, Set<String>> ();    // key = RepeatedTask, value = list of the parameters that are being changed
-    Map<Task, Set<RepeatedTask>> taskToChildRepeatedTasks = new LinkedHashMap<Task, Set<RepeatedTask>> ();    // key = Task, value = list of RepeatedTasks ending with this task
     Map<SId, Task> topTaskToBaseTask = new LinkedHashMap<> ();                // key = TopmostTaskId, value = Tasks at the bottom of the SubTasks chain OR the topmost task itself if instanceof Task
 
     private static void sanityCheck(BioModel bioModel) throws SEDMLImportException {
@@ -110,84 +108,53 @@ public class SolverHandler {
 				TempSimulation tempSimulation = new TempSimulation(sim,false);
 				String importedTaskId = tempSimulation.getImportedTaskID();
                 SedBase foundElement = sedML.searchInTasksFor(new SId(importedTaskId));
-                if (!(foundElement instanceof AbstractTask at)) throw new RuntimeException("Imported task id " + importedTaskId + " is not an AbstractTask.");
-				this.tempSimulationToTaskMap.put(tempSimulation, at);
-				this.taskToTempSimulationMap.put(at,  tempSimulation);
+                if (!(foundElement instanceof AbstractTask abstractTask)) throw new RuntimeException("Imported task id " + importedTaskId + " is not an AbstractTask.");
+				this.tempSimulationToTaskMap.put(tempSimulation, abstractTask);
+				this.taskToTempSimulationMap.put(abstractTask,  tempSimulation);
 				this.origSimulationToTempSimulationMap.put(sim, tempSimulation);
-				topmostTasks.add(at);    // all the tasks referred by an importedTaskId are supposed to be topmost
+				topmostTasks.add(abstractTask);    // all the tasks referred by an importedTaskId are supposed to be topmost
 			}
         }
         
-        {
-    	// we first make a list of all the subtasks (subtasks themselves may be instanceof Task or another RepeatedTask)
-        Set <AbstractTask> subTasks = new LinkedHashSet<> ();
-        for(AbstractTask at : sedML.getTasks()) {
-        	if(!(at instanceof RepeatedTask rt)) continue;
-			for (SubTask entry : rt.getSubTasks()) {
-                SedBase foundElement = sedML.searchInTasksFor(entry.getTask());
-                if (!(foundElement instanceof AbstractTask subTaskTarget)) throw new RuntimeException("Subtask (id=" + entry.getId().string() + " ) does not reference an AbstractTask.");
-				subTasks.add(subTaskTarget);
-			}
-        }
-        // then we make a list of all topmost tasks (Task or RepeatedTask that are not a subtask)
-    	// the topmost task is the "actual" task at the end of a chain  of subtasks
-        Set <AbstractTask> topmostTasks2 = new LinkedHashSet<> ();	// topmost tasks, different way to calculate (they are not in the list of subtasks above)
-        for (AbstractTask at : sedML.getTasks()) {
-			if(!subTasks.contains(at)) {
-				topmostTasks2.add(at);
-			}
-        }
-        if(topmostTasks.size() != topmostTasks2.size()) {
-            logger.error("TopmostTasks lists sizes are different.");
-//        	throw new RuntimeException("TopmostTasks lists sizes are different.");
-        }
-        for (AbstractTask abstractTask : topmostTasks) {        // we have higher confidence that topmostTask is correct
-			List<AbstractTask> subTasksList = new ArrayList<> ();
-			Task baseTask;
-			if(abstractTask instanceof RepeatedTask repeatedTask) {
-				baseTask = sedmlContainer.getBaseTask(repeatedTask.getId());
-                if (baseTask == null) throw new RuntimeException("Unable to find base task of repeated task: " + repeatedTask.getId().string() + ".");
-			} else if (abstractTask instanceof Task task) {
-				baseTask = task;
-			} else {
-                throw new RuntimeException(String.format("Task (id=%s) has unknown type: %s.", abstractTask.getId().string(), abstractTask.getClass().getName()));
+        { // sub scope to keep names limited
+            // we first make a list of all the subtasks (subtasks themselves may be instanceof Task or another RepeatedTask)
+            Set <AbstractTask> subTasks = new LinkedHashSet<> ();
+            for(AbstractTask at : sedML.getTasks()) {
+                if(!(at instanceof RepeatedTask rt)) continue;
+                for (SubTask entry : rt.getSubTasks()) {
+                    SedBase foundElement = sedML.searchInTasksFor(entry.getTask());
+                    if (!(foundElement instanceof AbstractTask subTaskTarget)) throw new RuntimeException("Subtask (id=" + entry.getId().string() + " ) does not reference an AbstractTask.");
+                    subTasks.add(subTaskTarget);
+                }
             }
+            // then we make a list of all topmost tasks (Task or RepeatedTask that are not a subtask)
+            // the topmost task is the "actual" task at the end of a chain  of subtasks
+            Set <AbstractTask> topmostTasks2 = new LinkedHashSet<> ();	// topmost tasks, different way to calculate (they are not in the list of subtasks above)
+            for (AbstractTask at : sedML.getTasks()) {
+                if(!subTasks.contains(at)) {
+                    topmostTasks2.add(at);
+                }
+            }
+            if(topmostTasks.size() != topmostTasks2.size()) {
+                logger.error("TopmostTasks lists sizes are different.");
+    //        	throw new RuntimeException("TopmostTasks lists sizes are different.");
+            }
+            for (AbstractTask abstractTask : topmostTasks) {        // we have higher confidence that topmostTask is correct
+                List<AbstractTask> subTasksList = new ArrayList<> ();
+                Task baseTask;
+                if(abstractTask instanceof RepeatedTask repeatedTask) {
+                    subTasksList.addAll(sedmlContainer.getActualSubTasks(repeatedTask.getId()));
+                    baseTask = sedmlContainer.getBaseTask(repeatedTask.getId());
+                    if (baseTask == null) throw new RuntimeException("Unable to find base task of repeated task: " + repeatedTask.getId().string() + ".");
+                } else if (abstractTask instanceof Task task) {
+                    baseTask = task;
+                } else {
+                    throw new RuntimeException(String.format("Task (id=%s) has unknown type: %s.", abstractTask.getId().string(), abstractTask.getClass().getName()));
+                }
 
-			this.taskToListOfSubTasksMap.put(abstractTask, subTasksList);    // subTasksList may be empty if task instanceof Task
-			this.topTaskToBaseTask.put(abstractTask.getId(), baseTask);
-
-			Set<RepeatedTask> childRepeatedTasks = new LinkedHashSet<> ();
-			taskToChildRepeatedTasks.put(baseTask, childRepeatedTasks);    // list of all Tasks, the set is only initialized here
-        }
-        for(Map.Entry<AbstractTask, List<AbstractTask>> entry : this.taskToListOfSubTasksMap.entrySet()) {    // populate the taskToChildRepeatedTasks map
-			AbstractTask topmostTask = entry.getKey();
-			List<AbstractTask> dependingTasks = entry.getValue();
-			if(topmostTask instanceof Task) {
-				// nothing to do except some sanity checks maybe
-				// the taskToChildRepeatedTasks contains this key and the associated set should be empty
-//        		assert dependingTasks.isEmpty() == true;							// the dependingTasks list should be empty
-//        		assert taskToChildRepeatedTasks.containsKey(topmostTask) == true;	// the Task should be a key in the map
-//        		assert taskToChildRepeatedTasks.get(topmostTask).isEmpty() == true;	// the set of repeated tasks associated to this task should be empty
-			} else {    // this is a RepeatedTask
-				// or use Task actualTask = topTaskToBaseTask.get(topmostTask.getId());
-				Task actualTask = null;
-				for(AbstractTask dependingTask : dependingTasks) {
-					if(dependingTask instanceof Task) {        // should always be one Task at the end of the list
-						actualTask = (Task)dependingTask;
-						break;        // we found the only Task
-					}
-				}
-//        		assert rootTask != null;
-				Set<RepeatedTask> childRepeatedTasks = this.taskToChildRepeatedTasks.get(actualTask);
-//        		assert childRepeatedTasks.isEmpty() == true;
-				childRepeatedTasks.add((RepeatedTask)topmostTask);
-				for(AbstractTask dependingTask : dependingTasks) {
-					if(dependingTask instanceof RepeatedTask) {
-						childRepeatedTasks.add((RepeatedTask)dependingTask);
-					}
-				}
-			}
-        }
+                this.taskToListOfSubTasksMap.put(abstractTask, subTasksList);    // subTasksList may be empty if task instanceof Task
+                this.topTaskToBaseTask.put(abstractTask.getId(), baseTask);
+            }
         }
         
         {
@@ -222,8 +189,8 @@ public class SolverHandler {
             }
         }
         
-        for (Map.Entry<AbstractTask, List<AbstractTask>> entry : this.taskToListOfSubTasksMap.entrySet()) {
-			AbstractTask topTask = entry.getKey();
+        for (AbstractTask topTask : this.taskToListOfSubTasksMap.keySet()) {
+            List<AbstractTask> subTasks = this.taskToListOfSubTasksMap.get(topTask);
 			Task baseTask = this.topTaskToBaseTask.get(topTask.getId());
 			TempSimulation tempSimulation = this.taskToTempSimulationMap.get(topTask);
 			int scanCount = tempSimulation.getScanCount();
@@ -308,10 +275,11 @@ public class SolverHandler {
         String bioModelBaseName = org.vcell.util.FileUtils.getBaseName(inputFile);
 
         //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
-		this.sedmlImporter = new SedMLImporter(sedmlImportLogger, externalDocInfo.getFile(), sedmlRequested, exactMatchOnly);
+        SedMLImporter sedmlImporter = new SedMLImporter(sedmlImportLogger, exactMatchOnly);
 		List<BioModel> bioModelList;
 		try {
-			bioModelList = this.sedmlImporter.getBioModels();
+            sedmlImporter.initialize(externalDocInfo.getFile(), sedmlRequested);
+			bioModelList = sedmlImporter.getBioModels();
         } catch (Exception e) {
             logger.error("Unable to Parse SED-ML into Bio-Model, failed with err: {}", e.getMessage(), e);
             throw e;
@@ -396,8 +364,9 @@ public class SolverHandler {
 								// must interpolate data for uniform time course which is not supported natively by the Java solvers
                                 Task baseTask = sedmlRequested.getBaseTask(task.getId());
                                 if (baseTask == null) throw new RuntimeException("Unable to find base task");
-                                SedBase elementFound = sedmlRequested.getSedML().searchInSimulationsFor(baseTask.getId());
-                                if (!(elementFound instanceof org.jlibsedml.components.simulation.Simulation sedmlSim)) throw new RuntimeException("Unable to find simulation for base task");
+                                SedBase elementFound = sedmlRequested.getSedML().searchInSimulationsFor(baseTask.getSimulationReference());
+                                if (!(elementFound instanceof org.jlibsedml.components.simulation.Simulation sedmlSim))
+                                    throw new RuntimeException("Unable to find simulation for base task");
 								if (sedmlSim instanceof UniformTimeCourse utcSedmlSim) {
 									odeSolverResultSet = RunUtils.interpolate(odeSolverResultSet, utcSedmlSim);
 									logTaskMessage += "done. Interpolating... ";
@@ -499,7 +468,7 @@ public class SolverHandler {
 					}
 
 					MathSymbolMapping mathMapping = (MathSymbolMapping) simTask.getSimulation().getMathDescription().getSourceSymbolMapping();
-					SBMLSymbolMapping sbmlMapping = this.sedmlImporter.getSBMLSymbolMapping(bioModel);
+					SBMLSymbolMapping sbmlMapping = sedmlImporter.getSBMLSymbolMapping(bioModel);
 					TaskJob taskJob = new TaskJob(task.getId(), tempSimulationJob.getJobIndex());
 					if (sd.isSpatial()) {
 						logger.info("Processing spatial results of execution...");

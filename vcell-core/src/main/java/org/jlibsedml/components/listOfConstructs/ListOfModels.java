@@ -13,4 +13,8 @@ public class ListOfModels extends ListOf<Model>{
     public String getElementName() {
         return SedMLTags.MODELS;
     }
+
+    public ListOfModels clone() throws CloneNotSupportedException {
+        return (ListOfModels) super.clone();
+    }
 }

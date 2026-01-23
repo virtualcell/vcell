@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
  */
 public class Plot2D extends Plot {
     private RightYAxis rightYAxis;
-    private final ListOfCurves listOfCurves;
+    private ListOfCurves listOfCurves;
 
     /**
      *
@@ -82,6 +82,13 @@ public class Plot2D extends Plot {
         super(id, name, useLegend, plotHeight, plotWidth, xAxis, yAxis);
         this.rightYAxis = rightYAxis;
         this.listOfCurves = listOfCurves;
+    }
+
+    public Plot2D clone() throws CloneNotSupportedException {
+        Plot2D clone = (Plot2D) super.clone();
+        clone.rightYAxis = this.rightYAxis == null ? null : this.rightYAxis.clone();
+        clone.listOfCurves = this.listOfCurves.clone();
+        return clone;
     }
 
     public RightYAxis getRightYAxis() {

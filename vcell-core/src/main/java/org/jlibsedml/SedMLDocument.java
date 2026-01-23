@@ -319,8 +319,7 @@ public class SedMLDocument {
             }
             xmlString = ModelTransformationUtils.exportChangedXMLAsString(doc);
         } catch (Exception e) {
-            throw new XMLException("Error generating new model"
-                    + e.getMessage(), e);
+            throw new XMLException("Error generating new model: ", e);
         }
         return xmlString;
     }

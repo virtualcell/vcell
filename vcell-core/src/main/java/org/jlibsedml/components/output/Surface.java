@@ -86,6 +86,20 @@ public final class Surface extends SedBase {
         this.order = order;
     }
 
+    public Surface clone() throws CloneNotSupportedException {
+        Surface copy = (Surface) super.clone();
+        copy.xDataReference = new SId(this.xDataReference.string());
+        copy.yDataReference = new SId(this.yDataReference.string());
+        copy.zDataReference = new SId(this.zDataReference.string());
+        copy.logScaleXAxis = this.logScaleXAxis;
+        copy.logScaleYAxis = this.logScaleYAxis;
+        copy.logScaleZAxis = this.logScaleZAxis;
+        copy.style = new SId(this.style.string());
+        copy.type = this.type;
+        copy.order = Integer.valueOf(this.order);
+        return copy;
+    }
+
     public SId getXDataReference() {
         return this.xDataReference;
     }

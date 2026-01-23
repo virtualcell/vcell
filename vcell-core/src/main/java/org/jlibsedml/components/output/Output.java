@@ -30,6 +30,10 @@ public abstract class Output extends SedBase {
         }
     }
 
+    public Output clone() throws CloneNotSupportedException {
+        return (Output) super.clone();
+    }
+
     /**
      * Gets the type of this output (Plot2D, Plot3D, Report)
      *

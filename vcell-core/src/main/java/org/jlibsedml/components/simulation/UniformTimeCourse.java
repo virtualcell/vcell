@@ -45,6 +45,15 @@ public final class UniformTimeCourse extends Simulation {
         this.numberOfSteps = numberOfSteps;
     }
 
+    public UniformTimeCourse clone() throws CloneNotSupportedException {
+        UniformTimeCourse clone = (UniformTimeCourse) super.clone();
+        this.initialTime = clone.initialTime;
+        this.outputStartTime = clone.outputStartTime;
+        this.outputEndTime = clone.outputEndTime;
+        this.numberOfSteps = clone.numberOfSteps;
+        return clone;
+    }
+
     /**
      * Getter for the initial time value, i.e., the value of <code>t</code> at the start of the simulation.
      * @return a double
