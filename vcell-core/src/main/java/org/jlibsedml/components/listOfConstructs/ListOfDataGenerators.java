@@ -11,7 +11,21 @@ import java.util.Map;
 import java.util.Set;
 
 public class ListOfDataGenerators extends ListOf<DataGenerator> {
-    private final Map<SId, Set<SId>> variableIdToDataGenerators = new HashMap<>();
+    private Map<SId, Set<SId>> variableIdToDataGenerators = new HashMap<>();
+
+    public ListOfDataGenerators clone() throws CloneNotSupportedException {
+        ListOfDataGenerators clone = (ListOfDataGenerators) super.clone();
+        Map<SId, Set<SId>> clonedVariableIdToDataGenerators = new HashMap<>();
+        for (SId id : this.variableIdToDataGenerators.keySet()) {
+            Set<SId> cloneSet = new HashSet<>();
+            for (SId dataGenId : this.variableIdToDataGenerators.get(id)) {
+                cloneSet.add(new SId(dataGenId.string()));
+            }
+            clonedVariableIdToDataGenerators.put(new SId(id.string()), cloneSet);
+        }
+        clone.variableIdToDataGenerators = clonedVariableIdToDataGenerators;
+        return clone;
+    }
 
     /**
      * Ease-of-use function to help when auto-creating "identity" DataGenerators

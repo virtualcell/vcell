@@ -13,6 +13,10 @@ public class YAxis extends Axis {
         super(id, name, type, min, max, grid, styleId, reverse);
     }
 
+    public YAxis clone() throws CloneNotSupportedException {
+        return (YAxis) super.clone();
+    }
+
     @Override
     public String getAxisTagName() {
         return SedMLTags.AXIS_Y;

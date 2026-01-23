@@ -13,4 +13,8 @@ public abstract class AbstractTask extends SedBase {
             SedGeneralClass.checkNoNullArgs(id);
         }
     }
+
+    public AbstractTask clone() throws CloneNotSupportedException {
+        return (AbstractTask) super.clone();
+    }
 }

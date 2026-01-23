@@ -14,4 +14,8 @@ public class ListOfSurfaces extends ListOf<Surface> {
     public String getElementName() {
         return SedMLTags.OUTPUT_SURFACES_LIST;
     }
+
+    public ListOfSurfaces clone() throws CloneNotSupportedException {
+        return (ListOfSurfaces) super.clone();
+    }
 }

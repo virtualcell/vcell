@@ -13,4 +13,8 @@ public class ListOfVariables extends ListOf<Variable> {
     public String getElementName() {
         return SedMLTags.VARIABLES;
     }
+
+    public ListOfVariables clone() throws CloneNotSupportedException {
+        return (ListOfVariables) super.clone();
+    }
 }

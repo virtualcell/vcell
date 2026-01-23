@@ -34,6 +34,16 @@ public abstract class Plot extends Output {
         this.yAxis = yAxis;
     }
 
+    public Plot clone() throws CloneNotSupportedException {
+        Plot clone = (Plot) super.clone();
+        clone.useLegend = this.useLegend;
+        clone.plotHeight = this.plotHeight;
+        clone.plotWidth = this.plotWidth;
+        clone.xAxis = this.xAxis;
+        clone.yAxis = this.yAxis;
+        return clone;
+    }
+
     public Boolean getUseLegend() {
         return this.useLegend;
     }
@@ -75,13 +85,13 @@ public abstract class Plot extends Output {
     }
 
     @OverridingMethodsMustInvokeSuper
-    public Boolean xAxisShouldBeLogarithmic(){
+    public Boolean xAxisShouldBeLogarithmic() {
         if (this.xAxis != null) return this.xAxis.getType() == Axis.Type.LOG10;
         return null; // Note that the subclasses should handle the deprecated way to check for this...but should still call this!!!
     }
 
     @OverridingMethodsMustInvokeSuper
-    public Boolean yAxisShouldBeLogarithmic(){
+    public Boolean yAxisShouldBeLogarithmic() {
         if (this.yAxis != null) return this.yAxis.getType() == Axis.Type.LOG10;
         return null; // Note that the subclasses should handle the deprecated way to check for this...but should still call this!!!
     }

@@ -15,6 +15,10 @@ public class ListOfCurves extends ListOf<AbstractCurve> {
         return SedMLTags.OUTPUT_CURVES_LIST;
     }
 
+    public ListOfCurves clone() throws CloneNotSupportedException {
+        return (ListOfCurves) super.clone();
+    }
+
 //    @Override
 //    public void addContent(AbstractCurve content) {
 //        if (null == content) return;

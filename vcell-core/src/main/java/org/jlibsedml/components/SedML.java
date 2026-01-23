@@ -75,13 +75,13 @@ public class SedML extends SedBase {
     private final static int DEFAULT_LEVEL = 1;
     private final static int DEFAULT_VERSION = 5;
 
-    private final int level;
-    private final int version;
-    private final ListOfModels models;
-    private final ListOfSimulations simulations;
-    private final ListOfTasks tasks;
-    private final ListOfDataGenerators dataGenerators;
-    private final ListOfOutputs outputs;
+    private int level;
+    private int version;
+    private ListOfModels models;
+    private ListOfSimulations simulations;
+    private ListOfTasks tasks;
+    private ListOfDataGenerators dataGenerators;
+    private ListOfOutputs outputs;
 
     public SedML() {
         this(SedML.DEFAULT_LEVEL, SedML.DEFAULT_VERSION);
@@ -96,14 +96,31 @@ public class SedML extends SedBase {
     }
 
     public SedML(SId id, String name, int level, int version) {
+        this(id, name, level, version, new ListOfModels(), new ListOfSimulations(), new ListOfTasks(), new ListOfDataGenerators(), new ListOfOutputs());
+    }
+
+    public SedML(SId id, String name, int level, int version, ListOfModels models, ListOfSimulations simulations,
+                 ListOfTasks tasks, ListOfDataGenerators dataGenerators, ListOfOutputs outputs) {
         super(id, name);
         this.level = level;
         this.version = version;
-        this.models = new ListOfModels();
-        this.simulations = new ListOfSimulations();
-        this.tasks = new ListOfTasks();
-        this.dataGenerators = new ListOfDataGenerators();
-        this.outputs = new ListOfOutputs();
+        this.models = models;
+        this.simulations = simulations;
+        this.tasks = tasks;
+        this.dataGenerators = dataGenerators;
+        this.outputs = outputs;
+    }
+
+    public SedML clone() throws CloneNotSupportedException {
+        SedML clone = (SedML) super.clone();
+        clone.level = this.level;
+        clone.version = this.version;
+        clone.models = this.models.clone();
+        clone.simulations = this.simulations.clone();
+        clone.tasks = this.tasks.clone();
+        clone.dataGenerators = this.dataGenerators.clone();
+        clone.outputs = this.outputs.clone();
+        return clone;
     }
 
     public int getLevel() {

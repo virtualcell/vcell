@@ -40,6 +40,12 @@ public final class ChangeAttribute extends Change {
         this.newValue = newValue;
     }
 
+    public ChangeAttribute clone() throws CloneNotSupportedException {
+        ChangeAttribute clone = (ChangeAttribute) super.clone();
+        clone.newValue = this.newValue;
+        return clone;
+    }
+
     /**
      * Getter for the change kind.
      *

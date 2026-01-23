@@ -13,4 +13,8 @@ public class ListOfParameters extends ListOf<Parameter> {
     public String getElementName() {
         return SedMLTags.PARAMETERS;
     }
+
+    public ListOfParameters clone () throws CloneNotSupportedException {
+        return (ListOfParameters) super.clone();
+    }
 }

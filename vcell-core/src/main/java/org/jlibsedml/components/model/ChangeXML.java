@@ -47,6 +47,12 @@ public final class ChangeXML extends Change {
         this.newXML = newXML;
     }
 
+    public ChangeXML clone() throws CloneNotSupportedException {
+        ChangeXML clone = (ChangeXML) super.clone();
+        clone.newXML = this.newXML;
+        return clone;
+    }
+
     /**
      * Getter for the change kind.
      *

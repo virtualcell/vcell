@@ -41,6 +41,12 @@ public final class AddXML extends Change {
         this.newXML = newXML;
     }
 
+    public AddXML clone() throws CloneNotSupportedException {
+        AddXML copy = (AddXML) super.clone();
+        copy.newXML = this.newXML;
+        return copy;
+    }
+
     /**
      * Getter for the new XML to be added to the target.
      *

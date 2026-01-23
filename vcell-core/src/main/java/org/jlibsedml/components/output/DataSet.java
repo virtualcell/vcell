@@ -45,6 +45,13 @@ public final class DataSet extends SedBase {
 
     }
 
+    public DataSet clone() throws CloneNotSupportedException {
+        DataSet clone = (DataSet) super.clone();
+        clone.dataReference = this.dataReference;
+        clone.label = this.label;
+        return clone;
+    }
+
     @Override
     public String parametersToString() {
         List<String> params = new ArrayList<>();

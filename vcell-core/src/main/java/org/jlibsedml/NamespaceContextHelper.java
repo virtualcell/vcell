@@ -25,11 +25,8 @@ package org.jlibsedml;
  */
 
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.net.URI;
+import java.util.*;
 
 import javax.xml.namespace.NamespaceContext;
 
@@ -87,6 +84,7 @@ import org.slf4j.LoggerFactory;
 public class NamespaceContextHelper implements NamespaceContext {
     private static final Logger log = LoggerFactory.getLogger(NamespaceContextHelper.class);
     private final Map<String, String> namespaceMapping;
+    private final Set<String> prefixlessNamespaces;
 
     /**
      * Creates a new instance of NamespaceContextHelper.
@@ -97,6 +95,7 @@ public class NamespaceContextHelper implements NamespaceContext {
      */
     NamespaceContextHelper() {
         this.namespaceMapping = new HashMap<>();
+        this.prefixlessNamespaces = new HashSet<>();
     }
 
     /**
@@ -108,7 +107,10 @@ public class NamespaceContextHelper implements NamespaceContext {
      * </p>
      */
     NamespaceContextHelper(Map<String, String> initialNamespaces) {
-        this.namespaceMapping = new HashMap<>(initialNamespaces);
+        this();
+        for (String prefix : initialNamespaces.keySet()) {
+            this.add(prefix, initialNamespaces.get(prefix));
+        }
     }
 
     /**
@@ -151,18 +153,19 @@ public class NamespaceContextHelper implements NamespaceContext {
         this();
         for (Element el : doc.getDescendants(new ElementFilter())) {
             Namespace ns = el.getNamespace();
-
             if (ns != null) {
-                if (this.namespaceMapping.containsKey(ns.getPrefix())) throw new XMLException("duplicate prefixes");
+                if (!"".equals(ns.getPrefix()) && this.namespaceMapping.containsKey(ns.getPrefix()) && !this.namespaceMapping.get(ns.getPrefix()).equals(ns.getURI()))
+                    throw new XMLException("duplicate prefixes");
                 if (ns.getURI().equals("http://www.copasi.org/static/sbml")) {
                     ns = Namespace.getNamespace("COPASI", "http://www.copasi.org/static/sbml");
                 }
-                this.namespaceMapping.put(ns.getPrefix(), ns.getURI());
+                this.add(ns);
             }
+
             for (Attribute att : el.getAttributes()) {
                 if (!att.getNamespace().equals(Namespace.NO_NAMESPACE)) {
                     ns = att.getNamespace();
-                    this.namespaceMapping.put(ns.getPrefix(), ns.getURI());
+                    this.add(ns);
                 }
             }
         }
@@ -211,44 +214,34 @@ public class NamespaceContextHelper implements NamespaceContext {
         //	return; // We have no need to consider the COPASI RDF namespace in VCell
         //}
 
-        if (this.namespaceMapping.containsKey(prefix)) {
-            String curURI = this.namespaceMapping.get(prefix);
-            if (uri.equals(curURI)) {
-                return;
-            }
-            throw new IllegalArgumentException(
-                    "Attempt to change binding in NamespaceContextHelper");
+        if ("xml".equals(prefix) && !"http://www.w3.org/XML/1998/namespace".equals(uri)) {
+            throw new IllegalArgumentException("The prefix 'xml' can only be bound to 'http://www.w3.org/XML/1998/namespace' in NamespaceContextHelper");
         }
 
-        if ("xml".equals(prefix)
-                && !"http://www.w3.org/XML/1998/namespace".equals(uri)) {
-            throw new IllegalArgumentException(
-                    "The prefix 'xml' can only be bound to 'http://www.w3.org/XML/1998/namespace' in NamespaceContextHelper");
+        if (!"xml".equals(prefix) && "http://www.w3.org/XML/1998/namespace".equals(uri)) {
+            throw new IllegalArgumentException("The namespace 'http://www.w3.org/XML/1998/namespace' can only have the prefix 'xml' in NamespaceContextHelper");
         }
 
-        if ("http://www.w3.org/XML/1998/namespace".equals(uri)
-                && !"xml".equals(prefix)) {
-            throw new IllegalArgumentException(
-                    "The namespace 'http://www.w3.org/XML/1998/namespace' can only have the prefix 'xml' in NamespaceContextHelper");
-        }
-
-        if ("xmlns".equals(prefix)
-                || "http://www.w3.org/2000/xmlns".equals(uri)) {
-            throw new IllegalArgumentException(
-                    "Neither the prefix 'xmlns' nor the URI 'http://www.w3.org/2000/xmlns' can be bound in NamespaceContextHelper");
+        if ("xmlns".equals(prefix) || "http://www.w3.org/2000/xmlns".equals(uri)) {
+            throw new IllegalArgumentException("Neither the prefix 'xmlns' nor the URI 'http://www.w3.org/2000/xmlns' can be bound in NamespaceContextHelper");
         }
 
         if (prefix.isEmpty()) {
-            if (uri.equals("http://www.copasi.org/static/sbml")) {
-                this.namespaceMapping.put(prefix, uri);
+            if (uri.contains("www.sbml.org/sbml/level")){
+                this.add("sbml", uri);
+                return;
             }
-            this.namespaceMapping.put(prefix, uri);
+            this.prefixlessNamespaces.add(uri);
         } else {
+            if (this.namespaceMapping.containsKey(prefix)) {
+                String curURI = this.namespaceMapping.get(prefix);
+                if (uri.equals(curURI)) return;
+                throw new IllegalArgumentException("Attempt to change binding in NamespaceContextHelper");
+            }
             if (prefix.matches("\\w[^ :/]*")) {
                 this.namespaceMapping.put(prefix, uri);
             } else {
-                throw new IllegalArgumentException(
-                        "Prefix is not a valid NCName in NamespaceContextHelper");
+                throw new IllegalArgumentException("Prefix is not a valid NCName in NamespaceContextHelper");
             }
         }
     }
@@ -257,8 +250,12 @@ public class NamespaceContextHelper implements NamespaceContext {
      * Implements the NamespaceContext getNamespaceURI method.
      */
     public String getNamespaceURI(String prefix) {
-        String s = this.namespaceMapping.get(prefix);
-        return s;
+        if (prefix == null || prefix.isEmpty()) throw new NullPointerException("Null prefix or uri passed to NamespaceContextHelper");
+        return this.namespaceMapping.get(prefix);
+    }
+
+    public Set<String> getAllPrefixlessURIs() {
+        return Collections.unmodifiableSet(this.prefixlessNamespaces);
     }
 
     public void process(XPathTarget target) {
@@ -266,15 +263,13 @@ public class NamespaceContextHelper implements NamespaceContext {
         xpathPrefixes.retainAll(this.namespaceMapping.keySet());
         for (String prefix : xpathPrefixes) {
             Namespace ns = Namespace.getNamespace(prefix, this.namespaceMapping.get(prefix));
-            if (((ns.getPrefix().equalsIgnoreCase(prefix) || ns.getPrefix().isEmpty() && ns.getURI().toLowerCase().contains(prefix.toLowerCase()))
-                    || ns.getPrefix().isEmpty()
-                    && this.replace(ns.getURI().toLowerCase()).contains(prefix.toLowerCase()))
-                    && this.getNamespaceURI(prefix) == null) {
-                this.add(prefix, ns.getURI());
-            }
-
+            boolean prefixesMatch = ns.getPrefix().equalsIgnoreCase(prefix);
+            boolean nsPrefixIsEmpty = ns.getPrefix().isEmpty();
+            boolean prefixFoundInNsURI = ns.getURI().toLowerCase().contains(prefix.toLowerCase());
+            boolean modifiedNsURIContainsPrefix = this.replace(ns.getURI().toLowerCase()).contains(prefix.toLowerCase());
+            boolean mappingFound = (prefixesMatch || nsPrefixIsEmpty && (prefixFoundInNsURI || modifiedNsURIContainsPrefix));
+            if (mappingFound && this.getNamespaceURI(prefix) == null) this.add(prefix, ns.getURI());
         }
-
     }
 
     private String replace(String lowerCase) {
@@ -284,6 +279,7 @@ public class NamespaceContextHelper implements NamespaceContext {
     public boolean areAllXPathPrefixesMapped(XPathTarget target) {
         Set<String> xpathPrefixes = target.getXPathPrefixes();
         for (String prefix : xpathPrefixes) {
+            if ("".equals(prefix) && !this.prefixlessNamespaces.isEmpty()) continue;
             if (this.namespaceMapping.get(prefix) != null) continue;
             return false;
         }
@@ -312,14 +308,14 @@ public class NamespaceContextHelper implements NamespaceContext {
      * Note that multiple prefixes may be bound to the same URI.
      * </p>
      */
-    public Iterator getPrefixes() {
+    public Iterator<String> getPrefixes() {
         return this.getPrefixes(null);
     }
 
     /**
      * Implements the NamespaceContext getPrefixes method.
      */
-    public Iterator getPrefixes(String namespaceURI) {
+    public Iterator<String> getPrefixes(String namespaceURI) {
         return new NSIterator(this.namespaceMapping, namespaceURI);
     }
 
@@ -333,25 +329,17 @@ public class NamespaceContextHelper implements NamespaceContext {
      * it is bound to several different prefixes.
      * </p>
      */
-    public Iterator getNamespaceURIs() {
+    public List<String> getNamespaceURIs() {
         // Make sure each URI is returned at most once...
-        Map<String, String> uriHash = new HashMap<String, String>();
-
-        for (String pfx : this.namespaceMapping.keySet()) {
-
-            String uri = this.namespaceMapping.get(pfx);
-            if (!uriHash.containsKey(uri)) {
-                uriHash.put(uri, pfx);
-            }
-        }
-
-        return new NSIterator(uriHash, null);
+        Set<String> uriHash = new HashSet<>(this.prefixlessNamespaces);
+        uriHash.addAll(this.namespaceMapping.values());
+        return uriHash.stream().toList();
     }
 
     /**
      * Implements the Iterator interface over namespace bindings.
      */
-    private class NSIterator implements Iterator {
+    private static class NSIterator implements Iterator<String> {
         private Iterator<String> keys;
 
         public NSIterator(Map<String, String> hash, String value) {
@@ -359,7 +347,7 @@ public class NamespaceContextHelper implements NamespaceContext {
             if (value != null) {
                 // We have to copy the hash to get only the keys that have the
                 // specified value
-                Map<String, String> vHash = new HashMap<String, String>();
+                Map<String, String> vHash = new HashMap<>();
                 while (this.keys.hasNext()) {
                     String key = this.keys.next();
                     String val = hash.get(key);

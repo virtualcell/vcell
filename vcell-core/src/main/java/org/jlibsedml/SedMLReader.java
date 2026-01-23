@@ -436,7 +436,7 @@ class SedMLReader {
                 }
                 case SedMLTags.UNIFORM_RANGE_TAG -> {
                     String numRangePointsAsString = eChild.getAttributeValue(SedMLTags.UNIFORM_RANGE_ATTR_NUMP);
-                    if (numRangePointsAsString == null) eChild.getAttributeValue(SedMLTags.UNIFORM_RANGE_ATTR_NUMS);
+                    if (numRangePointsAsString == null) numRangePointsAsString = eChild.getAttributeValue(SedMLTags.UNIFORM_RANGE_ATTR_NUMS);
                     if (numRangePointsAsString == null) throw new IllegalArgumentException("Number of Range points cannot be determined.");
 
                     range = new UniformRange(

@@ -18,14 +18,18 @@ public class Curve extends AbstractCurve {
         BAR("bar"),
         BAR_STACKED("barStacked"),
         HORIZONTAL_BAR("horizontalBar"),
-        HORIZONTAL_BAR_STACKED("horizontalBarStacked"),;
+        HORIZONTAL_BAR_STACKED("horizontalBarStacked"),
+        ;
 
         private final String tag;
-        Type(String tag){
+
+        Type(String tag) {
             this.tag = tag;
         }
 
-        public String getTag() { return this.tag; }
+        public String getTag() {
+            return this.tag;
+        }
 
         public static Type fromTag(String tag) {
             return switch (tag) {
@@ -39,39 +43,41 @@ public class Curve extends AbstractCurve {
         }
     }
 
-    @Deprecated protected Boolean logScaleYAxis; // now a capital-B Boolean because deprecated
+    @Deprecated
+    protected Boolean logScaleYAxis; // now a capital-B Boolean because deprecated
     protected SId yDataReference; // DataGenerator.id
     protected SId xErrorUpper, xErrorLower, yErrorUpper, yErrorLower;
     protected Type type;
 
 
     /**
-     * @param id An identifier that is unique in this document.
-     * @param name An optional name
+     * @param id             An identifier that is unique in this document.
+     * @param name           An optional name
      * @param xDataReference An {@link SId} reference to the {@link DataGenerator} for the x-axis.
-     * @param yDataReference  An {@link SId} reference to the {@link DataGenerator} for the y-axis.
+     * @param yDataReference An {@link SId} reference to the {@link DataGenerator} for the y-axis.
      * @throws IllegalArgumentException if any required argument is `null`
      */
-    public Curve(SId id, String name, SId xDataReference, SId yDataReference){
+    public Curve(SId id, String name, SId xDataReference, SId yDataReference) {
         this(id, name, xDataReference, yDataReference, null, null, Type.POINTS, null, null, YAxisAlignment.NOT_APPLICABLE, null, null, null, null);
     }
 
     /**
-     * @param id An identifier that is unique in this document.
-     * @param name An optional name
+     * @param id             An identifier that is unique in this document.
+     * @param name           An optional name
      * @param logScaleXAxis  <code>boolean</code> as to whether x-axis is a log scale.
-     * @param logScaleYAxis	<code>boolean</code> as to whether y-axis is a log scale.
+     * @param logScaleYAxis  <code>boolean</code> as to whether y-axis is a log scale.
      * @param xDataReference An {@link SId} reference to the {@link DataGenerator} for the x-axis.
-     * @param yDataReference  An {@link SId} reference to the {@link DataGenerator} for the y-axis.
-     * @param xErrorUpper An {@link SId} reference to the {@link DataGenerator} to be used as an upper-bounds line for the x-axis.
-     * @param xErrorLower An {@link SId} reference to the {@link DataGenerator} to be used as a lower-bounds line for the x-axis.
-     * @param yErrorUpper An {@link SId} reference to the {@link DataGenerator} to be used as an upper-bounds line for the y-axis.
-     * @param yErrorLower An {@link SId} reference to the {@link DataGenerator} to be used as a lower-bounds line for the y-axis.
+     * @param yDataReference An {@link SId} reference to the {@link DataGenerator} for the y-axis.
+     * @param xErrorUpper    An {@link SId} reference to the {@link DataGenerator} to be used as an upper-bounds line for the x-axis.
+     * @param xErrorLower    An {@link SId} reference to the {@link DataGenerator} to be used as a lower-bounds line for the x-axis.
+     * @param yErrorUpper    An {@link SId} reference to the {@link DataGenerator} to be used as an upper-bounds line for the y-axis.
+     * @param yErrorLower    An {@link SId} reference to the {@link DataGenerator} to be used as a lower-bounds line for the y-axis.
      * @throws IllegalArgumentException if any required argument is `null`, or <code>order</code> is a negative integer
      */
     public Curve(SId id, String name, SId xDataReference, SId yDataReference, Boolean logScaleXAxis, Boolean logScaleYAxis, Type type, Integer order, SId style, YAxisAlignment yAxis, SId xErrorUpper, SId xErrorLower, SId yErrorUpper, SId yErrorLower) {
         super(id, name, xDataReference, logScaleXAxis, order, style, yAxis);
-        if (SedMLElementFactory.getInstance().isStrictCreation()) SedGeneralClass.checkNoNullArgs(xDataReference, yDataReference, type);
+        if (SedMLElementFactory.getInstance().isStrictCreation())
+            SedGeneralClass.checkNoNullArgs(xDataReference, yDataReference, type);
         this.logScaleYAxis = logScaleYAxis;
         this.yDataReference = yDataReference;
         this.type = type;
@@ -80,16 +86,29 @@ public class Curve extends AbstractCurve {
         this.yErrorUpper = yErrorUpper;
         this.yErrorLower = yErrorLower;
     }
-    
+
+    public Curve clone() throws CloneNotSupportedException {
+        Curve clone = (Curve) super.clone();
+        clone.logScaleYAxis = this.logScaleYAxis;
+        clone.yDataReference = this.yDataReference;
+        clone.xErrorUpper = this.xErrorUpper;
+        clone.xErrorLower = this.xErrorLower;
+        clone.yErrorUpper = this.yErrorUpper;
+        clone.yErrorLower = this.yErrorLower;
+        clone.type = this.type;
+        return clone;
+    }
+
     /**
      * @return <code>true</code> if the y-axis is a log scale, <code>false</code> otherwise.
      */
     public Boolean getLogScaleYAxis() {
         return this.logScaleYAxis;
     }
-    
-	/**
+
+    /**
      * Setter for whether the y-axis of this curve is on a log scale.
+     *
      * @param logScaleYAxis A <code>boolean</code>.
      * @since 1.2.0
      */
@@ -106,8 +125,9 @@ public class Curve extends AbstractCurve {
 
     /**
      * Setter for the y-axis  data generator.
+     *
      * @param yDataReference A non-null <code>String</code> that is an identifier of a {@link DataGenerator}
-     *  element.
+     *                       element.
      * @since 1.2.0
      */
     public void setyDataReference(SId yDataReference) {
@@ -154,11 +174,11 @@ public class Curve extends AbstractCurve {
         this.yErrorLower = yErrorLower;
     }
 
-	@Override
-	public String getElementName() {
-		return SedMLTags.OUTPUT_CURVE;
-	}
-    
+    @Override
+    public String getElementName() {
+        return SedMLTags.OUTPUT_CURVE;
+    }
+
     @Override
     public String parametersToString() {
         List<String> params = new ArrayList<>();

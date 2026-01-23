@@ -59,6 +59,13 @@ public class SetValue extends ComputeChange {
         this.rangeReference = rangeReference;
         this.modelReference = modelReference;
     }
+
+    public SetValue clone() throws CloneNotSupportedException {
+        SetValue clone = (SetValue) super.clone();
+        clone.modelReference = new SId(this.modelReference.string());
+        clone.rangeReference = new SId(this.rangeReference.string());
+        return clone;
+    }
     
     public void setRangeReference(SId rangeReference) {
         this.rangeReference = rangeReference;

@@ -1,6 +1,5 @@
 package org.jlibsedml.components.listOfConstructs;
 
-import org.jlibsedml.SEDMLVisitor;
 import org.jlibsedml.components.SId;
 import org.jlibsedml.components.SedBase;
 
@@ -57,6 +56,16 @@ public abstract class ListOf<T extends SedBase> extends SedBase {
             if (sid == null) continue;
             this.contentIdMapping.put(sid, element);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public ListOf<T> clone() throws CloneNotSupportedException {
+        ListOf<T> clone = (ListOf<T>) super.clone();
+        for (T element : this.contents) {
+            T cloneElement = (T) element.clone();
+            clone.addContent(cloneElement);
+        }
+        return clone;
     }
 
     public boolean isEmpty() {

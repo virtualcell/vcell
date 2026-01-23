@@ -13,6 +13,10 @@ public class XAxis extends Axis{
         super(id, name, type, min, max, grid, styleId, reverse);
     }
 
+    public XAxis clone() throws CloneNotSupportedException {
+        return (XAxis) super.clone();
+    }
+
     @Override
     public String getAxisTagName() {
         return SedMLTags.AXIS_X;

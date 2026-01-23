@@ -31,6 +31,13 @@ public class AlgorithmParameter extends SedBase {
         this.kisaoID = kisaoID;
         this.setValue(value);
     }
+
+    public AlgorithmParameter clone() throws CloneNotSupportedException {
+        AlgorithmParameter clone = (AlgorithmParameter) super.clone();
+        clone.kisaoID = this.kisaoID;
+        clone.value = this.value;
+        return clone;
+    }
     
     public void setKisaoID(String kisaoID) {
         this.kisaoID = kisaoID;

@@ -34,9 +34,9 @@ import javax.annotation.OverridingMethodsMustInvokeSuper;
 public class FunctionalRange extends Range implements Calculation {
     private final static FormulaFormatter formulaFormatter = new FormulaFormatter();
 
-    private final SId range;
-    private final ListOfVariables variables;
-    private final ListOfParameters parameters;
+    private SId range;
+    private ListOfVariables variables;
+    private ListOfParameters parameters;
     private ASTNode math;
 
 
@@ -52,6 +52,15 @@ public class FunctionalRange extends Range implements Calculation {
         if(variables != null) for (SId varKey : variables.keySet()) this.variables.addContent(variables.get(varKey));
         if(parameters != null) for (SId paramKey : parameters.keySet()) this.parameters.addContent(parameters.get(paramKey));
         this.math = mathAsNode;
+    }
+
+    public FunctionalRange clone() throws CloneNotSupportedException {
+        FunctionalRange clone = (FunctionalRange) super.clone();
+        clone.range = this.range;
+        clone.variables = this.variables;
+        clone.parameters = this.parameters;
+        clone.math = this.math;
+        return clone;
     }
 
     public SId getRange() {

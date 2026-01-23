@@ -12,9 +12,9 @@ import java.util.Objects;
  * @author anu/radams
  *
  */
-public abstract class SedBase implements SedGeneralClass, IIdentifiable, Comparable<SedBase>{
+public abstract class SedBase implements SedGeneralClass, IIdentifiable, Comparable<SedBase>, Cloneable {
 	private String metaId = null;
-    private final SId id;
+    private SId id;
     private String name;
 	
 	private Notes notes;
@@ -25,6 +25,15 @@ public abstract class SedBase implements SedGeneralClass, IIdentifiable, Compara
         super();
         this.id = id; // Since id is optional, we use `null` to indicate "not present"
         this.name = name;
+    }
+
+    public SedBase clone() throws CloneNotSupportedException {
+        SedBase copy = (SedBase) super.clone();
+        copy.id = this.id == null ? null : new SId(this.id.string());
+        copy.name = this.name;
+        copy.notes = this.notes == null ? null : this.notes.clone();
+        copy.annotation = this.annotation == null ? null : this.annotation.clone();
+        return copy;
     }
 
     /**
@@ -122,7 +131,6 @@ public abstract class SedBase implements SedGeneralClass, IIdentifiable, Compara
         if (null == ann) throw new IllegalArgumentException("Annotation provided is null");
         this.annotation = ann;
 	}
-
 
     /**
      * Returns the parameters that are used in <code>this.equals()</code> to evaluate equality.

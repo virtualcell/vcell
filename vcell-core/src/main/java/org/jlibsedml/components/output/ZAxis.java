@@ -13,6 +13,10 @@ public class ZAxis extends Axis {
         super(id, name, type, min, max, grid, styleId, reverse);
     }
 
+    public ZAxis clone() throws CloneNotSupportedException {
+        return (ZAxis) super.clone();
+    }
+
     @Override
     public String getAxisTagName() {
         return SedMLTags.AXIS_Z;
