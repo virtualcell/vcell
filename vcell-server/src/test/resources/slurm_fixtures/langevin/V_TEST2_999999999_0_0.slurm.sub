@@ -10,6 +10,7 @@
 #SBATCH --mem-per-cpu=4096M
 #SBATCH --nodes=1
 #SBATCH --time=6-14:24:00		# timeout for the entire job
+#SBATCH --nodelist=mantis-040
 #SBATCH --no-kill
 #SBATCH --no-requeue
 

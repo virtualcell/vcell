@@ -1012,6 +1012,10 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("#SBATCH --mem-per-cpu=" + memoryMBAllowed.getMemLimit() + "M");
 		lsb.write("#SBATCH --nodes=1");
 		lsb.write("#SBATCH --time=" + jobTimeout + "\t\t# timeout for the entire job");
+		String nodelist = PropertyLoader.getProperty(PropertyLoader.htcNodeList, null);
+		if (nodelist!=null && nodelist.trim().length()>0) {
+			lsb.write("#SBATCH --nodelist="+nodelist);
+		}
 		lsb.write("#SBATCH --no-kill");
 		lsb.write("#SBATCH --no-requeue");
 
