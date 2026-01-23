@@ -54,29 +54,10 @@ public DataIdentifier[] getDataIdentifiers(OutputContext outputContext, VCDataId
 public double[] getDataSetTimes(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException;
 
 public double[] getVtuTimes(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException;
-/**
- * Insert the method's description here.
- * Creation date: (10/11/00 6:21:10 PM)
- * @param function cbit.vcell.math.Function
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception RemoteProxyException The exception description.
- */
- AnnotatedFunction[] getFunctions(OutputContext outputContext,VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException; 
-/**
- * This method was created by a SmartGuide.
- * @return cbit.plot.PlotData
- * @param variable java.lang.String
- * @param time double
- * @param spatialSelection cbit.vcell.simdata.gui.SpatialSelection
- * @exception RemoteProxyException The exception description.
- */
+
+AnnotatedFunction[] getFunctions(OutputContext outputContext,VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException;
+
 public PlotData getLineScan(OutputContext outputContext, VCDataIdentifier vcdataID, String variable, double time, SpatialSelection spatialSelection) throws RemoteProxyException, DataAccessException;
-/**
- * @param outputContext 
- * This method was created in VisualAge.
- * @return CartesianMesh
- * @throws  
- */
 
 public VtuFileContainer getEmptyVtuMeshFiles(VCDataIdentifier vcdataID, int timeIndex) throws RemoteProxyException, DataAccessException;
 
@@ -86,15 +67,16 @@ public double[] getVtuMeshData(OutputContext outputContext, VCDataIdentifier vcd
 public NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException;
 
 CartesianMesh getMesh(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException;
-/**
- * Insert the method's description here.
- * Creation date: (1/13/00 6:21:10 PM)
- * @param odeSimData cbit.vcell.export.data.ODESimData
- * @exception org.vcell.util.DataAccessException The exception description.
- * @exception RemoteProxyException The exception description.
- */
+
 cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException;
+
 /**
+ *
+ * getLangevinBatchResultSet
+ */
+ LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException;
+
+ /**
  * This method was created in VisualAge.
  * @return ParticleData
  * @param time double
@@ -121,15 +103,7 @@ public boolean getParticleDataExists(VCDataIdentifier vcdataID) throws DataAcces
  * @exception RemoteProxyException The exception description.
  */
 public cbit.vcell.simdata.SimDataBlock getSimDataBlock(OutputContext outputContext, VCDataIdentifier vcdataID, String varName, double time) throws RemoteProxyException, DataAccessException;
-/**
- * This method was created by a SmartGuide.
- * @return double[]
- * @param varName java.lang.String
- * @param x int
- * @param y int
- * @param z int
- * @exception RemoteProxyException The exception description.
- */
+
 public org.vcell.util.document.TimeSeriesJobResults getTimeSeriesValues(OutputContext outputContext, VCDataIdentifier vcdataID, org.vcell.util.document.TimeSeriesJobSpec timeSeriesJobSpec) throws RemoteProxyException, DataAccessException;
 /**
  * Insert the method's description here.

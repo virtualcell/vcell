@@ -449,6 +449,9 @@ public CartesianMesh getMesh() throws DataAccessException, MathException {
 	}
 }
 
+public synchronized File getLangevinFile(LangevinBatchResultSet.LangevinFileType type) throws DataAccessException {
+	throw new RuntimeException("MergedData.getLangevinFile: Not yet implemented!");
+}
 
 public ODEDataBlock getODEDataBlock() throws DataAccessException {
 

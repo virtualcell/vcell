@@ -109,7 +109,12 @@ public class PDEDataViewerPostProcess extends JPanel implements DataJobListener{
 						// TODO Auto-generated method stub
 						return null;
 					}
-					
+
+					@Override
+					public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException {
+						return null;
+					}
+
 					@Override
 					public CartesianMesh getMesh(VCDataIdentifier vcdataID) throws RemoteProxyException, DataAccessException {
 						return null;//throw new DataAccessException("PostProcessData mesh not available at this level");

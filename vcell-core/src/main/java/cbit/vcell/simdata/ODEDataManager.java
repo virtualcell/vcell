@@ -35,6 +35,7 @@ public class ODEDataManager implements DataManager {
 	private VCDataIdentifier vcDataIdentifier = null;
 	private ODESolverResultSet odeSolverResultSet = null;
 	private NFSimMolecularConfigurations nFSimMolecularConfigurations = null;
+	private LangevinBatchResultSet langevinBatchResultSet = null;
 	private OutputContext outputContext = null;
 
 public OutputContext getOutputContext() {
@@ -179,6 +180,7 @@ private void connect() throws DataAccessException {
 	// clone, so we can operate safely on it (adding/removing user-defined functions) - real remote data is being cached...
 	odeSolverResultSet = new ODESimData(getVCDataIdentifier(),getVCDataManager().getODEData(getVCDataIdentifier()));
 	nFSimMolecularConfigurations = getVCDataManager().getNFSimMolecularConfigurations(getVCDataIdentifier());
+//	langevinBatchResultSet = getVCDataManager().getLangevinBatchResultSet(getVCDataIdentifier());
 }
 
 private void addOutputFunction(AnnotatedFunction function, ODESolverResultSet odeRS) {
