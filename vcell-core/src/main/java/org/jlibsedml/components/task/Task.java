@@ -40,6 +40,13 @@ public class Task extends AbstractTask {
 		this.simulationReference = simulationReference;
 	}
 
+    public Task clone() throws CloneNotSupportedException {
+        Task copy = (Task) super.clone();
+        copy.modelReference = new SId(this.modelReference.string());
+        copy.simulationReference = new SId(this.simulationReference.string());
+        return copy;
+    }
+
     /**
      * Getter for the model reference.
      * @return A <code>String</code> that should correspond to a model's <code>id</code> attribute.

@@ -46,6 +46,10 @@ public class ListOfOutputs extends ListOf<Output> {
         super(id, name, elements, new OutputComparator());
     }
 
+    public ListOfOutputs clone() throws CloneNotSupportedException {
+        return (ListOfOutputs) super.clone();
+    }
+
     /**
      * Gets the contents as an unmodifiable list
      * @return an unmodifiable {@link List} of type {@link Output}

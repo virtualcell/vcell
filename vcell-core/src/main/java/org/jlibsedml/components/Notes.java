@@ -26,9 +26,9 @@ import org.jlibsedml.SedMLTags;
  * Clients do not have to set the namespace of the XHTML contents, this is performed by this class.
  * 
  */
-public final class Notes implements SedGeneralClass {
+public final class Notes implements SedGeneralClass, Cloneable {
 
-    private final List<Element> elements;
+    private List<Element> elements;
 
 	/**
 	 * @param argNotesElement
@@ -43,6 +43,12 @@ public final class Notes implements SedGeneralClass {
             this.elements.add(element.detach().setNamespace(Namespace.getNamespace(SedMLTags.XHTML_NS)));
         }
 	}
+
+    public Notes clone() throws CloneNotSupportedException {
+        Notes clone = (Notes) super.clone();
+        clone.elements = new ArrayList<>(this.elements);
+        return clone;
+    }
 
     public void addNote(Element note) {
         this.elements.add(note);

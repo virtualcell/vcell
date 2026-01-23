@@ -19,6 +19,10 @@ public class Analysis extends Simulation {
         super(id, name, algorithm);
     }
 
+    public Analysis clone() throws CloneNotSupportedException {
+        return (Analysis) super.clone();
+    }
+
     /**
      * Getter for the type of this simulation.
      *

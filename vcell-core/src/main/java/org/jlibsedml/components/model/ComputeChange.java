@@ -24,8 +24,8 @@ public class ComputeChange extends Change implements Calculation {
     private final static FormulaFormatter formulaFormatter = new FormulaFormatter();
 
     private ASTNode math = null;
-    private final ListOfVariables listOfVariables;
-    private final ListOfParameters listOfParameters;
+    private ListOfVariables listOfVariables;
+    private ListOfParameters listOfParameters;
 
     /**
      *
@@ -67,6 +67,14 @@ public class ComputeChange extends Change implements Calculation {
         this.setMath(math);
         this.listOfVariables = new ListOfVariables();
         this.listOfParameters = new ListOfParameters();
+    }
+
+    public ComputeChange clone() throws CloneNotSupportedException {
+        ComputeChange clone = (ComputeChange) super.clone();
+        clone.math = this.math;
+        clone.listOfVariables = this.listOfVariables;
+        clone.listOfParameters = this.listOfParameters;
+        return clone;
     }
 
     public ASTNode getMath() {

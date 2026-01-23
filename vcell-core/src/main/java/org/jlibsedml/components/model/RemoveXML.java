@@ -32,6 +32,10 @@ public class RemoveXML extends Change {
         super(id, name, target);
     }
 
+    public RemoveXML clone() throws CloneNotSupportedException {
+        return (RemoveXML) super.clone();
+    }
+
     @Override
     public String getElementName() {
         return SedMLTags.REMOVE_XML;

@@ -13,4 +13,8 @@ public class ListOfTasks extends ListOf<AbstractTask> {
     public String getElementName() {
         return SedMLTags.TASKS;
     }
+
+    public ListOfTasks clone() throws CloneNotSupportedException {
+        return (ListOfTasks) super.clone();
+    }
 }

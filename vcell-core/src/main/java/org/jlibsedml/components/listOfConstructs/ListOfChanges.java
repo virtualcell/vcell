@@ -39,6 +39,10 @@ public class ListOfChanges extends ListOf<Change> {
         super(id, name, elements, new ListOfChanges.ChangeComparator());
     }
 
+    public ListOfChanges clone() throws CloneNotSupportedException {
+        return (ListOfChanges) super.clone();
+    }
+
     /**
      * Gets the contents as an unmodifiable list
      * @return an unmodifiable {@link List} of type {@link Output}

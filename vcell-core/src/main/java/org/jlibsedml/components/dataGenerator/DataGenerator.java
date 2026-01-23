@@ -21,8 +21,8 @@ public final class DataGenerator extends SedBase implements Calculation {
     private final static FormulaFormatter formulaFormatter = new FormulaFormatter();
 
 	private ASTNode math = null;
-	private final ListOfVariables listOfVariables = new ListOfVariables();
-	private final ListOfParameters listOfParameters = new ListOfParameters();
+	private ListOfVariables listOfVariables = new ListOfVariables();
+	private ListOfParameters listOfParameters = new ListOfParameters();
 
 	/**
 	 * 
@@ -48,6 +48,14 @@ public final class DataGenerator extends SedBase implements Calculation {
     public DataGenerator(SId id, String name) {
 		super(id, name);
 	}
+
+    public DataGenerator clone() throws CloneNotSupportedException {
+        DataGenerator clone = (DataGenerator) super.clone();
+        clone.math = this.math;
+        clone.listOfVariables = this.listOfVariables;
+        clone.listOfParameters = this.listOfParameters;
+        return clone;
+    }
 
     public ListOfVariables getListOfVariables() {
         return this.listOfVariables;

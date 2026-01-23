@@ -13,4 +13,8 @@ public class ListOfSubTasks extends ListOf<SubTask> {
     public String getElementName() {
         return SedMLTags.REPEATED_TASK_SUBTASKS_LIST;
     }
+
+    public ListOfSubTasks clone() throws CloneNotSupportedException {
+        return (ListOfSubTasks) super.clone();
+    }
 }

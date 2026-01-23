@@ -15,12 +15,12 @@ import org.slf4j.LoggerFactory;
 
 public class RepeatedTask extends AbstractTask {
     private static final Logger logger = LoggerFactory.getLogger(RepeatedTask.class);
+
     private boolean resetModel;
     private SId range;
-
-    private final ListOfRanges ranges = new ListOfRanges();
-    private final ListOfRepeatedTaskChanges changes = new ListOfRepeatedTaskChanges();
-    private final ListOfSubTasks subTasks = new ListOfSubTasks();
+    private ListOfRanges ranges = new ListOfRanges();
+    private ListOfRepeatedTaskChanges changes = new ListOfRepeatedTaskChanges();
+    private ListOfSubTasks subTasks = new ListOfSubTasks();
 
     public RepeatedTask(SId id, String name, boolean resetModel, SId range) {
         super(id, name);
@@ -28,9 +28,20 @@ public class RepeatedTask extends AbstractTask {
         this.range = range;
     }
 
+    public RepeatedTask clone() throws CloneNotSupportedException {
+        RepeatedTask clone = (RepeatedTask) super.clone();
+        clone.resetModel = this.resetModel;
+        clone.range = new SId(this.range.string());
+        clone.ranges = this.ranges.clone();
+        clone.changes = this.changes.clone();
+        clone.subTasks = this.subTasks.clone();
+        return clone;
+    }
+
     public boolean getResetModel() {
         return this.resetModel;
     }
+
     public void setResetModel(boolean resetModel) {
         this.resetModel = resetModel;
     }
@@ -38,6 +49,7 @@ public class RepeatedTask extends AbstractTask {
     public SId getRange() {
         return this.range;
     }
+
     public void setRange(SId range) {
         this.range = range;
     }
@@ -65,9 +77,11 @@ public class RepeatedTask extends AbstractTask {
     public ListOfRepeatedTaskChanges getListOfChanges() {
         return this.changes;
     }
+
     public List<SetValue> getChanges() {
         return this.changes.getContents();
     }
+
     public void addChange(SetValue change) {
         this.changes.addContent(change);
     }
@@ -75,25 +89,27 @@ public class RepeatedTask extends AbstractTask {
     public ListOfSubTasks getListOfSubTasks() {
         return this.subTasks;
     }
+
     public List<SubTask> getSubTasks() {
         return this.subTasks.getContents();
     }
+
     public void addSubtask(SubTask subTask) {
-        if (subTask == null ) throw new IllegalArgumentException("subTask cannot be null");
+        if (subTask == null) throw new IllegalArgumentException("subTask cannot be null");
         if (subTask.getTask() == null || subTask.getTask().string().isEmpty()) {
             logger.warn("subtask cant't be null, key can't be null, key can't be empty string");
             logger.warn("   ...subtask " + subTask.getTask().string() + " not added to list");
             return;     // subtask can't be null, key can't be null, key can't be ""
         }
-        if(this.getId().equals(subTask.getTask())) {
+        if (this.getId().equals(subTask.getTask())) {
             logger.warn("'this' repeated task cannot be a subtask for itself");
             logger.warn("   ...subtask " + subTask.getTask() + " not added to list");
             return;     // "this" repeated task cannot be a subtask for itself
         }
         this.subTasks.addContent(subTask);
     }
-    
-     @Override
+
+    @Override
     public String getElementName() {
         return SedMLTags.REPEATED_TASK_TAG;
     }
@@ -103,12 +119,15 @@ public class RepeatedTask extends AbstractTask {
         List<String> params = new ArrayList<>(), rangeParams = new ArrayList<>(),
                 changesParams = new ArrayList<>(), subTasksParams = new ArrayList<>();
         params.add(String.format("resetModel=%b", this.getResetModel()));
-        for (Range r : this.ranges.getContents()) rangeParams.add(r.getId() != null ? r.getId().string() : '{' + r.parametersToString() + '}');
-        for (SetValue setVal : this.changes.getContents()) changesParams.add(setVal.getId() != null ? setVal.getId().string() : '{' + setVal.parametersToString() + '}');
-        for (SubTask subTask : this.subTasks.getContents()) subTasksParams.add(subTask.getId() != null ? subTask.getId().string() : '{' + subTask.parametersToString() + '}');
-        params.add(String.format("ranges=[%s]", String.join(", ",  rangeParams)));
-        params.add(String.format("changes=[%s]", String.join(", ",  changesParams)));
-        params.add(String.format("subTasks=[%s]", String.join(", ",  subTasksParams)));
+        for (Range r : this.ranges.getContents())
+            rangeParams.add(r.getId() != null ? r.getId().string() : '{' + r.parametersToString() + '}');
+        for (SetValue setVal : this.changes.getContents())
+            changesParams.add(setVal.getId() != null ? setVal.getId().string() : '{' + setVal.parametersToString() + '}');
+        for (SubTask subTask : this.subTasks.getContents())
+            subTasksParams.add(subTask.getId() != null ? subTask.getId().string() : '{' + subTask.parametersToString() + '}');
+        params.add(String.format("ranges=[%s]", String.join(", ", rangeParams)));
+        params.add(String.format("changes=[%s]", String.join(", ", changesParams)));
+        params.add(String.format("subTasks=[%s]", String.join(", ", subTasksParams)));
         return super.parametersToString() + ", " + String.join(", ", params);
     }
 

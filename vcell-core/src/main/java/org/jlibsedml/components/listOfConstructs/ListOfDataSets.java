@@ -13,4 +13,8 @@ public class ListOfDataSets extends ListOf<DataSet>{
     public String getElementName() {
         return SedMLTags.OUTPUT_DATASETS_LIST;
     }
+
+    public ListOfDataSets clone() throws CloneNotSupportedException {
+        return (ListOfDataSets) super.clone();
+    }
 }

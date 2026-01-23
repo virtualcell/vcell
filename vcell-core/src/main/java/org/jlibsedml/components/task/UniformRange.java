@@ -65,6 +65,15 @@ public class UniformRange extends Range {
         }
     }
 
+    public UniformRange clone() throws CloneNotSupportedException {
+        UniformRange clone = (UniformRange) super.clone();
+        clone.start = this.start;
+        clone.end = this.end;
+        clone.numberOfSteps = this.numberOfSteps;
+        clone.type = this.type;
+        return clone;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;

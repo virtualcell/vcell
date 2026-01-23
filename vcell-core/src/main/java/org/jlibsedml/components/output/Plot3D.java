@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  */
 public class Plot3D extends Plot {
 
-    private final ListOfSurfaces listOfSurfaces;
+    private ListOfSurfaces listOfSurfaces;
     private ZAxis zAxis;
 
     /**
@@ -78,6 +78,13 @@ public class Plot3D extends Plot {
         super(id, name, useLegend, plotHeight, plotWidth, xAxis, yAxis);
         this.zAxis = zAxis;
         this.listOfSurfaces = listOfSurfaces;
+    }
+
+    public Plot3D clone() throws CloneNotSupportedException {
+        Plot3D clone = (Plot3D) super.clone();
+        clone.listOfSurfaces = this.listOfSurfaces;
+        clone.zAxis = this.zAxis.clone();
+        return clone;
     }
 
     public ZAxis getZAxis() {

@@ -13,4 +13,8 @@ public class ListOfAlgorithmParameters extends ListOf<AlgorithmParameter> {
     public String getElementName() {
         return SedMLTags.ALGORITHM_PARAMETERS;
     }
+
+    public ListOfAlgorithmParameters clone() throws CloneNotSupportedException {
+        return (ListOfAlgorithmParameters) super.clone();
+    }
 }

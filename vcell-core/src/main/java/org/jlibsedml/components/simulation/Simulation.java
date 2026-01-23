@@ -33,6 +33,12 @@ public abstract class Simulation extends SedBase {
 		}
 		this.algorithm = algorithm;
 	}
+
+    public Simulation clone() throws CloneNotSupportedException {
+        Simulation clone = (Simulation) super.clone();
+        clone.algorithm = this.algorithm.clone();
+        return clone;
+    }
 	
 	/**
 	 * Returns the {@link Algorithm} for this simulation

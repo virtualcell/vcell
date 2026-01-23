@@ -14,4 +14,8 @@ public class ListOfRepeatedTaskChanges extends ListOf<SetValue> {
     public String getElementName() {
         return SedMLTags.CHANGES;
     }
+
+    public ListOfRepeatedTaskChanges clone() throws CloneNotSupportedException {
+        return (ListOfRepeatedTaskChanges) super.clone();
+    }
 }

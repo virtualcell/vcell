@@ -12,6 +12,10 @@ public abstract class Range extends SedBase {
     public Range(SId id, String name) {
         super(id, name);
     }
+
+    public Range clone() throws CloneNotSupportedException {
+        return (Range) super.clone();
+    }
     /**
      * Gets the number of elements in this range
      * @return the number of elements.

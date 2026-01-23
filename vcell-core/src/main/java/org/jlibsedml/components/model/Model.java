@@ -24,8 +24,8 @@ import static org.jlibsedml.execution.ArchiveModelResolver.SPACE_URI_ESCAPE_SEQU
  */
 public final class Model extends SedBase {
 	private String language;
-	private final String source_path_or_URI_string;
-    private final ListOfChanges listOfChanges = new ListOfChanges();
+	private String source_path_or_URI_string;
+    private ListOfChanges listOfChanges = new ListOfChanges();
 
 	/**
      * Standard Constructor for Models
@@ -72,6 +72,14 @@ public final class Model extends SedBase {
 	public Model(Model toCopy, SId id) {
 		this(id, toCopy.getName(), toCopy.getLanguage(), toCopy.getSourceAsString());
 	}
+
+    public Model clone() throws CloneNotSupportedException {
+        Model clone = (Model) super.clone();
+        clone.language = this.language;
+        clone.listOfChanges = this.listOfChanges.clone();
+        clone.source_path_or_URI_string = this.source_path_or_URI_string;
+        return clone;
+    }
 
     /**
      * Returns the model's language.

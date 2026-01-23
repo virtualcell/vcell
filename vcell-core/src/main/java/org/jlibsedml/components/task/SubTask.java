@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /*
 <listOfSubTasks>
@@ -60,14 +61,14 @@ public class SubTask extends SedBase {
     public boolean equals(Object obj){
         if (null == obj) return false;
         if (!(obj instanceof SubTask subTask)) return false;
-        return  this.getId().equals(subTask.getId())
-                && this.getName().equals(subTask.getName())
+        return Objects.equals(this.getId(), subTask.getId())
+                && Objects.equals(this.getName(), subTask.getName())
                 && this.getTask().equals(subTask.getTask())
                 && this.getOrder().equals(subTask.getOrder());
     }
 
     public int hashCode(){
-        return (this.getClass().getSimpleName() + "::" + this.getId().string() + "::" + this.getName() + "::" +
+        return (this.getClass().getSimpleName() + "::" + (this.getId() == null ? "<null>" : this.getId().string()) + "::" + this.getName() + "::" +
                 this.getTask().string()+ "::" + this.getOrder()).hashCode();
     }
 

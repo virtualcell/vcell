@@ -13,4 +13,8 @@ public class ListOfSimulations extends ListOf<Simulation> {
     public String getElementName() {
         return SedMLTags.SIMS;
     }
+
+    public ListOfSimulations clone() throws CloneNotSupportedException {
+        return (ListOfSimulations) super.clone();
+    }
 }

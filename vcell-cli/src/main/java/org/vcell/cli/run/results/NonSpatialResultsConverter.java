@@ -75,7 +75,8 @@ public class NonSpatialResultsConverter extends ResultsConverter {
                     SedBase elementFound = sedML.searchInTasksFor(variable.getTaskReference());
                     if (!(elementFound instanceof AbstractTask abstractTask)) throw new RuntimeException("Requested abstract task does not exist");
                     AbstractTask derivedTask = ResultsConverter.getBaseTask(abstractTask, sedmlContainer);
-                    if (!(derivedTask instanceof Task baseTask)) throw new SEDMLImportException("Unable to find base task referred to by var `" + variable.getId() + "`");
+                    if (!(derivedTask instanceof Task baseTask))
+                        throw new SEDMLImportException("Unable to find base task referred to by var `" + variable.getId() + "`");
                     SedBase sim = sedML.searchInSimulationsFor(baseTask.getSimulationReference());
                     if (!(sim instanceof UniformTimeCourse utcSim)) throw new SEDMLImportException("Unable to find utc sim referred to by var `" + variable.getId() + "`");
                     maxTimeLength = Math.max(utcSim.getNumberOfSteps() + 1, maxTimeLength);

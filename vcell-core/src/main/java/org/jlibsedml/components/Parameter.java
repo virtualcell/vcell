@@ -20,8 +20,6 @@ public final class Parameter extends SedBase {
 		this(parameter.getId(), parameter.isNameSet() ? parameter.getName()	: null, parameter.getValue());
 	}
 
-	
-
 	/**
 	 * 
 	 * @param id The id of this element.
@@ -36,6 +34,12 @@ public final class Parameter extends SedBase {
 		}		
 		this.value = value;
 	}
+
+    public Parameter clone() throws CloneNotSupportedException {
+        Parameter clone = (Parameter) super.clone();
+        clone.value = this.value;
+        return clone;
+    }
 
 	/**
 	 * Boolean test for whether this parameter is set or not.

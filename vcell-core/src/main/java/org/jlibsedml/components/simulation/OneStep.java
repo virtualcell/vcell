@@ -23,6 +23,12 @@ public class OneStep extends Simulation {
         this.setStep(step);
     }
 
+    public OneStep clone() throws CloneNotSupportedException {
+        OneStep clone = (OneStep) super.clone();
+        clone.step = this.step;
+        return clone;
+    }
+
     @Override
     public String getSimulationKind() {
         return SedMLTags.SIMUL_OS_KIND;
