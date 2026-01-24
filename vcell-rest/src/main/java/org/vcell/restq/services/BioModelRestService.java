@@ -15,6 +15,7 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
+import org.vcell.util.document.VCInfoContainer;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -108,6 +109,10 @@ public class BioModelRestService {
 
     public BioModelInfo[] getBioModelInfos(User user, boolean all) throws DataAccessException {
         return databaseServerImpl.getBioModelInfos(user, all);
+    }
+
+    public VCInfoContainer getVCInfoContainer(User user) throws DataAccessException {
+        return databaseServerImpl.getVCInfoContainer(user);
     }
 
 }
