@@ -45,7 +45,9 @@ public Triangle(Node n0, Node n1, Node n2) {
 	super(new Node[] {n0, n1, n2});
 }
 
-
+public Triangle deepClone() {
+	return new Triangle(getNodes().clone());
+}
 /**
  * Insert the method's description here.
  * Creation date: (5/6/2004 2:14:34 PM)

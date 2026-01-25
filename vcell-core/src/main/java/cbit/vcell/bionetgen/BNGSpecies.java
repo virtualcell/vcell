@@ -122,7 +122,15 @@ public String toStringShort() {
 	return new String(getName());
 }
 
-public enum SignatureDetailLevel {
+    public BNGSpecies deepClone() {
+		Expression newConc = getConcentration();
+		if (newConc != null) {
+			newConc = Expression.clone(newConc);
+		}
+		return new BNGComplexSpecies(getName(), newConc, getNetworkFileIndex());
+    }
+
+    public enum SignatureDetailLevel {
 	MoleculesOnly,
 	ComponentsAndStates		// molecules and components with states, no bond
 }

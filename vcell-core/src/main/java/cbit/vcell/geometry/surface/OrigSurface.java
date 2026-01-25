@@ -121,4 +121,14 @@ public void reverseDirection() {
 		getPolygons(i).reverseDirection();
 	}
 }
+
+	public OrigSurface deepClone() {
+		OrigSurface origSurface = new OrigSurface(fieldInteriorRegionIndex, fieldExteriorRegionIndex);
+		for (int i = 0; i < fieldPolygons.size(); i++) {
+			origSurface.addPolygon(fieldPolygons.get(i).deepClone());
+		}
+		origSurface.setInteriorMask(interiorMask);
+		origSurface.setExteriorMask(exteriorMask);
+		return origSurface;
+	}
 }

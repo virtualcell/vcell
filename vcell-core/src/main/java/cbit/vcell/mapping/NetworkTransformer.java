@@ -11,6 +11,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.model.bngl.ParseException;
@@ -85,8 +87,8 @@ public class NetworkTransformer implements SimContextTransformer {
 	final public SimContextTransformation transform(SimulationContext originalSimContext, MathMappingCallback mathMappingCallback, NetworkGenerationRequirements networkGenerationRequirements) {
 		SimulationContext transformedSimContext;
 		try {
-			transformedSimContext = (SimulationContext)BeanUtils.cloneSerializable(originalSimContext);
-		} catch (ClassNotFoundException | IOException e) {
+			transformedSimContext = XmlHelper.cloneSimulationContext(originalSimContext);
+		} catch (XmlParseException e) {
 			throw new RuntimeException("unexpected exception: "+e.getMessage(), e);
 		}
 		transformedSimContext.getModel().refreshDependencies();
@@ -205,7 +207,7 @@ public class NetworkTransformer implements SimContextTransformer {
 				simContext.appendToConsole(tcm);
 			}
 			outputSpec = simContext.getMostRecentlyCreatedOutputSpec();
-			return (BNGOutputSpec)BeanUtils.cloneSerializable(outputSpec);
+			return outputSpec.deepClone();
 		}
 		
 		BNGInput bngInput = new BNGInput(input);
@@ -280,7 +282,7 @@ public class NetworkTransformer implements SimContextTransformer {
 		} else {
 			lg.debug("something is wrong with the hash and/or output spec");
 		}
-		return (BNGOutputSpec)BeanUtils.cloneSerializable(outputSpec);
+		return outputSpec.deepClone();
 	}
 
 	static final float progressFractionQuota = 2.0f/5.0f;

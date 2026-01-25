@@ -143,7 +143,22 @@ public static Expression assign(Expression lvalueExp, Expression rvalueExp) thro
 	exp.rootNode = assignNode;
 	return exp;
 }
-   public void bindExpression(SymbolTable symbolTable) throws ExpressionBindingException
+
+    public static Expression clone(Expression exp) {
+	   if (exp == null){
+		   return null;
+	   }else{
+		   Expression new_exp = new Expression(exp);
+		   try {
+			   new_exp.bindExpression(null);
+			   return new_exp;
+		   }catch (Exception e){
+			   throw new RuntimeException("unexpected error in Expression.clone() "+e.getMessage(), e);
+		   }
+	   }
+    }
+
+    public void bindExpression(SymbolTable symbolTable) throws ExpressionBindingException
    {
 bindCount++;/////////////////
 	  rootNode.bind(symbolTable);

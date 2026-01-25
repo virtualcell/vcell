@@ -3588,7 +3588,7 @@ private Element getXML(FluxReaction param) throws XmlParseException {
  * @return Element
  * @param param cbit.vcell.model.Kinetics
  */
-private Element getXML(Kinetics param) throws XmlParseException {
+public Element getXML(Kinetics param) throws XmlParseException {
 
 	String kineticsType = null;
 
@@ -4279,7 +4279,7 @@ private Element getXML(ReactionParticipant param) {
  * @return Element
  * @param param cbit.vcell.model.ReactionStep
  */
-private Element getXML(ReactionStep param) throws XmlParseException {
+public Element getXML(ReactionStep param) throws XmlParseException {
 	Element rsElement = null;
 	if (param instanceof FluxReaction) {
 		rsElement = getXML((FluxReaction)param);

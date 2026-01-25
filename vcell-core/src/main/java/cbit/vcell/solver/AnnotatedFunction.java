@@ -45,6 +45,10 @@ public class AnnotatedFunction extends Function implements Matchable, Simulation
 	public AnnotatedFunction(String argFunctionName, Expression argFunctionExpression, Domain domain, String argErrString, VariableType argFunctionType, FunctionCategory fc) {
 		this(argFunctionName, argFunctionExpression, domain, argFunctionName, argErrString, argFunctionType, fc);
 	}
+
+	public AnnotatedFunction deepClone() {
+		return new AnnotatedFunction(getName(), Expression.clone(getExpression()), getDomain(), getErrorString(), getFunctionType(), getFunctionCatogery());
+	}
 	
 /**
  * AnnotatedFunction constructor comment.

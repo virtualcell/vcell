@@ -10,29 +10,6 @@
 
 package cbit.vcell.solvers;
 
-import java.beans.PropertyVetoException;
-import java.io.BufferedOutputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.*;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.chombo.ChomboSolverSpec;
-import org.vcell.chombo.RefinementRoi;
-import org.vcell.chombo.RefinementRoi.RoiType;
-import org.vcell.chombo.TimeInterval;
-import org.vcell.solver.smoldyn.SmoldynFileWriter;
-import org.vcell.util.BeanUtils;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.Extent;
-import org.vcell.util.ISize;
-import org.vcell.util.Origin;
-
 import cbit.image.ImageException;
 import cbit.image.VCImage;
 import cbit.image.VCImageUncompressed;
@@ -40,88 +17,40 @@ import cbit.image.VCPixelClass;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.field.FieldFunctionArguments;
 import cbit.vcell.field.FieldUtilities;
-import cbit.vcell.geometry.AnalyticSubVolume;
-import cbit.vcell.geometry.Geometry;
-import cbit.vcell.geometry.GeometryException;
-import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.geometry.SubVolume;
+import cbit.vcell.geometry.*;
 import cbit.vcell.geometry.surface.DistanceMapGenerator;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.RayCaster;
 import cbit.vcell.geometry.surface.SubvolumeSignedDistanceMap;
 import cbit.vcell.mapping.FastSystemAnalyzer;
-import cbit.vcell.math.BoundaryConditionType;
-import cbit.vcell.math.CompartmentSubDomain;
-import cbit.vcell.math.Constant;
-import cbit.vcell.math.ConvolutionDataGenerator;
+import cbit.vcell.math.*;
 import cbit.vcell.math.ConvolutionDataGenerator.ConvolutionDataGeneratorKernel;
 import cbit.vcell.math.ConvolutionDataGenerator.GaussianConvolutionDataGeneratorKernel;
-import cbit.vcell.math.DataGenerator;
-import cbit.vcell.math.Distribution;
-import cbit.vcell.math.Equation;
-import cbit.vcell.math.FastSystem;
-import cbit.vcell.math.FilamentVariable;
-import cbit.vcell.math.GaussianDistribution;
-import cbit.vcell.math.JumpCondition;
-import cbit.vcell.math.MathDescription;
-import cbit.vcell.math.MathException;
-import cbit.vcell.math.MathUtilities;
-import cbit.vcell.math.MeasureEquation;
-import cbit.vcell.math.MemVariable;
-import cbit.vcell.math.MembraneParticleVariable;
-import cbit.vcell.math.MembraneRandomVariable;
-import cbit.vcell.math.MembraneRegionEquation;
-import cbit.vcell.math.MembraneRegionVariable;
-import cbit.vcell.math.MembraneSubDomain;
-import cbit.vcell.math.ParameterVariable;
-import cbit.vcell.math.PdeEquation;
 import cbit.vcell.math.PdeEquation.BoundaryConditionValue;
-import cbit.vcell.math.PostProcessingBlock;
-import cbit.vcell.math.ProjectionDataGenerator;
-import cbit.vcell.math.PseudoConstant;
-import cbit.vcell.math.RandomVariable;
-import cbit.vcell.math.ReservedVariable;
-import cbit.vcell.math.SubDomain;
 import cbit.vcell.math.SubDomain.BoundaryConditionSpec;
-import cbit.vcell.math.UniformDistribution;
-import cbit.vcell.math.Variable;
 import cbit.vcell.math.Variable.Domain;
-import cbit.vcell.math.VariableType;
 import cbit.vcell.math.VariableType.VariableDomain;
-import cbit.vcell.math.VolVariable;
-import cbit.vcell.math.VolumeParticleVariable;
-import cbit.vcell.math.VolumeRandomVariable;
-import cbit.vcell.math.VolumeRegionEquation;
-import cbit.vcell.math.VolumeRegionVariable;
 import cbit.vcell.messaging.server.SimulationTask;
-import cbit.vcell.parser.Discontinuity;
-import cbit.vcell.parser.DivideByZeroException;
-import cbit.vcell.parser.Expression;
-import cbit.vcell.parser.ExpressionException;
-import cbit.vcell.parser.FunctionInvocation;
-import cbit.vcell.parser.RvachevFunctionUtils;
-import cbit.vcell.parser.SymbolTable;
+import cbit.vcell.parser.*;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.simdata.DataSet;
-import cbit.vcell.simdata.DataSetControllerImpl;
-import cbit.vcell.simdata.SimDataBlock;
-import cbit.vcell.simdata.SimDataConstants;
-import cbit.vcell.simdata.SimulationData;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.ErrorTolerance;
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationSymbolTable;
-import cbit.vcell.solver.SmoldynSimulationOptions;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverException;
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.SolverUtilities;
-import cbit.vcell.solver.UniformOutputTimeSpec;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
+import cbit.vcell.simdata.*;
+import cbit.vcell.solver.*;
 import cbit.vcell.solver.server.SolverFileWriter;
+import cbit.vcell.xml.XmlHelper;
+import cbit.vcell.xml.XmlParseException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.chombo.ChomboSolverSpec;
+import org.vcell.chombo.RefinementRoi;
+import org.vcell.chombo.RefinementRoi.RoiType;
+import org.vcell.chombo.TimeInterval;
+import org.vcell.solver.smoldyn.SmoldynFileWriter;
+import org.vcell.util.*;
+
+import java.beans.PropertyVetoException;
+import java.io.*;
+import java.util.*;
 
 /**
  * Insert the type's description here.
@@ -1940,7 +1869,7 @@ lg.error(e);
         }
     }
 
-    private void writeChomboSpec() throws ExpressionException, SolverException, PropertyVetoException, ClassNotFoundException, IOException, GeometryException, ImageException{
+    private void writeChomboSpec() throws ExpressionException, SolverException, PropertyVetoException, XmlParseException, IOException, GeometryException, ImageException{
         if(!bChomboSolver){
             return;
         }
@@ -1996,7 +1925,7 @@ lg.error(e);
 
         SubVolume[] subVolumes = geometrySpec.getSubVolumes();
         if(geometrySpec.hasImage()){
-            Geometry geometry = (Geometry) BeanUtils.cloneSerializable(simulation.getMathDescription().getGeometry());
+            Geometry geometry = XmlHelper.cloneGeometry(simulation.getMathDescription().getGeometry());
             Geometry simGeometry = geometry;
             VCImage img = geometry.getGeometrySpec().getImage();
 
