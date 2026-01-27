@@ -80,7 +80,7 @@ public final class Variable extends SedBase {
            SedGeneralClass.checkNoNullArgs(id, modelReference, targetXPath);
         }
         this.targetXPathStr = targetXPath;
-        this.modelReference = null;
+        this.modelReference = modelReference;
         this.taskReference = null;
         this.symbol = null;
     }
@@ -341,7 +341,7 @@ public final class Variable extends SedBase {
     public String parametersToString(){
         List<String> params = new ArrayList<>();
         if (this.modelReference != null) params.add(String.format("modelReference=%s", this.modelReference.string()));
-        if (this.modelReference != null)params.add(String.format("taskReference=%s", this.taskReference.string()));
+        if (this.taskReference != null)params.add(String.format("taskReference=%s", this.taskReference.string()));
         if (this.symbol != null) params.add(String.format("symbol=%s", this.symbol));
         if (this.targetXPathStr != null) params.add(String.format("targetXPathStr=%s", this.targetXPathStr));
         return super.parametersToString() + ", " + String.join(", ", params);

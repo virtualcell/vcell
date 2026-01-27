@@ -7,4 +7,8 @@ public class SEDMLImportException extends Exception {
     public SEDMLImportException(String message, Exception exception){
         super(message, exception);
     }
+
+    public SEDMLImportException(Exception exception){
+        super(exception);
+    }
 }

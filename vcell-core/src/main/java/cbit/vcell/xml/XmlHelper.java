@@ -483,7 +483,7 @@ public class XmlHelper {
                                              SedMLDataContainer sedml, boolean exactMatchOnly) throws Exception {
 		SedMLImporter sedmlImporter = new SedMLImporter(transLogger, exactMatchOnly);
         sedmlImporter.initialize(externalDocInfo.getFile(), sedml);
-		return sedmlImporter.getBioModels();
+		return new ArrayList<>(sedmlImporter.getBioModels().keySet());
 	}
 
 	public static BioModel XMLToBioModel(XMLSource xmlSource) throws XmlParseException {

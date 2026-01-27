@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.jdom2.Element;
+import org.jdom2.Namespace;
 import org.jlibsedml.SedMLTags;
 import org.jlibsedml.SedMLElementFactory;
 
@@ -16,7 +17,7 @@ import org.jlibsedml.SedMLElementFactory;
  * Elements added to this Annotation should be in their own XML namespace. 
  *
  */
-public final class Annotation implements SedGeneralClass, Cloneable{
+public final class Annotation implements SedGeneralClass, Cloneable {
 	
 	private List<Element> elements;
 	
@@ -29,10 +30,11 @@ public final class Annotation implements SedGeneralClass, Cloneable{
 	public Annotation(Element argAnnotElement) {
         this.elements = new ArrayList<>();
 		if(SedMLElementFactory.getInstance().isStrictCreation()) SedGeneralClass.checkNoNullArgs(argAnnotElement);
-        for (Element element : argAnnotElement.getChildren()) {
-            this.elements.add(element.detach());
+        // We can NOT use a for-each loop, as we can end up causing a "concurrentAccessViolation" exception
+        while (!argAnnotElement.getChildren().isEmpty()) {
+            Element elementToAdd = argAnnotElement.getChildren().get(0).detach();
+            this.elements.add(0, elementToAdd.setNamespace(Namespace.getNamespace(SedMLTags.XHTML_NS)));
         }
-        this.elements.add(0, argAnnotElement);
 	}
 
     public Annotation clone() throws CloneNotSupportedException {
