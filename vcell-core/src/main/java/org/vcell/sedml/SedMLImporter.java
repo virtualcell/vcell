@@ -73,6 +73,7 @@ import java.nio.charset.Charset;
 
 import java.nio.file.Files;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -160,9 +161,9 @@ public class SedMLImporter {
     /**
      * Get the list of biomodels from the sedml initialized at construction time.
      */
-    public List<BioModel> getBioModels(){
+    public Map<BioModel, SBMLSymbolMapping> getBioModels(){
         if (this.sedmlContainer == null) throw new IllegalStateException("Importer has not yet been initialized!");
-		List<BioModel> bioModelList = new LinkedList<>();
+		Set<BioModel> bioModels = new LinkedHashSet<>();
 
 		Map<SId, BioModel> bioModelMap; // Holds all entries for all SEDML Models where some may reference the same BioModel
 		Map<SId, Simulation> vcSimulations; // We will parse all tasks and create Simulations in BioModels
@@ -172,7 +173,7 @@ public class SedMLImporter {
 	        // iterate through all the elements and show them at the console
             this.printSEDMLSummary(matchingSedml.getModels(), matchingSedml.getSimulations(), matchingSedml.getTasks(), matchingSedml.getDataGenerators(), matchingSedml.getOutputs());
             // If we don't have models, we don't have anything to do
-            if (this.sedmlContainer.getSedML().getModels().isEmpty()) return new LinkedList<>(); // nothing to import
+            if (this.sedmlContainer.getSedML().getModels().isEmpty()) return new HashMap<>(); // nothing to import
 
 			// NB: We don't know how many BioModels we'll end up with,
 			// 		as some model changes may be translatable as simulations with overrides
@@ -214,19 +215,19 @@ public class SedMLImporter {
 						i--;
 					}
 				}
-				if (doc.getSimulationContexts().length > 0) bioModelList.add(doc);
+				if (doc.getSimulationContexts().length > 0) bioModels.add(doc);
 			}
 
 			// try to consolidate SimContexts into fewer (possibly just one) BioModels
 			// unlikely to happen from SED-MLs not originating from VCell, but very useful for round-tripping if so
 			// TODO: maybe try to detect that and only try if of VCell origin
-			bioModelList = this.mergeBioModels(bioModelList);
+			bioModels = this.mergeBioModels(bioModels);
 
 			// TODO: make imported BioModel(s) VCell-friendly
 			// TODO: apply TransformMassActions to usedBiomodels
 			// cannot do this for now, as it can be very expensive (hours!!)
 			// also has serious memory issues (runs out of memory even with bumping up to Xmx12G
-			return bioModelList;
+			return bioModels.stream().collect(Collectors.toMap(Function.identity(), this::getSBMLSymbolMapping));
 		} catch (Exception e) {
 			Tracer.failure(e,"Unable to initialize bioModel for the given selection: "+e.getMessage());
 			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
@@ -240,6 +241,7 @@ public class SedMLImporter {
         2) SedML requests a solver algorithm that we do not have exactly
         3) SedML requests repeated task with multiple subtasks
          */
+        boolean shouldPrune = false;
         boolean disallowModifiedImport = this.disallowModifiedImport;
         SedMLDataContainer copiedSedmlContainer;
         if (this.disallowModifiedImport){
@@ -277,6 +279,7 @@ public class SedMLImporter {
             for (org.jlibsedml.components.simulation.Simulation simToRemove: badSims){
                 copiedSedml.getListOfSimulations().removeContent(simToRemove);
             }
+            shouldPrune = true;
         }
         logger.info("Simulation Type check: PASSED");
 
@@ -309,6 +312,7 @@ public class SedMLImporter {
                     if (!badMatches.contains(kisaoAlg)) continue;
                     copiedSedml.getListOfSimulations().removeContent(sim);
                 }
+                shouldPrune = true;
             }
         }
         this.kisaoToSolverMapping.putAll(solverMatches);
@@ -344,16 +348,19 @@ public class SedMLImporter {
                     for (RepeatedTask taskToRemove: badRepeatedTasks){
                         copiedSedml.getListOfTasks().removeContent(taskToRemove);
                     }
+                    shouldPrune = true;
                 }
             }
         }
         logger.info("Multi-SubTask check: PASSED");
 
+        if (shouldPrune) providedSedmlContainer.pruneSedML();
         return providedSedmlContainer;
     }
 
-	private List<BioModel> mergeBioModels(List<BioModel> bioModels) {
-		if (bioModels.size() <=1) return bioModels;
+	private Set<BioModel> mergeBioModels(Set<BioModel> bioModelSet) {
+		if (bioModelSet.size() <= 1) return bioModelSet;
+        List<BioModel> bioModels = new ArrayList<>(bioModelSet);
 		// for now just try if they *ALL* have matchable model
 		// this should be the case if dealing with exported SEDML/OMEX from VCell BioModel with multiple applications
 		
@@ -404,7 +411,7 @@ public class SedMLImporter {
 						bioModel.refreshDependencies();
 					} catch (XmlParseException | PropertyVetoException e) {
 						logger.error(e);
-						return bioModels;
+						return bioModelSet;
 					}
 				}
 			}
@@ -416,7 +423,7 @@ public class SedMLImporter {
 			RelationVisitor rvNotStrict = new ModelRelationVisitor(false);
 			boolean equivalent = bioModels.get(i).getModel().relate(bm0.getModel(),rvNotStrict);
 			logger.debug("Equivalent => {}", equivalent);
-			if (!equivalent) return bioModels;
+			if (!equivalent) return bioModelSet;
 		}
 		// all have matchable model, try to merge by pooling SimContexts
 		Document dom;
@@ -436,7 +443,7 @@ public class SedMLImporter {
 			}
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			return bioModels;
+			return bioModelSet;
 		}
 		// re-read XML into a single BioModel and replace docs List
 		BioModel mergedBioModel;
@@ -445,10 +452,10 @@ public class SedMLImporter {
 			mergedBioModel = XmlHelper.XMLToBioModel(new XMLSource(mergedXML));
 		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
-			return bioModels;
+			return bioModelSet;
 		}
 		// merge succeeded, replace the list
-		return Arrays.asList(mergedBioModel);
+		return Set.of(mergedBioModel);
 		// TODO more work here if we want to generalize
 	}
 
@@ -1268,11 +1275,7 @@ public class SedMLImporter {
 
 	public SBMLSymbolMapping getSBMLSymbolMapping(BioModel bioModel){
 		SBMLImporter sbmlImporter = this.importMap.get(bioModel);
-		if (sbmlImporter != null) {
-			return sbmlImporter.getSymbolMapping();
-		} else {
-			return null;
-		}
+        return (sbmlImporter != null) ? sbmlImporter.getSymbolMapping() : null;
 	}
 
 	private enum ADVANCED_MODEL_TYPES {

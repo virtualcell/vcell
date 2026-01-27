@@ -38,9 +38,10 @@ public final class Notes implements SedGeneralClass, Cloneable {
 	public Notes(Element argNotesElement) {
         this.elements = new ArrayList<>();
 		if (SedMLElementFactory.getInstance().isStrictCreation()) SedGeneralClass.checkNoNullArgs(argNotesElement);
-
-        for (Element element : argNotesElement.getChildren()) {
-            this.elements.add(element.detach().setNamespace(Namespace.getNamespace(SedMLTags.XHTML_NS)));
+        // We can NOT use a for-each loop, as we can end up causing a "concurrentAccessViolation" exception
+        while (!argNotesElement.getChildren().isEmpty()) {
+            Element elementToAdd = argNotesElement.getChildren().get(0).detach();
+            this.elements.add(elementToAdd.setNamespace(Namespace.getNamespace(SedMLTags.XHTML_NS)));
         }
 	}
 
