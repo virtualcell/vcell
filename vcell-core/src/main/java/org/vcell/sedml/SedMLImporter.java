@@ -227,7 +227,9 @@ public class SedMLImporter {
 			// TODO: apply TransformMassActions to usedBiomodels
 			// cannot do this for now, as it can be very expensive (hours!!)
 			// also has serious memory issues (runs out of memory even with bumping up to Xmx12G
-			return bioModels.stream().collect(Collectors.toMap(Function.identity(), this::getSBMLSymbolMapping));
+            Map<BioModel, SBMLSymbolMapping> mappings = new LinkedHashMap<>();
+            for (BioModel bm : bioModels) mappings.put(bm, this.getSBMLSymbolMapping(bm));
+            return mappings;
 		} catch (Exception e) {
 			Tracer.failure(e,"Unable to initialize bioModel for the given selection: "+e.getMessage());
 			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
