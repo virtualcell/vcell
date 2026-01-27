@@ -4,10 +4,12 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import cbit.vcell.solver.Simulation;
 import org.jdom2.Namespace;
 import org.jlibsedml.components.*;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
 import org.jlibsedml.components.model.Model;
+import org.jlibsedml.components.output.*;
 import org.jlibsedml.components.task.AbstractTask;
 import org.jlibsedml.components.task.RepeatedTask;
 import org.jlibsedml.components.task.SubTask;
@@ -47,7 +49,7 @@ public final class SedMLDataContainer {
         this.xmlPrefixToNamespaceMap = new HashMap<>();
     }
 
-    public SedMLDataContainer(SedMLDataContainer containerToCopy, boolean deepCopySedml) throws CloneNotSupportedException{
+    public SedMLDataContainer(SedMLDataContainer containerToCopy, boolean deepCopySedml) throws CloneNotSupportedException {
         this.sedml = deepCopySedml ? containerToCopy.sedml.clone() : containerToCopy.sedml;
         this.pathForURI = containerToCopy.pathForURI;
         this.fileName = containerToCopy.fileName;
@@ -63,6 +65,93 @@ public final class SedMLDataContainer {
 
     public SedML getSedML() {
         return this.sedml;
+    }
+
+    /**
+     * Removes any dangling references from the internal SedML
+     */
+    public void pruneSedML(){
+        this.pruneSedMLTasks();
+        this.pruneSedMLDataGenerators();
+        this.pruneSedMLOutputs();
+    }
+
+    private void pruneSedMLTasks(){
+        // Step 0; separate into base and repeated tasks
+        List<Task> baseTasks = new ArrayList<>();
+        List<RepeatedTask> repeatedTasks = new ArrayList<>();
+        for (AbstractTask abTask: this.sedml.getTasks()){
+            if (abTask instanceof RepeatedTask repTask) repeatedTasks.add(repTask);
+            if (abTask instanceof Task task) baseTasks.add(task);
+        }
+        // Step 1: prune base tasks
+        for (Task task: baseTasks){
+            SedBase possibleModel = this.sedml.searchInModelsFor(task.getModelReference());
+            if (!(possibleModel instanceof Model))
+                this.sedml.getListOfTasks().removeContent(task);
+            SedBase possibleSim = this.sedml.searchInSimulationsFor(task.getSimulationReference());
+            if (!(possibleSim instanceof org.jlibsedml.components.simulation.Simulation))
+                this.sedml.getListOfTasks().removeContent(task);
+        }
+
+        // Step 2: prune repeated tasks
+        int currentNumTask;
+        do {
+            currentNumTask = this.sedml.getListOfTasks().size();
+            for (RepeatedTask repTask: repeatedTasks){
+                if (!this.sedml.getListOfTasks().containsContent(repTask.getId())) continue;
+                for (SubTask subTask: repTask.getSubTasks()){
+                    SedBase possibleReferredToTask = this.sedml.searchInTasksFor(subTask.getTask());
+                    if (!(possibleReferredToTask instanceof AbstractTask)) this.sedml.getListOfTasks().removeContent(repTask);
+                }
+            }
+        } while (currentNumTask != this.sedml.getListOfTasks().size()); // There may be nested repeated tasks to prune
+    }
+
+    private void pruneSedMLDataGenerators(){
+        for (DataGenerator generator: new ArrayList<>(this.sedml.getDataGenerators())) {
+            for (Variable var: generator.getVariables()) {
+                SedBase possibleModel = this.sedml.searchInModelsFor(var.getModelReference());
+                SedBase possibleTask =  this.sedml.searchInTasksFor(var.getTaskReference());
+                if (possibleModel instanceof Model || possibleTask instanceof AbstractTask) continue;
+                this.sedml.getListOfDataGenerators().removeContent(generator);
+                break;
+            }
+        }
+    }
+
+    private void pruneSedMLOutputs(){
+        for (Output output: new ArrayList<>(this.sedml.getOutputs())) {
+            if (output instanceof Report report) {
+                for (DataSet dataSet: report.getDataSets()) {
+                    SedBase dataGen = this.sedml.searchInDataGeneratorsFor(dataSet.getDataReference());
+                    if (dataGen instanceof DataGenerator) continue;
+                    this.sedml.getListOfOutputs().removeContent(output);
+                    break;
+                }
+            } else if (output instanceof Plot2D plot) {
+                for (AbstractCurve abCurve: plot.getCurves()) {
+                    SedBase dataGenX = this.sedml.searchInDataGeneratorsFor(abCurve.getXDataReference());
+                    if (!(dataGenX instanceof DataGenerator)){ this.sedml.getListOfOutputs().removeContent(output); break; }
+                    if (!(abCurve instanceof Curve curve)) continue;
+                    SedBase dataGenY = this.sedml.searchInDataGeneratorsFor(curve.getYDataReference());
+                    if (dataGenY instanceof DataGenerator) continue;
+                    this.sedml.getListOfOutputs().removeContent(output);
+                    break;
+                }
+            } else if (output instanceof Plot3D plot) {
+                for (Surface surface: plot.getSurfaces()) {
+                    SedBase dataGenX = this.sedml.searchInDataGeneratorsFor(surface.getXDataReference());
+                    if (!(dataGenX instanceof DataGenerator)){ this.sedml.getListOfOutputs().removeContent(output); break; }
+                    SedBase dataGenY = this.sedml.searchInDataGeneratorsFor(surface.getYDataReference());
+                    if (!(dataGenY instanceof DataGenerator)){ this.sedml.getListOfOutputs().removeContent(output); break; }
+                    SedBase dataGenZ = this.sedml.searchInDataGeneratorsFor(surface.getZDataReference());
+                    if (dataGenZ instanceof DataGenerator) continue;
+                    this.sedml.getListOfOutputs().removeContent(output);
+                    break;
+                }
+            }
+        }
     }
 
     /**

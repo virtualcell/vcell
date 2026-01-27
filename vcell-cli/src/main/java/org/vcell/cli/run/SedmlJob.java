@@ -1,5 +1,6 @@
 package org.vcell.cli.run;
 
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.xml.ExternalDocInfo;
 import org.apache.commons.io.FilenameUtils;
@@ -31,6 +32,7 @@ import org.vcell.cli.run.results.*;
 import org.vcell.cli.run.plotting.PlottingDataExtractor;
 import org.vcell.cli.run.plotting.ChartCouldNotBeProducedException;
 import org.vcell.cli.run.plotting.Results2DLinePlot;
+import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
 import org.vcell.sbml.vcell.lazy.LazySBMLSpatialDataAccessor;
 import org.vcell.sedml.log.BiosimulationLog;
@@ -229,10 +231,13 @@ public class SedmlJob {
         RunUtils.drawBreakLine("-", 100);
         try {
             span = Tracer.startSpan(Span.ContextType.SIMULATIONS_RUN, "runSimulations", null);
-            Map<AbstractTask, BiosimulationLog.Status> taskResults =  solverHandler.simulateAllTasks(externalDocInfo, this.sedml, this.CLI_RECORDER,
-                    this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML, this.RESULTS_DIRECTORY_PATH,
-                    this.SEDML_LOCATION, this.SHOULD_KEEP_TEMP_FILES,
-                    this.ACCEPT_EXACT_MATCH_ONLY, this.SHOULD_OVERRIDE_FOR_SMALL_MESH);
+            Pair<SedMLDataContainer, Map<BioModel, SBMLSymbolMapping>> initializedModelPair = solverHandler.initialize(externalDocInfo, this.sedml, this.ACCEPT_EXACT_MATCH_ONLY);
+            if (!this.sedml.equals(initializedModelPair.one)){
+                logger.warn("Importer returned modified SedML to process; now using modified SedML");
+                this.sedml = initializedModelPair.one;
+            }
+            Map<AbstractTask, BiosimulationLog.Status> taskResults =  solverHandler.simulateAllTasks(this.CLI_RECORDER,
+                    this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML, this.SEDML_LOCATION, this.SHOULD_KEEP_TEMP_FILES, this.SHOULD_OVERRIDE_FOR_SMALL_MESH);
             int numSimulationsUnsuccessful = 0;
             StringBuilder executionSummary = new StringBuilder("Summary of Task Results\n");
             for (AbstractTask sedmlTask : taskResults.keySet()){

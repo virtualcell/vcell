@@ -40,11 +40,13 @@ public abstract class SedBase implements SedGeneralClass, IIdentifiable, Compara
      * Attempts to search <code>this</code> and relevant children for the object with the matching id
      * @param idOfElement ID to look for
      * @return null if the element could not be found, otherwise, returns the element itself
-     * @throws IllegalArgumentException if null is provided as an argument
+     *
      */
+    //@throws IllegalArgumentException if null is provided as an argument
     @OverridingMethodsMustInvokeSuper
     public SedBase searchFor(SId idOfElement){
-        if (idOfElement == null) throw new IllegalArgumentException("`null` is not a valid id to search for.");
+        if (idOfElement == null) return null;
+        //if (idOfElement == null) throw new IllegalArgumentException("`null` is not a valid id to search for.");
         if (idOfElement.equals(this.id)) return this;
         return null;
     }
