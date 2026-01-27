@@ -887,7 +887,7 @@ public class SedMLExporter {
                         Expression expr = new Expression(unscannedParamExpr);
                         for (String symbol : exprSymbols) {
                             SId varName = new SId(overriddenSimContextId.string() + "_" + symbol + "_" + variableCount);
-                            Variable sedmlVar = new Variable(varName, varName.string(), overriddenSimContextId, symbolToTargetMap.get(symbol).toString());
+                            Variable sedmlVar = new Variable(varName, varName.string(), symbolToTargetMap.get(symbol).toString(), overriddenSimContextId);
                             expr.substituteInPlace(new Expression(symbol), new Expression(varName.string()));
                             computeChange.addVariable(sedmlVar);
                             variableCount++;
