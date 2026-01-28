@@ -870,7 +870,7 @@ public class SedMLExporter {
                             Expression expr = new Expression(unscannedParamExpr);
                             for (String symbol : symbols) {
                                 SId symbolName = new SId(rangeId.string() + "_" + symbol + "_" + variableCount);
-                                Variable sedmlVar = new Variable(symbolName, symbolName.string(), overriddenSimContextId, symbolToTargetMap.get(symbol).toString());    // sbmlSupport.getXPathForSpecies(symbol));
+                                Variable sedmlVar = new Variable(symbolName, symbolName.string(), symbolToTargetMap.get(symbol).toString(), overriddenSimContextId);    // sbmlSupport.getXPathForSpecies(symbol));
                                 setValue.addVariable(sedmlVar);
                                 expr.substituteInPlace(new Expression(symbol), new Expression(symbolName.string()));
                                 variableCount++;

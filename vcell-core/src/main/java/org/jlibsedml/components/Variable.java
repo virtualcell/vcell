@@ -75,14 +75,7 @@ public final class Variable extends SedBase {
      *             <code>targetXPath</code> is null.
      */
     public Variable(SId id, String name, String targetXPath, SId modelReference) {
-        super(id, name);
-        if (SedMLElementFactory.getInstance().isStrictCreation()) {
-           SedGeneralClass.checkNoNullArgs(id, modelReference, targetXPath);
-        }
-        this.targetXPathStr = targetXPath;
-        this.modelReference = modelReference;
-        this.taskReference = null;
-        this.symbol = null;
+        this(id, name, modelReference, null, targetXPath);
     }
 
     /**
@@ -101,12 +94,7 @@ public final class Variable extends SedBase {
      *             <code>targetXPath</code> is null.
      */
     public Variable(SId id, String name, VariableSymbol symbol, SId modelReference) {
-        super(id, name);
-        SedGeneralClass.checkNoNullArgs(id, modelReference, symbol);
-        this.targetXPathStr = null;
-        this.modelReference = modelReference;
-        this.taskReference = null;
-        this.symbol = symbol;
+        this(id, name, modelReference, null, symbol);
     }
 
     /**
@@ -125,14 +113,7 @@ public final class Variable extends SedBase {
      *             <code>targetXPath</code> is null.
      */
     public Variable(SId id, String name, SId taskReference, String targetXPath) {
-        super(id, name);
-        if (SedMLElementFactory.getInstance().isStrictCreation()) {
-            SedGeneralClass.checkNoNullArgs(id, taskReference, targetXPath);
-        }
-        this.targetXPathStr = targetXPath;
-        this.modelReference = null;
-        this.taskReference = taskReference;
-        this.symbol = null;
+        this(id, name, null, taskReference, targetXPath);
     }
 
     /**
@@ -151,12 +132,7 @@ public final class Variable extends SedBase {
      *             <code>targetXPath</code> is null.
      */
     public Variable(SId id, String name, SId taskReference, VariableSymbol symbol) {
-        super(id, name);
-        SedGeneralClass.checkNoNullArgs(id, taskReference, symbol);
-        this.targetXPathStr = null;
-        this.modelReference = null;
-        this.taskReference = taskReference;
-        this.symbol = symbol;
+        this(id, name, null, taskReference, symbol);
     }
 
     /**
@@ -177,13 +153,7 @@ public final class Variable extends SedBase {
      *             <code>targetXPath</code> is null.
      */
     public Variable(SId id, String name, SId modelReference, SId taskReference, String targetXPath) {
-        super(id, name);
-        SId oneRefNotNull = (modelReference != null) ? modelReference : taskReference;
-        SedGeneralClass.checkNoNullArgs(id, oneRefNotNull, targetXPath);
-        this.targetXPathStr = targetXPath;
-        this.modelReference = modelReference;
-        this.taskReference = taskReference;
-        this.symbol = null;
+        this(id, name, modelReference, taskReference, targetXPath, null);
     }
 
     /**
@@ -204,13 +174,20 @@ public final class Variable extends SedBase {
      *             <code>targetXPath</code> is null.
      */
     public Variable(SId id, String name, SId modelReference, SId taskReference, VariableSymbol symbol) {
+        this(id, name, modelReference, taskReference, null, symbol);
+    }
+
+    // Internal constructor
+    private Variable(SId id, String name, SId modelReference, SId taskReference, String targetXPath, VariableSymbol symbol){
         super(id, name);
         SId oneRefNotNull = (modelReference != null) ? modelReference : taskReference;
-        SedGeneralClass.checkNoNullArgs(id, oneRefNotNull, symbol);
-        this.targetXPathStr = null;
+        Object oneTargetNotNull = (targetXPath != null) ? targetXPath : symbol;
+        SedGeneralClass.checkNoNullArgs(id, oneRefNotNull, oneTargetNotNull);
+        this.targetXPathStr = targetXPath;
         this.modelReference = modelReference;
         this.taskReference = taskReference;
         this.symbol = symbol;
+        boolean boo = 0 == 0;
     }
 
     public Variable clone() throws CloneNotSupportedException {
