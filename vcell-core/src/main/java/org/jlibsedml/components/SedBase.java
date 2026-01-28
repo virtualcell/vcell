@@ -153,6 +153,11 @@ public abstract class SedBase implements SedGeneralClass, IIdentifiable, Compara
 
     @Override
     public String toString(){
+        return this.generateVerboseDescription();
+    }
+
+    public String generateVerboseDescription(){
+        // Warning! This method is used in both hashcode and compare to! Know what you're doing if you edit this!
         return String.format("%s {%s}", this.getClass().getSimpleName(), this.parametersToString());
     }
 
@@ -172,10 +177,12 @@ public abstract class SedBase implements SedGeneralClass, IIdentifiable, Compara
     //TODO: Verify this is the hash code we want!
     @Override
     public int hashCode() { // written by Ion
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((id == null) ? 0 : id.hashCode());
-        return result;
+//        final int prime = 31;
+//        int result = 1;
+//        result = prime * result + ((id == null) ? 0 : id.hashCode());
+//        return result;
+        // Due to IDs potentially being null, we can't rely on the above alone.
+        return this.generateVerboseDescription().hashCode(); // Since toString uses `parametersToString()`, every object should add its identifiable parts
     }
 
     /**
@@ -183,7 +190,9 @@ public abstract class SedBase implements SedGeneralClass, IIdentifiable, Compara
      *  of their identifiers.
      */
     public int compareTo(SedBase o) {
-        return this.getIdAsString().compareTo(o.getIdAsString());
+        String thisDesc = this.generateVerboseDescription();
+        String otherDesc = o.generateVerboseDescription();
+        return thisDesc.compareTo(otherDesc);
     }
 
 

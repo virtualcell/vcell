@@ -192,6 +192,18 @@ public class Plot3D extends Plot {
     public SedBase searchFor(SId idOfElement) {
         SedBase elementFound = super.searchFor(idOfElement);
         if (elementFound != null) return elementFound;
+        if (this.getXAxis() != null) {
+            elementFound = this.getXAxis().searchFor(idOfElement);
+            if (elementFound != null) return elementFound;
+        }
+        if (this.getYAxis() != null) {
+            elementFound = this.getYAxis().searchFor(idOfElement);
+            if (elementFound != null) return elementFound;
+        }
+        if (this.getZAxis() != null) {
+            elementFound = this.getZAxis().searchFor(idOfElement);
+            if (elementFound != null) return elementFound;
+        }
         for (Surface var : this.getSurfaces()) {
             elementFound = var.searchFor(idOfElement);
             if (elementFound != null) return elementFound;

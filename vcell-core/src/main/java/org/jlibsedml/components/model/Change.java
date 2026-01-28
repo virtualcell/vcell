@@ -141,7 +141,7 @@ public abstract class Change extends SedBase {
     @OverridingMethodsMustInvokeSuper
     public String parametersToString() {
         if (this.target == null) return super.parametersToString();
-        else return super.parametersToString() + ", target=[" + this.target.toString() + ']';
+        else return super.parametersToString() + ", target={" + this.target.toString() + '}';
     }
 
 

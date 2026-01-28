@@ -207,6 +207,18 @@ public class Plot2D extends Plot {
     public SedBase searchFor(SId idOfElement) {
         SedBase elementFound = super.searchFor(idOfElement);
         if (elementFound != null) return elementFound;
+        if (this.getXAxis() != null) {
+            elementFound = this.getXAxis().searchFor(idOfElement);
+            if (elementFound != null) return elementFound;
+        }
+        if (this.getYAxis() != null) {
+            elementFound = this.getYAxis().searchFor(idOfElement);
+            if (elementFound != null) return elementFound;
+        }
+        if (this.getRightYAxis() != null) {
+            elementFound = this.getRightYAxis().searchFor(idOfElement);
+            if (elementFound != null) return elementFound;
+        }
         for (AbstractCurve var : this.getCurves()) {
             elementFound = var.searchFor(idOfElement);
             if (elementFound != null) return elementFound;

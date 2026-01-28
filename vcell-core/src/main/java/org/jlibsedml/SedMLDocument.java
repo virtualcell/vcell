@@ -283,8 +283,7 @@ public class SedMLDocument {
 
         List<Change> changes = sedModelFound.getChanges();
         try {
-            org.w3c.dom.Document doc = ModelTransformationUtils
-                    .getXMLDocumentFromModelString(originalModel);
+            org.w3c.dom.Document doc = ModelTransformationUtils.getXMLDocumentFromModelString(originalModel);
 
             XPathFactory xpf = XPathFactory.newInstance();
             XPath xpath = xpf.newXPath();
