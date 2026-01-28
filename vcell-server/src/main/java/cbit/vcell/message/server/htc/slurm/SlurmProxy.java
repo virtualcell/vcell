@@ -523,12 +523,13 @@ public class SlurmProxy extends HtcProxy {
 		String singularityPullfolder = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_pullfolder);
 		String singularityModuleName = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_module_name);
 
-		lsb.write("echo \"=== Singularity check BEFORE module load ===\"");
+		lsb.write("echo \"=== Singularity check ===\"");
 		lsb.write("if command -v singularity >/dev/null 2>&1; then");
 		lsb.write("    echo \"Singularity found at: $(command -v singularity)\"");
 		lsb.write("    singularity --version");
 		lsb.write("else");
-		lsb.write("    echo \"Singularity not found before module load\"");
+		lsb.write("    echo \"Singularity not found\"");
+		lsb.write("    exit 127");
 		lsb.write("fi");
 		lsb.write("");
 
@@ -536,24 +537,8 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi");
 		lsb.write("echo `hostname`");
 		lsb.write("export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles");
-		lsb.write("if [ -f /usr/share/modules/init/bash ]; then");
-		lsb.write("    source /usr/share/modules/init/bash");
-		lsb.write("    module load " + singularityModuleName);
-		lsb.write("else");
-		lsb.write("    echo \"[Warning] Module init script not found - skipping module setup\"");
-		lsb.write("fi");
 		lsb.write("export SINGULARITY_CACHEDIR=" + singularityCachedir);
 		lsb.write("export SINGULARITY_PULLFOLDER=" + singularityPullfolder);
-		lsb.write("");
-
-		lsb.write("echo \"=== Singularity check AFTER module load ===\"");
-		lsb.write("if command -v singularity >/dev/null 2>&1; then");
-		lsb.write("    echo \"Singularity found at: $(command -v singularity)\"");
-		lsb.write("    singularity --version");
-		lsb.write("else");
-		lsb.write("    echo \"Singularity not found after module load\"");
-		lsb.write("    exit 127");
-		lsb.write("fi");
 		lsb.write("");
 	}
 	private void writeSlurmJobMetadata(LineStringBuilder lsb) {
@@ -661,10 +646,12 @@ public class SlurmProxy extends HtcProxy {
 		SolverDescription solverDescription = std.getSolverDescription();
 		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid, simID, solverDescription, memSizeMB, simTask.isPowerUser());
 
-		// TODO: do we hardcode these? Should it be part of LangevinSimulationOptions? Or, even better, properties?
-		int timeoutPerTaskSeconds = 86400;			// seconds. 24 hours
-		long hardbBtchMemoryLimitPerTask = 1024;	// MB. we hard limit mem to 1G for langevin batch jobs
-		int blockSizeMB = 256; 						// MB. SLURM memory allocation granularity
+		String sTimeoutPerTaskSeconds = PropertyLoader.getProperty(PropertyLoader.timeoutPerTaskSeconds, "86400");
+		String sHardbBtchMemoryLimitPerTask = PropertyLoader.getProperty(PropertyLoader.hardBatchMemoryLimitPerTaskMB, "1024");
+		String sBlockSizeMB =  PropertyLoader.getProperty(PropertyLoader.slurmMemoryBlockSizeMB, "256");
+		int timeoutPerTaskSeconds = Integer.parseInt(sTimeoutPerTaskSeconds);				// seconds. 24 hours
+		long hardbBtchMemoryLimitPerTask = Long.parseLong(sHardbBtchMemoryLimitPerTask);	// MB. we hard limit mem to 2G for langevin batch jobs
+		int blockSizeMB = Integer.parseInt(sBlockSizeMB); 						// MB. SLURM memory allocation granularity
 		String slurmJobTimeout = computeSlurmTimeLimit(totalNumberOfJobs, numberOfConcurrentTasks, timeoutPerTaskSeconds);
 		long batchMemoryLimitPerTask = memoryMBAllowed.getMemLimit();
 		batchMemoryLimitPerTask = Math.min(batchMemoryLimitPerTask, hardbBtchMemoryLimitPerTask);

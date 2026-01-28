@@ -115,6 +115,12 @@ public class PropertyLoader {
 	public static final String MPI_HOME_EXTERNAL		        = record("vcell.htc.mpi.home",ValueType.GEN);
 	public static final String nativeSolverDir_External      = record("vcell.nativesolverdir.external",ValueType.GEN);
 
+	// specific to langevin solver when running in batch mode
+	public static String timeoutPerTaskSeconds 			= record("vcell.slurm.timeoutPerTaskSeconds",ValueType.GEN);
+	public static String hardBatchMemoryLimitPerTaskMB 	= record("vcell.slurm.hardBatchMemoryLimitPerTaskMB",ValueType.GEN);
+	public static String slurmMemoryBlockSizeMB 		= record("vcell.slurm.memoryBlockSizeMB",ValueType.GEN);
+
+
 //	public static final String finiteVolumeExecutableProperty = record("vcell.finitevolume.executable",ValueType.EXE);
 //
 //	//
