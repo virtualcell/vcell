@@ -40,6 +40,11 @@ public abstract class SEDMLExporterCommon {
 			this.filename = filename;
 			this.modelFormat = modelFormat;
 		}
+
+        @Override
+        public String toString(){
+            return String.format("[%s] %s (%s)", this.getClass().getSimpleName(), this.filename, this.modelFormat);
+        }
 	}
 
 

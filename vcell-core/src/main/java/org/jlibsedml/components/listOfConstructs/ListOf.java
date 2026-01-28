@@ -146,11 +146,7 @@ public abstract class ListOf<T extends SedBase> extends SedBase {
     protected static class GeneralListOfComparator<N extends SedBase> implements Comparator<N> {
         public int compare(N o1, N o2) {
             if (o1 == o2) return 0;
-            SId id1 = o1.getId(), id2 = o2.getId();
-            if (null == id1 && null == id2) return 0;
-            if (id2 == null) return -1;
-            if (id1 == null) return 1;
-            return id1.string().compareTo(id2.string());
+            return o1.compareTo(o2);
         }
     }
 }
