@@ -36,35 +36,21 @@ rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.functions
 rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.langevinInput
 rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.langevinMessagingConfig
 
-echo "=== Singularity check BEFORE module load ==="
+echo "=== Singularity check ==="
 if command -v singularity >/dev/null 2>&1; then
     echo "Singularity found at: $(command -v singularity)"
     singularity --version
 else
-    echo "Singularity not found before module load"
+    echo "Singularity not found"
+    exit 127
 fi
 
 TMPDIR=/scratch/vcell
 if [ ! -e $TMPDIR ]; then mkdir -p $TMPDIR ; fi
 echo `hostname`
 export MODULEPATH=/isg/shared/modulefiles:/tgcapps/modulefiles
-if [ -f /usr/share/modules/init/bash ]; then
-    source /usr/share/modules/init/bash
-    module load singularity/vcell-3.10.0
-else
-    echo "[Warning] Module init script not found - skipping module setup"
-fi
 export SINGULARITY_CACHEDIR=/share/apps/vcell3/singularity/cachdir
 export SINGULARITY_PULLFOLDER=/share/apps/vcell3/singularity/pullfolder
-
-echo "=== Singularity check AFTER module load ==="
-if command -v singularity >/dev/null 2>&1; then
-    echo "Singularity found at: $(command -v singularity)"
-    singularity --version
-else
-    echo "Singularity not found after module load"
-    exit 127
-fi
 
 # Compute memory per task and per job
 MEM_TASK=$(( SLURM_MEM_PER_CPU * SLURM_CPUS_PER_TASK ))
