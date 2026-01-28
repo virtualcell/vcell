@@ -161,7 +161,7 @@ public class TestResults2DLinePlot {
 
     @Test
     public void pngLibraryLevelTest() throws IOException {
-        String STANDARD_IMAGE_LOCAL_PATH = "Parabolic.png";
+        String STANDARD_IMAGE_LOCAL_PATH = "parabolic.png";
         InputStream standardImageStream = TestResults2DLinePlot.class.getResourceAsStream(STANDARD_IMAGE_LOCAL_PATH);
         if (standardImageStream == null)
             throw new FileNotFoundException(String.format("can not find `%s`; maybe it moved?", STANDARD_IMAGE_LOCAL_PATH));
@@ -211,8 +211,8 @@ public class TestResults2DLinePlot {
         if (generatedImage1 == null) throw new RuntimeException("Plot_1 PNG was not found; check paths?");
 
 
-        String PLOT_0_PATH = "plot_0.png";
-        String PLOT_1_PATH = "plot_1.png";
+        String PLOT_0_PATH = "plot_result_0.png";
+        String PLOT_1_PATH = "plot_result_1.png";
         InputStream standardImageStream0 = TestResults2DLinePlot.class.getResourceAsStream(PLOT_0_PATH);
         if (standardImageStream0 == null)
             throw new FileNotFoundException(String.format("can not find `%s`; maybe it moved?", PLOT_0_PATH));
