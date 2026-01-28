@@ -116,9 +116,9 @@ public class PropertyLoader {
 	public static final String nativeSolverDir_External      = record("vcell.nativesolverdir.external",ValueType.GEN);
 
 	// specific to langevin solver when running in batch mode
-	public static String timeoutPerTaskSeconds 			= record("vcell.slurm.timeoutPerTaskSeconds",ValueType.GEN);
-	public static String hardBatchMemoryLimitPerTaskMB 	= record("vcell.slurm.hardBatchMemoryLimitPerTaskMB",ValueType.GEN);
-	public static String slurmMemoryBlockSizeMB 		= record("vcell.slurm.memoryBlockSizeMB",ValueType.GEN);
+	public static final String slurm_langevin_timeoutPerTaskSeconds = record("vcell.slurm.langevin.timeoutPerTaskSeconds",ValueType.GEN);
+	public static final String slurm_langevin_batchMemoryLimitPerTaskMB = record("vcell.slurm.langevin.batchMemoryLimitPerTaskMB",ValueType.GEN);
+	public static final String slurm_langevin_memoryBlockSizeMB = record("vcell.slurm.langevin.memoryBlockSizeMB",ValueType.GEN);
 
 
 //	public static final String finiteVolumeExecutableProperty = record("vcell.finitevolume.executable",ValueType.EXE);

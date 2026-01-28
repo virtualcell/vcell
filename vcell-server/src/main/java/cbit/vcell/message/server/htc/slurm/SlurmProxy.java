@@ -646,9 +646,9 @@ public class SlurmProxy extends HtcProxy {
 		SolverDescription solverDescription = std.getSolverDescription();
 		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid, simID, solverDescription, memSizeMB, simTask.isPowerUser());
 
-		String sTimeoutPerTaskSeconds = PropertyLoader.getProperty(PropertyLoader.timeoutPerTaskSeconds, "86400");
-		String sHardbBtchMemoryLimitPerTask = PropertyLoader.getProperty(PropertyLoader.hardBatchMemoryLimitPerTaskMB, "1024");
-		String sBlockSizeMB =  PropertyLoader.getProperty(PropertyLoader.slurmMemoryBlockSizeMB, "256");
+		String sTimeoutPerTaskSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_timeoutPerTaskSeconds, "86400");
+		String sHardbBtchMemoryLimitPerTask = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_batchMemoryLimitPerTaskMB, "1024");
+		String sBlockSizeMB =  PropertyLoader.getProperty(PropertyLoader.slurm_langevin_memoryBlockSizeMB, "256");
 		int timeoutPerTaskSeconds = Integer.parseInt(sTimeoutPerTaskSeconds);				// seconds. 24 hours
 		long hardbBtchMemoryLimitPerTask = Long.parseLong(sHardbBtchMemoryLimitPerTask);	// MB. we hard limit mem to 2G for langevin batch jobs
 		int blockSizeMB = Integer.parseInt(sBlockSizeMB); 						// MB. SLURM memory allocation granularity
