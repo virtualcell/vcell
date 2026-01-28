@@ -26,9 +26,9 @@ public class BiosimulationsHdf5WriterTest {
         Report plotReport = new Report(new SId("report0"), "Plot Report");
         Report reportReport = new Report(new SId("report1"), "Report Report");
 
-        DataSet t = new DataSet(new SId("t"),"t","t",new SId("#null"));
-        DataSet s0 = new DataSet(new SId("s0"),"s0","s0",new SId("#null"));
-        DataSet s1 = new DataSet(new SId("s1"), "s1", "s1",new SId("#null"));
+        DataSet t = new DataSet(new SId("t"),"t","t",new SId("null"));
+        DataSet s0 = new DataSet(new SId("s0"),"s0","s0",new SId("null"));
+        DataSet s1 = new DataSet(new SId("s1"), "s1", "s1",new SId("null"));
         plotReport.addDataSet(t); plotReport.addDataSet(s0); plotReport.addDataSet(s1);
         reportReport.addDataSet(t); reportReport.addDataSet(s0); reportReport.addDataSet(s1);
 

@@ -174,7 +174,6 @@ public class TestResults2DLinePlot {
         dataset.addSeries(series);
         JFreeChart chart = ChartFactory.createXYLineChart("Test", "X-Axis","Y-Axis", dataset);
         BufferedImage currentImage = chart.createBufferedImage(1000,1000);
-        ImageIO.write(currentImage, "png", new File("/Users/logandrescher/Documents/Parabolic.png"));
         Assertions.assertEquals(currentImage.getWidth(), standardImage.getWidth());
         Assertions.assertEquals(currentImage.getHeight(), standardImage.getHeight());
         for (int wPix = 0; wPix < currentImage.getWidth(); wPix++){
