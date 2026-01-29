@@ -456,7 +456,16 @@ public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, 
 	}
 	
 	// read functions file
-	
+	if(functionsFile == null) {
+		// functionFile is being initialized in SimulationData.getJobFunctionsFile() which already
+		// throws is the file doesn't exist, so we call explicitly with null here to skip functions loading
+		// for langevin batch simulation results (where functionFile is meaningless)
+		if (keepMost > 0) {
+			odeSimData.trimRows(keepMost);
+		}
+		return odeSimData;
+	}
+
 	if (!odeSimData.getColumnDescriptions(0).getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME)) {
 		Vector<AnnotatedFunction> funcList;
 		try {

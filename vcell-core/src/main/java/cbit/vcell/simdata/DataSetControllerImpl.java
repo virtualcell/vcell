@@ -2405,28 +2405,30 @@ public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) 
 		VCData simData = getVCData(vcdID);
 		ODEDataInfo odeDataInfo = new ODEDataInfo(vcdID.getOwner(), vcdID.getID(),
 									simData.getDataBlockTimeStamp(ODE_DATA, 0));
-		int keepAtMost = 10000;
-		File functionsFile = null;
+//		int keepAtMost = 10000;
+//		File functionsFile = null;
 		LangevinBatchResultSet lbrs = new LangevinBatchResultSet(odeDataInfo);
 
 		File avg_file = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.Avg);
 		if (avg_file != null && avg_file.exists()) {
-			ODESimData odeSimData_avg = ODESimData.readIDADataFile(vcdID, avg_file, keepAtMost, functionsFile);
+			// want to keep all results, so pass 0 for keepAtMost
+			// don't care about functions, so pass null for functionsFile
+			ODESimData odeSimData_avg = ODESimData.readIDADataFile(vcdID, avg_file, 0, null);
 			lbrs.setOdeSimDataAvg(odeSimData_avg);
 		}
 		File max_file = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.Max);
 		if (max_file != null && max_file.exists()) {
-			ODESimData odeSimData_max = ODESimData.readIDADataFile(vcdID, max_file, keepAtMost, functionsFile);
+			ODESimData odeSimData_max = ODESimData.readIDADataFile(vcdID, max_file, 0, null);
 			lbrs.setOdeSimDataMax(odeSimData_max);
 		}
 		File min_file = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.Min);
 		if (min_file != null && min_file.exists()) {
-			ODESimData odeSimData_min = ODESimData.readIDADataFile(vcdID, min_file, keepAtMost, functionsFile);
+			ODESimData odeSimData_min = ODESimData.readIDADataFile(vcdID, min_file, 0, null);
 			lbrs.setOdeSimDataMin(odeSimData_min);
 		}
 		File std_file = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.Std);
 		if (std_file != null && std_file.exists()) {
-			ODESimData odeSimData_std = ODESimData.readIDADataFile(vcdID, std_file, keepAtMost, functionsFile);
+			ODESimData odeSimData_std = ODESimData.readIDADataFile(vcdID, std_file, 0, null);
 			lbrs.setOdeSimDataStd(odeSimData_std);
 		}
 		return lbrs;
