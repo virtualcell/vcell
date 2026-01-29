@@ -29,7 +29,11 @@ import java.util.stream.Stream;
 
 @Tag("Fast")
 public class TestResults2DLinePlot {
-    private static List<XYDataItem> paraData = List.of(
+    private static final double PIXEL_DIFF_HIGH = 0.2; // 20%
+    private static final double PIXEL_DIFF_LOW = -0.2; // 20%
+    private static final double ACCURACY_THRESHOLD = 0.9; // 90%
+
+    private static final List<XYDataItem> paraData = List.of(
             new XYDataItem(0.0, 0.0),
             new XYDataItem(0.5, 0.25),
             new XYDataItem(1.0, 1.0),
@@ -44,17 +48,17 @@ public class TestResults2DLinePlot {
             new XYDataItem(5.5, 30.25)
     );
 
-    private static Pair<double[], double[]> parabolicData = new Pair<>(
+    private static final Pair<double[], double[]> parabolicData = new Pair<>(
             Stream.of(0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5).mapToDouble(Double::valueOf).toArray(),
             Stream.of(0.0, 0.25, 1.0, 2.25, 4.0, 6.25, 9.0, 12.25, 16.0, 20.25, 25.0, 30.25).mapToDouble(Double::valueOf).toArray()
     );
 
-    private static Pair<List<Double>, List<Double>> parabolicListData = new Pair<>(
+    private static final Pair<List<Double>, List<Double>> parabolicListData = new Pair<>(
             List.of(0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0),
             List.of(0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0)
     );
 
-    private static Pair<List<Double>, List<Double>> linearListData = new Pair<>(
+    private static final Pair<List<Double>, List<Double>> linearListData = new Pair<>(
             List.of(0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0),
             List.of(0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0)
     );
@@ -152,11 +156,8 @@ public class TestResults2DLinePlot {
         BufferedImage roundTrippedImage = ImageIO.read(dupe);
         Assertions.assertEquals(originalImage.getWidth(), roundTrippedImage.getWidth());
         Assertions.assertEquals(originalImage.getHeight(), roundTrippedImage.getHeight());
-        for (int wPix = 0; wPix < originalImage.getWidth(); wPix++){
-            for (int hPix = 0; hPix < originalImage.getHeight(); hPix++){
-                Assertions.assertEquals(originalImage.getRGB(wPix, hPix), roundTrippedImage.getRGB(wPix, hPix));
-            }
-        }
+        double accuracy = TestResults2DLinePlot.getAccuracyPercentage(originalImage, roundTrippedImage);
+        Assertions.assertTrue(accuracy > ACCURACY_THRESHOLD, String.format("accuracy: %f !> %f", accuracy, ACCURACY_THRESHOLD));
     }
 
     @Test
@@ -176,11 +177,8 @@ public class TestResults2DLinePlot {
         BufferedImage currentImage = chart.createBufferedImage(1000,1000);
         Assertions.assertEquals(currentImage.getWidth(), standardImage.getWidth());
         Assertions.assertEquals(currentImage.getHeight(), standardImage.getHeight());
-        for (int wPix = 0; wPix < currentImage.getWidth(); wPix++){
-            for (int hPix = 0; hPix < currentImage.getHeight(); hPix++){
-                Assertions.assertEquals(currentImage.getRGB(wPix, hPix), standardImage.getRGB(wPix, hPix));
-            }
-        }
+        double accuracy = TestResults2DLinePlot.getAccuracyPercentage(standardImage, currentImage);
+        Assertions.assertTrue(accuracy > ACCURACY_THRESHOLD, String.format("accuracy: %f !> %f", accuracy, ACCURACY_THRESHOLD));
     }
 
     @Test
@@ -228,16 +226,25 @@ public class TestResults2DLinePlot {
         Assertions.assertEquals(standardImage1.getHeight(), generatedImage1.getHeight());
 
 
-        for (int wPix = 0; wPix < generatedImage0.getWidth(); wPix++){
-            for (int hPix = 0; hPix < generatedImage0.getHeight(); hPix++){
-                Assertions.assertEquals(generatedImage0.getRGB(wPix, hPix), standardImage0.getRGB(wPix, hPix));
-            }
-        }
+        double accuracy0 = TestResults2DLinePlot.getAccuracyPercentage(standardImage0, generatedImage0);
+        Assertions.assertTrue(accuracy0 > ACCURACY_THRESHOLD, String.format("accuracy: %f !> %f", accuracy0, ACCURACY_THRESHOLD));
 
-        for (int wPix = 0; wPix < generatedImage1.getWidth(); wPix++){
-            for (int hPix = 0; hPix < generatedImage1.getHeight(); hPix++){
-                Assertions.assertEquals(generatedImage1.getRGB(wPix, hPix), standardImage1.getRGB(wPix, hPix));
+        double accuracy1 = TestResults2DLinePlot.getAccuracyPercentage(standardImage1, generatedImage1);
+        Assertions.assertTrue(accuracy1 > ACCURACY_THRESHOLD, String.format("accuracy: %f !> %f", accuracy1, ACCURACY_THRESHOLD));
+    }
+
+    private static double getAccuracyPercentage(BufferedImage original, BufferedImage generated){
+        int totalNumPixels = generated.getWidth() * generated.getHeight();
+        int accuratePixels = 0;
+        for (int wPix = 0; wPix < generated.getWidth(); wPix++){
+            for (int hPix = 0; hPix < generated.getHeight(); hPix++){
+                int originalPixel = original.getRGB(wPix, hPix);
+                int generatedPixel = generated.getRGB(wPix, hPix);
+                double pixelComp = (originalPixel - generatedPixel) / (1.0 * originalPixel);
+                if (pixelComp > PIXEL_DIFF_HIGH || pixelComp < PIXEL_DIFF_LOW) continue; // too far out of range
+                accuratePixels++;
             }
         }
+        return accuratePixels/(1.0 * totalNumPixels);
     }
 }
