@@ -73,7 +73,6 @@ import java.nio.charset.Charset;
 
 import java.nio.file.Files;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
@@ -83,8 +82,7 @@ import java.util.stream.Collectors;
 public class SedMLImporter {
 	private final static Logger logger = LogManager.getLogger(SedMLImporter.class);
 
-	private final boolean disallowModifiedImport;
-    private final boolean trySundialsAnyway;
+	private final StrictnessPolicy strictnessPolicy;
 	private final VCLogger transLogger;
     private final Map<String, SolverDescription> kisaoToSolverMapping;
     private final HashMap<BioModel, SBMLImporter> importMap;
@@ -101,26 +99,15 @@ public class SedMLImporter {
 	 * Builds the importer for future initialization
 	 * 
 	 * @param transLogger the VC logger to use
-	 * @param disallowModifiedImport sets whether to import strictly as-is or with flexibility
+	 * @param policy settings for how import should react to unsupported cases
 	 */
-	public SedMLImporter(VCLogger transLogger, boolean disallowModifiedImport) {
-		this(transLogger, disallowModifiedImport, true);
-	}
-
-    /**
-     * Builds the importer for future initialization
-     *
-     * @param transLogger the VC logger to use
-     * @param disallowModifiedImport sets whether to import strictly as-is or with flexibility
-     */
-    public SedMLImporter(VCLogger transLogger, boolean disallowModifiedImport, boolean trySundialsAnyway) {
+	public SedMLImporter(VCLogger transLogger, StrictnessPolicy policy) {
         this.transLogger = transLogger;
-        this.disallowModifiedImport = disallowModifiedImport;
-        this.trySundialsAnyway = trySundialsAnyway;
+        this.strictnessPolicy = policy;
         this.kisaoToSolverMapping =  new HashMap<>();
         this.importMap = new LinkedHashMap<>();
         this.sedmlContainer = null;
-    }
+	}
 
 	/**
 	 * Initialize the importer to process a specific set of SedML within a document or archive. The importer will attempt
@@ -193,8 +180,8 @@ public class SedMLImporter {
 				Simulation[] sims = bm.getSimulations();
 				for (Simulation sim : sims) {
 					String taskId = sim.getImportedTaskID();
-                    SedBase sedBaseFound = matchingSedml.searchInTasksFor(new SId(taskId));
-                    if (!(sedBaseFound instanceof AbstractTask task)) throw new RuntimeException("Unexpected non-task");
+                    AbstractTask task = this.sedmlContainer.findAbstractTaskById(new SId(taskId));
+                    if (null == task) throw new RuntimeException("Unexpected non-task");
 					if (task.getName() != null) {
 						try {
 							sim.setName(task.getName());
@@ -244,20 +231,25 @@ public class SedMLImporter {
         3) SedML requests repeated task with multiple subtasks
          */
         boolean shouldPrune = false;
-        boolean disallowModifiedImport = this.disallowModifiedImport;
+        StrictnessPolicy policy;
         SedMLDataContainer copiedSedmlContainer;
-        if (this.disallowModifiedImport){
+
+        if (this.strictnessPolicy.isConsideredStrict()){
             copiedSedmlContainer = providedSedmlContainer;
+            policy = this.strictnessPolicy;
         } else {
             SedMLDataContainer tmpContainer;
+            StrictnessPolicy tmpPolicy;
             try {
                 tmpContainer = new SedMLDataContainer(providedSedmlContainer, true);
+                tmpPolicy = this.strictnessPolicy;
             } catch (CloneNotSupportedException e){
-                logger.warn("could not clone sedml in provided SedMLDataContainer; will still attempt strict import.");
+                logger.warn("could not clone sedml in provided SedMLDataContainer; will still attempt flexible import.");
                 tmpContainer = providedSedmlContainer;
-                disallowModifiedImport = true;
+                tmpPolicy = StrictnessPolicy.elevateToStrictSettings(this.strictnessPolicy);
             }
             copiedSedmlContainer = tmpContainer;
+            policy = tmpPolicy;
         }
         SedML copiedSedml = copiedSedmlContainer.getSedML();
 
@@ -270,14 +262,14 @@ public class SedMLImporter {
             // We have some simulations we can't support
             Set<org.jlibsedml.components.simulation.Simulation> badSims = new HashSet<>(copiedSedml.getSimulations());
             badSims.removeAll(validSimulations);
-            if (disallowModifiedImport){
+            if (!policy.skipUnsupportedSimulationTypes){
                 String badSimsString = badSims.stream().map(Object::toString).collect(Collectors.joining("\n\t"));
                 String errMsg = "Provided SedML contains disallowed Simulations:\n\t" + badSimsString;
                 logger.error("Simulation Type check: FAILED ...throwing exception...");
                 throw new IllegalArgumentException(errMsg);
             }
             logger.info("Removing unsupported simulations from SedML");
-            // Safe to modify `copiedSedmlContainer` / "copiedSedml" for rest of this scope; if statement ensures it's a deep copy
+            // Safe to modify `copiedSedmlContainer` / "copiedSedml" for rest of this scope; if statement ensures it's a deep copy since if skipUnsupportedSimulationTypes is true, it can't be strict
             for (org.jlibsedml.components.simulation.Simulation simToRemove: badSims){
                 copiedSedml.getListOfSimulations().removeContent(simToRemove);
             }
@@ -290,31 +282,34 @@ public class SedMLImporter {
         java.util.function.Function<org.jlibsedml.components.simulation.Simulation, Algorithm> SimulationDotGetAlgorithm = org.jlibsedml.components.simulation.Simulation::getAlgorithm;
         Set<String> requestedAlgorithms = copiedSedml.getSimulations().stream().map(SimulationDotGetAlgorithm).map(Algorithm::getKisaoID).collect(Collectors.toSet());
         Map<String, SolverDescription> solverMatches = new HashMap<>();
-        for (String kisao : requestedAlgorithms) solverMatches.put(kisao, SolverUtilities.matchSolverWithKisaoId(kisao, this.disallowModifiedImport));
+        boolean strictKisao = StrictnessPolicy.SolverMatchPolicy.STRICT_MATCH_OR_REJECT == policy.solverMatchPolicy;
+        for (String kisao : requestedAlgorithms) solverMatches.put(kisao, SolverUtilities.matchSolverWithKisaoId(kisao, strictKisao));
         Set<String> badMatches = new HashSet<>();
         for (String kisao : solverMatches.keySet()) if (solverMatches.get(kisao) == null) badMatches.add(kisao);
         if (!badMatches.isEmpty()){
-            if (disallowModifiedImport){
-                String badSimsString = String.join("\n\t", badMatches);
-                String errMsg = "Under selected settings, provided SedML contains unmatchable Kisao Algorithms:\n\t" + badSimsString;
-                logger.error("Simulation Algorithm check: FAILED ...throwing exception...");
-                throw new IllegalArgumentException(errMsg);
-            }
-            // Safe to modify `copiedSedmlContainer` / "copiedSedml" for rest of this scope; if statement ensures it's a deep copy
-            if (this.trySundialsAnyway){
-                // give it a try anyway with our deterministic default solver
-                logger.warn("Attempting to solve incompatible kisao algorithms with deterministic default solver: {}", SolverDescription.CombinedSundials);
-                for (String kisao : requestedAlgorithms) solverMatches.putIfAbsent(kisao, SolverDescription.CombinedSundials);
-            } else {
-                // remove the offending simulations (and their unsupported algorithms)
-                for (String badKisao : badMatches) solverMatches.remove(badKisao);
-                logger.info("Removing simulations with unsupported kisao from SedML");
-                for (org.jlibsedml.components.simulation.Simulation sim: copiedSedml.getSimulations()) {
-                    String kisaoAlg = sim.getAlgorithm().getKisaoID();
-                    if (!badMatches.contains(kisaoAlg)) continue;
-                    copiedSedml.getListOfSimulations().removeContent(sim);
-                }
-                shouldPrune = true;
+            switch (policy.solverMatchPolicy){
+                case STRICT_MATCH_OR_REJECT:
+                case FLEXIBLE_MATCH_OR_REJECT:
+                    String badSimsString = String.join("\n\t", badMatches);
+                    String errMsg = "Under selected settings, provided SedML contains unmatchable Kisao Algorithms:\n\t" + badSimsString;
+                    logger.error("Simulation Algorithm check: FAILED ...throwing exception...");
+                    throw new IllegalArgumentException(errMsg);
+                case SUNDIALS_AS_LAST_RESORT:
+                    // give it a try anyway with our deterministic default solver
+                    logger.warn("Attempting to solve incompatible kisao algorithms with deterministic default solver: {}", SolverDescription.CombinedSundials);
+                    for (String kisao : requestedAlgorithms) solverMatches.putIfAbsent(kisao, SolverDescription.CombinedSundials);
+                    break;
+                case REMOVE_UNSUPPORTED:
+                    // remove the offending simulations (and their unsupported algorithms)
+                    for (String badKisao : badMatches) solverMatches.remove(badKisao);
+                    logger.info("Removing simulations with unsupported kisao from SedML");
+                    for (org.jlibsedml.components.simulation.Simulation sim: copiedSedml.getSimulations()) {
+                        String kisaoAlg = sim.getAlgorithm().getKisaoID();
+                        if (!badMatches.contains(kisaoAlg)) continue;
+                        copiedSedml.getListOfSimulations().removeContent(sim);
+                    }
+                    shouldPrune = true;
+                    break;
             }
         }
         this.kisaoToSolverMapping.putAll(solverMatches);
@@ -324,40 +319,53 @@ public class SedMLImporter {
         //      -> In essence, a repeated task can apply to multiple "simulations" at once. This is problematic for us.
         logger.info("Multi-SubTask check: STARTED");
         List<RepeatedTask> repeatedTasks = copiedSedml.getTasks().stream().filter(RepeatedTask.class::isInstance).map(RepeatedTask.class::cast).toList();
-        List<RepeatedTask> badRepeatedTasks = repeatedTasks.stream().filter((task)->task.getSubTasks().size() > 1).toList();
+        Queue<RepeatedTask> badRepeatedTasks = repeatedTasks.stream().filter((task)->task.getSubTasks().size() > 1).collect(Collectors.toCollection(LinkedList::new));
         if (!badRepeatedTasks.isEmpty()){
             // Uh-oh, multi-subTasks detected!
-            if (this.disallowModifiedImport){
-                String badSimsString = badRepeatedTasks.stream().map(Object::toString).collect(Collectors.joining("\n\t"));
-                String errMsg = "Provided SedML contains disallowed RepeatedTasks with multi-subTasks:\n\t" + badSimsString;
-                logger.info("Multi-SubTask check: FAILED ...throwing exception...");
-                throw new IllegalArgumentException(errMsg);
-            }
-            // Safe to modify `copiedSedmlContainer` / "copiedSedml" for rest of this scope; if statement ensures it's a deep copy
-            //
-            // There one way we can keep the repeated task:
-            // if the repeated task does something silly, like repeat the same task multiple times...for no good reason...,
-            // we can just keep one single subtask, and keep the repeated task!
-            for (RepeatedTask badRepeatedTask: badRepeatedTasks){
-                Set<SId> uniqueSubTaskReferences = badRepeatedTask.getSubTasks().stream().map(SubTask::getId).collect(Collectors.toSet());
-                if (uniqueSubTaskReferences.size() == 1){
-                    SubTask subTaskToKeep = badRepeatedTask.getSubTasks().iterator().next();
-                    for (SubTask subTask : badRepeatedTask.getSubTasks()){
-                        if (subTask == subTaskToKeep) continue;
-                        badRepeatedTask.getListOfSubTasks().removeContent(subTask);
-                    }
-                } else { // we have to remove the unsupported task
-                    for (RepeatedTask taskToRemove: badRepeatedTasks){
-                        copiedSedml.getListOfTasks().removeContent(taskToRemove);
-                    }
-                    shouldPrune = true;
+            // Short circuit here matters; if `condenseRedundantSubTasks == true`, then we can modify the sedml, and safely call the method to do so
+            if (policy.multipleSubTaskPolicy != StrictnessPolicy.MultipleSubTaskPolicy.REJECT_IMMEDIATELY){
+                while (!badRepeatedTasks.isEmpty()){
+                    boolean success = this.successfullyReducedRedundantSubTasks(badRepeatedTasks.poll());
+                    if (!success) break; //
                 }
+            }
+            // check again!
+            if (!badRepeatedTasks.isEmpty()){
+                if (policy.multipleSubTaskPolicy != StrictnessPolicy.MultipleSubTaskPolicy.CONDENSE_ELSE_REMOVE){
+                    String badSimsString = badRepeatedTasks.stream().map(Object::toString).collect(Collectors.joining("\n\t"));
+                    String baseErrMsg = "Provided SedML contains disallowed RepeatedTasks with multi-subTasks";
+                    String addendum = policy.multipleSubTaskPolicy == StrictnessPolicy.MultipleSubTaskPolicy.CONDENSE_ELSE_REJECT ? "; sub-tasks are not redundant:" : "";
+                    logger.info("Multi-SubTask check: FAILED ...throwing exception...");
+                    throw new IllegalArgumentException(baseErrMsg + addendum + badSimsString);
+                }
+
+                // Remove what we can't do
+                while (!badRepeatedTasks.isEmpty()){
+                    copiedSedml.getListOfTasks().removeContent(badRepeatedTasks.poll());
+                }
+                shouldPrune = true;
             }
         }
         logger.info("Multi-SubTask check: PASSED");
 
         if (shouldPrune) providedSedmlContainer.pruneSedML();
         return providedSedmlContainer;
+    }
+    //!!!!!
+    //!!! WARNING! DO NOT CALL UNLESS SEDML CONTAINING RepeatedTask CAN BE EDITED!!!!!
+    //!!!!!
+    private boolean successfullyReducedRedundantSubTasks(RepeatedTask badRepeatedTask){
+        // There one way we can keep the repeated task:
+        // if the repeated task does something silly, like repeat the same task multiple times...for no good reason...,
+        // we can just keep one single subtask, and keep the repeated task!
+        Set<SId> uniqueSubTaskReferences = badRepeatedTask.getSubTasks().stream().map(SubTask::getId).collect(Collectors.toSet());
+        if (uniqueSubTaskReferences.size() != 1) return false;
+        SubTask subTaskToKeep = badRepeatedTask.getSubTasks().iterator().next();
+        for (SubTask subTask : badRepeatedTask.getSubTasks()){
+            if (subTask == subTaskToKeep) continue;
+            badRepeatedTask.getListOfSubTasks().removeContent(subTask);
+        }
+        return true;
     }
 
 	private Set<BioModel> mergeBioModels(Set<BioModel> bioModelSet) {
@@ -622,8 +630,8 @@ public class SedMLImporter {
             }
 
             // the "original" model referred to by the task; almost always sbml we can import as physiology
-            SedBase sedBaseModelFound = sedml.searchInModelsFor(baseTask.getModelReference());
-            if(!(sedBaseModelFound instanceof Model sedmlModel)) {
+            Model sedmlModel = sedmlContainer.findModelById(baseTask.getModelReference());
+            if(null == sedmlModel) {
                 String baseTaskName = String.format("%s(%s)", baseTask.getName() == null ? "" : baseTask.getName(), baseTask.getId());
                 logger.error("Model reference of task `{}` is invalid", baseTaskName);
                 continue;
@@ -934,8 +942,8 @@ public class SedMLImporter {
 			// if we don't we should remove the entry in the map.
 			if (this.simulationIsNeededAsOutput(vcSimulations.get(baseTask.getId()))){
 				targetId = repeatedTask.getId();
-                SedBase foundBase = this.sedmlContainer.getSedML().searchInSimulationsFor(baseTask.getSimulationReference());
-                if (!(foundBase instanceof org.jlibsedml.components.simulation.Simulation sedmlSim)) throw new RuntimeException("Unexpected non-simulation");
+                org.jlibsedml.components.simulation.Simulation sedmlSim = this.sedmlContainer.findSimulationById(baseTask.getSimulationReference());
+                if (null == sedmlSim) throw new RuntimeException("Unexpected non-simulation");
 				simulation.setName(SedMLUtil.getName(sedmlSim) + "_" + SedMLUtil.getName(repeatedTask));
 			} else {
 				targetId = baseTask.getId();
@@ -1279,6 +1287,38 @@ public class SedMLImporter {
 		SBMLImporter sbmlImporter = this.importMap.get(bioModel);
         return (sbmlImporter != null) ? sbmlImporter.getSymbolMapping() : null;
 	}
+
+    public record StrictnessPolicy(boolean skipUnsupportedSimulationTypes, MultipleSubTaskPolicy multipleSubTaskPolicy, SolverMatchPolicy solverMatchPolicy){
+        public enum MultipleSubTaskPolicy {
+            REJECT_IMMEDIATELY,
+            CONDENSE_ELSE_REJECT,
+            CONDENSE_ELSE_REMOVE
+        }
+
+        public enum SolverMatchPolicy {
+            STRICT_MATCH_OR_REJECT,
+            FLEXIBLE_MATCH_OR_REJECT,
+            SUNDIALS_AS_LAST_RESORT,
+            REMOVE_UNSUPPORTED
+        }
+
+        public boolean isConsideredStrict(){
+            // WARNING: Changing this method has repercussions for code using it. Check and understand usage context's side effects before editing.
+            return !this.skipUnsupportedSimulationTypes
+                    && this.multipleSubTaskPolicy == MultipleSubTaskPolicy.REJECT_IMMEDIATELY
+                    && this.solverMatchPolicy != SolverMatchPolicy.REMOVE_UNSUPPORTED;
+        }
+
+        public static StrictnessPolicy elevateToStrictSettings(StrictnessPolicy startingPolicy){
+            // WARNING: Changing this method has repercussions for code using it. Check and understand usage context's side effects before editing.
+            if (startingPolicy.isConsideredStrict()) return startingPolicy;
+            // Because only `REMOVE_UNSUPPORTED` can be considered "unstrict", we don't want to unnecessarily lower the setting
+            SolverMatchPolicy newMatchPolicy = startingPolicy.solverMatchPolicy != SolverMatchPolicy.REMOVE_UNSUPPORTED ? startingPolicy.solverMatchPolicy : SolverMatchPolicy.SUNDIALS_AS_LAST_RESORT;
+            StrictnessPolicy complyingPolicy = new StrictnessPolicy(false, MultipleSubTaskPolicy.REJECT_IMMEDIATELY, newMatchPolicy);
+            assert complyingPolicy.isConsideredStrict(); // This is to ensure we never edit `isConsideredStrict` without considering this method too.
+            return complyingPolicy;
+        }
+    }
 
 	private enum ADVANCED_MODEL_TYPES {
 		CHANGED_MODELS, REFERENCING_MODELS

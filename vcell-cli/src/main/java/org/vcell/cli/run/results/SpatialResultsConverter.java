@@ -12,6 +12,7 @@ import org.jlibsedml.components.SedBase;
 import org.jlibsedml.components.SedML;
 import org.jlibsedml.components.Variable;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.model.Model;
 import org.jlibsedml.components.output.*;
 import org.jlibsedml.components.simulation.Simulation;
 import org.jlibsedml.components.simulation.UniformTimeCourse;
@@ -46,8 +47,8 @@ public class SpatialResultsConverter extends ResultsConverter {
                 dataGeneratorsToProcess = new LinkedHashSet<>();
                 for (DataSet dataSet : report.getDataSets()){
                     // use the data reference to obtain the data generator
-                    SedBase foundDg = sedML.searchInModelsFor(dataSet.getDataReference());
-                    if (!(foundDg instanceof DataGenerator dataGenerator)) throw new RuntimeException("Non-data-generator found");
+                    DataGenerator dataGenerator = sedmlContainer.findDataGeneratorById(dataSet.getDataReference());
+                    if (dataGenerator == null) throw new RuntimeException("Non-data-generator found");
                     dataGeneratorsToProcess.add(dataGenerator);
                     BiosimulationLog.instance().updateDatasetStatusYml(Paths.get(sedmlContainer.getPathForURI(), sedmlContainer.getFileName()).toString(), output.getId().string(), dataSet.getId().string(), BiosimulationLog.Status.SUCCEEDED);
                 }
@@ -56,12 +57,12 @@ public class SpatialResultsConverter extends ResultsConverter {
                 Set<DataGenerator> uniqueDataGens = new LinkedHashSet<>();
                 for (AbstractCurve abstractCurve : plot2D.getCurves()){
                     if (!(abstractCurve instanceof Curve curve)) continue;
-                    SedBase foundXRef = sedML.searchInModelsFor(curve.getXDataReference());
-                    if (!(foundXRef instanceof DataGenerator xDataGen)) throw new RuntimeException("Non-data-generator found");
+                    DataGenerator xDataGen = sedmlContainer.findDataGeneratorById(curve.getXDataReference());
+                    if (xDataGen == null) throw new RuntimeException("Non-data-generator found");
                     uniqueDataGens.add(xDataGen);
 
-                    SedBase foundYRef = sedML.searchInModelsFor(curve.getYDataReference());
-                    if (!(foundYRef instanceof DataGenerator yDataGen)) throw new RuntimeException("Non-data-generator found");
+                    DataGenerator yDataGen = sedmlContainer.findDataGeneratorById(curve.getYDataReference());
+                    if (yDataGen == null) throw new RuntimeException("Non-data-generator found");
                     uniqueDataGens.add(yDataGen);
                 }
                 dataGeneratorsToProcess = uniqueDataGens;
@@ -103,8 +104,8 @@ public class SpatialResultsConverter extends ResultsConverter {
 
             for (DataSet dataSet : report.getDataSets()) {
                 // use the data reference to obtain the data generator
-                SedBase foundDg = sedML.searchInModelsFor(dataSet.getDataReference());
-                if (!(foundDg instanceof DataGenerator dataGen)) throw new RuntimeException("No valid Data Generator `" + dataSet.getDataReference() + "` can be found!");
+                DataGenerator dataGen = sedml.findDataGeneratorById(dataSet.getDataReference());
+                if (dataGen == null) throw new RuntimeException("No valid Data Generator `" + dataSet.getDataReference() + "` can be found!");
                 if (!generalizedResultsMapping.containsKey(dataGen)){
                     if (allValidDataGenerators.contains(dataGen)) continue;
                     throw new RuntimeException("No data for Data Generator `" + dataSet.getDataReference() + "` can be found!");
@@ -187,13 +188,12 @@ public class SpatialResultsConverter extends ResultsConverter {
         // get the list of variables associated with the data reference
         for (Variable var : dataGen.getVariables()) {
             // for each variable we recover the task
-            SedBase topLevelFind = sedML.searchInTasksFor(var.getTaskReference());
-            if (!(topLevelFind instanceof AbstractTask topLevelTask)) throw new RuntimeException("Unable to find task referenced by var: " + var.getId().string());
-            Task baseTask = ResultsConverter.getBaseTask(topLevelTask, sedml); // if !RepeatedTask, baseTask == topLevelTask
+            Task baseTask = sedml.findBaseTaskByAbstractTaskId(var.getTaskReference());
+            if (baseTask == null) throw new RuntimeException("Unable to find task referenced by var: " + var.getId().string());
 
             // from the task we get the sbml model
-            SedBase simulationFind = sedML.searchInTasksFor(var.getTaskReference());
-            if (!(simulationFind instanceof Simulation sedmlSim)) throw new RuntimeException("Unable to find simulation referenced by task: " + baseTask.getId().string());
+            Simulation sedmlSim = sedml.findSimulationById(var.getTaskReference());
+            if (null == sedmlSim) throw new RuntimeException("Unable to find simulation referenced by task: " + baseTask.getId().string());
 
             if (!(sedmlSim instanceof UniformTimeCourse utcSim)){
                 logger.error("only uniform time course simulations are supported");

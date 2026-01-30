@@ -149,15 +149,15 @@ public class StandaloneSEDMLTest {
         for (AbstractTask task : taskList){
             Task baseTask = sedmlContainer.getBaseTask(task.getId());
             if (baseTask == null) throw new RuntimeException("baseTask is null");
-        	SedBase maybeModel = sedml.searchInModelsFor(baseTask.getModelReference());
-            if (!(maybeModel instanceof Model sedmlOriginalModel)) throw new RuntimeException("Unable to determine source model");
+            Model sedmlOriginalModel = sedmlContainer.findModelById(baseTask.getModelReference());
+            if (null == sedmlOriginalModel) throw new RuntimeException("Unable to determine source model");
         	
             String sbmlModelString = resolver.getXMLStringRepresentationOfModel(sedmlOriginalModel);
             
             XMLSource sbmlSource = new XMLSource(sbmlModelString);		// sbmlSource with all the changes applied
 
-            SedBase maybeSim = sedml.searchInSimulationsFor(baseTask.getSimulationReference());
-            if (!(maybeSim instanceof org.jlibsedml.components.simulation.Simulation sedmlSimulation)) throw new RuntimeException("Unable to determine simulation");
+            org.jlibsedml.components.simulation.Simulation sedmlSimulation = sedmlContainer.findSimulationById(baseTask.getSimulationReference());
+            if (null == sedmlSimulation) throw new RuntimeException("Unable to determine simulation");
     		Algorithm algorithm = sedmlSimulation.getAlgorithm();
 			KisaoTerm sedmlKisao = kisaoInstance.getTermById(algorithm.getKisaoID());
 

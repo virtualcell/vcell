@@ -45,8 +45,8 @@ public class NonSpatialResultsConverter extends ResultsConverter {
                 dataGeneratorsToProcess = new LinkedHashSet<>();
                 for (DataSet dataSet : report.getDataSets()){
                     // use the data reference to obtain the data generator
-                    SedBase elementFound = sedML.searchInDataGeneratorsFor(dataSet.getDataReference());
-                    if (!(elementFound instanceof DataGenerator dg)) throw new RuntimeException("Requested data generator does not exist");
+                    DataGenerator dg = sedmlContainer.findDataGeneratorById(dataSet.getDataReference());
+                    if (dg == null) throw new RuntimeException("Requested data generator does not exist");
                     dataGeneratorsToProcess.add(dg);
                     BiosimulationLog.instance().updateDatasetStatusYml(Paths.get(sedmlContainer.getPathForURI(), sedmlContainer.getFileName()).toString(), output.getIdAsString(), dataSet.getIdAsString(), BiosimulationLog.Status.SUCCEEDED);
                 }
@@ -55,12 +55,11 @@ public class NonSpatialResultsConverter extends ResultsConverter {
                 Set<DataGenerator> uniqueDataGens = new LinkedHashSet<>();
                 for (AbstractCurve abstractCurve : plot2D.getCurves()){
                     if (!(abstractCurve instanceof Curve curve)) continue;
-                    SedBase foundXRef = sedML.searchInDataGeneratorsFor(curve.getXDataReference());
-                    if (!(foundXRef instanceof DataGenerator xDataGen)) throw new RuntimeException("Non-data-generator found");
+                    DataGenerator xDataGen = sedmlContainer.findDataGeneratorById(curve.getXDataReference());
+                    if (xDataGen == null) throw new RuntimeException("Non-data-generator found");
                     uniqueDataGens.add(xDataGen);
-
-                    SedBase foundYRef = sedML.searchInDataGeneratorsFor(curve.getYDataReference());
-                    if (!(foundYRef instanceof DataGenerator yDataGen)) throw new RuntimeException("Non-data-generator found");
+                    DataGenerator yDataGen = sedmlContainer.findDataGeneratorById(curve.getYDataReference());
+                    if (yDataGen == null) throw new RuntimeException("Non-data-generator found");
                     uniqueDataGens.add(yDataGen);
                 }
                 dataGeneratorsToProcess = uniqueDataGens;
@@ -72,13 +71,10 @@ public class NonSpatialResultsConverter extends ResultsConverter {
             int maxTimeLength = 0;
             for (DataGenerator dataGenerator : dataGeneratorsToProcess){
                 for (Variable variable : dataGenerator.getVariables()){
-                    SedBase elementFound = sedML.searchInTasksFor(variable.getTaskReference());
-                    if (!(elementFound instanceof AbstractTask abstractTask)) throw new RuntimeException("Requested abstract task does not exist");
-                    AbstractTask derivedTask = ResultsConverter.getBaseTask(abstractTask, sedmlContainer);
-                    if (!(derivedTask instanceof Task baseTask))
-                        throw new SEDMLImportException("Unable to find base task referred to by var `" + variable.getId() + "`");
-                    SedBase sim = sedML.searchInSimulationsFor(baseTask.getSimulationReference());
-                    if (!(sim instanceof UniformTimeCourse utcSim)) throw new SEDMLImportException("Unable to find utc sim referred to by var `" + variable.getId() + "`");
+                    Task baseTask = sedmlContainer.findBaseTaskByAbstractTaskId(variable.getTaskReference());
+                    if (baseTask == null) throw new SEDMLImportException("Unable to find base task referred to by var `" + variable.getId() + "`");
+                    UniformTimeCourse utcSim = sedmlContainer.findUniformTimeCourseById(baseTask.getSimulationReference());
+                    if (utcSim == null) throw new SEDMLImportException("Unable to find utc sim referred to by var `" + variable.getId() + "`");
                     maxTimeLength = Math.max(utcSim.getNumberOfSteps() + 1, maxTimeLength);
                 }
             }
@@ -115,8 +111,8 @@ public class NonSpatialResultsConverter extends ResultsConverter {
 
             for (DataSet dataset : report.getDataSets()) {
                 // use the data reference to obtain the data generator
-                SedBase elementFound = sedML.searchInDataGeneratorsFor(dataset.getDataReference());
-                if (!(elementFound instanceof DataGenerator dataGen)) throw new RuntimeException("No data for Data Generator `" + dataset.getDataReference() + "` can be found!");;
+                DataGenerator dataGen = sedmlContainer.findDataGeneratorById(dataset.getDataReference());
+                if (dataGen == null) throw new RuntimeException("No data for Data Generator `" + dataset.getDataReference() + "` can be found!");;
                 if (!generalizedResultsMapping.containsKey(dataGen)){
                     if (allValidDataGenerators.contains(dataGen)) continue;
                     throw new RuntimeException("No data for Data Generator `" + dataset.getDataReference() + "` can be found!");
@@ -190,13 +186,13 @@ public class NonSpatialResultsConverter extends ResultsConverter {
         // get the list of variables associated with the data reference
         for (Variable var : dataGen.getVariables()) {
             // for each variable we recover the task
-            SedBase maybeTask = sedml.searchInTasksFor(var.getTaskReference());
-            if (!(maybeTask instanceof AbstractTask topLevelTask)) throw new RuntimeException("Task referenced by variable could not be found!");
-            Task baseTask = ResultsConverter.getBaseTask(topLevelTask, sedmlContainer); // if !RepeatedTask, baseTask == topLevelTask
+            AbstractTask topLevelTask = sedmlContainer.findAbstractTaskById(var.getTaskReference());
+            if (topLevelTask == null) throw new RuntimeException("Task referenced by variable could not be found!");
+            Task baseTask = sedmlContainer.findBaseTaskByAbstractTaskId(var.getTaskReference());
 
             // from the task we get the sbml model
-            SedBase maybeSimulation = sedml.searchInSimulationsFor(baseTask.getSimulationReference());
-            if (!(maybeSimulation instanceof org.jlibsedml.components.simulation.Simulation sedmlSim)) throw new RuntimeException("Simulation referenced by task could not be found!");
+            org.jlibsedml.components.simulation.Simulation sedmlSim = sedmlContainer.findSimulationById(baseTask.getSimulationReference());
+            if (null == sedmlSim) throw new RuntimeException("Simulation referenced by task could not be found!");
             if (!(sedmlSim instanceof UniformTimeCourse utcSim)){
                 logger.error("only uniform time course simulations are supported");
                 continue;
@@ -243,8 +239,8 @@ public class NonSpatialResultsConverter extends ResultsConverter {
 
         SId exampleTaskReference = resultsByVariable.keySet().iterator().next().getTaskReference();
         int numJobs = resultsByVariable.values().iterator().next().listOfResultSets.size();
-        SedBase elementFound = sedml.searchInTasksFor(exampleTaskReference);
-        if (!(elementFound instanceof AbstractTask abstractTask)) throw new RuntimeException("Task referenced by variable could not be found!");
+        AbstractTask abstractTask = sedmlContainer.findAbstractTaskById(exampleTaskReference);
+        if (null == abstractTask) throw new RuntimeException("Task referenced by variable could not be found!");
         ValueHolder<LazySBMLNonSpatialDataAccessor> synthesizedResults = new ValueHolder<>(taskToSimulationMap.get(abstractTask));
         SimpleDataGenCalculator calc = new SimpleDataGenCalculator(dataGen);
 

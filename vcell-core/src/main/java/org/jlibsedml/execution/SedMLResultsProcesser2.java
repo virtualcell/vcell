@@ -116,7 +116,7 @@ public class SedMLResultsProcesser2 {
         }
         this.sedml = sedml;
         this.output = output;
-        if (this.sedml.getSedML().searchInOutputsFor(output.getId()) instanceof Output) return;
+        if (null != this.sedml.findOutputById(output.getId())) return;
         throw new IllegalArgumentException("Output [" + output.getId() + "] does not belong the SED-ML object. ");
     }
 
@@ -154,8 +154,8 @@ public class SedMLResultsProcesser2 {
         for (SId dgId : this.output.getAllDataGeneratorReferences()) {
             double[] mutated = new double[numRows];
             processed.add(mutated);
-            SedBase dgBase = this.sedml.getSedML().searchInDataGeneratorsFor(dgId);
-            if (!(dgBase instanceof DataGenerator dg)){
+            DataGenerator dg = this.sedml.findDataGeneratorById(dgId);
+            if (null == dg) {
                 this.report.messages.add(new ExecutionStatusElement(null, MISSING_DG_MESSAGE + dgId.string(), ExecutionStatusType.ERROR));
                 return;
             }
@@ -174,8 +174,8 @@ public class SedMLResultsProcesser2 {
                     // generated.
                     modelID = this.variable2IDResolver.getIdFromXPathIdentifer(variable.getTarget());
                     SId taskRef = variable.getTaskReference();
-                    SedBase taskBase = this.sedml.getSedML().searchInTasksFor(taskRef);
-                    if (!(taskBase instanceof AbstractTask t)){
+                    AbstractTask t = this.sedml.findAbstractTaskById(taskRef);
+                    if (null == t){
                         this.report.messages.add(new ExecutionStatusElement(null, MISSING_TASK_MESSAGE + taskRef.string(), ExecutionStatusType.ERROR));
                         return;
                     }

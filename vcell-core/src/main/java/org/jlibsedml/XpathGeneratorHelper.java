@@ -46,8 +46,8 @@ public class XpathGeneratorHelper {
             Set<Task> potentialBaseTasks = this.sedml.getBaseTasks(task.getId());
             if (potentialBaseTasks.size() != 1) throw new IllegalArgumentException("Cannot make data generators for repeated task with multiple different base tasks!");
             Task baseTask = potentialBaseTasks.stream().findFirst().orElse(null);
-            SedBase elementFound = this.sedml.getSedML().searchInModelsFor(baseTask.getModelReference());
-            if (!(elementFound instanceof Model modelFound)) throw new IllegalArgumentException("provided task has invalid model reference!");
+            Model modelFound = this.sedml.findModelById(baseTask.getModelReference());
+            if (null == modelFound) throw new IllegalArgumentException("provided task has invalid model reference!");
             String modelStrRep = modelResolver.getModelXMLFor(modelFound.getSourceURI());
             if (modelStrRep == null) return false;
 

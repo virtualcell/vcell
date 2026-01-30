@@ -71,16 +71,16 @@ public class SEDMLChooserPanel extends JPanel {
 			boolean issueFound = false;
 			
 			if(at instanceof Task t) {
-                SedBase maybeModel = this.sedml.getSedML().searchInModelsFor(t.getModelReference());
-                SedBase maybeSim = this.sedml.getSedML().searchInSimulationsFor(t.getSimulationReference());
-                String modelSimpleName = maybeModel == null ? "<unknown>" : maybeModel.getClass().getSimpleName();
-                String simSimpleName = maybeSim == null ? "<unknown>" : maybeSim.getClass().getSimpleName();
+                Model model = this.sedml.findModelById(t.getModelReference());
+                org.jlibsedml.components.simulation.Simulation sim = this.sedml.findSimulationById(t.getSimulationReference());
+                String modelSimpleName = model == null ? "<unknown>" : model.getClass().getSimpleName();
+                String simSimpleName = sim == null ? "<unknown>" : sim.getClass().getSimpleName();
                 text = " Simple task '" + t.getId() + "' - " +
                         modelSimpleName + " '" +		// model class
-						SedMLUtil.getName(maybeModel) + "' : " +
+						SedMLUtil.getName(model) + "' : " +
                         simSimpleName + " '" +	// simulation class
-						SedMLUtil.getName(maybeSim) + "' ";
-                if (maybeModel instanceof Model model){
+						SedMLUtil.getName(sim) + "' ";
+                if (model != null){
                     tooltip = "The model has " + model.getListOfChanges().size() + " changes.";
                 } else {
                     tooltip = "";
@@ -108,18 +108,18 @@ public class SEDMLChooserPanel extends JPanel {
 				case 1:
 					SubTask st = rt.getSubTasks().iterator().next();		// first (and only) element
 					SId taskId = st.getTask();
-                    SedBase maybeAbstractTask = this.sedml.getSedML().searchInModelsFor(taskId);
+                    AbstractTask abstractTask = this.sedml.findAbstractTaskById(taskId);
                     Task rtBaseTask;
-					if (maybeAbstractTask instanceof AbstractTask abstractTask && null != (rtBaseTask = this.sedml.getBaseTask(abstractTask.getId()))){
-                        SedBase maybeRTModel = this.sedml.getSedML().searchInModelsFor(rtBaseTask.getModelReference());
-                        SedBase maybeRTSim =  this.sedml.getSedML().searchInSimulationsFor(rtBaseTask.getSimulationReference());
-                        String rtModelSimpleName = maybeRTModel == null ? "<unknown>" : maybeRTModel.getClass().getSimpleName();
-                        String rtSimSimpleName = maybeRTSim == null ? "<unknown>" : maybeRTSim.getClass().getSimpleName();
+					if (null != abstractTask && null != (rtBaseTask = this.sedml.getBaseTask(abstractTask.getId()))){
+                        Model model = this.sedml.findModelById(rtBaseTask.getModelReference());
+                        org.jlibsedml.components.simulation.Simulation sim =  this.sedml.findSimulationById(rtBaseTask.getSimulationReference());
+                        String rtModelSimpleName = model == null ? "<unknown>" : model.getClass().getSimpleName();
+                        String rtSimSimpleName = sim == null ? "<unknown>" : sim.getClass().getSimpleName();
                         text = " Repeated task '" + rt.getId() + "' - " +
                                 rtModelSimpleName + " '" +		// model class
-                                SedMLUtil.getName(maybeRTModel) + "' : " +
+                                SedMLUtil.getName(model) + "' : " +
                                 rtSimSimpleName + " '" +	// simulation class
-                                SedMLUtil.getName(maybeRTSim) + "' ";
+                                SedMLUtil.getName(sim) + "' ";
                         tooltip = "The repeated task has " + rt.getChanges().size() + " changes and " + rt.getRanges().size() + " ranges.";
                     } else {
                         text = "Unknown task";

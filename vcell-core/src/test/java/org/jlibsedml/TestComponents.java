@@ -34,17 +34,16 @@ public class TestComponents {
 
     @Test
     public void testImport() {
-        SedML sedml = TestComponents.sedmlContainer.getSedML();
         SId xAxisId = new SId("x_axis_for_autogen_plot_for_task1");
-        SId yAxisId = new SId("y_axis_for_autogen_plot_for_task1");
-        SedBase maybeXAxis = sedml.searchInOutputsFor(xAxisId);
-        if (!(maybeXAxis instanceof Axis xAxis)){
-            Assertions.fail(String.format("id `%s` does not map to the expected xAxis element", xAxisId.string())); return; }
-        SedBase maybeYAxis = sedml.searchInOutputsFor(yAxisId);
+        Axis xAxis = TestComponents.sedmlContainer.findAxisById(xAxisId);
+        if (null == xAxis){Assertions.fail(String.format("id `%s` does not map to the expected xAxis element", xAxisId.string())); return; }
         Assertions.assertEquals(xAxisId, xAxis.getId());
         Assertions.assertEquals("Time", xAxis.getName());
         Assertions.assertEquals(Axis.Type.LINEAR, xAxis.getType());
-        if (!(maybeYAxis instanceof Axis yAxis)){ Assertions.fail(String.format("id `%s` does not map to the expected yAxis element", yAxisId.string())); return; }
+
+        SId yAxisId = new SId("y_axis_for_autogen_plot_for_task1");
+        Axis yAxis = TestComponents.sedmlContainer.findAxisById(yAxisId);
+        if (null == yAxis){ Assertions.fail(String.format("id `%s` does not map to the expected yAxis element", yAxisId.string())); return; }
         Assertions.assertEquals(yAxisId, yAxis.getId());
         Assertions.assertEquals("Species", yAxis.getName());
         Assertions.assertEquals(Axis.Type.LINEAR, yAxis.getType());

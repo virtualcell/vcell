@@ -1,6 +1,5 @@
 package org.vcell.cli.run;
 
-import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.resource.OperatingSystemInfo;
 import cbit.vcell.xml.ExternalDocInfo;
 import org.apache.commons.io.FilenameUtils;
@@ -32,7 +31,6 @@ import org.vcell.cli.run.results.*;
 import org.vcell.cli.run.plotting.PlottingDataExtractor;
 import org.vcell.cli.run.plotting.ChartCouldNotBeProducedException;
 import org.vcell.cli.run.plotting.Results2DLinePlot;
-import org.vcell.sbml.vcell.SBMLSymbolMapping;
 import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
 import org.vcell.sbml.vcell.lazy.LazySBMLSpatialDataAccessor;
 import org.vcell.sedml.log.BiosimulationLog;
@@ -53,8 +51,8 @@ import java.util.Map;
 /**
  * Class that deals with the processing quest of a sedml file.
  */
-public class SedmlJob {
-    private final static Logger logger = LogManager.getLogger(SedmlJob.class);
+public class SedMLJob {
+    private final static Logger logger = LogManager.getLogger(SedMLJob.class);
 
     private final boolean SHOULD_KEEP_TEMP_FILES,
             ACCEPT_EXACT_MATCH_ONLY, SHOULD_OVERRIDE_FOR_SMALL_MESH;
@@ -83,7 +81,7 @@ public class SedmlJob {
      * @param bExactMatchOnly enforces a KISAO match, with no substitution
      * @param bSmallMeshOverride whether to use small meshes or standard meshes.
      */
-    public SedmlJob(String sedmlLocation, OmexHandler omexHandler, File masterOmexArchive,
+    public SedMLJob(String sedmlLocation, OmexHandler omexHandler, File masterOmexArchive,
                     String resultsDirPath, String pathToPlotsDirectory, CLIRecordable cliRecorder,
                     boolean bKeepTempFiles, boolean bExactMatchOnly, boolean bSmallMeshOverride){
         final String SAFE_WINDOWS_FILE_SEPARATOR = "\\\\";
@@ -127,13 +125,13 @@ public class SedmlJob {
             logger.info("Initializing and Pre-Processing SedML document: {}", this.SEDML_NAME);
             biosimLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.RUNNING);
             try {
-                this.sedml = SedmlJob.getSedMLFile(this.SEDML_NAME_SPLIT, this.MASTER_OMEX_ARCHIVE);
+                this.sedml = SedMLJob.getSedMLFile(this.SEDML_NAME_SPLIT, this.MASTER_OMEX_ARCHIVE);
             } catch (Exception e) {
                 String prefix = "SedML pre-processing for " + this.SEDML_LOCATION + " failed";
                 this.logDocumentError = prefix + ": " + e.getMessage();
                 Tracer.failure(e, prefix);
                 this.reportProblem(e);
-                this.somethingFailed = SedmlJob.somethingDidFail();
+                this.somethingFailed = SedMLJob.somethingDidFail();
                 biosimLog.updateSedmlDocStatusYml(this.SEDML_LOCATION, BiosimulationLog.Status.FAILED);
                 span.close();
                 throw new PreProcessingException(prefix, e);
@@ -191,8 +189,6 @@ public class SedmlJob {
             }
 
 
-        } catch(Exception e){
-            throw e;
         } finally {
             if (span != null) span.close();
         }
@@ -231,10 +227,10 @@ public class SedmlJob {
         RunUtils.drawBreakLine("-", 100);
         try {
             span = Tracer.startSpan(Span.ContextType.SIMULATIONS_RUN, "runSimulations", null);
-            Pair<SedMLDataContainer, Map<BioModel, SBMLSymbolMapping>> initializedModelPair = solverHandler.initialize(externalDocInfo, this.sedml, this.ACCEPT_EXACT_MATCH_ONLY);
-            if (!this.sedml.equals(initializedModelPair.one)){
+            SolverHandler.Configuration initializedModelPair = solverHandler.initialize(externalDocInfo, this.sedml, this.ACCEPT_EXACT_MATCH_ONLY);
+            if (!this.sedml.equals(initializedModelPair.postInitializedSedml())){
                 logger.warn("Importer returned modified SedML to process; now using modified SedML");
-                this.sedml = initializedModelPair.one;
+                this.sedml = initializedModelPair.postInitializedSedml();
             }
             Map<AbstractTask, BiosimulationLog.Status> taskResults =  solverHandler.simulateAllTasks(this.CLI_RECORDER,
                     this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML, this.SEDML_LOCATION, this.SHOULD_KEEP_TEMP_FILES, this.SHOULD_OVERRIDE_FOR_SMALL_MESH);
@@ -398,7 +394,7 @@ public class SedmlJob {
 
     // This method is a bit weird; it uses a temp file as a reference to compare against while getting the file straight from the archive.
     private static SedMLDataContainer getSedMLFile(String[] tokenizedPathToSedml, File inputFile) throws XMLException, IOException {
-        Path convertedPath = SedmlJob.getRelativePath(tokenizedPathToSedml);
+        Path convertedPath = SedMLJob.getRelativePath(tokenizedPathToSedml);
         if (convertedPath == null) throw new RuntimeException("Was not able to get relative path to " + inputFile.getName());
         String identifyingPath = FilenameUtils.separatorsToUnix(convertedPath.toString());
         try (FileInputStream omexStream = new FileInputStream(inputFile)) {

@@ -59,13 +59,16 @@ public class PlottingDataExtractor {
 
 
             for (AbstractCurve abstractCurve: requestedPlot.getCurves()){
-                if (!(abstractCurve instanceof Curve curve )) continue;
+                if (!(abstractCurve instanceof Curve curve )){
+                    logger.warn("AbstractCurve `{}` is not a Curve for PlottingDataExtractor; skipping...", abstractCurve);
+                    continue;
+                }
                 ValueHolder<LazySBMLNonSpatialDataAccessor> xResults, yResults;
                 BiosimulationLog.instance().updateCurveStatusYml(this.sedmlName, requestedPlot.getIdAsString(), curve.getIdAsString(), BiosimulationLog.Status.RUNNING);
-                SedBase maybeXGenerator = sedML.searchInDataGeneratorsFor(curve.getXDataReference());
-                if (!(maybeXGenerator instanceof DataGenerator requestedXGenerator)) throw new RuntimeException("Unable to retrieve x data reference!");
-                SedBase maybeYGenerator = sedML.searchInDataGeneratorsFor(curve.getYDataReference());
-                if (!(maybeYGenerator instanceof DataGenerator requestedYGenerator)) throw new RuntimeException("Unable to retrieve y data reference!");
+                DataGenerator requestedXGenerator = this.sedml.findDataGeneratorById(curve.getXDataReference());
+                if (null == requestedXGenerator) throw new RuntimeException("Unable to retrieve x data reference!");
+                DataGenerator requestedYGenerator = this.sedml.findDataGeneratorById(curve.getYDataReference());
+                if (null == requestedYGenerator) throw new RuntimeException("Unable to retrieve y data reference!");
                 if (null == (xResults = PlottingDataExtractor.simplifyRedundantSets(organizedNonSpatialResults.get(requestedXGenerator))))
                     throw this.logBeforeThrowing(new RuntimeException("Unexpected lack of x-axis results!"), requestedPlot.getIdAsString(), curve.getIdAsString());
                 if (null == (yResults = organizedNonSpatialResults.get(requestedYGenerator)))
@@ -155,13 +158,13 @@ public class PlottingDataExtractor {
 
     private Pair<String, String> getXYAxisLabel(Curve curve){
         String yLabel;
-        SedBase xRef = this.sedml.getSedML().searchInDataGeneratorsFor(curve.getXDataReference());
-        String xLabel = xRef instanceof DataGenerator dataGenerator ? PlottingDataExtractor.getBestLabel(dataGenerator) : "";
+        DataGenerator requestedXGenerator = this.sedml.findDataGeneratorById(curve.getXDataReference());
+        String xLabel = (null == requestedXGenerator) ? "" : PlottingDataExtractor.getBestLabel(requestedXGenerator);
         if (curve.getName() != null) yLabel = curve.getName();
         else if (curve.getId() != null) yLabel = curve.getId().string();
         else {
-            SedBase yRef = this.sedml.getSedML().searchInDataGeneratorsFor(curve.getYDataReference());
-            yLabel = yRef instanceof DataGenerator dataGenerator ? PlottingDataExtractor.getBestLabel(dataGenerator) : "";
+            DataGenerator requestedYGenerator = this.sedml.findDataGeneratorById(curve.getYDataReference());
+            yLabel = (null == requestedYGenerator) ? "" : PlottingDataExtractor.getBestLabel(requestedYGenerator);
         }
         return new Pair<>(xLabel, yLabel);
     }

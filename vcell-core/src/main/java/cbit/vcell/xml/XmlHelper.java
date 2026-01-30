@@ -481,7 +481,11 @@ public class XmlHelper {
 
 	public static List<BioModel> importSEDML(VCLogger transLogger, ExternalDocInfo externalDocInfo,
                                              SedMLDataContainer sedml, boolean exactMatchOnly) throws Exception {
-		SedMLImporter sedmlImporter = new SedMLImporter(transLogger, exactMatchOnly);
+		SedMLImporter sedmlImporter = new SedMLImporter(transLogger, new SedMLImporter.StrictnessPolicy(
+                true,
+                SedMLImporter.StrictnessPolicy.MultipleSubTaskPolicy.CONDENSE_ELSE_REMOVE,
+                exactMatchOnly ? SedMLImporter.StrictnessPolicy.SolverMatchPolicy.STRICT_MATCH_OR_REJECT : SedMLImporter.StrictnessPolicy.SolverMatchPolicy.SUNDIALS_AS_LAST_RESORT
+        ));
         sedmlImporter.initialize(externalDocInfo.getFile(), sedml);
 		return new ArrayList<>(sedmlImporter.getBioModels().keySet());
 	}

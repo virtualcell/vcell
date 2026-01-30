@@ -276,9 +276,8 @@ public class SedMLDocument {
             throws XPathExpressionException, XMLException {
 
         String xmlString;
-        SedBase sedBaseFound = sedml.getSedML().searchInModelsFor(modelID);
-        if (!(sedBaseFound instanceof Model sedModelFound))
-            throw new IllegalArgumentException("Provided ID does not exist as a SedML Model!");
+        Model sedModelFound = sedml.findModelById(modelID);
+        if (sedModelFound == null) throw new IllegalArgumentException("Provided ID does not exist as a SedML Model!");
         if (!sedModelFound.hasChanges()) return originalModel;
 
         List<Change> changes = sedModelFound.getChanges();
@@ -338,9 +337,8 @@ public class SedMLDocument {
      */
     public boolean canResolveXPathExpressions(SId modelID, final String originalModelXMLStr) throws XMLException {
         org.jdom2.Document doc = SedMLDocument.createDocument(originalModelXMLStr);
-        SedBase sedBaseFound = this.sedMLDataContainer.getSedML().searchInModelsFor(modelID);
-        if (!(sedBaseFound instanceof Model sedModelFound))
-            throw new IllegalArgumentException("Provided ID does not exist as a SedML Model!");
+        Model sedModelFound = this.sedMLDataContainer.findModelById(modelID);
+        if (sedModelFound == null) throw new IllegalArgumentException("Provided ID does not exist as a SedML Model!");
         for (Change change : sedModelFound.getChanges()) {
             XPathTarget target = change.getTargetXPath();
             NamespaceContextHelper nc = new NamespaceContextHelper(doc);
