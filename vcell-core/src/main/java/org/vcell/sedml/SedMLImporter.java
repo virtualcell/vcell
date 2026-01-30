@@ -322,7 +322,6 @@ public class SedMLImporter {
         Queue<RepeatedTask> badRepeatedTasks = repeatedTasks.stream().filter((task)->task.getSubTasks().size() > 1).collect(Collectors.toCollection(LinkedList::new));
         if (!badRepeatedTasks.isEmpty()){
             // Uh-oh, multi-subTasks detected!
-            // Short circuit here matters; if `condenseRedundantSubTasks == true`, then we can modify the sedml, and safely call the method to do so
             if (policy.multipleSubTaskPolicy != StrictnessPolicy.MultipleSubTaskPolicy.REJECT_IMMEDIATELY){
                 while (!badRepeatedTasks.isEmpty()){
                     boolean success = this.successfullyReducedRedundantSubTasks(badRepeatedTasks.poll());
