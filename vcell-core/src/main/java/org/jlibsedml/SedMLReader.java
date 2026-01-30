@@ -2,6 +2,7 @@ package org.jlibsedml;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,6 +39,23 @@ class SedMLReader {
             SedMLElementFactory.getInstance().setStrictCreation(false);
             SedMLReader reader = new SedMLReader();
             return reader.getSedDocument(sedRoot, file.getName());
+        } finally {
+            SedMLElementFactory.getInstance().setStrictCreation(true);
+        }
+    }
+
+    public static SedMLDataContainer readFile(InputStream iStream) throws JDOMException, IOException, XMLException {
+        return SedMLReader.readFile(iStream, null);
+    }
+
+    public static SedMLDataContainer readFile(InputStream iStream, String sourceFileName) throws JDOMException, IOException, XMLException {
+        SAXBuilder builder = new SAXBuilder();
+        Document doc = builder.build(iStream);
+        Element sedRoot = doc.getRootElement();
+        try {
+            SedMLElementFactory.getInstance().setStrictCreation(false);
+            SedMLReader reader = new SedMLReader();
+            return reader.getSedDocument(sedRoot, sourceFileName);
         } finally {
             SedMLElementFactory.getInstance().setStrictCreation(true);
         }

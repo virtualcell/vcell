@@ -187,7 +187,6 @@ public final class Variable extends SedBase {
         this.modelReference = modelReference;
         this.taskReference = taskReference;
         this.symbol = symbol;
-        boolean boo = 0 == 0;
     }
 
     public Variable clone() throws CloneNotSupportedException {
