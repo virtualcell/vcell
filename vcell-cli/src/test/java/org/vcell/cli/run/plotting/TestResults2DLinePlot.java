@@ -31,7 +31,7 @@ import java.util.stream.Stream;
 public class TestResults2DLinePlot {
     private static final double PIXEL_DIFF_HIGH = 0.2; // 20%
     private static final double PIXEL_DIFF_LOW = -0.2; // 20%
-    private static final double ACCURACY_THRESHOLD = 0.9; // 90%
+    private static final double ACCURACY_THRESHOLD = 0.999; // 99.9%
 
     private static final List<XYDataItem> paraData = List.of(
             new XYDataItem(0.0, 0.0),

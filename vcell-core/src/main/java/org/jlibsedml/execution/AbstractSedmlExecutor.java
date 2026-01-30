@@ -163,8 +163,8 @@ public abstract class AbstractSedmlExecutor {
 
         for (AbstractTask task : tasksToExecute) {
             if (!(task instanceof Task basicTask)) continue;
-            SedBase modelFound = this.sedml.getSedML().searchInModelsFor(basicTask.getModelReference());
-            if (!(modelFound instanceof Model m)) throw new RuntimeException("Unexpected non-model found");
+            Model m = this.sedml.findModelById(basicTask.getModelReference());
+            if (null == m) throw new RuntimeException("Unexpected non-model found");
             if (!this.supportsLanguage(m.getLanguage())) {
                 this.addStatus(new ExecutionStatusElement(null,
                         LANGUAGE_NOT_SUPPORTED_ERROR + m.getLanguage(),
@@ -181,8 +181,8 @@ public abstract class AbstractSedmlExecutor {
             }
 
             log.debug("Ready to execute");
-            SedBase foundSimulation = this.sedml.getSedML().searchInSimulationsFor(basicTask.getSimulationReference());
-            if (!(foundSimulation instanceof UniformTimeCourse utcSim)) throw new RuntimeException("Unexpected non-utc simulation found.");
+            UniformTimeCourse utcSim = this.sedml.findUniformTimeCourseById(basicTask.getSimulationReference());
+            if (null == utcSim) throw new RuntimeException("Unexpected non-utc simulation found.");
             IRawSedmlSimulationResults results = this.executeSimulation(changedModel, utcSim);
             if (results == null) {
                 this.addStatus(new ExecutionStatusElement(null,
@@ -277,8 +277,8 @@ public abstract class AbstractSedmlExecutor {
         List<AbstractTask> rc = new ArrayList<>();
         for (AbstractTask task : this.sedml.getSedML().getTasks()) {
             if (!(task instanceof Task basicTask)) continue;
-            SedBase foundSim = sedML.searchInSimulationsFor(basicTask.getSimulationReference());
-            if (!(foundSim instanceof UniformTimeCourse utcSim)) continue;
+            UniformTimeCourse utcSim = this.sedml.findUniformTimeCourseById(basicTask.getSimulationReference());
+            if (null == utcSim) continue;
             if (!this.canExecuteSimulation(utcSim)) continue;
             rc.add(task);
         }
@@ -289,16 +289,16 @@ public abstract class AbstractSedmlExecutor {
         Set<AbstractTask> tasksToExecute = new TreeSet<>();
         Set<DataGenerator> dgs = new TreeSet<>();
         for (SId dgId : output.getAllDataGeneratorReferences()) {
-            SedBase dgFound = this.sedml.getSedML().searchInDataGeneratorsFor(dgId);
-            if (!(dgFound instanceof DataGenerator dg)) continue;
+            DataGenerator dg = this.sedml.findDataGeneratorById(dgId);
+            if (null == dg) continue;
             dgs.add(dg);
         }
 
         for (DataGenerator dg : dgs) {
             for (Variable v : dg.getVariables()) {
                 SId taskRef = v.getTaskReference();
-                SedBase taskFound = this.sedml.getSedML().searchInTasksFor(taskRef);
-                if (!(taskFound instanceof AbstractTask taskToDo)) continue;
+                AbstractTask taskToDo = this.sedml.findAbstractTaskById(taskRef);
+                if (null == taskToDo) continue;
                 tasksToExecute.add(taskToDo);
             }
         }

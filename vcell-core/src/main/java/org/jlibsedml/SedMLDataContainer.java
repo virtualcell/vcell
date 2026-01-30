@@ -2,14 +2,15 @@ package org.jlibsedml;
 
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
-import cbit.vcell.solver.Simulation;
 import org.jdom2.Namespace;
 import org.jlibsedml.components.*;
 import org.jlibsedml.components.dataGenerator.DataGenerator;
 import org.jlibsedml.components.model.Model;
 import org.jlibsedml.components.output.*;
+import org.jlibsedml.components.simulation.OneStep;
+import org.jlibsedml.components.simulation.Simulation;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
 import org.jlibsedml.components.task.AbstractTask;
 import org.jlibsedml.components.task.RepeatedTask;
 import org.jlibsedml.components.task.SubTask;
@@ -86,12 +87,10 @@ public final class SedMLDataContainer {
         }
         // Step 1: prune base tasks
         for (Task task: baseTasks){
-            SedBase possibleModel = this.sedml.searchInModelsFor(task.getModelReference());
-            if (!(possibleModel instanceof Model))
-                this.sedml.getListOfTasks().removeContent(task);
-            SedBase possibleSim = this.sedml.searchInSimulationsFor(task.getSimulationReference());
-            if (!(possibleSim instanceof org.jlibsedml.components.simulation.Simulation))
-                this.sedml.getListOfTasks().removeContent(task);
+            Model possibleModel = this.findModelById(task.getModelReference());
+            if (null == possibleModel) this.sedml.getListOfTasks().removeContent(task);
+            Simulation possibleSim = this.findSimulationById(task.getSimulationReference());
+            if (null == possibleSim) this.sedml.getListOfTasks().removeContent(task);
         }
 
         // Step 2: prune repeated tasks
@@ -101,8 +100,8 @@ public final class SedMLDataContainer {
             for (RepeatedTask repTask: repeatedTasks){
                 if (!this.sedml.getListOfTasks().containsContent(repTask.getId())) continue;
                 for (SubTask subTask: repTask.getSubTasks()){
-                    SedBase possibleReferredToTask = this.sedml.searchInTasksFor(subTask.getTask());
-                    if (!(possibleReferredToTask instanceof AbstractTask)) this.sedml.getListOfTasks().removeContent(repTask);
+                    AbstractTask possibleReferredToTask = this.findAbstractTaskById(subTask.getTask());
+                    if (null == possibleReferredToTask) this.sedml.getListOfTasks().removeContent(repTask);
                 }
             }
         } while (currentNumTask != this.sedml.getListOfTasks().size()); // There may be nested repeated tasks to prune
@@ -111,11 +110,9 @@ public final class SedMLDataContainer {
     private void pruneSedMLDataGenerators(){
         for (DataGenerator generator: new ArrayList<>(this.sedml.getDataGenerators())) {
             for (Variable var: generator.getVariables()) {
-                SedBase possibleModel = this.sedml.searchInModelsFor(var.getModelReference());
-                SedBase possibleTask =  this.sedml.searchInTasksFor(var.getTaskReference());
-                if (possibleModel instanceof Model || possibleTask instanceof AbstractTask) continue;
-                this.sedml.getListOfDataGenerators().removeContent(generator);
-                break;
+                Model possibleModel = this.findModelById(var.getModelReference());
+                AbstractTask possibleTask =  this.findAbstractTaskById(var.getTaskReference());
+                if (null == possibleModel && null == possibleTask) this.sedml.getListOfDataGenerators().removeContent(generator);
             }
         }
     }
@@ -417,5 +414,95 @@ public final class SedMLDataContainer {
 
     public void setFileName(String fileName) {
         this.fileName = fileName;
+    }
+
+    public Model findModelById(SId id) {
+        SedBase foundBase = this.sedml.searchInModelsFor(id);
+        if (!(foundBase instanceof Model model)) return null;
+        return model;
+    }
+
+    public org.jlibsedml.components.simulation.Simulation findSimulationById(SId id) {
+        SedBase foundBase = this.sedml.searchInSimulationsFor(id);
+        if (!(foundBase instanceof org.jlibsedml.components.simulation.Simulation sim)) return null;
+        return sim;
+    }
+
+    public UniformTimeCourse findUniformTimeCourseById(SId id) {
+        SedBase foundBase = this.sedml.searchInSimulationsFor(id);
+        if (!(foundBase instanceof UniformTimeCourse uniformTimeCourse)) return null;
+        return uniformTimeCourse;
+    }
+
+    public OneStep findOneStepById(SId id) {
+        SedBase foundBase = this.sedml.searchInSimulationsFor(id);
+        if (!(foundBase instanceof OneStep oneStep)) return null;
+        return oneStep;
+    }
+
+    public AbstractTask findAbstractTaskById(SId id) {
+        SedBase foundBase = this.sedml.searchInTasksFor(id);
+        if (!(foundBase instanceof AbstractTask abstractTask)) return null;
+        return abstractTask;
+    }
+
+    public Task findTaskById(SId id) {
+        SedBase foundBase = this.sedml.searchInTasksFor(id);
+        if (!(foundBase instanceof Task task)) return null;
+        return task;
+    }
+
+    public Task findBaseTaskByAbstractTaskId(SId id) {
+        SedBase foundBase = this.sedml.searchInTasksFor(id);
+        if (!(foundBase instanceof AbstractTask)) throw new RuntimeException("The element `" + id + "` is not an abstract task.");
+        return this.getBaseTask(id);
+    }
+
+    public RepeatedTask findRepeatedTaskById(SId id) {
+        SedBase foundBase = this.sedml.searchInTasksFor(id);
+        if (!(foundBase instanceof RepeatedTask repeatedTask)) return null;
+        return repeatedTask;
+    }
+
+    public DataGenerator findDataGeneratorById(SId id) {
+        SedBase foundBase = this.sedml.searchInDataGeneratorsFor(id);
+        if (!(foundBase instanceof DataGenerator dataGenerator)) return null;
+        return dataGenerator;
+    }
+
+    public Output findOutputById(SId id) {
+        SedBase foundBase = this.sedml.searchInOutputsFor(id);
+        if (!(foundBase instanceof Output output)) return null;
+        return output;
+    }
+
+    public Plot findPlotById(SId id) {
+        SedBase foundBase = this.sedml.searchInOutputsFor(id);
+        if (!(foundBase instanceof Plot plot)) return null;
+        return plot;
+    }
+
+    public Plot2D findPlot2DById(SId id) {
+        SedBase foundBase = this.sedml.searchInOutputsFor(id);
+        if (!(foundBase instanceof Plot2D plot)) return null;
+        return plot;
+    }
+
+    public Plot3D findPlot3DById(SId id) {
+        SedBase foundBase = this.sedml.searchInOutputsFor(id);
+        if (!(foundBase instanceof Plot3D plot)) return null;
+        return plot;
+    }
+
+    public Report findReportById(SId id) {
+        SedBase foundBase = this.sedml.searchInOutputsFor(id);
+        if (!(foundBase instanceof Report report)) return null;
+        return report;
+    }
+
+    public Axis findAxisById(SId id) {
+        SedBase foundBase = this.sedml.searchInOutputsFor(id);
+        if (!(foundBase instanceof Axis axis)) return null;
+        return axis;
     }
 }

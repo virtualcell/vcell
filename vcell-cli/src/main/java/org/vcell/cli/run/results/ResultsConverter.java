@@ -75,8 +75,8 @@ public abstract class ResultsConverter {
             Report fakeReport = new Report(plot2D.getId(), plot2D.getName());
             for (AbstractCurve abstractCurve: plot2D.getCurves()){
                 if (!(abstractCurve instanceof Curve curve)) continue;
-                SedBase elementXFound = sedML.searchInDataGeneratorsFor(curve.getXDataReference());
-                if (!(elementXFound instanceof DataGenerator dataGenX)) continue;
+                DataGenerator dataGenX = sedmlContainer.findDataGeneratorById(curve.getXDataReference());
+                if (null == dataGenX) continue;
                 if (!organizedNonSpatialResults.containsKey(dataGenX))
                     throw new RuntimeException("No data for Data Generator `" + curve.getXDataReference() + "` can be found!");
                 if (!addedDataGenIDs.contains(dataGenX.getId())) {
@@ -84,8 +84,8 @@ public abstract class ResultsConverter {
                     String fakeLabel = String.format("%s.%s::X", plot2D.getId(), curve.getId());
                     fakeReport.addDataSet(new DataSet(dataGenX.getId(), dataGenX.getName(), fakeLabel, dataGenX.getId()));
                 }
-                SedBase elementYFound = sedML.searchInDataGeneratorsFor(curve.getYDataReference());
-                if (!(elementYFound instanceof DataGenerator dataGenY)) continue;
+                DataGenerator dataGenY = sedmlContainer.findDataGeneratorById(curve.getYDataReference());
+                if (null == dataGenY) continue;
                 if (!organizedNonSpatialResults.containsKey(dataGenY))
                     throw new RuntimeException("No data for Data Generator `" + curve.getYDataReference() + "` can be found!");
                 if (!addedDataGenIDs.contains(dataGenY.getId())) {
@@ -96,10 +96,6 @@ public abstract class ResultsConverter {
             }
             listToModify.add(fakeReport);
         }
-    }
-
-    protected static Task getBaseTask(AbstractTask task, SedMLDataContainer sedml){
-        return sedml.getBaseTask(task.getId());
     }
 
     protected static String convertToVCellSymbol(Variable var){

@@ -179,8 +179,8 @@ public class RunUtils {
                 List<DataSet> datasets = sedmlReport.getDataSets();
                 Map<DataSet, DataGenerator> dataGeneratorMapping = new LinkedHashMap<>();
                 for (DataSet dataset : datasets) {
-                    SedBase maybeDataGenerator = sedML.searchInDataGeneratorsFor(dataset.getDataReference());
-                    if (!(maybeDataGenerator instanceof DataGenerator referencedGenerator)) throw new RuntimeException("SedML DataGenerator referenced by report is missing!");
+                    DataGenerator referencedGenerator = sedmlContainer.findDataGeneratorById(dataset.getDataReference());
+                    if (null == referencedGenerator) throw new IllegalArgumentException("Unable to find data generator referenced in dataset: " + dataset.getDataReference());
                     if (!organizedNonSpatialResults.containsKey(referencedGenerator)) break;
                     dataGeneratorMapping.put(dataset, referencedGenerator);
                 }

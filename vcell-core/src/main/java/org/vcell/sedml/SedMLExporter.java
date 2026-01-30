@@ -354,9 +354,8 @@ public class SedMLExporter {
 
             sedmlPlot2d.setNotes(this.createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
             sedmlReport.setNotes(this.createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-            SedBase dgFound = this.sedmlModel.getSedML().searchInDataGeneratorsFor(new SId(DATA_GENERATOR_TIME_NAME + "_" + taskRef.string()));
-            if (!(dgFound instanceof DataGenerator dgTime))
-                throw new RuntimeException("DataGenerator referring time could not be found (sim context: '" + simContext.getName() + "')");
+            DataGenerator dgTime = this.sedmlModel.findDataGeneratorById(new SId(DATA_GENERATOR_TIME_NAME + "_" + taskRef.string()));
+            if (null == dgTime) throw new RuntimeException("DataGenerator referring time could not be found (sim context: '" + simContext.getName() + "')");
             SId xDataRef = dgTime.getId();
             SId xDatasetXId = new SId("__data_set__" + plot2dId + dgTime.getIdAsString());
             DataSet dataSet = new DataSet(xDatasetXId, DATA_GENERATOR_TIME_NAME, "time", xDataRef);    // id, name, label, data generator reference
@@ -395,9 +394,8 @@ public class SedMLExporter {
 
                 sedmlPlot3d.setNotes(this.createNotesElement("Plot of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
                 sedmlReport.setNotes(this.createNotesElement("Report of all variables and output functions from application '" + simContext.getName() + "' ; simulation '" + vcSimulation.getName() + "' in VCell model"));
-                SedBase dgFound = this.sedmlModel.getSedML().searchInDataGeneratorsFor(new SId(DATA_GENERATOR_TIME_NAME + "_" + taskRef.string()));
-                if (!(dgFound instanceof DataGenerator dgTime))
-                    throw new RuntimeException("DataGenerator referring time could not be found (sim context: '" + simContext.getName() + "')");
+                DataGenerator dgTime = this.sedmlModel.findDataGeneratorById(new SId(DATA_GENERATOR_TIME_NAME + "_" + taskRef.string()));
+                if (null == dgTime) throw new RuntimeException("DataGenerator referring time could not be found (sim context: '" + simContext.getName() + "')");
                 SId xDataRef = dgTime.getId();
                 SId xDatasetXId = new SId("__data_set__" + plot3dId.string() + dgTime.getIdAsString());
                 DataSet dataSet = new DataSet(xDatasetXId, DATA_GENERATOR_TIME_NAME, "time", xDataRef);    // id, name, label, data generator reference
