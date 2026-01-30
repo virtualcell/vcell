@@ -188,7 +188,9 @@ public class SpatialResultsConverter extends ResultsConverter {
         // get the list of variables associated with the data reference
         for (Variable var : dataGen.getVariables()) {
             // for each variable we recover the task
-            Task baseTask = sedml.findBaseTaskByAbstractTaskId(var.getTaskReference());
+            AbstractTask topLevelTask = sedml.findAbstractTaskById(var.getTaskReference());
+            if (null == topLevelTask) throw new RuntimeException("Task referenced by variable could not be found!");
+            Task baseTask = sedml.findBaseTaskByAbstractTaskId(topLevelTask.getId());
             if (baseTask == null) throw new RuntimeException("Unable to find task referenced by var: " + var.getId().string());
 
             // from the task we get the sbml model
