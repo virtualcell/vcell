@@ -32,7 +32,7 @@ import java.util.function.Predicate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Tag("Fast")
-public class MathOverrideRoundTipTest {
+public class MathOverrideRoundTripTest {
 
     private final boolean bDebug = true;
 
@@ -223,7 +223,7 @@ public class MathOverrideRoundTipTest {
 
 
     private static BioModel getBioModelFromResource(String fileName) throws IOException, XmlParseException {
-        InputStream inputStream = MathOverrideRoundTipTest.class.getResourceAsStream(fileName);
+        InputStream inputStream = MathOverrideRoundTripTest.class.getResourceAsStream(fileName);
         if (inputStream == null) {
             throw new FileNotFoundException("file not found! " + fileName);
         } else {
