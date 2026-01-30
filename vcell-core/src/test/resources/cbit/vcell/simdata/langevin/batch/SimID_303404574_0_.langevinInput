@@ -1,0 +1,143 @@
+*** TIME INFORMATION ***
+Total time: 0.01
+dt: 1.0E-8
+dt_data: 1.0E-4
+dt_spring: 1.0E-9
+dt_image: 1.0E-4
+
+*** SYSTEM INFORMATION ***
+L_x: 0.1
+L_y: 0.1
+L_z_out: 0.010000000000000009
+L_z_in: 0.09
+Partition Nx: 10
+Partition Ny: 10
+Partition Nz: 10
+
+*** MOLECULES ***
+
+MOLECULE: "Substrate" Intracellular Number 20 Site_Types 1 Total_Sites 1 Total_Links 0 is2D false
+{
+     TYPE: Name "S" Radius 2.00000 D 2.000 Color YELLOW STATES "p" "u" 
+
+     SITE 0 : Intracellular : Initial State 'u'
+          TYPE: Name "S" Radius 2.00000 D 2.000 Color YELLOW STATES "p" "u" 
+          x 0.00000 y 4.00000 z 4.00000 
+
+
+     Initial_Positions: Random
+}
+
+MOLECULE: "Ligand" Extracellular Number 20 Site_Types 1 Total_Sites 1 Total_Links 0 is2D false
+{
+     TYPE: Name "L" Radius 2.00000 D 2.000 Color VIOLET STATES "state0" 
+
+     SITE 0 : Extracellular : Initial State 'state0'
+          TYPE: Name "L" Radius 2.00000 D 2.000 Color VIOLET STATES "state0" 
+          x 0.00000 y 4.00000 z 4.00000 
+
+
+     Initial_Positions: Random
+}
+
+MOLECULE: "RK" Membrane Number 10 Site_Types 3 Total_Sites 3 Total_Links 2 is2D false
+{
+     TYPE: Name "B" Radius 2.00000 D 2.000 Color RED STATES "state0" "state1" 
+     TYPE: Name "Anchor" Radius 2.00000 D 2.000 Color DARK_GRAY STATES "Anchor" 
+     TYPE: Name "K" Radius 2.00000 D 2.000 Color LIME STATES "on" "off" 
+
+     SITE 0 : Extracellular : Initial State 'state0'
+          TYPE: Name "B" Radius 2.00000 D 2.000 Color RED STATES "state0" "state1" 
+          x 0.00000 y 4.00000 z 4.00000 
+     SITE 1 : Membrane : Initial State 'Anchor'
+          TYPE: Name "Anchor" Radius 2.00000 D 2.000 Color DARK_GRAY STATES "Anchor" 
+          x 0.00000 y 4.00000 z 8.00000 
+     SITE 2 : Intracellular : Initial State 'off'
+          TYPE: Name "K" Radius 2.00000 D 2.000 Color LIME STATES "on" "off" 
+          x 0.00000 y 4.00000 z 12.00000 
+
+     LINK: Site 0 ::: Site 1
+     LINK: Site 1 ::: Site 2
+
+     Initial_Positions: Random
+}
+
+*** MOLECULE FILES ***
+
+MOLECULE: Substrate null
+MOLECULE: Ligand null
+MOLECULE: RK null
+
+*** CREATION/DECAY REACTIONS ***
+
+'Substrate' : kcreate  0  kdecay  0
+'Ligand' : kcreate  0  kdecay  0
+'RK' : kcreate  0  kdecay  0
+
+*** STATE TRANSITION REACTIONS ***
+
+'Dephosphorylation' ::     'Substrate' : 'S' : 'p' --> 'u'  Rate 10.0  Condition Free
+'BD_0_to_1' ::     'RK' : 'B' : 'state0' --> 'state1'  Rate 1000.0  Condition Bound 'Ligand' : 'L' : 'state0
+'BD_1_to_0' ::     'RK' : 'B' : 'state1' --> 'state0'  Rate 1000.0  Condition Free
+'Phosphorylation' ::     'Substrate' : 'S' : 'u' --> 'p'  Rate 100.0  Condition Bound 'RK' : 'K' : 'on
+'KinaseInactivation' ::     'RK' : 'K' : 'on' --> 'off'  Rate 10.0  Condition Free
+
+*** ALLOSTERIC REACTIONS ***
+
+'KinaseActivation' ::     'RK' : Site 2 : 'off' --> 'on'  Rate 1000.0 Allosteric_Site 0 State 'state0'
+
+*** BIMOLECULAR BINDING REACTIONS ***
+
+'LigandBinding0'       'Ligand' : 'L' : 'state0'  +  'RK' : 'B' : 'state0'  kon  20.0  koff 100.0  Bond_Length 1.0
+'LigandBinding1'       'Ligand' : 'L' : 'state0'  +  'RK' : 'B' : 'state1'  kon  40.0  koff 10.0  Bond_Length 1.0
+'BindingUnphos'       'RK' : 'K' : 'on'  +  'Substrate' : 'S' : 'u'  kon  10.0  koff 20.0  Bond_Length 1.0
+'BindingPhos'       'RK' : 'K' : 'on'  +  'Substrate' : 'S' : 'p'  kon  0.0  koff 1000.0  Bond_Length 1.0
+
+*** MOLECULE COUNTERS ***
+
+'Ligand' : Measure Total Free Bound
+'RK' : Measure Total Free Bound
+'Substrate' : Measure Total Free Bound
+
+*** STATE COUNTERS ***
+
+'Ligand' : 'L' : 'state0' : Measure Total Free Bound
+'RK' : 'B' : 'state0' : Measure Total Free Bound
+'RK' : 'B' : 'state1' : Measure Total Free Bound
+'RK' : 'Anchor' : 'Anchor' : Measure Total Free Bound
+'RK' : 'K' : 'on' : Measure Total Free Bound
+'RK' : 'K' : 'off' : Measure Total Free Bound
+'Substrate' : 'S' : 'p' : Measure Total Free Bound
+'Substrate' : 'S' : 'u' : Measure Total Free Bound
+
+*** BOND COUNTERS ***
+
+'LigandBinding0' : Counted
+'LigandBinding1' : Counted
+'BindingUnphos' : Counted
+'BindingPhos' : Counted
+
+*** SITE PROPERTY COUNTERS ***
+
+'Ligand' Site 0 : Track Properties true
+'RK' Site 0 : Track Properties true
+'RK' Site 1 : Track Properties true
+'RK' Site 2 : Track Properties true
+'Substrate' Site 0 : Track Properties true
+
+*** CLUSTER COUNTERS ***
+
+Track_Clusters: true
+
+*** SYSTEM ANNOTATIONS ***
+
+
+*** MOLECULE ANNOTATIONS ***
+
+
+*** REACTION ANNOTATIONS ***
+
+
+*** SIMULATION OPTIONS ***
+
+
