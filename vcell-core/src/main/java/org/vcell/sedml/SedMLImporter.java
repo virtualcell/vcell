@@ -118,7 +118,7 @@ public class SedMLImporter {
         this.disallowModifiedImport = disallowModifiedImport;
         this.trySundialsAnyway = trySundialsAnyway;
         this.kisaoToSolverMapping =  new HashMap<>();
-        this.importMap = new HashMap<>();
+        this.importMap = new LinkedHashMap<>();
         this.sedmlContainer = null;
     }
 
