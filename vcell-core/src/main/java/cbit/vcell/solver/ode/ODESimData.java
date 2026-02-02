@@ -25,8 +25,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.StringTokenizer;
 import java.util.Vector;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -406,6 +408,60 @@ public void writeOut(DataOutputStream output) throws IOException {
 	}                          
 }
 
+// TODO: work in progress, untested
+public static ODESimData readCSVDataFile(VCDataIdentifier vcdId, File csvFile)
+		throws DataAccessException {
+
+	lg.trace("reading csv file : " + csvFile);
+
+	ODESimData odeSimData = new ODESimData();
+	odeSimData.formatID = ODESimData.IDA_DATA_FORMAT_ID;
+	odeSimData.mathName = vcdId.getID();
+
+	BufferedReader bufferedReader = null;
+	try {
+		bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(csvFile)));
+
+		String line = bufferedReader.readLine();	// read header line
+		if (line == null) {
+			return null;
+		}
+
+		String[] headerTokens = line.split(",");		// header is comma-separated
+		for (String token : headerTokens) {
+			odeSimData.addDataColumn(new ODESolverResultSetColumnDescription(token.trim()));
+		}
+
+		while ((line = bufferedReader.readLine()) != null) {	// read data rows
+			if (line.trim().isEmpty()) {
+				continue;
+			}
+			String[] tokens = line.split(",");
+			double[] values = new double[odeSimData.getDataColumnCount()];
+			if (tokens.length != values.length) {
+				break;		// malformed row → stop reading
+			}
+			for (int i = 0; i < tokens.length; i++) {
+				values[i] = Double.parseDouble(tokens[i]);
+			}
+			odeSimData.addRow(values);
+		}
+
+	} catch (Exception e) {
+		lg.error(e.getMessage(), e);
+		throw new DataAccessException(e.getMessage(), e);
+	} finally {
+		try {
+			if (bufferedReader != null) {
+				bufferedReader.close();
+			}
+		} catch (Exception ex) {
+			lg.error(ex.getMessage(), ex);
+		}
+	}
+	return odeSimData;
+}
+
 
 public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, int keepMost, File functionsFile) throws DataAccessException {
 	// read ida file
@@ -456,7 +512,16 @@ public static ODESimData readIDADataFile(VCDataIdentifier vcdId, File dataFile, 
 	}
 	
 	// read functions file
-	
+	if(functionsFile == null) {
+		// functionFile is being initialized in SimulationData.getJobFunctionsFile() which already
+		// throws is the file doesn't exist, so we call explicitly with null here to skip functions loading
+		// for langevin batch simulation results (where functionFile is meaningless)
+		if (keepMost > 0) {
+			odeSimData.trimRows(keepMost);
+		}
+		return odeSimData;
+	}
+
 	if (!odeSimData.getColumnDescriptions(0).getName().equals(SimDataConstants.HISTOGRAM_INDEX_NAME)) {
 		Vector<AnnotatedFunction> funcList;
 		try {

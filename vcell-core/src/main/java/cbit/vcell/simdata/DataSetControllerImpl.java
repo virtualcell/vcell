@@ -2411,6 +2411,8 @@ public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) 
 
 		File avg_file = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.Avg);
 		if (avg_file != null && avg_file.exists()) {
+			// want to keep all results, so pass 0 for keepAtMost
+			// don't care about functions, so pass null for functionsFile
 			ODESimData odeSimData_avg = ODESimData.readIDADataFile(vcdID, avg_file, keepAtMost, functionsFile);
 			lbrs.setOdeSimDataAvg(odeSimData_avg);
 		}
@@ -2429,6 +2431,23 @@ public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) 
 			ODESimData odeSimData_std = ODESimData.readIDADataFile(vcdID, std_file, keepAtMost, functionsFile);
 			lbrs.setOdeSimDataStd(odeSimData_std);
 		}
+
+		// TODO: call ODESimData readCSVDataFile(VCDataIdentifier vcdId, File csvFile) to read cluster analysis results
+//		File counts = simData.getLangevinFile(LangevinFileType.ClusterCounts);
+//		if (counts != null && counts.exists()) {
+//			lbrs.setClusterCounts(readCSVDataFile(vcdID, counts));
+//		}
+//
+//		File mean = simData.getLangevinFile(LangevinFileType.ClusterMean);
+//		if (mean != null && mean.exists()) {
+//			lbrs.setClusterMeans(readCSVDataFile(vcdID, mean));
+//		}
+//
+//		File overall = simData.getLangevinFile(LangevinFileType.ClusterOverall);
+//		if (overall != null && overall.exists()) {
+//			lbrs.setClusterOverall(readCSVDataFile(vcdID, overall));
+//		}
+
 		return lbrs;
 	} catch (IOException e) {
 		throw new DataAccessException(e.getMessage(), e);
