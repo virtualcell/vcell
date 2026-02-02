@@ -7,11 +7,14 @@ import java.io.Serializable;
 
 public class LangevinBatchResultSet implements Serializable {
 
-    private ODEDataInfo odeDataInfo;
-    private ODESimData odeSimDataAvg;
-    private ODESimData odeSimDataMax;
-    private ODESimData odeSimDataMin;
-    private ODESimData odeSimDataStd;
+    private ODEDataInfo odeDataInfo = null;
+    private ODESimData odeSimDataAvg = null;
+    private ODESimData odeSimDataMax = null;
+    private ODESimData odeSimDataMin = null;
+    private ODESimData odeSimDataStd = null;
+    private ODESimData odeSimDataClusterCounts = null;
+    private ODESimData odeSimDataClusterMean = null;
+    private ODESimData odeSimDataClusterOverall = null;
 
     public enum LangevinFileType {
 
@@ -41,22 +44,9 @@ public class LangevinBatchResultSet implements Serializable {
         }
     }
 
-    public LangevinBatchResultSet(
-            ODEDataInfo odeDataInfo,
-            ODESimData odeSimDataAvg,
-            ODESimData odeSimDataMax,
-            ODESimData odeSimDataMin,
-            ODESimData odeSimDataStd) {
+    public LangevinBatchResultSet(ODEDataInfo odeDataInfo) {
 
         this.odeDataInfo = odeDataInfo;
-        this.odeSimDataAvg = odeSimDataAvg;
-        this.odeSimDataMax = odeSimDataMax;
-        this.odeSimDataMin = odeSimDataMin;
-        this.odeSimDataStd = odeSimDataStd;
-    }
-
-    public LangevinBatchResultSet(ODEDataInfo odeDataInfo) {
-        this(odeDataInfo, null, null, null, null);
     }
 
     public ODEDataInfo getOdeDataInfo() {
@@ -89,6 +79,21 @@ public class LangevinBatchResultSet implements Serializable {
     }
     public void setOdeSimDataStd(ODESimData odeSimDataStd) {
         this.odeSimDataStd = odeSimDataStd;
+    }
+
+    public ODESimData getOdeSimDataClusterCounts() {  return odeSimDataClusterCounts; }
+    public void setOdeSimDataClusterCounts(ODESimData odeSimDataClusterCounts) {
+        this.odeSimDataClusterCounts = odeSimDataClusterCounts;
+    }
+
+    public ODESimData getOdeSimDataClusterMean() {  return odeSimDataClusterMean; }
+    public void setOdeSimDataClusterMean(ODESimData odeSimDataClusterMean) {
+        this.odeSimDataClusterMean = odeSimDataClusterMean;
+    }
+
+    public ODESimData getOdeSimDataClusterOverall() {  return odeSimDataClusterOverall; }
+    public void setOdeSimDataClusterOverall(ODESimData odeSimDataClusterOverall) {
+        this.odeSimDataClusterOverall = odeSimDataClusterOverall;
     }
 }
 

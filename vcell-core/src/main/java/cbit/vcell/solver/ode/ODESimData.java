@@ -408,7 +408,6 @@ public void writeOut(DataOutputStream output) throws IOException {
 	}                          
 }
 
-// TODO: work in progress, untested
 public static ODESimData readCSVDataFile(VCDataIdentifier vcdId, File csvFile)
 		throws DataAccessException {
 

@@ -87,12 +87,9 @@ public class LangevinResultsReadTest {
         ida_min_file = copyToPrimaryDir("SimID_303404574_0__Min.ida");
         ida_std_file = copyToPrimaryDir("SimID_303404574_0__Std.ida");
 
-
-
-
-//        ida_0_File = File.createTempFile("SimID_284673710_0_", ".ida");
+//        ida_1_File = File.createTempFile("SimID_284673710_0_", ".ida");
 //        Resources.asByteSource(Resources.getResource("cbit/vcell/simdata/SimID_284673710_0_.ida"))
-//                .copyTo(com.google.common.io.Files.asByteSink(ida_0_File));
+//                .copyTo(com.google.common.io.Files.asByteSink(ida_1_File));
 
     }
 
@@ -100,12 +97,8 @@ public class LangevinResultsReadTest {
     public static void tearDown() {
 
         deleteRecursively(primaryDir);
-//        ida_0_File.delete();
 //        ida_1_File.delete();
-//        ida_2_File.delete();
-//                if (inputStream != null) {
-//                    inputStream.close();
-    }
+   }
 
 
     @Test
@@ -136,54 +129,27 @@ public class LangevinResultsReadTest {
         ODESimData odeSimDataAvg = lbrs.getOdeSimDataAvg();
         assertNotNull(odeSimDataAvg, "Avg ODE data should be loaded");
         assertTrue(odeSimDataAvg.getMathName().contains(simID), "Avg ODE data mathName should contain the simulation ID");
-
         // --- Minimal structural checks ---
         assertTrue(odeSimDataAvg.getDataColumnCount() > 0, "Avg ODE data should have at least one column");
         assertTrue(odeSimDataAvg.getRowCount() > 0, "Avg ODE data should have at least one row");
 
+        // Cluster Counts data loaded
+        ODESimData odeSimDataClusterCounts = lbrs.getOdeSimDataClusterCounts();
+        assertNotNull(odeSimDataClusterCounts, "Cluster Counts ODE data should be loaded");
+        assertTrue(odeSimDataClusterCounts.getMathName().contains(simID), "Cluster Counts ODE data mathName should contain the simulation ID");
+        // --- Minimal structural checks ---
+        assertTrue(odeSimDataClusterCounts.getDataColumnCount() > 0, "Cluster Counts ODE data should have at least one column");
+        assertTrue(odeSimDataClusterCounts.getRowCount() > 0, "Cluster Counts ODE data should have at least one row");
+
     }
 
 //    @Test
-//    @Disabled("Deprecated: postprocessing moved to solver")
 //    public void testRead() throws IOException {
 //
-//        // read the input data (3 .IDA files)
-//        ODESolverResultSet osrs_0 = getOdeSolverResultSet(ida_0_File);
+//        // read the input data
 //        ODESolverResultSet osrs_1 = getOdeSolverResultSet(ida_1_File);
-//        ODESolverResultSet osrs_2 = getOdeSolverResultSet(ida_2_File);
-//
-//        Map<Integer, ODESolverResultSet> odeSolverResultSetMap = new LinkedHashMap<>();
-//        odeSolverResultSetMap.put(0, osrs_0);
-//        odeSolverResultSetMap.put(1, osrs_1);
-//        odeSolverResultSetMap.put(2, osrs_2);
-//
-//        LangevinPostProcessorInput lppInput = new LangevinPostProcessorInput(null, null);
-//        lppInput.setFailed(false);
-//        lppInput.setOdeSolverResultSetMap(odeSolverResultSetMap);
-//
-//        // compute primary statistics
-//        // note: LangevinPostProcessor is deprecated, but this test is kept for it contains some reusable code
-//        LangevinPostProcessor lpp = new LangevinPostProcessor();
-//        LangevinPostProcessorOutput lppOutput = lpp.postProcessLangevinResults(lppInput);
-//
-//        assertFalse(lppOutput.isFailed(), "expected to not fail");
-//        assertTrue(lppOutput.isMultiTrial(), "expected to be multi-trial");
-//
-//        // get some timepoint for some variable
-//        String name = osrs_0.getColumnDescriptions()[7].getName();
-//        double anAverage = lppOutput.getAveragesResultSet().getRow(10)[7];      // TOTAL_MT0__Site1__state0
-//        double aStd = lppOutput.getStdResultSet().getRow(10)[7];
-//        double aMin = lppOutput.getMinResultSet().getRow(10)[7];
-//        double aMax = lppOutput.getMaxResultSet().getRow(10)[7];
-//
-//        // compare to what's expected
-//        assertTrue("TOTAL_MT0__Site1__state0".contentEquals(name), "expecting column name 'TOTAL_MT0__Site1__state0', found: '" + name + "'");
-//        assertTrue(anAverage == 21.0 ? true : false, "expecting 21.0, found " + anAverage);
-//        assertTrue(aStd == 0.816496580927726 ? true : false, "expecting 0.816496580927726, found " + aStd);
-//        assertTrue(aMin == 20.0 ? true : false, "expecting 20.0, found " + aMin);
-//        assertTrue(aMax == 22.0 ? true : false, "expecting 22.0, found " + aMax);
+//        assertNotNull(osrs_1, "Failed to read IDA file: " + ida_1_File.getAbsolutePath());
 //    }
-
 
     private static void deleteRecursively(File file) {
         if (file == null || !file.exists()) {
@@ -206,7 +172,7 @@ public class LangevinResultsReadTest {
         return out;
     }
 
-
+    // also see ODESimData.readIDADataFile()
     private static ODESolverResultSet getOdeSolverResultSet(File idaFile) throws IOException {
         ODESolverResultSet odeSolverResultSet = new ODESolverResultSet();
         FileInputStream inputStream = null;
