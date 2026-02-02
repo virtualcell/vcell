@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import org.vcell.cli.commands.execution.BiosimulationsCommand;
+import org.vcell.cli.testsupport.SSIMComparisonTool;
 import org.vcell.util.Pair;
 import org.vcell.util.VCellUtilityHub;
 
@@ -31,7 +32,7 @@ import java.util.stream.Stream;
 public class TestResults2DLinePlot {
     private static final double PIXEL_DIFF_HIGH = 0.2; // 20%
     private static final double PIXEL_DIFF_LOW = -0.2; // 20%
-    private static final double ACCURACY_THRESHOLD = 0.999; // 99.9%
+    private static final double ACCURACY_THRESHOLD = 0.97; // 97%
 
     private static final List<XYDataItem> paraData = List.of(
             new XYDataItem(0.0, 0.0),
@@ -62,6 +63,17 @@ public class TestResults2DLinePlot {
             List.of(0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0),
             List.of(0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0)
     );
+
+    @Test
+    public void ensureSSIMWorks() throws IOException {
+        String STANDARD_IMAGE_LOCAL_PATH = "parabolic.png";
+        InputStream standardImageStream = TestResults2DLinePlot.class.getResourceAsStream(STANDARD_IMAGE_LOCAL_PATH);
+        if (standardImageStream == null)
+            throw new FileNotFoundException(String.format("can not find `%s`; maybe it moved?", STANDARD_IMAGE_LOCAL_PATH));
+        BufferedImage standardImage = ImageIO.read(standardImageStream);
+        SSIMComparisonTool comparisonTool = new SSIMComparisonTool();
+        Assertions.assertEquals (1.0, comparisonTool.performSSIMComparison(standardImage, standardImage));
+    }
 
     @Test
     public void testConstructors(){
@@ -234,17 +246,7 @@ public class TestResults2DLinePlot {
     }
 
     private static double getAccuracyPercentage(BufferedImage original, BufferedImage generated){
-        int totalNumPixels = generated.getWidth() * generated.getHeight();
-        int accuratePixels = 0;
-        for (int wPix = 0; wPix < generated.getWidth(); wPix++){
-            for (int hPix = 0; hPix < generated.getHeight(); hPix++){
-                int originalPixel = original.getRGB(wPix, hPix);
-                int generatedPixel = generated.getRGB(wPix, hPix);
-                double pixelComp = (originalPixel - generatedPixel) / (1.0 * originalPixel);
-                if (pixelComp > PIXEL_DIFF_HIGH || pixelComp < PIXEL_DIFF_LOW) continue; // too far out of range
-                accuratePixels++;
-            }
-        }
-        return accuratePixels/(1.0 * totalNumPixels);
+        SSIMComparisonTool ssim = new SSIMComparisonTool();
+        return ssim.performSSIMComparison(original, generated);
     }
 }
