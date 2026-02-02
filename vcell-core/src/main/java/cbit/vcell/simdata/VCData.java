@@ -226,4 +226,6 @@ public abstract boolean isMovingBoundary() throws DataAccessException, IOExcepti
 
 public abstract boolean isComsol() throws DataAccessException, IOException;
 
+public abstract File getJobFunctionsFile() throws FileNotFoundException;
+
 }

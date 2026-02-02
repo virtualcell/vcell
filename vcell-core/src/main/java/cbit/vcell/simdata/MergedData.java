@@ -1160,5 +1160,10 @@ public ComsolSimFiles getComsolSimFiles() throws FileNotFoundException, DataAcce
 	throw new RuntimeException("MergedData.getComsolSimFiles() not yet implemented");
 }
 
+@Override
+public File getJobFunctionsFile() throws FileNotFoundException {
+	throw new RuntimeException("MergedData.getJobFunctionsFile() not yet implemented");
+}
+
 
 }

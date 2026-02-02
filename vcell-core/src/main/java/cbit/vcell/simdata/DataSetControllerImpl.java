@@ -2406,13 +2406,11 @@ public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) 
 		ODEDataInfo odeDataInfo = new ODEDataInfo(vcdID.getOwner(), vcdID.getID(),
 									simData.getDataBlockTimeStamp(ODE_DATA, 0));
 		int keepAtMost = 10000;
-		File functionsFile = null;
+		File functionsFile = simData.getJobFunctionsFile();
 		LangevinBatchResultSet lbrs = new LangevinBatchResultSet(odeDataInfo);
 
 		File avg_file = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.Avg);
 		if (avg_file != null && avg_file.exists()) {
-			// want to keep all results, so pass 0 for keepAtMost
-			// don't care about functions, so pass null for functionsFile
 			ODESimData odeSimData_avg = ODESimData.readIDADataFile(vcdID, avg_file, keepAtMost, functionsFile);
 			lbrs.setOdeSimDataAvg(odeSimData_avg);
 		}
