@@ -72,7 +72,7 @@ public class TestResults2DLinePlot {
             throw new FileNotFoundException(String.format("can not find `%s`; maybe it moved?", STANDARD_IMAGE_LOCAL_PATH));
         BufferedImage standardImage = ImageIO.read(standardImageStream);
         SSIMComparisonTool comparisonTool = new SSIMComparisonTool();
-        Assertions.assertEquals (1.0, comparisonTool.performSSIMComparison(standardImage, standardImage));
+        Assertions.assertEquals (1.0, comparisonTool.performModifiedSSIMComparison(standardImage, standardImage).product());
     }
 
     @Test
@@ -248,6 +248,6 @@ public class TestResults2DLinePlot {
 
     private static SSIMComparisonTool.Results getAccuracy(BufferedImage original, BufferedImage generated){
         SSIMComparisonTool ssim = new SSIMComparisonTool();
-        return ssim.performSSIMComparison(original, generated);
+        return ssim.performModifiedSSIMComparison(original, generated);
     }
 }

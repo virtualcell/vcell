@@ -3,6 +3,19 @@ package org.vcell.cli.testsupport;
 import java.awt.image.BufferedImage;
 
 public class SSIMComparisonTool {
+    private static final double S_WEIGHT = 0.03, M_WEIGHT = 0.05, L_WEIGHT = 0.15;
+
+    private static final double[][] blurWeights = {
+            {S_WEIGHT, S_WEIGHT, S_WEIGHT, S_WEIGHT, S_WEIGHT},
+            {S_WEIGHT, M_WEIGHT, M_WEIGHT, M_WEIGHT, S_WEIGHT},
+            {S_WEIGHT, M_WEIGHT, L_WEIGHT, M_WEIGHT, S_WEIGHT},
+            {S_WEIGHT, M_WEIGHT, M_WEIGHT, M_WEIGHT, S_WEIGHT},
+            {S_WEIGHT, S_WEIGHT, S_WEIGHT, S_WEIGHT, S_WEIGHT}
+    };
+    private static final int blurOffset = blurWeights.length / 2;
+    private static final int blurStartOffset = -blurOffset;
+    private static final int blurEndOffset = blurStartOffset + blurWeights.length;
+
     private static final double STANDARD_RED_WEIGHT = 0.299;
     private static final double STANDARD_GREEN_WEIGHT = 0.587;
     private static final double STANDARD_BLUE_WEIGHT = 0.114;
@@ -49,9 +62,33 @@ public class SSIMComparisonTool {
         this.STRUCTURE_STABILIZER = structureStabilizer;
     }
 
+    /**
+     * Returns a modified version of SSIM analysis, where structure calculations are done on blurred variants.
+     * This is done to reduce "error" based on shifted pixels and different fonts.
+     * @param original
+     * @param contender
+     * @return
+     */
+    public Results performModifiedSSIMComparison(BufferedImage original, BufferedImage contender){
+        double[][] originalGrayscaleData = SSIMComparisonTool.getGrayScaleData(original);
+        double[][] contenderGrayscaleData = SSIMComparisonTool.getGrayScaleData(contender);
+        Results regularResults = this.performSSIMComparison(originalGrayscaleData, contenderGrayscaleData);
+        double[][] blurredOGD = doubleWideBlur(originalGrayscaleData);
+        double[][] blurredCGD = doubleWideBlur(contenderGrayscaleData);
+        Results blurredResults = this.performSSIMComparison(blurredOGD, blurredCGD);
+        double newProduct = regularResults.luminanceComponent() * regularResults.contrastComponent() * blurredResults.structureComponent();
+        return new Results(newProduct, regularResults.luminanceComponent(), regularResults.contrastComponent(), blurredResults.structureComponent());
+
+    }
+
     public Results performSSIMComparison(BufferedImage original, BufferedImage contender){
         double[][] originalGrayscaleData = SSIMComparisonTool.getGrayScaleData(original);
         double[][] contenderGrayscaleData = SSIMComparisonTool.getGrayScaleData(contender);
+        return this.performSSIMComparison(originalGrayscaleData, contenderGrayscaleData);
+    }
+
+
+    private Results performSSIMComparison(double[][] originalGrayscaleData, double[][] contenderGrayscaleData){
         double originalPSM = SSIMComparisonTool.pixelSampleMean(originalGrayscaleData);
         double contenderPSM = SSIMComparisonTool.pixelSampleMean(contenderGrayscaleData);
         double originalVariance = SSIMComparisonTool.sampleVariance(originalGrayscaleData, originalPSM);
@@ -83,7 +120,7 @@ public class SSIMComparisonTool {
         return numerator / denominator;
     }
 
-    private double structureCalculation(double originalVariance, double contenderVariance, double coVariance){
+    private double structureCalculation(double originalVariance, double contenderVariance, double coVariance) {
         double numerator = coVariance + this.STRUCTURE_STABILIZER;
         double denominator = Math.sqrt(originalVariance * contenderVariance) + this.STRUCTURE_STABILIZER;
         return numerator / denominator;
@@ -130,6 +167,27 @@ public class SSIMComparisonTool {
                 double red = STANDARD_RED_WEIGHT * (0xff & rgb);
 
                 convertedData[y][x] = red + green + blue;
+            }
+        }
+        return convertedData;
+    }
+
+    private static double[][] doubleWideBlur(double[][] grayscaleData){
+        return wideBlur(wideBlur(grayscaleData));
+    }
+
+    private static double[][] wideBlur(double[][] grayscaleData){
+        double[][] convertedData = new double[grayscaleData.length][grayscaleData[0].length];
+        for (int y = 0; y < grayscaleData.length; y++) {
+            for (int x = 0; x < grayscaleData[0].length; x++) {
+                double newValue = 0.0;
+                for (int i = blurStartOffset; i < blurEndOffset; i++) {
+                    for (int j = blurStartOffset; j < blurEndOffset; j++) {
+                        if (y + i < 0 || x + j < 0 || y + i >= grayscaleData.length || x + j >= grayscaleData[0].length) continue;
+                        newValue += grayscaleData[y + i][x + j] * blurWeights[i + blurOffset][j + blurOffset];
+                    }
+                }
+                convertedData[y][x] = newValue;
             }
         }
         return convertedData;
