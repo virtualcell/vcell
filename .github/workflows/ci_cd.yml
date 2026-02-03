@@ -181,9 +181,9 @@ jobs:
             mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="${{ matrix.test-group }}"
           fi
 
-#      - name: Setup tmate session
-#        uses: mxschmitt/action-tmate@v3
-#        if: ${{ failure() }}
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
 
   CD:
     name: CD
