@@ -626,8 +626,8 @@ private synchronized File getFirstJobFunctionsFile() throws FileNotFoundExceptio
 	}
 }
 
-
-private synchronized File getJobFunctionsFile() throws FileNotFoundException {
+@Override
+public synchronized File getJobFunctionsFile() throws FileNotFoundException {
 	File functionsFile = null;
 	functionsFile = amplistorHelper.getFunctionsFile(false);
 	if (functionsFile.exists()){

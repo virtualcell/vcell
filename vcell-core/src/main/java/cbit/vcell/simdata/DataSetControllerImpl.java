@@ -2406,13 +2406,11 @@ public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) 
 		ODEDataInfo odeDataInfo = new ODEDataInfo(vcdID.getOwner(), vcdID.getID(),
 									simData.getDataBlockTimeStamp(ODE_DATA, 0));
 		int keepAtMost = 10000;
-		File functionsFile = null;
+		File functionsFile = simData.getJobFunctionsFile();
 		LangevinBatchResultSet lbrs = new LangevinBatchResultSet(odeDataInfo);
 
 		File avg_file = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.Avg);
 		if (avg_file != null && avg_file.exists()) {
-			// want to keep all results, so pass 0 for keepAtMost
-			// don't care about functions, so pass null for functionsFile
 			ODESimData odeSimData_avg = ODESimData.readIDADataFile(vcdID, avg_file, keepAtMost, functionsFile);
 			lbrs.setOdeSimDataAvg(odeSimData_avg);
 		}
@@ -2432,21 +2430,21 @@ public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) 
 			lbrs.setOdeSimDataStd(odeSimData_std);
 		}
 
-		// TODO: call ODESimData readCSVDataFile(VCDataIdentifier vcdId, File csvFile) to read cluster analysis results
-//		File counts = simData.getLangevinFile(LangevinFileType.ClusterCounts);
-//		if (counts != null && counts.exists()) {
-//			lbrs.setClusterCounts(readCSVDataFile(vcdID, counts));
-//		}
-//
-//		File mean = simData.getLangevinFile(LangevinFileType.ClusterMean);
-//		if (mean != null && mean.exists()) {
-//			lbrs.setClusterMeans(readCSVDataFile(vcdID, mean));
-//		}
-//
-//		File overall = simData.getLangevinFile(LangevinFileType.ClusterOverall);
-//		if (overall != null && overall.exists()) {
-//			lbrs.setClusterOverall(readCSVDataFile(vcdID, overall));
-//		}
+		File counts = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.ClusterCounts);
+		if (counts != null && counts.exists()) {
+			ODESimData odeSimData_clusterCounts = ODESimData.readCSVDataFile(vcdID, counts);
+			lbrs.setOdeSimDataClusterCounts(odeSimData_clusterCounts);
+		}
+		File mean = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.ClusterMean);
+		if (mean != null && mean.exists()) {
+			ODESimData odeSimData_clusterMean = ODESimData.readCSVDataFile(vcdID, mean);
+			lbrs.setOdeSimDataClusterMean(odeSimData_clusterMean);
+		}
+		File overall = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.ClusterOverall);
+		if (overall != null && overall.exists()) {
+			ODESimData odeSimData_clusterOverall = ODESimData.readCSVDataFile(vcdID, overall);
+			lbrs.setOdeSimDataClusterOverall(odeSimData_clusterOverall);
+		}
 
 		return lbrs;
 	} catch (IOException e) {
