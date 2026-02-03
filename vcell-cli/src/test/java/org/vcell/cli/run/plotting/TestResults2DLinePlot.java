@@ -169,7 +169,7 @@ public class TestResults2DLinePlot {
         Assertions.assertEquals(originalImage.getWidth(), roundTrippedImage.getWidth());
         Assertions.assertEquals(originalImage.getHeight(), roundTrippedImage.getHeight());
         double accuracy = TestResults2DLinePlot.getAccuracyPercentage(originalImage, roundTrippedImage);
-        Assertions.assertTrue(accuracy > ACCURACY_THRESHOLD, String.format("accuracy: %f !> %f", accuracy, ACCURACY_THRESHOLD));
+        Assertions.assertTrue(accuracy > ACCURACY_THRESHOLD, String.format("accuracy: %f !> %f; file: %s", accuracy, ACCURACY_THRESHOLD, dupe.getCanonicalPath()));
     }
 
     @Test
