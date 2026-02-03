@@ -239,10 +239,9 @@ public class TestResults2DLinePlot {
 
 
         double accuracy0 = TestResults2DLinePlot.getAccuracyPercentage(standardImage0, generatedImage0);
-        Assertions.assertTrue(accuracy0 > ACCURACY_THRESHOLD, String.format("accuracy: %f !> %f", accuracy0, ACCURACY_THRESHOLD));
-
         double accuracy1 = TestResults2DLinePlot.getAccuracyPercentage(standardImage1, generatedImage1);
-        Assertions.assertTrue(accuracy1 > ACCURACY_THRESHOLD, String.format("accuracy: %f !> %f", accuracy1, ACCURACY_THRESHOLD));
+        String errMsg = String.format("Values Threshold (%f):\n\tTest0 - accuracy: %f; file: %s\n\tTest1 - accuracy: %f; file: %s", ACCURACY_THRESHOLD, accuracy0, generatedPlot0.getCanonicalPath(), accuracy1, generatedPlot1.getCanonicalPath());
+        Assertions.assertTrue(accuracy0 > ACCURACY_THRESHOLD && accuracy1 > ACCURACY_THRESHOLD, errMsg);
     }
 
     private static double getAccuracyPercentage(BufferedImage original, BufferedImage generated){
