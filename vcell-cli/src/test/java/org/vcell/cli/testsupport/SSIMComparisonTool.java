@@ -75,10 +75,10 @@ public class SSIMComparisonTool {
     }
 
     private double contrastCalculation(double originalVariance, double contenderVariance){
-        double ovSquared = originalVariance * originalVariance;
-        double cvSquared = contenderVariance * contenderVariance;
-        double numerator = 2 * originalVariance * contenderVariance + this.CONTRAST_STABILIZER;
-        double denominator = ovSquared + cvSquared + this.CONTRAST_STABILIZER;
+        double originalSD = Math.sqrt(originalVariance);
+        double contenderSD = Math.sqrt(contenderVariance);
+        double numerator = 2 * originalSD * contenderSD + this.CONTRAST_STABILIZER;
+        double denominator = originalVariance + contenderVariance + this.CONTRAST_STABILIZER;
         return numerator / denominator;
     }
 
