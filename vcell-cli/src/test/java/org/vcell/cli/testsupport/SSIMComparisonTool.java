@@ -49,7 +49,7 @@ public class SSIMComparisonTool {
         this.STRUCTURE_STABILIZER = structureStabilizer;
     }
 
-    public double performSSIMComparison(BufferedImage original, BufferedImage contender){
+    public Results performSSIMComparison(BufferedImage original, BufferedImage contender){
         double[][] originalGrayscaleData = SSIMComparisonTool.getGrayScaleData(original);
         double[][] contenderGrayscaleData = SSIMComparisonTool.getGrayScaleData(contender);
         double originalPSM = SSIMComparisonTool.pixelSampleMean(originalGrayscaleData);
@@ -63,7 +63,8 @@ public class SSIMComparisonTool {
         double weightedLuminance = Math.pow(luminance, SSIMComparisonTool.ALPHA_WEIGHT);
         double weightedContrast = Math.pow(contrast, SSIMComparisonTool.BETA_WEIGHT);
         double weightedStructure = Math.pow(structure, SSIMComparisonTool.GAMMA_WEIGHT);
-        return weightedLuminance * weightedContrast * weightedStructure;
+        double product = weightedLuminance * weightedContrast * weightedStructure;
+        return new Results(product, weightedLuminance, weightedContrast, weightedStructure);
     }
 
     private double luminanceCalculation(double originalPSM, double contenderPSM){
@@ -133,4 +134,6 @@ public class SSIMComparisonTool {
         }
         return convertedData;
     }
+
+    public record Results (double product, double luminanceComponent, double contrastComponent, double structureComponent) {}
 }

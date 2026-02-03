@@ -168,7 +168,7 @@ public class TestResults2DLinePlot {
         BufferedImage roundTrippedImage = ImageIO.read(dupe);
         Assertions.assertEquals(originalImage.getWidth(), roundTrippedImage.getWidth());
         Assertions.assertEquals(originalImage.getHeight(), roundTrippedImage.getHeight());
-        double accuracy = TestResults2DLinePlot.getAccuracyPercentage(originalImage, roundTrippedImage);
+        double accuracy = TestResults2DLinePlot.getAccuracy(originalImage, roundTrippedImage).product();
         Assertions.assertTrue(accuracy > ACCURACY_THRESHOLD, String.format("accuracy: %f !> %f; file: %s", accuracy, ACCURACY_THRESHOLD, dupe.getCanonicalPath()));
     }
 
@@ -189,7 +189,7 @@ public class TestResults2DLinePlot {
         BufferedImage currentImage = chart.createBufferedImage(1000,1000);
         Assertions.assertEquals(currentImage.getWidth(), standardImage.getWidth());
         Assertions.assertEquals(currentImage.getHeight(), standardImage.getHeight());
-        double accuracy = TestResults2DLinePlot.getAccuracyPercentage(standardImage, currentImage);
+        double accuracy = TestResults2DLinePlot.getAccuracy(standardImage, currentImage).product();
         Assertions.assertTrue(accuracy > ACCURACY_THRESHOLD, String.format("accuracy: %f !> %f", accuracy, ACCURACY_THRESHOLD));
     }
 
@@ -237,14 +237,16 @@ public class TestResults2DLinePlot {
         Assertions.assertEquals(standardImage1.getWidth(), generatedImage1.getWidth());
         Assertions.assertEquals(standardImage1.getHeight(), generatedImage1.getHeight());
 
-
-        double accuracy0 = TestResults2DLinePlot.getAccuracyPercentage(standardImage0, generatedImage0);
-        double accuracy1 = TestResults2DLinePlot.getAccuracyPercentage(standardImage1, generatedImage1);
-        String errMsg = String.format("Values Threshold (%f):\n\tTest0 - accuracy: %f; file: %s\n\tTest1 - accuracy: %f; file: %s", ACCURACY_THRESHOLD, accuracy0, generatedPlot0.getCanonicalPath(), accuracy1, generatedPlot1.getCanonicalPath());
-        Assertions.assertTrue(accuracy0 > ACCURACY_THRESHOLD && accuracy1 > ACCURACY_THRESHOLD, errMsg);
+        SSIMComparisonTool.Results results0 = TestResults2DLinePlot.getAccuracy(standardImage0, generatedImage0);
+        SSIMComparisonTool.Results results1 = TestResults2DLinePlot.getAccuracy(standardImage1, generatedImage1);
+        String errMsg = String.format("Values Threshold (%f):\n\tTest0 - accuracy: %f (%f/%f/%f); file: %s\n\tTest1 - accuracy: %f ((%f/%f/%f)); file: %s",
+                ACCURACY_THRESHOLD,
+                results0.product(), results0.luminanceComponent(), results0.contrastComponent(), results0.structureComponent(), generatedPlot0.getCanonicalPath(),
+                results1.product(), results1.luminanceComponent(), results1.contrastComponent(), results1.structureComponent(), generatedPlot1.getCanonicalPath());
+        Assertions.assertTrue(results0.product() > ACCURACY_THRESHOLD && results1.product() > ACCURACY_THRESHOLD, errMsg);
     }
 
-    private static double getAccuracyPercentage(BufferedImage original, BufferedImage generated){
+    private static SSIMComparisonTool.Results getAccuracy(BufferedImage original, BufferedImage generated){
         SSIMComparisonTool ssim = new SSIMComparisonTool();
         return ssim.performSSIMComparison(original, generated);
     }
