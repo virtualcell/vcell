@@ -647,7 +647,9 @@ public synchronized File getJobFunctionsFile() throws FileNotFoundException {
 		refreshLogFile();
 		return odeIdentifier.equals(IDA_DATA_IDENTIFIER);
 	}
-
+	public String getDataIdentifierSafe() {
+		return new String(odeIdentifier);
+	}
 
 private long getLastModified(File pdeFile, File zipFile) throws IOException {
 	if (zipFile == null) {

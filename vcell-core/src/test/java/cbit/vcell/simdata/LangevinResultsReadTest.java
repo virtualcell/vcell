@@ -46,6 +46,9 @@ public class LangevinResultsReadTest {
     private static File langevin_input_file;
     private static File messaging_config_file;
 
+    private static File euler_log_file;
+    private static File euler_ode_file;
+
     // results for first task in the batch, named to match single run file (ending in "_") ex: SimID_303404574_0_
     private static File ida_0_file;
     // log produced by the solver for first task in the batch, named using the normal convention ex: SimID_303404574_0_0.log
@@ -56,6 +59,8 @@ public class LangevinResultsReadTest {
     //    SimID_303404574_0_.ida
     private static File log_data_file;
 
+    // resource location of files for various test cases
+    private static String resourceBase = null;
 
     @BeforeAll
     public static void setUp() throws IOException {
@@ -71,6 +76,7 @@ public class LangevinResultsReadTest {
             throw new IOException("Failed to create subdirectory: " + localSimDir.getAbsolutePath());
         }
 
+        resourceBase = "cbit/vcell/simdata/langevin/batch/";
         functions_file = copyToPrimaryDir("SimID_303404574_0_.functions");
         ida_0_file = copyToPrimaryDir("SimID_303404574_0_.ida");    // results for batch run0 (or for single run)
         log_0_file = copyToPrimaryDir("SimID_303404574_0_0.log");   // langevin-made log for run 0
@@ -87,6 +93,11 @@ public class LangevinResultsReadTest {
         ida_min_file = copyToPrimaryDir("SimID_303404574_0__Min.ida");
         ida_std_file = copyToPrimaryDir("SimID_303404574_0__Std.ida");
 
+        resourceBase = "cbit/vcell/simdata/langevin/euler/";
+        euler_log_file = copyToPrimaryDir("SimID_303690651_0_.log");
+        euler_ode_file = copyToPrimaryDir("SimID_303690651_0_.ode");
+
+
 //        ida_1_File = File.createTempFile("SimID_284673710_0_", ".ida");
 //        Resources.asByteSource(Resources.getResource("cbit/vcell/simdata/SimID_284673710_0_.ida"))
 //                .copyTo(com.google.common.io.Files.asByteSink(ida_1_File));
@@ -102,7 +113,7 @@ public class LangevinResultsReadTest {
 
 
     @Test
-    public void testReadData() throws IOException, DataAccessException, CacheException {
+    public void testReadDataLangevinBatch() throws IOException, DataAccessException, CacheException {
 
         String simID = "303404574";
         KeyValue key = new KeyValue(simID);
@@ -111,10 +122,13 @@ public class LangevinResultsReadTest {
 
         VCDataIdentifier vCDataIdentifier = new VCSimulationDataIdentifier(vcSimID, 0);
         VCData vcData = new SimulationData(vCDataIdentifier, primaryDir, localSimDir, null);
+        SimulationData simData = (SimulationData)vcData;
+        String identifier = simData.getDataIdentifierSafe();
+        assertTrue(identifier.equals(SimDataConstants.IDA_DATA_IDENTIFIER), "Langevin simulation should be IDA data");
+        assertFalse(identifier.equals(SimDataConstants.ODE_DATA_IDENTIFIER), "Langevin simulation should not be ODE data");
 
         Cachetable aCacheTable = new Cachetable(10 * Cachetable.minute, 100000);
         aCacheTable.put(vCDataIdentifier, vcData);
-
         DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(aCacheTable, primaryDir, localSimDir);
 
         LangevinBatchResultSet lbrs = dataSetControllerImpl.getLangevinBatchResultSet(vCDataIdentifier);
@@ -143,6 +157,31 @@ public class LangevinResultsReadTest {
 
     }
 
+    // we should not try to read euler results using LangevinBatchResultSet
+    @Test
+    public void testReadDataEulerBatch() throws IOException, DataAccessException, CacheException {
+
+        String simID = "303690651";
+        KeyValue key = new KeyValue(simID);
+        User usr = new User("temp",key);
+        VCSimulationIdentifier vcSimID = new VCSimulationIdentifier(key, usr);
+
+        VCDataIdentifier vCDataIdentifier = new VCSimulationDataIdentifier(vcSimID, 0);
+        VCData vcData = new SimulationData(vCDataIdentifier, primaryDir, localSimDir, null);
+        SimulationData simData = (SimulationData)vcData;
+        String identifier = simData.getDataIdentifierSafe();
+        assertFalse(identifier.equals(SimDataConstants.IDA_DATA_IDENTIFIER), "Langevin simulation should not be IDA data");
+        assertTrue(identifier.equals(SimDataConstants.ODE_DATA_IDENTIFIER), "Langevin simulation should be ODE data");
+
+        Cachetable aCacheTable = new Cachetable(10 * Cachetable.minute, 100000);
+        aCacheTable.put(vCDataIdentifier, vcData);
+        DataSetControllerImpl dataSetControllerImpl = new DataSetControllerImpl(aCacheTable, primaryDir, localSimDir);
+
+        LangevinBatchResultSet lbrs = dataSetControllerImpl.getLangevinBatchResultSet(vCDataIdentifier);
+        assertNull(lbrs, "Result set should be null for Euler data when read as LangevinBatchResultSet");
+
+    }
+
 //    @Test
 //    public void testRead() throws IOException {
 //
@@ -167,7 +206,7 @@ public class LangevinResultsReadTest {
 
     private static File copyToPrimaryDir(String resourceName) throws IOException {
         File out = new File(primaryDir, resourceName);
-        Resources.asByteSource(Resources.getResource("cbit/vcell/simdata/langevin/batch/" + resourceName))
+        Resources.asByteSource(Resources.getResource(resourceBase + resourceName))
                 .copyTo(com.google.common.io.Files.asByteSink(out));
         return out;
     }
