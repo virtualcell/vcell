@@ -639,11 +639,17 @@ public synchronized File getJobFunctionsFile() throws FileNotFoundException {
 
 
 
-public synchronized boolean getIsODEData() throws DataAccessException {
-	refreshLogFile();
-	return isODEData;
-}
-
+	public synchronized boolean getIsODEData() throws DataAccessException {
+		refreshLogFile();
+		return isODEData;
+	}
+	public synchronized boolean getIsIDAData() throws DataAccessException {
+		refreshLogFile();
+		return odeIdentifier.equals(IDA_DATA_IDENTIFIER);
+	}
+	public String getDataIdentifierSafe() {
+		return new String(odeIdentifier);
+	}
 
 private long getLastModified(File pdeFile, File zipFile) throws IOException {
 	if (zipFile == null) {

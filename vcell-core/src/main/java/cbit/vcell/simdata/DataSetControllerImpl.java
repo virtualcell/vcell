@@ -2402,7 +2402,15 @@ public ODEDataBlock getODEDataBlock(VCDataIdentifier vcdID) throws DataAccessExc
 public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) throws DataAccessException {
 	if (lg.isTraceEnabled()) lg.trace("DataSetControllerImpl.getLangevinBatchResultSet()");
 	try {
-		VCData simData = getVCData(vcdID);
+		VCData vcData = getVCData(vcdID);
+		if(!(vcData instanceof SimulationData)) {
+			return null;
+		}
+		SimulationData simData = (SimulationData)vcData;
+		if(!(simData.getIsIDAData())) {
+			return null;
+		}
+
 		ODEDataInfo odeDataInfo = new ODEDataInfo(vcdID.getOwner(), vcdID.getID(),
 									simData.getDataBlockTimeStamp(ODE_DATA, 0));
 		int keepAtMost = 10000;
