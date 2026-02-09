@@ -33,9 +33,9 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         }
     }
 
-    private static final double NmToPixelRatio = 25;
-    private static final double DEFAULT_UPPER_CORNER = 3;       // default screen coordinates where we want to display the first site
-    private static final double DEFAULT_LEFT_CORNER = 10;       // in nm
+    private static final double NmToPixelRatio = 18;
+    private static final double DEFAULT_UPPER_CORNER = 5.3;     // default screen coordinates where we want to display the first site
+    private static final double DEFAULT_LEFT_CORNER = 13;       // in nm
 
     // x, y positions where we want to begin drawing the shape (nm from top and left of painting area)
     private double x_offset = DEFAULT_LEFT_CORNER;
@@ -204,36 +204,30 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         Stroke strokeOld = g2.getStroke();
 
         Font font;
-        int z = shapePanel.getZoomFactor();
-        nmToPixelRatio = NmToPixelRatio + z;
+        int zoomFactor = shapePanel.getZoomFactor();
+        nmToPixelRatio = NmToPixelRatio + zoomFactor;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         String name = structure.getName();
-        if(z > -3) {
+        if(zoomFactor > -3) {
             font = fontOld.deriveFont(Font.BOLD);
             g.setFont(font);
-
         } else {
             font = fontOld;
             g.setFont(font);
         }
 
         g.setColor(Color.black);
+        double VerticalTextOffset = 1.0;    // vertical means y coord
         if(!hasMembraneSite) {
             double x = minX+x_offset;
-            double y = 1;
-            g2.drawString(name, (int)(nmToPixelRatio * x), (int)(nmToPixelRatio * y));
+            double y = VerticalTextOffset;
+            g2.drawString(name, (int)(nmToPixelRatio * x), (int)(NmToPixelRatio * y));
         } else {
-            double x = membraneX+x_offset-5;
-            double y = 1;
-            g2.drawString("Extracellular", (int)(nmToPixelRatio * x), (int)(nmToPixelRatio * y));
-
-            x = membraneX+x_offset;
-            y = 1;
-            g2.drawString("Membrane       Intracellular",
-                    (int)(nmToPixelRatio * x),
-//                    (int)(nmToPixelRatio * (x-membraneRadius)),     // move it slightly to the left
-                    (int)(nmToPixelRatio * y));
+            double x = membraneX+x_offset;     // position of membrane bar
+            double y = VerticalTextOffset;
+            g2.drawString("Extracellular", (int)(nmToPixelRatio * (x-7)), (int)(NmToPixelRatio * y));
+            g2.drawString("Intracellular", (int)(nmToPixelRatio * (x+3)), (int)(NmToPixelRatio * y));
 
             g2.setColor(NamedColor.darker(Color.orange, 0.8));
             float thickness = 4.0f;
@@ -343,14 +337,14 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         nmToPixelRatio = NmToPixelRatio + z;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        xd = xd-(rd/2);
-        yd = yd-(rd/2);
+        xd = xd-rd;
+        yd = yd-rd;
 
         int x = (int)(nmToPixelRatio * xd);
         int y = (int)(nmToPixelRatio * yd);
         int r = (int)(nmToPixelRatio * rd);
 
-        Ellipse2D oval = new Ellipse2D.Double(x, y, r, r);
+        Ellipse2D oval = new Ellipse2D.Double(x, y, 2*r, 2*r);
         g2.setColor(namedColor.getColor());
         g2.fill(oval);
 
