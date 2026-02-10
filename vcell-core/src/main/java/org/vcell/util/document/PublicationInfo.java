@@ -66,7 +66,7 @@ public class PublicationInfo implements Serializable{
 	public User getUser() {
 		return user;
 	}
-	@JsonIgnore
+	@Schema(format = "date-time")
 	public Date getPubDate() {
 		return pubdate;
 	}
