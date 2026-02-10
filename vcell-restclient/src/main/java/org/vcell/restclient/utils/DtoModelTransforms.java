@@ -264,7 +264,7 @@ public class DtoModelTransforms {
         return new PublicationInfo(new KeyValue(dto.getPublicationKey()), new KeyValue(dto.getVersionKey()),
                 dto.getTitle(), dto.getAuthors().toArray(new String[0]), dto.getCitation(),dto.getPubmedid(),
                 dto.getDoi(), dto.getUrl(), dtoToVCDocumentType(dto.getVcDocumentType()), dtoToUser(dto.getUser()),
-                new Date(dto.getPubdate().toEpochDay()));
+                new Date(dto.getPubDate().toEpochSecond()));
     }
 
     public static BioModelInfo bioModelContextToBioModelInfo(BioModelSummary summary){
@@ -304,9 +304,9 @@ public class DtoModelTransforms {
         try {
             return new VCImageInfo(DtoModelTransforms.versionDTOToVersion(summary.getVersion()),
                     DtoModelTransforms.dtoToISize(summary.getSize()), DtoModelTransforms.dtoToExtent(summary.getExtent()),
-                    new GIFImage(Files.readAllBytes(summary.getPreview().getGifEncodedData().toPath())),
+                    new GIFImage(summary.getPreview().getGifEncodedData().getAbsolutePath().getBytes()),
                     DtoModelTransforms.dtoToVCellSoftwareVersion(summary.getSoftwareVersion()));
-        } catch (GifParsingException | IOException e) {
+        } catch (GifParsingException e) {
             throw new RuntimeException(e);
         }
     }

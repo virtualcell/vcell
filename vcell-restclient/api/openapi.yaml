@@ -2474,38 +2474,40 @@ components:
             - allSimulationNames
         publicationInformation:
         - vcDocumentType: null
-          theHashCode: 2
           citation: citation
           title: title
           publicationKey: publicationKey
           pubmedid: pubmedid
+          pubDate: 2000-01-23T04:56:07.000+00:00
+          url: url
+          versionKey: versionKey
+          theHashCode: 2
           user:
             mySpecials:
             - null
             - null
             userName: userName
             key: key
-          url: url
-          versionKey: versionKey
           authors:
           - authors
           - authors
           doi: doi
           pubdate: 2022-03-10T00:00:00.000+00:00
         - vcDocumentType: null
-          theHashCode: 2
           citation: citation
           title: title
           publicationKey: publicationKey
           pubmedid: pubmedid
+          pubDate: 2000-01-23T04:56:07.000+00:00
+          url: url
+          versionKey: versionKey
+          theHashCode: 2
           user:
             mySpecials:
             - null
             - null
             userName: userName
             key: key
-          url: url
-          versionKey: versionKey
           authors:
           - authors
           - authors
@@ -3645,38 +3647,40 @@ components:
           versionNumber: versionNumber
         publicationInfos:
         - vcDocumentType: null
-          theHashCode: 2
           citation: citation
           title: title
           publicationKey: publicationKey
           pubmedid: pubmedid
+          pubDate: 2000-01-23T04:56:07.000+00:00
+          url: url
+          versionKey: versionKey
+          theHashCode: 2
           user:
             mySpecials:
             - null
             - null
             userName: userName
             key: key
-          url: url
-          versionKey: versionKey
           authors:
           - authors
           - authors
           doi: doi
           pubdate: 2022-03-10T00:00:00.000+00:00
         - vcDocumentType: null
-          theHashCode: 2
           citation: citation
           title: title
           publicationKey: publicationKey
           pubmedid: pubmedid
+          pubDate: 2000-01-23T04:56:07.000+00:00
+          url: url
+          versionKey: versionKey
+          theHashCode: 2
           user:
             mySpecials:
             - null
             - null
             userName: userName
             key: key
-          url: url
-          versionKey: versionKey
           authors:
           - authors
           - authors
@@ -4012,19 +4016,20 @@ components:
     PublicationInfo:
       example:
         vcDocumentType: null
-        theHashCode: 2
         citation: citation
         title: title
         publicationKey: publicationKey
         pubmedid: pubmedid
+        pubDate: 2000-01-23T04:56:07.000+00:00
+        url: url
+        versionKey: versionKey
+        theHashCode: 2
         user:
           mySpecials:
           - null
           - null
           userName: userName
           key: key
-        url: url
-        versionKey: versionKey
         authors:
         - authors
         - authors
@@ -4060,6 +4065,9 @@ components:
         theHashCode:
           format: int32
           type: integer
+        pubDate:
+          format: date-time
+          type: string
       type: object
     SPECIAL_CLAIM:
       enum:
@@ -5029,38 +5037,40 @@ components:
             versionNumber: versionNumber
           publicationInfos:
           - vcDocumentType: null
-            theHashCode: 2
             citation: citation
             title: title
             publicationKey: publicationKey
             pubmedid: pubmedid
+            pubDate: 2000-01-23T04:56:07.000+00:00
+            url: url
+            versionKey: versionKey
+            theHashCode: 2
             user:
               mySpecials:
               - null
               - null
               userName: userName
               key: key
-            url: url
-            versionKey: versionKey
             authors:
             - authors
             - authors
             doi: doi
             pubdate: 2022-03-10T00:00:00.000+00:00
           - vcDocumentType: null
-            theHashCode: 2
             citation: citation
             title: title
             publicationKey: publicationKey
             pubmedid: pubmedid
+            pubDate: 2000-01-23T04:56:07.000+00:00
+            url: url
+            versionKey: versionKey
+            theHashCode: 2
             user:
               mySpecials:
               - null
               - null
               userName: userName
               key: key
-            url: url
-            versionKey: versionKey
             authors:
             - authors
             - authors
@@ -5111,38 +5121,40 @@ components:
             versionNumber: versionNumber
           publicationInfos:
           - vcDocumentType: null
-            theHashCode: 2
             citation: citation
             title: title
             publicationKey: publicationKey
             pubmedid: pubmedid
+            pubDate: 2000-01-23T04:56:07.000+00:00
+            url: url
+            versionKey: versionKey
+            theHashCode: 2
             user:
               mySpecials:
               - null
               - null
               userName: userName
               key: key
-            url: url
-            versionKey: versionKey
             authors:
             - authors
             - authors
             doi: doi
             pubdate: 2022-03-10T00:00:00.000+00:00
           - vcDocumentType: null
-            theHashCode: 2
             citation: citation
             title: title
             publicationKey: publicationKey
             pubmedid: pubmedid
+            pubDate: 2000-01-23T04:56:07.000+00:00
+            url: url
+            versionKey: versionKey
+            theHashCode: 2
             user:
               mySpecials:
               - null
               - null
               userName: userName
               key: key
-            url: url
-            versionKey: versionKey
             authors:
             - authors
             - authors
@@ -5277,38 +5289,40 @@ components:
               - allSimulationNames
           publicationInformation:
           - vcDocumentType: null
-            theHashCode: 2
             citation: citation
             title: title
             publicationKey: publicationKey
             pubmedid: pubmedid
+            pubDate: 2000-01-23T04:56:07.000+00:00
+            url: url
+            versionKey: versionKey
+            theHashCode: 2
             user:
               mySpecials:
               - null
               - null
               userName: userName
               key: key
-            url: url
-            versionKey: versionKey
             authors:
             - authors
             - authors
             doi: doi
             pubdate: 2022-03-10T00:00:00.000+00:00
           - vcDocumentType: null
-            theHashCode: 2
             citation: citation
             title: title
             publicationKey: publicationKey
             pubmedid: pubmedid
+            pubDate: 2000-01-23T04:56:07.000+00:00
+            url: url
+            versionKey: versionKey
+            theHashCode: 2
             user:
               mySpecials:
               - null
               - null
               userName: userName
               key: key
-            url: url
-            versionKey: versionKey
             authors:
             - authors
             - authors
@@ -5382,38 +5396,40 @@ components:
               - allSimulationNames
           publicationInformation:
           - vcDocumentType: null
-            theHashCode: 2
             citation: citation
             title: title
             publicationKey: publicationKey
             pubmedid: pubmedid
+            pubDate: 2000-01-23T04:56:07.000+00:00
+            url: url
+            versionKey: versionKey
+            theHashCode: 2
             user:
               mySpecials:
               - null
               - null
               userName: userName
               key: key
-            url: url
-            versionKey: versionKey
             authors:
             - authors
             - authors
             doi: doi
             pubdate: 2022-03-10T00:00:00.000+00:00
           - vcDocumentType: null
-            theHashCode: 2
             citation: citation
             title: title
             publicationKey: publicationKey
             pubmedid: pubmedid
+            pubDate: 2000-01-23T04:56:07.000+00:00
+            url: url
+            versionKey: versionKey
+            theHashCode: 2
             user:
               mySpecials:
               - null
               - null
               userName: userName
               key: key
-            url: url
-            versionKey: versionKey
             authors:
             - authors
             - authors

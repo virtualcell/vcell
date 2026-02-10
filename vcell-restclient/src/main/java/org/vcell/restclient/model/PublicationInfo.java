@@ -25,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -48,7 +49,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   PublicationInfo.JSON_PROPERTY_PUBDATE,
   PublicationInfo.JSON_PROPERTY_VC_DOCUMENT_TYPE,
   PublicationInfo.JSON_PROPERTY_USER,
-  PublicationInfo.JSON_PROPERTY_THE_HASH_CODE
+  PublicationInfo.JSON_PROPERTY_THE_HASH_CODE,
+  PublicationInfo.JSON_PROPERTY_PUB_DATE
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class PublicationInfo {
@@ -87,6 +89,9 @@ public class PublicationInfo {
 
   public static final String JSON_PROPERTY_THE_HASH_CODE = "theHashCode";
   private Integer theHashCode;
+
+  public static final String JSON_PROPERTY_PUB_DATE = "pubDate";
+  private OffsetDateTime pubDate;
 
   public PublicationInfo() { 
   }
@@ -399,6 +404,31 @@ public class PublicationInfo {
   }
 
 
+  public PublicationInfo pubDate(OffsetDateTime pubDate) {
+    this.pubDate = pubDate;
+    return this;
+  }
+
+   /**
+   * Get pubDate
+   * @return pubDate
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_PUB_DATE)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public OffsetDateTime getPubDate() {
+    return pubDate;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_PUB_DATE)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setPubDate(OffsetDateTime pubDate) {
+    this.pubDate = pubDate;
+  }
+
+
   /**
    * Return true if this PublicationInfo object is equal to o.
    */
@@ -422,12 +452,13 @@ public class PublicationInfo {
         Objects.equals(this.pubdate, publicationInfo.pubdate) &&
         Objects.equals(this.vcDocumentType, publicationInfo.vcDocumentType) &&
         Objects.equals(this.user, publicationInfo.user) &&
-        Objects.equals(this.theHashCode, publicationInfo.theHashCode);
+        Objects.equals(this.theHashCode, publicationInfo.theHashCode) &&
+        Objects.equals(this.pubDate, publicationInfo.pubDate);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(publicationKey, versionKey, title, authors, citation, pubmedid, doi, url, pubdate, vcDocumentType, user, theHashCode);
+    return Objects.hash(publicationKey, versionKey, title, authors, citation, pubmedid, doi, url, pubdate, vcDocumentType, user, theHashCode, pubDate);
   }
 
   @Override
@@ -446,6 +477,7 @@ public class PublicationInfo {
     sb.append("    vcDocumentType: ").append(toIndentedString(vcDocumentType)).append("\n");
     sb.append("    user: ").append(toIndentedString(user)).append("\n");
     sb.append("    theHashCode: ").append(toIndentedString(theHashCode)).append("\n");
+    sb.append("    pubDate: ").append(toIndentedString(pubDate)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -555,6 +587,11 @@ public class PublicationInfo {
     // add `theHashCode` to the URL query string
     if (getTheHashCode() != null) {
       joiner.add(String.format("%stheHashCode%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getTheHashCode()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
+
+    // add `pubDate` to the URL query string
+    if (getPubDate() != null) {
+      joiner.add(String.format("%spubDate%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPubDate()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();

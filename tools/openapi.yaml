@@ -3015,6 +3015,10 @@ components:
         theHashCode:
           format: int32
           type: integer
+        pubDate:
+          format: date-time
+          type: string
+          example: 2022-03-10
     SPECIAL_CLAIM:
       enum:
       - admins
