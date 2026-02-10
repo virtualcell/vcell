@@ -15,7 +15,6 @@ import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.util.*;
-import java.util.List;
 
 public class SpeciesContextSpecLargeShape extends AbstractComponentShape implements HighlightableShapeInterface {
 
@@ -33,9 +32,9 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         }
     }
 
-    private static final double NmToPixelRatio = 25;
-    private static final double DEFAULT_UPPER_CORNER = 3;       // default screen coordinates where we want to display the first site
-    private static final double DEFAULT_LEFT_CORNER = 10;       // in nm
+    private static final double NmToPixelRatio = 18;
+    private static final double DEFAULT_UPPER_CORNER = 5.3;     // default screen coordinates where we want to display the first site
+    private static final double DEFAULT_LEFT_CORNER = 13;       // in nm
 
     // x, y positions where we want to begin drawing the shape (nm from top and left of painting area)
     private double x_offset = DEFAULT_LEFT_CORNER;
@@ -73,13 +72,17 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
 
     Map<Ellipse2D, SiteAttributesSpec> ellipseToSasMap = new LinkedHashMap<>();         // site oval to site attributes map
     Map<CustomLine2D, MolecularInternalLinkSpec> lineToMilsMap = new LinkedHashMap<>(); // link line to link spec
+    // we need also the inverse association
+    Map<SiteAttributesSpec, Ellipse2D> sasToEllipseMap = new LinkedHashMap<>();
+    Map<MolecularInternalLinkSpec, CustomLine2D> milsToLineMap = new LinkedHashMap<>();
 
-    private MolecularComponentPattern mcpSelected = null;   // any or both of these may be selected in their tables
+    private MolecularComponentPattern mcpSelected = null;   // any or both of these may be selected in their tables, they are highlighted on the shape
     private MolecularInternalLinkSpec milsSelected = null;
+    private Object lastSelectedObject = null;    // this is the last selected object, we show it on top of everything else
 
     public SpeciesContextSpecLargeShape(SpeciesContextSpec scs, LargeShapeCanvas shapePanel, Displayable owner,
                                         MolecularComponentPattern mcpSelected, MolecularInternalLinkSpec milsSelected,
-                                        IssueListProvider issueListProvider) {
+                                        Object lastSelectedObject, IssueListProvider issueListProvider) {
         super(issueListProvider);
 
         this.owner = owner;
@@ -88,6 +91,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
 
         this.mcpSelected = mcpSelected;
         this.milsSelected = milsSelected;
+        this.lastSelectedObject = lastSelectedObject;
 
         if(scs != null) {
             this.sc = scs.getSpeciesContext();
@@ -204,36 +208,30 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         Stroke strokeOld = g2.getStroke();
 
         Font font;
-        int z = shapePanel.getZoomFactor();
-        nmToPixelRatio = NmToPixelRatio + z;
+        int zoomFactor = shapePanel.getZoomFactor();
+        nmToPixelRatio = NmToPixelRatio + zoomFactor;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         String name = structure.getName();
-        if(z > -3) {
+        if(zoomFactor > -3) {
             font = fontOld.deriveFont(Font.BOLD);
             g.setFont(font);
-
         } else {
             font = fontOld;
             g.setFont(font);
         }
 
         g.setColor(Color.black);
+        double VerticalTextOffset = 1.0;    // vertical means y coord
         if(!hasMembraneSite) {
             double x = minX+x_offset;
-            double y = 1;
-            g2.drawString(name, (int)(nmToPixelRatio * x), (int)(nmToPixelRatio * y));
+            double y = VerticalTextOffset;
+            g2.drawString(name, (int)(nmToPixelRatio * x), (int)(NmToPixelRatio * y));
         } else {
-            double x = membraneX+x_offset-5;
-            double y = 1;
-            g2.drawString("Extracellular", (int)(nmToPixelRatio * x), (int)(nmToPixelRatio * y));
-
-            x = membraneX+x_offset;
-            y = 1;
-            g2.drawString("Membrane       Intracellular",
-                    (int)(nmToPixelRatio * x),
-//                    (int)(nmToPixelRatio * (x-membraneRadius)),     // move it slightly to the left
-                    (int)(nmToPixelRatio * y));
+            double x = membraneX+x_offset;     // position of membrane bar
+            double y = VerticalTextOffset;
+            g2.drawString("Extracellular", (int)(nmToPixelRatio * (x-7)), (int)(NmToPixelRatio * y));
+            g2.drawString("Intracellular", (int)(nmToPixelRatio * (x+3)), (int)(NmToPixelRatio * y));
 
             g2.setColor(NamedColor.darker(Color.orange, 0.8));
             float thickness = 4.0f;
@@ -343,14 +341,14 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         nmToPixelRatio = NmToPixelRatio + z;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        xd = xd-(rd/2);
-        yd = yd-(rd/2);
+        xd = xd-rd;
+        yd = yd-rd;
 
         int x = (int)(nmToPixelRatio * xd);
         int y = (int)(nmToPixelRatio * yd);
         int r = (int)(nmToPixelRatio * rd);
 
-        Ellipse2D oval = new Ellipse2D.Double(x, y, r, r);
+        Ellipse2D oval = new Ellipse2D.Double(x, y, 2*r, 2*r);
         g2.setColor(namedColor.getColor());
         g2.fill(oval);
 
@@ -416,6 +414,9 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         }
         Map<MolecularComponentPattern, SiteAttributesSpec> sasMap = scs.getSiteAttributesMap();
         Set<MolecularInternalLinkSpec> internalLinkSet = scs.getInternalLinkSet();
+
+        // we draw all objects as unselected first, and then we redraw the selected objects on top of everything else,
+        // so that they look highlighted and are not hidden behind other objects
         for(MolecularInternalLinkSpec mils : internalLinkSet) {
             Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
             SiteAttributesSpec sas1 = sasMap.get(link.one);
@@ -424,9 +425,9 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             double x2 = x_offset + sas2.getCoordinate().getZ();
             double y1 = y_offset + sas1.getCoordinate().getY();
             double y2 = y_offset + sas2.getCoordinate().getY();
-            boolean isSelected = mils == milsSelected ? true : false;
-            CustomLine2D line = drawLink(g, x1, y1, x2, y2, isSelected);
+            CustomLine2D line = drawLink(g, x1, y1, x2, y2, false);
             lineToMilsMap.put(line, mils);
+            milsToLineMap.put(mils, line);
         }
         for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
             SiteAttributesSpec sas = sasMap.get(mcp);
@@ -435,9 +436,72 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             NamedColor color = sas.getColor();
             double x = x_offset + coord.getZ();
             double y = y_offset + coord.getY();
-            boolean isSelected = mcp == mcpSelected ? true : false;
-            Ellipse2D oval = drawCenteredCircle(g, color, x, y, radius, isSelected);
+            Ellipse2D oval = drawCenteredCircle(g, color, x, y, radius, false);
             ellipseToSasMap.put(oval, sas);
+            sasToEllipseMap.put(sas, oval);
+        }
+
+        // we redraw the selected objects on top of all unselected objects
+        if(mcpSelected != null) {
+            SiteAttributesSpec sas = sasMap.get(mcpSelected);
+            Coordinate coord = sas.getCoordinate();
+            double radius = sas.getRadius();
+            NamedColor color = sas.getColor();
+            double x = x_offset + coord.getZ();
+            double y = y_offset + coord.getY();
+            Ellipse2D newOval = drawCenteredCircle(g, color, x, y, radius, true);
+            Ellipse2D oldOval = sasToEllipseMap.get(sas);
+            sasToEllipseMap.put(sas, newOval);
+            ellipseToSasMap.remove(oldOval);
+            ellipseToSasMap.put(newOval, sas);
+        }
+        if(milsSelected != null) {
+            Pair<MolecularComponentPattern, MolecularComponentPattern> link = milsSelected.getLink();
+            SiteAttributesSpec sas1 = sasMap.get(link.one);
+            SiteAttributesSpec sas2 = sasMap.get(link.two);
+            double x1 = x_offset + sas1.getCoordinate().getZ();
+            double x2 = x_offset + sas2.getCoordinate().getZ();
+            double y1 = y_offset + sas1.getCoordinate().getY();
+            double y2 = y_offset + sas2.getCoordinate().getY();
+            CustomLine2D newLine = drawLink(g, x1, y1, x2, y2, true);
+            // we need to extract the mils from the lineToMilsMap, because the line we just drew is not the same
+            // as the one we drew in the first loop (and that is the one in the map)
+            CustomLine2D oldLine = milsToLineMap.get(milsSelected);
+            milsToLineMap.put(milsSelected, newLine);
+            lineToMilsMap.remove(oldLine);
+            lineToMilsMap.put(newLine, milsSelected);
+        }
+
+        // we now redraw the last selected object on top of everything else
+        if(lastSelectedObject != null) {
+            if(lastSelectedObject instanceof MolecularComponentPattern) {
+                MolecularComponentPattern mcp = (MolecularComponentPattern)lastSelectedObject;
+                SiteAttributesSpec sas = sasMap.get(mcp);
+                Coordinate coord = sas.getCoordinate();
+                double radius = sas.getRadius();
+                NamedColor color = sas.getColor();
+                double x = x_offset + coord.getZ();
+                double y = y_offset + coord.getY();
+                Ellipse2D newOval = drawCenteredCircle(g, color, x, y, radius, true);
+                Ellipse2D oldOval = sasToEllipseMap.get(sas);
+                sasToEllipseMap.put(sas, newOval);
+                ellipseToSasMap.remove(oldOval);
+                ellipseToSasMap.put(newOval, sas);
+            } else if(lastSelectedObject instanceof MolecularInternalLinkSpec) {
+                MolecularInternalLinkSpec mils = (MolecularInternalLinkSpec)lastSelectedObject;
+                Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
+                SiteAttributesSpec sas1 = sasMap.get(link.one);
+                SiteAttributesSpec sas2 = sasMap.get(link.two);
+                double x1 = x_offset + sas1.getCoordinate().getZ();
+                double x2 = x_offset + sas2.getCoordinate().getZ();
+                double y1 = y_offset + sas1.getCoordinate().getY();
+                double y2 = y_offset + sas2.getCoordinate().getY();
+                CustomLine2D newLine = drawLink(g, x1, y1, x2, y2, true);
+                CustomLine2D oldLine = milsToLineMap.get(mils);
+                milsToLineMap.put(mils, newLine);
+                lineToMilsMap.remove(oldLine);
+                lineToMilsMap.put(newLine, mils);
+            }
         }
     }
 
