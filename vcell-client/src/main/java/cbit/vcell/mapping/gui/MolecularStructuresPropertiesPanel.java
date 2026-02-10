@@ -46,6 +46,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
 
     private MolecularComponentPattern mcpSelected = null;
     private MolecularInternalLinkSpec milsSelected = null;
+    private Object lastSelectedObject = null;       // may be either MolecularComponentPattern or MolecularInternalLinkSpec
 
     private JButton zoomLargerButton = null;
     private JButton zoomSmallerButton = null;
@@ -80,16 +81,32 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                 Object o = evt.getNewValue();
                 if(o instanceof MolecularComponentPattern mcp) {
                     mcpSelected = mcp;
+                    lastSelectedObject = mcpSelected;
                 } else {
                     mcpSelected = null;
+                    if(milsSelected != null) {
+                        // if we had a link selected before, it becomes the last (and only) selected
+                        lastSelectedObject = milsSelected;
+                    } else {
+                        // nothing is selected anymore
+                        lastSelectedObject = null;
+                    }
                 }
                 updateShape();
             } else if(evt.getSource() instanceof SpeciesContextSpec && evt.getPropertyName().equals(SpeciesContextSpec.PROPERTY_NAME_LINK_SELECTED_IN_TABLE)) {
                 Object o = evt.getNewValue();
                 if(o instanceof MolecularInternalLinkSpec mils) {
                     milsSelected = mils;
+                    lastSelectedObject = milsSelected;
                 } else {
                     milsSelected = null;
+                    if(mcpSelected != null) {
+                        // if we had a site selected before, it becomes the last (and only) selected
+                        lastSelectedObject = mcpSelected;
+                    } else {
+                        // nothing is selected anymore
+                        lastSelectedObject = null;
+                    }
                 }
                 updateShape();
             }
@@ -121,7 +138,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                         return;
                     }
                     scsls = new SpeciesContextSpecLargeShape(speciesContextSpec, shapePanel, speciesContextSpec,
-                            mcpSelected, milsSelected, issueManager);
+                            mcpSelected, milsSelected, lastSelectedObject, issueManager);
                     scsls.paintSelf(g);
                 }
                 @Override
@@ -188,12 +205,14 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                     Object overObject = scsls.contains(overWhat);   // check if we clicked inside a site oval or link line
                     if(overObject instanceof MolecularInternalLinkSpec mils) {
                         milsSelected = mils;
+                        lastSelectedObject = milsSelected;
                         // redraw the whole shape to highlight the selected site oval
                         updateShape();
                         // we tell the table in the upper panel to update the selected row
                         speciesContextSpec.firePropertyChange(PROPERTY_NAME_LINK_SELECTED_IN_SHAPE, null, milsSelected);
                     } else if(overObject instanceof SiteAttributesSpec sas) {
                         mcpSelected = sas.getMolecularComponentPattern();
+                        lastSelectedObject = mcpSelected;
                         // redraw the whole shape to highlight the selected link line
                         updateShape();
                         // we tell the table in the upper panel to update the selected row
@@ -282,7 +301,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
             return;
         }
         scsls = new SpeciesContextSpecLargeShape(speciesContextSpec, shapePanel, speciesContextSpec,
-                mcpSelected, milsSelected, issueManager);
+                mcpSelected, milsSelected, lastSelectedObject, issueManager);
 
 //        shapePanel.setPreferredSize(scsls.getMaxSize());
 
