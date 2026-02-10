@@ -47,9 +47,21 @@ LABEL \
     maintainer="BioSimulators Team <info@biosimulators.org>"
 
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt -y update && apt install -y software-properties-common
-RUN apt install -y --no-install-recommends curl python3.10 python3-pip build-essential dnsutils \
-    apt-utils libfreetype6 fontconfig fonts-dejavu
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends \
+        software-properties-common \
+        curl \
+        python3.10 \
+        python3-pip \
+        build-essential \
+        dnsutils \
+        apt-utils \
+        libfreetype6 \
+        fontconfig \
+        fonts-dejavu \
+    ; \
+    rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /usr/local/app/vcell/lib && \
     mkdir -p /usr/local/app/vcell/simulation && \
