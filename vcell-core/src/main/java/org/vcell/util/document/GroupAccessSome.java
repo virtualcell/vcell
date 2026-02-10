@@ -28,7 +28,7 @@ public class GroupAccessSome extends GroupAccess {
 		private java.math.BigDecimal    hash			= null;
 		private User[] 					groupMembers 	= null;
 		private boolean[]				hiddenMembers	= null;
-		private final String type = "GroupAccessSome";
+		public final String type = "GroupAccessSome";
 
 /**
  * Insert the method's description here.
