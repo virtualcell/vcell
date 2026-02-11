@@ -9,8 +9,6 @@ Name | Type | Description | Notes
 **group_members** | [**List[User]**](User.md) |  | [optional] 
 **hidden_members** | **List[bool]** |  | [optional] 
 **description** | **str** |  | [optional] 
-**hidden_group_members** | [**List[User]**](User.md) |  | [optional] 
-**normal_group_members** | [**List[User]**](User.md) |  | [optional] 
 
 ## Example
 

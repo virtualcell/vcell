@@ -38,8 +38,6 @@ class GroupAccessSome(GroupAccess):
     group_members: Optional[List[User]] = Field(default=None, alias="groupMembers")
     hidden_members: Optional[List[StrictBool]] = Field(default=None, alias="hiddenMembers")
     description: Optional[StrictStr] = None
-    hidden_group_members: Optional[List[User]] = Field(default=None, alias="hiddenGroupMembers")
-    normal_group_members: Optional[List[User]] = Field(default=None, alias="normalGroupMembers")
     __properties: ClassVar[List[str]] = ["groupid", "description"]
 
     model_config = {

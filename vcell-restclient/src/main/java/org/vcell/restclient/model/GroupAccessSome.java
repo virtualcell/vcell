@@ -45,9 +45,7 @@ import org.vcell.restclient.JSON;
   GroupAccessSome.JSON_PROPERTY_HASH,
   GroupAccessSome.JSON_PROPERTY_GROUP_MEMBERS,
   GroupAccessSome.JSON_PROPERTY_HIDDEN_MEMBERS,
-  GroupAccessSome.JSON_PROPERTY_DESCRIPTION,
-  GroupAccessSome.JSON_PROPERTY_HIDDEN_GROUP_MEMBERS,
-  GroupAccessSome.JSON_PROPERTY_NORMAL_GROUP_MEMBERS
+  GroupAccessSome.JSON_PROPERTY_DESCRIPTION
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 @JsonIgnoreProperties(
@@ -71,12 +69,6 @@ public class GroupAccessSome extends GroupAccess {
 
   public static final String JSON_PROPERTY_DESCRIPTION = "description";
   private String description;
-
-  public static final String JSON_PROPERTY_HIDDEN_GROUP_MEMBERS = "hiddenGroupMembers";
-  private List<User> hiddenGroupMembers;
-
-  public static final String JSON_PROPERTY_NORMAL_GROUP_MEMBERS = "normalGroupMembers";
-  private List<User> normalGroupMembers;
 
   public GroupAccessSome() { 
   }
@@ -222,72 +214,6 @@ public class GroupAccessSome extends GroupAccess {
   }
 
 
-  public GroupAccessSome hiddenGroupMembers(List<User> hiddenGroupMembers) {
-    this.hiddenGroupMembers = hiddenGroupMembers;
-    return this;
-  }
-
-  public GroupAccessSome addHiddenGroupMembersItem(User hiddenGroupMembersItem) {
-    if (this.hiddenGroupMembers == null) {
-      this.hiddenGroupMembers = new ArrayList<>();
-    }
-    this.hiddenGroupMembers.add(hiddenGroupMembersItem);
-    return this;
-  }
-
-   /**
-   * Get hiddenGroupMembers
-   * @return hiddenGroupMembers
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_HIDDEN_GROUP_MEMBERS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public List<User> getHiddenGroupMembers() {
-    return hiddenGroupMembers;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_HIDDEN_GROUP_MEMBERS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setHiddenGroupMembers(List<User> hiddenGroupMembers) {
-    this.hiddenGroupMembers = hiddenGroupMembers;
-  }
-
-
-  public GroupAccessSome normalGroupMembers(List<User> normalGroupMembers) {
-    this.normalGroupMembers = normalGroupMembers;
-    return this;
-  }
-
-  public GroupAccessSome addNormalGroupMembersItem(User normalGroupMembersItem) {
-    if (this.normalGroupMembers == null) {
-      this.normalGroupMembers = new ArrayList<>();
-    }
-    this.normalGroupMembers.add(normalGroupMembersItem);
-    return this;
-  }
-
-   /**
-   * Get normalGroupMembers
-   * @return normalGroupMembers
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_NORMAL_GROUP_MEMBERS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public List<User> getNormalGroupMembers() {
-    return normalGroupMembers;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_NORMAL_GROUP_MEMBERS)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setNormalGroupMembers(List<User> normalGroupMembers) {
-    this.normalGroupMembers = normalGroupMembers;
-  }
-
-
   @Override
   public GroupAccessSome groupid(BigDecimal groupid) {
     this.setGroupid(groupid);
@@ -311,14 +237,12 @@ public class GroupAccessSome extends GroupAccess {
         Objects.equals(this.groupMembers, groupAccessSome.groupMembers) &&
         Objects.equals(this.hiddenMembers, groupAccessSome.hiddenMembers) &&
         Objects.equals(this.description, groupAccessSome.description) &&
-        Objects.equals(this.hiddenGroupMembers, groupAccessSome.hiddenGroupMembers) &&
-        Objects.equals(this.normalGroupMembers, groupAccessSome.normalGroupMembers) &&
         super.equals(o);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(type, hash, groupMembers, hiddenMembers, description, hiddenGroupMembers, normalGroupMembers, super.hashCode());
+    return Objects.hash(type, hash, groupMembers, hiddenMembers, description, super.hashCode());
   }
 
   @Override
@@ -331,8 +255,6 @@ public class GroupAccessSome extends GroupAccess {
     sb.append("    groupMembers: ").append(toIndentedString(groupMembers)).append("\n");
     sb.append("    hiddenMembers: ").append(toIndentedString(hiddenMembers)).append("\n");
     sb.append("    description: ").append(toIndentedString(description)).append("\n");
-    sb.append("    hiddenGroupMembers: ").append(toIndentedString(hiddenGroupMembers)).append("\n");
-    sb.append("    normalGroupMembers: ").append(toIndentedString(normalGroupMembers)).append("\n");
     sb.append("}");
     return sb.toString();
   }

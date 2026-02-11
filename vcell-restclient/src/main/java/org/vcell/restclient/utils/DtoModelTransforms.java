@@ -196,7 +196,6 @@ public class DtoModelTransforms {
         if (dto instanceof org.vcell.restclient.model.GroupAccessAll){
             return new GroupAccessAll();
         } else if (dto instanceof org.vcell.restclient.model.GroupAccessSome gs){
-
             boolean[] bValues = new boolean[gs.getHiddenMembers().size()];
             for (int i = 0; i < bValues.length; i++){
                 bValues[i] = gs.getHiddenMembers().get(i);

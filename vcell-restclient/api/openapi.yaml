@@ -3443,14 +3443,6 @@ components:
           type: array
         description:
           type: string
-        hiddenGroupMembers:
-          items:
-            $ref: '#/components/schemas/User'
-          type: array
-        normalGroupMembers:
-          items:
-            $ref: '#/components/schemas/User'
-          type: array
       required:
       - type
       type: object

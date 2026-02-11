@@ -2761,14 +2761,6 @@ components:
             type: boolean
         description:
           type: string
-        hiddenGroupMembers:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
-        normalGroupMembers:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
     HelloWorldMessage:
       type: object
       properties:

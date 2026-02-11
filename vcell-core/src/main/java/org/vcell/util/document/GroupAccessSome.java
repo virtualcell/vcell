@@ -10,6 +10,8 @@
 
 package org.vcell.util.document;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.microprofile.openapi.annotations.enums.SchemaType;
 import org.eclipse.microprofile.openapi.annotations.media.Schema;
 import org.eclipse.microprofile.openapi.annotations.media.SchemaProperty;
@@ -26,7 +28,9 @@ import java.util.Vector;
 @Schema(allOf = {GroupAccess.class}, requiredProperties = {"type"}, properties = {@SchemaProperty(name = "type", defaultValue = "GroupAccessSome", type = SchemaType.STRING)})
 public class GroupAccessSome extends GroupAccess {
 		private java.math.BigDecimal    hash			= null;
+		@JsonProperty
 		private User[] 					groupMembers 	= null;
+		@JsonProperty
 		private boolean[]				hiddenMembers	= null;
 		public final String type = "GroupAccessSome";
 
@@ -134,6 +138,7 @@ public java.math.BigDecimal getHash() {
  * Creation date: (11/15/2001 4:04:55 PM)
  * @return cbit.vcell.server.User[]
  */
+@JsonIgnore
 public User[] getHiddenGroupMembers() {
 	if(hiddenMembers == null){
 		return null;
@@ -155,6 +160,7 @@ public User[] getHiddenGroupMembers() {
  * Creation date: (11/15/2001 4:04:55 PM)
  * @return cbit.vcell.server.User[]
  */
+@JsonIgnore
 public User[] getNormalGroupMembers() {
 	if(hiddenMembers == null){
 		return groupMembers;
