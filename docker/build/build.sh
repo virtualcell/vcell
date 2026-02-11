@@ -262,9 +262,12 @@ case $target in
 		;;
 	rest)
 		build_rest
-		build_exporter
 		exit $?
 		;;
+  exporter)
+    build_exporter
+    exit $?
+    ;;
 	webapp)
 		build_webapp
 		exit $?
