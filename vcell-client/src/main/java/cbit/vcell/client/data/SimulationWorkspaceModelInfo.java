@@ -379,17 +379,17 @@ public class InternalDataSymbolMetadataResolver implements DataSymbolMetadataRes
 				String columnName = cd.getName();
 				ModelCategoryType filterCategory = null;	// parse name to find the filter category
 				SsldUtils.LangevinResult lr = SsldUtils.LangevinResult.fromString(columnName);
-				if(!(lr.qualifier.equals("FREE") || lr.qualifier.equals("BOUND") || lr.qualifier.equals("TOTAL"))) {
-					System.out.println("Ignoring LangevinResult token: " + columnName);
+				if(lr.qualifier.equals(SsldUtils.Qualifier.NONE)) {
+					System.out.println("Ignoring LangevinResult token: " + columnName + ", qualifier missing");
 					continue;
 				}
 				if(!lr.molecule.isEmpty() && lr.site.isEmpty() && lr.state.isEmpty()) {
 					filterCategory = BioModelCategoryType.Molecules;
-				} else if(lr.qualifier.equals("FREE") && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
+				} else if(lr.qualifier.equals(SsldUtils.Qualifier.FREE) && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
 					filterCategory = BioModelCategoryType.FreeSites;
-				} else if(lr.qualifier.equals("BOUND") && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
+				} else if(lr.qualifier.equals(SsldUtils.Qualifier.BOUND) && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
 					filterCategory = BioModelCategoryType.BoundSites;
-				} else if(lr.qualifier.equals("TOTAL") && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
+				} else if(lr.qualifier.equals(SsldUtils.Qualifier.TOTAL) && !lr.molecule.isEmpty() && !lr.site.isEmpty() && !lr.state.isEmpty()) {
 					filterCategory = BioModelCategoryType.TotalSites;
 				}
 				VCUnitDefinition unit = null;
