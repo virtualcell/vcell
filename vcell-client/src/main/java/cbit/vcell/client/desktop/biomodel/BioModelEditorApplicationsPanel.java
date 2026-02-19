@@ -27,6 +27,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
+import org.vcell.model.ssld.SsldUtils;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.DownArrowIcon;
 
@@ -355,8 +356,7 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				appsPopupMenu.add(appNewDeterministicApp);
 				appsPopupMenu.add(appNewStochApp);
 				appsPopupMenu.add(appNewRulebasedApp);
-				boolean enableSpringSaLaD = PropertyLoader.getBooleanProperty(PropertyLoader.enableSpringSaLaD,
-						PropertyLoader.enableSpringSaLaD_default_value);
+				boolean enableSpringSaLaD = SsldUtils.isSsldEnabled();
 				if (enableSpringSaLaD) {
 					appsPopupMenu.add(appNewSpringSaLaDApp);
 				}

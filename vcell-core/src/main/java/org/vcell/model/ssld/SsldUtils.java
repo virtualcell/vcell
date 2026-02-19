@@ -7,10 +7,14 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.*;
 import cbit.vcell.model.*;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.model.rbm.*;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.springsalad.Colors;
 import org.vcell.util.springsalad.NamedColor;
 
@@ -35,6 +39,8 @@ public class SsldUtils {
             return NONE;
         }
     }
+
+    private static Logger lg = LogManager.getLogger(SsldUtils.class);
 
     // result entry from langevin output
     public static class LangevinResult {
@@ -396,6 +402,25 @@ public class SsldUtils {
         MolecularType getSink(Structure structure) {
             return structureToSinkMap.get(structure);
         }
+    }
+
+    public static boolean isSsldEnabled() {
+        VCellSoftwareVersion.VCellSite vCellSite = VCellSoftwareVersion.VCellSite.unknown;
+        boolean enableSpringSaLaD;
+        try {
+            VCellSoftwareVersion vCellSoftwareVersion = VCellSoftwareVersion.fromSystemProperty();
+            vCellSite = vCellSoftwareVersion.getSite();
+        } catch (Exception e) {
+            lg.warn("Could not recover VCellSoftwareVersion.VCellSite from system property", e);
+        }
+        if(vCellSite == VCellSoftwareVersion.VCellSite.alpha) {
+            // if running on Alpha, we enable the menu item unconditionally
+            enableSpringSaLaD = true;
+        } else {
+            enableSpringSaLaD = PropertyLoader.getBooleanProperty(PropertyLoader.enableSpringSaLaD,
+                    PropertyLoader.enableSpringSaLaD_default_value);
+        }
+        return enableSpringSaLaD;
     }
 
     public BioModel fromSsld(SsldModel ssldModel) throws Exception {
