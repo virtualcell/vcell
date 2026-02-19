@@ -23,6 +23,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import cbit.vcell.mapping.*;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
@@ -33,12 +34,6 @@ import org.vcell.util.Pair;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.mapping.GeometryContext;
-import cbit.vcell.mapping.ReactionContext;
-import cbit.vcell.mapping.ReactionRuleSpec;
-import cbit.vcell.mapping.ReactionSpec;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.RbmKineticLaw;
 import cbit.vcell.model.ReactionRule;
@@ -445,12 +440,22 @@ public class SpringSaLaDExporter {
 				List<MolecularComponent> mcList = mt.getComponentList();
 				for(MolecularComponent mc : mcList) {
 					List<ComponentStateDefinition> csdList = mc.getComponentStateDefinitions();
-					for(ComponentStateDefinition csd : csdList) {
+					if(csdList == null || csdList.isEmpty()) {
+						ComponentStateDefinition fakeCsd = new ComponentStateDefinition(SiteAttributesSpec.StateZero);
 						sb.append("'").append(mt.getName()).append("' : ")
-							.append("'").append(mc.getName()).append("' : ")
-							.append("'").append(csd.getName()).append("' : ")
-							.append("Measure Total Free Bound");
+								.append("'").append(mc.getName()).append("' : ")
+								.append("'").append(fakeCsd.getName()).append("' : ")
+								.append("Measure Total Free Bound");
 						sb.append("\n");
+
+					} else {
+						for (ComponentStateDefinition csd : csdList) {
+							sb.append("'").append(mt.getName()).append("' : ")
+									.append("'").append(mc.getName()).append("' : ")
+									.append("'").append(csd.getName()).append("' : ")
+									.append("Measure Total Free Bound");
+							sb.append("\n");
+						}
 					}
 				}
 			}

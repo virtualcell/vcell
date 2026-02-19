@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.vcell.model.rbm.ComponentStateDefinition;
+import org.vcell.solver.langevin.LangevinLngvWriter;
 import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.Compare;
 import org.vcell.util.Coordinate;
@@ -51,20 +52,16 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 	public String getVCML() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("    "+VCML.ParticleMolecularComponent + " " + getName()+" { ");
-		if (getComponentStateDefinitions().size()==0) {
-			buffer.append(" }");
-		} else {
-			buffer.append("\n            "+VCML.ParticleComponentRadius + " " + fieldRadius + "");
-			buffer.append("\n            "+VCML.ParticleComponentDiffusionRate + " " + fieldDiffusionRate + "");
-			buffer.append("\n            "+VCML.ParticleComponentLocation + " " + fieldLocation + "");
-			buffer.append("\n            "+VCML.ParticleComponentCoordinate + " " + fieldCoordinate + "");
-			buffer.append("\n            "+VCML.ParticleComponentColor + " " + fieldColor + "");
-			for (ParticleComponentStateDefinition state : getComponentStateDefinitions()) {
-				String name = state.getName();
-				buffer.append("\n            "+VCML.ParticleComponentAllowableState + " " + name + "");
-			}
-			buffer.append("\n        "+"}");
-		}		
+		buffer.append("\n            "+VCML.ParticleComponentRadius + " " + fieldRadius + "");
+		buffer.append("\n            "+VCML.ParticleComponentDiffusionRate + " " + fieldDiffusionRate + "");
+		buffer.append("\n            "+VCML.ParticleComponentLocation + " " + fieldLocation + "");
+		buffer.append("\n            "+VCML.ParticleComponentCoordinate + " " + fieldCoordinate + "");
+		buffer.append("\n            "+VCML.ParticleComponentColor + " " + fieldColor + "");
+		for (ParticleComponentStateDefinition state : getComponentStateDefinitions()) {
+			String name = state.getName();
+			buffer.append("\n            "+VCML.ParticleComponentAllowableState + " " + name + "");
+		}
+		buffer.append("\n        "+"}");
 		return buffer.toString();
 	}
 	
@@ -137,8 +134,12 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 		sb.append("TYPE: Name \"" + getName() + "\"");
 		sb.append(" Radius " + IOHelp.DF[5].format(getRadius()) + " D " + IOHelp.DF[3].format(getDiffusionRate()) + " Color " + getColor().getName());
 		sb.append(" STATES ");
-		for (ParticleComponentStateDefinition state : getComponentStateDefinitions()) {
-			sb.append("\"" + state.getName() + "\"" + " ");
+		if(getComponentStateDefinitions() == null || getComponentStateDefinitions().size() == 0) {
+			sb.append("\"" + LangevinLngvWriter.StateZero + "\"" + " ");
+		} else {
+			for (ParticleComponentStateDefinition state : getComponentStateDefinitions()) {
+				sb.append("\"" + state.getName() + "\"" + " ");
+			}
 		}
 		sb.append("\n");
 	}

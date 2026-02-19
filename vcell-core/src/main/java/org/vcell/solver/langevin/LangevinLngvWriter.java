@@ -60,6 +60,7 @@ public class LangevinLngvWriter {
 	public final static String DEFAULT_FOLDER = "Default Folder";
 	private String systemName;		// The system name (same as the file name, usually)
 	public final static String DEFAULT_SYSTEM_NAME = "New Model";
+	public static String StateZero = "State0";	// default name to be used when no state is specified for a site
 
 	// various collections here for the intermediate stuff as we build the lngv file from math
 	private static Map<ParticleProperties, SubDomain> particlePropertiesMap = new LinkedHashMap<> ();			// initial conditions for seed species
@@ -927,8 +928,16 @@ public class LangevinLngvWriter {
 				// a few lines that follow are needed to extract the initial state from the ParticleMolecularComponentPattern
 				ParticleMolecularComponentPattern pmcp = particleMolecularTypePattern.getMolecularComponentPattern(pmc);
 				ParticleComponentStatePattern pcsp = pmcp.getComponentStatePattern();
-				ParticleComponentStateDefinition pcsd = pcsp.getParticleComponentStateDefinition();
-				String initialState = pcsd.getName();
+				ParticleComponentStateDefinition pcsd = null;
+				if(pcsp != null) {
+					pcsd = pcsp.getParticleComponentStateDefinition();
+				}
+				String initialState;
+				if(pcsp == null || pcsd == null) {
+					initialState = StateZero;
+				} else {
+					initialState = pcsd.getName();
+				}
 				LangevinParticleMolecularComponent lpmc = (LangevinParticleMolecularComponent)pmc;
 				sb.append("     ");
 				lpmc.writeSite(sb, lpmt.getComponentList().indexOf(lpmc), initialState);
@@ -1091,12 +1100,20 @@ public class LangevinLngvWriter {
 			List <ParticleMolecularComponent> pmcList = pmt.getComponentList();
 			for(ParticleMolecularComponent pmc : pmcList)  {
 				List <ParticleComponentStateDefinition> pcsdList = pmc.getComponentStateDefinitions();
-				for(ParticleComponentStateDefinition pcsd : pcsdList) {
+				if(pcsdList == null || pcsdList.isEmpty()) {
 					sb.append("'").append(pmt.getName()).append("' : ")
 							.append("'").append(pmc.getName()).append("' : ")
-							.append("'").append(pcsd.getName()).append("' : ")
+							.append("'").append(LangevinLngvWriter.StateZero).append("' : ")
 							.append("Measure Total Free Bound");
 					sb.append("\n");
+				} else {
+					for(ParticleComponentStateDefinition pcsd : pcsdList) {
+						sb.append("'").append(pmt.getName()).append("' : ")
+								.append("'").append(pmc.getName()).append("' : ")
+								.append("'").append(pcsd.getName()).append("' : ")
+								.append("Measure Total Free Bound");
+						sb.append("\n");
+					}
 				}
 			}
 		}

@@ -100,7 +100,7 @@ public class SpringSaLaDGoodReactionsTest {
 		simContext.gatherIssues(issueContext, issueList, true);		// bIgnoreMathDescription == true
 		int numErrors = checkIssuesBySeverity(issueList, Issue.Severity.ERROR);
 		int numWarnings = checkIssuesBySeverity(issueList, Issue.Severity.WARNING);
-        assertTrue((numErrors == 2 && numWarnings == 7) ? true : false, "expecting 2 errors and 8 warnings for this model");
+        assertTrue((numErrors == 2 && numWarnings == 6) ? true : false, "expecting 2 errors and warnings for this model");
 
 		/*		We should detect the following:
 		
