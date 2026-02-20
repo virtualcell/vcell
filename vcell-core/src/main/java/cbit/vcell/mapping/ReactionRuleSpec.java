@@ -220,6 +220,8 @@ public static final String StateTransitionCounter = "stateTransitionCounter";
 public static final String BondTransitionCounter = "bondTransitionCounter";
 public static final String CspReactantBond = "cspReactantBond";
 
+public static final String NoStateSpecified = "NoStateSpecified";		// used when we have a binding transition but no state specified for the transitioning site
+
 // --------------------------------------------------------------------------------------------------------
 public void analizeReaction(Map<String, Object> analysisResults) {
 	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
@@ -347,7 +349,7 @@ public void analizeReaction(Map<String, Object> analysisResults) {
 			
 			String stateReactant;
 			if(cspReactant == null) {
-				stateReactant = "ERROR";
+				stateReactant = NoStateSpecified;
 			} else if(cspReactant.isAny()) {
 				stateReactant = ANY_STATE_STRING;
 			} else {
@@ -747,7 +749,9 @@ private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, 
 		for(MolecularComponentPattern mcpCandidate : mtpConditionReactant.getComponentPatternList()) {
 			if(BondType.Specified == mcpCandidate.getBondType()) {
 				mcpConditionReactant = mcpCandidate;	// found the bond condition site, it's the one with bond type "Specified"
-				if(!mcpConditionReactant.getComponentStatePattern().isAny()) {
+				if(mcpConditionReactant.getComponentStatePattern() == null) {
+					stateConditionReactant = SiteAttributesSpec.StateZero;
+				} else if(!mcpConditionReactant.getComponentStatePattern().isAny()) {
 					stateConditionReactant = mcpConditionReactant.getComponentStatePattern().getComponentStateDefinition().getName();
 				}
 				break;
@@ -792,7 +796,7 @@ private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, 
 		if(mcpTransitionReactant == mcp) {
 			continue;		// found the allosteric site index
 		}
-		if(mcp.getComponentStatePattern().isAny()) {
+		if(mcp.getComponentStatePattern() == null || mcp.getComponentStatePattern().isAny()) {
 			continue;	// the allosteric state must be explicit
 		}
 		mcpAllostericReactant = mcp;
@@ -828,7 +832,13 @@ private void writeBindingData(StringBuilder sb, Subtype subtype, Map<String, Obj
 	MolecularComponentPattern mcpReactantOne = (MolecularComponentPattern)analysisResults.get(McpReactantBond + "1");
 	MolecularComponentPattern mcpReactantTwo = (MolecularComponentPattern)analysisResults.get(McpReactantBond + "2");
 	String stateReactantOne = (String)analysisResults.get(CspReactantBond + "1");
+	if(stateReactantOne.equals(NoStateSpecified)) {
+		stateReactantOne = SiteAttributesSpec.StateZero;
+	}
 	String stateReactantTwo =  (String)analysisResults.get(CspReactantBond + "2");
+	if(stateReactantTwo.equals(NoStateSpecified)) {
+		stateReactantTwo = SiteAttributesSpec.StateZero;
+	}
 	if(mtpReactantOne == null || mtpReactantTwo == null || mcpReactantOne == null || mcpReactantTwo == null) {
 		throw new RuntimeException("writeBindingData() error: something is wrong");
 	}
