@@ -220,6 +220,8 @@ public static final String StateTransitionCounter = "stateTransitionCounter";
 public static final String BondTransitionCounter = "bondTransitionCounter";
 public static final String CspReactantBond = "cspReactantBond";
 
+public static final String NoStateSpecified = "NoStateSpecified";		// used when we have a binding transition but no state specified for the transitioning site
+
 // --------------------------------------------------------------------------------------------------------
 public void analizeReaction(Map<String, Object> analysisResults) {
 	List<ReactantPattern> rpList = reactionRule.getReactantPatterns();
@@ -347,7 +349,7 @@ public void analizeReaction(Map<String, Object> analysisResults) {
 			
 			String stateReactant;
 			if(cspReactant == null) {
-				stateReactant = "ERROR";
+				stateReactant = NoStateSpecified;
 			} else if(cspReactant.isAny()) {
 				stateReactant = ANY_STATE_STRING;
 			} else {
@@ -424,14 +426,10 @@ public TransitionCondition getTransitionCondition(Map<String, Object> analysisRe
 		for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
 			ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
 			BondType bondTypeReactant = mcpReactant.getBondType();
+
 			if(cspReactant == null) {
-				return null;	// all sites must have at least one state
-			}
-//			if(!cspReactant.isAny() && BondType.Possible != bondTypeReactant) {
-//				// this is the transition site, bond must be "Possible"
-//				return null;
-//			}
-			if(!cspReactant.isAny()) {
+				numAnyStates++;		// no state for this site, so counts as any (no transition)
+			} else if(!cspReactant.isAny()) {
 				;
 			} else {
 				numAnyStates++;
@@ -491,9 +489,6 @@ public TransitionCondition getTransitionCondition(Map<String, Object> analysisRe
 			}
 			for(MolecularComponentPattern mcpReactant : mtpReactant.getComponentPatternList()) {
 				ComponentStatePattern cspReactant = mcpReactant.getComponentStatePattern();
-				if(cspReactant == null) {
-					return null;	// all sites must have at least one state
-				}
 				BondType bondTypeReactant = mcpReactant.getBondType();
 				if(BondType.Specified == bondTypeReactant) {	// we must have exactly one Specified bond, all the others must be Possible
 					numSpecifiedBonds[i]++;	// the condition binding site has bond type "Exists"
@@ -502,7 +497,7 @@ public TransitionCondition getTransitionCondition(Map<String, Object> analysisRe
 					return null;		// all other bonds in the reactant must be of type "Possible"
 				}
 
-				if(!cspReactant.isAny()) {	// we also need to reack explicit states
+				if(cspReactant != null && !cspReactant.isAny()) {	// we also need to reack explicit states
 					numExplicitStates[i]++;
 					totalExplicitStates++;
 					mcpExplicitStates[i] = mcpReactant;
@@ -603,7 +598,7 @@ private boolean isAllostericReaction(Map<String, Object> analysisResults) {
 	}
 	for(MolecularComponentPattern mcp : mcpReactantList) {
 		if(mcp.getComponentStatePattern() == null) {
-			return false;		// all sites must have at least one state
+			continue;		// if no state defined for this site, counts as any state, so we skip it
 		}
 		if(!mcp.getComponentStatePattern().isAny()) {
 			explicitReactantStatesSet.add(mcp.getComponentStatePattern().getComponentStateDefinition());
@@ -613,7 +608,7 @@ private boolean isAllostericReaction(Map<String, Object> analysisResults) {
 	int matchedStates = 0;
 	int unmatchedStates = 0;
 	for(MolecularComponentPattern mcp : mcpProductList) {
-		if(!mcp.getComponentStatePattern().isAny()) {
+		if(mcp.getComponentStatePattern() != null && !mcp.getComponentStatePattern().isAny()) {
 			ComponentStateDefinition csdProductExplicit = mcp.getComponentStatePattern().getComponentStateDefinition();
 			if(explicitReactantStatesSet.contains(csdProductExplicit)) {
 				matchedStates++;
@@ -669,8 +664,8 @@ private boolean isBindingReaction(Map<String, Object> analysisResults) {
 			for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
 				BondType bt = mcp.getBondType();
 				ComponentStatePattern csp = mcp.getComponentStatePattern();
-				if(csp == null || (!csp.isAny() && BondType.Possible == bt)) {
-					// all the sites not binding must be in Any state
+				if((csp != null && !csp.isAny()) && BondType.Possible == bt) {
+					// all the sites not binding must be in Any state or must have no state defined
 					return false;
 				}
 			}
@@ -754,7 +749,9 @@ private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, 
 		for(MolecularComponentPattern mcpCandidate : mtpConditionReactant.getComponentPatternList()) {
 			if(BondType.Specified == mcpCandidate.getBondType()) {
 				mcpConditionReactant = mcpCandidate;	// found the bond condition site, it's the one with bond type "Specified"
-				if(!mcpConditionReactant.getComponentStatePattern().isAny()) {
+				if(mcpConditionReactant.getComponentStatePattern() == null) {
+					stateConditionReactant = SiteAttributesSpec.StateZero;
+				} else if(!mcpConditionReactant.getComponentStatePattern().isAny()) {
 					stateConditionReactant = mcpConditionReactant.getComponentStatePattern().getComponentStateDefinition().getName();
 				}
 				break;
@@ -799,7 +796,7 @@ private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, 
 		if(mcpTransitionReactant == mcp) {
 			continue;		// found the allosteric site index
 		}
-		if(mcp.getComponentStatePattern().isAny()) {
+		if(mcp.getComponentStatePattern() == null || mcp.getComponentStatePattern().isAny()) {
 			continue;	// the allosteric state must be explicit
 		}
 		mcpAllostericReactant = mcp;
@@ -835,7 +832,13 @@ private void writeBindingData(StringBuilder sb, Subtype subtype, Map<String, Obj
 	MolecularComponentPattern mcpReactantOne = (MolecularComponentPattern)analysisResults.get(McpReactantBond + "1");
 	MolecularComponentPattern mcpReactantTwo = (MolecularComponentPattern)analysisResults.get(McpReactantBond + "2");
 	String stateReactantOne = (String)analysisResults.get(CspReactantBond + "1");
+	if(stateReactantOne.equals(NoStateSpecified)) {
+		stateReactantOne = SiteAttributesSpec.StateZero;
+	}
 	String stateReactantTwo =  (String)analysisResults.get(CspReactantBond + "2");
+	if(stateReactantTwo.equals(NoStateSpecified)) {
+		stateReactantTwo = SiteAttributesSpec.StateZero;
+	}
 	if(mtpReactantOne == null || mtpReactantTwo == null || mcpReactantOne == null || mcpReactantTwo == null) {
 		throw new RuntimeException("writeBindingData() error: something is wrong");
 	}
@@ -1215,6 +1218,13 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 					siteAttributesMapTwo = scs.getSiteAttributesMap();
 				}
 			}
+			if(siteAttributesMapOne == null)  {
+				// this may happen if the reaction uses a Molecule for which no Species was yet defined
+				String msg = "Could not match reactant '" + mtOursOne.getName() + "' to any Species in the model.";
+				String tip = "Verify that a Species has been defined for the molecule type '" + mtOursOne.getName() + "'.";
+				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+				return;
+			}
 			SiteAttributesSpec sasOne = null;
 			SiteAttributesSpec sasTwo = null;
 			for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMapOne.entrySet()) {
@@ -1234,8 +1244,14 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 			// happened when the reaction was between 2 molecules of the same type  A + A -> A.A
 			// the temp fixwas:  we check for non-null siteAttributesMapTwo
 			// as from feb 24, 2025 this was fixed and siteAttributesMapTwo should never be null
-			if(siteAttributesMapTwo == null) {
-				throw new RuntimeException("Unexpected null value for siteAttributesMapTwo");
+			// feb 18 2026 - it actually may still be null if no Species is defined for the molecule type,
+			// // so we keep the check and fire an issue if it's nevertheless null
+			if(siteAttributesMapTwo == null)  {
+				// this may happen if the reaction uses a Molecule for which no Species was yet defined
+				String msg = "Could not match reactant '" + mtOursTwo.getName() + "' to any Species in the model.";
+				String tip = "Verify that a Species has been defined for the molecule type '" + mtOursTwo.getName() + "'.";
+				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+				return;
 			}
 			if(sasOne != null && sasTwo != null) {
 				for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMapTwo.entrySet()) {

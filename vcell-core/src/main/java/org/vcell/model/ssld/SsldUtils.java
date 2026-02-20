@@ -7,10 +7,14 @@ import cbit.vcell.geometry.GeometrySpec;
 import cbit.vcell.mapping.*;
 import cbit.vcell.model.*;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.model.rbm.*;
 import org.vcell.util.Coordinate;
 import org.vcell.util.Extent;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.springsalad.Colors;
 import org.vcell.util.springsalad.NamedColor;
 
@@ -24,43 +28,76 @@ import static org.vcell.solver.langevin.LangevinLngvWriter.*;
 
 public class SsldUtils {
 
+    public enum Qualifier {
+        FREE, BOUND, TOTAL, NONE;
+        public static Qualifier fromPrefix(String s) {
+            for (Qualifier q : values()) {
+                if (q != NONE && q.name().equals(s)) {
+                    return q;
+                }
+            }
+            return NONE;
+        }
+    }
+
+    private static Logger lg = LogManager.getLogger(SsldUtils.class);
+
     // result entry from langevin output
     public static class LangevinResult {
-        public final String qualifier;
+        public final Qualifier qualifier;
         public final String molecule;
         public final String site;
         public final String state;
 
         public static LangevinResult fromString(String str) {
-            if(str == null || str.length() == 0) {
+            if (str == null || str.isEmpty()) {
                 throw new RuntimeException("Langevin generated molecules name must contain some text");
             }
-            String qualifier = "";
-            String molecule = "";
+
+            // Step 1: split only on DOUBLE underscore
+            String[] parts = str.split("__");
+
+            String first = parts[0];
+
+            // Step 2: find first underscore
+            int idx = first.indexOf('_');
+
+            Qualifier qualifier = Qualifier.NONE;
+            String molecule;
+
+            if (idx > 0) {
+                String prefix = first.substring(0, idx);
+                qualifier = Qualifier.fromPrefix(prefix);
+
+                if (qualifier != Qualifier.NONE) {
+                    // Valid qualifier found
+                    molecule = first.substring(idx + 1);
+                } else {
+                    // Not a valid qualifier → whole thing is molecule
+                    molecule = first;
+                }
+            } else {
+                // No underscore at all → no qualifier
+                molecule = first;
+            }
+
             String site = "";
             String state = "";
 
-            String[] tokens = str.split("_{1,2}");
-            if(tokens.length <1 || tokens.length > 4) {
-                throw new RuntimeException("Langevin generated molecules name must have between one and 4 tokens");
+            if (parts.length >= 2) {
+                site = parts[1];
             }
-            for (int i=0; i<tokens.length; i++) {
-                String token = tokens[i];
-                if(i == 0) {
-                    qualifier = token;
-                } else if(i == 1) {
-                    molecule = token;
-                } else if(i == 2) {
-                    site = token;
-                } else if(i == 3) {
-                    state = token;
-                }
+            if (parts.length >= 3) {
+                state = parts[2];
             }
-           LangevinResult lr = new LangevinResult(qualifier, molecule, site, state);
-            return lr;
+            if (parts.length > 3) {
+                throw new RuntimeException("Too many '__' sections in: " + str);
+            }
+
+            return new LangevinResult(qualifier, molecule, site, state);
         }
 
-        public LangevinResult(String qualifier, String molecule, String site, String state) {
+        public LangevinResult(Qualifier qualifier, String molecule, String site, String state) {
             this.qualifier = qualifier;
             this.molecule = molecule;
             this.site = site;
@@ -365,6 +402,25 @@ public class SsldUtils {
         MolecularType getSink(Structure structure) {
             return structureToSinkMap.get(structure);
         }
+    }
+
+    public static boolean isSsldEnabled() {
+        VCellSoftwareVersion.VCellSite vCellSite = VCellSoftwareVersion.VCellSite.unknown;
+        boolean enableSpringSaLaD;
+        try {
+            VCellSoftwareVersion vCellSoftwareVersion = VCellSoftwareVersion.fromSystemProperty();
+            vCellSite = vCellSoftwareVersion.getSite();
+        } catch (Exception e) {
+            lg.warn("Could not recover VCellSoftwareVersion.VCellSite from system property", e);
+        }
+        if(vCellSite == VCellSoftwareVersion.VCellSite.alpha) {
+            // if running on Alpha, we enable the menu item unconditionally
+            enableSpringSaLaD = true;
+        } else {
+            enableSpringSaLaD = PropertyLoader.getBooleanProperty(PropertyLoader.enableSpringSaLaD,
+                    PropertyLoader.enableSpringSaLaD_default_value);
+        }
+        return enableSpringSaLaD;
     }
 
     public BioModel fromSsld(SsldModel ssldModel) throws Exception {

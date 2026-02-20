@@ -46,6 +46,8 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 	private Structure fieldLocation = null;		// feature or membrane
 	private Coordinate fieldCoordinate = new Coordinate(0,0,0);	// double x,y,z; has distanceTo()
 	private NamedColor fieldColor = Colors.RED;
+
+	public static final String StateZero = "State0";		// default state name if no states are defined in the model; used for I/O only, not stored in the model
 	// the ComponentStatePattern must not be Any; can be recovered from the MolecularComponentPattern
 	// the BondType must be None, can be recovered from the MolecularComponentPattern
 	
@@ -131,8 +133,12 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 		sb.append("TYPE: Name \"" + mc.getName() + "\"");
 		sb.append(" Radius " + IOHelp.DF[5].format(getRadius()) + " D " + IOHelp.DF[3].format(getDiffusionRate()) + " Color " + getColor().getName());
 		sb.append(" STATES ");
-		for (ComponentStateDefinition state : csdList) {
-			sb.append("\"" + state.getName() + "\"" + " ");
+		if(csdList == null || csdList.isEmpty()) {
+			sb.append("\"" + StateZero + "\"" + " ");
+		} else {
+			for (ComponentStateDefinition state : csdList) {
+				sb.append("\"" + state.getName() + "\"" + " ");
+			}
 		}
 		sb.append("\n");
 	}
@@ -141,14 +147,12 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 			throw new RuntimeException("writeSite(): MolecularComponentPattern is null");
 		}
 		ComponentStatePattern csp = getMolecularComponentPattern().getComponentStatePattern();
-		if(csp == null) {
-			sb.append("SITE " + (this.getIndex()-1) + " : " + getLocation().getName() + " : Initial State '" + "ERROR: at least one State is needed"  + "'");
-			sb.append("\n");
-			return;
+		ComponentStateDefinition csd = null;
+		if(csp != null) {
+			csd = csp.getComponentStateDefinition();
 		}
-		ComponentStateDefinition csd = csp.getComponentStateDefinition();
-		if(csd == null) {
-			throw new RuntimeException("writeSite(): csd is null");
+		if(csp == null || csd == null) {
+			csd = new ComponentStateDefinition(StateZero);
 		}
 		String initialState = csd.getName();
 		sb.append("SITE " + (this.getIndex()-1) + " : " + getLocation().getName() + " : Initial State '" + initialState + "'");

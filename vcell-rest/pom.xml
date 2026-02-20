@@ -111,6 +111,18 @@
       <groupId>com.nimbusds</groupId>
       <artifactId>oauth2-oidc-sdk</artifactId>
       <version>10.7</version>
+      <exclusions>
+        <exclusion>
+            <groupId>net.minidev</groupId>
+            <artifactId>json-smart</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!-- Source: https://mvnrepository.com/artifact/net.minidev/json-smart -->
+    <dependency>
+      <groupId>net.minidev</groupId>
+      <artifactId>json-smart</artifactId>
+      <version>${json-smart.version}</version>
     </dependency>
     <dependency>
       <groupId>io.rest-assured</groupId>

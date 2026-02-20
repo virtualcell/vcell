@@ -49,8 +49,10 @@ import javax.swing.tree.TreeSelectionModel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.client.logicalwindow.LWNamespace;
+import org.vcell.model.ssld.SsldUtils;
 import org.vcell.util.Issue;
 import org.vcell.util.Issue.Severity;
+import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.JTabbedPaneEnhanced;
@@ -721,8 +723,8 @@ private void construcutPopupMenu() {
 			addNewAppMenu.add(addNewAppDeterministicMenuItem);
 			addNewAppMenu.add(addNewAppStochasticMenuItem);
 			addNewAppMenu.add(addNewAppRulebasedMenuItem);
-			boolean enableSpringSaLaD = PropertyLoader.getBooleanProperty(PropertyLoader.enableSpringSaLaD,
-					PropertyLoader.enableSpringSaLaD_default_value);
+
+			boolean enableSpringSaLaD = SsldUtils.isSsldEnabled();
 			if (enableSpringSaLaD) {
 				addNewAppMenu.add(addNewAppSpringSaLaDMenuItem);
 			}

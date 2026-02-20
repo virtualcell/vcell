@@ -1289,16 +1289,6 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                     issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
                     return;
                 }
-                for(MolecularComponentPattern mcp : mcpList){
-                    MolecularComponent mc = mcp.getMolecularComponent();
-                    List<ComponentStateDefinition> csd = mc.getComponentStateDefinitions();
-                    if(csd.size() < 1){
-                        String msg = "Each Site must have at least one State.";
-                        String tip = msg;
-                        issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
-                        return;
-                    }
-                }
                 for(MolecularInternalLinkSpec mils : getInternalLinkSet()){
                     if(mils.getMolecularComponentPatternOne() == mils.getMolecularComponentPatternTwo()){
                         String msg = "Both sites of the Link are identical. A site cannot be linked to itself.";
@@ -1341,11 +1331,6 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                             return;
                         }
                     }
-                }
-                if(mcpList.size() == 1){
-                    String msg = "Internal Links are possible only when the Molecule has at least 2 sites.";
-                    String tip = msg;
-                    issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
                 }
 
                 // if the species context is on membrane it must have a site named Anchor on the membrane, the other sites must NOT be on membrane

@@ -106,6 +106,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set Docker API version workaround
+        run: echo "api.version=1.44" >> ~/.docker-java.properties
+
       - name: Install hdf5 tools needed for testing
         run: sudo apt -y update && sudo apt -y install hdf5-tools
 
