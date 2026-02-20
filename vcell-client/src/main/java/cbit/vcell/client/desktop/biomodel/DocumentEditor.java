@@ -724,7 +724,6 @@ private void construcutPopupMenu() {
 			addNewAppMenu.add(addNewAppStochasticMenuItem);
 			addNewAppMenu.add(addNewAppRulebasedMenuItem);
 
-			VCellSoftwareVersion.VCellSite vCellSite = VCellSoftwareVersion.VCellSite.unknown;
 			boolean enableSpringSaLaD = SsldUtils.isSsldEnabled();
 			if (enableSpringSaLaD) {
 				addNewAppMenu.add(addNewAppSpringSaLaDMenuItem);
