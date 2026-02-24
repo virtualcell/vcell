@@ -55,8 +55,6 @@ public class MathMLTest {
 			}catch (Exception e){
 				continue;
 			}
-			if (infix.equals("csch((0.0 ^ id_8))"))
-				System.out.println("here!");
 			try {
 				exp.evaluateConstantSafe();
 			}catch (FunctionDomainException | DivideByZeroException | ArithmeticException e2) {
