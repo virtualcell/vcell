@@ -11,6 +11,7 @@
 package cbit.vcell.parser;
 /* JJT: 0.2.2 */
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Set;
 
 import cbit.vcell.parser.Expression.FunctionFilter;
@@ -20,6 +21,7 @@ import net.sourceforge.interval.ia_math.IAFunctionDomainException;
 import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
+import org.apache.commons.math4.core.jdkmath.AccurateMath;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -53,50 +55,279 @@ public class ASTFuncNode extends SimpleNode {
  	}
  	
  	public static enum FunctionType {
- 		USERDEFINED("user defined",	 -1, 	null,	"" ),   
-		EXP			("exp",				1, 	MathMLTags.EXP					,	"<html>exponential function, <i>e<sup>x</sup></i></html>" ),   
-		SQRT		("sqrt",			1, 	null							,	"square root" ),	 
-		ABS			("abs",				1, 	MathMLTags.ABS					,	"absolute value" ),	 
-		POW			("pow",				2, 	MathMLTags.POWER				,	"<html>power function, <i>x<sup>y</sup></i></html>" ),	 
-		LOG			("log",				1, 	MathMLTags.LN					,	"natural logarithmic function" ),
-		SIN			("sin",				1, 	MathMLTags.SINE					,	"sine function" ),	 
-		COS			("cos",				1, 	MathMLTags.COSINE				,	"cosine function" ),
-		TAN			("tan",				1, 	MathMLTags.TANGENT				,	"tagent function" ),
-		ASIN		("asin",			1, 	MathMLTags.INV_SINE				,	"inverse since function" ),	 
-		ACOS		("acos",			1, 	MathMLTags.INV_COSINE			,	"inverse cosine function" ),
-		ATAN		("atan",			1, 	MathMLTags.INV_TANGENT			,	"inverse tangent function" ),	 
-		ATAN2		("atan2",			2, 	null						,	"<html>similar to <i>atan(y/x)</i>, except places the angle in the correct quadrant</html>" ),
-		MAX			("max",				2, 	MathMLTags.MAX					,	"<html>maximum of <i>x</i> and <i>y</i></html>" ),
-		MIN			("min",				2, 	MathMLTags.MIN					,	"<html>minimum of <i>x</i> and <i>y</i></html>" ),
-		CEIL		("ceil",			1, 	MathMLTags.CEILING				,	"<html>smallest integral value not less than <i>x</i></html>" ),	 
-		FLOOR		("floor",			1, 	MathMLTags.FLOOR				,	"<html>largest integral value not greater than <i>x</i></html>" ),	 
-		CSC			("csc",				1, 	MathMLTags.COSECANT				,	"cosecant function" ),	 
-		COT			("cot",				1, 	MathMLTags.COTANGENT			,	"cotangent function" ),	 
-		SEC			("sec",				1, 	MathMLTags.SECANT				,	"secant function" ),	 
-		ACSC		("acsc",			1, 	MathMLTags.INV_COSECANT			,	"inverse cosecant function" ),	 
-		ACOT		("acot",			1, 	MathMLTags.INV_COTANGENT		,	"inverse cotangent function" ),	 
-		ASEC		("asec",			1, 	MathMLTags.INV_SECANT			,	"inverse secant" ),	 
-		SINH		("sinh",			1, 	MathMLTags.HYP_SINE				,	"hyperbolic sine function" ),	 
-		COSH		("cosh",			1, 	MathMLTags.HYP_COSINE			,	"hyperbolic cosine function" ),	 
-		TANH		("tanh",			1, 	MathMLTags.HYP_TANGENT			,	"hyperbolic tangent function" ),	 
-		CSCH		("csch",			1, 	MathMLTags.HYP_COSECANT			,	"hyperbolic cosecant function" ),	 
-		COTH		("coth",			1, 	MathMLTags.HYP_COTANGENT		,	"hyperbolic cotangent function" ),	 
-		SECH		("sech",			1, 	MathMLTags.HYP_SECANT			,	"hyperbolic secant function" ),	 
-		ASINH		("asinh",			1, 	MathMLTags.INV_HYP_SINE			,	"inverse hyperbolic sine function" ),	 
-		ACOSH		("acosh",			1, 	MathMLTags.INV_HYP_COSINE		,	"inverse hyperbolic cosine function" ),	 
-		ATANH		("atanh",			1, 	MathMLTags.INV_HYP_TANGENT		,	"inverse hyperbolic tangent function" ),	 
-		ACSCH		("acsch",			1, 	MathMLTags.INV_HYP_COSECANT		,	"inverse hyperbolic cosecant function" ),	 
-		ACOTH		("acoth",			1, 	MathMLTags.INV_HYP_COTANGENT	,	"inverse hyperbolic cotangent function" ),	 
-		ASECH		("asech",			1, 	MathMLTags.INV_HYP_SECANT		,	"inverse hyperbolic secant function" ),	 
-		FACTORIAL	("factorial",		1, 	MathMLTags.FACTORIAL			,	"<html>factorial function, <i>x!</i></html>" ),	 
-		LOG_10		("log10",			1, 	MathMLTags.LOG_10				,	"base-10 logarithmic function" ),	 
-		LOGBASE		("logbase", 		1, 	MathMLTags.LOGBASE		 		, 	"" );	 
- 		
- 		private String name, htmlDescription;
+         //
+ 		USERDEFINED (
+				 new Name("user defined", "user defined"),
+		         -1,
+		         null,
+		         "",
+		         false
+		),
+		EXP (
+				new Name("exp"),
+				1,
+				MathMLTags.EXP,
+				"<html>exponential function, <i>e<sup>x</sup></i></html>",
+				false
+		),
+		SQRT (
+				new Name("sqrt"),
+				1,
+				null,
+				"square root",
+				false
+		),
+		ABS (
+				new Name("abs", "math.fabs"),
+				1,
+				MathMLTags.ABS ,
+				"absolute value",
+				false
+		),
+		POW (
+				new Name("pow"),
+				2,
+				MathMLTags.POWER,
+				"<html>power function, <i>x<sup>y</sup></i></html>",
+				false
+		),
+		LOG (
+				new Name("log"),
+				1,
+				MathMLTags.LN,
+				"natural logarithmic function",
+				false
+		),
+		SIN (
+				new Name("sin"), 1,
+				MathMLTags.SINE,
+				"sine function",
+				true
+		),
+		COS (
+				new Name("cos"), 1,
+				MathMLTags.COSINE,
+				"cosine function",
+				true
+		),
+		TAN (
+				new Name("tan"),
+				1,
+				MathMLTags.TANGENT,
+				"tangent function",
+				true
+		),
+		ASIN (
+				new Name("asin"),
+				1,
+				MathMLTags.INV_SINE,
+				"inverse since function",
+				true
+		),
+		ACOS (
+				new Name("acos"),
+				1,
+				MathMLTags.INV_COSINE,
+				"inverse cosine function",
+				true
+		),
+		ATAN (
+				new Name("atan"),
+				1, MathMLTags.INV_TANGENT,
+				"inverse tangent function",
+				true
+		),
+		ATAN2 (
+				new Name("atan2"),
+				2,
+				null,
+				"<html>similar to <i>atan(y/x)</i>, except places the angle in the correct quadrant</html>",
+				true
+		),
+		MAX (
+				new Name("max", "max"),
+				2,
+				MathMLTags.MAX,
+				"<html>maximum of <i>x</i> and <i>y</i></html>",
+				false
+		),
+		MIN (
+				new Name("min", "min"),
+				2,
+				MathMLTags.MIN,
+				"<html>minimum of <i>x</i> and <i>y</i></html>",
+				false
+		),
+		CEIL (
+				new Name("ceil"),
+				1,
+				MathMLTags.CEILING,
+				"<html>smallest integral value not less than <i>x</i></html>",
+				false
+		),
+		FLOOR (
+				new Name("floor"),
+				1,
+				MathMLTags.FLOOR,
+				"<html>largest integral value not greater than <i>x</i></html>",
+				false
+		),
+		CSC	(
+				new Name("csc", "1.0/" + SIN.getPythonName()),
+				1,
+				MathMLTags.COSECANT,
+				"cosecant function",
+				true
+		),
+		COT (
+				new Name("cot", "1.0/" + TAN.getPythonName()),
+				1,
+				MathMLTags.COTANGENT,
+				"cotangent function",
+				true
+		),
+		SEC (
+				new Name("sec", "1.0/" + COS.getPythonName()),
+				1,
+				MathMLTags.SECANT,
+				"secant function",
+				true
+		),
+		ACSC (
+				new Name("acsc", null),
+				1,
+				MathMLTags.INV_COSECANT,
+				"inverse cosecant function",
+				true
+		),
+		ACOT (
+				new Name("acot", null),
+				1,
+				MathMLTags.INV_COTANGENT,
+				"inverse cotangent function",
+				true
+		),
+		ASEC (
+				new Name("asec", null),
+				1,
+				MathMLTags.INV_SECANT,
+				"inverse secant",
+				true
+		),
+		SINH (
+				new Name("sinh"),
+				1,
+				MathMLTags.HYP_SINE,
+				"hyperbolic sine function",
+				true
+		),
+		COSH (
+				new Name("cosh"),
+				1,
+				MathMLTags.HYP_COSINE,
+				"hyperbolic cosine function",
+				true
+		),
+		TANH (
+				new Name("tanh"),
+				1,
+				MathMLTags.HYP_TANGENT,
+				"hyperbolic tangent function",
+				true
+		),
+		CSCH (
+				new Name("csch", "1.0/" + SINH.getPythonName()),
+				1,
+				MathMLTags.HYP_COSECANT,
+				"hyperbolic cosecant function",
+				true
+		),
+		COTH (
+				new Name("coth", "1.0/" + TANH.getPythonName()),
+				1,
+				MathMLTags.HYP_COTANGENT,
+				"hyperbolic cotangent function",
+				true
+		),
+		SECH (
+				new Name("sech", "1.0/" + COSH.getPythonName()),
+				1,
+				MathMLTags.HYP_SECANT,
+				"hyperbolic secant function",
+				true
+		),
+		ASINH (
+				new Name("asinh"),
+				1,
+				MathMLTags.INV_HYP_SINE,
+				"inverse hyperbolic sine function",
+				true
+		),
+		ACOSH (
+				new Name("acosh"),
+				1,
+				MathMLTags.INV_HYP_COSINE,
+				"inverse hyperbolic cosine function",
+				true
+		),
+		ATANH (
+				new Name("atanh"),
+				1,
+				MathMLTags.INV_HYP_TANGENT,
+				"inverse hyperbolic tangent function",
+				true
+		),
+		ACSCH (
+				new Name("acsch", null),
+				1,
+				MathMLTags.INV_HYP_COSECANT,
+				"inverse hyperbolic cosecant function",
+				true
+		),
+		ACOTH (
+				new Name("acoth", null),
+				1,
+				MathMLTags.INV_HYP_COTANGENT,
+				"inverse hyperbolic cotangent function",
+				true
+		),
+		ASECH (
+				new Name("asech", null),
+				1,
+				MathMLTags.INV_HYP_SECANT,
+				"inverse hyperbolic secant function",
+				true
+		),
+		FACTORIAL (
+				new Name("factorial"),
+				1,
+				MathMLTags.FACTORIAL,
+				"<html>factorial function, <i>x!</i></html>",
+				false
+		),
+		LOG_10 (
+				new Name("log10"),
+				1,
+				MathMLTags.LOG_10,
+				"base-10 logarithmic function",
+				false
+		),
+		LOGBASE (
+				new Name("logbase", "1.0/" + LOG.getPythonName()),
+				1,
+				MathMLTags.LOGBASE,
+				"",
+				false
+		);
+
+		private Name name;
+ 		private String htmlDescription;
  		private String[] argNames;
  		private FunctionArgType[] argTypes;
  		private String mathMLTag;
-		private FunctionType(String name, int numArgs, String mathMLTag, String htmlDescription) {
+	    private boolean isTrigonometric;
+
+		private FunctionType(Name name, int numArgs, String mathMLTag, String htmlDescription, boolean isTrigonometric) {
 			if (numArgs != 1 && numArgs != 2 && numArgs != -1) {
 				throw new RuntimeException("wrong number of numArgs");
 			}
@@ -110,9 +341,15 @@ public class ASTFuncNode extends SimpleNode {
 			}
 			this.mathMLTag = mathMLTag;
 			this.htmlDescription = htmlDescription;
+			this.isTrigonometric = isTrigonometric;
 		}
 		public final String getName() {
-			return name;
+			return name.name();
+		}
+
+		public final String getPythonName() {
+			if (null == name.pythonName()) throw new UnsupportedOperationException("Python has no equivalent name.");
+			return name.pythonName();
 		}
 		public final String getHtmlDescription() {
 			return htmlDescription;
@@ -128,11 +365,21 @@ public class ASTFuncNode extends SimpleNode {
 		}
 		public static FunctionType fromFunctionName(String functionName){
 			for (FunctionType ft : values()){
-				if (ft.name.equals(functionName)){
+				if (ft.name.name().equals(functionName)){
 					return ft;
 				}
 			}
 			return null;
+		}
+
+		public final boolean isTrigonometric() {
+			return isTrigonometric;
+		}
+
+		private record Name(String name, String pythonName){
+			public Name(String name){
+				this(name, "math." + name);
+			}
 		}
  	}
 	
@@ -1313,17 +1560,17 @@ public double evaluateConstant(boolean substituteConstants) throws ExpressionExc
 	}
 	case SIN: {
 		if (jjtGetNumChildren()!=1) throw new Error("sin() expects 1 argument");
-		result = Math.sin(jjtGetChild(0).evaluateConstant(substituteConstants));
+		result = MathUtil.sin(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case COS: {
 		if (jjtGetNumChildren()!=1) throw new Error("cos() expects 1 argument");
-		result = Math.cos(jjtGetChild(0).evaluateConstant(substituteConstants));
+		result = MathUtil.cos(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case TAN: {
 		if (jjtGetNumChildren()!=1) throw new Error("tan() expects 1 argument");
-		result = Math.tan(jjtGetChild(0).evaluateConstant(substituteConstants));
+		result = MathUtil.tan(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case ASIN: {
@@ -1332,7 +1579,7 @@ public double evaluateConstant(boolean substituteConstants) throws ExpressionExc
 		if (Math.abs(argument)>1.0){
 			throw new FunctionDomainException("asin(u) and |u|>1.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = Math.asin(argument);
+		result = MathUtil.asin(argument);
 		break;
 	}
 	case ACOS: {
@@ -1341,12 +1588,12 @@ public double evaluateConstant(boolean substituteConstants) throws ExpressionExc
 		if (Math.abs(argument)>1.0){
 			throw new FunctionDomainException("acos(u) and |u|>1.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = Math.acos(argument);
+		result = MathUtil.acos(argument);
 		break;
 	}
 	case ATAN: {
 		if (jjtGetNumChildren()!=1) throw new Error("atan() expects 1 argument");
-		result = Math.atan(jjtGetChild(0).evaluateConstant(substituteConstants));
+		result = MathUtil.atan(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case ATAN2: {
@@ -1356,13 +1603,7 @@ public double evaluateConstant(boolean substituteConstants) throws ExpressionExc
 		if (arg1 == 0 && arg2 == 0) {
 			throw new FunctionDomainException("atan2(u, v) where u=0 and v=0 is undefined, expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		if (arg1==-0.0){
-			arg1 = 0.0;
-		}
-		if (arg2==-0.0){
-			arg2 = 0.0;
-		}
-		result = Math.atan2(arg1,arg2);
+		result = MathUtil.atan2(arg1,arg2);
 		break;
 	}
 	case MAX: {
@@ -1429,17 +1670,17 @@ public double evaluateConstant(boolean substituteConstants) throws ExpressionExc
 	}
 	case SINH: {
 		if (jjtGetNumChildren()!=1) throw new Error("sinh() expects 1 argument");
-		result = Math.sinh(jjtGetChild(0).evaluateConstant(substituteConstants));
+		result = MathUtil.sinh(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case COSH: {
 		if (jjtGetNumChildren()!=1) throw new Error("cosh() expects 1 argument");
-		result = Math.cosh(jjtGetChild(0).evaluateConstant(substituteConstants));
+		result = MathUtil.cosh(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case TANH: {
 		if (jjtGetNumChildren()!=1) throw new Error("tanh() expects 1 argument");
-		result = Math.tanh(jjtGetChild(0).evaluateConstant(substituteConstants));
+		result = MathUtil.tanh(jjtGetChild(0).evaluateConstant(substituteConstants));
 		break;
 	}
 	case CSCH: {
@@ -1859,7 +2100,11 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	}
 	case EXP: {
 		if (jjtGetNumChildren()!=1) throw new Error("exp() expects 1 argument");
-		result = Math.exp(jjtGetChild(0).evaluateVector(values));
+		double childEval = jjtGetChild(0).evaluateVector(values);
+		result = Math.exp(childEval);
+		if (Double.isNaN(result) || Double.isInfinite(result)){
+			throw new FunctionDomainException("exp(u) evaluated to "+result+", u="+result+", expression = '"+infixString(LANGUAGE_DEFAULT)+"'");
+		}
 		break;
 	}
 	case SQRT: {
@@ -1880,16 +2125,19 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=2) throw new Error("pow() expects 2 arguments");
 		double u = jjtGetChild(0).evaluateVector(values);
 		double v = jjtGetChild(1).evaluateVector(values);
-		if (u<0 && Math.round(v)!=v){
-			throw new FunctionDomainException("pow(u,v) and u<0 and v not an integer: undefined, u="+u+", v="+v+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
-		}
 		if (u==0.0 && v<0){
 			throw new FunctionDomainException("pow(u,v) and u=0 and v<0 divide by zero, u="+u+", v="+v+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
+		}
+		if (u<0 && Math.round(v)!=v){
+			throw new FunctionDomainException("pow(u,v) and u<0 and v not an integer: undefined, u="+u+", v="+v+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
 		if (u>=0.0 && v==1.0){
 			return u;
 		}
-		result = Math.pow(u,v);
+		result = AccurateMath.pow(u,v);
+		if (Double.isNaN(result) || Double.isInfinite(result)){
+			throw new FunctionDomainException("pow(u,v) evaluated to "+result+", u="+u+", v="+v+", expression = '"+infixString(LANGUAGE_DEFAULT)+"'");
+		}
 		break;
 	}
 	case LOG: {
@@ -1906,17 +2154,17 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	}
 	case SIN: {
 		if (jjtGetNumChildren()!=1) throw new Error("sin() expects 1 argument");
-		result = Math.sin(jjtGetChild(0).evaluateVector(values));
+		result = MathUtil.sin(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case COS: {
 		if (jjtGetNumChildren()!=1) throw new Error("cos() expects 1 argument");
-		result = Math.cos(jjtGetChild(0).evaluateVector(values));
+		result = MathUtil.cos(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case TAN: {
 		if (jjtGetNumChildren()!=1) throw new Error("tan() expects 1 argument");
-		result = Math.tan(jjtGetChild(0).evaluateVector(values));
+		result = MathUtil.tan(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case ASIN: {
@@ -1925,7 +2173,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (Math.abs(argument)>1.0){
 			throw new FunctionDomainException("asin(u) and |u|>1.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = Math.asin(argument);
+		result = MathUtil.asin(argument);
 		break;
 	}
 	case ACOS: {
@@ -1934,12 +2182,12 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (Math.abs(argument)>1.0){
 			throw new FunctionDomainException("acos(u) and |u|>1.0 undefined, u="+argument+", expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		result = Math.acos(argument);
+		result = MathUtil.acos(argument);
 		break;
 	}
 	case ATAN: {
 		if (jjtGetNumChildren()!=1) throw new Error("atan() expects 1 argument");
-		result = Math.atan(jjtGetChild(0).evaluateVector(values));
+		result = MathUtil.atan(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case ATAN2: {
@@ -1949,13 +2197,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (arg1 == 0 && arg2 == 0) {
 			throw new FunctionDomainException("atan2(u, v) where u=0 and v=0 is undefined, expression='"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
-		if (arg1 == -0.0){
-			arg1 = 0.0;
-		}
-		if (arg2 == -0.0){
-			arg2 = 0.0;
-		}
-		result = Math.atan2(arg1, arg2);
+		result = MathUtil.atan2(arg1, arg2);
 		break;
 	}
 	case MAX: {
@@ -2022,17 +2264,17 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	}
 	case SINH: {
 		if (jjtGetNumChildren()!=1) throw new Error("sinh() expects 1 argument");
-		result = Math.sinh(jjtGetChild(0).evaluateVector(values));
+		result = MathUtil.sinh(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case COSH: {
 		if (jjtGetNumChildren()!=1) throw new Error("cosh() expects 1 argument");
-		result = Math.cosh(jjtGetChild(0).evaluateVector(values));
+		result = MathUtil.cosh(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case TANH: {
 		if (jjtGetNumChildren()!=1) throw new Error("tanh() expects 1 argument");
-		result = Math.tanh(jjtGetChild(0).evaluateVector(values));
+		result = MathUtil.tanh(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case CSCH: {
@@ -2413,7 +2655,7 @@ public String infixString(int lang) {
 
 	switch(funcType){
 		//
-		// pow() is treated specially, Matlab needs a^b.
+		// pow() is treated specially in most cases
 		//
 	 	case POW: {
 			if (lang == LANGUAGE_MATLAB || lang == LANGUAGE_ECLiPSe || lang == LANGUAGE_UNITS) {
@@ -2440,7 +2682,13 @@ public String infixString(int lang) {
 				buffer.append(",");
 				buffer.append("((double)(" + jjtGetChild(1).infixString(lang) + "))");
 				buffer.append(")");
-			} else { // default behavior (like LANGUAGE_DEFAULT)
+			} else if (lang == LANGUAGE_PYTHON) {
+                buffer.append("((");
+                buffer.append(jjtGetChild(0).infixString(lang));
+                buffer.append(")**(");
+                buffer.append(jjtGetChild(1).infixString(lang));
+                buffer.append("))");
+            } else { // default behavior (like LANGUAGE_DEFAULT)
 	 			buffer.append("pow(");
 	 			buffer.append(jjtGetChild(0).infixString(lang));
 	 			buffer.append(",");
@@ -2449,8 +2697,62 @@ public String infixString(int lang) {
 			}
 			break;
 		}
+		case CSC:
+		case COT:
+		case SEC:
+		case CSCH:
+		case COTH:
+		case SECH:
+		case LOGBASE: {
+			if (lang == LANGUAGE_PYTHON){
+				// Need parenthesis to encapsulate the "1.0/x" operation
+				buffer.append("(");
+				buffer.append(funcType.getPythonName());
+				buffer.append("(");
+				buffer.append(jjtGetChild(0).infixString(lang));
+				buffer.append("))");
+				break;
+			}
+			// DO NOT PUT A "BREAK" HERE! We want to "fall through" to default!
+		}
+		case ACSC:
+		case ACOT:
+		case ASEC:
+		case ACSCH:
+		case ACOTH:
+		case ASECH:{
+			if (lang == LANGUAGE_PYTHON){ // Need parenthesis to encapsulate the "1.0/x" operation
+				Map<FunctionType, FunctionType> inversionMap = Map.of(
+						FunctionType.ACSC, FunctionType.ASIN,
+						FunctionType.ACOT, FunctionType.ATAN,
+						FunctionType.ASEC, FunctionType.ACOS,
+						FunctionType.ACSCH, FunctionType.ASINH,
+						FunctionType.ACOTH, FunctionType.ATANH,
+						FunctionType.ASECH, FunctionType.ACOSH
+				);
+				FunctionType inversionType = inversionMap.get(funcType);
+				buffer.append("(");
+				buffer.append(inversionType.getPythonName());
+				buffer.append("(1.0/(");
+				buffer.append(jjtGetChild(0).infixString(lang));
+				buffer.append(")))");
+				break;
+			}
+			// DO NOT PUT A "BREAK" HERE! We want to "fall through" to default!
+		}
+		case FACTORIAL:
+			if (lang == LANGUAGE_PYTHON){
+				String name = funcType.getPythonName();
+				// Since VCell now only accepts integer-values for factorial, integer casting should be safe
+				buffer.append(name).append("(int(");
+				if (1 < this.jjtGetNumChildren()) throw new UnsupportedOperationException("Cannot take factorial of multiple children");
+				buffer.append(jjtGetChild(0).infixString(lang));
+				buffer.append("))");
+				break;
+			}
 	 	default:{
-			buffer.append(getName() + "(");
+            String name = lang == LANGUAGE_PYTHON ? funcType.getPythonName() : funcType.getName() ;
+			buffer.append(name + "(");
 			for (int i=0;i<jjtGetNumChildren();i++){
 				if (i>0) buffer.append(", ");
 				if (lang == LANGUAGE_C){

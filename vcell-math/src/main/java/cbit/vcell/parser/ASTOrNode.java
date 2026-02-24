@@ -31,6 +31,11 @@ if (id != ExpressionParserTreeConstants.JJTORNODE){ System.out.println("ASTOrNod
 		  return true;
 	}
 
+	@Override
+	public boolean isLogical() {
+		return true;
+	}
+
   public void bind(SymbolTable symbolTable) throws ExpressionBindingException
   {
 	  super.bind(symbolTable);
@@ -168,6 +173,13 @@ public Node flatten(boolean substituteConstants) throws ExpressionException {
 			  buffer.append(jjtGetChild(i).infixString(lang));
 			  buffer.append(")");
 		  }
+	  }else if(lang == LANGUAGE_PYTHON){
+		  buffer.append("float(bool(");
+		  for (int i=0;i<jjtGetNumChildren();i++){
+			  if (i>0) buffer.append(" or ");
+			  buffer.append(jjtGetChild(i).infixString(lang));
+		  }
+		  buffer.append("))");
 	  }else{
 		  for (int i=0;i<jjtGetNumChildren();i++){
 			if (i>0) {

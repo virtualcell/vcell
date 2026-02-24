@@ -31,12 +31,18 @@ public abstract class SimpleNode implements Node, java.io.Serializable {
   final static int LANGUAGE_VISIT = 5;
   final static int LANGUAGE_UNITS = 6;
   final static int LANGUAGE_BNGL = 7;
+  final static int LANGUAGE_PYTHON = 8;
 
   public SimpleNode(int i) {
     id = i;
   }
 
   public boolean isBoolean() {
+	  return false;
+  }
+
+  @Override
+  public boolean isLogical() {
 	  return false;
   }
   
@@ -304,5 +310,14 @@ public void substitute(Node origNode, Node newNode) {
 	  for (int i=0;i<jjtGetNumChildren();i++){
 		  jjtGetChild(i).renameBoundSymbols(nameScope);
 	  }
+ }
+
+ @Override
+ public int getHeight(){
+	  int height = 0;
+	  for (int i=0;i<jjtGetNumChildren();i++){
+		  height = Math.max(height,jjtGetChild(i).getHeight());
+	  }
+	  return height + 1;
  }
 }

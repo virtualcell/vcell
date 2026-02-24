@@ -16,6 +16,7 @@ import net.sourceforge.interval.ia_math.IAFunctionDomainException;
 import net.sourceforge.interval.ia_math.IAMath;
 import net.sourceforge.interval.ia_math.IANarrow;
 import net.sourceforge.interval.ia_math.RealInterval;
+import org.apache.commons.math4.core.jdkmath.AccurateMath;
 
 import java.util.ArrayList;
 
@@ -164,7 +165,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (baseValue>=0.0 && exponentValue==1.0){
 			return baseValue;
 		}
-		double result = Math.pow(baseValue,exponentValue);
+		double result = AccurateMath.pow(baseValue,exponentValue);
 		if (Double.isInfinite(result) || Double.isNaN(result)){
 			throw new FunctionDomainException("u^v evaluated to "+result+", u="+baseValue+", v="+exponentValue+", expression = '"+infixString(LANGUAGE_DEFAULT)+"'");
 		}
@@ -259,7 +260,13 @@ public String infixString(int lang){
 		buffer.append(" ^ ");
 		buffer.append(jjtGetChild(1).infixString(lang));
 		buffer.append(")");
-	}else{
+	} else if (lang == LANGUAGE_PYTHON) {
+		buffer.append("((");
+		buffer.append(jjtGetChild(0).infixString(lang));
+		buffer.append(")**(");
+		buffer.append(jjtGetChild(1).infixString(lang));
+		buffer.append("))");
+	} else{
 		buffer.append("(");
 		buffer.append(jjtGetChild(0).infixString(lang));
 		buffer.append(" ^ ");

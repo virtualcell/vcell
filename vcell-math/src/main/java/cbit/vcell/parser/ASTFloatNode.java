@@ -142,7 +142,11 @@ public Node flatten(boolean substituteConstants) throws ExpressionException {
 					  return "("+ value +")";
 				  }
 			  }
-		  } else {
+		  } else if (lang == LANGUAGE_PYTHON) {
+              if (value == Double.POSITIVE_INFINITY) return "float('inf')";
+              if (value == Double.NEGATIVE_INFINITY) return "float('-inf')";
+              return value.toString();
+          } else {
 		      return value.toString();
 		  }
 	  }

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 
 import java.util.List;
+import java.util.Objects;
 
 @Tag("Fast")
 public class DomainsTest {
@@ -42,6 +43,10 @@ public class DomainsTest {
 		Assertions.assertEquals(-1, simpleSemiInclusiveDomain1.compareTo(simpleInclusiveDomain));
 		Assertions.assertEquals(1, simpleInclusiveDomain.compareTo(simpleExclusiveDomain));
 		Assertions.assertEquals(-1, simpleExclusiveDomain.compareTo(simpleInclusiveDomain));
+
+		Assertions.assertTrue(simpleSemiInclusiveDomain1.containsValue(2.2));
+		Assertions.assertFalse(simpleSemiInclusiveDomain1.containsValue(3.5));
+		Assertions.assertTrue(simpleInclusiveDomain.containsValue(3.5));
 
 		ContinuousDomain everythingDomain = new ContinuousDomain(Double.NEGATIVE_INFINITY, true, Double.POSITIVE_INFINITY, true);
 		Assertions.assertFalse(everythingDomain.min().isInclusive() && everythingDomain.max().isInclusive());
@@ -147,6 +152,42 @@ public class DomainsTest {
 		ExpressionDomain shouldNotBeEmptyDomain = new ExpressionDomain("[3, 4]", "[-2, -5]");
 		Assertions.assertNotEquals(new ExpressionDomain("()"), shouldNotBeEmptyDomain);
 		Assertions.assertEquals(new ExpressionDomain("[3, 4]"), shouldNotBeEmptyDomain);
+	}
+
+	@Test
+	public void componentsTest(){
+		ContinuousDomain[] segmentedComponents = {new ContinuousDomain("[-20, -3)"), new ContinuousDomain("[-2, 5]"), new ContinuousDomain("(6, Infinity)")};
+		ContinuousDomain[] staticSegmentedComponents = DomainsTest.segmentedExpressionDomain.getComponentContinuousDomains();
+		Assertions.assertEquals(segmentedComponents.length, staticSegmentedComponents.length);
+		for (int i = 0; i < segmentedComponents.length; i++){
+			Assertions.assertEquals(segmentedComponents[i], staticSegmentedComponents[i]);
+		}
+		ContinuousDomain[] continuousComponents = {new ContinuousDomain("[-3, 3)")};
+		ContinuousDomain[] staticContinuousComponents = DomainsTest.continuousExpressionDomain.getComponentContinuousDomains();
+		Assertions.assertEquals(continuousComponents.length, staticContinuousComponents.length);
+		for (int i = 0; i < continuousComponents.length; i++){
+			Assertions.assertEquals(continuousComponents[i], staticContinuousComponents[i]);
+		}
+	}
+
+	@Test
+	public void containsTest(){
+		Assertions.assertFalse(DomainsTest.segmentedExpressionDomain.contains(-22));
+		Assertions.assertTrue(DomainsTest.segmentedExpressionDomain.contains(-20));
+		Assertions.assertFalse(DomainsTest.segmentedExpressionDomain.contains(-2.2));
+		Assertions.assertTrue(DomainsTest.segmentedExpressionDomain.contains(-1));
+		Assertions.assertFalse(DomainsTest.segmentedExpressionDomain.contains(5.7));
+		Assertions.assertTrue(DomainsTest.segmentedExpressionDomain.contains(7));
+		Assertions.assertTrue(DomainsTest.segmentedExpressionDomain.contains(Double.POSITIVE_INFINITY));
+	}
+
+	@Test void minMaxTest(){
+//		"ExpressionDomain -> [-20, -3)U[-2, 5]U(6, Infinity)"
+//		"ExpressionDomain -> [-3, 3)"
+		Assertions.assertEquals(-20, DomainsTest.segmentedExpressionDomain.getMinimumPossibleValue());
+		Assertions.assertEquals(Double.MAX_VALUE, DomainsTest.segmentedExpressionDomain.getMaximumPossibleValue());
+		Assertions.assertEquals(-3, DomainsTest.continuousExpressionDomain.getMinimumPossibleValue());
+		Assertions.assertEquals(3 - Double.MIN_VALUE, DomainsTest.continuousExpressionDomain.getMaximumPossibleValue());
 	}
 
 	@Test

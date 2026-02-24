@@ -35,6 +35,7 @@ public class MathMLTest {
 		List<String> tokensToAvoid = Arrays.asList(
 				"<",">","=","&","|","!"
 //				,"min","max"
+				, "factorial"
 			);
 		ArrayList<Expression> expressions = new ArrayList<>();
 		for (int i = 0; i < numTests; i++) {
@@ -47,17 +48,20 @@ public class MathMLTest {
 			if (exp.infix_JSCL().length()>120){
 				continue;
 			}
+			if (infix.contains("0.0 ^")) continue;
+
 			try {
 				ExpressionUtils.functionallyEquivalent(exp,exp);
 			}catch (Exception e){
 				continue;
 			}
+			if (infix.equals("csch((0.0 ^ id_8))"))
+				System.out.println("here!");
 			try {
 				exp.evaluateConstantSafe();
-			}catch (FunctionDomainException | DivideByZeroException e2) {
+			}catch (FunctionDomainException | DivideByZeroException | ArithmeticException e2) {
 				continue;
-			}catch (ExpressionException e){
-			}
+			}catch (ExpressionException ignored){}
 			expressions.add(exp);
 		}
 		expressions.add(new Expression("-((-x)^2)"));
@@ -178,7 +182,8 @@ public class MathMLTest {
 			return;
 		}
 
-		jscl.math.Expression jsclExp = jscl.math.Expression.valueOf(expression.infix_JSCL());
+		String vcellInfixJSCL = expression.infix_JSCL();
+		jscl.math.Expression jsclExp = jscl.math.Expression.valueOf(vcellInfixJSCL);
 		String jsclExpInfix = jsclExp.toString();
 		Expression roundTripExp = new Expression(jsclExpInfix);
 

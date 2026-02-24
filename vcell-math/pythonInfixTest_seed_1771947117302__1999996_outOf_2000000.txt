@@ -1,0 +1,34 @@
+1999996 / 2000000 models pass! Errors caught:
+java.lang.RuntimeException: Mismatch between expressions and results:
+	Progress: 762706
+	VCell Infix: ((0.9921421286814841 * min(ceil(id_0), log(id_4)) * (sqrt(0.6041285276467626) * (0.3323954837559202 * id_2 * 0.3569628609900356) * (0.5552176151877557 * id_3 * 0.6752032092143674))) * min(pow( - 0.8084244608441493,(0.5461351074723814 >= id_1)), min(floor(0.14779786417290786), abs(0.8545644658096476))) * floor((abs(id_6) / id_2 * ceil(0.6096135877376689))))
+	Expected: 0.0045736159115837595
+	Python Infix: ((0.9921421286814841 * min(math.ceil(id_0), math.log(id_4)) * (math.sqrt(0.6041285276467626) * (0.3323954837559202 * id_2 * 0.3569628609900356) * (0.5552176151877557 * id_3 * 0.6752032092143674))) * min((( - 0.8084244608441493)**((0.5461351074723814 >= id_1))), min(math.floor(0.14779786417290786), math.fabs(0.8545644658096476))) * math.floor((math.fabs(id_6) / id_2 * math.ceil(0.6096135877376689))))
+	Actual: 0.0030490772743891727
+	Diff: 0.0015245386371945868
+
+java.lang.RuntimeException: Mismatch between expressions and results:
+	Progress: 1195263
+	VCell Infix: (floor((abs(id_6) * ceil(0.5282484500743364) / id_1)) - ceil(sqrt(0.3503239129476293)) + (pow(pow(id_0,id_3), - 0.0) ^ 0.33509339658565507))
+	Expected: 6.0
+	Python Infix: (math.floor((math.fabs(id_6) * math.ceil(0.5282484500743364) / id_1)) - math.ceil(math.sqrt(0.3503239129476293)) + ((((((id_0)**(id_3)))**( - 0.0)))**(0.33509339658565507)))
+	Actual: 5.0
+	Diff: 1.0
+
+java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
+	Progress: 1838549
+	VCell Infix: !(( - exp(id_8) ^ (min(id_6, id_9) / id_2)))
+	Expected: -0.0
+	Python Infix: float(not((( - math.exp(id_8))**((min(id_6, id_9) / id_2)))))
+	Actual: <was not evaluated>
+	Diff: <was not evaluated>
+	Threshold: 1.0E-6
+
+java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
+	Progress: 1938696
+	VCell Infix: ceil((min(max(id_4, id_4), log(id_1)) ^ (min(id_6, 0.7054894529750428) / id_1)))
+	Expected: 150.0
+	Python Infix: math.ceil(((min(max(id_4, id_4), math.log(id_1)))**((min(id_6, 0.7054894529750428) / id_1))))
+	Actual: <was not evaluated>
+	Diff: <was not evaluated>
+	Threshold: 1.0E-6

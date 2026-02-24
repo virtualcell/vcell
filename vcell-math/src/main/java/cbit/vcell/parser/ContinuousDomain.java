@@ -2,6 +2,8 @@ package cbit.vcell.parser;
 
 import java.util.*;
 
+//TODO: if ever desired, upgrade this to have two variants of
+// children, one using double, the other using `BigDecimal`;
 public record ContinuousDomain(Term min, Term max) implements Comparable<ContinuousDomain> {
 	//TODO: if allowed, using unicode for the empty set makes sense here
 	private static final String EMPTY_SET_NOTATION = "()";
@@ -211,8 +213,9 @@ public record ContinuousDomain(Term min, Term max) implements Comparable<Continu
 
 
 	public boolean containsValue(double value) {
-		if (this.min.value() == value) return this.min.isInclusive();
-		if (this.max.value() == value) return this.max.isInclusive();
+		if (Double.isNaN(value) || this.isEmptyDomain()) return false;
+		if (this.min.value() == value) return this.min.isInclusive() || Double.isInfinite(value);
+		if (this.max.value() == value) return this.max.isInclusive() || Double.isInfinite(value);
 		return this.min.value() < value && this.max.value() > value;
 	}
 

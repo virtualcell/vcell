@@ -2,10 +2,12 @@ package cbit.vcell.parser;
 
 import java.util.*;
 
+//TODO: if ever desired, after completing the TODO in ContinuousDomain, make this class
+// generic of `T extends ContinuousDomain`
 public class ExpressionDomain {
 	//TODO: if allowed, using unicode for the empty set AND union symbol makes sense here
-	private static final String EMPTY_SET_NOTATION = "()";
-	private static final String UNION_NOTATION = "U";
+	public static final String EMPTY_SET_NOTATION = "()";
+	public static final String UNION_NOTATION = "U";
 
 	private final NavigableMap<ContinuousDomain.Term, ContinuousDomain> domNavMap;
 
@@ -116,10 +118,44 @@ public class ExpressionDomain {
 		}
 	}
 
+	public ContinuousDomain[] getComponentContinuousDomains() {
+		String thisObjectsNotation = this.toNotation();
+		String[] components = thisObjectsNotation.contains(ExpressionDomain.UNION_NOTATION) ?
+				thisObjectsNotation.split(ExpressionDomain.UNION_NOTATION): new String[]{thisObjectsNotation};
+		return Arrays.stream(components).map(ContinuousDomain::new).toArray(ContinuousDomain[]::new);
+	}
+
+	public boolean contains(double value){
+		ContinuousDomain.Term wrapper = new ContinuousDomain.Term(value, true);
+		ContinuousDomain.Term term = this.domNavMap.floorKey(wrapper);
+		if (term == null) return false;
+		ContinuousDomain domainToCheck = this.domNavMap.get(term);
+		return domainToCheck.containsValue(value);
+	}
+
+	public double getMinimumPossibleValue(){
+		if (this.domNavMap.isEmpty()) return Double.NaN;
+		ContinuousDomain minDomain = this.domNavMap.ceilingEntry(new ContinuousDomain.Term(Double.NEGATIVE_INFINITY, false)).getValue();
+		ContinuousDomain.Term minBound = minDomain.min();
+		double potentialValue = Double.isInfinite(minBound.value()) ? -Double.MAX_VALUE : minBound.value();
+		return minBound.isInclusive() ? potentialValue : potentialValue + Double.MIN_VALUE;
+	}
+
+	public double getMaximumPossibleValue(){
+		if (this.domNavMap.isEmpty()) return Double.NaN;
+		ContinuousDomain maxDomain = this.domNavMap.floorEntry(new ContinuousDomain.Term(Double.POSITIVE_INFINITY, false)).getValue();
+		ContinuousDomain.Term maxBound = maxDomain.max();
+		double potentialValue = Double.isInfinite(maxBound.value()) ? Double.MAX_VALUE : maxBound.value();
+		return maxBound.isInclusive() ? potentialValue : potentialValue - Double.MIN_VALUE;
+	}
+
+	public String toNotation(){
+		return this.domNavMap.isEmpty() ? EMPTY_SET_NOTATION : String.join(UNION_NOTATION, this.domNavMap.values().stream().map(ContinuousDomain::getNotation).toList());
+	}
+
 	@Override
 	public String toString(){
-		String representation = this.domNavMap.isEmpty() ? EMPTY_SET_NOTATION : String.join(UNION_NOTATION, this.domNavMap.values().stream().map(ContinuousDomain::getNotation).toList());
-		return String.format("%s -> %s", ExpressionDomain.class.getSimpleName(), representation);
+		return String.format("%s -> %s", ExpressionDomain.class.getSimpleName(), this.toNotation());
 	}
 
 	@Override

@@ -16,11 +16,11 @@ import cbit.vcell.matrix.RationalExpMatrix;
 import cbit.vcell.parser.ASTFuncNode.FunctionType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.ArrayUtils;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
-import java.util.Random;
-import java.util.Vector;
+import java.util.*;
 import java.util.function.BiPredicate;
 
 /**
@@ -99,7 +99,7 @@ public class ExpressionUtils {
 		}
 	}
 
-private static SimpleNode createNode(java.util.Random random, boolean bIsConstraint) {
+private static SimpleNode createNode(java.util.Random random, boolean bIsConstraint, SimpleNode parent) {
 	final int AddNode = 0;
 	final int AndNode = 1;
 	final int FloatNode = 2;
@@ -141,24 +141,28 @@ private static SimpleNode createNode(java.util.Random random, boolean bIsConstra
 		0.0,	// POWER
 		0.0,	// RELATIONAL
 	};
-		
-	final FunctionType[] functionIDs = {
+
+	final FunctionType[] nonTrigFunctionIDs = {
 		FunctionType.ABS,
-		FunctionType.ACOS,
-		FunctionType.ASIN,
-		FunctionType.ATAN,
-		FunctionType.ATAN2,
-		FunctionType.COS,
 		FunctionType.EXP,
 		FunctionType.LOG,
 		FunctionType.MAX,
 		FunctionType.MIN,
 		FunctionType.POW,
-		FunctionType.SIN,
 		FunctionType.SQRT,
-		FunctionType.TAN,
 		FunctionType.CEIL,
 		FunctionType.FLOOR,
+		FunctionType.FACTORIAL
+	};
+
+	final FunctionType[] trigFunctionIDs = {
+		FunctionType.ACOS,
+		FunctionType.ASIN,
+		FunctionType.ATAN,
+		FunctionType.ATAN2,
+		FunctionType.COS,
+		FunctionType.SIN,
+		FunctionType.TAN,
 		FunctionType.CSC,
 		FunctionType.COT,
 		FunctionType.SEC,
@@ -177,8 +181,10 @@ private static SimpleNode createNode(java.util.Random random, boolean bIsConstra
 		FunctionType.ACSCH,
 		FunctionType.ACOTH,
 		FunctionType.ASECH,
-		FunctionType.FACTORIAL
 	};
+
+
+	final FunctionType[] functionIDs = ArrayUtils.addElements(nonTrigFunctionIDs, trigFunctionIDs);
 	double nodeProbability[] = null;
 	if (bIsConstraint){
 		nodeProbability = nodeProbabilityConstraint;
@@ -214,10 +220,16 @@ private static SimpleNode createNode(java.util.Random random, boolean bIsConstra
 			}
 		}
 		case FuncNode: {
+			FunctionType[] validTypes;
+			if (parent instanceof ASTFuncNode parentFunc && parentFunc.getFunction().isTrigonometric()){
+				validTypes = nonTrigFunctionIDs; // avoid repeat trig as much as reasonable and possible.
+			} else {
+				validTypes = functionIDs;
+			}
 			ASTFuncNode fn = new ASTFuncNode();
 			double ftype = random.nextDouble();
-			int index = (int)Math.min(functionIDs.length-1,Math.floor(functionIDs.length*ftype));
-			fn.setFunctionType(functionIDs[index]);
+			int index = (int)Math.min(validTypes.length-1,Math.floor(validTypes.length*ftype));
+			fn.setFunctionType(validTypes[index]);
 			return fn;
 		}
 		case IDNode: {
@@ -408,13 +420,15 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2) {
  * @param exp2 cbit.vcell.parser.Expression non null
  */
 public static boolean functionallyEquivalent(Expression exp1, Expression exp2, boolean bVerifySameSymbols) {
+	if (Objects.equals(exp1.infix(), exp2.infix())) return true;
+
 	try {
 		// no tolerance for zero
 		if (exp1.flattenSafe().isZero() || exp2.flattenSafe().isZero()) return (exp1.flattenSafe().isZero() && exp2.flattenSafe().isZero());
 	} catch (ExpressionException e1) {
 		lg.debug("FlattenSafe exception in equivalency check: ", e1.getMessage(), e1);
 		return false;
-	} 
+	}
 	double defaultAbsoluteTolerance = 1e-12;
 	double defaultRelativeTolerance = 1e-9;
 	boolean bFirstAnswer = functionallyEquivalent(exp1,exp2,bVerifySameSymbols,defaultRelativeTolerance,defaultAbsoluteTolerance);
@@ -424,7 +438,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 			return bFirstAnswer;
 		}else{
 			lg.debug("first  '"+exp1.infix()+"=="+exp2.infix()+"':"+bFirstAnswer+"'\nsecond '"+exp1.flattenSafe().infix()+"=="+exp2.flattenSafe().infix()+"':"+bSecondAnswer+"'");
-			return bFirstAnswer;
+			return bSecondAnswer;
 		}
 	} catch (ExpressionException e) {
 		throw new RuntimeException(e);
@@ -555,7 +569,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 		final int MAX_TRIES = 1000;
 		final int REQUIRED_NUM_EVALUATIONS = 20;
 		int numEvaluations = 0;
-		Exception savedException = null;
+		List<Exception> savedExceptions = new ArrayList<>();
 		//
 		// we want to scale logarithmically to explore magnitudes
 		//
@@ -599,12 +613,15 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 				}
 				numEvaluations++;
 			}catch (Exception e){
-				savedException = e;
+				savedExceptions.add(e);
 			}
 		}
 		if (numEvaluations < REQUIRED_NUM_EVALUATIONS){
-			//savedException.printStackTrace(System.out);
-			throw new RuntimeException("too many failed evaluations ("+numEvaluations+" of "+REQUIRED_NUM_EVALUATIONS+") ("+savedException.toString()+") of expressions '"+exp1+"' and '"+exp2+"'");
+			// Before we declare failure, we should check if all the exceptions were Domain exceptions; that just means we got a bad expression!
+			List<Exception> unacceptableExceptions = savedExceptions.stream().filter(obj -> !(obj instanceof FunctionDomainException)).toList();
+			//unacceptableExceptions.printStackTrace(System.out);
+			if (!unacceptableExceptions.isEmpty())
+				throw new RuntimeException("too many failed evaluations ("+numEvaluations+" of "+REQUIRED_NUM_EVALUATIONS+") ( example: " + unacceptableExceptions.get(0).toString()+") of expressions '"+exp1+"' and '"+exp2+"'");
 		}
 		// before we declare victory, the expressions may have been poorly scaled (e.g. max magnitude was very small)
 		double maxAbsScale = result1MaxAbs + result2MaxAbs;
@@ -888,14 +905,14 @@ public interface IExpression {
  * @return cbit.vcell.parser.Expression
  */
 public static Expression generateExpression(java.util.Random random, int maxDepth, boolean bIsConstraint) throws ExpressionException {
-	SimpleNode node = generateSubtree(0,maxDepth,random,bIsConstraint);
+	SimpleNode node = generateSubtree(0,maxDepth,random,bIsConstraint, null);
 	if (bIsConstraint){
 		node = (SimpleNode)node.copyTreeBinary();
 	}
 	return new Expression(node.infixString(SimpleNode.LANGUAGE_DEFAULT));
 }
 
-private static SimpleNode generateSubtree(int depth, int maxDepth, java.util.Random random, boolean bIsConstraint) {
+private static SimpleNode generateSubtree(int depth, int maxDepth, java.util.Random random, boolean bIsConstraint, SimpleNode parent) {
 	SimpleNode newNode = null;
 	if (depth == 0 && bIsConstraint){
 		ASTRelationalNode relNode = new ASTRelationalNode();
@@ -913,15 +930,15 @@ private static SimpleNode generateSubtree(int depth, int maxDepth, java.util.Ran
 	}else if (depth >= maxDepth){
 		newNode = createTerminalNode(random,bIsConstraint);
 	}else{
-		newNode = createNode(random,bIsConstraint);
+		newNode = createNode(random,bIsConstraint, parent);
 	}
 	int numChildren = getNumberOfChildren(newNode);
 	for (int i = 0; i < numChildren; i++){
 		if (newNode instanceof ASTMultNode && i>0){  // InvertTerm is only ok if it's a second or later child of a mult node
-			newNode.jjtAddChild(generateSubtree(depth+1,maxDepth,random,bIsConstraint));
+			newNode.jjtAddChild(generateSubtree(depth+1,maxDepth,random,bIsConstraint, newNode), i);
 		}else{
 			SimpleNode child = null;
-			while ((child = generateSubtree(depth+1,maxDepth,random,bIsConstraint)) instanceof ASTInvertTermNode){
+			while ((child = generateSubtree(depth+1,maxDepth,random,bIsConstraint, newNode)) instanceof ASTInvertTermNode){
 			}
 			newNode.jjtAddChild(child);
 		}
