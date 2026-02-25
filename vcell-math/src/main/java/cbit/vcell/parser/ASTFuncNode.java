@@ -55,279 +55,51 @@ public class ASTFuncNode extends SimpleNode {
  	}
  	
  	public static enum FunctionType {
-         //
- 		USERDEFINED (
-				 new Name("user defined", "user defined"),
-		         -1,
-		         null,
-		         "",
-		         false
-		),
-		EXP (
-				new Name("exp"),
-				1,
-				MathMLTags.EXP,
-				"<html>exponential function, <i>e<sup>x</sup></i></html>",
-				false
-		),
-		SQRT (
-				new Name("sqrt"),
-				1,
-				null,
-				"square root",
-				false
-		),
-		ABS (
-				new Name("abs", "math.fabs"),
-				1,
-				MathMLTags.ABS ,
-				"absolute value",
-				false
-		),
-		POW (
-				new Name("pow"),
-				2,
-				MathMLTags.POWER,
-				"<html>power function, <i>x<sup>y</sup></i></html>",
-				false
-		),
-		LOG (
-				new Name("log"),
-				1,
-				MathMLTags.LN,
-				"natural logarithmic function",
-				false
-		),
-		SIN (
-				new Name("sin"), 1,
-				MathMLTags.SINE,
-				"sine function",
-				true
-		),
-		COS (
-				new Name("cos"), 1,
-				MathMLTags.COSINE,
-				"cosine function",
-				true
-		),
-		TAN (
-				new Name("tan"),
-				1,
-				MathMLTags.TANGENT,
-				"tangent function",
-				true
-		),
-		ASIN (
-				new Name("asin"),
-				1,
-				MathMLTags.INV_SINE,
-				"inverse since function",
-				true
-		),
-		ACOS (
-				new Name("acos"),
-				1,
-				MathMLTags.INV_COSINE,
-				"inverse cosine function",
-				true
-		),
-		ATAN (
-				new Name("atan"),
-				1, MathMLTags.INV_TANGENT,
-				"inverse tangent function",
-				true
-		),
-		ATAN2 (
-				new Name("atan2"),
-				2,
-				null,
-				"<html>similar to <i>atan(y/x)</i>, except places the angle in the correct quadrant</html>",
-				true
-		),
-		MAX (
-				new Name("max", "max"),
-				2,
-				MathMLTags.MAX,
-				"<html>maximum of <i>x</i> and <i>y</i></html>",
-				false
-		),
-		MIN (
-				new Name("min", "min"),
-				2,
-				MathMLTags.MIN,
-				"<html>minimum of <i>x</i> and <i>y</i></html>",
-				false
-		),
-		CEIL (
-				new Name("ceil"),
-				1,
-				MathMLTags.CEILING,
-				"<html>smallest integral value not less than <i>x</i></html>",
-				false
-		),
-		FLOOR (
-				new Name("floor"),
-				1,
-				MathMLTags.FLOOR,
-				"<html>largest integral value not greater than <i>x</i></html>",
-				false
-		),
-		CSC	(
-				new Name("csc", "1.0/" + SIN.getPythonName()),
-				1,
-				MathMLTags.COSECANT,
-				"cosecant function",
-				true
-		),
-		COT (
-				new Name("cot", "1.0/" + TAN.getPythonName()),
-				1,
-				MathMLTags.COTANGENT,
-				"cotangent function",
-				true
-		),
-		SEC (
-				new Name("sec", "1.0/" + COS.getPythonName()),
-				1,
-				MathMLTags.SECANT,
-				"secant function",
-				true
-		),
-		ACSC (
-				new Name("acsc", null),
-				1,
-				MathMLTags.INV_COSECANT,
-				"inverse cosecant function",
-				true
-		),
-		ACOT (
-				new Name("acot", null),
-				1,
-				MathMLTags.INV_COTANGENT,
-				"inverse cotangent function",
-				true
-		),
-		ASEC (
-				new Name("asec", null),
-				1,
-				MathMLTags.INV_SECANT,
-				"inverse secant",
-				true
-		),
-		SINH (
-				new Name("sinh"),
-				1,
-				MathMLTags.HYP_SINE,
-				"hyperbolic sine function",
-				true
-		),
-		COSH (
-				new Name("cosh"),
-				1,
-				MathMLTags.HYP_COSINE,
-				"hyperbolic cosine function",
-				true
-		),
-		TANH (
-				new Name("tanh"),
-				1,
-				MathMLTags.HYP_TANGENT,
-				"hyperbolic tangent function",
-				true
-		),
-		CSCH (
-				new Name("csch", "1.0/" + SINH.getPythonName()),
-				1,
-				MathMLTags.HYP_COSECANT,
-				"hyperbolic cosecant function",
-				true
-		),
-		COTH (
-				new Name("coth", "1.0/" + TANH.getPythonName()),
-				1,
-				MathMLTags.HYP_COTANGENT,
-				"hyperbolic cotangent function",
-				true
-		),
-		SECH (
-				new Name("sech", "1.0/" + COSH.getPythonName()),
-				1,
-				MathMLTags.HYP_SECANT,
-				"hyperbolic secant function",
-				true
-		),
-		ASINH (
-				new Name("asinh"),
-				1,
-				MathMLTags.INV_HYP_SINE,
-				"inverse hyperbolic sine function",
-				true
-		),
-		ACOSH (
-				new Name("acosh"),
-				1,
-				MathMLTags.INV_HYP_COSINE,
-				"inverse hyperbolic cosine function",
-				true
-		),
-		ATANH (
-				new Name("atanh"),
-				1,
-				MathMLTags.INV_HYP_TANGENT,
-				"inverse hyperbolic tangent function",
-				true
-		),
-		ACSCH (
-				new Name("acsch", null),
-				1,
-				MathMLTags.INV_HYP_COSECANT,
-				"inverse hyperbolic cosecant function",
-				true
-		),
-		ACOTH (
-				new Name("acoth", null),
-				1,
-				MathMLTags.INV_HYP_COTANGENT,
-				"inverse hyperbolic cotangent function",
-				true
-		),
-		ASECH (
-				new Name("asech", null),
-				1,
-				MathMLTags.INV_HYP_SECANT,
-				"inverse hyperbolic secant function",
-				true
-		),
-		FACTORIAL (
-				new Name("factorial"),
-				1,
-				MathMLTags.FACTORIAL,
-				"<html>factorial function, <i>x!</i></html>",
-				false
-		),
-		LOG_10 (
-				new Name("log10"),
-				1,
-				MathMLTags.LOG_10,
-				"base-10 logarithmic function",
-				false
-		),
-		LOGBASE (
-				new Name("logbase", "1.0/" + LOG.getPythonName()),
-				1,
-				MathMLTags.LOGBASE,
-				"",
-				false
-		);
+	    USERDEFINED("user defined",	 -1, 	null,	"" ),
+	    EXP			("exp",				1, 	MathMLTags.EXP					,	"<html>exponential function, <i>e<sup>x</sup></i></html>" ),
+	    SQRT		("sqrt",			1, 	null							,	"square root" ),
+	    ABS			("abs",				1, 	MathMLTags.ABS					,	"absolute value" ),
+	    POW			("pow",				2, 	MathMLTags.POWER				,	"<html>power function, <i>x<sup>y</sup></i></html>" ),
+	    LOG			("log",				1, 	MathMLTags.LN					,	"natural logarithmic function" ),
+	    SIN			("sin",				1, 	MathMLTags.SINE					,	"sine function" ),
+	    COS			("cos",				1, 	MathMLTags.COSINE				,	"cosine function" ),
+	    TAN			("tan",				1, 	MathMLTags.TANGENT				,	"tagent function" ),
+	    ASIN		("asin",			1, 	MathMLTags.INV_SINE				,	"inverse since function" ),
+	    ACOS		("acos",			1, 	MathMLTags.INV_COSINE			,	"inverse cosine function" ),
+	    ATAN		("atan",			1, 	MathMLTags.INV_TANGENT			,	"inverse tangent function" ),
+	    ATAN2		("atan2",			2, 	null						,	"<html>similar to <i>atan(y/x)</i>, except places the angle in the correct quadrant</html>" ),
+	    MAX			("max",				2, 	MathMLTags.MAX					,	"<html>maximum of <i>x</i> and <i>y</i></html>" ),
+	    MIN			("min",				2, 	MathMLTags.MIN					,	"<html>minimum of <i>x</i> and <i>y</i></html>" ),
+	    CEIL		("ceil",			1, 	MathMLTags.CEILING				,	"<html>smallest integral value not less than <i>x</i></html>" ),
+	    FLOOR		("floor",			1, 	MathMLTags.FLOOR				,	"<html>largest integral value not greater than <i>x</i></html>" ),
+	    CSC			("csc",				1, 	MathMLTags.COSECANT				,	"cosecant function" ),
+	    COT			("cot",				1, 	MathMLTags.COTANGENT			,	"cotangent function" ),
+	    SEC			("sec",				1, 	MathMLTags.SECANT				,	"secant function" ),
+	    ACSC		("acsc",			1, 	MathMLTags.INV_COSECANT			,	"inverse cosecant function" ),
+	    ACOT		("acot",			1, 	MathMLTags.INV_COTANGENT		,	"inverse cotangent function" ),
+	    ASEC		("asec",			1, 	MathMLTags.INV_SECANT			,	"inverse secant" ),
+	    SINH		("sinh",			1, 	MathMLTags.HYP_SINE				,	"hyperbolic sine function" ),
+	    COSH		("cosh",			1, 	MathMLTags.HYP_COSINE			,	"hyperbolic cosine function" ),
+	    TANH		("tanh",			1, 	MathMLTags.HYP_TANGENT			,	"hyperbolic tangent function" ),
+	    CSCH		("csch",			1, 	MathMLTags.HYP_COSECANT			,	"hyperbolic cosecant function" ),
+	    COTH		("coth",			1, 	MathMLTags.HYP_COTANGENT		,	"hyperbolic cotangent function" ),
+	    SECH		("sech",			1, 	MathMLTags.HYP_SECANT			,	"hyperbolic secant function" ),
+	    ASINH		("asinh",			1, 	MathMLTags.INV_HYP_SINE			,	"inverse hyperbolic sine function" ),
+	    ACOSH		("acosh",			1, 	MathMLTags.INV_HYP_COSINE		,	"inverse hyperbolic cosine function" ),
+	    ATANH		("atanh",			1, 	MathMLTags.INV_HYP_TANGENT		,	"inverse hyperbolic tangent function" ),
+	    ACSCH		("acsch",			1, 	MathMLTags.INV_HYP_COSECANT		,	"inverse hyperbolic cosecant function" ),
+	    ACOTH		("acoth",			1, 	MathMLTags.INV_HYP_COTANGENT	,	"inverse hyperbolic cotangent function" ),
+	    ASECH		("asech",			1, 	MathMLTags.INV_HYP_SECANT		,	"inverse hyperbolic secant function" ),
+	    FACTORIAL	("factorial",		1, 	MathMLTags.FACTORIAL			,	"<html>factorial function, <i>x!</i></html>" ),
+	    LOG_10		("log10",			1, 	MathMLTags.LOG_10				,	"base-10 logarithmic function" ),
+	    LOGBASE		("logbase", 		1, 	MathMLTags.LOGBASE		 		, 	"" );
 
-		private Name name;
+	    private String name;
  		private String htmlDescription;
  		private String[] argNames;
  		private FunctionArgType[] argTypes;
  		private String mathMLTag;
-	    private boolean isTrigonometric;
-
-		private FunctionType(Name name, int numArgs, String mathMLTag, String htmlDescription, boolean isTrigonometric) {
+		private FunctionType(String name, int numArgs, String mathMLTag, String htmlDescription) {
 			if (numArgs != 1 && numArgs != 2 && numArgs != -1) {
 				throw new RuntimeException("wrong number of numArgs");
 			}
@@ -341,15 +113,26 @@ public class ASTFuncNode extends SimpleNode {
 			}
 			this.mathMLTag = mathMLTag;
 			this.htmlDescription = htmlDescription;
-			this.isTrigonometric = isTrigonometric;
 		}
 		public final String getName() {
-			return name.name();
+			return name;
 		}
 
 		public final String getPythonName() {
-			if (null == name.pythonName()) throw new UnsupportedOperationException("Python has no equivalent name.");
-			return name.pythonName();
+			return switch (this){
+				case USERDEFINED -> "user defined";
+				case ABS -> "math.fabs";
+				case MAX, MIN -> getName();
+				case CSC -> "1.0/" + SIN.getPythonName();
+				case COT -> "1.0/" + TAN.getPythonName();
+				case SEC -> "1.0/" + COS.getPythonName();
+				case CSCH -> "1.0/" + SINH.getPythonName();
+				case COTH -> "1.0/" + TANH.getPythonName();
+				case SECH -> "1.0/" + COSH.getPythonName();
+				case LOGBASE -> "1.0/" + LOG.getPythonName();
+				case ACSC, ACOT, ASEC, ACSCH, ACOTH, ASECH -> throw new UnsupportedOperationException("Python has no equivalent name.");
+				default -> "math." + getName();
+			};
 		}
 		public final String getHtmlDescription() {
 			return htmlDescription;
@@ -365,21 +148,11 @@ public class ASTFuncNode extends SimpleNode {
 		}
 		public static FunctionType fromFunctionName(String functionName){
 			for (FunctionType ft : values()){
-				if (ft.name.name().equals(functionName)){
+				if (ft.name.equals(functionName)){
 					return ft;
 				}
 			}
 			return null;
-		}
-
-		public final boolean isTrigonometric() {
-			return isTrigonometric;
-		}
-
-		private record Name(String name, String pythonName){
-			public Name(String name){
-				this(name, "math." + name);
-			}
 		}
  	}
 	
@@ -2102,9 +1875,6 @@ public double evaluateVector(double values[]) throws ExpressionException {
 		if (jjtGetNumChildren()!=1) throw new Error("exp() expects 1 argument");
 		double childEval = jjtGetChild(0).evaluateVector(values);
 		result = Math.exp(childEval);
-		if (Double.isNaN(result) || Double.isInfinite(result)){
-			throw new FunctionDomainException("exp(u) evaluated to "+result+", u="+result+", expression = '"+infixString(LANGUAGE_DEFAULT)+"'");
-		}
 		break;
 	}
 	case SQRT: {
@@ -2135,9 +1905,6 @@ public double evaluateVector(double values[]) throws ExpressionException {
 			return u;
 		}
 		result = AccurateMath.pow(u,v);
-		if (Double.isNaN(result) || Double.isInfinite(result)){
-			throw new FunctionDomainException("pow(u,v) evaluated to "+result+", u="+u+", v="+v+", expression = '"+infixString(LANGUAGE_DEFAULT)+"'");
-		}
 		break;
 	}
 	case LOG: {
@@ -2751,7 +2518,7 @@ public String infixString(int lang) {
 				break;
 			}
 	 	default:{
-            String name = lang == LANGUAGE_PYTHON ? funcType.getPythonName() : funcType.getName() ;
+            String name = ((lang == LANGUAGE_PYTHON && !funcType.equals(FunctionType.USERDEFINED))? funcType.getPythonName(): this.getName());
 			buffer.append(name + "(");
 			for (int i=0;i<jjtGetNumChildren();i++){
 				if (i>0) buffer.append(", ");

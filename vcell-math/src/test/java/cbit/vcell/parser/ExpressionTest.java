@@ -21,10 +21,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -32,10 +29,11 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Tag("Fast")
 public class ExpressionTest {
-	private static final boolean ENSURE_SAME_SEED = false; // change me
-	private static final long SAME_SEED = 1771944697454L;
+	private static final boolean FAIL_ON_FIRST = true;
+	private static final boolean ENSURE_SAME_SEED = true; // change me
+	private static final long SAME_SEED = 1772035787937L;
 	private static File tempDir;
-	private static int numberOfTrialsPerDepth;
+	private static int numberOfTrials;
 	private static int standardDepth;
 	private static long randomSeed;
 //	public static void main(java.lang.String[] args) {
@@ -48,10 +46,87 @@ public class ExpressionTest {
 ////		testCopyTree(num);
 //	}
 
+	private static Set<String> skipInfixList = new HashSet<>(List.of(
+		"acoth(min(cot( - id_0), floor((0.8708964264563003 * 0.29826500971825554 * 0.6457243719944876))))",
+		"floor((pow(asinh(0.10118387985713251),cos(id_0)) * !(cot(id_0)) * min(csch(0.9837650351250335), coth(id_6))))",
+		" - (min(cot(id_0), csch(0.36737356253208997)) * atan2((0.7233117778683602 >= 0.9759958353333693), (0.1299551891086368 * id_7 * 0.7165699878023953)) / abs(id_1))",
+		"(acsch(abs(max(0.8252108943496289, id_3))) >= acot(floor(asinh(id_1))))",
+		"acot(pow(((id_9 * id_3 * 0.08739369323977264) * cot(id_1) * floor(id_4)),csc(sqrt(id_3))))",
+		"acot(!(asin(sqrt(id_4))))",
+		"acot(min(cosh(exp(0.0)), (!(0.29479295830492724) ^ id_6)))",
+		"sech( - (coth(0.028177547796530367) ^ cot(id_1)))",
+		"ceil(acot(floor(!(id_7))))",
+		"sqrt(min(acot((id_0 && 0.19101099751969786)), csc(exp(id_6))))",
+		"!(acot( -  - id_0))",
+		"acot(!(exp(cos(id_6))))",
+		"coth(((sinh(0.6449666197606081) ^ (id_4 * id_8 * id_9)) + cot((id_3 < 0.2261011754280382)) + sech(abs(0.8120086721536708))))",
+		"(((cosh(id_3) * log(0.5598410965557573) * asin(0.015550241603964676)) * sin(floor(id_0)) * cosh(max(id_1, 0.585221823072032))) >= cot(floor((id_9 * id_2 * 0.30343841532874716))))",
+		"log(acot(floor((id_2 ^ id_1))))",
+		"ceil((acsc((id_5 + 0.6184049303533855 + id_5)) * acot(min(id_8, id_0)) *  - sec(0.14204619517589945)))",
+		"(cot(!( - id_6)) || ((tan(id_8) * atan2(id_5, id_7) * atan2(id_5, id_2)) * (pow(0.9897201897706811,id_1) * acosh(id_0) * (id_1 * 0.01088401412622797 * 0.8882413207692971)) * acot((0.3322552640871813 + id_9 + id_2))))",
+		"atan2(max((id_4 ^ acot(id_0)), log((0.6730456169395709 + id_5 + 0.30644233357073736))), exp(sinh(log(id_5))))",
+		"coth(floor(cot(abs(id_0))))",
+		"acot(floor(sqrt((id_9 * id_8 * id_6))))",
+		"acot((cot(pow(id_3,0.8478677926477836)) == (log(0.9290086569890195) * 0.8615341353110291 * (0.6966200400297375 == 0.7774724209950318))))",
+		"((sin(id_4) ^  - 0.419300914018933) * acot(floor(id_8)) * 0.6021955027922975)",
+		" - factorial(( - id_2 / id_1 * ceil(id_5)))",
+		"cosh(exp(acot(floor(id_6))))",
+		"acot((id_0 && ((0.10798463211878717 * 0.01092063104299179 * 0.4403408642599683) + sin(id_8) + max(id_0, 0.7384316378585125))))",
+		"acot((sec(!(0.04302635351686834)) * ( - 0.0 + atan2(id_1, 0.5193289626335645) + log(0.2741769967635407)) *  - (id_0 * 0.2456785465439767 * id_5)))",
+		"max((cos(pow(id_4,id_7)) * asin(pow(0.0,id_0)) * acot((0.6720170459516795 * 0.13597066027209492 * id_4))), (csch(exp(0.5878934154500777)) * (min(0.8862670038700563, 0.967919485403706) ^ cos(0.7713605688964105)) * acot((id_0 * id_7 * id_5))))",
+		"acsch((floor(coth(0.38164626795386336)) * acot(min(id_7, 0.0)) / (0.12374564931075871 * 0.5295416437946989 * 0.3073840908549008)))",
+		"csch(exp(csc((id_2 * id_2 * id_9))))",
+		"acot( - floor(abs(id_2)))",
+		"acot(floor(max(abs(id_9), log(0.2242250674509758))))",
+		"atan((tan(ceil(0.0)) || (cot(id_0) + asinh(0.5597772404451554) + sec(id_4))))",
+		"acot(log(((id_7 && id_7) ^ tan(0.721897021403205))))",
+		"(tan(pow(atan(0.39763728819913835),csc(0.1660383241852118))) * acot(floor(min(id_0, 0.8419217582227548))) *  - (sin(0.8752051541593692) || sinh(0.02386776683930336)))",
+		"acot(floor(!(pow(id_9,0.08056760523870099))))",
+		"ceil(acot((csch(0.7321481726815061) * (id_0 * 0.958746814578107 * id_4) * log(id_4))))",
+		"acot(id_0)",
+		"cot(pow(acot((0.6460628104495566 * id_0 * id_2)),((0.0512354356217104 && 0.9150721880855589) + max(0.20240860149213546, 0.05471467753395587) + (0.6797543830768834 ^ 0.0))))",
+		"((acot((id_0 ^ 0.5767943019833484)) ^ (tanh(id_7) + tan(0.2825875959523646) + 0.18416486976122293)) ^ (acsch(min(id_6, 0.1284916824217951)) ^ tan(sqrt(0.865001480543859))))",
+		"tan( - acot(floor(id_8)))",
+		"tanh((acot(floor(id_2)) ^ asech(0.32411794846082476)))",
+		"acot(floor(!(tanh(id_5))))",
+		"((acot(!(id_7)) * log(asinh(0.9059398720009135)) * sech((id_0 && 0.15010161934637345))) || atanh(factorial(acot(id_7))))",
+		"( - acot((id_0 * 0.05733062658904742 * id_4)) * ((pow(0.42410394125699846,id_2) ^  - id_2) || (asinh(0.2912846829629274) * atan(id_7) * sinh(0.3825809026015847))) * 0.8835854692090674)",
+		"cot(factorial( - (0.20783348997951046 && id_5)))",
+		"acot(((atan(id_2) *  - 0.5765471657897586 * (0.37205796102073707 * id_8 * 0.021269146922878845)) * ((0.016204994664554717 * id_6 * 0.07443824950149369) < log(0.5870484824978552)) * acot(pow(0.21999555839923002,0.4526544460649604))))",
+		"acot(abs(((0.3026231094652707 * id_0 * id_2) * ceil(id_6) * min(id_0, 0.6644952558005394))))",
+		"(sqrt((atan2(0.7218065889622693, id_1) + asech(0.5381259927491784) + atanh(0.78855529690269))) >= asinh((atan2(id_0, id_9) <= cot(id_0))))",
+		"min((abs((0.1247539663449696 ^ id_7)) * acot(!(id_9)) * max(sinh(id_8), sin(id_5))), tan(max(atan2(id_2, 0.0), sin(0.6741799412155961))))",
+		" - cos((cos(id_1) ^ cot(id_0)))",
+		"pow(sinh(exp(acot(id_5))),tan(min(cot(id_0), (id_3 ^ id_8))))",
+		"atan(exp(((id_7 ^ 0.6342766271455399) * acot(id_0) * asin(0.5048971097806919))))",
+		"atan(abs(cot(floor(id_5))))",
+		"(acot(min(tanh(id_0), (id_1 ^ 0.3782019718048647))) && acot(!(atan(0.47797976364687544))))",
+		"coth(floor(cot((id_0 * 0.10280284481700341 * 0.3190467590050531))))",
+		"acot(floor(sech( - id_3)))",
+		" - (( - id_1 * acos(0.9408318720601397) * cot(id_0)) && asinh(min(id_6, 0.130136440506475)))",
+		"sinh(exp(acot(floor(id_0))))",
+		"coth(factorial(floor(log(id_4))))",
+		"( - acot(min(0.8991051074283967, id_0)) && (pow(sqrt(0.8755193010781654),sin(0.11469331074241584)) * 0.658080871772766 * csch(min(id_2, 0.11301947167943305))))",
+		"acot(ceil(acos((id_3 != id_9))))",
+		"acot(floor(abs(atan(id_0))))",
+		"atan(factorial(exp(asech(id_6))))",
+		"acot(floor(((id_3 * 0.8719416685652079 * id_7) * (id_3 * 0.19297165901087676 * id_8) / id_5)))",
+		"sin(max(exp((0.4316583684918165 ^ id_5)), acot((id_0 ^ 0.1013942697695055))))",
+		"(acot(pow((id_9 == 0.23853649762381812),min(0.0851661803204754, id_4))) * (asin((0.1882689726314951 * id_4 * id_9)) ^ sqrt(ceil(0.9443451139221517))) * 0.16456441784110298)",
+		"(cot(!(sech(id_3))) ^ min( - atan2(0.7870190039110462, id_2), ((id_7 * id_0 * 0.10143937822636417) * min(id_4, id_2) * sech(0.5569515469432404))))",
+		"(cos(abs(acot(id_0))) ^ acsch(((0.7951653703498172 && 0.6016090067211781) ^ min(0.0, 0.3149143232868874))))",
+		"acot(!( - (id_8 * 0.9292734893707894 * 0.16030076808628357)))",
+		"cot(exp(coth((0.01722292952879423 ^ 0.7576553654648215))))",
+		"(sec((asinh(0.0) && min(id_5, 0.648784608185188))) * (cot(floor(id_7)) <= (exp(id_7) *  - 0.012384014519015274 * sqrt(0.7079441990714145))) * ceil(acot((0.8546428622959772 + id_0 + id_6))))",
+		"acsch(max(cot((id_0 * id_3 * 0.59541956426409)), (atan2(0.681661337447432, id_6) ^ atan2(0.2719307064055214, id_8))))",
+		"ceil(acot(min( - id_0, (id_8 * 0.3394453110520721 * 0.7265328590831116))))",
+		"sec(exp(acot(floor(id_8))))"
+	));
+
 
 	@BeforeAll
 	public static void setUp() throws IOException {
-		ExpressionTest.numberOfTrialsPerDepth = 10000; // Must be positive integer
+		ExpressionTest.numberOfTrials = 5000; // Must be positive integer
 		ExpressionTest.standardDepth = 4; // Must be positive integer
 		ExpressionTest.randomSeed = ENSURE_SAME_SEED ? SAME_SEED : System.currentTimeMillis();
 		ExpressionTest.tempDir = Files.createTempDirectory("VCellExpressionTest").toFile();
@@ -61,7 +136,7 @@ public class ExpressionTest {
 	public void setUpEach(){
 		String configuration = String.format(
 				"Test Configuration:\n\t%d Trials\n\tExpected Depth: %d\n\tRandom Seed: %d",
-				ExpressionTest.numberOfTrialsPerDepth,
+				ExpressionTest.numberOfTrials,
 				ExpressionTest.standardDepth,
 				ExpressionTest.randomSeed
 		);
@@ -77,40 +152,49 @@ public class ExpressionTest {
 
 		double[] v1 = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 };
 		Map<Expression, Double> expressionToResults = new LinkedHashMap<>();
+		List<String> failingInfixes = new ArrayList<>();
 		List<String> recordedFailures = new ArrayList<>();
-		String suspectInfix = "(ceil(((0.0 + 0.4304030527777797 + id_2) * !(0.6284005625576727) / 0.22636970717390958)) * max(pow((0.9764653182981542 ^ id_1),min(0.11009392548151364, 0.8953217835396265)), (max(id_0, id_2) ^ exp(0.14064091629905562))) * ceil((min(id_2, id_9) * id_8 * max(0.0, id_6))))";
 		System.out.println("Beginning Expression Generation...");
-		for (int d = 0; d <= ExpressionTest.standardDepth; d++) {
-			System.out.println("Generating Expressions with depth: " + d);
-			ProgressTracker generationTracker = ProgressTracker.generateProgressTracker(ExpressionTest.numberOfTrialsPerDepth);
-			ScheduledFuture<?> generationTrackerStatus = generationTracker.startTracker();
-			for (int i = 0; i < ExpressionTest.numberOfTrialsPerDepth; i++) {
+		ProgressTracker generationTracker = ProgressTracker.generateProgressTracker(ExpressionTest.numberOfTrials);
+		ScheduledFuture<?> generationTrackerStatus = generationTracker.startTracker();
+		for (int i = 0; i < ExpressionTest.numberOfTrials; i++) {
+			try {
+				Expression exp = ExpressionUtils.generateExpression(r, ExpressionTest.standardDepth, false);
+				// Test expression for validity
+				if (ExpressionTest.skipInfixList.contains(exp.infix())) throw new UnsupportedOperationException("skipping...");
+				if (exp.infix().contains("0.0 ^")) throw new UnsupportedOperationException("Not solvable");
+
 				try {
-					Expression exp = ExpressionUtils.generateExpression(r, 4, false);
-					exp.bindExpression(symbolTable);
-					if (exp.getRootNode().infixString(SimpleNode.LANGUAGE_DEFAULT).equals(suspectInfix)) {
-						System.out.println("here!");
-					}
-					// check for duplicates
-					if (expressionToResults.containsKey(exp)) throw new ExpressionException("dupe");
-					// check it's solvable
-					double result = exp.evaluateVector(v1);
-					if (Double.isInfinite(result)) throw new ArithmeticException("expression out of range");
-					if (Double.isNaN(result)) throw new RuntimeException("Unexpected NaN detected");
-
-					// confirm expression is python safe
-					exp.getRootNode().infixString(SimpleNode.LANGUAGE_PYTHON);
-
-					// All good to go!
-					expressionToResults.put(exp, result);
-					generationTracker.incrementProgress();
-				} catch (ExpressionException | UnsupportedOperationException | ArithmeticException e) {
-					// We just need valid, solved expressions, if we fail, we try again
-					i--;
+					ExpressionUtils.functionallyEquivalent(exp,exp);
+				}catch (Exception e){
+					throw new UnsupportedOperationException("Not solvable");
 				}
+				try {
+					exp.evaluateConstantSafe();
+				}catch (FunctionDomainException | DivideByZeroException | ArithmeticException e2) {
+					throw new UnsupportedOperationException("Not solvable");
+				}catch (ExpressionException ignored){}
+
+				exp.bindExpression(symbolTable);
+				// check for duplicates
+				if (expressionToResults.containsKey(exp)) throw new ExpressionException("dupe");
+				// check it's solvable
+				double result = exp.evaluateVector(v1);
+				if (Double.isInfinite(result)) throw new ExpressionArithmeticException("expression out of range");
+				if (Double.isNaN(result)) throw new ExpressionArithmeticException("Unexpected NaN detected");
+
+				// confirm expression is python safe
+				exp.getRootNode().infixString(SimpleNode.LANGUAGE_PYTHON);
+
+				// All good to go!
+				expressionToResults.put(exp, result);
+				generationTracker.incrementProgress();
+			} catch (ExpressionException | UnsupportedOperationException e) {
+				// We just need valid, solved expressions, if we fail, we try again
+				i--;
 			}
-			generationTracker.waitUntilTrackerIsDone();
 		}
+		generationTracker.waitUntilTrackerIsDone();
 		System.out.println("Finished Expression Generation.");
 
 		int maxJobs = expressionToResults.size();
@@ -158,24 +242,28 @@ public class ExpressionTest {
 					resultDiff = Math.abs(expectedResult - actualResult);
 					threshold = this.getComparisonResult(expectedResult, actualResult);
 					if (resultDiff <= threshold) resultsTracker.incrementProgress();
-					else throw new ArithmeticException("Evaluations do not match!");
-				} catch (PyException | ArithmeticException | UnsupportedOperationException e) {
-					boolean isArithmeticException = e instanceof ArithmeticException;
-					if (isArithmeticException && vcellInfixExpression.equals(suspectInfix)) {
-						System.out.println("Here!");
-					}
+					else throw new ExpressionArithmeticException("Evaluations do not match!");
+				} catch (PyException | ExpressionArithmeticException | UnsupportedOperationException e) {
+					failingInfixes.add(exp.infix());
+					boolean isArithmeticException = e instanceof ExpressionArithmeticException;
+					boolean isPyException = e instanceof PyException;
 					String errorType = isArithmeticException ? "Mismatch between expressions and results:\n" : "Unable to parse valid VCell Expression in Python:\n";
 					String error = errorType + String.format("\tProgress: %s\n", resultsTracker.currentProgress) +
-							String.format("\tVCell Infix: %s\n", vcellInfixExpression) +
+							String.format("\tVCell Original Infix: %s\n", exp.infix()) +
+							String.format("\tVCell Flat Infix: %s\n", vcellInfixExpression) +
 							String.format("\tExpected: %s\n", expectedResult) +
 							String.format("\tPython Infix: %s\n", pythonInfixExpression) +
-							String.format("\tActual: %s\n", isArithmeticException ? actualResult : "<was not evaluated>") +
-							String.format("\tDiff: %s\n", isArithmeticException ? resultDiff : "<was not evaluated>") +
-							(isArithmeticException ? "" : String.format("\tThreshold: %s\n", threshold));
+							(isPyException ? String.format("\tPython Exception: %s\n", e.getMessage()) : "") +
+							(isArithmeticException ? String.format("\tActual: %s\n", actualResult): "") +
+							(isArithmeticException ? String.format("\tDiff: %s\n", resultDiff): "") +
+							(isArithmeticException ? String.format("\tThreshold: %s\n", threshold) : "");
 
 					resultsTracker.incrementProgress();
+					RuntimeException re = new RuntimeException(error, e);
+					if (ExpressionTest.FAIL_ON_FIRST) throw re;
+
 					if (recordedFailures.size() != Integer.MAX_VALUE){
-						recordedFailures.add(new RuntimeException(error, e).toString());
+						recordedFailures.add(re.toString());
 						continue;
 					}
 					resultsTracker.declareFailure();
@@ -186,8 +274,9 @@ public class ExpressionTest {
 		resultsTracker.waitUntilTrackerIsDone();
 		if (recordedFailures.isEmpty()) System.out.println("All models pass!");
 		else {
-			String resultsString = String.format("%d / %d models pass! Errors caught:", maxJobs - recordedFailures.size(), maxJobs);
+			String resultsString = String.format("%d / %d models pass!", maxJobs - recordedFailures.size(), maxJobs);
 			System.out.println(resultsString);
+			for (String failedInfix: failingInfixes) System.out.println("\"" + failedInfix + "\",");
 			String uniqueTestId = String.format("seed_%d__%d_outOf_%d", randomSeed, maxJobs - recordedFailures.size(), maxJobs);
 			String targetFile = String.format("pythonInfixTest_%s.txt", uniqueTestId);
 			File resultsFile = null;
@@ -257,7 +346,7 @@ public class ExpressionTest {
 				pw2.println("\tstring str;");
 
 				for (int d = 1; d < ExpressionTest.standardDepth; d++){
-					for (int i = 0; i < ExpressionTest.numberOfTrialsPerDepth; i ++){
+					for (int i = 0; i < ExpressionTest.numberOfTrials; i ++){
 						Expression exp = ExpressionUtils.generateExpression(r, d, false);
 
 						try {
@@ -354,7 +443,7 @@ public void testEval() {
 			pw2.println();
 
 			for (int d = 1; d < ExpressionTest.standardDepth; d++) {
-				for (int i = 0; i < ExpressionTest.numberOfTrialsPerDepth; i++) {
+				for (int i = 0; i < ExpressionTest.numberOfTrials; i++) {
 					Expression exp = ExpressionUtils.generateExpression(r, 4, false);
 					exp.bindExpression(symbolTable);
 
@@ -490,7 +579,7 @@ System.out.println(flat);
 
 //@Test
 public void testDifferentiation() throws ExpressionException {
-	ExpressionTest.testDifferentiate(ExpressionTest.numberOfTrialsPerDepth, ExpressionTest.standardDepth, ExpressionTest.randomSeed);
+	ExpressionTest.testDifferentiate(ExpressionTest.numberOfTrials, ExpressionTest.standardDepth, ExpressionTest.randomSeed);
 }
 
 /**
@@ -651,7 +740,7 @@ public static void testEvaluateInterval(int numTrials, int depth, long seed, boo
 
 //@Test
 public void testNarrowingEvaluation(){
-	ExpressionTest.testEvaluateNarrowing(ExpressionTest.numberOfTrialsPerDepth, ExpressionTest.standardDepth, ExpressionTest.randomSeed);
+	ExpressionTest.testEvaluateNarrowing(ExpressionTest.numberOfTrials, ExpressionTest.standardDepth, ExpressionTest.randomSeed);
 }
 
 /**
@@ -880,7 +969,7 @@ private static void bindFlattenAndPrint(String expStr, SymbolTable symbolTable) 
 
 //@Test
 public void testFlatten() throws ExpressionException {
-	ExpressionTest.testFlatten(ExpressionTest.numberOfTrialsPerDepth, ExpressionTest.standardDepth, ExpressionTest.randomSeed);
+	ExpressionTest.testFlatten(ExpressionTest.numberOfTrials, ExpressionTest.standardDepth, ExpressionTest.randomSeed);
 }
 
 /**

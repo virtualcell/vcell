@@ -1,8 +1,0 @@
-49999 / 50000 models pass! Errors caught:
-java.lang.RuntimeException: Mismatch between expressions and results:
-	Progress: 34954
-	VCell Infix: cos(((0.32013148995189455 * (id_4 * id_3 * 0.07083826107961166) * (0.508382534490026 * 0.8500620674339501 * id_6)) ^  - coth(0.26116935039063593)))
-	Expected: 0.9729473858900577
-	Python Infix: math.cos((((0.32013148995189455 * (id_4 * id_3 * 0.07083826107961166) * (0.508382534490026 * 0.8500620674339501 * id_6)))**( - (1.0/math.tanh(0.26116935039063593)))))
-	Actual: 0.9695785783440448
-	Diff: 0.0033688075460128752

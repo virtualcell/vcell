@@ -20,7 +20,12 @@ import org.vcell.util.ArrayUtils;
 import org.vcell.util.Matchable;
 import org.vcell.util.TokenMangler;
 
-import java.util.*;
+import java.util.Set;
+import java.util.LinkedHashSet;
+import java.util.Random;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Vector;
 import java.util.function.BiPredicate;
 
 /**
@@ -155,7 +160,7 @@ private static SimpleNode createNode(java.util.Random random, boolean bIsConstra
 		FunctionType.FACTORIAL
 	};
 
-	final FunctionType[] trigFunctionIDs = {
+	final Set<FunctionType> trigFunctionIDs = new LinkedHashSet<>(List.of(
 		FunctionType.ACOS,
 		FunctionType.ASIN,
 		FunctionType.ATAN,
@@ -180,11 +185,11 @@ private static SimpleNode createNode(java.util.Random random, boolean bIsConstra
 		FunctionType.ATANH,
 		FunctionType.ACSCH,
 		FunctionType.ACOTH,
-		FunctionType.ASECH,
-	};
+		FunctionType.ASECH
+	));
 
 
-	final FunctionType[] functionIDs = ArrayUtils.addElements(nonTrigFunctionIDs, trigFunctionIDs);
+	final FunctionType[] functionIDs = ArrayUtils.addElements(nonTrigFunctionIDs, trigFunctionIDs.toArray(FunctionType[]::new));
 	double nodeProbability[] = null;
 	if (bIsConstraint){
 		nodeProbability = nodeProbabilityConstraint;
@@ -221,7 +226,7 @@ private static SimpleNode createNode(java.util.Random random, boolean bIsConstra
 		}
 		case FuncNode: {
 			FunctionType[] validTypes;
-			if (parent instanceof ASTFuncNode parentFunc && parentFunc.getFunction().isTrigonometric()){
+			if (parent instanceof ASTFuncNode parentFunc && trigFunctionIDs.contains(parentFunc.getFunction())){
 				validTypes = nonTrigFunctionIDs; // avoid repeat trig as much as reasonable and possible.
 			} else {
 				validTypes = functionIDs;
@@ -413,14 +418,15 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2) {
 	return functionallyEquivalent(exp1,exp2,verifySameSymbols);
 }
 /**
- * Insert the method's description here.
+ * Checks whether two expressions can be resolved, and whether they are equivalent once resolved
  * Creation date: (10/17/2002 12:42:18 AM)
  * @return boolean
  * @param exp1 cbit.vcell.parser.Expression non null
  * @param exp2 cbit.vcell.parser.Expression non null
  */
 public static boolean functionallyEquivalent(Expression exp1, Expression exp2, boolean bVerifySameSymbols) {
-	if (Objects.equals(exp1.infix(), exp2.infix())) return true;
+	// We can't just test that infixes are equal, because we NEED to test if the expression is solvable!
+	//if (Objects.equals(exp1.infix(), exp2.infix())) return true;
 
 	try {
 		// no tolerance for zero
@@ -617,11 +623,8 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 			}
 		}
 		if (numEvaluations < REQUIRED_NUM_EVALUATIONS){
-			// Before we declare failure, we should check if all the exceptions were Domain exceptions; that just means we got a bad expression!
-			List<Exception> unacceptableExceptions = savedExceptions.stream().filter(obj -> !(obj instanceof FunctionDomainException)).toList();
-			//unacceptableExceptions.printStackTrace(System.out);
-			if (!unacceptableExceptions.isEmpty())
-				throw new RuntimeException("too many failed evaluations ("+numEvaluations+" of "+REQUIRED_NUM_EVALUATIONS+") ( example: " + unacceptableExceptions.get(0).toString()+") of expressions '"+exp1+"' and '"+exp2+"'");
+			//savedExceptions.get(0).printStackTrace(System.out);
+			throw new RuntimeException("too many failed evaluations ("+numEvaluations+" of "+REQUIRED_NUM_EVALUATIONS+") ( example: " + savedExceptions.get(0).toString()+") of expressions '"+exp1+"' and '"+exp2+"'");
 		}
 		// before we declare victory, the expressions may have been poorly scaled (e.g. max magnitude was very small)
 		double maxAbsScale = result1MaxAbs + result2MaxAbs;

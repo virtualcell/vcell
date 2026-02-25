@@ -870,7 +870,7 @@ parseCount++;
 	} catch (ParseException | TokenMgrError e) {
 		String msg = "Parse Error while parsing expression '" + expString + "': " + e.getMessage();
 		logger.error(msg, e);
-		throw new ParserException("Parse Error while parsing expression '" + expString + "': " + e.getMessage());
+		throw new ParserException("Parse Error while parsing expression '" + expString + "': ", e);
 	}
 }
 /**
