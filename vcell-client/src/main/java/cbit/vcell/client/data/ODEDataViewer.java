@@ -18,6 +18,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import cbit.vcell.simdata.LangevinSolverResultSet;
+import cbit.vcell.solver.ode.gui.LangevinClustersResultsPanel;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
@@ -53,12 +55,16 @@ public class ODEDataViewer extends DataViewer {
 	private PlotPane ivjPlotPane1 = null;
 	private JTabbedPane ivjJTabbedPane = null;
 	private ODESolverResultSet fieldOdeSolverResultSet = null;
+	public boolean hasLangevinBatchResults = false;
+	private LangevinSolverResultSet fieldLangevinSolverResultSet = null;
 	private NFSimMolecularConfigurations nFSimMolecularConfigurations = null;
 	private javax.swing.JPanel ivjViewData = null;
+	private LangevinClustersResultsPanel langevinClustersResultsPanel = null;
 	private OutputSpeciesResultsPanel outputSpeciesResultsPanel = null;
 	private VCDataIdentifier fieldVcDataIdentifier = null;
 
 	private static final String OUTPUT_SPECIES_TABNAME = "Output Species";
+	private static final String LANGEVIN_CLUSTER_RESULTS_TABNAME = "Langevin Clusters";
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -217,6 +223,9 @@ public ODESolverPlotSpecificationPanel getODESolverPlotSpecificationPanel1() {
 public ODESolverResultSet getOdeSolverResultSet() {
 	return fieldOdeSolverResultSet;
 }
+public LangevinSolverResultSet getLangevinSolverResultSet() {
+	return fieldLangevinSolverResultSet;
+}
 public NFSimMolecularConfigurations getNFSimMolecularConfigurations() {
 	return nFSimMolecularConfigurations;
 }
@@ -265,7 +274,9 @@ new ChangeListener(){
 	public void stateChanged(ChangeEvent e) {
 		if(ivjJTabbedPane.getSelectedIndex() == ivjJTabbedPane.indexOfTab(OUTPUT_SPECIES_TABNAME)){
 			// TODO: here
-		}else {
+		} else if(ivjJTabbedPane.getSelectedIndex() == ivjJTabbedPane.indexOfTab(LANGEVIN_CLUSTER_RESULTS_TABNAME)) {
+
+		} else {
 
 		}
 	}
@@ -277,9 +288,15 @@ private javax.swing.JTabbedPane getJTabbedPane() {
 			ivjJTabbedPane = new javax.swing.JTabbedPane();
 			ivjJTabbedPane.setName("JTabbedPane1");
 			ivjJTabbedPane.insertTab("View Data", null, getViewData(), null, 0);
+
+			langevinClustersResultsPanel = new LangevinClustersResultsPanel(this);
+			langevinClustersResultsPanel.addPropertyChangeListener(ivjEventHandler);
+			ivjJTabbedPane.addTab(LANGEVIN_CLUSTER_RESULTS_TABNAME, langevinClustersResultsPanel);
+
 			outputSpeciesResultsPanel = new OutputSpeciesResultsPanel(this);
 			outputSpeciesResultsPanel.addPropertyChangeListener(ivjEventHandler);
 			ivjJTabbedPane.addTab(OUTPUT_SPECIES_TABNAME, outputSpeciesResultsPanel);
+
 			ivjJTabbedPane.addChangeListener(mainTabChangeListener);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -390,6 +407,11 @@ public void setOdeSolverResultSet(ODESolverResultSet odeSolverResultSet) {
 	fieldOdeSolverResultSet = odeSolverResultSet;
 	firePropertyChange("odeSolverResultSet", oldValue, odeSolverResultSet);
 }
+public void setLangevinSolverResultSet(LangevinSolverResultSet langevinSolverResultSet) {
+	LangevinSolverResultSet oldValue = fieldLangevinSolverResultSet;
+	fieldLangevinSolverResultSet = langevinSolverResultSet;
+	firePropertyChange("langevinSolverResultSet", oldValue, langevinSolverResultSet);
+}
 public void setNFSimMolecularConfigurations(NFSimMolecularConfigurations nFSimMolecularConfigurations) {
 	NFSimMolecularConfigurations oldValue = nFSimMolecularConfigurations;
 	this.nFSimMolecularConfigurations = nFSimMolecularConfigurations;
@@ -430,10 +452,15 @@ public void setVcDataIdentifier(VCDataIdentifier vcDataIdentifier) {
 }
 
 public void setOdeDataContext() {
-	if(getSimulation() != null && getNFSimMolecularConfigurations() != null) {
+	if(getSimulation() != null && hasLangevinBatchResults) {
+		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(OUTPUT_SPECIES_TABNAME), false);
+		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(LANGEVIN_CLUSTER_RESULTS_TABNAME), true);
+	} else if(getSimulation() != null && getNFSimMolecularConfigurations() != null) {
 		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(OUTPUT_SPECIES_TABNAME), true);
+		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(LANGEVIN_CLUSTER_RESULTS_TABNAME), false);
 	} else {
 		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(OUTPUT_SPECIES_TABNAME), false);
+		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(LANGEVIN_CLUSTER_RESULTS_TABNAME), false);
 	}
 }
 

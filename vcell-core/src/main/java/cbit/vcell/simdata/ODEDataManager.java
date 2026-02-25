@@ -137,6 +137,9 @@ public ODESolverResultSet getODESolverResultSet() throws DataAccessException {
 public NFSimMolecularConfigurations getNFSimMolecularConfigurations() throws DataAccessException {	
 	return nFSimMolecularConfigurations;
 }
+public LangevinSolverResultSet getLangevinSolverResultSet() throws DataAccessException {
+	return langevinSolverResultSet;
+}
 
 /**
  * Gets the simulationInfo property (cbit.vcell.solver.SimulationInfo) value.
@@ -184,6 +187,7 @@ private void connect() throws DataAccessException {
 	langevinSolverResultSet = new LangevinSolverResultSet(raw);		// may be null
 	if( langevinSolverResultSet.isAverageDataAvailable()) {
 		odeSolverResultSet = langevinSolverResultSet.getAvg();
+//		odeSolverResultSet = langevinSolverResultSet.getClusterMean();
 	}
 }
 
