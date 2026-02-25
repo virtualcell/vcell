@@ -145,5 +145,4 @@ public void renameBoundSymbols(NameScope nameScope) throws ExpressionBindingExce
 
 	public Node convertToRvachevFunction();
 
-int getHeight();
 }

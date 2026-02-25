@@ -180,8 +180,7 @@ public class MathMLTest {
 			return;
 		}
 
-		String vcellInfixJSCL = expression.infix_JSCL();
-		jscl.math.Expression jsclExp = jscl.math.Expression.valueOf(vcellInfixJSCL);
+		jscl.math.Expression jsclExp = jscl.math.Expression.valueOf(expression.infix_JSCL());
 		String jsclExpInfix = jsclExp.toString();
 		Expression roundTripExp = new Expression(jsclExpInfix);
 

@@ -312,12 +312,4 @@ public void substitute(Node origNode, Node newNode) {
 	  }
  }
 
- @Override
- public int getHeight(){
-	  int height = 0;
-	  for (int i=0;i<jjtGetNumChildren();i++){
-		  height = Math.max(height,jjtGetChild(i).getHeight());
-	  }
-	  return height + 1;
- }
 }

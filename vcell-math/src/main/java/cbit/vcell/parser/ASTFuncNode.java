@@ -118,18 +118,18 @@ public class ASTFuncNode extends SimpleNode {
 			return name;
 		}
 
-		public final String getPythonName() {
+		public final String getPythonTranslation() {
 			return switch (this){
-				case USERDEFINED -> "user defined";
+				case USERDEFINED -> throw new IllegalArgumentException("User defined functions have nothing to do with standard python names.");
 				case ABS -> "math.fabs";
 				case MAX, MIN -> getName();
-				case CSC -> "1.0/" + SIN.getPythonName();
-				case COT -> "1.0/" + TAN.getPythonName();
-				case SEC -> "1.0/" + COS.getPythonName();
-				case CSCH -> "1.0/" + SINH.getPythonName();
-				case COTH -> "1.0/" + TANH.getPythonName();
-				case SECH -> "1.0/" + COSH.getPythonName();
-				case LOGBASE -> "1.0/" + LOG.getPythonName();
+				case CSC -> "1.0/" + SIN.getPythonTranslation();
+				case COT -> "1.0/" + TAN.getPythonTranslation();
+				case SEC -> "1.0/" + COS.getPythonTranslation();
+				case CSCH -> "1.0/" + SINH.getPythonTranslation();
+				case COTH -> "1.0/" + TANH.getPythonTranslation();
+				case SECH -> "1.0/" + COSH.getPythonTranslation();
+				case LOGBASE -> "1.0/" + LOG.getPythonTranslation();
 				case ACSC, ACOT, ASEC, ACSCH, ACOTH, ASECH -> throw new UnsupportedOperationException("Python has no equivalent name.");
 				default -> "math." + getName();
 			};
@@ -1873,8 +1873,7 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	}
 	case EXP: {
 		if (jjtGetNumChildren()!=1) throw new Error("exp() expects 1 argument");
-		double childEval = jjtGetChild(0).evaluateVector(values);
-		result = Math.exp(childEval);
+		result = Math.exp(jjtGetChild(0).evaluateVector(values));
 		break;
 	}
 	case SQRT: {
@@ -2389,6 +2388,13 @@ String getMathMLName() {
 	return funcType.getMathMLTag();
 }
 
+String getPythonName(){
+	if (funcType == FunctionType.USERDEFINED){
+		return funcName;
+	}
+	return funcType.getPythonTranslation();
+}
+
 
 /**
  * Insert the method's description here.
@@ -2474,7 +2480,7 @@ public String infixString(int lang) {
 			if (lang == LANGUAGE_PYTHON){
 				// Need parenthesis to encapsulate the "1.0/x" operation
 				buffer.append("(");
-				buffer.append(funcType.getPythonName());
+				buffer.append(getPythonName());
 				buffer.append("(");
 				buffer.append(jjtGetChild(0).infixString(lang));
 				buffer.append("))");
@@ -2499,7 +2505,7 @@ public String infixString(int lang) {
 				);
 				FunctionType inversionType = inversionMap.get(funcType);
 				buffer.append("(");
-				buffer.append(inversionType.getPythonName());
+				buffer.append(getPythonName());
 				buffer.append("(1.0/(");
 				buffer.append(jjtGetChild(0).infixString(lang));
 				buffer.append(")))");
@@ -2509,7 +2515,7 @@ public String infixString(int lang) {
 		}
 		case FACTORIAL:
 			if (lang == LANGUAGE_PYTHON){
-				String name = funcType.getPythonName();
+				String name = getPythonName();
 				// Since VCell now only accepts integer-values for factorial, integer casting should be safe
 				buffer.append(name).append("(int(");
 				if (1 < this.jjtGetNumChildren()) throw new UnsupportedOperationException("Cannot take factorial of multiple children");
@@ -2517,8 +2523,10 @@ public String infixString(int lang) {
 				buffer.append("))");
 				break;
 			}
+			// DO NOT PUT A "BREAK" HERE! We want to "fall through" to default!
 	 	default:{
-            String name = ((lang == LANGUAGE_PYTHON && !funcType.equals(FunctionType.USERDEFINED))? funcType.getPythonName(): this.getName());
+		    boolean needPythonicVersionOfName = lang == LANGUAGE_PYTHON && !funcType.equals(FunctionType.USERDEFINED);
+            String name = needPythonicVersionOfName ? getPythonName(): getName();
 			buffer.append(name + "(");
 			for (int i=0;i<jjtGetNumChildren();i++){
 				if (i>0) buffer.append(", ");
