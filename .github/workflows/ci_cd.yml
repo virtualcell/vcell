@@ -89,7 +89,9 @@ jobs:
         shell: bash
         run: |
           curl https://repo1.maven.org/maven2/org/python/jython-installer/2.7.4/jython-installer-2.7.4.jar -o jython-installer.jar
-          java -jar jython-installer.jar -s -d /home/runner/.m2/repository/org/python/jython/2.7.4 
+          mkdir .temp_holding
+          mv /home/runner/.m2/repository/org/python/jython/2.7.4/* .temp_holding
+          java -jar jython-installer.jar -s -d /home/runner/.m2/repository/org/python/jython/2.7.4
 
       - name: Test building of docker image
         run: |
@@ -180,6 +182,8 @@ jobs:
         shell: bash
         run: |
           curl https://repo1.maven.org/maven2/org/python/jython-installer/2.7.4/jython-installer-2.7.4.jar -o jython-installer.jar
+          mkdir .temp_holding
+          mv /home/runner/.m2/repository/org/python/jython/2.7.4/* .temp_holding
           java -jar jython-installer.jar -s -d /home/runner/.m2/repository/org/python/jython/2.7.4 
 
       - name: Maven Build and run Test group ${{ matrix.test-group }}
