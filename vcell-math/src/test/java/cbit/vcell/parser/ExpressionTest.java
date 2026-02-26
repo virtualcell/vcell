@@ -969,7 +969,7 @@ public static void testFlatten(int numTrials, int depth, long seed) {
 	System.out.println("test for .flatten(), "+numCorrect+" correct, "+numWrong+" wrong, "+numNotIdempotent+" not idempotent, "+numFailed+" failed, out of "+numTrials+" trials");
 }
 
-	//@Test
+	@Test
 	public void testLinearity() throws ExpressionException {
 		Expression[][] tests = new Expression[][] {
 				{ new Expression("k*abc"), new Expression("k"), new Expression("abc") },
@@ -1011,7 +1011,7 @@ public static void testFlatten(int numTrials, int depth, long seed) {
 		}
 	}
 
-	//@Test
+	@Test
 	public void test_functional_equivalence_with_functionSTEs() throws ExpressionException {
 		final String infix1 = "((CLEC2_Raft * ((0.42857142857142855 * Syk_A) + (1.806642537E8 * CLEC2_Syk_A / " +
 				"(4.1538E18 * vcRegionVolume('subdomain1') / (1.0E10 * vcRegionArea('subdomain0_subdomain1_membrane'))))" +

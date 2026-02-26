@@ -444,7 +444,7 @@ public static boolean functionallyEquivalent(Expression exp1, Expression exp2, b
 			return bFirstAnswer;
 		}else{
 			lg.debug("first  '"+exp1.infix()+"=="+exp2.infix()+"':"+bFirstAnswer+"'\nsecond '"+exp1.flattenSafe().infix()+"=="+exp2.flattenSafe().infix()+"':"+bSecondAnswer+"'");
-			return bSecondAnswer;
+			return bFirstAnswer;
 		}
 	} catch (ExpressionException e) {
 		throw new RuntimeException(e);
