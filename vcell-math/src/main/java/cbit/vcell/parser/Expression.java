@@ -687,7 +687,11 @@ public int hashCode() {
 	  }else{
 		 return rootNode.infixString(SimpleNode.LANGUAGE_MATLAB);
 	  }
-   }   
+   }
+
+   public String infix_Python() {
+       return rootNode == null ?  null : rootNode.infixString(SimpleNode.LANGUAGE_PYTHON);
+   }
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.model.Expression
