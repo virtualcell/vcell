@@ -95,7 +95,7 @@ public Node flatten(boolean substituteConstants) throws ExpressionException {
 public String infixString(int lang){
 
 	StringBuffer buffer = new StringBuffer();
-	 
+
 	if (lang == LANGUAGE_BNGL){
 		buffer.append(" -");
 		buffer.append(jjtGetChild(0).infixString(lang));

@@ -10,6 +10,8 @@
 
 package cbit.vcell.parser;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 import net.sourceforge.interval.ia_math.IAException;
@@ -141,8 +143,9 @@ public double evaluateConstant(boolean substituteConstants) throws ExpressionExc
 	for (int i=0;i<jjtGetNumChildren();i++){
 		if (jjtGetChild(i).isBoolean()) {
 			try {
-				if (jjtGetChild(i).evaluateConstant(substituteConstants) == 0) {
-					return 0.0;
+				double result = jjtGetChild(i).evaluateConstant(substituteConstants);
+				if (result == 0) {
+					return result;
 				}
 			}catch (ExpressionException e){
 				childException = e;
@@ -158,12 +161,16 @@ public double evaluateConstant(boolean substituteConstants) throws ExpressionExc
 		try {
 			double constantValue = jjtGetChild(i).evaluateConstant(substituteConstants);
 			product *= constantValue;
-		}catch (ExpressionException e){
+		} catch (FunctionDomainException e) {
 			childException = e;
-		}		
+		} catch (ExpressionException e){
+			// Function Domain Exception has higher priority than a binding exception
+			if (!(childException instanceof FunctionDomainException)) childException = e;
+		}
 	}
-	if (product == -0.0){
-		return 0.0;
+	/// Reminder: can't simply, functions like atan2 need a signed zero
+	if (product == 0.0){ // -0.0 == 0.0
+		return product;
 	}	
 	if (childException != null){
 		throw childException;
@@ -185,23 +192,20 @@ public double evaluateVector(double values[]) throws ExpressionException {
 	// domain defined by the boolean conditions.
 	for (int i=0;i<jjtGetNumChildren();i++){
 		if (jjtGetChild(i).isBoolean()) {
-			if (jjtGetChild(i).evaluateVector(values) == 0) {
-				return 0.0;
+			double result = jjtGetChild(i).evaluateVector(values);
+			if (result == 0) { // must keep separate, as -0.0 == 0.0, but -0.0 affects `atan2`
+				return result;
 			}
 		}
 	}
-	
+
 	// otherwise, evaluate all terms in the old way.	
 	double product = 1.0;
 	for (int i=0;i<jjtGetNumChildren();i++){
 		product *= jjtGetChild(i).evaluateVector(values);
 	}
 
-	if (product == -0.0){
-		return 0.0;
-	}else{
-		return product;
-	}
+	return product; // can't simply -0.0 as 0.0, because that affects `atan2`
 }    
 @Override
 public Node flatten(boolean substituteConstants) throws ExpressionException {
@@ -412,9 +416,10 @@ public String infixString(int lang){
 	 
 	buffer.append("(");
 	
-	if (bAllBoolean || bNoBoolean || (lang != SimpleNode.LANGUAGE_C && lang != SimpleNode.LANGUAGE_VISIT)) { // old way
+	if (bAllBoolean || bNoBoolean || (lang != SimpleNode.LANGUAGE_C && lang != SimpleNode.LANGUAGE_VISIT && lang != SimpleNode.LANGUAGE_PYTHON)) { // old way
 		for (int i=0;i<jjtGetNumChildren();i++){
 			if (jjtGetChild(i) instanceof ASTInvertTermNode){
+				// bAllBoolean must be false here!
 				if (lang == SimpleNode.LANGUAGE_MATLAB){
 					buffer.append(" ./ ");
 				}else{
@@ -422,10 +427,14 @@ public String infixString(int lang){
 				}
 				buffer.append(jjtGetChild(i).infixString(lang));
 			}else{
-				if (lang == SimpleNode.LANGUAGE_MATLAB){
-					if (i>0) buffer.append(" .* ");
-				}else{
-					if (i>0) buffer.append(" * ");
+				if (i>0){
+					if (lang == SimpleNode.LANGUAGE_MATLAB){
+						buffer.append(" .* ");
+					} else if(lang == SimpleNode.LANGUAGE_PYTHON && bAllBoolean){
+						buffer.append(" and ");
+					} else {
+						buffer.append(" * ");
+					}
 				}
 				buffer.append(jjtGetChild(i).infixString(lang));
 			}
@@ -436,7 +445,11 @@ public String infixString(int lang){
 		for (int i=0;i<jjtGetNumChildren();i++){
 			if (boolChildFlags[i]) {
 				if (conditionBuffer.length() > 0) {
-					conditionBuffer.append(" && ");
+					if (lang == SimpleNode.LANGUAGE_PYTHON){
+						conditionBuffer.append(" and ");
+					} else {
+						conditionBuffer.append(" && ");
+					}
 				}
 				conditionBuffer.append(jjtGetChild(i).infixString((lang == SimpleNode.LANGUAGE_VISIT?SimpleNode.LANGUAGE_DEFAULT:lang)));
 			} else {
@@ -461,6 +474,8 @@ public String infixString(int lang){
 			}catch(Exception e){
 				e.printStackTrace();
 			}
+		}else if (lang == SimpleNode.LANGUAGE_PYTHON) {
+			buffer.append("(").append(valueBuffer).append(") if (").append(conditionBuffer).append(") else 0.0");
 		}else{
 			buffer.append("((" + conditionBuffer + ") ? (" + valueBuffer + ") : 0.0)");
 		}

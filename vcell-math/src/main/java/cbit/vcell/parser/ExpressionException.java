@@ -27,4 +27,14 @@ public ExpressionException() {
 public ExpressionException(String s) {
 	super(s);
 }
+
+public ExpressionException(Throwable cause){
+	super(cause);
 }
+
+public ExpressionException(String s, Throwable e){
+	super(s, e);
+}
+}
+
+

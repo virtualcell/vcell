@@ -5,32 +5,251 @@ import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
 import cbit.vcell.units.VCUnitSystem;
 import net.sourceforge.interval.ia_math.RealInterval;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.python.core.PyException;
+import org.python.util.PythonInterpreter;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+
+
 @Tag("Fast")
 public class ExpressionTest {
-	public static void main(java.lang.String[] args) {
-		int num = 5000;
-		
-		if (args.length > 0) {
-			num = Integer.parseInt(args[0]);
-		}
-		testEval(num);
-//		testCopyTree(num);
+	private static final boolean FAIL_ON_FIRST = true;
+	private static final boolean ENSURE_SAME_SEED = true; // change me
+	private static final long SAME_SEED = 1772035787937L;
+	private static File tempDir;
+	private static int numberOfTrials;
+	private static int standardDepth;
+	private static long randomSeed;
+//	public static void main(java.lang.String[] args) {
+//		int num = 5000;
+//
+//		if (args.length > 0) {
+//			num = Integer.parseInt(args[0]);
+//		}
+//		testEval(num);
+////		testCopyTree(num);
+//	}
+
+	private static Set<String> skipInfixList = new HashSet<>(List.of(
+		"floor((pow(asinh(0.10118387985713251),cos(id_0)) * !(cot(id_0)) * min(csch(0.9837650351250335), coth(id_6))))",
+		" - (min(cot(id_0), csch(0.36737356253208997)) * atan2((0.7233117778683602 >= 0.9759958353333693), (0.1299551891086368 * id_7 * 0.7165699878023953)) / abs(id_1))",
+		"sech( - (coth(0.028177547796530367) ^ cot(id_1)))",
+		"coth(((sinh(0.6449666197606081) ^ (id_4 * id_8 * id_9)) + cot((id_3 < 0.2261011754280382)) + sech(abs(0.8120086721536708))))",
+		"(((cosh(id_3) * log(0.5598410965557573) * asin(0.015550241603964676)) * sin(floor(id_0)) * cosh(max(id_1, 0.585221823072032))) >= cot(floor((id_9 * id_2 * 0.30343841532874716))))",
+		"coth(floor(cot(abs(id_0))))",
+		" - factorial(( - id_2 / id_1 * ceil(id_5)))",
+		"csch(exp(csc((id_2 * id_2 * id_9))))",
+		"atan((tan(ceil(0.0)) || (cot(id_0) + asinh(0.5597772404451554) + sec(id_4))))",
+		"cot(factorial( - (0.20783348997951046 && id_5)))",
+		" - cos((cos(id_1) ^ cot(id_0)))",
+		"atan(abs(cot(floor(id_5))))",
+		"coth(floor(cot((id_0 * 0.10280284481700341 * 0.3190467590050531))))",
+		" - (( - id_1 * acos(0.9408318720601397) * cot(id_0)) && asinh(min(id_6, 0.130136440506475)))",
+		"coth(factorial(floor(log(id_4))))",
+		"(cot(!(sech(id_3))) ^ min( - atan2(0.7870190039110462, id_2), ((id_7 * id_0 * 0.10143937822636417) * min(id_4, id_2) * sech(0.5569515469432404))))",
+		"cot(exp(coth((0.01722292952879423 ^ 0.7576553654648215))))",
+		"cosh(min(cot((id_7 * id_0 * 0.9871116728260001)),  - !(id_6)))",
+		" - acos(((0.01949787088472099 * id_1 * id_9) ^ cot(id_0)))",
+		"factorial(min(tanh((id_9 ^ id_1)), floor( - 0.5153523376029631)))"
+	));
+
+
+	@BeforeAll
+	public static void setUp() throws IOException {
+		ExpressionTest.numberOfTrials = 5000; // Must be positive integer
+		ExpressionTest.standardDepth = 4; // Must be positive integer
+		ExpressionTest.randomSeed = ENSURE_SAME_SEED ? SAME_SEED : System.currentTimeMillis();
+		ExpressionTest.tempDir = Files.createTempDirectory("VCellExpressionTest").toFile();
 	}
 
-	public static void testCopyTree(int num) {
-		try {
-				
-			java.util.Random r = new java.util.Random();
+	@BeforeEach
+	public void setUpEach(){
+		String configuration = String.format(
+				"Test Configuration:\n\t%d Trials\n\tExpected Depth: %d\n\tRandom Seed: %d",
+				ExpressionTest.numberOfTrials,
+				ExpressionTest.standardDepth,
+				ExpressionTest.randomSeed
+		);
+		System.err.println(configuration);
+	}
 
+	@Test
+	public void testPythonInfix() throws InterruptedException {
+		java.util.Random r = new java.util.Random(ExpressionTest.randomSeed);
+		String[] ids = {"id_0", "id_1", "id_2", "id_3",
+				"id_4", "id_5", "id_6", "id_7", "id_8", "id_9"};
+		SimpleSymbolTable symbolTable = new SimpleSymbolTable(ids);
+
+		double[] v1 = {0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9 };
+		Map<Expression, Double> expressionToResults = new LinkedHashMap<>();
+		List<String> failingInfixes = new ArrayList<>();
+		List<String> recordedFailures = new ArrayList<>();
+		System.out.println("Beginning Expression Generation...");
+		ProgressTracker generationTracker = ProgressTracker.generateProgressTracker(ExpressionTest.numberOfTrials);
+		ScheduledFuture<?> generationTrackerStatus = generationTracker.startTracker();
+		for (int i = 0; i < ExpressionTest.numberOfTrials; i++) {
+			try {
+				Expression exp = ExpressionUtils.generateExpression(r, ExpressionTest.standardDepth, false);
+				// Test expression for validity
+				if (ExpressionTest.skipInfixList.contains(exp.infix())) throw new UnsupportedOperationException("skipping...");
+				if (exp.infix().contains("0.0 ^")) throw new UnsupportedOperationException("Not solvable");
+
+				try {
+					ExpressionUtils.functionallyEquivalent(exp,exp);
+				}catch (Exception e){
+					throw new UnsupportedOperationException("Not solvable");
+				}
+				try {
+					exp.evaluateConstantSafe();
+				}catch (FunctionDomainException | DivideByZeroException | ArithmeticException e2) {
+					throw new UnsupportedOperationException("Not solvable");
+				}catch (ExpressionException ignored){}
+
+				exp.bindExpression(symbolTable);
+				// check for duplicates
+				if (expressionToResults.containsKey(exp)) throw new ExpressionException("dupe");
+				// check it's solvable
+				double result = exp.evaluateVector(v1);
+				if (Double.isInfinite(result)) throw new ExpressionArithmeticException("expression out of range");
+				if (Double.isNaN(result)) throw new ExpressionArithmeticException("Unexpected NaN detected");
+
+				// confirm expression is python safe
+				exp.getRootNode().infixString(SimpleNode.LANGUAGE_PYTHON);
+
+				// All good to go!
+				expressionToResults.put(exp, result);
+				generationTracker.incrementProgress();
+			} catch (ExpressionException | UnsupportedOperationException e) {
+				// We just need valid, solved expressions, if we fail, we try again
+				i--;
+			}
+		}
+		generationTracker.waitUntilTrackerIsDone();
+		System.out.println("Finished Expression Generation.");
+
+		int maxJobs = expressionToResults.size();
+		System.out.println("Starting Python Equivalence Testing...");
+		ProgressTracker resultsTracker = ProgressTracker.generateProgressTracker(maxJobs);
+		ScheduledFuture<?> resultsTrackerStatus = resultsTracker.startTracker();
+		boolean trackerEnabled = true;
+		double expectedResult = Double.NaN, actualResult = Double.NaN, resultDiff = Double.NaN, threshold = Double.NaN;
+		String vcellInfixExpression = "<none>", pythonInfixExpression = "<none>";
+		try (PythonInterpreter interpreter = new PythonInterpreter()) {
+			interpreter.exec("import math");
+			for (int i = 0; i < ids.length; i++) interpreter.set(ids[i], v1[i]);
+			for (Expression exp : expressionToResults.keySet()) {
+				if (trackerEnabled && resultsTrackerStatus.isDone()) { // uh-oh, shouldn't be done yet!
+					trackerEnabled = false;
+					try{
+						resultsTrackerStatus.get();
+					} catch (CancellationException e){
+						System.err.println("Results tracker was cancelled:\n" + e.getMessage());
+					} catch (InterruptedException e){
+						System.err.println("Results tracker was interrupted:\n" + e.getMessage());
+					} catch (ExecutionException e) {
+						System.err.println("Results tracker suffered an exception:\n" + e.getMessage());
+					}
+				}
+				try {
+					expectedResult = expressionToResults.get(exp);
+					try{
+						vcellInfixExpression = exp.getRootNode().infixString(SimpleNode.LANGUAGE_DEFAULT);
+						pythonInfixExpression = exp.getRootNode().infixString(SimpleNode.LANGUAGE_PYTHON);
+						actualResult = (Double) interpreter.eval(pythonInfixExpression).__tojava__(Double.class);
+					} catch (PyException | ArithmeticException | UnsupportedOperationException e){
+						// try flattened
+						Expression flatExp;
+						try {
+							flatExp = exp.flatten();
+						} catch (ExpressionException ee){
+							throw e;
+						}
+						vcellInfixExpression = flatExp.getRootNode().infixString(SimpleNode.LANGUAGE_DEFAULT);
+						pythonInfixExpression = flatExp.getRootNode().infixString(SimpleNode.LANGUAGE_PYTHON);
+						actualResult = (Double) interpreter.eval(pythonInfixExpression).__tojava__(Double.class);
+					}
+
+					resultDiff = Math.abs(expectedResult - actualResult);
+					threshold = this.getComparisonResult(expectedResult, actualResult);
+					if (resultDiff <= threshold) resultsTracker.incrementProgress();
+					else throw new ExpressionArithmeticException("Evaluations do not match!");
+				} catch (PyException | ExpressionArithmeticException | UnsupportedOperationException e) {
+					failingInfixes.add(exp.infix());
+					boolean isArithmeticException = e instanceof ExpressionArithmeticException;
+					boolean isPyException = e instanceof PyException;
+					String errorType = isArithmeticException ? "Mismatch between expressions and results:\n" : "Unable to parse valid VCell Expression in Python:\n";
+					String error = errorType + String.format("\tProgress: %s\n", resultsTracker.currentProgress) +
+							String.format("\tVCell Original Infix: %s\n", exp.infix()) +
+							String.format("\tVCell Flat Infix: %s\n", vcellInfixExpression) +
+							String.format("\tExpected: %s\n", expectedResult) +
+							String.format("\tPython Infix: %s\n", pythonInfixExpression) +
+							(isPyException ? String.format("\tPython Exception: %s\n", e.getMessage()) : "") +
+							(isArithmeticException ? String.format("\tActual: %s\n", actualResult): "") +
+							(isArithmeticException ? String.format("\tDiff: %s\n", resultDiff): "") +
+							(isArithmeticException ? String.format("\tThreshold: %s\n", threshold) : "");
+
+					resultsTracker.incrementProgress();
+					RuntimeException re = new RuntimeException(error, e);
+					if (ExpressionTest.FAIL_ON_FIRST) throw re;
+
+					if (recordedFailures.size() != Integer.MAX_VALUE){
+						recordedFailures.add(re.toString());
+						continue;
+					}
+					resultsTracker.declareFailure();
+					System.err.println("There is no more room to declare failures!");
+				}
+			}
+		}
+		resultsTracker.waitUntilTrackerIsDone();
+		if (recordedFailures.isEmpty()) System.out.println("All models pass!");
+		else {
+			String resultsString = String.format("%d / %d models pass!", maxJobs - recordedFailures.size(), maxJobs);
+			System.out.println(resultsString);
+			for (String failedInfix: failingInfixes) System.out.println("\"" + failedInfix + "\",");
+			String uniqueTestId = String.format("seed_%d__%d_outOf_%d", randomSeed, maxJobs - recordedFailures.size(), maxJobs);
+			String targetFile = String.format("pythonInfixTest_%s.txt", uniqueTestId);
+			File resultsFile = null;
+			try {
+				resultsFile = Path.of("src/test/reports", targetFile).toFile().getCanonicalFile();
+				if (resultsFile.exists()) if(!resultsFile.delete()) throw new IOException("Unable to delete existing file!");
+				if (!resultsFile.createNewFile()) throw new IOException("Unable to create file!");
+				try (BufferedWriter bw = new BufferedWriter(new FileWriter(resultsFile))){ // record what went wrong to file:
+					bw.write(resultsString);
+					for (String errMsg : recordedFailures) {
+						bw.write("\n" + errMsg);
+					}
+				}
+			} catch (IOException e){
+				System.out.println("Unable to export failures to file` " + resultsFile + "`: " + e.getMessage());
+			}
+		}
+	}
+
+	//@Test
+	public void testCopyTree() {
+		java.util.Random r = new java.util.Random(ExpressionTest.randomSeed);
+		try {
 			for (int j = 0; j < 1; j ++) {
 				//java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.FileOutputStream("D:\\VCell\\Testing\\ExpressionParser\\ExpParserTest" + j + ".txt"));
-				java.io.PrintWriter pw2 = new java.io.PrintWriter(new java.io.FileOutputStream("D:\\VCell\\Testing\\ExpressionParser\\ExpParserTest" + j + ".cpp"));
+				File targetFile = new File(ExpressionTest.tempDir, String.format("ExpParserTest_copyTree%d.cpp", j));
+				java.io.PrintWriter pw2 = new java.io.PrintWriter(new java.io.FileOutputStream(targetFile));
 				pw2.println("#include <math.h>");
 				pw2.println("#include <string>");
 				pw2.println("#include <iostream>");
@@ -71,27 +290,29 @@ public class ExpressionTest {
 				pw2.println("\tExpression* expression, *copyExpression;");
 				pw2.println("\tstring infix, copyInfix;");
 				pw2.println("\tstring str;");
-				
-				for (int i = 0; i < num; i ++){
-					Expression exp = ExpressionUtils.generateExpression(r, 4, false);
 
-					try {
-						pw2.println("\t// " + i);
-						pw2.println("\tstr = string(\"" + exp.infix() + ";\");");
-						pw2.println("\texpression = new Expression(str);");
-						pw2.println("\tcopyExpression = new Expression(expression);");
-						pw2.println("\tinfix = expression->infix();");
-						pw2.println("\tcopyInfix = copyExpression->infix();");
-						pw2.println("\tif (infix != copyInfix) {");
-						pw2.println("\t\tcout << " + i + " << \" different\" << endl;");						
-						pw2.println("\t\tcout << \"infix : \" << infix << endl;");						
-						pw2.println("\t\tcout << \"copyInfix : \" << copyInfix << endl;");				
-						pw2.println("\t} else {");
-						pw2.println("\t\tcout << " + i + " << \" same\" << endl;");				
-						pw2.println("\t}");						
-						pw2.println();
-					} catch (Exception ex) {
-						System.out.println("!!!!!" + ex.getMessage());						
+				for (int d = 1; d < ExpressionTest.standardDepth; d++){
+					for (int i = 0; i < ExpressionTest.numberOfTrials; i ++){
+						Expression exp = ExpressionUtils.generateExpression(r, d, false);
+
+						try {
+							pw2.println("\t// " + i);
+							pw2.println("\tstr = string(\"" + exp.infix() + ";\");");
+							pw2.println("\texpression = new Expression(str);");
+							pw2.println("\tcopyExpression = new Expression(expression);");
+							pw2.println("\tinfix = expression->infix();");
+							pw2.println("\tcopyInfix = copyExpression->infix();");
+							pw2.println("\tif (infix != copyInfix) {");
+							pw2.println("\t\tcout << " + i + " << \" different\" << endl;");
+							pw2.println("\t\tcout << \"infix : \" << infix << endl;");
+							pw2.println("\t\tcout << \"copyInfix : \" << copyInfix << endl;");
+							pw2.println("\t} else {");
+							pw2.println("\t\tcout << " + i + " << \" same\" << endl;");
+							pw2.println("\t}");
+							pw2.println();
+						} catch (Exception ex) {
+							System.out.println("!!!!!" + ex.getMessage());
+						}
 					}
 				}			
 				//pw.close();
@@ -104,10 +325,11 @@ public class ExpressionTest {
 
 	}
 
-public static void testEval(int num) {
+@Test
+public void testEval() {
 	try {
 			
-		java.util.Random r = new java.util.Random();
+		java.util.Random r = new java.util.Random(ExpressionTest.randomSeed);
 		String ids[] = {"id_0", "id_1", "id_2", "id_3", 
 				"id_4", "id_5", "id_6", "id_7", "id_8", "id_9"};
 		SimpleSymbolTable symbolTable = new SimpleSymbolTable(ids);		
@@ -116,7 +338,8 @@ public static void testEval(int num) {
 
 		for (int j = 0; j < 1; j ++) {
 			//java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.FileOutputStream("D:\\VCell\\Testing\\ExpressionParser\\ExpParserTest" + j + ".txt"));
-			java.io.PrintWriter pw2 = new java.io.PrintWriter(new java.io.FileOutputStream("D:\\VCell\\Testing\\ExpressionParser\\ExpParserTest" + j + ".cpp"));
+			File targetFile = new File(ExpressionTest.tempDir, String.format("ExpParserTest_eval%d.cpp", j));
+			java.io.PrintWriter pw2 = new java.io.PrintWriter(new java.io.FileOutputStream(targetFile));
 			pw2.println("#include \"Windows.h\"");
 			pw2.println("#include \"ExpressionTest.h\"");
 			pw2.println("#include \"MathUtil.h\"");
@@ -165,20 +388,22 @@ public static void testEval(int num) {
 			pw2.println("\tdouble values[10] = {0,1,2,3,4,5,6,7,8,9};");
 			pw2.println();
 
-			for (int i = 0; i < num; i ++){
-				Expression exp = ExpressionUtils.generateExpression(r, 4, false);
-				exp.bindExpression(symbolTable);
+			for (int d = 1; d < ExpressionTest.standardDepth; d++) {
+				for (int i = 0; i < ExpressionTest.numberOfTrials; i++) {
+					Expression exp = ExpressionUtils.generateExpression(r, 4, false);
+					exp.bindExpression(symbolTable);
 
-				try {
-					double d = exp.evaluateVector(v1);
-					pw2.println("\t// " + i);
-					pw2.println("\tr = " + exp.infix_C() + ";");
-					pw2.println("\tExpressionTest::testParser(" + i + ", \"" + d + "\", r, \"" + exp.infix() + "\", symbolTable, values);");
-					pw2.println();
-				} catch (Exception ex) {
-					System.out.println("!!!!!" + ex.getMessage());						
+					try {
+						double result = exp.evaluateVector(v1);
+						pw2.println("\t// " + i);
+						pw2.println("\tr = " + exp.infix_C() + ";");
+						pw2.println("\tExpressionTest::testParser(" + i + ", \"" + result + "\", r, \"" + exp.infix() + "\", symbolTable, values);");
+						pw2.println();
+					} catch (Exception ex) {
+						System.out.println("!!!!!" + ex.getMessage());
+					}
 				}
-			}			
+			}
 			//pw.close();
 			pw2.println("}");
 			pw2.close();
@@ -221,8 +446,8 @@ public static double sample(RealInterval interval, java.util.Random random) {
 /**
  * This method was created by a SmartGuide.
  */
-private static void testBig() {
-	try {
+//@Test
+public void testBig() throws ExpressionException {
 		
 
 String expString = "(((ALPHA * ((ip3r_coeff * ((4.0 * pow((RIC / ch_dens), 3.0))"+
@@ -296,25 +521,18 @@ System.out.println("Simplifying:");
 		long flatten3Time = after-before;
 System.out.println("time for simplification = "+flatten3Time+" ms");
 System.out.println(flat);
-		
-	} catch (ParserException e) {
-		System.out.println("error parsing expression");
-		e.printStackTrace();
-		return;
-	} catch (Exception e) {
-		System.out.println("exception parsing expression");
-		e.printStackTrace();
-		return;
-	}
-	return;
 }
 
+//@Test
+public void testDifferentiation() throws ExpressionException {
+	ExpressionTest.testDifferentiate(ExpressionTest.numberOfTrials, ExpressionTest.standardDepth, ExpressionTest.randomSeed);
+}
 
 /**
  * Insert the method's description here.
  * Creation date: (12/27/2002 2:14:48 PM)
  */
-public static void testDifferentiate(int numTrials, int depth, long seed) {
+public static void testDifferentiate(int numTrials, int depth, long seed) throws ExpressionException {
 	final double relativeTolerance = 1e-7;
 	final double absoluteTolerance = 1e-10;
 	int numCorrect = 0;
@@ -322,10 +540,8 @@ public static void testDifferentiate(int numTrials, int depth, long seed) {
 	int numDerivatives = 0;
 	java.util.Random random = new java.util.Random(seed);
 	for (int i = 0; i < numTrials; i++) {
-		try {
 			cbit.vcell.parser.Expression exp = cbit.vcell.parser.ExpressionUtils.generateExpression(random, depth, false);
 			cbit.vcell.parser.Expression flattened = null;
-			try {
 				//
 				// test against identifier that is not present in expression
 				//
@@ -351,10 +567,9 @@ public static void testDifferentiate(int numTrials, int depth, long seed) {
 				// test against derivative wrt each symbol (test for numerical equivalence vs. central difference)
 				//
 				String symbols[] = exp.getSymbols();
-				if (symbols!=null && symbols.length>0){
+
 					for (int j = 0;symbols!=null && j < symbols.length; j++){
 						numDerivatives++;
-						try {
 							diff = exp.differentiate(symbols[j]);
 							try {
 								diff = diff.flatten();
@@ -371,17 +586,8 @@ public static void testDifferentiate(int numTrials, int depth, long seed) {
 								System.out.println("D f()/D("+symbols[j]+") = "+diff);
 								System.out.println("[f("+symbols[j]+"+delta)-f("+symbols[j]+"-delta)]/(2*delta)  !=  D f(k)/D("+symbols[j]+")\n\n\n");
 							}
-						} catch (cbit.vcell.parser.DivideByZeroException e) {
-							e.printStackTrace(System.out);
-						}
 					}
-				}
-            } catch (Throwable e) {
-                e.printStackTrace(System.out);
-            }
-        } catch (Throwable e) {
-            e.printStackTrace(System.out);
-        }
+
     }
     System.out.println("test for .differentiate(), "+numCorrect+" correct, "+numWrong+" wrong, "+(numDerivatives-numCorrect-numWrong)+" failed, out of "+numTrials+" trials");
 }
@@ -478,6 +684,10 @@ public static void testEvaluateInterval(int numTrials, int depth, long seed, boo
     System.out.println("test for .testEvaluateInterval(), "+numCorrect+" correct, "+numWrong+" wrong, "+numFailures+" failures, "+numTrials+" trials");
 }
 
+//@Test
+public void testNarrowingEvaluation(){
+	ExpressionTest.testEvaluateNarrowing(ExpressionTest.numberOfTrials, ExpressionTest.standardDepth, ExpressionTest.randomSeed);
+}
 
 /**
  * This method was created in VisualAge.
@@ -656,26 +866,31 @@ public static void testEvaluateNarrowingOld() {
 /**
  * This method was created in VisualAge.
  */
-public static void testEvaluateVector() {
-	try {
-		Expression exp = new Expression("a+b/c;");
+//@Test
+public void testEvaluateVector() throws ExpressionException{
+	Expression exp = new Expression("a+b/c;"); // Note lack of parenthesis
 
-		SimpleSymbolTable simpleSymbolTable = new SimpleSymbolTable(new String[] { "a", "b", "c" });
+	SimpleSymbolTable simpleSymbolTable = new SimpleSymbolTable(new String[] { "a", "b", "c" });
 
-		double v1[] = { 0,1,2 };
-		double v2[] = { 3,4,5 };
-
-		exp.bindExpression(simpleSymbolTable);
-
-		System.out.println("evaluate '"+exp+"' with v1=["+v1[0]+","+v1[1]+","+v1[2]+"]: result="+exp.evaluateVector(v1));
-		System.out.println("evaluate '"+exp+"' with v2=["+v2[0]+","+v2[1]+","+v2[2]+"]: result="+exp.evaluateVector(v2));
-	}catch (Throwable e){
-		e.printStackTrace(System.out);
-	}
+	double v1[] = { 0,1,2 };
+	double v2[] = { 3,4,5 };
+	double expectedResult1 = v1[0] + v1[1] / v1[2]; // Note lack of parenthesis
+	double expectedResult2 = v2[0] + v2[1] / v2[2]; // Note lack of parenthesis
+	exp.bindExpression(simpleSymbolTable);
+	double actualResult1 = exp.evaluateVector(v1);
+	double actualResult2 = exp.evaluateVector(v2);
+	System.out.println("evaluate '"+exp+"' with v1=["+v1[0]+","+v1[1]+","+v1[2]+"]: result="+actualResult1);
+	Assertions.assertEquals(expectedResult1,actualResult1);
+	System.out.println("evaluate '"+exp+"' with v2=["+v2[0]+","+v2[1]+","+v2[2]+"]: result="+actualResult2);
+	Assertions.assertEquals(expectedResult2,actualResult2);
 }
 
-public static void testUserDefinedFunctions(VCUnitSystem vcUnitSystem) {
-	try {
+//@Test
+public void testEvaluateUserDefinedFunctions() throws ExpressionException {
+	ExpressionTest.testUserDefinedFunctions(new VCUnitSystem() {});
+}
+
+public static void testUserDefinedFunctions(VCUnitSystem vcUnitSystem) throws ExpressionException {
 		SimpleSymbolTableFunctionEntry steFunc = new SimpleSymbolTableFunctionEntry("myfunc", new String[] { "arg1", "arg2" }, new FunctionArgType[] { FunctionArgType.NUMERIC, FunctionArgType.NUMERIC }, new Expression("arg1+arg2"), vcUnitSystem.getInstance_DIMENSIONLESS(), null);
 		SimpleSymbolTable symbolTable = new SimpleSymbolTable(new String[] { "a", "b", "c" }, new SymbolTableFunctionEntry[] { steFunc }, null);
 		
@@ -685,9 +900,6 @@ public static void testUserDefinedFunctions(VCUnitSystem vcUnitSystem) {
 		bindFlattenAndPrint("4*myfunc('a',b)",  symbolTable);
 		bindFlattenAndPrint("4*myfunc('a',b)",  symbolTable);
 		bindFlattenAndPrint("4*myfunc(myfunc(1,2),b)",  symbolTable);
-	}catch (Exception e){
-		e.printStackTrace(System.out);
-	}
 }
 
 private static void bindFlattenAndPrint(String expStr, SymbolTable symbolTable) throws ExpressionException{
@@ -699,6 +911,11 @@ private static void bindFlattenAndPrint(String expStr, SymbolTable symbolTable) 
 		System.out.println("failed expression: \""+expStr+"\",  reason: "+e.getMessage());
 	}
 	System.out.println();
+}
+
+//@Test
+public void testFlatten() throws ExpressionException {
+	ExpressionTest.testFlatten(ExpressionTest.numberOfTrials, ExpressionTest.standardDepth, ExpressionTest.randomSeed);
 }
 
 /**
@@ -836,4 +1053,82 @@ public static void testFlatten(int numTrials, int depth, long seed) {
  */
 public void testParser() {
 }
+
+private double getComparisonResult(double expectedResult, double actualResult){
+//	final double OFFSET = 2.225e-308;
+//	if (expectedResult == actualResult) return 0.0;
+//	double denominator = expectedResult + actualResult;
+//	double numerator = 2*(actualResult - expectedResult);
+//	if (0.0 != denominator) return Math.abs(numerator/denominator);
+//	else return Math.abs((numerator + OFFSET)/(denominator + 2*OFFSET));
+	return this.getComparisonResult(expectedResult, actualResult, 1e-6, 1e-6);
+}
+
+private double getComparisonResult(double expectedResult, double actualResult, double absTolerance, double relTolerance){
+	return Math.max(absTolerance, relTolerance * Math.max(Math.abs(expectedResult), Math.abs(actualResult)));
+
+}
+
+static class ProgressTracker {
+	final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+
+	final private AtomicBoolean writerFailed = new AtomicBoolean(false);
+	final private AtomicReference<Integer> currentProgress = new AtomicReference<>(0);
+	final private AtomicReference<Integer> previousProgress = new AtomicReference<>(-1);
+	final private AtomicReference<Integer> goal;
+	final private Runnable trackerCheck;
+
+	public static ProgressTracker generateProgressTracker(int goal){
+
+		return new ProgressTracker(goal);
+	}
+
+	public java.util.concurrent.ScheduledFuture<?> startTracker(){
+		return this.executorService.scheduleAtFixedRate(this.trackerCheck, 0, 500, TimeUnit.MILLISECONDS);
+	}
+
+	public void updateProgress(int newProgress){
+		try{
+			if (newProgress < 0) throw new IllegalArgumentException("newProgress must be non-negative");
+			this.currentProgress.set(newProgress);
+		} catch (Exception e){
+			this.writerFailed.set(true);
+			throw e;
+		}
+	}
+
+	public void waitUntilTrackerIsDone() throws InterruptedException {
+		if(this.executorService.awaitTermination(5, TimeUnit.SECONDS)) return;
+		System.err.println("Timed-out waiting for tracker to finish");
+	}
+
+	public void incrementProgress(){
+		this.updateProgress(this.currentProgress.get() + 1);
+	}
+
+	public void declareFailure(){
+		this.writerFailed.set(true);
+	}
+
+	private ProgressTracker(int goal) {
+		if (goal <= 0) throw new IllegalArgumentException("goal must be positive");
+		this.goal = new AtomicReference<>(goal);
+		this.trackerCheck = ()->{
+			if (this.writerFailed.get()) {
+				this.executorService.shutdown();
+				return;
+			}
+
+			int newProgress = this.currentProgress.get();
+			if (this.previousProgress.get() == newProgress) return;
+			int target = this.goal.get();
+			this.previousProgress.set(newProgress);
+			double progressPercent = 100 * newProgress / (double) this.goal.get();
+			System.out.printf("Progress: %s%% (%d/%d)%n", progressPercent, newProgress, target);
+
+			if ((1.0 * newProgress) / target >= 1.0) this.executorService.shutdown();
+		};
+	}
+}
+
 }

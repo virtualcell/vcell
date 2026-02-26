@@ -23,6 +23,7 @@ import net.sourceforge.interval.ia_math.RealInterval;
 interface Node {
 	
 	public boolean isBoolean();
+	boolean isLogical();
 
   /** Bind method, identifiers bind themselves to ValueObjects */
   void bind(SymbolTable symbolTable) 
@@ -143,4 +144,5 @@ void getDiscontinuities(Vector<Discontinuity> v) throws ExpressionException;
 public void renameBoundSymbols(NameScope nameScope) throws ExpressionBindingException;
 
 	public Node convertToRvachevFunction();
+
 }

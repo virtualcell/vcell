@@ -27,7 +27,12 @@ ASTNotNode(int id) {
 		  return true;
 	}
 
-  public void bind(SymbolTable symbolTable) throws ExpressionBindingException
+	@Override
+	public boolean isLogical() {
+		return true;
+	}
+
+	public void bind(SymbolTable symbolTable) throws ExpressionBindingException
   {
 	  super.bind(symbolTable);
 	  setInterval(new RealInterval(0.0,1.0),null);  // either true or false
@@ -89,7 +94,7 @@ public double evaluateVector(double values[]) throws ExpressionException, Divide
 	if (childValue == 0.0){
 		return 1.0;
 	}else{
-		return 0.0;
+		return childValue < 0 ? -0.0 : 0.0; // want to try and preserve sign for atan2
 	}
 }    
 @Override
@@ -130,9 +135,12 @@ public Node flatten(boolean substituteConstants) throws ExpressionException {
  */
 public String infixString(int language) {
 	StringBuffer buffer = new StringBuffer();
-
+	boolean parentIsLogical = parent != null && parent.isLogical();
 	if (language == LANGUAGE_VISIT){
 		buffer.append("not(");
+	}else if(language == LANGUAGE_PYTHON){
+		if (parentIsLogical) buffer.append("not(");
+		else buffer.append("float(not(");
 	}else if (language == LANGUAGE_ECLiPSe){
 		buffer.append("neg(");
 	}else{
@@ -140,6 +148,7 @@ public String infixString(int language) {
 	}
 	buffer.append(jjtGetChild(0).infixString(language));
 	buffer.append(")");
+	if (language == LANGUAGE_PYTHON && !parentIsLogical) buffer.append(")");
 
 	return buffer.toString();
 }

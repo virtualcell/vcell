@@ -28,6 +28,7 @@ ziptool
 vcell-client/UserDocumentation/originalXML/helpSearchConfig.txt
 *.iml
 .metadata/
+.jython_cache
 
 ### Eclipse ###
 .metadata

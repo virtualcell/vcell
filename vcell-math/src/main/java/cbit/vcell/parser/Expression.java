@@ -687,7 +687,11 @@ public int hashCode() {
 	  }else{
 		 return rootNode.infixString(SimpleNode.LANGUAGE_MATLAB);
 	  }
-   }   
+   }
+
+   public String infix_Python() {
+       return rootNode == null ?  null : rootNode.infixString(SimpleNode.LANGUAGE_PYTHON);
+   }
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.model.Expression
@@ -870,7 +874,7 @@ parseCount++;
 	} catch (ParseException | TokenMgrError e) {
 		String msg = "Parse Error while parsing expression '" + expString + "': " + e.getMessage();
 		logger.error(msg, e);
-		throw new ParserException("Parse Error while parsing expression '" + expString + "': " + e.getMessage());
+		throw new ParserException("Parse Error while parsing expression '" + expString + "': ", e);
 	}
 }
 /**

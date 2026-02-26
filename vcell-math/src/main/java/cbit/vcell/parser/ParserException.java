@@ -27,4 +27,8 @@ public ParserException() {
 public ParserException(String s) {
 	super(s);
 }
+
+public ParserException(String s, Throwable e){
+	super(s, e);
+}
 }

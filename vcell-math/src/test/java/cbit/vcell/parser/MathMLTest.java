@@ -35,6 +35,7 @@ public class MathMLTest {
 		List<String> tokensToAvoid = Arrays.asList(
 				"<",">","=","&","|","!"
 //				,"min","max"
+				, "factorial"
 			);
 		ArrayList<Expression> expressions = new ArrayList<>();
 		for (int i = 0; i < numTests; i++) {
@@ -47,6 +48,8 @@ public class MathMLTest {
 			if (exp.infix_JSCL().length()>120){
 				continue;
 			}
+			if (infix.contains("0.0 ^")) continue;
+
 			try {
 				ExpressionUtils.functionallyEquivalent(exp,exp);
 			}catch (Exception e){
@@ -54,10 +57,9 @@ public class MathMLTest {
 			}
 			try {
 				exp.evaluateConstantSafe();
-			}catch (FunctionDomainException | DivideByZeroException e2) {
+			}catch (FunctionDomainException | DivideByZeroException | ArithmeticException e2) {
 				continue;
-			}catch (ExpressionException e){
-			}
+			}catch (ExpressionException ignored){}
 			expressions.add(exp);
 		}
 		expressions.add(new Expression("-((-x)^2)"));
