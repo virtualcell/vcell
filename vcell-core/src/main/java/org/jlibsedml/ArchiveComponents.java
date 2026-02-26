@@ -11,15 +11,15 @@ import java.util.List;
 public class ArchiveComponents {
 
 	private List<IModelContent> modelFiles;
-	private List<SEDMLDocument> sedmlDocs;
+	private List<SedMLDocument> sedmlDocs;
 	
 	/**
 	 * 
 	 * @param modelFiles a non-null, but possible empty list of <code>IModelContent</code> objects.
-	 * @param sedmlDoc A {@link SEDMLDocument}
+	 * @param sedmlDoc A {@link SedMLDocument}
 	 * @throws IllegalArgumentException if either parameter is null.
 	 */
-	public ArchiveComponents(List<IModelContent> modelFiles, List<SEDMLDocument> sedmlDocs) {
+	public ArchiveComponents(List<IModelContent> modelFiles, List<SedMLDocument> sedmlDocs) {
 		super();
 		if(modelFiles ==null || sedmlDocs==null){
 			throw new IllegalArgumentException();
@@ -56,9 +56,9 @@ public class ArchiveComponents {
 	
     /**
      * Gets the SED-ML document stored in this archive.
-     * @return A {@link SEDMLDocument}, which will not be null.
+     * @return A {@link SedMLDocument}, which will not be null.
      */
-	public List<SEDMLDocument> getSedmlDocuments() {
+	public List<SedMLDocument> getSedmlDocuments() {
 		return sedmlDocs;
 	}
 	

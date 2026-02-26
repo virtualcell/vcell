@@ -27,24 +27,33 @@ import java.util.StringTokenizer;
  */
 @SuppressWarnings("serial")
 public abstract class Variable extends CommentedObject implements SymbolTableEntry, Serializable, Matchable, VCMLProvider, IssueSource {
-	private String name = null;
+	private String name;
 	private transient int symbolTableIndex = -1;
 	private Domain domain = null;  // global if null
 	public static final String COMBINED_IDENTIFIER_SEPARATOR = "::";
 
     void rename(String newName) {
-		this.name = newName;
+        if (newName == null)
+            throw new IllegalArgumentException("Variable does not have a name");
+
+        String nameWithPeriodsMangled = newName.replace('.','_');
+        if (!nameWithPeriodsMangled.equals(TokenMangler.fixTokenStrict(nameWithPeriodsMangled))){
+            throw new RuntimeException("unexpected character sequence in variable name " + newName);
+        }
+        this.name = newName;
     }
 
     public static class Domain implements Matchable, Serializable {
-		private String name = null;
+		private final String name;
 		
-		public Domain(String argName){
-			String nameWithPeriodsMangled = argName.replace('.','_');
+		public Domain(String name){
+            if (name == null)
+                throw new IllegalArgumentException("Variable does not have a name");
+			String nameWithPeriodsMangled = name.replace('.','_');
 			if (!nameWithPeriodsMangled.equals(TokenMangler.fixTokenStrict(nameWithPeriodsMangled))){
-				throw new RuntimeException("unexpected character sequence in domain name "+argName);
+				throw new RuntimeException("unexpected character sequence in domain name "+name);
 			}
-			this.name = argName;
+			this.name = name;
 		}
 		public Domain(GeometryClass geometryClass){
 			this(geometryClass.getName());
@@ -75,16 +84,9 @@ public abstract class Variable extends CommentedObject implements SymbolTableEnt
 /**
  * This method was created by a SmartGuide.
  */
-protected Variable (String argName, Domain argDomain ) {
-	if (argName == null) {
-		throw new IllegalArgumentException("Variable does not have a name");
-	}
-	String nameWithPeriodsMangled = argName.replace('.','_');
-	if (!nameWithPeriodsMangled.equals(TokenMangler.fixTokenStrict(nameWithPeriodsMangled))){
-		throw new RuntimeException("unexpected character sequence in variable name "+argName);
-	}
-	this.name = argName;
-	this.domain = argDomain;
+protected Variable (String name, Domain domain ) {
+	this.rename(name);
+	this.domain = domain;
 }
 /**
  * This method was created in VisualAge.

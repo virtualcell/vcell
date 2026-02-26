@@ -103,7 +103,7 @@ public class CopasiOptimizationSolverTest {
 //        OptimizationResultSet optimizationResultSet = copasiOptimizationSolver.solveRemoteApi(
 //                parameterEstimationTask, optSolverCallbacks, clientTaskStatusSupport, clientServerInfo);
 //
-//        Assert.assertNotNull(optimizationResultSet);
+//       SedGeneralClass.assertNotNull(optimizationResultSet);
 //    }
 
     private static class TestClientTaskStatusSupport implements ClientTaskStatusSupport {

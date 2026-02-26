@@ -3,7 +3,7 @@ package org.jlibsedml.modelsupport;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jlibsedml.SEDMLDocument;
+import org.jlibsedml.SedMLDocument;
 import org.jlibsedml.execution.IXPathToVariableIDResolver;
 
 /**
@@ -16,7 +16,7 @@ import org.jlibsedml.execution.IXPathToVariableIDResolver;
  * </p>
  * <p>
  * This class does not apply XPath changes, that is achieved through
- * {@link SEDMLDocument}:<br/>
+ * {@link SedMLDocument}:<br/>
  * <code> String getChangedModel(String model_ID, final String originalModel);</code>
  * 
  * @author radams

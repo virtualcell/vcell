@@ -82,8 +82,8 @@ import org.jdom2.Element;
 import org.jdom2.Namespace;
 import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.Libsedml;
-import org.jlibsedml.SEDMLDocument;
-import org.jlibsedml.SedML;
+import org.jlibsedml.SedMLDataContainer;
+import org.jlibsedml.SedMLDocument;
 import org.vcell.api.server.AsynchMessageManager;
 import org.vcell.api.server.ClientServerManager;
 import org.vcell.api.server.ConnectionStatus;
@@ -3275,17 +3275,17 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 				try {
 					ArchiveComponents ac = null;
 					ac = Libsedml.readSEDMLArchive(new FileInputStream(file));
-					List<SEDMLDocument> docs = ac.getSedmlDocuments();
+					List<SedMLDocument> docs = ac.getSedmlDocuments();
 					if (docs.isEmpty()) {
 						throw new RuntimeException("Did not find any supported SEDML files in archive " + file.getName());
 					}
-					List<SedML> sedmls = new ArrayList<>();
-					for (SEDMLDocument doc : docs) {
-						SedML sedml =doc.getSedMLModel();
+					List<SedMLDataContainer> sedmls = new ArrayList<>();
+					for (SedMLDocument doc : docs) {
+						SedMLDataContainer sedml =doc.getSedMLModel();
 						if (sedml == null) {
 							throw new RuntimeException("Failed importing " + file.getName());
 						}
-						if (sedml.getModels().isEmpty()) {
+						if (sedml.getSedML().getModels().isEmpty()) {
 							throw new RuntimeException("Unable to find any model in " + file.getName());
 						}
 						sedmls.add(sedml);
@@ -3333,8 +3333,8 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 							|| file.getName().toLowerCase().endsWith(".omex"))) {
 						TranslationLogger transLogger = new TranslationLogger(requester);
 						// iterate through one or more SEDML objects 
-						List<SedML> sedmls = (List<SedML>) hashTable.get(SEDML_MODELS);
-						for (SedML sedml : sedmls) {
+						List<SedMLDataContainer> sedmls = (List<SedMLDataContainer>) hashTable.get(SEDML_MODELS);
+						for (SedMLDataContainer sedml : sedmls) {
 							// default to import all tasks
 							List<BioModel> vcdocs = XmlHelper.importSEDML(transLogger, externalDocInfo, sedml, false);
 							for (VCDocument vcdoc : vcdocs) {
@@ -3477,14 +3477,14 @@ private BioModel createDefaultBioModelDocument(BngUnitSystem bngUnitSystem) thro
 										requester);
 							} else if (xmlType.equals(XMLTags.SedMLTypeTag)) {
 								File sedmlFile = xmlSource.getXmlFile();
-								SedML sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
+								SedMLDataContainer sedml = Libsedml.readDocument(sedmlFile).getSedMLModel();
 								if (sedml == null) {
 									throw new RuntimeException("Failed importing " + file.getName());
 								}
-								if (sedml.getModels().isEmpty()) {
+								if (sedml.getSedML().getModels().isEmpty()) {
 									throw new RuntimeException("Unable to find any model in " + file.getName());
 								}
-								List<SedML> sedmls = new ArrayList<>();
+								List<SedMLDataContainer> sedmls = new ArrayList<>();
 								sedmls.add(sedml);
 								hashTable.put(SEDML_MODELS, sedmls);
 

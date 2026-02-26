@@ -9,15 +9,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.jlibsedml.AbstractTask;
-import org.jlibsedml.DataGenerator;
-import org.jlibsedml.Model;
-import org.jlibsedml.Output;
-import org.jlibsedml.SedML;
-import org.jlibsedml.Simulation;
-import org.jlibsedml.Task;
-import org.jlibsedml.UniformTimeCourse;
-import org.jlibsedml.Variable;
+import org.jlibsedml.SedMLDataContainer;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
+import org.jlibsedml.components.SedML;
+import org.jlibsedml.components.task.AbstractTask;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.model.Model;
+import org.jlibsedml.components.output.Output;
+import org.jlibsedml.components.simulation.Simulation;
+import org.jlibsedml.components.task.Task;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
+import org.jlibsedml.components.Variable;
 import org.jlibsedml.execution.ExecutionStatusElement.ExecutionStatusType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +49,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public abstract class AbstractSedmlExecutor {
-    protected final SedML sedml;
+    protected final SedMLDataContainer sedml;
     private final Output output;
 
     private List<ExecutionStatusElement> failureMessages = new ArrayList<ExecutionStatusElement>();
@@ -65,13 +68,13 @@ public abstract class AbstractSedmlExecutor {
     /**
      * 
      * @param model
-     *            A non-null {@link SedML} model
+     *            A non-null {@link SedMLDataContainer} model
      * @param output
      *            An {@link Output} which we want to reproduce.
      * @throws IllegalArgumentException
      *             if <code>model == null</code> or <code>output == null</code>.
      */
-    public AbstractSedmlExecutor(SedML model, Output output) {
+    public AbstractSedmlExecutor(SedMLDataContainer model, Output output) {
         if (model == null || output == null) {
             throw new IllegalArgumentException();
         }
@@ -86,13 +89,13 @@ public abstract class AbstractSedmlExecutor {
      * a single time-course and return all variables.
      * 
      * @param model
-     *            A non-null {@link SedML} model
+     *            A non-null {@link SedMLDataContainer} model
      * @param task
      *            An {@link Task} which we want to run.
      * @throws IllegalArgumentException
      *             if <code>model == null</code> or <code>output == null</code>.
      */
-    public AbstractSedmlExecutor(SedML model, AbstractTask task) {
+    public AbstractSedmlExecutor(SedMLDataContainer model, AbstractTask task) {
         if (model == null || task == null) {
             throw new IllegalArgumentException();
         }
@@ -159,31 +162,33 @@ public abstract class AbstractSedmlExecutor {
         }
 
         for (AbstractTask task : tasksToExecute) {
-            Model m = sedml.getModelWithId(task.getModelReference());
-            if (!supportsLanguage(m.getLanguage())) {
-                addStatus(new ExecutionStatusElement(null,
+            if (!(task instanceof Task basicTask)) continue;
+            Model m = this.sedml.findModelById(basicTask.getModelReference());
+            if (null == m) throw new RuntimeException("Unexpected non-model found");
+            if (!this.supportsLanguage(m.getLanguage())) {
+                this.addStatus(new ExecutionStatusElement(null,
                         LANGUAGE_NOT_SUPPORTED_ERROR + m.getLanguage(),
                         ExecutionStatusType.ERROR));
                 return res;
 
             }
             log.debug("language {} is OK", m.getLanguage());
-            String changedModel = modelResolver.getModelString(m);
+            String changedModel = this.modelResolver.getXMLStringRepresentationOfModel(m);
             log.debug("Changed modell is {}", changedModel);
             if (changedModel == null) {
-                addStatus(new ExecutionStatusElement(null,
-                        modelResolver.getMessage(), ExecutionStatusType.ERROR));
+                this.addStatus(new ExecutionStatusElement(null,
+                        this.modelResolver.getMessage(), ExecutionStatusType.ERROR));
             }
 
             log.debug("Ready to execute");
-            IRawSedmlSimulationResults results = executeSimulation(
-                    changedModel, (UniformTimeCourse) sedml.getSimulation(task
-                            .getSimulationReference()));
+            UniformTimeCourse utcSim = this.sedml.findUniformTimeCourseById(basicTask.getSimulationReference());
+            if (null == utcSim) throw new RuntimeException("Unexpected non-utc simulation found.");
+            IRawSedmlSimulationResults results = this.executeSimulation(changedModel, utcSim);
             if (results == null) {
-                addStatus(new ExecutionStatusElement(null,
+                this.addStatus(new ExecutionStatusElement(null,
                         "Simulation failed during execution: "
-                                + task.getSimulationReference() + " with model: "
-                                + task.getModelReference(),
+                                + basicTask.getSimulationReference().string() + " with model: "
+                                + basicTask.getModelReference().string(),
                         ExecutionStatusType.ERROR));
                 // return res;
             }
@@ -268,26 +273,33 @@ public abstract class AbstractSedmlExecutor {
      *         IDs.
      */
     public List<AbstractTask> getSimulatableTasks() {
-        List<AbstractTask> rc = new ArrayList<AbstractTask>();
-        for (AbstractTask task : sedml.getTasks()) {
-            Simulation s = sedml.getSimulation(task.getSimulationReference());
-            if (s != null && canExecuteSimulation(s)) {
-                rc.add(task);
-            }
+        SedML sedML = this.sedml.getSedML();
+        List<AbstractTask> rc = new ArrayList<>();
+        for (AbstractTask task : this.sedml.getSedML().getTasks()) {
+            if (!(task instanceof Task basicTask)) continue;
+            UniformTimeCourse utcSim = this.sedml.findUniformTimeCourseById(basicTask.getSimulationReference());
+            if (null == utcSim) continue;
+            if (!this.canExecuteSimulation(utcSim)) continue;
+            rc.add(task);
         }
         return rc;
     }
 
     private Set<AbstractTask> findTasks(Output output) {
-        Set<AbstractTask> tasksToExecute = new TreeSet<AbstractTask>();
-        Set<DataGenerator> dgs = new TreeSet<DataGenerator>();
-        for (String dgid : output.getAllDataGeneratorReferences()) {
-            dgs.add(sedml.getDataGeneratorWithId(dgid));
+        Set<AbstractTask> tasksToExecute = new TreeSet<>();
+        Set<DataGenerator> dgs = new TreeSet<>();
+        for (SId dgId : output.getAllDataGeneratorReferences()) {
+            DataGenerator dg = this.sedml.findDataGeneratorById(dgId);
+            if (null == dg) continue;
+            dgs.add(dg);
         }
 
         for (DataGenerator dg : dgs) {
-            for (Variable v : dg.getListOfVariables()) {
-                tasksToExecute.add(sedml.getTaskWithId(v.getReference()));
+            for (Variable v : dg.getVariables()) {
+                SId taskRef = v.getTaskReference();
+                AbstractTask taskToDo = this.sedml.findAbstractTaskById(taskRef);
+                if (null == taskToDo) continue;
+                tasksToExecute.add(taskToDo);
             }
         }
         return tasksToExecute;

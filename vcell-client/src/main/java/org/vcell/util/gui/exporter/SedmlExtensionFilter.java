@@ -5,7 +5,7 @@ import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.mapping.SimulationContext;
 import org.vcell.sedml.ModelFormat;
-import org.vcell.sedml.SEDMLExporter;
+import org.vcell.sedml.SedMLExporter;
 import org.vcell.util.FileUtils;
 import org.vcell.util.UserCancelException;
 
@@ -57,11 +57,11 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		String sFile = FileUtils.getBaseName(exportFile.getAbsolutePath());
 		String sExt = FileUtils.getExtension(exportFile.getAbsolutePath());
 		
-		SEDMLExporter sedmlExporter = null;
+		SedMLExporter sedmlExporter = null;
 		if (bioModel != null) {
-			sedmlExporter = new SEDMLExporter(sFile, bioModel, sedmlLevel, sedmlVersion, null);
+			sedmlExporter = new SedMLExporter(sFile, bioModel, sedmlLevel, sedmlVersion, null);
 			boolean bRoundTripSBMLValidation = true;
-			Map<String, String> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);
+			Map<String, String> unsupportedApplications = SedMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);
 			Predicate<SimulationContext> simContextFilter = (SimulationContext sc) -> !unsupportedApplications.containsKey(sc.getName());
 			resultString = sedmlExporter.getSEDMLDocument(sPath, sFile, modelFormat, bRoundTripSBMLValidation, simContextFilter).writeDocumentToString();
 			// gather unsupported applications with messages
@@ -77,7 +77,7 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 		}
 	}
 	
-	public void doSpecificWork(SEDMLExporter sedmlExporter, String resultString, String sPath, String sFile) throws Exception {
+	public void doSpecificWork(SedMLExporter sedmlExporter, String resultString, String sPath, String sFile) throws Exception {
 		String sedmlFileName = Paths.get(sPath, sFile + ".sedml").toString();
 		XmlUtil.writeXMLStringToFile(resultString, sedmlFileName, true);
 		sedmlExporter.addSedmlFileToList(sFile + ".sedml");

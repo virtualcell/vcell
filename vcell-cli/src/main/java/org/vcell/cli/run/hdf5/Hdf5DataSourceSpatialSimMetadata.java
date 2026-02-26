@@ -2,7 +2,7 @@ package org.vcell.cli.run.hdf5;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jlibsedml.Variable;
+import org.jlibsedml.components.Variable;
 
 import java.util.*;
 

@@ -2,13 +2,11 @@ package org.vcell.cli.run.hdf5;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jlibsedml.DataSet;
-import org.jlibsedml.Report;
+import org.jlibsedml.components.output.DataSet;
+import org.jlibsedml.components.output.Report;
 import org.vcell.sbml.vcell.SBMLDataRecord;
 import org.vcell.sbml.vcell.lazy.LazySBMLDataAccessor;
-import org.vcell.sbml.vcell.lazy.LazySBMLNonSpatialDataAccessor;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.Pair;
 
 import java.util.*;
 
