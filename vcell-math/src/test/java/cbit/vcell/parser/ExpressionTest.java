@@ -227,7 +227,7 @@ public class ExpressionTest {
 			String targetFile = String.format("pythonInfixTest_%s.txt", uniqueTestId);
 			File resultsFile = null;
 			try {
-				resultsFile = Path.of(targetFile).toFile().getCanonicalFile();
+				resultsFile = Path.of("src/test/reports", targetFile).toFile().getCanonicalFile();
 				if (resultsFile.exists()) if(!resultsFile.delete()) throw new IOException("Unable to delete existing file!");
 				if (!resultsFile.createNewFile()) throw new IOException("Unable to create file!");
 				try (BufferedWriter bw = new BufferedWriter(new FileWriter(resultsFile))){ // record what went wrong to file:
@@ -325,7 +325,7 @@ public class ExpressionTest {
 
 	}
 
-//@Test
+@Test
 public void testEval() {
 	try {
 			
