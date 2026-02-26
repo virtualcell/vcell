@@ -47,7 +47,7 @@ class MathUtil {
 	}
 
 	static double acot(double arg){
-		return MathUtil.atan(1.0/arg);
+		return (AccurateMath.PI - (2*MathUtil.atan(arg)))/2.0;
 	}
 
 	static double acoth(double arg){
