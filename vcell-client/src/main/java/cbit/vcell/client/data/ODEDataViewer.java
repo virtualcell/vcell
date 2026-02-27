@@ -9,12 +9,10 @@
  */
 
 package cbit.vcell.client.data;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Hashtable;
 
-import javax.swing.JTabbedPane;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -39,7 +37,6 @@ import cbit.vcell.simdata.DataManager;
 import cbit.vcell.solver.DataSymbolMetadata;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationModelInfo;
-import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
 import cbit.vcell.solver.ode.gui.OutputSpeciesResultsPanel;
@@ -58,8 +55,8 @@ public class ODEDataViewer extends DataViewer {
 	public boolean hasLangevinBatchResults = false;
 	private LangevinSolverResultSet fieldLangevinSolverResultSet = null;
 	private NFSimMolecularConfigurations nFSimMolecularConfigurations = null;
-	private javax.swing.JPanel ivjViewData = null;
-	private LangevinClustersResultsPanel langevinClustersResultsPanel = null;
+	private javax.swing.JPanel viewData = null;
+	private LangevinClustersResultsPanel viewClustersPanel = null;
 	private OutputSpeciesResultsPanel outputSpeciesResultsPanel = null;
 	private VCDataIdentifier fieldVcDataIdentifier = null;
 
@@ -289,9 +286,7 @@ private javax.swing.JTabbedPane getJTabbedPane() {
 			ivjJTabbedPane.setName("JTabbedPane1");
 			ivjJTabbedPane.insertTab("View Data", null, getViewData(), null, 0);
 
-			langevinClustersResultsPanel = new LangevinClustersResultsPanel(this);
-			langevinClustersResultsPanel.addPropertyChangeListener(ivjEventHandler);
-			ivjJTabbedPane.addTab(LANGEVIN_CLUSTER_RESULTS_TABNAME, langevinClustersResultsPanel);
+			ivjJTabbedPane.addTab(LANGEVIN_CLUSTER_RESULTS_TABNAME, getViewClusters());
 
 			outputSpeciesResultsPanel = new OutputSpeciesResultsPanel(this);
 			outputSpeciesResultsPanel.addPropertyChangeListener(ivjEventHandler);
@@ -304,23 +299,31 @@ private javax.swing.JTabbedPane getJTabbedPane() {
 	}
 	return ivjJTabbedPane;
 }
-/**
- * Return the ViewData property value.
- * @return javax.swing.JPanel
- */
-private javax.swing.JPanel getViewData() {
-	if (ivjViewData == null) {
+
+private JPanel getViewClusters() {
+	if (viewClustersPanel == null) {
 		try {
-			ivjViewData = new javax.swing.JPanel();
-			ivjViewData.setName("ViewData");
-			ivjViewData.setLayout(new java.awt.BorderLayout());
-			getViewData().add(getODESolverPlotSpecificationPanel1(), "West");
-			getViewData().add(getPlotPane1(), "Center");
+			viewClustersPanel = new LangevinClustersResultsPanel(this);
+			viewClustersPanel.addPropertyChangeListener(ivjEventHandler);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjViewData;
+	return viewClustersPanel;
+}
+private JPanel getViewData() {
+	if (viewData == null) {
+		try {
+			viewData = new JPanel();
+			viewData.setName("ViewData");
+			viewData.setLayout(new java.awt.BorderLayout());
+			viewData.add(getODESolverPlotSpecificationPanel1(), "West");
+			viewData.add(getPlotPane1(), "Center");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return viewData;
 }
 
 
@@ -449,6 +452,7 @@ public void setVcDataIdentifier(VCDataIdentifier vcDataIdentifier) {
 	setOdeDataContext();
 	firePropertyChange("vcDataIdentifier", oldValue, vcDataIdentifier);
 	outputSpeciesResultsPanel.refreshData();
+	viewClustersPanel.refreshData();
 }
 
 public void setOdeDataContext() {
