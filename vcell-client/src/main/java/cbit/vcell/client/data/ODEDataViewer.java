@@ -17,7 +17,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import cbit.vcell.simdata.LangevinSolverResultSet;
-import cbit.vcell.solver.ode.gui.LangevinClustersResultsPanel;
+import cbit.vcell.solver.ode.gui.*;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
@@ -38,8 +38,6 @@ import cbit.vcell.solver.DataSymbolMetadata;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
-import cbit.vcell.solver.ode.gui.OutputSpeciesResultsPanel;
 import cbit.vcell.util.ColumnDescription;
 /**
  * Insert the type's description here.
@@ -50,13 +48,16 @@ public class ODEDataViewer extends DataViewer {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private ODESolverPlotSpecificationPanel ivjODESolverPlotSpecificationPanel1 = null;
 	private PlotPane ivjPlotPane1 = null;
+	private ClusterSpecificationPanel clusterSpecificationPanel = null;
+	private ClusterVisualizationPanel clusterVisualizationPanel = null;
+
 	private JTabbedPane ivjJTabbedPane = null;
 	private ODESolverResultSet fieldOdeSolverResultSet = null;
 	public boolean hasLangevinBatchResults = false;
 	private LangevinSolverResultSet fieldLangevinSolverResultSet = null;
 	private NFSimMolecularConfigurations nFSimMolecularConfigurations = null;
 	private javax.swing.JPanel viewData = null;
-	private LangevinClustersResultsPanel viewClustersPanel = null;
+	private JPanel viewClustersPanel = null;
 	private OutputSpeciesResultsPanel outputSpeciesResultsPanel = null;
 	private VCDataIdentifier fieldVcDataIdentifier = null;
 
@@ -303,14 +304,42 @@ private javax.swing.JTabbedPane getJTabbedPane() {
 private JPanel getViewClusters() {
 	if (viewClustersPanel == null) {
 		try {
-			viewClustersPanel = new LangevinClustersResultsPanel(this);
-			viewClustersPanel.addPropertyChangeListener(ivjEventHandler);
+			viewClustersPanel = new JPanel();
+			viewClustersPanel.setName("ViewClusters");
+			viewClustersPanel.setLayout(new java.awt.BorderLayout());
+			viewClustersPanel.add(getClusterSpecificationPanel(), "West");
+			viewClustersPanel.add(getClusterVisualizationPanel(), "Center");
+//			viewClustersPanel = new LangevinClustersResultsPanel(this);
+//			viewClustersPanel.addPropertyChangeListener(ivjEventHandler);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
 	return viewClustersPanel;
 }
+public ClusterSpecificationPanel getClusterSpecificationPanel() {
+	if (clusterSpecificationPanel == null) {
+		try {
+			clusterSpecificationPanel = new ClusterSpecificationPanel(this);
+			clusterSpecificationPanel.setName("ClusterSpecificationPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return clusterSpecificationPanel;
+}
+public ClusterVisualizationPanel getClusterVisualizationPanel() {
+	if (clusterVisualizationPanel == null) {
+		try {
+			clusterVisualizationPanel = new ClusterVisualizationPanel(this);
+			clusterVisualizationPanel.setName("ClusterVisualizationPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return clusterVisualizationPanel;
+}
+
 private JPanel getViewData() {
 	if (viewData == null) {
 		try {
@@ -452,7 +481,7 @@ public void setVcDataIdentifier(VCDataIdentifier vcDataIdentifier) {
 	setOdeDataContext();
 	firePropertyChange("vcDataIdentifier", oldValue, vcDataIdentifier);
 	outputSpeciesResultsPanel.refreshData();
-	viewClustersPanel.refreshData();
+	getClusterSpecificationPanel().refreshData();
 }
 
 public void setOdeDataContext() {
