@@ -22,32 +22,24 @@ import java.beans.PropertyChangeListener;
 
 public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
 
-    private final ODEDataViewer owner;
-    ClusterSpecificationPanel.IvjEventHandler ivjEventHandler = new ClusterSpecificationPanel.IvjEventHandler();
-
-    private DefaultListModel defaultListModelY = null;
-
-    private CollapsiblePanel displayOptionsCollapsiblePanel = null;
-    private JScrollPane jScrollPaneYAxis = null;
-    private JList yAxisChoiceList = null;
-
-
     private enum DisplayMode { COUNTS, MEAN, OVERALL };
-    LangevinSolverResultSet langevinSolverResultSet = null;
-    SimulationModelInfo simulationModelInfo = null;
+    public static class ClusterSelection {  // used to communicate y-list selection to the ClusterVisualizationPanel
+        public final DisplayMode mode;
+        public final java.util.List<ColumnDescription> columns;
+        public final ODESolverResultSet resultSet;
+        public ClusterSelection(DisplayMode mode, java.util.List<ColumnDescription> columns, ODESolverResultSet resultSet) {
+            this.mode = mode;
+            this.columns = columns;
+            this.resultSet = resultSet;
+        }
+    }
 
-
-    class IvjEventHandler implements ActionListener, PropertyChangeListener, ChangeListener, ListSelectionListener {
+    class IvjEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            System.out.println("ClusterSpecificationPanel.IvjEventHandler.actionPerformed() called");
-            System.out.println("     Source: " + e.getSource() + ", Action Command: " + e.getActionCommand());
-            Object source = e.getSource();
             String cmd = e.getActionCommand();
-
-            if (source instanceof JRadioButton) {
-                JRadioButton rb = (JRadioButton) source;
-                System.out.println("     Source is JRadioButton with text: " + rb.getText());
+            if (e.getSource() instanceof JRadioButton rb && SwingUtilities.isDescendingFrom(rb, ClusterSpecificationPanel.this)) {
+                System.out.println("ClusterSpecificationPanel.actionPerformed() called. Source is JRadioButton: " + rb.getText());
                 switch (cmd) {
                     case "COUNTS":
                         populateYAxisChoices(DisplayMode.COUNTS);
@@ -63,23 +55,59 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         }
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            System.out.println("ClusterSpecificationPanel.IvjEventHandler.propertyChange() called");
-            System.out.println("     Source: " + evt.getSource() + ", Property Name: " + evt.getPropertyName() + ", Old Value: " + evt.getOldValue() + ", New Value: " + evt.getNewValue());
+            if(evt.getSource() == ClusterSpecificationPanel.this) {
+                System.out.println("ClusterSpecificationPanel.IvjEventHandler.propertyChange() called");
+            }
         }
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            System.out.println("ClusterSpecificationPanel.IvjEventHandler.stateChanged() called");
-            System.out.println("     Source: " + e.getSource() + ", Class: " + e.getSource().getClass().getName());
-        }
-
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            System.out.println("ClusterSpecificationPanel.IvjEventHandler.valueChanged() called");
-            System.out.println("     Source: " + e.getSource() + ", Class: " + e.getSource().getClass().getName());
-            Object source = e.getSource();
-
+            if (e.getSource() == ClusterSpecificationPanel.this.getYAxisChoice() && !e.getValueIsAdjusting()) {
+                // extract selected ColumnDescriptions
+                java.util.List<ColumnDescription> selected = (java.util.List<ColumnDescription>) yAxisChoiceList.getSelectedValuesList();
+                DisplayMode mode = null;
+                JPanel content = displayOptionsCollapsiblePanel.getContentPanel();
+                for (Component c : content.getComponents()) {
+                    if (c instanceof JRadioButton rb && rb.isSelected()) {
+                        switch (rb.getActionCommand()) {
+                            case "COUNTS":
+                                mode = DisplayMode.COUNTS;
+                                break;
+                            case "MEAN":
+                                mode = DisplayMode.MEAN;
+                                break;
+                            case "OVERALL":
+                                mode = DisplayMode.OVERALL;
+                                break;
+                        }
+                    }
+                }
+                ODESolverResultSet srs = null;
+                switch (mode) {
+                    case COUNTS:
+                        srs = langevinSolverResultSet.getClusterCounts();
+                        break;
+                    case MEAN:
+                        srs = langevinSolverResultSet.getClusterMean();
+                        break;
+                    case OVERALL:
+                        srs = langevinSolverResultSet.getClusterOverall();
+                        break;
+                }
+                // fire the event upward
+                firePropertyChange("ClusterSelection", null, new ClusterSelection(mode, selected, srs));
+            }
         }
     };
+
+    private final ODEDataViewer owner;    LangevinSolverResultSet langevinSolverResultSet = null;
+    SimulationModelInfo simulationModelInfo = null;
+    ClusterSpecificationPanel.IvjEventHandler ivjEventHandler = new ClusterSpecificationPanel.IvjEventHandler();
+
+    private CollapsiblePanel displayOptionsCollapsiblePanel = null;
+    private JScrollPane jScrollPaneYAxis = null;
+    private JList yAxisChoiceList = null;
+    private DefaultListModel<ColumnDescription> defaultListModelY = null;
+
 
     private void populateYAxisChoices(DisplayMode mode) {
         DefaultListModel model = getDefaultListModelY();
@@ -108,6 +136,7 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
                 cd = srs.getColumnDescriptions();
                 break;
         }
+
         if(cd == null || cd.length == 1) {
             model.addElement("<no data>");  // if only "t" column is present, treat as no data
             return;
@@ -116,7 +145,7 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
             if(columnDescription.getName().equals("t")) {
                 continue; // skip time column
             }
-            model.addElement(columnDescription.getName());
+            model.addElement(columnDescription);
             getYAxisChoice().setEnabled(true);
         }
     }
@@ -229,6 +258,21 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
             yAxisChoiceList.setName("YAxisChoice");
             yAxisChoiceList.setBounds(0, 0, 160, 120);
             yAxisChoiceList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+            yAxisChoiceList.setCellRenderer(new DefaultListCellRenderer() {
+                @Override
+                public Component getListCellRendererComponent(
+                        JList<?> list, Object value, int index,
+                        boolean isSelected, boolean cellHasFocus) {
+
+                    JLabel label = (JLabel) super.getListCellRendererComponent(
+                            list, value, index, isSelected, cellHasFocus);
+
+                    ColumnDescription cd = (ColumnDescription) value;
+                    label.setText(cd.getName());   // later: cd.getName() + " (molecules)"
+
+                    return label;
+                }
+            });
         }
         return yAxisChoiceList;
     }

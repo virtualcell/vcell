@@ -2,6 +2,7 @@ package cbit.vcell.solver.ode.gui;
 
 import cbit.vcell.client.data.ODEDataViewer;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.util.ColumnDescription;
 import org.vcell.util.gui.JToolBarToggleButton;
 import org.vcell.util.gui.VCellIcons;
 
@@ -40,37 +41,39 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
     class IvjEventHandler implements ActionListener, PropertyChangeListener, ChangeListener, ListSelectionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            System.out.println("ClusterVisualizationPanel.IvjEventHandler.actionPerformed() called");
-            System.out.println("     Source: " + e.getSource() + ", Action Command: " + e.getActionCommand());
-            Object source = e.getSource();
-            String cmd = e.getActionCommand();
-
-            if (cmd.equals("JPanelPlot") || cmd.equals("JPanelData")) {
-                CardLayout cl = (CardLayout) ivjJPanel1.getLayout();
-                cl.show(ivjJPanel1, cmd);                               // show the plot or the data panel
-                ivjPlotButton.setSelected(cmd.equals("JPanelPlot"));    // update button selection state
-                ivjDataButton.setSelected(cmd.equals("JPanelData"));
-                ivjJPanelLegend.setVisible(cmd.equals("JPanelPlot"));   // show legend only in plot mode
-                return;
+            if (e.getSource() instanceof Component c && SwingUtilities.isDescendingFrom(c, ClusterVisualizationPanel.this)) {
+                String cmd = e.getActionCommand();
+                if (cmd.equals("JPanelPlot") || cmd.equals("JPanelData")) {
+                    CardLayout cl = (CardLayout) ivjJPanel1.getLayout();
+                    cl.show(ivjJPanel1, cmd);                               // show the plot or the data panel
+                    ivjPlotButton.setSelected(cmd.equals("JPanelPlot"));    // update button selection state
+                    ivjDataButton.setSelected(cmd.equals("JPanelData"));
+                    ivjJPanelLegend.setVisible(cmd.equals("JPanelPlot"));   // show legend only in plot mode
+                    return;
+                }
             }
         }
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            System.out.println("ClusterVisualizationPanel.IvjEventHandler.propertyChange() called");
-            System.out.println("     Source: " + evt.getSource() + ", Property Name: " + evt.getPropertyName() + ", Old Value: " + evt.getOldValue() + ", New Value: " + evt.getNewValue());
+            if (evt.getSource() == owner.getClusterSpecificationPanel() && "ClusterSelection".equals(evt.getPropertyName())) {
+                ClusterSpecificationPanel.ClusterSelection sel = (ClusterSpecificationPanel.ClusterSelection) evt.getNewValue();
+                updateLegend(sel);      // update legend (one plot, multiple curves)
+                redrawPlot(sel);        // redraw plot (one plot, multiple curves)
+                updateDataTable(sel);   // update data table
+                return;
+            }
         }
         @Override
         public void stateChanged(ChangeEvent e) {
-            System.out.println("ClusterVisualizationPanel.IvjEventHandler.stateChanged() called");
-            System.out.println("     Source: " + e.getSource() + ", Class: " + e.getSource().getClass().getName());
+            if (e.getSource() instanceof Component c && SwingUtilities.isDescendingFrom(c, ClusterVisualizationPanel.this)) {
+                System.out.println("ClusterVisualizationPanel.IvjEventHandler.stateChanged() called");
+            }
         }
-
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            System.out.println("ClusterVisualizationPanel.IvjEventHandler.valueChanged() called");
-            System.out.println("     Source: " + e.getSource() + ", Class: " + e.getSource().getClass().getName());
-            Object source = e.getSource();
-
+            if (e.getSource() instanceof Component c && SwingUtilities.isDescendingFrom(c, ClusterVisualizationPanel.this)) {
+                System.out.println("ClusterVisualizationPanel.IvjEventHandler.valueChanged() called");
+            }
         }
     };
 
@@ -255,14 +258,17 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
 
 
     private void initConnectionsRight() {
-        // Group the two buttons so only one stays selected
+        // group the two buttons so only one stays selected
         ButtonGroup bg = new ButtonGroup();
         bg.add(getPlotButton());
         bg.add(getDataButton());
 
-        // Add the shared handler
+        // add the shared handler
         getPlotButton().addActionListener(ivjEventHandler);
         getDataButton().addActionListener(ivjEventHandler);
+
+        // listen to the left panel
+        owner.getClusterSpecificationPanel().addPropertyChangeListener(ivjEventHandler);
     }
 
 
@@ -280,7 +286,23 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
 //        simulationModelInfo = owner.getSimulationModelInfo();
 //        langevinSolverResultSet = owner.getLangevinSolverResultSet();
         System.out.println("ClusterVisualizationPanel.refreshData() called");
-
     }
+
+    // ---------------------------------------------------------------------
+
+    private void updateLegend(ClusterSpecificationPanel.ClusterSelection sel) {
+        System.out.println("ClusterVisualizationPanel.updateLegend() called");
+    }
+    private void redrawPlot(ClusterSpecificationPanel.ClusterSelection sel) {
+        System.out.println("ClusterVisualizationPanel.redrawPlot() called");
+        java.util.List<ColumnDescription> columnDescriptions = sel.columns;
+        for(ColumnDescription cd : columnDescriptions) {
+            System.out.println("  column name: '" + cd.getName() + "'");
+        }
+    }
+    private void updateDataTable(ClusterSpecificationPanel.ClusterSelection sel) {
+        System.out.println("ClusterVisualizationPanel.updateDataTable() called");
+    }
+
 
 }
