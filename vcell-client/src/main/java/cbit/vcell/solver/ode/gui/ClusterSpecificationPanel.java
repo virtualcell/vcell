@@ -19,6 +19,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
 
@@ -99,12 +101,16 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         }
     };
 
-    private final ODEDataViewer owner;    LangevinSolverResultSet langevinSolverResultSet = null;
+    private final ODEDataViewer owner;
+    LangevinSolverResultSet langevinSolverResultSet = null;
     SimulationModelInfo simulationModelInfo = null;
+    private final Map<DisplayMode, Integer> yAxisCounts = new LinkedHashMap<>();
     ClusterSpecificationPanel.IvjEventHandler ivjEventHandler = new ClusterSpecificationPanel.IvjEventHandler();
 
     private CollapsiblePanel displayOptionsCollapsiblePanel = null;
     private JScrollPane jScrollPaneYAxis = null;
+    private static final String YAxisLabelText = "Y Axis: ";
+    private JLabel yAxisLabel = null;
     private JList yAxisChoiceList = null;
     private DefaultListModel<ColumnDescription> defaultListModelY = null;
 
@@ -117,8 +123,9 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         ODESolverResultSet srs = null;
         ColumnDescription[] cd = null;
 
+        updateYAxisLabel(mode);
+
         if (langevinSolverResultSet == null) {
-            model.addElement("<no data>");
             return;
         }
         switch (mode) {
@@ -138,7 +145,6 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         }
 
         if(cd == null || cd.length == 1) {
-            model.addElement("<no data>");  // if only "t" column is present, treat as no data
             return;
         }
         for (ColumnDescription columnDescription : cd) {
@@ -148,6 +154,11 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
             model.addElement(columnDescription);
             getYAxisChoice().setEnabled(true);
         }
+    }
+    private void updateYAxisLabel(DisplayMode mode) {
+        int count = yAxisCounts.getOrDefault(mode, 0);
+        String text = "<html><b>" + YAxisLabelText + "</b><span style='color:#8B0000;'>(" + count + " entries)</span></html>";
+        yAxisLabel.setText(text);
     }
 
     public ClusterSpecificationPanel(ODEDataViewer odeDataViewer) {
@@ -163,7 +174,7 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         setSize(248, 604);
         setMinimumSize(new Dimension(125, 300));
 
-        JLabel xAxisLabel = new JLabel("X Axis:");
+        JLabel xAxisLabel = new JLabel("<html><b>X Axis: </b></html>");     // non-breaking space is  &nbsp;
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
         gbc.gridx = 0; gbc.gridy = 0;
@@ -180,12 +191,11 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         gbc.insets = new Insets(0, 4, 4, 4);
         add(xAxisTextBox, gbc);
 
-        JLabel yAxisLabel = new JLabel("Y Axis:");
         gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
         gbc.insets = new Insets(4, 4, 0, 4);
         gbc.gridx = 0; gbc.gridy = 2;
-        add(yAxisLabel, gbc);
+        add(getYAxisLabel(), gbc);
 
         gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
@@ -228,7 +238,7 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
             group.add(rbMean);
             group.add(rbOverall);
 
-            rbCounts.setSelected(true);
+            rbCounts.setSelected(true);     // select the first option by default, which will populate the y-axis choices
 
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.gridx = 0;
@@ -249,8 +259,20 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
             jScrollPaneYAxis = new JScrollPane();
             jScrollPaneYAxis.setName("JScrollPaneYAxis");
             jScrollPaneYAxis.setViewportView(getYAxisChoice());
+            // prevent collapse when list is empty
+            jScrollPaneYAxis.setMinimumSize(new Dimension(100, 120));
+            jScrollPaneYAxis.setPreferredSize(new Dimension(100, 120));
         }
         return jScrollPaneYAxis;
+    }
+    private JLabel getYAxisLabel() {
+        if (yAxisLabel == null) {
+            yAxisLabel = new JLabel();
+            yAxisLabel.setName("YAxisLabel");
+            String text = "<html><b>" + YAxisLabelText + "</b></html>";
+            yAxisLabel.setText(text);
+        }
+        return yAxisLabel;
     }
     private JList getYAxisChoice() {
         if ((yAxisChoiceList == null)) {
@@ -284,9 +306,9 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         getYAxisChoice().setModel(getDefaultListModelY());
     }
 
-    private DefaultListModel getDefaultListModelY() {
+    private DefaultListModel<ColumnDescription> getDefaultListModelY() {
         if (defaultListModelY == null) {
-            defaultListModelY = new DefaultListModel();
+            defaultListModelY = new DefaultListModel<>();
         }
         return defaultListModelY;
     }
@@ -304,9 +326,16 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
     public void refreshData() {
         simulationModelInfo = owner.getSimulationModelInfo();
         langevinSolverResultSet = owner.getLangevinSolverResultSet();
+        yAxisCounts.clear();
+        if (langevinSolverResultSet != null) {
+            yAxisCounts.put(DisplayMode.COUNTS, countColumns(langevinSolverResultSet.getClusterCounts()));
+            yAxisCounts.put(DisplayMode.MEAN, countColumns(langevinSolverResultSet.getClusterMean()));
+            yAxisCounts.put(DisplayMode.OVERALL, countColumns(langevinSolverResultSet.getClusterOverall()));
+        }
         System.out.println("ClusterSpecificationPanel.refreshData() called");
 
-        // find the selected radio button inside the collapsible panel
+        // find the selected radio button inside the collapsible panel and fire event as if it were just selected by mouse click
+        // which will populate the y-axis choices based on the new data
         JPanel content = displayOptionsCollapsiblePanel.getContentPanel();
         for (Component c : content.getComponents()) {
             if (c instanceof JRadioButton rb && rb.isSelected()) {
@@ -314,6 +343,12 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
                 break;
             }
         }
+    }
+    private int countColumns(ODESolverResultSet srs) {
+        if (srs == null) return 0;
+        ColumnDescription[] cds = srs.getColumnDescriptions();
+        if (cds == null) return 0;
+        return cds.length > 1 ? cds.length-1 : 0; // subtract one for time column, but don't return negative if no column at all
     }
 
 }
