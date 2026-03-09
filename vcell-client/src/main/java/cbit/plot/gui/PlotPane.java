@@ -52,7 +52,7 @@ import cbit.vcell.units.VCUnitDefinition;
  */
 public class PlotPane extends JPanel {
 
-class LineIcon implements Icon {
+public class LineIcon implements Icon {
 		private Paint lineColor;
 		private LineIcon(Paint paint) {
 			lineColor = paint;

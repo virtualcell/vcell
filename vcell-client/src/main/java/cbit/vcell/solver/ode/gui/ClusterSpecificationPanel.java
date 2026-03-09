@@ -24,7 +24,7 @@ import java.util.Map;
 
 public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
 
-    private enum DisplayMode { COUNTS, MEAN, OVERALL };
+    public enum DisplayMode { COUNTS, MEAN, OVERALL };
     public static class ClusterSelection {  // used to communicate y-list selection to the ClusterVisualizationPanel
         public final DisplayMode mode;
         public final java.util.List<ColumnDescription> columns;
@@ -65,36 +65,10 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         public void valueChanged(ListSelectionEvent e) {
             if (e.getSource() == ClusterSpecificationPanel.this.getYAxisChoice() && !e.getValueIsAdjusting()) {
                 // extract selected ColumnDescriptions
-                java.util.List<ColumnDescription> selected = (java.util.List<ColumnDescription>) yAxisChoiceList.getSelectedValuesList();
-                DisplayMode mode = null;
-                JPanel content = displayOptionsCollapsiblePanel.getContentPanel();
-                for (Component c : content.getComponents()) {
-                    if (c instanceof JRadioButton rb && rb.isSelected()) {
-                        switch (rb.getActionCommand()) {
-                            case "COUNTS":
-                                mode = DisplayMode.COUNTS;
-                                break;
-                            case "MEAN":
-                                mode = DisplayMode.MEAN;
-                                break;
-                            case "OVERALL":
-                                mode = DisplayMode.OVERALL;
-                                break;
-                        }
-                    }
-                }
-                ODESolverResultSet srs = null;
-                switch (mode) {
-                    case COUNTS:
-                        srs = langevinSolverResultSet.getClusterCounts();
-                        break;
-                    case MEAN:
-                        srs = langevinSolverResultSet.getClusterMean();
-                        break;
-                    case OVERALL:
-                        srs = langevinSolverResultSet.getClusterOverall();
-                        break;
-                }
+                java.util.List<ColumnDescription> selected = yAxisChoiceList.getSelectedValuesList();
+                DisplayMode mode = getCurrentDisplayMode();
+                ODESolverResultSet srs = getResultSetForMode(mode);
+
                 // fire the event upward
                 firePropertyChange("ClusterSelection", null, new ClusterSelection(mode, selected, srs));
             }
@@ -114,47 +88,30 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
     private JList yAxisChoiceList = null;
     private DefaultListModel<ColumnDescription> defaultListModelY = null;
 
-
     private void populateYAxisChoices(DisplayMode mode) {
-        DefaultListModel model = getDefaultListModelY();
+        DefaultListModel<ColumnDescription> model = getDefaultListModelY();
         model.clear();
         getYAxisChoice().setEnabled(false);
 
-        ODESolverResultSet srs = null;
-        ColumnDescription[] cd = null;
-
         updateYAxisLabel(mode);
 
-        if (langevinSolverResultSet == null) {
+        ColumnDescription[] cds = getColumnDescriptionsForMode(mode);
+        if (cds == null || cds.length <= 1) {
             return;
-        }
-        switch (mode) {
-            case COUNTS:
-                // we may never get non-trivial clusters if there's no binding reaction
-                srs = langevinSolverResultSet.getClusterCounts();
-                cd = srs.getColumnDescriptions();
-                break;
-            case MEAN:
-                srs = langevinSolverResultSet.getClusterMean();
-                cd = srs.getColumnDescriptions();
-                break;
-            case OVERALL:
-                srs = langevinSolverResultSet.getClusterOverall();
-                cd = srs.getColumnDescriptions();
-                break;
         }
 
-        if(cd == null || cd.length == 1) {
-            return;
-        }
-        for (ColumnDescription columnDescription : cd) {
-            if(columnDescription.getName().equals("t")) {
-                continue; // skip time column
+        for (ColumnDescription cd : cds) {
+            if (!"t".equals(cd.getName())) {
+                model.addElement(cd);
             }
-            model.addElement(columnDescription);
+        }
+
+        if (!model.isEmpty()) {
             getYAxisChoice().setEnabled(true);
+            getYAxisChoice().setSelectedIndex(0);   // triggers valueChanged()
         }
     }
+
     private void updateYAxisLabel(DisplayMode mode) {
         int count = yAxisCounts.getOrDefault(mode, 0);
         String text = "<html><b>" + YAxisLabelText + "</b><span style='color:#8B0000;'>(" + count + " entries)</span></html>";
@@ -350,5 +307,27 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         if (cds == null) return 0;
         return cds.length > 1 ? cds.length-1 : 0; // subtract one for time column, but don't return negative if no column at all
     }
-
+    private ODESolverResultSet getResultSetForMode(DisplayMode mode) {
+        if (langevinSolverResultSet == null) {
+            return null;
+        }
+        return switch (mode) {
+            case COUNTS -> langevinSolverResultSet.getClusterCounts();
+            case MEAN   -> langevinSolverResultSet.getClusterMean();
+            case OVERALL-> langevinSolverResultSet.getClusterOverall();
+        };
+    }
+    private ColumnDescription[] getColumnDescriptionsForMode(DisplayMode mode) {
+        ODESolverResultSet srs = getResultSetForMode(mode);
+        return (srs == null ? null : srs.getColumnDescriptions());
+    }
+    private DisplayMode getCurrentDisplayMode() {
+        JPanel content = displayOptionsCollapsiblePanel.getContentPanel();
+        for (Component c : content.getComponents()) {
+            if (c instanceof JRadioButton rb && rb.isSelected()) {
+                return DisplayMode.valueOf(rb.getActionCommand());
+            }
+        }
+        return DisplayMode.COUNTS; // default fallback
+    }
 }

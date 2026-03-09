@@ -2,7 +2,9 @@ package cbit.vcell.solver.ode.gui;
 
 import cbit.vcell.client.data.ODEDataViewer;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.util.ColumnDescription;
+import org.vcell.util.ColorUtil;
 import org.vcell.util.gui.JToolBarToggleButton;
 import org.vcell.util.gui.VCellIcons;
 
@@ -17,12 +19,20 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.*;
+import java.util.List;
 
 
 public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
 
     ODEDataViewer owner;
     IvjEventHandler ivjEventHandler = new IvjEventHandler();
+
+    private final Map<String, Color> persistentColorMap = new LinkedHashMap<>();
+    private final java.util.List<Color> globalPalette = new ArrayList<>();
+    private int nextColorIndex = 0;
+
+
 
     private JPanel ivjJPanel1 = null;
     private JPanel ivjJPanelPlot = null;
@@ -57,8 +67,13 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource() == owner.getClusterSpecificationPanel() && "ClusterSelection".equals(evt.getPropertyName())) {
                 ClusterSpecificationPanel.ClusterSelection sel = (ClusterSpecificationPanel.ClusterSelection) evt.getNewValue();
-                updateLegend(sel);      // update legend (one plot, multiple curves)
-                redrawPlot(sel);        // redraw plot (one plot, multiple curves)
+                ensureColorsAssigned(sel.columns);
+                try {
+                    redrawPlot(sel);        // redraw plot (one plot, multiple curves)
+                } catch (ExpressionException e) {
+                    throw new RuntimeException(e);
+                }
+                redrawLegend(sel);      // update legend (one plot, multiple curves)
                 updateDataTable(sel);   // update data table
                 return;
             }
@@ -90,7 +105,8 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         add(getJPanel1(), "Center");
         add(getBottomRightPanel(), "South");
         add(getJPanelLegend(), "East");
-        initConnectionsRight();
+        setBackground(Color.white);
+        initConnections();
     }
 
     private JPanel getJPanel1() {
@@ -231,11 +247,14 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
             ivjJPanelLegend.setName("JPanelLegend");
             ivjJPanelLegend.setLayout(new BorderLayout());
             getJPanelLegend().add(new JLabel("        "), "South");
-            getJPanelLegend().add(new JLabel("Plot Legend:"), "North");
+            JLabel labelLegendTitle = new JLabel("Plot Legend:");
+            labelLegendTitle.setBorder(new EmptyBorder(10, 4, 10, 4));
+            getJPanelLegend().add(labelLegendTitle, "North");
             getJPanelLegend().add(getPlotLegendsScrollPane(), "Center");
         }
         return ivjJPanelLegend;
     }
+
     private JScrollPane getPlotLegendsScrollPane() {
         if (ivjPlotLegendsScrollPane == null) {
             ivjPlotLegendsScrollPane = new JScrollPane();
@@ -256,8 +275,22 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         return ivjJPanelPlotLegends;
     }
 
+    public void setBackground(Color color) {
+        super.setBackground(color);
+        getBottomRightPanel().setBackground(color);
+        getJBottomLabel().setBackground(color);
+        getJPanelLegend().setBackground(color);
+        getJPanelPlotLegends().setBackground(color);
+        getJPanel1().setBackground(color);
+        getPlot2DPanel1().setBackground(color);
+        getPlot2DDataPanel1().setBackground(color);
+        getJPanelData().setBackground(color);
+        getJPanelPlot().setBackground(color);
 
-    private void initConnectionsRight() {
+    }
+
+        private void initConnections() {
+        initializeGlobalPalette();      // get a stable, high contrast palette
         // group the two buttons so only one stays selected
         ButtonGroup bg = new ButtonGroup();
         bg.add(getPlotButton());
@@ -290,15 +323,101 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
 
     // ---------------------------------------------------------------------
 
-    private void updateLegend(ClusterSpecificationPanel.ClusterSelection sel) {
-        System.out.println("ClusterVisualizationPanel.updateLegend() called");
+    private void initializeGlobalPalette() {
+        // Use a curated palette from ColorUtil
+        globalPalette.clear();
+        globalPalette.addAll(Arrays.asList(ColorUtil.TABLEAU20));
     }
-    private void redrawPlot(ClusterSpecificationPanel.ClusterSelection sel) {
-        System.out.println("ClusterVisualizationPanel.redrawPlot() called");
-        java.util.List<ColumnDescription> columnDescriptions = sel.columns;
-        for(ColumnDescription cd : columnDescriptions) {
-            System.out.println("  column name: '" + cd.getName() + "'");
+    private void ensureColorsAssigned(List<ColumnDescription> columns) {
+        // assign colors only when needed, and keep them consistent across updates
+        for (ColumnDescription cd : columns) {
+            String name = cd.getName();
+            if (!persistentColorMap.containsKey(name)) {
+                Color c = globalPalette.get(nextColorIndex % globalPalette.size());
+                persistentColorMap.put(name, c);
+                nextColorIndex++;
+            }
         }
+    }
+    private JComponent createLegendEntry(String name, Color color, ClusterSpecificationPanel.DisplayMode mode) {
+        JPanel p = new JPanel();
+        p.setName("JPanelClusterColorLegends");
+        BoxLayout bl = new BoxLayout(p, BoxLayout.Y_AXIS);
+        p.setLayout(bl);
+        p.setBounds(0, 0, 72, 360);
+        p.setOpaque(false);
+
+        String unitSymbol = "";
+        if(ClusterSpecificationPanel.DisplayMode.COUNTS == mode) {
+            unitSymbol = "molecules";
+        }
+        String shortLabel = "<html>" + name + "<font color=\"#8B0000\">" + " [" + unitSymbol + "] " + "</font></html>";
+
+        JLabel line = new JLabel(new LineIcon(color));
+        JLabel text = new JLabel(shortLabel);
+        line.setBorder(new EmptyBorder(6,0,1,0));
+        text.setBorder(new EmptyBorder(1,8,6,0));
+        p.add(line);
+        p.add(text);
+
+        return p;
+    }
+    public class LineIcon implements Icon {
+        private final Color color;
+        public LineIcon(Color color) {
+            this.color = color;
+        }
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            Graphics2D g2 = (Graphics2D)g;
+            g2.setStroke(new BasicStroke(3.0f));
+            g2.setPaint(color);
+            int midY = y + getIconHeight() / 2;
+            g2.drawLine(x, midY, x + getIconWidth(), midY);
+        }
+        @Override
+        public int getIconWidth() { return 50; }
+        @Override
+        public int getIconHeight() {
+            return 4;  // more vertical room for a wider stroke
+        }
+    }
+    public static String getUnitSymbol(ClusterSpecificationPanel.ClusterSelection sel) {
+        if(ClusterSpecificationPanel.DisplayMode.COUNTS == sel.mode) {
+
+
+        }
+        return "";
+    }
+
+    private void redrawPlot(ClusterSpecificationPanel.ClusterSelection sel) throws ExpressionException {
+        System.out.println("ClusterVisualizationPanel.redrawPlot() called");
+//        java.util.List<ColumnDescription> columnDescriptions = sel.columns;
+//        for(ColumnDescription cd : columnDescriptions) {
+//            System.out.println("  column name: '" + cd.getName() + "'");
+//        }
+//        getPlot2DPanel1().removeAllPlots();
+//
+//        int index = sel.resultSet.findColumn("t");
+//        double[] t = sel.resultSet.extractColumn(index);
+//
+//        for (ColumnDescription cd : sel.columns) {
+//            index = sel.resultSet.findColumn(cd.getName());
+//            double[] y = sel.resultSet.extractColumn(index);
+//            Color c = persistentColorMap.get(cd.getName());
+//            getPlot2DPanel1().addLinePlot(cd.getName(), c, t, y);
+//        }
+//        getPlot2DPanel1().repaint();
+    }
+    private void redrawLegend(ClusterSpecificationPanel.ClusterSelection sel) {
+        System.out.println("ClusterVisualizationPanel.updateLegend() called");
+        getJPanelPlotLegends().removeAll();
+        for (ColumnDescription cd : sel.columns) {
+            Color c = persistentColorMap.get(cd.getName());
+            getJPanelPlotLegends().add(createLegendEntry(cd.getName(), c, sel.mode));
+        }
+        getJPanelPlotLegends().revalidate();
+        getJPanelPlotLegends().repaint();
     }
     private void updateDataTable(ClusterSpecificationPanel.ClusterSelection sel) {
         System.out.println("ClusterVisualizationPanel.updateDataTable() called");
