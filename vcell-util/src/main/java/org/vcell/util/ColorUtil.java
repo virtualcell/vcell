@@ -124,4 +124,73 @@ public class ColorUtil {
 		return (red*299+grn*587+blu*114)/1000;
 	}
 
+	public static final Color[] TABLEAU20 = {
+			new Color(31,119,180),    // deep blue
+			new Color(255,127,14),    // orange
+			new Color(44,160,44),     // green
+			new Color(214,39,40),     // red
+			new Color(148,103,189),   // purple
+			new Color(140,86,75),     // brown
+			new Color(227,119,194),   // pink
+			new Color(127,127,127),   // gray
+			new Color(188,189,34),    // olive
+			new Color(23,190,207),    // teal
+			new Color(174,199,232),   // light blue
+			new Color(255,187,120),   // light orange
+			new Color(152,223,138),   // light green
+			new Color(255,152,150),   // light red
+			new Color(197,176,213),   // light purple
+			new Color(196,156,148),   // light brown
+			new Color(247,182,210),   // light pink
+			new Color(199,199,199),   // light gray
+			new Color(219,219,141),   // light olive
+			new Color(158,218,229)    // light teal
+	};
+
+	public static final Color[] COLORBLIND20 = {
+			new Color(0,114,178),     // deep blue
+			new Color(213,94,0),      // orange
+			new Color(0,158,115),     // green
+			new Color(170,51,119),    // magenta
+			new Color(0,170,170),     // teal
+			new Color(153,153,153),   // gray
+			new Color(0,150,255),     // azure
+			new Color(0,170,0),       // emerald
+			new Color(200,55,0),      // brick red
+			new Color(102,0,153),     // purple
+			new Color(86,180,233),    // sky blue
+			new Color(120,190,32),    // lime green
+			new Color(230,159,0),     // goldenrod
+			new Color(204,121,167),   // rose
+			new Color(0,200,200),     // cyan
+			new Color(102,102,102),   // dark gray
+			new Color(0,90,160),      // deep navy
+			new Color(40,120,40),     // forest green
+			new Color(153,102,204),   // lavender
+			new Color(136,34,85)      // plum
+	};
+
+	public static final Color[] DARK20 = {
+			new Color(31,119,180),   // dark blue
+			new Color(214,39,40),    // dark red
+			new Color(44,160,44),    // dark green
+			new Color(148,103,189),  // dark purple
+			new Color(140,86,75),    // brown
+			new Color(23,190,207),   // dark cyan
+			new Color(188,189,34),   // olive
+			new Color(127,127,127),  // gray
+			new Color(57,59,121),    // indigo
+			new Color(82,84,163),    // muted violet
+			new Color(107,110,207),  // periwinkle
+			new Color(156,158,222),  // muted lavender
+			new Color(99,121,57),    // moss green
+			new Color(140,162,82),   // muted lime
+			new Color(181,207,107),  // muted olive green
+			new Color(206,109,189),  // muted magenta
+			new Color(140,109,49),   // dark gold/brown
+			new Color(189,158,57),   // mustard
+			new Color(231,186,82),   // muted amber
+			new Color(231,203,148)   // muted beige
+	};
+
 }
