@@ -413,6 +413,21 @@ public void testEval() {
 	}
 }
 
+@Test
+public void testNumExprGeneration() throws ExpressionException {
+	Expression expr1 = new Expression("(2.0 && id_2) * 3.3 / acsc(1 + id_1) * pow(2, 3.2 ^ 2)");
+	String numExpr1 = expr1.infix_NumExpr();
+	Assertions.assertEquals("(where(((0.0!=2.0) & (0.0!=id_2)), 3.3 / (arcsin(1.0/((1.0 + id_1)))) * ((2.0)**(((3.2)**(2.0)))), 0.0))", numExpr1);
+
+	Expression expr2 = new Expression("(1.2 * 2.2) * logbase(3.3) * 2.0");
+	String numExpr2 = expr2.infix_NumExpr();
+	Assertions.assertEquals("((1.2 * 2.2) * (1.0/log(3.3)) * 2.0)", numExpr2);
+
+	Expression expr3 = new Expression("(1.2 || 2.2) * (3.3 && !(2.0 && 0.0))");
+	String numExpr3 = expr3.infix_NumExpr();
+	Assertions.assertEquals("(((0.0!=1.2) | (0.0!=2.2)) & ((0.0!=3.3) & (0.0!=~(((0.0!=2.0) & (0.0!=0.0))))))", numExpr3);
+}
+
 
 /**
  * Insert the method's description here.

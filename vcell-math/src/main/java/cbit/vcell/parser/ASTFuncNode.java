@@ -134,6 +134,29 @@ public class ASTFuncNode extends SimpleNode {
 				default -> "math." + getName();
 			};
 		}
+
+		public final String getNumExprTranslation() {
+			return switch (this){
+				case USERDEFINED -> throw new IllegalArgumentException("User defined functions have nothing to do with standard python names.");
+				case ABS -> "abs";
+				case MAX -> "maximum";
+				case MIN -> "minimum";
+				case CSC -> "1.0/" + SIN.getNumExprTranslation();
+				case COT -> "1.0/" + TAN.getNumExprTranslation();
+				case SEC -> "1.0/" + COS.getNumExprTranslation();
+				case ASIN -> "arcsin";
+				case ACOS -> "arccos";
+				case ATAN -> "arctan";
+				case ATAN2 -> "arctan2";
+				case CSCH -> "1.0/" + SINH.getNumExprTranslation();
+				case COTH -> "1.0/" + TANH.getNumExprTranslation();
+				case SECH -> "1.0/" + COSH.getNumExprTranslation();
+				case LOGBASE -> "1.0/" + LOG.getNumExprTranslation();
+				case ACSC, ACOT, ASEC, ACSCH, ACOTH, ASECH, FACTORIAL -> throw new UnsupportedOperationException("Python has no equivalent name.");
+				default -> getName();
+			};
+		}
+
 		public final String getHtmlDescription() {
 			return htmlDescription;
 		}
@@ -2389,12 +2412,28 @@ String getMathMLName() {
 }
 
 String getPythonName(){
-	if (funcType == FunctionType.USERDEFINED){
-		return funcName;
-	}
-	return funcType.getPythonTranslation();
+	return getPythonName(funcType);
 }
 
+// This function is used when we need to "override" `funcType` to get the correct answer
+private String getPythonName(ASTFuncNode.FunctionType functionType){
+	if (functionType == FunctionType.USERDEFINED){
+		return funcName;
+	}
+	return functionType.getPythonTranslation();
+}
+
+String getNumExprName(){
+	return getNumExprName(funcType);
+}
+
+// This function is used when we need to "override" `funcType` to get the correct answer
+private String getNumExprName(ASTFuncNode.FunctionType functionType){
+	if (functionType == FunctionType.USERDEFINED){
+		return funcName;
+	}
+	return functionType.getNumExprTranslation();
+}
 
 /**
  * Insert the method's description here.
@@ -2455,7 +2494,7 @@ public String infixString(int lang) {
 				buffer.append(",");
 				buffer.append("((double)(" + jjtGetChild(1).infixString(lang) + "))");
 				buffer.append(")");
-			} else if (lang == LANGUAGE_PYTHON) {
+			} else if (lang == LANGUAGE_PYTHON || lang == LANGUAGE_NUM_EXPR) {
                 buffer.append("((");
                 buffer.append(jjtGetChild(0).infixString(lang));
                 buffer.append(")**(");
@@ -2485,19 +2524,26 @@ public String infixString(int lang) {
 				buffer.append(jjtGetChild(0).infixString(lang));
 				buffer.append("))");
 				break;
+			} else if (lang == LANGUAGE_NUM_EXPR){
+				// Need parenthesis to encapsulate the "1.0/x" operation
+				buffer.append("(");
+				buffer.append(getNumExprName());
+				buffer.append("(");
+				buffer.append(jjtGetChild(0).infixString(lang));
+				buffer.append("))");
+				break;
 			}
 			// DO NOT PUT A "BREAK" HERE! We want to "fall through" to default!
 		}
 		case ACSC:
-		case ACOT:
 		case ASEC:
 		case ACSCH:
 		case ACOTH:
 		case ASECH:{
-			if (lang == LANGUAGE_PYTHON){ // Need parenthesis to encapsulate the "1.0/x" operation
+			if (lang == LANGUAGE_PYTHON){
+				// Need parenthesis to encapsulate the "1.0/x" operation
 				Map<FunctionType, FunctionType> inversionMap = Map.of(
 						FunctionType.ACSC, FunctionType.ASIN,
-						FunctionType.ACOT, FunctionType.ATAN,
 						FunctionType.ASEC, FunctionType.ACOS,
 						FunctionType.ACSCH, FunctionType.ASINH,
 						FunctionType.ACOTH, FunctionType.ATANH,
@@ -2505,13 +2551,46 @@ public String infixString(int lang) {
 				);
 				FunctionType inversionType = inversionMap.get(funcType);
 				buffer.append("(");
-				buffer.append(getPythonName());
+				buffer.append(getPythonName(inversionType));
+				buffer.append("(1.0/(");
+				buffer.append(jjtGetChild(0).infixString(lang));
+				buffer.append(")))");
+				break;
+			} else if (lang == LANGUAGE_NUM_EXPR){
+				// Need parenthesis to encapsulate the "1.0/x" operation
+				Map<FunctionType, FunctionType> inversionMap = Map.of(
+						FunctionType.ACSC, FunctionType.ASIN,
+						FunctionType.ASEC, FunctionType.ACOS,
+						FunctionType.ACSCH, FunctionType.ASINH,
+						FunctionType.ACOTH, FunctionType.ATANH,
+						FunctionType.ASECH, FunctionType.ACOSH
+				);
+				FunctionType inversionType = inversionMap.get(funcType);
+				buffer.append("(");
+				buffer.append(getNumExprName(inversionType));
 				buffer.append("(1.0/(");
 				buffer.append(jjtGetChild(0).infixString(lang));
 				buffer.append(")))");
 				break;
 			}
 			// DO NOT PUT A "BREAK" HERE! We want to "fall through" to default!
+		}
+		case ACOT:{
+			if (lang == LANGUAGE_PYTHON){
+				buffer.append(String.format("((%s/2.0) - ", Math.PI));
+				buffer.append(getPythonName(FunctionType.ATAN));
+				buffer.append("(");
+				buffer.append(jjtGetChild(0).infixString(lang));
+				buffer.append("))");
+				break;
+			} else if (lang == LANGUAGE_NUM_EXPR){
+				buffer.append(String.format("((%s/2.0) - ", Math.PI));
+				buffer.append(getNumExprName(FunctionType.ATAN));
+				buffer.append("(");
+				buffer.append(jjtGetChild(0).infixString(lang));
+				buffer.append("))");
+				break;
+			}
 		}
 		case FACTORIAL:
 			if (lang == LANGUAGE_PYTHON){
@@ -2525,8 +2604,7 @@ public String infixString(int lang) {
 			}
 			// DO NOT PUT A "BREAK" HERE! We want to "fall through" to default!
 	 	default:{
-		    boolean needPythonicVersionOfName = lang == LANGUAGE_PYTHON && !funcType.equals(FunctionType.USERDEFINED);
-            String name = needPythonicVersionOfName ? getPythonName(): getName();
+            String name = getAppropriateName(lang);
 			buffer.append(name + "(");
 			for (int i=0;i<jjtGetNumChildren();i++){
 				if (i>0) buffer.append(", ");
@@ -2543,6 +2621,15 @@ public String infixString(int lang) {
 	
 	return buffer.toString();
 	
+}
+
+private String getAppropriateName(int language){
+	if (FunctionType.USERDEFINED.equals(funcType)) return getName();
+	return switch (language){
+		case LANGUAGE_PYTHON -> getPythonName();
+		case LANGUAGE_NUM_EXPR -> getNumExprName();
+		default -> getName();
+	};
 }
 
 /**
