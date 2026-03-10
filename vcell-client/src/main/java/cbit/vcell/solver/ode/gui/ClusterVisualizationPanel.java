@@ -1,8 +1,12 @@
 package cbit.vcell.solver.ode.gui;
 
+import cbit.plot.gui.ClusterPlotPanel;
 import cbit.vcell.client.data.ODEDataViewer;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.client.task.AsynchClientTask;
+import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import org.vcell.util.ColorUtil;
 import org.vcell.util.gui.JToolBarToggleButton;
@@ -17,6 +21,8 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
@@ -32,14 +38,14 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
     private final java.util.List<Color> globalPalette = new ArrayList<>();
     private int nextColorIndex = 0;
 
-
+    private ClusterSpecificationPanel.ClusterSelection currentSelection = null;
 
     private JPanel ivjJPanel1 = null;
     private JPanel ivjJPanelPlot = null;
-    private JPanel ivjPlot2DPanel1 = null;             // here
+    private ClusterPlotPanel clusterPlotPanel = null;   // here are the plots being drawn
     private JLabel ivjJLabelBottom = null;
     private JPanel ivjJPanelData = null;
-    private JPanel ivjPlot2DDataPanel1 = null;     // here
+    private JPanel ivjPlot2DDataPanel1 = null;          // here resides the data table
     private JPanel bottomRightPanel = null;
     private JPanel ivjJPanelLegend = null;
     private JScrollPane ivjPlotLegendsScrollPane = null;
@@ -124,7 +130,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
             ivjJPanelPlot = new JPanel();
             ivjJPanelPlot.setName("JPanelPlot");
             ivjJPanelPlot.setLayout(new BorderLayout());
-            ivjJPanelPlot.add(getPlot2DPanel1(), "Center");
+            ivjJPanelPlot.add(getClusterPlotPanel(), "Center");
             ivjJPanelPlot.add(getJLabelBottom(), "South");
         }
         return ivjJPanelPlot;
@@ -150,16 +156,34 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         }
         return ivjJLabelBottom;
     }
-    private JPanel getPlot2DPanel1() {
-        if (ivjPlot2DPanel1 == null) {
+    private ClusterPlotPanel getClusterPlotPanel() {      // actual plotting is done here
+        if (clusterPlotPanel == null) {
             try {
-                ivjPlot2DPanel1 = new JPanel();
-                ivjPlot2DPanel1.setName("Plot2DPanel1");
+                clusterPlotPanel = new ClusterPlotPanel();
+                clusterPlotPanel.setName("ClusterPlotPanel");
+                clusterPlotPanel.addComponentListener(new ComponentAdapter() {
+                    @Override
+                    public void componentShown(ComponentEvent e) {
+                        System.out.println("ClusterVisualizationPanel.componentShown() called, height = " + clusterPlotPanel.getHeight());
+                        // Only redraw when the panel is actually visible and sized
+                        if (currentSelection != null) {
+                            try {
+                                System.out.println("ClusterVisualizationPanel.componentShown() calling redrawPlot() with current selection: " + currentSelection);
+                                redrawPlot(currentSelection);
+                            } catch (ExpressionException ex) {
+                                ex.printStackTrace();
+                            }
+                        } else {
+                            System.out.println("ClusterVisualizationPanel.componentShown() no current selection, skipping redraw");
+                        }
+                    }
+                });
+
             } catch (java.lang.Throwable ivjExc) {
                 handleException(ivjExc);
             }
         }
-        return ivjPlot2DPanel1;
+        return clusterPlotPanel;
     }
     public JPanel getPlot2DDataPanel1() {
         if (ivjPlot2DDataPanel1 == null) {
@@ -282,7 +306,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         getJPanelLegend().setBackground(color);
         getJPanelPlotLegends().setBackground(color);
         getJPanel1().setBackground(color);
-        getPlot2DPanel1().setBackground(color);
+        getClusterPlotPanel().setBackground(color);
         getPlot2DDataPanel1().setBackground(color);
         getJPanelData().setBackground(color);
         getJPanelPlot().setBackground(color);
@@ -382,35 +406,97 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
             return 4;  // more vertical room for a wider stroke
         }
     }
-    public static String getUnitSymbol(ClusterSpecificationPanel.ClusterSelection sel) {
-        if(ClusterSpecificationPanel.DisplayMode.COUNTS == sel.mode) {
-
-
-        }
-        return "";
-    }
 
     private void redrawPlot(ClusterSpecificationPanel.ClusterSelection sel) throws ExpressionException {
-        System.out.println("ClusterVisualizationPanel.redrawPlot() called");
-//        java.util.List<ColumnDescription> columnDescriptions = sel.columns;
-//        for(ColumnDescription cd : columnDescriptions) {
-//            System.out.println("  column name: '" + cd.getName() + "'");
-//        }
-//        getPlot2DPanel1().removeAllPlots();
-//
-//        int index = sel.resultSet.findColumn("t");
-//        double[] t = sel.resultSet.extractColumn(index);
-//
-//        for (ColumnDescription cd : sel.columns) {
-//            index = sel.resultSet.findColumn(cd.getName());
-//            double[] y = sel.resultSet.extractColumn(index);
-//            Color c = persistentColorMap.get(cd.getName());
-//            getPlot2DPanel1().addLinePlot(cd.getName(), c, t, y);
-//        }
-//        getPlot2DPanel1().repaint();
+        System.out.println("ClusterVisualizationPanel.redrawPlot() called, current selection: " + sel);
+        if (sel != null) {
+            System.out.println("ClusterVisualizationPanel.redrawPlot() mode: " + sel.mode + ", columns: " + sel.columns.size() + ", resultSet: " + (sel.resultSet != null ? "present" : "null"));
+        } else {
+            System.out.println("ClusterVisualizationPanel.redrawPlot() selection is null");
+        }
+        System.out.println("ClusterVisualizationPanel.redrawPlot(), height = " + getClusterPlotPanel().getHeight());
+        currentSelection = sel;
+        java.util.List<ColumnDescription> columnDescriptions = sel.columns;
+        for(ColumnDescription cd : columnDescriptions) {
+            System.out.println("  column name: '" + cd.getName() + "'");
+        }
+        Hashtable<String, Object> hashTable = new Hashtable<>();
+        hashTable.put("columns", sel.columns);      // selected columns
+        hashTable.put("resultSet", sel.resultSet);
+        hashTable.put("persistentColorMap", persistentColorMap);
+        hashTable.put("plotPanel", getClusterPlotPanel());
+        hashTable.put("panelHeight", getPlot2DDataPanel1().getHeight());
+        hashTable.put("panelWidth", getPlot2DDataPanel1().getWidth());
+
+        AsynchClientTask computeScaledCurvesTask = new AsynchClientTask("Computing scaled curves...",
+                        AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
+            @Override
+            public void run(Hashtable<String, Object> hashTable) throws Exception {
+
+                List<ColumnDescription> columns = (List<ColumnDescription>) hashTable.get("columns");
+                ODESolverResultSet srs = (ODESolverResultSet) hashTable.get("resultSet");
+                int panelWidth = (Integer) hashTable.get("panelWidth");
+
+                double globalMin = Double.POSITIVE_INFINITY;    // compute global min/max
+                double globalMax = Double.NEGATIVE_INFINITY;
+                Map<String, double[]> rawCurves = new LinkedHashMap<>();
+
+                for (ColumnDescription cd : columns) {
+                    int index = srs.findColumn(cd.getName());
+                    double[] y = srs.extractColumn(index);
+                    rawCurves.put(cd.getName(), y);
+
+                    for (double v : y) {
+                        if (v < globalMin) globalMin = v;
+                        if (v > globalMax) globalMax = v;
+                    }
+                }
+                hashTable.put("globalMin", globalMin);
+                hashTable.put("globalMax", globalMax);
+
+                int panelHeight = (Integer) hashTable.get("panelHeight");   // scale curves into panel coordinates
+                Map<String, int[]> scaledCurves = new LinkedHashMap<>();
+                double range = globalMax - globalMin;
+                if (range == 0) range = 1; // avoid divide-by-zero
+
+                for (Map.Entry<String, double[]> entry : rawCurves.entrySet()) {
+                    String name = entry.getKey();
+                    double[] y = entry.getValue();
+                    int[] scaled = new int[y.length];       // this is in pixels, which are int
+                    for (int i = 0; i < y.length; i++) {
+                        double norm = (y[i] - globalMin) / range;
+                        scaled[i] = panelHeight - (int) Math.round(norm * panelHeight);
+                    }
+                    scaledCurves.put(name, scaled);
+                }
+                hashTable.put("scaledCurves", scaledCurves);
+            }
+        };
+        AsynchClientTask drawCurvesTask = new AsynchClientTask("Drawing curves...",
+                        AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+            @Override
+            public void run(Hashtable<String, Object> hashTable) throws Exception {
+
+                Map<String, int[]> scaledCurves = (Map<String, int[]>) hashTable.get("scaledCurves");
+                Map<String, Color> colorMap = (Map<String, Color>) hashTable.get("persistentColorMap");
+                ClusterPlotPanel clusterPlotPanel = (ClusterPlotPanel) hashTable.get("plotPanel");
+
+                clusterPlotPanel.clear();
+                for (String name : scaledCurves.keySet()) {
+                    int[] yScaled = scaledCurves.get(name);
+                    Color c = colorMap.get(name);
+                    clusterPlotPanel.addCurve(name, yScaled, c);
+                }
+                clusterPlotPanel.repaint();
+            }
+        };
+        AsynchClientTask[] tasks = new AsynchClientTask[] { computeScaledCurvesTask, drawCurvesTask };
+        ClientTaskDispatcher.dispatch(this, hashTable, tasks, false);
+
+
     }
     private void redrawLegend(ClusterSpecificationPanel.ClusterSelection sel) {
-        System.out.println("ClusterVisualizationPanel.updateLegend() called");
+        System.out.println("ClusterVisualizationPanel.redrawLegend() called");
         getJPanelPlotLegends().removeAll();
         for (ColumnDescription cd : sel.columns) {
             Color c = persistentColorMap.get(cd.getName());

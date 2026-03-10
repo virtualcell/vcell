@@ -130,20 +130,20 @@ public class ColorUtil {
 			new Color(44,160,44),     // green
 			new Color(214,39,40),     // red
 			new Color(148,103,189),   // purple
+			new Color(23,190,207),    // teal
 			new Color(140,86,75),     // brown
 			new Color(227,119,194),   // pink
 			new Color(127,127,127),   // gray
 			new Color(188,189,34),    // olive
-			new Color(23,190,207),    // teal
 			new Color(174,199,232),   // light blue
 			new Color(255,187,120),   // light orange
 			new Color(152,223,138),   // light green
 			new Color(255,152,150),   // light red
 			new Color(197,176,213),   // light purple
+			new Color(219,219,141),   // light olive
 			new Color(196,156,148),   // light brown
 			new Color(247,182,210),   // light pink
 			new Color(199,199,199),   // light gray
-			new Color(219,219,141),   // light olive
 			new Color(158,218,229)    // light teal
 	};
 
