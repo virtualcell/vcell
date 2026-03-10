@@ -416,84 +416,30 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         }
         System.out.println("ClusterVisualizationPanel.redrawPlot(), height = " + getClusterPlotPanel().getHeight());
         currentSelection = sel;
-        java.util.List<ColumnDescription> columnDescriptions = sel.columns;
-        for(ColumnDescription cd : columnDescriptions) {
-            System.out.println("  column name: '" + cd.getName() + "'");
+        List<ColumnDescription> columns = sel.columns;
+        ODESolverResultSet srs = sel.resultSet;
+
+        int indexTime = srs.findColumn("t");
+        double[] times = srs.extractColumn(indexTime);
+
+//        double globalMin = Double.POSITIVE_INFINITY;
+        double globalMin = 0;       // these are counts, so min is always 0
+        double globalMax = Double.NEGATIVE_INFINITY;
+        clusterPlotPanel.clear();
+
+        for (ColumnDescription cd : columns) {
+            int index = srs.findColumn(cd.getName());
+            double[] y = srs.extractColumn(index);
+            for (double v : y) {
+//                if (v < globalMin) globalMin = v;
+                if (v > globalMax) globalMax = v;
+            }
+            Color c = persistentColorMap.get(cd.getName());
+            clusterPlotPanel.addCurve(cd.getName(), y, c);
         }
-        Hashtable<String, Object> hashTable = new Hashtable<>();
-        hashTable.put("columns", sel.columns);      // selected columns
-        hashTable.put("resultSet", sel.resultSet);
-        hashTable.put("persistentColorMap", persistentColorMap);
-        hashTable.put("plotPanel", getClusterPlotPanel());
-        hashTable.put("panelHeight", getPlot2DDataPanel1().getHeight());
-        hashTable.put("panelWidth", getPlot2DDataPanel1().getWidth());
-
-        AsynchClientTask computeScaledCurvesTask = new AsynchClientTask("Computing scaled curves...",
-                        AsynchClientTask.TASKTYPE_NONSWING_BLOCKING) {
-            @Override
-            public void run(Hashtable<String, Object> hashTable) throws Exception {
-
-                List<ColumnDescription> columns = (List<ColumnDescription>) hashTable.get("columns");
-                ODESolverResultSet srs = (ODESolverResultSet) hashTable.get("resultSet");
-                int panelWidth = (Integer) hashTable.get("panelWidth");
-
-                double globalMin = Double.POSITIVE_INFINITY;    // compute global min/max
-                double globalMax = Double.NEGATIVE_INFINITY;
-                Map<String, double[]> rawCurves = new LinkedHashMap<>();
-
-                for (ColumnDescription cd : columns) {
-                    int index = srs.findColumn(cd.getName());
-                    double[] y = srs.extractColumn(index);
-                    rawCurves.put(cd.getName(), y);
-
-                    for (double v : y) {
-                        if (v < globalMin) globalMin = v;
-                        if (v > globalMax) globalMax = v;
-                    }
-                }
-                hashTable.put("globalMin", globalMin);
-                hashTable.put("globalMax", globalMax);
-
-                int panelHeight = (Integer) hashTable.get("panelHeight");   // scale curves into panel coordinates
-                Map<String, int[]> scaledCurves = new LinkedHashMap<>();
-                double range = globalMax - globalMin;
-                if (range == 0) range = 1; // avoid divide-by-zero
-
-                for (Map.Entry<String, double[]> entry : rawCurves.entrySet()) {
-                    String name = entry.getKey();
-                    double[] y = entry.getValue();
-                    int[] scaled = new int[y.length];       // this is in pixels, which are int
-                    for (int i = 0; i < y.length; i++) {
-                        double norm = (y[i] - globalMin) / range;
-                        scaled[i] = panelHeight - (int) Math.round(norm * panelHeight);
-                    }
-                    scaledCurves.put(name, scaled);
-                }
-                hashTable.put("scaledCurves", scaledCurves);
-            }
-        };
-        AsynchClientTask drawCurvesTask = new AsynchClientTask("Drawing curves...",
-                        AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
-            @Override
-            public void run(Hashtable<String, Object> hashTable) throws Exception {
-
-                Map<String, int[]> scaledCurves = (Map<String, int[]>) hashTable.get("scaledCurves");
-                Map<String, Color> colorMap = (Map<String, Color>) hashTable.get("persistentColorMap");
-                ClusterPlotPanel clusterPlotPanel = (ClusterPlotPanel) hashTable.get("plotPanel");
-
-                clusterPlotPanel.clear();
-                for (String name : scaledCurves.keySet()) {
-                    int[] yScaled = scaledCurves.get(name);
-                    Color c = colorMap.get(name);
-                    clusterPlotPanel.addCurve(name, yScaled, c);
-                }
-                clusterPlotPanel.repaint();
-            }
-        };
-        AsynchClientTask[] tasks = new AsynchClientTask[] { computeScaledCurvesTask, drawCurvesTask };
-        ClientTaskDispatcher.dispatch(this, hashTable, tasks, false);
-
-
+        clusterPlotPanel.setGlobalMinMax(globalMin, globalMax);
+        clusterPlotPanel.setDt(times[1]);   // times[0] == 0;
+        clusterPlotPanel.repaint();
     }
     private void redrawLegend(ClusterSpecificationPanel.ClusterSelection sel) {
         System.out.println("ClusterVisualizationPanel.redrawLegend() called");
