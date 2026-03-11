@@ -100,7 +100,6 @@ docs/VariableType.md
 docs/Version.md
 docs/VersionFlag.md
 test/__init__.py
-test/test_publish_models_request.py
 tox.ini
 vcell_client/__init__.py
 vcell_client/api/__init__.py

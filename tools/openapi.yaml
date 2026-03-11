@@ -3031,19 +3031,6 @@ components:
             $ref: '#/components/schemas/MathmodelRef'
         date:
           $ref: '#/components/schemas/Date'
-    PublishModelsRequest:
-      type: object
-      properties:
-        biomodelKeys:
-          type: array
-          items:
-            format: int64
-            type: integer
-        mathmodelKeys:
-          type: array
-          items:
-            format: int64
-            type: integer
     PublicationInfo:
       type: object
       properties:
@@ -3074,6 +3061,19 @@ components:
         theHashCode:
           format: int32
           type: integer
+    PublishModelsRequest:
+      type: object
+      properties:
+        biomodelKeys:
+          type: array
+          items:
+            format: int64
+            type: integer
+        mathmodelKeys:
+          type: array
+          items:
+            format: int64
+            type: integer
     SPECIAL_CLAIM:
       enum:
       - admins

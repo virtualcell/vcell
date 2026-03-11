@@ -4085,26 +4085,6 @@ components:
           format: date
           type: string
       type: object
-    PublishModelsRequest:
-      example:
-        mathmodelKeys:
-        - 6
-        - 6
-        biomodelKeys:
-        - 0
-        - 0
-      properties:
-        biomodelKeys:
-          items:
-            format: int64
-            type: integer
-          type: array
-        mathmodelKeys:
-          items:
-            format: int64
-            type: integer
-          type: array
-      type: object
     PublicationInfo:
       example:
         vcDocumentType: null
@@ -4156,6 +4136,26 @@ components:
         theHashCode:
           format: int32
           type: integer
+      type: object
+    PublishModelsRequest:
+      example:
+        mathmodelKeys:
+        - 6
+        - 6
+        biomodelKeys:
+        - 0
+        - 0
+      properties:
+        biomodelKeys:
+          items:
+            format: int64
+            type: integer
+          type: array
+        mathmodelKeys:
+          items:
+            format: int64
+            type: integer
+          type: array
       type: object
     SPECIAL_CLAIM:
       enum:
