@@ -1793,6 +1793,58 @@ paths:
       tags:
       - Publication Resource
       x-accepts: application/json
+  /api/v1/publications/{id}/publish:
+    put:
+      operationId: publishBioModels
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishModelsRequest'
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      summary: Publish selected BioModels and MathModels associated with a publication
+      tags:
+      - Publication Resource
+      x-content-type: application/json
+      x-accepts: application/json
   /api/v1/solver/getFVSolverInput:
     post:
       operationId: getFVSolverInputFromSBML
@@ -4032,6 +4084,26 @@ components:
           example: 2022-03-10
           format: date
           type: string
+      type: object
+    PublishModelsRequest:
+      example:
+        mathmodelKeys:
+        - 6
+        - 6
+        biomodelKeys:
+        - 0
+        - 0
+      properties:
+        biomodelKeys:
+          items:
+            format: int64
+            type: integer
+          type: array
+        mathmodelKeys:
+          items:
+            format: int64
+            type: integer
+          type: array
       type: object
     PublicationInfo:
       example:

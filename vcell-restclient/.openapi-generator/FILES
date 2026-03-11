@@ -58,6 +58,7 @@ docs/Origin.md
 docs/Publication.md
 docs/PublicationInfo.md
 docs/PublicationResourceApi.md
+docs/PublishModelsRequest.md
 docs/SPECIALCLAIM.md
 docs/SampledCurve.md
 docs/SchedulerStatus.md
@@ -170,6 +171,7 @@ src/main/java/org/vcell/restclient/model/N5ExportRequest.java
 src/main/java/org/vcell/restclient/model/Origin.java
 src/main/java/org/vcell/restclient/model/Publication.java
 src/main/java/org/vcell/restclient/model/PublicationInfo.java
+src/main/java/org/vcell/restclient/model/PublishModelsRequest.java
 src/main/java/org/vcell/restclient/model/SPECIALCLAIM.java
 src/main/java/org/vcell/restclient/model/SampledCurve.java
 src/main/java/org/vcell/restclient/model/SchedulerStatus.java
@@ -206,3 +208,4 @@ src/main/java/org/vcell/restclient/model/VariableSpecs.java
 src/main/java/org/vcell/restclient/model/VariableType.java
 src/main/java/org/vcell/restclient/model/Version.java
 src/main/java/org/vcell/restclient/model/VersionFlag.java
+src/test/java/org/vcell/restclient/model/PublishModelsRequestTest.java

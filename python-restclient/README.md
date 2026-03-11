@@ -122,6 +122,7 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/v1/publications/{id} | Delete publication
 *PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/v1/publications/{id} | Get publication by ID
 *PublicationResourceApi* | [**get_publications**](docs/PublicationResourceApi.md#get_publications) | **GET** /api/v1/publications | Get all publications
+*PublicationResourceApi* | [**publish_bio_models**](docs/PublicationResourceApi.md#publish_bio_models) | **PUT** /api/v1/publications/{id}/publish | Publish selected BioModels and MathModels associated with a publication
 *PublicationResourceApi* | [**update_publication**](docs/PublicationResourceApi.md#update_publication) | **PUT** /api/v1/publications | Update publication
 *SimulationResourceApi* | [**get_simulation_status**](docs/SimulationResourceApi.md#get_simulation_status) | **GET** /api/v1/Simulation/{simID}/simulationStatus | Get the status of simulation running
 *SimulationResourceApi* | [**start_simulation**](docs/SimulationResourceApi.md#start_simulation) | **POST** /api/v1/Simulation/{simID}/startSimulation | Start a simulation.
@@ -196,6 +197,7 @@ Class | Method | HTTP request | Description
  - [Origin](docs/Origin.md)
  - [Publication](docs/Publication.md)
  - [PublicationInfo](docs/PublicationInfo.md)
+ - [PublishModelsRequest](docs/PublishModelsRequest.md)
  - [SPECIALCLAIM](docs/SPECIALCLAIM.md)
  - [SampledCurve](docs/SampledCurve.md)
  - [SchedulerStatus](docs/SchedulerStatus.md)

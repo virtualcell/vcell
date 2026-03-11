@@ -1704,6 +1704,54 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/publications/{id}/publish:
+    put:
+      tags:
+      - Publication Resource
+      summary: Publish selected BioModels and MathModels associated with a publication
+      operationId: publishBioModels
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          format: int64
+          type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishModelsRequest'
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+      security:
+      - openId:
+        - user
   /api/v1/solver/getFVSolverInput:
     post:
       tags:
@@ -2983,6 +3031,19 @@ components:
             $ref: '#/components/schemas/MathmodelRef'
         date:
           $ref: '#/components/schemas/Date'
+    PublishModelsRequest:
+      type: object
+      properties:
+        biomodelKeys:
+          type: array
+          items:
+            format: int64
+            type: integer
+        mathmodelKeys:
+          type: array
+          items:
+            format: int64
+            type: integer
     PublicationInfo:
       type: object
       properties:

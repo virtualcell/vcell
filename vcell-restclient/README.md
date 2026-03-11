@@ -171,6 +171,8 @@ Class | Method | HTTP request | Description
 *PublicationResourceApi* | [**getPublicationByIdWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationByIdWithHttpInfo) | **GET** /api/v1/publications/{id} | Get publication by ID
 *PublicationResourceApi* | [**getPublications**](docs/PublicationResourceApi.md#getPublications) | **GET** /api/v1/publications | Get all publications
 *PublicationResourceApi* | [**getPublicationsWithHttpInfo**](docs/PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/v1/publications | Get all publications
+*PublicationResourceApi* | [**publishBioModels**](docs/PublicationResourceApi.md#publishBioModels) | **PUT** /api/v1/publications/{id}/publish | Publish selected BioModels and MathModels associated with a publication
+*PublicationResourceApi* | [**publishBioModelsWithHttpInfo**](docs/PublicationResourceApi.md#publishBioModelsWithHttpInfo) | **PUT** /api/v1/publications/{id}/publish | Publish selected BioModels and MathModels associated with a publication
 *PublicationResourceApi* | [**updatePublication**](docs/PublicationResourceApi.md#updatePublication) | **PUT** /api/v1/publications | Update publication
 *PublicationResourceApi* | [**updatePublicationWithHttpInfo**](docs/PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/v1/publications | Update publication
 *SimulationResourceApi* | [**getSimulationStatus**](docs/SimulationResourceApi.md#getSimulationStatus) | **GET** /api/v1/Simulation/{simID}/simulationStatus | Get the status of simulation running
@@ -266,6 +268,7 @@ Class | Method | HTTP request | Description
  - [Origin](docs/Origin.md)
  - [Publication](docs/Publication.md)
  - [PublicationInfo](docs/PublicationInfo.md)
+ - [PublishModelsRequest](docs/PublishModelsRequest.md)
  - [SPECIALCLAIM](docs/SPECIALCLAIM.md)
  - [SampledCurve](docs/SampledCurve.md)
  - [SchedulerStatus](docs/SchedulerStatus.md)
