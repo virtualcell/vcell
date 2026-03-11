@@ -14,10 +14,8 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.BioModelResourceApi;
 import org.vcell.restclient.api.PublicationResourceApi;
-import org.vcell.restclient.model.BiomodelRef;
 import org.vcell.restclient.model.Publication;
 import org.vcell.restclient.model.PublishModelsRequest;
-import org.vcell.restclient.model.SaveBioModel;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
@@ -103,15 +101,8 @@ public class PublicationApiTest {
         org.vcell.restclient.model.BioModel biomodel = bioModelAPI.getBioModel(savedModelKey);
 
         Publication publication = TestEndpointUtils.defaultPublication();
-        BiomodelRef bioModelRef = new BiomodelRef();
-        bioModelRef.setBmKey(Long.parseLong(savedModelKey));
-        bioModelRef.setName(biomodel.getName());
-        bioModelRef.setOwnerName(biomodel.getOwnerName());
-        bioModelRef.setVersionFlag(VersionFlag.Current.getIntValue());
-        assert biomodel.getOwnerKey() != null;
-        bioModelRef.setOwnerKey(Long.parseLong(biomodel.getOwnerKey()));
         assert publication.getBiomodelRefs() != null;
-        publication.getBiomodelRefs().add(bioModelRef);
+        publication.getBiomodelRefs().add(TestEndpointUtils.biomodelRefFromBioModel(biomodel));
         // save publication pub
         Long newPubKey = apiInstance.createPublication(publication);
         Assertions.assertNotNull(newPubKey);
@@ -151,17 +142,10 @@ public class PublicationApiTest {
         String savedModelKey = savedBioModel.getVersion().getVersionKey().toString();
         org.vcell.restclient.model.BioModel biomodel = bioModelAPI.getBioModel(savedModelKey);
 
-        // Create a publication with the biomodel ref
+        // Create a publication with the biomodel ref queried from the database
         Publication publication = TestEndpointUtils.defaultPublication();
-        BiomodelRef bioModelRef = new BiomodelRef();
-        bioModelRef.setBmKey(Long.parseLong(savedModelKey));
-        bioModelRef.setName(biomodel.getName());
-        bioModelRef.setOwnerName(biomodel.getOwnerName());
-        bioModelRef.setVersionFlag(VersionFlag.Current.getIntValue());
-        assert biomodel.getOwnerKey() != null;
-        bioModelRef.setOwnerKey(Long.parseLong(biomodel.getOwnerKey()));
         assert publication.getBiomodelRefs() != null;
-        publication.getBiomodelRefs().add(bioModelRef);
+        publication.getBiomodelRefs().add(TestEndpointUtils.biomodelRefFromBioModel(biomodel));
         Long pubKey = pubAPI.createPublication(publication);
 
         // Verify biomodel is not yet published
