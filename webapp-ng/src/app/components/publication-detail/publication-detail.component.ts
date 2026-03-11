@@ -65,6 +65,19 @@ export class PublicationDetailComponent implements OnInit {
     });
   }
 
+  refreshPublication() {
+    if (this.publication?.pubKey) {
+      this.publicationService.getPublicationById(this.publication.pubKey).subscribe({
+        next: (publication) => {
+          this.publication = publication;
+        },
+        error: (err) => {
+          console.error('Error refreshing publication', err);
+        }
+      });
+    }
+  }
+
   cancel() {
     console.log("Update cancelled");
     this.router.navigate(['/publications']);

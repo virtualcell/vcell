@@ -47,6 +47,7 @@ export * from './n5-export-request';
 export * from './origin';
 export * from './publication';
 export * from './publication-info';
+export * from './publish-models-request';
 export * from './specialclaim';
 export * from './sampled-curve';
 export * from './scheduler-status';
