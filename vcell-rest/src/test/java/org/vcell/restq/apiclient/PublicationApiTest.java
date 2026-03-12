@@ -173,9 +173,21 @@ public class PublicationApiTest {
         Publication rePub = pubAPI.getPublicationById(pubKey);
         Assertions.assertEquals(VersionFlag.Published.getIntValue(), rePub.getBiomodelRefs().get(0).getVersionFlag());
 
-        // Cleanup
+        // Cleanup: unpublish before deleting (published models cannot be deleted)
+        setVersionFlag(savedModelKey, VersionFlag.Current.getIntValue());
         pubAPI.deletePublication(pubKey);
         bioModelAPI.deleteBioModel(savedModelKey);
+    }
+
+    private void setVersionFlag(String bioModelKey, int versionFlagValue) throws DataAccessException, SQLException {
+        Object lock = new Object();
+        java.sql.Connection connection = agroalConnectionFactory.getConnection(lock);
+        connection.prepareStatement(
+                "UPDATE vc_biomodel SET versionFlag = " + versionFlagValue +
+                        " WHERE id = " + bioModelKey
+        ).executeUpdate();
+        connection.commit();
+        connection.close();
     }
 
     @Test
