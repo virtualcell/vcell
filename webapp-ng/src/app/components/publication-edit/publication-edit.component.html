@@ -48,6 +48,7 @@
             <mat-checkbox *ngIf="showPublishControls" [checked]="selectedBiomodelKeys.has(biomodelRef.bmKey!)" (change)="toggleBiomodelSelection(biomodelRef.bmKey!)"></mat-checkbox>
             <span>{{ "BioModel (" + biomodelRef.ownerName + " : " + biomodelRef.bmKey + " : " + biomodelRef.name + ")" }}</span>
             <span class="version-badge" [ngClass]="getVersionFlagClass(biomodelRef.versionFlag)">{{ getVersionFlagLabel(biomodelRef.versionFlag) }}</span>
+            <span class="privacy-badge" [ngClass]="getPrivacyClass(biomodelRef.privacy)">{{ getPrivacyLabel(biomodelRef.privacy) }}</span>
             <button mat-icon-button color="warn" (click)="removeBiomodelRef(i)">
               <mat-icon>delete</mat-icon>
             </button>

@@ -12,6 +12,7 @@
 |**ownerName** | **String** |  |  [optional] |
 |**ownerKey** | **Long** |  |  [optional] |
 |**versionFlag** | **Integer** |  |  [optional] |
+|**privacy** | **Integer** |  |  [optional] |
 
 
 

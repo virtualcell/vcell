@@ -2638,6 +2638,7 @@ components:
         ownerName: ownerName
         name: name
         versionFlag: 7
+        privacy: 9
         ownerKey: 2
       properties:
         bmKey:
@@ -2651,6 +2652,9 @@ components:
           format: int64
           type: integer
         versionFlag:
+          format: int32
+          type: integer
+        privacy:
           format: int32
           type: integer
       type: object
@@ -3790,9 +3794,9 @@ components:
       example:
         ownerName: ownerName
         name: name
-        versionFlag: 2
-        mmKey: 9
-        ownerKey: 3
+        versionFlag: 4
+        mmKey: 3
+        ownerKey: 2
       properties:
         mmKey:
           format: int64
@@ -4024,25 +4028,27 @@ components:
           ownerName: ownerName
           name: name
           versionFlag: 7
+          privacy: 9
           ownerKey: 2
         - bmKey: 5
           ownerName: ownerName
           name: name
           versionFlag: 7
+          privacy: 9
           ownerKey: 2
         pubmedid: pubmedid
         url: url
         mathmodelRefs:
         - ownerName: ownerName
           name: name
-          versionFlag: 2
-          mmKey: 9
-          ownerKey: 3
+          versionFlag: 4
+          mmKey: 3
+          ownerKey: 2
         - ownerName: ownerName
           name: name
-          versionFlag: 2
-          mmKey: 9
-          ownerKey: 3
+          versionFlag: 4
+          mmKey: 3
+          ownerKey: 2
         pubKey: 0
         authors:
         - authors

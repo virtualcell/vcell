@@ -17,5 +17,6 @@ export interface BiomodelRef {
     ownerName?: string;
     ownerKey?: number;
     versionFlag?: number;
+    privacy?: number;
 }
 

@@ -95,6 +95,20 @@ export class PublicationEditComponent implements OnInit {
     }
   }
 
+  getPrivacyLabel(privacy: number | undefined): string {
+    if (privacy === 0) return 'Public';
+    if (privacy === 1) return 'Private';
+    if (privacy != null && privacy > 1) return 'Shared';
+    return 'Unknown';
+  }
+
+  getPrivacyClass(privacy: number | undefined): string {
+    if (privacy === 0) return 'badge-public';
+    if (privacy === 1) return 'badge-private';
+    if (privacy != null && privacy > 1) return 'badge-shared';
+    return 'badge-unknown';
+  }
+
   publishModels() {
     if (!this.publication?.pubKey) return;
     const biomodelKeys = Array.from(this.selectedBiomodelKeys);
@@ -138,7 +152,8 @@ export class PublicationEditComponent implements OnInit {
           name: biomodel.name,
           ownerName: biomodel.ownerName,
           ownerKey: biomodel.ownerKey!=null ? Number.parseInt(biomodel.ownerKey) : -1,
-          versionFlag: biomodel.privacy
+          versionFlag: biomodel.versionFlag,
+          privacy: biomodel.privacy
         };
         this.publication.biomodelRefs.push(biomodelRef);
         this.newBiomodelKey = undefined;

@@ -199,7 +199,7 @@ public class PublicationServerResource extends AbstractServerResource implements
 		if(classType.equals(BioModelReferenceRep.class)) {
 			BioModelReferenceRep[] biomodelReferenceReps = new BioModelReferenceRep[modelKeys.length];
 			for (int i = 0; i < modelKeys.length; i++) {
-				biomodelReferenceReps[i] = new BioModelReferenceRep(new KeyValue(modelKeys[i]), null, null,null);
+				biomodelReferenceReps[i] = new BioModelReferenceRep(new KeyValue(modelKeys[i]), null, null, null, null);
 			}
 			return biomodelReferenceReps;
 		}else if(classType.equals(MathModelReferenceRep.class)) {

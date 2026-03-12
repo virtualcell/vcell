@@ -2329,6 +2329,9 @@ components:
         versionFlag:
           format: int32
           type: integer
+        privacy:
+          format: int32
+          type: integer
     CompositeCurve:
       required:
       - type

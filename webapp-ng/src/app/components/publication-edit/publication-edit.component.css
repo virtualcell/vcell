@@ -60,6 +60,30 @@
   color: #666;
 }
 
+.privacy-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75em;
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.badge-public {
+  background-color: #2196f3;
+  color: white;
+}
+
+.badge-private {
+  background-color: #f44336;
+  color: white;
+}
+
+.badge-shared {
+  background-color: #9c27b0;
+  color: white;
+}
+
 .publish-row {
   display: flex;
   justify-content: flex-start;
