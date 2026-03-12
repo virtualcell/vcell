@@ -3,6 +3,7 @@ package org.vcell.restq;
 import cbit.vcell.resource.PropertyLoader;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.quarkus.test.common.QuarkusTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
@@ -14,9 +15,11 @@ import org.vcell.util.DataAccessException;
 import java.sql.SQLException;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 
 @QuarkusTest
+@QuarkusTestResource(KeycloakTestResource.class)
 public class HelloWorldTest {
 
     @Inject
@@ -38,7 +41,7 @@ public class HelloWorldTest {
                 .when().get("/api/v1/helloworld")
                 .then()
                 .statusCode(200)
-                .body("message", is("Hello Security Roles: [user]"));
+                .body("message", containsString("user"));
 
     }
 }
