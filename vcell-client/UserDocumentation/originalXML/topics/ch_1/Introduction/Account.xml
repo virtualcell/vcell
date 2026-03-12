@@ -3,7 +3,7 @@
 <page title="Account">
 
 	<introduction>
-	The <bold>Account</bold> menu bar option allows the user to change the account settings for the current user of VCell.
+	The <bold>Account</bold> menu bar option allows the user to change the login status the current user of VCell, and to manage account settings using the VCell Auth0 app.
 	</introduction>
 	
 	<appearance>
@@ -11,19 +11,18 @@
 	</appearance>
 	
 	<operations> 
-	Clicking the Account menu displays the following selections 
-	<list>
+		<list>
 		<item>
-			<bold>Login</bold> - allows user to login if they have not do so already.
+			<bold>Login</bold> directs the user to the <link target = "Auth0ProfilePage">VCell Auth0 Profile page</link> to login to VCell if they are not currently logged in.
 		</item>
 		<item>
-			<bold>Login as Guest</bold> - allows user to login as guest if they are not logged in already.
+			<bold>Login as Guest</bold> allows user to login as a "guest" if they are not logged in already.  Guest login can only access public models and cannot be used to save a model to the database.
 		</item>
 		<item>
-			<bold>Logout</bold> - allows user to logout if they are logged in.
+			<bold>Logout</bold> allows user to logout if they are logged in. The user will be directed to the VCell Auth0 site to complete the logout. Once logged out the user can only use VCell in an offline mode, with no connection to the VCell database or servers.
 		</item>
 		<item>
-			<link target = "Auth0ProfilePage">Manage User</link> - takes the user to the Auth0 profile page.
+			<link target = "Auth0ProfilePage">Manage User</link> - takes the user to their Auth0 profile web page to manage VCell credentials.
 		</item>
 		<item>
 		<link target = "SetProxy">Set Proxy...</link> - allows the user to set a Proxy if local policy prevents direct connection to the VCell server.
@@ -32,7 +31,7 @@
 		<bold>Reconnect (Refresh)</bold> - allows user to reconnect to the server. The status bar displays the connecting status.
 		</item>
 		<item>
-		<link target = "ViewSimStatus">View Simulation Jobs</link> - provides a way to view and stop simulation jobs.
+		<link target = "ViewSimStatus">View Simulation Jobs</link> provides a way to view and currently running, stopped or failed simulation jobs and to stop any jobs currently running.
 		</item>
 	</list>
 	</operations>

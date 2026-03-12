@@ -4,35 +4,42 @@
 
 	<introduction>
 	<bold>Molecules</bold> are the principal component of rule-based model specification. 
-	They are used to create <link target = "SpeciesTabView">Species</link> and to define <link target = "ReactTabView"> Reaction Rules</link> and <link target="Observables">Observables</link>. 
+	They are used to create <link target = "SpeciesTabView">Species</link> and to define <link target = "ReactTabView">Reaction Rules</link> and <link target="Observables">Observables</link>.
 	Molecules are structured objects comprised of <bold>sites</bold> that can
-	bind other sites, either within a single molecule or between molecules. <bold>Sites</bold> typically
-	represent physical parts (e.g. domains) of proteins. <bold>Sites</bold> may also be associated with a list of states, 
-	intended to represent states or properties of the site, e.g. phosphorylation status.  	
+	bind other sites, either within a single molecule or between molecules. <bold>Sites</bold> typically represent physical parts (e.g. domains) of proteins. <bold>Sites</bold> may also be associated with a list of states,
+	intended to represent states or properties of the site, e.g. phosphorylation status or activation status.
 	</introduction>
 	
 	<appearance>
 	<imgReference target = "BNG_MoleculesTable.png"/>
-	<para></para>The Molecules Table displays several columns:
+
+	<para>The Molecules Table displays:
 	<list>
-	<item>Molecule <bold>name</bold></item>
-	<item>Molecular <bold>Depiction</bold> of each molecule. Green circles denote molecular Sites, and an associated small yellow circle denotes a Site that has possible states.</item>
-	<item><bold>Notes</bold> show a link icon if there are annotated links to database entries or a text bubble if there are text annotations for the reaction.  Double click in the Notes column to show the <link target ="PP_Annotations">Annotations Properties</link> Pane for a reaction.</item>
-	<item><bold>Links</bold> show links to pathway items (see <link target="PathwayOverview">Biology Pathways</link>). Double click on that link to navigate to the Pathway Diagram.</item> 
-	<item><def target = "def_BioNetGen">BioNetGen</def> definition of the molecule. 
-	Selecting a molecule brings the <link target = "PP_Molecules">Molecule Properties Pane</link> 
-	 to the bottom right of the workspace, where a user can specify and edit a selected <bold>Molecule</bold>.
+	<item>Molecule <bold>name</bold> that can be edited</item>
+	<item><bold>Molecular depiction</bold> with different color ovals representing molecules.  Circular elements represent specific sites on the molecule, and small yellow circles associate with a site denote multiple possible states for the site.</item>
+	<item><bold>Notes</bold> show a link symbol if there are annotated links to database entries and a text bubble if there are text annotations related to the molecule.  Double-click to view the <link target ="PP_Annotations">Annotations Properties</link> Pane for the molecule.</item>
+	<item><bold>Links</bold> show links to pathway items (see <link target="PathwayOverview">Biology Pathways</link>). Double-click on that link to navigate to the Pathway Diagram.</item>
+	<item><def target = "def_BioNetGen">BioNetGen</def> Definition gives the BioNetGen Language (bngl) description of the molecule.
 	</item>
 	</list>
+	<bold>Select</bold> a molecule to view the <link target = "PP_Molecules">Molecule Properties Pane</link> to the bottom right of the workspace to edit the molecule.
+	</para>
 	</appearance>
 	
 	<operations>
-	<para><bold>New Molecule</bold> creates a new molecule with a default name of <bold>MT'number'</bold>, and also creates a new <link target="Observables">observable</link> with the defaul name of <bold>O'number'_MT'number'_tot.</bold> The Observable tracks the amounts of all instances of the molecule in all species. (Note that if the Molecule is conserved (i.e. not synthesized or degraded), then the observable <bold>Molecule_tot</bold> will be conserved, which is one possible verification of model consistency.)</para>
-	<para><bold>Edit</bold> the molecule name in the table; molecular properties cannot be edited in the table, but must be specified in the <link target = "PP_Molecules">Molecule Properties</link> pane.</para> 
-	<para> <bold>Search</bold> the list of molecules by entering a name 
-	or an element of molecular structure in the Search box below the table.</para>
-	<para><bold>Delete</bold> molecules by selecting the row and using the Delete button below the table. A molecule will not be deleted if it is used elsewhere in the model.</para>
+	<para><bold>New Molecule</bold> creates a new molecule with a default name <bold>MT'number'</bold>, and also creates a new <link target="Observables">observable</link> with the default name <bold>O'number'_MT'number'_tot.</bold> The Observable tracks the amounts of all instances of the molecule in all species. (Note that if the Molecule is conserved (i.e. not synthesized or degraded), then the observable <bold>Molecule_tot</bold> will be conserved, which is one possible verification of model consistency.)</para>
+
+	<para><bold>Specify Molecular Details</bold> in the <link target = "PP_Molecules">Molecule Properties</link> pane in the bottom right of the work space for a selected Molecule. The molecule name can be edited directly in the Molecules table. </para>
+
+	<para><bold>Delete</bold> molecules by selecting the row and using the Delete button below the table. A molecule will not be deleted if it is used elsewhere in the model. Because a molecule_tot observable is automatically created for each molecule, you must first delete the observable before you can delete the molecule.</para>
+
+	<para><bold>Pathway Links</bold> opens a table to <link target="PathLink">Edit Pathway Links</link>.</para>
+
+	<para><bold>Search</bold> the list of molecules by entering a name
+	or an element of molecular structure in the Search box below the table. </para>
+
 	<para><bold>Add or Edit Annotations</bold> using the <link target= "PP_Annotations">Annotations</link> tab in the Properties Pane.</para>
+
 	</operations>
 	
 	<properties>

@@ -3,11 +3,10 @@
 <page title="Overview of Rule-Based Features" target="RuleBasedOverview">
 
 	<introduction> 
-The Virtual Cell Software now provides an integrated environment to 
-introduce <def target= "def_RuleBased">rule-based</def> features among species and reactions in a VCell Biomodel. 
-Additions to the Biomodel <link target = "PhysOverview">Physiology</link>  include 
-<link target = "Molecules">Molecules</link> and <link target = "Observables">Observables</link>, 
-as well as <def target = "def_ReactionRules">reaction rules</def> that can be specified alongside 
+The Virtual Cell Software provides an integrated environment to
+use <def target= "def_RuleBased">rule-based</def> features among species and reactions in a VCell Biomodel.
+<link target = "Molecules">Molecules</link>, <link target = "Observables">Observables</link>,
+and <def target = "def_ReactionRules">Reaction Rules</def> can be specified alongside
 <def target = "def_reactions">reactions</def> in the <link target = "ReactTabView">Reactions</link> Table.  Defining <link target = "Molecules">Molecules</link> allows the user to create species that have <link target = "PP_Species">molecular details</link>.
  
 <para><bold>Mixing Rule-based features and reaction networks</bold></para>
@@ -19,23 +18,24 @@ and one or more Applications. Any operations on species and reactions that are s
 	Each <link target = "ApplicationOverview">BioModel Application</link> 
 	allows the user to define the  quantitative conditions needed to define, 
 	run and visualize a numerical simulation.  A Rule-Based BioModel may have mutliple
-	Applications, solved using <def target="def_Deterministic">deterministic</def>, 
-	<def target="def_Stochastic">stochastic</def> or <def target="def_NetworkFree">network-free</def> approaches.  
+	Applications, solved using <def target="def_Deterministic">deterministic</def>, or
+	<def target="def_Stochastic">stochastic</def> approaches, and also supports <def target="def_NetworkFree">network-free</def> and <def target="def_LangevinDynamics">Langevin Dynamics</def> approaches.
 	Each Application, in turn, can have multiple Simulations, in which different numerical
 	methods or conditions are used. 
 	<list>
-		<item>In order to run <def target="def_Deterministic">deterministic</def> or 
-	<def target="def_Stochastic">stochastic</def> (<def target="def_RuleBased">rule-based</def>) applications
-	the <def target="def_BioNetGen">BioNetGen</def> network-generation
-	algorithm first generates the complete network of species and reactions.</item> 
-	<item>The network is created by applying the set of reaction rules to the set of 
+
+	<item><def target="def_Deterministic">deterministic</def> or
+	<def target="def_Stochastic">stochastic</def> (<def target="def_RuleBased">rule-based</def>) applications uses the <def target="def_BioNetGen">BioNetGen</def> network-generation
+	algorithm to first generate the complete network of species and reactions. The network is created by applying the set of reaction rules to the set of
 	<def target = "def_SeedSpecies">seed species</def> with initial amounts
 	specified in the <link target = "SpeciesSpecifications">Species</link> specification tab.
-	<link target = "NetworkSpecifications">Network</link> specification parameters are used to control the size of the network,
-	which otherwise can become infinitely large. The generated species and reactions can be seen in the 
-	<link target = "NetworkSpecifications">Network</link> tab. </item>
-	<item>After the user is satified with the network that is generated using the set of species and reaction rules, any determiministic or stochastic <link target = "simulations_overview">simulation</link> can be run.
-		</item>
+	<link target = "NetworkSpecifications">Network</link> specification parameters control the size of the network,
+	which otherwise can become infinitely large. Generated species and reactions are viewed in the
+	<link target = "NetworkSpecifications">Network</link> tab. After the user is satified with the network generated using the set of species and reaction rules, any determiministic or stochastic <link target = "simulations_overview">simulation</link> can be run.</item>
+
+	<item>Network-Free simulations use the NFsim simulator, a stochastic-based simulator that and only creates the necessary species and reactions to satisfy the rules.</item>
+
+	<item>SpringSaLaD simulations require the representation of molecules as a collection of impenetrable spheres (sites) linked by stiff springs. The diameter of each site and the distance between sites is specified.  The Langevin Dynamics solver uses a stochastic approach to identify the position of each site based on diffusion as well as the molecular state defined by the reaction rules.</item>
 	</list>
 
 	<para><bold>Rule-Based MathModel</bold></para>

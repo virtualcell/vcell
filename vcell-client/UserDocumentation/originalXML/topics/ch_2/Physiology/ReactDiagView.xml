@@ -3,35 +3,34 @@
 <page title="Reactions Diagram" target="ReactDiagView">
 
 	<introduction> 
-	The reactions diagram shows a bipartite graph consisting of 
+	The reactions diagram shows a bipartite graph of the phsyiological components of the model; this diagram can be used to construct the underlying physiology for the Biomodel.  It consists of
 	<def target = "def_species">species</def>
-	(<bold>green</bold> balls for species that do not have <link target = "Molecules">molecular details</link>, 
+	(<bold>green</bold> balls for species without <link target = "Molecules">molecular details</link>,
 	or <bold>blue</bold> balls for species with <link target = "Molecules">molecular details</link>) 
-	and <def target = "def_reactions">reaction</def> (<bold>yellow</bold> squares) nodes, 
+	and <def target = "def_reactions">reaction</def> nodes(<bold>yellow</bold> squares),
 	each within the appropriate
-	compartments, and with lines connecting the species that participate in a reaction.  In rule-based models, species patterns representing reactants and products defined within rules are depicted with ovals around balls (molecules) of various colors.
+	compartment.  Lines connect species that participate in a reaction.  In rule-based models, species patterns representing reactants and products defined within rules are depicted with ovals around balls (molecules) of various colors.
 	</introduction>
 	
 	<appearance> 
 	<imgReference target = "ReactDiagView2.png"/> 
 	<para> 
 	Structures are depicted as connected rectangles within the workspace. 
-	Species are green or blue balls and reactions are yellow squares placed into the structures. Lines each connect one 
-	species with one reaction: solid lines with arrows denote reactants and products with the arrow indicating the direction of the forward reaction; dashed lines denote catalysts.
+	Lines each connect one species (green or blue balls) with one reaction (yellow square): solid lines with arrows denote reactants and products with the arrow indicating the direction of the forward reaction; dashed lines denote catalysts as defined by the reaction kinetics.
 	Stoichiometric coefficients, if different from one, are displayed next to the appropriate lines. Toolbars above and below the diagram provide tools to edit the diagram.
 	</para>
-	<para> When a single object in the graph is selected, properties of that object are displayed in the Properties Pane in the bottom right pane of the window.  Details of reactions and fluxes can be edited in this pane, as described in the <link target = "PP_Reactions">reaction</link> and the <link target = "PP_MemFlux">membrane flux</link> Properties Pane Help.
+	<para> When a single object in the graph is selected, properties of that object are displayed in the Properties Pane in the bottom right pane of the window.  Kinetics of reactions and fluxes are edited in this pane, as described in the <link target = "PP_Reactions">reaction</link> and the <link target = "PP_MemFlux">membrane flux</link> Properties Pane Help.
 	</para>
 	</appearance>
 	
 	<operations> 
 	
-	The toolbar above the graph provides tools for creating and editing species, reactions, and fluxes; selecting the tool alters the function of the mouse as described below.
+	<bold>Create and edit the Physiology</bold> using the tools in the toolbar above the graph; selecting the tool alters the function of the mouse to edit different components of the physiology as described below.
 	    
-	    <imgReference target = "icon_arrowselect.gif"/> The <bold>Selection</bold> tool selects Species (graph nodes), connecting lines (edges) or reactions by mouse click, or drag the mouse to select multiple components. Add elements to the selection using the shift key with the left mouse button, toggle the selection using the control key.
+	    <imgReference target = "icon_arrowselect.gif"/> The <bold>Selection</bold> tool selects Species (graph nodes), connecting lines (edges) or reactions by mouse click, or drag the mouse to select multiple components. Add to the selection with shift and left mouse button, toggle with  control and left mouse button.
 
 	    <imgReference target = "icon_addcompartment.png"/> The <bold> Structure </bold> tool inserts a new structure by clicking between existing structures or appending new structures to the ends.
-	    Dashed vertical lines appear on the reaction diagram to indicate where structures can be added. Hovering with the mouse turns the dashed lines green with instructions to <bold>'click to insert structure'</bold> a new structure between the dashed lines. When clicked a menu appears to <bold>'Add Compartment</bold> to add a volume compartment or <bold>'Add Membrane"</bold> to add a membrane compartment.
+	    Dashed vertical lines appear on the reaction diagram to indicate where structures can be added. Hovering with the mouse turns the dashed lines green with instructions to <bold>'click to insert structure'</bold>. When clicked a menu appears to <bold>'Add Compartment</bold> to add a volume compartment or <bold>'Add Membrane"</bold> to add a membrane compartment.
 	    
 	    <para>
 	    <bold>Move a structure</bold> using the 'Selection tool'.  Click and drag on the <bold>structure name</bold> to enable <bold>drag to move</bold>; releasing the mouse over any set of vertical dashed lines moves the structure and contents to the new location.
