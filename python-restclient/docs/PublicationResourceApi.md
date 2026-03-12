@@ -13,7 +13,7 @@ Method | HTTP request | Description
 
 
 # **create_publication**
-> int create_publication(publication=publication)
+> int create_publication(publication)
 
 Create publication
 
@@ -42,11 +42,11 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.PublicationResourceApi(api_client)
-    publication = vcell_client.Publication() # Publication |  (optional)
+    publication = vcell_client.Publication() # Publication | 
 
     try:
         # Create publication
-        api_response = api_instance.create_publication(publication=publication)
+        api_response = api_instance.create_publication(publication)
         print("The response of PublicationResourceApi->create_publication:\n")
         pprint(api_response)
     except Exception as e:
@@ -59,7 +59,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **publication** | [**Publication**](Publication.md)|  | [optional] 
+ **publication** | [**Publication**](Publication.md)|  | 
 
 ### Return type
 
@@ -78,6 +78,7 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
+**400** | Bad Request |  -  |
 **401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
 **500** | Data Access Exception |  -  |
@@ -283,7 +284,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **publish_bio_models**
-> publish_bio_models(id, publish_models_request=publish_models_request)
+> publish_bio_models(id, publish_models_request)
 
 Publish selected BioModels and MathModels associated with a publication
 
@@ -313,11 +314,11 @@ with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.PublicationResourceApi(api_client)
     id = 56 # int | 
-    publish_models_request = vcell_client.PublishModelsRequest() # PublishModelsRequest |  (optional)
+    publish_models_request = vcell_client.PublishModelsRequest() # PublishModelsRequest | 
 
     try:
         # Publish selected BioModels and MathModels associated with a publication
-        api_instance.publish_bio_models(id, publish_models_request=publish_models_request)
+        api_instance.publish_bio_models(id, publish_models_request)
     except Exception as e:
         print("Exception when calling PublicationResourceApi->publish_bio_models: %s\n" % e)
 ```
@@ -329,7 +330,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **int**|  | 
- **publish_models_request** | [**PublishModelsRequest**](PublishModelsRequest.md)|  | [optional] 
+ **publish_models_request** | [**PublishModelsRequest**](PublishModelsRequest.md)|  | 
 
 ### Return type
 
@@ -348,6 +349,7 @@ void (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **204** | No Content |  -  |
+**400** | Bad Request |  -  |
 **401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
 **404** | Not found |  -  |
@@ -356,7 +358,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **update_publication**
-> Publication update_publication(publication=publication)
+> Publication update_publication(publication)
 
 Update publication
 
@@ -385,11 +387,11 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.PublicationResourceApi(api_client)
-    publication = vcell_client.Publication() # Publication |  (optional)
+    publication = vcell_client.Publication() # Publication | 
 
     try:
         # Update publication
-        api_response = api_instance.update_publication(publication=publication)
+        api_response = api_instance.update_publication(publication)
         print("The response of PublicationResourceApi->update_publication:\n")
         pprint(api_response)
     except Exception as e:
@@ -402,7 +404,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **publication** | [**Publication**](Publication.md)|  | [optional] 
+ **publication** | [**Publication**](Publication.md)|  | 
 
 ### Return type
 
@@ -421,6 +423,7 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
+**400** | Bad Request |  -  |
 **401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
 **500** | Data Access Exception |  -  |

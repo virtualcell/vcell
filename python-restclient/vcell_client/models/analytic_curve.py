@@ -33,7 +33,7 @@ class AnalyticCurve(Curve):
     """
     AnalyticCurve
     """ # noqa: E501
-    type: StrictStr
+    type: Optional[Any]
     exp_x: Optional[StrictStr] = Field(default=None, alias="expX")
     exp_y: Optional[StrictStr] = Field(default=None, alias="expY")
     exp_z: Optional[StrictStr] = Field(default=None, alias="expZ")
@@ -86,6 +86,11 @@ class AnalyticCurve(Curve):
         # override the default output from pydantic by calling `to_dict()` of ending_coordinate
         if self.ending_coordinate:
             _dict['endingCoordinate'] = self.ending_coordinate.to_dict()
+        # set to None if type (nullable) is None
+        # and model_fields_set contains the field
+        if self.type is None and "type" in self.model_fields_set:
+            _dict['type'] = None
+
         return _dict
 
     @classmethod
@@ -105,7 +110,7 @@ class AnalyticCurve(Curve):
         _obj = cls.model_validate({
             "bClosed": obj.get("bClosed"),
             "description": obj.get("description"),
-            "type": obj.get("type") if obj.get("type") is not None else 'AnalyticCurve',
+            "type": obj.get("type"),
             "beginningCoordinate": Coordinate.from_dict(obj.get("beginningCoordinate")) if obj.get("beginningCoordinate") is not None else None,
             "defaultNumSamples": obj.get("defaultNumSamples"),
             "endingCoordinate": Coordinate.from_dict(obj.get("endingCoordinate")) if obj.get("endingCoordinate") is not None else None,

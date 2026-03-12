@@ -52,7 +52,7 @@ class ExportResourceApi:
     @validate_call
     def export_n5(
         self,
-        n5_export_request: Optional[N5ExportRequest] = None,
+        n5_export_request: N5ExportRequest,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -66,11 +66,11 @@ class ExportResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> int:
-        """export_n5
+        """Create N 5 Export
 
         Create an N5 (ImageJ compatible) export. The request must contain the standard export information, exportable data type, dataset name, and sub-volume specifications.
 
-        :param n5_export_request:
+        :param n5_export_request: (required)
         :type n5_export_request: N5ExportRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -125,7 +125,7 @@ class ExportResourceApi:
     @validate_call
     def export_n5_with_http_info(
         self,
-        n5_export_request: Optional[N5ExportRequest] = None,
+        n5_export_request: N5ExportRequest,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -139,11 +139,11 @@ class ExportResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[int]:
-        """export_n5
+        """Create N 5 Export
 
         Create an N5 (ImageJ compatible) export. The request must contain the standard export information, exportable data type, dataset name, and sub-volume specifications.
 
-        :param n5_export_request:
+        :param n5_export_request: (required)
         :type n5_export_request: N5ExportRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -198,7 +198,7 @@ class ExportResourceApi:
     @validate_call
     def export_n5_without_preload_content(
         self,
-        n5_export_request: Optional[N5ExportRequest] = None,
+        n5_export_request: N5ExportRequest,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -212,11 +212,11 @@ class ExportResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """export_n5
+        """Create N 5 Export
 
         Create an N5 (ImageJ compatible) export. The request must contain the standard export information, exportable data type, dataset name, and sub-volume specifications.
 
-        :param n5_export_request:
+        :param n5_export_request: (required)
         :type n5_export_request: N5ExportRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -356,7 +356,7 @@ class ExportResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> List[ExportEvent]:
-        """export_status
+        """Poll Export Status
 
         Get the status of your export jobs past the timestamp (Unix epoch in seconds).
 
@@ -427,7 +427,7 @@ class ExportResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[List[ExportEvent]]:
-        """export_status
+        """Poll Export Status
 
         Get the status of your export jobs past the timestamp (Unix epoch in seconds).
 
@@ -498,7 +498,7 @@ class ExportResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """export_status
+        """Poll Export Status
 
         Get the status of your export jobs past the timestamp (Unix epoch in seconds).
 

@@ -4,12 +4,12 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | **str** |  | [default to 'SampledCurve']
+**type** | **object** |  | 
 **default_num_samples** | **int** |  | [optional] 
 **max_control_points** | **int** |  | [optional] 
 **min_control_points** | **int** |  | [optional] 
 **segment_count** | **int** |  | [optional] 
-**spatial_length** | **float** |  | [optional] 
+**spatial_length** | **object** |  | [optional] 
 
 ## Example
 

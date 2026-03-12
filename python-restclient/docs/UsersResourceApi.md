@@ -346,7 +346,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **map_new_user**
-> map_new_user(user_registration_info=user_registration_info)
+> map_new_user(user_registration_info)
 
 create vcell user
 
@@ -375,11 +375,11 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.UsersResourceApi(api_client)
-    user_registration_info = vcell_client.UserRegistrationInfo() # UserRegistrationInfo |  (optional)
+    user_registration_info = vcell_client.UserRegistrationInfo() # UserRegistrationInfo | 
 
     try:
         # create vcell user
-        api_instance.map_new_user(user_registration_info=user_registration_info)
+        api_instance.map_new_user(user_registration_info)
     except Exception as e:
         print("Exception when calling UsersResourceApi->map_new_user: %s\n" % e)
 ```
@@ -390,7 +390,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **user_registration_info** | [**UserRegistrationInfo**](UserRegistrationInfo.md)|  | [optional] 
+ **user_registration_info** | [**UserRegistrationInfo**](UserRegistrationInfo.md)|  | 
 
 ### Return type
 
@@ -409,6 +409,7 @@ void (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Successful, returning the identity |  -  |
+**400** | Bad Request |  -  |
 **401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
 **409** | VCell Identity not mapped, userid already exists |  -  |
@@ -417,7 +418,7 @@ void (empty response body)
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **map_user**
-> bool map_user(user_login_info_for_mapping=user_login_info_for_mapping)
+> bool map_user(user_login_info_for_mapping)
 
 map vcell user
 
@@ -446,11 +447,11 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.UsersResourceApi(api_client)
-    user_login_info_for_mapping = vcell_client.UserLoginInfoForMapping() # UserLoginInfoForMapping |  (optional)
+    user_login_info_for_mapping = vcell_client.UserLoginInfoForMapping() # UserLoginInfoForMapping | 
 
     try:
         # map vcell user
-        api_response = api_instance.map_user(user_login_info_for_mapping=user_login_info_for_mapping)
+        api_response = api_instance.map_user(user_login_info_for_mapping)
         print("The response of UsersResourceApi->map_user:\n")
         pprint(api_response)
     except Exception as e:
@@ -463,7 +464,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
- **user_login_info_for_mapping** | [**UserLoginInfoForMapping**](UserLoginInfoForMapping.md)|  | [optional] 
+ **user_login_info_for_mapping** | [**UserLoginInfoForMapping**](UserLoginInfoForMapping.md)|  | 
 
 ### Return type
 
@@ -482,6 +483,7 @@ Name | Type | Description  | Notes
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
+**400** | Bad Request |  -  |
 **401** | Not Authenticated |  -  |
 **403** | Not Allowed |  -  |
 **500** | Data Access Exception |  -  |

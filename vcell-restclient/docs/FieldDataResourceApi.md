@@ -385,7 +385,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **sourceModel** | [**SourceModel**](SourceModel.md)|  | [optional] |
+| **sourceModel** | [**SourceModel**](SourceModel.md)|  | |
 
 ### Return type
 
@@ -405,6 +405,7 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **400** | Bad Request |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **422** | Unprocessable content submitted |  -  |
@@ -457,7 +458,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **sourceModel** | [**SourceModel**](SourceModel.md)|  | [optional] |
+| **sourceModel** | [**SourceModel**](SourceModel.md)|  | |
 
 ### Return type
 
@@ -477,6 +478,7 @@ ApiResponse<[**Map&lt;String, ExternalDataIdentifier&gt;**](ExternalDataIdentifi
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **400** | Bad Request |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **422** | Unprocessable content submitted |  -  |
@@ -696,6 +698,7 @@ null (empty response body)
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **201** | Created |  -  |
+| **400** | Bad Request |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
@@ -770,6 +773,7 @@ ApiResponse<Void>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **201** | Created |  -  |
+| **400** | Bad Request |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **500** | Data Access Exception |  -  |
@@ -1231,7 +1235,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **fieldData** | [**FieldData**](FieldData.md)|  | [optional] |
+| **fieldData** | [**FieldData**](FieldData.md)|  | |
 
 ### Return type
 
@@ -1251,6 +1255,7 @@ public class Example {
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **400** | Bad Request |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **422** | Unprocessable content submitted |  -  |
@@ -1303,7 +1308,7 @@ public class Example {
 
 | Name | Type | Description  | Notes |
 |------------- | ------------- | ------------- | -------------|
-| **fieldData** | [**FieldData**](FieldData.md)|  | [optional] |
+| **fieldData** | [**FieldData**](FieldData.md)|  | |
 
 ### Return type
 
@@ -1323,6 +1328,7 @@ ApiResponse<[**FieldDataSavedResults**](FieldDataSavedResults.md)>
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **400** | Bad Request |  -  |
 | **401** | Not Authenticated |  -  |
 | **403** | Not Allowed |  -  |
 | **422** | Unprocessable content submitted |  -  |

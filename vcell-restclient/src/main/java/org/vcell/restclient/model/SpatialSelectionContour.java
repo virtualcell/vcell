@@ -27,9 +27,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import org.vcell.restclient.model.CurveSelectionInfo;
 import org.vcell.restclient.model.SpatialSelection;
 import org.vcell.restclient.model.VariableType;
@@ -55,21 +53,21 @@ import org.vcell.restclient.JSON;
 
 public class SpatialSelectionContour extends SpatialSelection {
   public static final String JSON_PROPERTY_TYPE = "type";
-  private String type = "Contour";
+  private Object type = Contour;
 
   public static final String JSON_PROPERTY_FIELD_SAMPLED_DATA_INDEXES = "fieldSampledDataIndexes";
-  private List<Integer> fieldSampledDataIndexes;
+  private Object fieldSampledDataIndexes = null;
 
   public static final String JSON_PROPERTY_INDEX_SAMPLES = "indexSamples";
-  private List<Integer> indexSamples;
+  private Object indexSamples = null;
 
   public static final String JSON_PROPERTY_SAMPLED_DATA_INDEXES = "sampledDataIndexes";
-  private List<Integer> sampledDataIndexes;
+  private Object sampledDataIndexes = null;
 
   public SpatialSelectionContour() { 
   }
 
-  public SpatialSelectionContour type(String type) {
+  public SpatialSelectionContour type(Object type) {
     this.type = type;
     return this;
   }
@@ -78,32 +76,24 @@ public class SpatialSelectionContour extends SpatialSelection {
    * Get type
    * @return type
   **/
-  @javax.annotation.Nonnull
+  @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
 
-  public String getType() {
+  public Object getType() {
     return type;
   }
 
 
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setType(String type) {
+  public void setType(Object type) {
     this.type = type;
   }
 
 
-  public SpatialSelectionContour fieldSampledDataIndexes(List<Integer> fieldSampledDataIndexes) {
+  public SpatialSelectionContour fieldSampledDataIndexes(Object fieldSampledDataIndexes) {
     this.fieldSampledDataIndexes = fieldSampledDataIndexes;
-    return this;
-  }
-
-  public SpatialSelectionContour addFieldSampledDataIndexesItem(Integer fieldSampledDataIndexesItem) {
-    if (this.fieldSampledDataIndexes == null) {
-      this.fieldSampledDataIndexes = new ArrayList<>();
-    }
-    this.fieldSampledDataIndexes.add(fieldSampledDataIndexesItem);
     return this;
   }
 
@@ -115,28 +105,20 @@ public class SpatialSelectionContour extends SpatialSelection {
   @JsonProperty(JSON_PROPERTY_FIELD_SAMPLED_DATA_INDEXES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<Integer> getFieldSampledDataIndexes() {
+  public Object getFieldSampledDataIndexes() {
     return fieldSampledDataIndexes;
   }
 
 
   @JsonProperty(JSON_PROPERTY_FIELD_SAMPLED_DATA_INDEXES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldSampledDataIndexes(List<Integer> fieldSampledDataIndexes) {
+  public void setFieldSampledDataIndexes(Object fieldSampledDataIndexes) {
     this.fieldSampledDataIndexes = fieldSampledDataIndexes;
   }
 
 
-  public SpatialSelectionContour indexSamples(List<Integer> indexSamples) {
+  public SpatialSelectionContour indexSamples(Object indexSamples) {
     this.indexSamples = indexSamples;
-    return this;
-  }
-
-  public SpatialSelectionContour addIndexSamplesItem(Integer indexSamplesItem) {
-    if (this.indexSamples == null) {
-      this.indexSamples = new ArrayList<>();
-    }
-    this.indexSamples.add(indexSamplesItem);
     return this;
   }
 
@@ -148,28 +130,20 @@ public class SpatialSelectionContour extends SpatialSelection {
   @JsonProperty(JSON_PROPERTY_INDEX_SAMPLES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<Integer> getIndexSamples() {
+  public Object getIndexSamples() {
     return indexSamples;
   }
 
 
   @JsonProperty(JSON_PROPERTY_INDEX_SAMPLES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setIndexSamples(List<Integer> indexSamples) {
+  public void setIndexSamples(Object indexSamples) {
     this.indexSamples = indexSamples;
   }
 
 
-  public SpatialSelectionContour sampledDataIndexes(List<Integer> sampledDataIndexes) {
+  public SpatialSelectionContour sampledDataIndexes(Object sampledDataIndexes) {
     this.sampledDataIndexes = sampledDataIndexes;
-    return this;
-  }
-
-  public SpatialSelectionContour addSampledDataIndexesItem(Integer sampledDataIndexesItem) {
-    if (this.sampledDataIndexes == null) {
-      this.sampledDataIndexes = new ArrayList<>();
-    }
-    this.sampledDataIndexes.add(sampledDataIndexesItem);
     return this;
   }
 
@@ -181,14 +155,14 @@ public class SpatialSelectionContour extends SpatialSelection {
   @JsonProperty(JSON_PROPERTY_SAMPLED_DATA_INDEXES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<Integer> getSampledDataIndexes() {
+  public Object getSampledDataIndexes() {
     return sampledDataIndexes;
   }
 
 
   @JsonProperty(JSON_PROPERTY_SAMPLED_DATA_INDEXES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSampledDataIndexes(List<Integer> sampledDataIndexes) {
+  public void setSampledDataIndexes(Object sampledDataIndexes) {
     this.sampledDataIndexes = sampledDataIndexes;
   }
 

@@ -31,7 +31,7 @@ export interface PublicationResourceServiceInterface {
      * 
      * @param publication 
      */
-    createPublication(publication?: Publication, extraHttpRequestParams?: any): Observable<number>;
+    createPublication(publication: Publication, extraHttpRequestParams?: any): Observable<number>;
 
     /**
      * Delete publication
@@ -59,13 +59,13 @@ export interface PublicationResourceServiceInterface {
      * @param id 
      * @param publishModelsRequest 
      */
-    publishBioModels(id: number, publishModelsRequest?: PublishModelsRequest, extraHttpRequestParams?: any): Observable<{}>;
+    publishBioModels(id: number, publishModelsRequest: PublishModelsRequest, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
      * Update publication
      * 
      * @param publication 
      */
-    updatePublication(publication?: Publication, extraHttpRequestParams?: any): Observable<Publication>;
+    updatePublication(publication: Publication, extraHttpRequestParams?: any): Observable<Publication>;
 
 }

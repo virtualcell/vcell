@@ -20,7 +20,7 @@ import json
 
 
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import StrictInt, StrictStr
+
 from pydantic import Field
 from vcell_client.models.curve_selection_info import CurveSelectionInfo
 from vcell_client.models.sampled_curve import SampledCurve
@@ -35,8 +35,8 @@ class SpatialSelectionMembrane(SpatialSelection):
     """
     SpatialSelectionMembrane
     """ # noqa: E501
-    type: StrictStr
-    field_sampled_data_indexes: Optional[List[StrictInt]] = Field(default=None, alias="fieldSampledDataIndexes")
+    type: Optional[Any]
+    field_sampled_data_indexes: Optional[Any] = Field(default=None, alias="fieldSampledDataIndexes")
     selection_source: Optional[SampledCurve] = Field(default=None, alias="selectionSource")
     __properties: ClassVar[List[str]] = ["curveSelectionInfo", "varType", "type", "smallestMeshCellDimensionLength", "variableType", "closed", "point"]
 
@@ -85,6 +85,11 @@ class SpatialSelectionMembrane(SpatialSelection):
         # override the default output from pydantic by calling `to_dict()` of variable_type
         if self.variable_type:
             _dict['variableType'] = self.variable_type.to_dict()
+        # set to None if type (nullable) is None
+        # and model_fields_set contains the field
+        if self.type is None and "type" in self.model_fields_set:
+            _dict['type'] = None
+
         return _dict
 
     @classmethod
@@ -104,7 +109,7 @@ class SpatialSelectionMembrane(SpatialSelection):
         _obj = cls.model_validate({
             "curveSelectionInfo": CurveSelectionInfo.from_dict(obj.get("curveSelectionInfo")) if obj.get("curveSelectionInfo") is not None else None,
             "varType": VariableType.from_dict(obj.get("varType")) if obj.get("varType") is not None else None,
-            "type": obj.get("type") if obj.get("type") is not None else 'Membrane',
+            "type": obj.get("type"),
             "smallestMeshCellDimensionLength": obj.get("smallestMeshCellDimensionLength"),
             "variableType": VariableType.from_dict(obj.get("variableType")) if obj.get("variableType") is not None else None,
             "closed": obj.get("closed"),

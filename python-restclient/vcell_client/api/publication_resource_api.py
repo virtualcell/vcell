@@ -26,7 +26,7 @@ except ImportError:
 
 from pydantic import StrictInt
 
-from typing import List, Optional
+from typing import List
 
 from vcell_client.models.publication import Publication
 from vcell_client.models.publish_models_request import PublishModelsRequest
@@ -52,7 +52,7 @@ class PublicationResourceApi:
     @validate_call
     def create_publication(
         self,
-        publication: Optional[Publication] = None,
+        publication: Publication,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -69,7 +69,7 @@ class PublicationResourceApi:
         """Create publication
 
 
-        :param publication:
+        :param publication: (required)
         :type publication: Publication
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -103,6 +103,7 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "int",
+            '400': None,
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -122,7 +123,7 @@ class PublicationResourceApi:
     @validate_call
     def create_publication_with_http_info(
         self,
-        publication: Optional[Publication] = None,
+        publication: Publication,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -139,7 +140,7 @@ class PublicationResourceApi:
         """Create publication
 
 
-        :param publication:
+        :param publication: (required)
         :type publication: Publication
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -173,6 +174,7 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "int",
+            '400': None,
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -192,7 +194,7 @@ class PublicationResourceApi:
     @validate_call
     def create_publication_without_preload_content(
         self,
-        publication: Optional[Publication] = None,
+        publication: Publication,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -209,7 +211,7 @@ class PublicationResourceApi:
         """Create publication
 
 
-        :param publication:
+        :param publication: (required)
         :type publication: Publication
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -243,6 +245,7 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "int",
+            '400': None,
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -1097,7 +1100,7 @@ class PublicationResourceApi:
     def publish_bio_models(
         self,
         id: StrictInt,
-        publish_models_request: Optional[PublishModelsRequest] = None,
+        publish_models_request: PublishModelsRequest,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1116,7 +1119,7 @@ class PublicationResourceApi:
 
         :param id: (required)
         :type id: int
-        :param publish_models_request:
+        :param publish_models_request: (required)
         :type publish_models_request: PublishModelsRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1167,7 +1170,7 @@ class PublicationResourceApi:
     def publish_bio_models_with_http_info(
         self,
         id: StrictInt,
-        publish_models_request: Optional[PublishModelsRequest] = None,
+        publish_models_request: PublishModelsRequest,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1186,7 +1189,7 @@ class PublicationResourceApi:
 
         :param id: (required)
         :type id: int
-        :param publish_models_request:
+        :param publish_models_request: (required)
         :type publish_models_request: PublishModelsRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1237,7 +1240,7 @@ class PublicationResourceApi:
     def publish_bio_models_without_preload_content(
         self,
         id: StrictInt,
-        publish_models_request: Optional[PublishModelsRequest] = None,
+        publish_models_request: PublishModelsRequest,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1256,7 +1259,7 @@ class PublicationResourceApi:
 
         :param id: (required)
         :type id: int
-        :param publish_models_request:
+        :param publish_models_request: (required)
         :type publish_models_request: PublishModelsRequest
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1380,7 +1383,7 @@ class PublicationResourceApi:
     @validate_call
     def update_publication(
         self,
-        publication: Optional[Publication] = None,
+        publication: Publication,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1397,7 +1400,7 @@ class PublicationResourceApi:
         """Update publication
 
 
-        :param publication:
+        :param publication: (required)
         :type publication: Publication
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1431,6 +1434,7 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Publication",
+            '400': None,
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -1450,7 +1454,7 @@ class PublicationResourceApi:
     @validate_call
     def update_publication_with_http_info(
         self,
-        publication: Optional[Publication] = None,
+        publication: Publication,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1467,7 +1471,7 @@ class PublicationResourceApi:
         """Update publication
 
 
-        :param publication:
+        :param publication: (required)
         :type publication: Publication
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1501,6 +1505,7 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Publication",
+            '400': None,
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"
@@ -1520,7 +1525,7 @@ class PublicationResourceApi:
     @validate_call
     def update_publication_without_preload_content(
         self,
-        publication: Optional[Publication] = None,
+        publication: Publication,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -1537,7 +1542,7 @@ class PublicationResourceApi:
         """Update publication
 
 
-        :param publication:
+        :param publication: (required)
         :type publication: Publication
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -1571,6 +1576,7 @@ class PublicationResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Publication",
+            '400': None,
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '500': "VCellHTTPError"

@@ -27,9 +27,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import org.vcell.restclient.model.Coordinate;
 import org.vcell.restclient.model.Curve;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -56,10 +54,10 @@ import org.vcell.restclient.JSON;
 
 public class CompositeCurve extends Curve {
   public static final String JSON_PROPERTY_TYPE = "type";
-  private String type = "CompositeCurve";
+  private Object type = CompositeCurve;
 
   public static final String JSON_PROPERTY_FIELD_CURVES = "fieldCurves";
-  private List<Object> fieldCurves;
+  private Object fieldCurves = null;
 
   public static final String JSON_PROPERTY_CURVE_COUNT = "curveCount";
   private Integer curveCount;
@@ -76,7 +74,7 @@ public class CompositeCurve extends Curve {
   public CompositeCurve() { 
   }
 
-  public CompositeCurve type(String type) {
+  public CompositeCurve type(Object type) {
     this.type = type;
     return this;
   }
@@ -85,32 +83,24 @@ public class CompositeCurve extends Curve {
    * Get type
    * @return type
   **/
-  @javax.annotation.Nonnull
+  @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
 
-  public String getType() {
+  public Object getType() {
     return type;
   }
 
 
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setType(String type) {
+  public void setType(Object type) {
     this.type = type;
   }
 
 
-  public CompositeCurve fieldCurves(List<Object> fieldCurves) {
+  public CompositeCurve fieldCurves(Object fieldCurves) {
     this.fieldCurves = fieldCurves;
-    return this;
-  }
-
-  public CompositeCurve addFieldCurvesItem(Object fieldCurvesItem) {
-    if (this.fieldCurves == null) {
-      this.fieldCurves = new ArrayList<>();
-    }
-    this.fieldCurves.add(fieldCurvesItem);
     return this;
   }
 
@@ -122,14 +112,14 @@ public class CompositeCurve extends Curve {
   @JsonProperty(JSON_PROPERTY_FIELD_CURVES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<Object> getFieldCurves() {
+  public Object getFieldCurves() {
     return fieldCurves;
   }
 
 
   @JsonProperty(JSON_PROPERTY_FIELD_CURVES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldCurves(List<Object> fieldCurves) {
+  public void setFieldCurves(Object fieldCurves) {
     this.fieldCurves = fieldCurves;
   }
 

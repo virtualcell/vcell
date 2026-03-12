@@ -15,7 +15,7 @@ import { StandardExportInfo } from './standard-export-info';
 
 export interface N5ExportRequest { 
     standardExportInformation?: StandardExportInfo;
-    subVolume?: { [key: string]: string; };
+    subVolume?: { [key: string]: string; } | null;
     exportableDataType?: ExportableDataType;
     datasetName?: string;
 }

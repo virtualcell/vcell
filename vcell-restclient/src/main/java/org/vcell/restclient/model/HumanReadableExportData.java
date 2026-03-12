@@ -72,7 +72,7 @@ public class HumanReadableExportData {
   private Boolean nonSpatial;
 
   public static final String JSON_PROPERTY_SUB_VOLUME = "subVolume";
-  private Map<String, String> subVolume = new HashMap<>();
+  private Map<String, String> subVolume;
 
   public static final String JSON_PROPERTY_Z_SLICES = "zSlices";
   private Integer zSlices;
@@ -271,14 +271,6 @@ public class HumanReadableExportData {
 
   public HumanReadableExportData subVolume(Map<String, String> subVolume) {
     this.subVolume = subVolume;
-    return this;
-  }
-
-  public HumanReadableExportData putSubVolumeItem(String key, String subVolumeItem) {
-    if (this.subVolume == null) {
-      this.subVolume = new HashMap<>();
-    }
-    this.subVolume.put(key, subVolumeItem);
     return this;
   }
 
@@ -510,11 +502,7 @@ public class HumanReadableExportData {
 
     // add `subVolume` to the URL query string
     if (getSubVolume() != null) {
-      for (String _key : getSubVolume().keySet()) {
-        joiner.add(String.format("%ssubVolume%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, _key, containerSuffix),
-            getSubVolume().get(_key), URLEncoder.encode(String.valueOf(getSubVolume().get(_key)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-      }
+      joiner.add(String.format("%ssubVolume%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSubVolume()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `zSlices` to the URL query string

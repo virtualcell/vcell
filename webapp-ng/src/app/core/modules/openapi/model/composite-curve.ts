@@ -14,8 +14,8 @@ import { Curve } from './curve';
 
 
 export interface CompositeCurve extends Curve { 
-    type: string;
-    fieldCurves?: Array<any>;
+    type: any | null;
+    fieldCurves?: any | null;
     curveCount?: number;
     defaultNumSamples?: number;
     segmentCount?: number;

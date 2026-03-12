@@ -4,10 +4,10 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | **str** |  | [default to 'ControlPointCurve']
-**control_points** | [**List[Coordinate]**](Coordinate.md) |  | [optional] 
+**type** | **object** |  | 
+**control_points** | **object** |  | [optional] 
 **control_point_count** | **int** |  | [optional] 
-**control_points_vector** | [**List[Coordinate]**](Coordinate.md) |  | [optional] 
+**control_points_vector** | **object** |  | [optional] 
 **max_control_points** | **int** |  | [optional] 
 **min_control_points** | **int** |  | [optional] 
 **control_point_addable** | **bool** |  | [optional] 

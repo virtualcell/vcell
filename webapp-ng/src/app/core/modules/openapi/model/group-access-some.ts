@@ -9,17 +9,16 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { User } from './user';
 import { GroupAccess } from './group-access';
 
 
 export interface GroupAccessSome extends GroupAccess { 
-    type: string;
-    hash?: number;
-    groupMembers?: Array<User>;
-    hiddenMembers?: Array<boolean>;
+    type: any | null;
+    hash?: any | null;
+    groupMembers?: any | null;
+    hiddenMembers?: any | null;
     description?: string;
-    hiddenGroupMembers?: Array<User>;
-    normalGroupMembers?: Array<User>;
+    hiddenGroupMembers?: any | null;
+    normalGroupMembers?: any | null;
 }
 

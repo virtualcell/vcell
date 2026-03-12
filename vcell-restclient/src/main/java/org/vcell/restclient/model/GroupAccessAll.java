@@ -50,7 +50,7 @@ import org.vcell.restclient.JSON;
 
 public class GroupAccessAll extends GroupAccess {
   public static final String JSON_PROPERTY_TYPE = "type";
-  private String type = "GroupAccessAll";
+  private Object type = GroupAccessAll;
 
   public static final String JSON_PROPERTY_DESCRIPTION = "description";
   private String description;
@@ -58,7 +58,7 @@ public class GroupAccessAll extends GroupAccess {
   public GroupAccessAll() { 
   }
 
-  public GroupAccessAll type(String type) {
+  public GroupAccessAll type(Object type) {
     this.type = type;
     return this;
   }
@@ -67,18 +67,18 @@ public class GroupAccessAll extends GroupAccess {
    * Get type
    * @return type
   **/
-  @javax.annotation.Nonnull
+  @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
 
-  public String getType() {
+  public Object getType() {
     return type;
   }
 
 
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setType(String type) {
+  public void setType(Object type) {
     this.type = type;
   }
 

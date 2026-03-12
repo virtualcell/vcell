@@ -54,7 +54,7 @@ import org.vcell.restclient.JSON;
 
 public class SampledCurve extends ControlPointCurve {
   public static final String JSON_PROPERTY_TYPE = "type";
-  private String type = "SampledCurve";
+  private Object type = SampledCurve;
 
   public static final String JSON_PROPERTY_DEFAULT_NUM_SAMPLES = "defaultNumSamples";
   private Integer defaultNumSamples;
@@ -69,12 +69,12 @@ public class SampledCurve extends ControlPointCurve {
   private Integer segmentCount;
 
   public static final String JSON_PROPERTY_SPATIAL_LENGTH = "spatialLength";
-  private Double spatialLength;
+  private Object spatialLength = null;
 
   public SampledCurve() { 
   }
 
-  public SampledCurve type(String type) {
+  public SampledCurve type(Object type) {
     this.type = type;
     return this;
   }
@@ -83,18 +83,18 @@ public class SampledCurve extends ControlPointCurve {
    * Get type
    * @return type
   **/
-  @javax.annotation.Nonnull
+  @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
 
-  public String getType() {
+  public Object getType() {
     return type;
   }
 
 
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setType(String type) {
+  public void setType(Object type) {
     this.type = type;
   }
 
@@ -199,7 +199,7 @@ public class SampledCurve extends ControlPointCurve {
   }
 
 
-  public SampledCurve spatialLength(Double spatialLength) {
+  public SampledCurve spatialLength(Object spatialLength) {
     this.spatialLength = spatialLength;
     return this;
   }
@@ -212,14 +212,14 @@ public class SampledCurve extends ControlPointCurve {
   @JsonProperty(JSON_PROPERTY_SPATIAL_LENGTH)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public Double getSpatialLength() {
+  public Object getSpatialLength() {
     return spatialLength;
   }
 
 
   @JsonProperty(JSON_PROPERTY_SPATIAL_LENGTH)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSpatialLength(Double spatialLength) {
+  public void setSpatialLength(Object spatialLength) {
     this.spatialLength = spatialLength;
   }
 

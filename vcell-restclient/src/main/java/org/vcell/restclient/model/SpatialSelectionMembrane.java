@@ -27,9 +27,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import org.vcell.restclient.model.CurveSelectionInfo;
 import org.vcell.restclient.model.SampledCurve;
 import org.vcell.restclient.model.SpatialSelection;
@@ -55,10 +53,10 @@ import org.vcell.restclient.JSON;
 
 public class SpatialSelectionMembrane extends SpatialSelection {
   public static final String JSON_PROPERTY_TYPE = "type";
-  private String type = "Membrane";
+  private Object type = Membrane;
 
   public static final String JSON_PROPERTY_FIELD_SAMPLED_DATA_INDEXES = "fieldSampledDataIndexes";
-  private List<Integer> fieldSampledDataIndexes;
+  private Object fieldSampledDataIndexes = null;
 
   public static final String JSON_PROPERTY_SELECTION_SOURCE = "selectionSource";
   private SampledCurve selectionSource;
@@ -66,7 +64,7 @@ public class SpatialSelectionMembrane extends SpatialSelection {
   public SpatialSelectionMembrane() { 
   }
 
-  public SpatialSelectionMembrane type(String type) {
+  public SpatialSelectionMembrane type(Object type) {
     this.type = type;
     return this;
   }
@@ -75,32 +73,24 @@ public class SpatialSelectionMembrane extends SpatialSelection {
    * Get type
    * @return type
   **/
-  @javax.annotation.Nonnull
+  @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
 
-  public String getType() {
+  public Object getType() {
     return type;
   }
 
 
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setType(String type) {
+  public void setType(Object type) {
     this.type = type;
   }
 
 
-  public SpatialSelectionMembrane fieldSampledDataIndexes(List<Integer> fieldSampledDataIndexes) {
+  public SpatialSelectionMembrane fieldSampledDataIndexes(Object fieldSampledDataIndexes) {
     this.fieldSampledDataIndexes = fieldSampledDataIndexes;
-    return this;
-  }
-
-  public SpatialSelectionMembrane addFieldSampledDataIndexesItem(Integer fieldSampledDataIndexesItem) {
-    if (this.fieldSampledDataIndexes == null) {
-      this.fieldSampledDataIndexes = new ArrayList<>();
-    }
-    this.fieldSampledDataIndexes.add(fieldSampledDataIndexesItem);
     return this;
   }
 
@@ -112,14 +102,14 @@ public class SpatialSelectionMembrane extends SpatialSelection {
   @JsonProperty(JSON_PROPERTY_FIELD_SAMPLED_DATA_INDEXES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<Integer> getFieldSampledDataIndexes() {
+  public Object getFieldSampledDataIndexes() {
     return fieldSampledDataIndexes;
   }
 
 
   @JsonProperty(JSON_PROPERTY_FIELD_SAMPLED_DATA_INDEXES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldSampledDataIndexes(List<Integer> fieldSampledDataIndexes) {
+  public void setFieldSampledDataIndexes(Object fieldSampledDataIndexes) {
     this.fieldSampledDataIndexes = fieldSampledDataIndexes;
   }
 

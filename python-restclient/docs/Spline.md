@@ -4,7 +4,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | **str** |  | [default to 'Spline']
+**type** | **object** |  | 
 **default_num_samples** | **int** |  | [optional] 
 **max_control_points** | **int** |  | [optional] 
 **min_control_points** | **int** |  | [optional] 

@@ -8,7 +8,7 @@
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
 |**standardExportInformation** | [**StandardExportInfo**](StandardExportInfo.md) |  |  [optional] |
-|**subVolume** | **Map&lt;String, String&gt;** |  |  [optional] |
+|**subVolume** |  |  |  [optional] |
 |**exportableDataType** | **ExportableDataType** |  |  [optional] |
 |**datasetName** | **String** |  |  [optional] |
 

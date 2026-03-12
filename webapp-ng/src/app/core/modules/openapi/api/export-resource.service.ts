@@ -99,15 +99,19 @@ export class ExportResourceService implements ExportResourceServiceInterface {
     }
 
     /**
+     * Create N 5 Export
      * Create an N5 (ImageJ compatible) export. The request must contain the standard export information, exportable data type, dataset name, and sub-volume specifications.
      * @param n5ExportRequest 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public exportN5(n5ExportRequest?: N5ExportRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<number>;
-    public exportN5(n5ExportRequest?: N5ExportRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<number>>;
-    public exportN5(n5ExportRequest?: N5ExportRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<number>>;
-    public exportN5(n5ExportRequest?: N5ExportRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public exportN5(n5ExportRequest: N5ExportRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<number>;
+    public exportN5(n5ExportRequest: N5ExportRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<number>>;
+    public exportN5(n5ExportRequest: N5ExportRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<number>>;
+    public exportN5(n5ExportRequest: N5ExportRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+        if (n5ExportRequest === null || n5ExportRequest === undefined) {
+            throw new Error('Required parameter n5ExportRequest was null or undefined when calling exportN5.');
+        }
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -170,6 +174,7 @@ export class ExportResourceService implements ExportResourceServiceInterface {
     }
 
     /**
+     * Poll Export Status
      * Get the status of your export jobs past the timestamp (Unix epoch in seconds).
      * @param timestamp 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.

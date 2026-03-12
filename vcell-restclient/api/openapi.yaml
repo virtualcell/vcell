@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   contact:
     email: vcell_support@uchc.com
@@ -458,6 +458,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/N5ExportRequest'
+        required: true
       responses:
         "200":
           content:
@@ -495,6 +496,7 @@ paths:
       security:
       - openId:
         - user
+      summary: Create N 5 Export
       tags:
       - Export Resource
       x-content-type: application/json
@@ -539,6 +541,7 @@ paths:
       security:
       - openId:
         - user
+      summary: Poll Export Status
       tags:
       - Export Resource
       x-accepts: application/json
@@ -612,6 +615,7 @@ paths:
                 style: form
             schema:
               $ref: '#/components/schemas/advancedCreate_request'
+        required: true
       responses:
         "200":
           content:
@@ -656,6 +660,7 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/analyzeFile_request'
+        required: true
       responses:
         "200":
           content:
@@ -702,6 +707,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/SourceModel'
+        required: true
       responses:
         "200":
           content:
@@ -709,8 +715,9 @@ paths:
               schema:
                 additionalProperties:
                   $ref: '#/components/schemas/ExternalDataIdentifier'
-                type: object
           description: OK
+        "400":
+          description: Bad Request
         "401":
           content:
             application/json:
@@ -756,6 +763,7 @@ paths:
                 style: form
             schema:
               $ref: '#/components/schemas/createFromFile_request'
+        required: true
       responses:
         "200":
           content:
@@ -800,9 +808,12 @@ paths:
           application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/createFromSimulation_request'
+        required: true
       responses:
         "201":
           description: Created
+        "400":
+          description: Bad Request
         "401":
           content:
             application/json:
@@ -876,6 +887,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/FieldData'
+        required: true
       responses:
         "200":
           content:
@@ -883,6 +895,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/FieldDataSavedResults'
           description: OK
+        "400":
+          description: Bad Request
         "401":
           content:
             application/json:
@@ -1012,6 +1026,7 @@ paths:
       security:
       - openId:
         - user
+      summary: Save
       tags:
       - Geometry Resource
       x-content-type: application/xml
@@ -1045,6 +1060,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Geometry Summaries
       tags:
       - Geometry Resource
       x-accepts: application/json
@@ -1086,6 +1102,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Geometry Summary
       tags:
       - Geometry Resource
       x-accepts: application/json
@@ -1128,6 +1145,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Delete Geometry
       tags:
       - Geometry Resource
       x-accepts: application/json
@@ -1167,6 +1185,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Geometry
       tags:
       - Geometry Resource
       x-accepts: application/json
@@ -1235,6 +1254,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Save VC Image
       tags:
       - VC Image Resource
       x-content-type: application/json
@@ -1268,6 +1288,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Summaries
       tags:
       - VC Image Resource
       x-accepts: application/json
@@ -1309,6 +1330,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Summary
       tags:
       - VC Image Resource
       x-accepts: application/json
@@ -1351,6 +1373,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Delete VC Image
       tags:
       - VC Image Resource
       x-accepts: application/json
@@ -1396,6 +1419,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get VC Image
       tags:
       - VC Image Resource
       x-accepts: application/json
@@ -1458,6 +1482,7 @@ paths:
       security:
       - openId:
         - user
+      summary: Save
       tags:
       - Math Model Resource
       x-content-type: application/xml
@@ -1491,6 +1516,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Math Model Summaries
       tags:
       - Math Model Resource
       x-accepts: application/json
@@ -1532,6 +1558,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Math Model Summary
       tags:
       - Math Model Resource
       x-accepts: application/json
@@ -1574,6 +1601,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Delete Math Model
       tags:
       - Math Model Resource
       x-accepts: application/json
@@ -1613,6 +1641,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
           description: Data Access Exception
+      summary: Get Math Model
       tags:
       - Math Model Resource
       x-accepts: application/json
@@ -1645,6 +1674,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Publication'
+        required: true
       responses:
         "200":
           content:
@@ -1653,6 +1683,8 @@ paths:
                 format: int64
                 type: integer
           description: OK
+        "400":
+          description: Bad Request
         "401":
           content:
             application/json:
@@ -1686,6 +1718,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Publication'
+        required: true
       responses:
         "200":
           content:
@@ -1693,6 +1726,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/Publication'
           description: OK
+        "400":
+          description: Bad Request
         "401":
           content:
             application/json:
@@ -1810,9 +1845,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PublishModelsRequest'
+        required: true
       responses:
         "204":
           description: No Content
+        "400":
+          description: Bad Request
         "401":
           content:
             application/json:
@@ -1853,6 +1891,7 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/getFVSolverInputFromSBML_request'
+        required: true
       responses:
         "200":
           content:
@@ -1880,6 +1919,7 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/getFVSolverInputFromVCML_request'
+        required: true
       responses:
         "200":
           content:
@@ -1986,6 +2026,7 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UserLoginInfoForMapping'
+        required: true
       responses:
         "200":
           content:
@@ -1993,6 +2034,8 @@ paths:
               schema:
                 type: boolean
           description: OK
+        "400":
+          description: Bad Request
         "401":
           content:
             application/json:
@@ -2078,9 +2121,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/UserRegistrationInfo'
+        required: true
       responses:
         "200":
           description: "Successful, returning the identity"
+        "400":
+          description: Bad Request
         "401":
           content:
             application/json:
@@ -2252,14 +2298,12 @@ components:
           type: string
         userKey:
           type: string
-      type: object
     AnalyticCurve:
       allOf:
       - $ref: '#/components/schemas/Curve'
       properties:
         type:
           default: AnalyticCurve
-          type: string
         expX:
           type: string
         expY:
@@ -2280,7 +2324,6 @@ components:
           type: boolean
       required:
       - type
-      type: object
     AnnotatedFunctionDTO:
       example:
         functionName: functionName
@@ -2312,7 +2355,6 @@ components:
           $ref: '#/components/schemas/VariableType'
         category:
           $ref: '#/components/schemas/FunctionCategory'
-      type: object
     Application:
       type: object
     ApplicationInfo:
@@ -2331,7 +2373,6 @@ components:
           type: integer
         geometryName:
           type: string
-      type: object
     BatchSystemType:
       enum:
       - PBS
@@ -2395,7 +2436,6 @@ components:
           items:
             $ref: '#/components/schemas/Application'
           type: array
-      type: object
     BioModelChildSummary:
       example:
         simulationContextAnnotations:
@@ -2499,7 +2539,6 @@ components:
           items:
             $ref: '#/components/schemas/ApplicationInfo'
           type: array
-      type: object
     BioModelSummary:
       example:
         summary:
@@ -2568,7 +2607,7 @@ components:
           - authors
           - authors
           doi: doi
-          pubdate: 2022-03-10T00:00:00.000+00:00
+          pubdate: 2000-01-23
         - vcDocumentType: null
           theHashCode: 9
           citation: citation
@@ -2587,7 +2626,7 @@ components:
           - authors
           - authors
           doi: doi
-          pubdate: 2022-03-10T00:00:00.000+00:00
+          pubdate: 2000-01-23
         version:
           date: 2000-01-23T04:56:07.000+00:00
           owner:
@@ -2631,7 +2670,6 @@ components:
           type: array
         vCellSoftwareVersion:
           $ref: '#/components/schemas/VCellSoftwareVersion'
-      type: object
     BiomodelRef:
       example:
         bmKey: 5
@@ -2657,17 +2695,14 @@ components:
         privacy:
           format: int32
           type: integer
-      type: object
     CompositeCurve:
       allOf:
       - $ref: '#/components/schemas/Curve'
       properties:
         type:
           default: CompositeCurve
-          type: string
         fieldCurves:
           items: {}
-          type: array
         curveCount:
           format: int32
           type: integer
@@ -2681,7 +2716,6 @@ components:
           type: boolean
       required:
       - type
-      type: object
     ControlPointCurve:
       allOf:
       - $ref: '#/components/schemas/Curve'
@@ -2693,18 +2727,15 @@ components:
       properties:
         type:
           default: ControlPointCurve
-          type: string
         controlPoints:
           items:
             $ref: '#/components/schemas/Coordinate'
-          type: array
         controlPointCount:
           format: int32
           type: integer
         controlPointsVector:
           items:
             $ref: '#/components/schemas/Coordinate'
-          type: array
         maxControlPoints:
           format: int32
           type: integer
@@ -2717,7 +2748,6 @@ components:
           type: boolean
       required:
       - type
-      type: object
     Coordinate:
       example:
         x: 1.4658129805029452
@@ -2733,7 +2763,6 @@ components:
         z:
           format: double
           type: number
-      type: object
     Curve:
       discriminator:
         mapping:
@@ -2788,7 +2817,6 @@ components:
           type: boolean
       required:
       - type
-      type: object
     CurveSelectionInfo:
       example:
         fieldControlPoint: 4
@@ -2846,7 +2874,6 @@ components:
           type: boolean
         crossing:
           type: boolean
-      type: object
     DataIdentifier:
       example:
         variableType:
@@ -2881,9 +2908,7 @@ components:
           type: boolean
         visible:
           type: boolean
-      type: object
     Date:
-      example: 2022-03-10
       format: date
       type: string
     DetailedState:
@@ -2945,7 +2970,6 @@ components:
       properties:
         name:
           type: string
-      type: object
     ExportEvent:
       example:
         dataKey: dataKey
@@ -2997,7 +3021,6 @@ components:
           type: string
         humanReadableData:
           $ref: '#/components/schemas/HumanReadableExportData'
-      type: object
     ExportProgressType:
       enum:
       - EXPORT_START
@@ -3016,9 +3039,9 @@ components:
       type: string
     Extent:
       example:
-        x: 7.061401241503109
-        "y": 9.301444243932576
-        z: 3.616076749251911
+        x: 5.962133916683182
+        "y": 5.637376656633329
+        z: 2.3021358869347655
       properties:
         x:
           format: double
@@ -3035,7 +3058,6 @@ components:
           type: number
           xml:
             attribute: true
-      type: object
     ExternalDataIdentifier:
       example:
         owner:
@@ -3066,13 +3088,12 @@ components:
           type: boolean
         dataKey:
           type: string
-      type: object
     FieldData:
       example:
         extent:
-          x: 7.061401241503109
-          "y": 9.301444243932576
-          z: 3.616076749251911
+          x: 5.962133916683182
+          "y": 5.637376656633329
+          z: 2.3021358869347655
         annotation: annotation
         times:
         - 1.4658129805029452
@@ -3091,9 +3112,9 @@ components:
           "y": 5.637376656633329
           z: 2.3021358869347655
         isize:
-          x: 2
-          "y": 4
-          z: 7
+          x: 7
+          "y": 9
+          z: 3
         name: name
         varNames:
         - varNames
@@ -3112,6 +3133,7 @@ components:
           items:
             items:
               items:
+                format: int16
                 type: integer
               type: array
             type: array
@@ -3144,7 +3166,6 @@ components:
           type: string
         name:
           type: string
-      type: object
     FieldDataReference:
       example:
         annotation: annotation
@@ -3173,7 +3194,6 @@ components:
           items:
             $ref: '#/components/schemas/KeyValue'
           type: array
-      type: object
     FieldDataSavedResults:
       example:
         fieldDataName: fieldDataName
@@ -3183,13 +3203,12 @@ components:
           type: string
         fieldDataKey:
           type: string
-      type: object
     FieldDataShape:
       example:
         extent:
-          x: 7.061401241503109
-          "y": 9.301444243932576
-          z: 3.616076749251911
+          x: 5.962133916683182
+          "y": 5.637376656633329
+          z: 2.3021358869347655
         times:
         - 0.8008281904610115
         - 0.8008281904610115
@@ -3198,9 +3217,9 @@ components:
           "y": 5.637376656633329
           z: 2.3021358869347655
         isize:
-          x: 2
-          "y": 4
-          z: 7
+          x: 7
+          "y": 9
+          z: 3
         dataIdentifier:
         - variableType:
             defaultUnits: defaultUnits
@@ -3252,7 +3271,6 @@ components:
             format: double
             type: number
           type: array
-      type: object
     FunctionCategory:
       enum:
       - PREDEFINED
@@ -3263,9 +3281,9 @@ components:
     GIFImage:
       example:
         size:
-          x: 2
-          "y": 4
-          z: 7
+          x: 7
+          "y": 9
+          z: 3
         gifEncodedData: ""
       properties:
         gifEncodedData:
@@ -3273,7 +3291,6 @@ components:
           type: string
         size:
           $ref: '#/components/schemas/ISize'
-      type: object
     GeometryMode:
       enum:
       - GEOMETRY_SELECTIONS
@@ -3403,13 +3420,12 @@ components:
           type: integer
         geometryMode:
           $ref: '#/components/schemas/GeometryMode'
-      type: object
     GeometrySummary:
       example:
         extent:
-          x: 7.061401241503109
-          "y": 9.301444243932576
-          z: 3.616076749251911
+          x: 5.962133916683182
+          "y": 5.637376656633329
+          z: 2.3021358869347655
         origin:
           x: 5.962133916683182
           "y": 5.637376656633329
@@ -3462,7 +3478,6 @@ components:
           $ref: '#/components/schemas/Version'
         softwareVersion:
           $ref: '#/components/schemas/VCellSoftwareVersion'
-      type: object
     GroupAccess:
       discriminator:
         mapping:
@@ -3480,68 +3495,55 @@ components:
           type: string
       required:
       - groupid
-      type: object
     GroupAccessAll:
       allOf:
       - $ref: '#/components/schemas/GroupAccess'
       properties:
         type:
           default: GroupAccessAll
-          type: string
         description:
           type: string
       required:
       - type
-      type: object
     GroupAccessNone:
       allOf:
       - $ref: '#/components/schemas/GroupAccess'
       properties:
         type:
           default: GroupAccessNone
-          type: string
         description:
           type: string
       required:
       - type
-      type: object
     GroupAccessSome:
       allOf:
       - $ref: '#/components/schemas/GroupAccess'
       properties:
         type:
           default: GroupAccessSome
-          type: string
-        hash:
-          type: number
+        hash: {}
         groupMembers:
           items:
             $ref: '#/components/schemas/User'
-          type: array
         hiddenMembers:
           items:
             type: boolean
-          type: array
         description:
           type: string
         hiddenGroupMembers:
           items:
             $ref: '#/components/schemas/User'
-          type: array
         normalGroupMembers:
           items:
             $ref: '#/components/schemas/User'
-          type: array
       required:
       - type
-      type: object
     HelloWorldMessage:
       example:
         message: message
       properties:
         message:
           type: string
-      type: object
     HtcJobID:
       example:
         server: server
@@ -3555,7 +3557,6 @@ components:
           type: string
         batchSystemType:
           $ref: '#/components/schemas/BatchSystemType'
-      type: object
     HumanReadableExportData:
       example:
         numChannels: 5
@@ -3592,7 +3593,6 @@ components:
         subVolume:
           additionalProperties:
             type: string
-          type: object
         zSlices:
           format: int32
           type: integer
@@ -3602,12 +3602,11 @@ components:
         numChannels:
           format: int32
           type: integer
-      type: object
     ISize:
       example:
-        x: 2
-        "y": 4
-        z: 7
+        x: 7
+        "y": 9
+        z: 3
       properties:
         x:
           format: int32
@@ -3618,7 +3617,6 @@ components:
         z:
           format: int32
           type: integer
-      type: object
     Identity:
       example:
         credentials:
@@ -3646,9 +3644,7 @@ components:
           items:
             type: string
           type: array
-      type: object
     Instant:
-      example: 2022-03-10T16:15:50Z
       format: date-time
       type: string
     KeyValue:
@@ -3680,7 +3676,6 @@ components:
           items:
             type: string
           type: array
-      type: object
     MathModelSummary:
       example:
         modelInfo:
@@ -3746,7 +3741,7 @@ components:
           - authors
           - authors
           doi: doi
-          pubdate: 2022-03-10T00:00:00.000+00:00
+          pubdate: 2000-01-23
         - vcDocumentType: null
           theHashCode: 9
           citation: citation
@@ -3765,7 +3760,7 @@ components:
           - authors
           - authors
           doi: doi
-          pubdate: 2022-03-10T00:00:00.000+00:00
+          pubdate: 2000-01-23
       properties:
         version:
           $ref: '#/components/schemas/Version'
@@ -3781,7 +3776,6 @@ components:
           type: array
         annotatedFunctions:
           type: string
-      type: object
     MathType:
       enum:
       - RuleBased
@@ -3811,7 +3805,6 @@ components:
         versionFlag:
           format: int32
           type: integer
-      type: object
     ModelType:
       enum:
       - BIOMODEL
@@ -3988,12 +3981,10 @@ components:
         subVolume:
           additionalProperties:
             type: string
-          type: object
         exportableDataType:
           $ref: '#/components/schemas/ExportableDataType'
         datasetName:
           type: string
-      type: object
     Origin:
       example:
         x: 5.962133916683182
@@ -4015,10 +4006,9 @@ components:
           type: number
           xml:
             attribute: true
-      type: object
     Publication:
       example:
-        date: 2022-03-10T00:00:00.000+00:00
+        date: 2000-01-23
         wittid: 5
         year: 6
         citation: citation
@@ -4091,10 +4081,8 @@ components:
             $ref: '#/components/schemas/MathmodelRef'
           type: array
         date:
-          example: 2022-03-10
           format: date
           type: string
-      type: object
     PublicationInfo:
       example:
         vcDocumentType: null
@@ -4115,7 +4103,7 @@ components:
         - authors
         - authors
         doi: doi
-        pubdate: 2022-03-10T00:00:00.000+00:00
+        pubdate: 2000-01-23
       properties:
         publicationKey:
           type: string
@@ -4136,7 +4124,6 @@ components:
         url:
           type: string
         pubdate:
-          example: 2022-03-10
           format: date
           type: string
         vcDocumentType:
@@ -4146,7 +4133,6 @@ components:
         theHashCode:
           format: int32
           type: integer
-      type: object
     PublishModelsRequest:
       example:
         mathmodelKeys:
@@ -4166,7 +4152,6 @@ components:
             format: int64
             type: integer
           type: array
-      type: object
     SPECIAL_CLAIM:
       enum:
       - admins
@@ -4180,7 +4165,6 @@ components:
       properties:
         type:
           default: SampledCurve
-          type: string
         defaultNumSamples:
           format: int32
           type: integer
@@ -4195,10 +4179,8 @@ components:
           type: integer
         spatialLength:
           format: double
-          type: number
       required:
       - type
-      type: object
     SchedulerStatus:
       enum:
       - WAITING
@@ -4211,10 +4193,10 @@ components:
       type: string
     SimulationExecutionStatusRecord:
       example:
-        fieldLatestUpdateDate: 2022-03-10T16:15:50Z
+        fieldLatestUpdateDate: 2000-01-23T04:56:07.000+00:00
         fieldHasData: true
-        fieldStartDate: 2022-03-10T16:15:50Z
-        fieldEndDate: 2022-03-10T16:15:50Z
+        fieldStartDate: 2000-01-23T04:56:07.000+00:00
+        fieldEndDate: 2000-01-23T04:56:07.000+00:00
         fieldComputeHost: fieldComputeHost
         fieldHtcJobID:
           server: server
@@ -4222,15 +4204,12 @@ components:
           jobNumber: 0
       properties:
         fieldStartDate:
-          example: 2022-03-10T16:15:50Z
           format: date-time
           type: string
         fieldLatestUpdateDate:
-          example: 2022-03-10T16:15:50Z
           format: date-time
           type: string
         fieldEndDate:
-          example: 2022-03-10T16:15:50Z
           format: date-time
           type: string
         fieldComputeHost:
@@ -4239,7 +4218,6 @@ components:
           type: boolean
         fieldHtcJobID:
           $ref: '#/components/schemas/HtcJobID'
-      type: object
     SimulationJobStatusRecord:
       example:
         fieldSimulationMessage:
@@ -4250,13 +4228,13 @@ components:
           displayMessage: displayMessage
           detailedState: null
           message: message
-        fieldTimeDataStamp: 2022-03-10T16:15:50Z
+        fieldTimeDataStamp: 2000-01-23T04:56:07.000+00:00
         fieldServerID: fieldServerID
         fieldSimulationExecutionStatus:
-          fieldLatestUpdateDate: 2022-03-10T16:15:50Z
+          fieldLatestUpdateDate: 2000-01-23T04:56:07.000+00:00
           fieldHasData: true
-          fieldStartDate: 2022-03-10T16:15:50Z
-          fieldEndDate: 2022-03-10T16:15:50Z
+          fieldStartDate: 2000-01-23T04:56:07.000+00:00
+          fieldEndDate: 2000-01-23T04:56:07.000+00:00
           fieldComputeHost: fieldComputeHost
           fieldHtcJobID:
             server: server
@@ -4275,19 +4253,17 @@ components:
         fieldSimulationQueueEntryStatus:
           fieldQueuePriority: 5
           fieldQueueID: null
-          fieldQueueDate: 2022-03-10T16:15:50Z
-        fieldSubmitDate: 2022-03-10T16:15:50Z
+          fieldQueueDate: 2000-01-23T04:56:07.000+00:00
+        fieldSubmitDate: 2000-01-23T04:56:07.000+00:00
         fieldSchedulerStatus: null
         fieldJobIndex: 1
       properties:
         fieldTimeDataStamp:
-          example: 2022-03-10T16:15:50Z
           format: date-time
           type: string
         fieldVCSimID:
           $ref: '#/components/schemas/VCSimulationIdentifier'
         fieldSubmitDate:
-          example: 2022-03-10T16:15:50Z
           format: date-time
           type: string
         fieldSchedulerStatus:
@@ -4306,7 +4282,6 @@ components:
           $ref: '#/components/schemas/SimulationExecutionStatusRecord'
         fieldSimulationQueueEntryStatus:
           $ref: '#/components/schemas/SimulationQueueEntryStatusRecord'
-      type: object
     SimulationMessage:
       example:
         htcJobId:
@@ -4325,23 +4300,20 @@ components:
           $ref: '#/components/schemas/HtcJobID'
         displayMessage:
           type: string
-      type: object
     SimulationQueueEntryStatusRecord:
       example:
         fieldQueuePriority: 5
         fieldQueueID: null
-        fieldQueueDate: 2022-03-10T16:15:50Z
+        fieldQueueDate: 2000-01-23T04:56:07.000+00:00
       properties:
         fieldQueuePriority:
           format: int32
           type: integer
         fieldQueueDate:
-          example: 2022-03-10T16:15:50Z
           format: date-time
           type: string
         fieldQueueID:
           $ref: '#/components/schemas/SimulationQueueID'
-      type: object
     SimulationQueueID:
       enum:
       - QUEUE_ID_WAITING
@@ -4360,7 +4332,6 @@ components:
           type: string
         hasData:
           type: boolean
-      type: object
     SourceModel:
       example:
         modelID: modelID
@@ -4370,7 +4341,6 @@ components:
           type: string
         modelType:
           $ref: '#/components/schemas/ModelType'
-      type: object
     SpatialSelection:
       discriminator:
         mapping:
@@ -4449,68 +4419,52 @@ components:
           type: boolean
       required:
       - type
-      type: object
     SpatialSelectionContour:
       allOf:
       - $ref: '#/components/schemas/SpatialSelection'
       properties:
         type:
           default: Contour
-          type: string
         fieldSampledDataIndexes:
           items:
             format: int32
-            type: integer
-          type: array
         indexSamples:
           items:
             format: int32
-            type: integer
-          type: array
         sampledDataIndexes:
           items:
             format: int32
-            type: integer
-          type: array
       required:
       - type
-      type: object
     SpatialSelectionMembrane:
       allOf:
       - $ref: '#/components/schemas/SpatialSelection'
       properties:
         type:
           default: Membrane
-          type: string
         fieldSampledDataIndexes:
           items:
             format: int32
-            type: integer
-          type: array
         selectionSource:
           $ref: '#/components/schemas/SampledCurve'
       required:
       - type
-      type: object
     SpatialSelectionVolume:
       allOf:
       - $ref: '#/components/schemas/SpatialSelection'
       properties:
         type:
           default: Volume
-          type: string
         symmetric:
           type: boolean
       required:
       - type
-      type: object
     Spline:
       allOf:
       - $ref: '#/components/schemas/ControlPointCurve'
       properties:
         type:
           default: Spline
-          type: string
         defaultNumSamples:
           format: int32
           type: integer
@@ -4525,7 +4479,6 @@ components:
           type: integer
       required:
       - type
-      type: object
     StandardExportInfo:
       example:
         contextName: contextName
@@ -4706,7 +4659,6 @@ components:
           $ref: '#/components/schemas/TimeSpecs'
         variableSpecs:
           $ref: '#/components/schemas/VariableSpecs'
-      type: object
     Status:
       enum:
       - UNKNOWN
@@ -4733,13 +4685,13 @@ components:
             displayMessage: displayMessage
             detailedState: null
             message: message
-          fieldTimeDataStamp: 2022-03-10T16:15:50Z
+          fieldTimeDataStamp: 2000-01-23T04:56:07.000+00:00
           fieldServerID: fieldServerID
           fieldSimulationExecutionStatus:
-            fieldLatestUpdateDate: 2022-03-10T16:15:50Z
+            fieldLatestUpdateDate: 2000-01-23T04:56:07.000+00:00
             fieldHasData: true
-            fieldStartDate: 2022-03-10T16:15:50Z
-            fieldEndDate: 2022-03-10T16:15:50Z
+            fieldStartDate: 2000-01-23T04:56:07.000+00:00
+            fieldEndDate: 2000-01-23T04:56:07.000+00:00
             fieldComputeHost: fieldComputeHost
             fieldHtcJobID:
               server: server
@@ -4758,8 +4710,8 @@ components:
           fieldSimulationQueueEntryStatus:
             fieldQueuePriority: 5
             fieldQueueID: null
-            fieldQueueDate: 2022-03-10T16:15:50Z
-          fieldSubmitDate: 2022-03-10T16:15:50Z
+            fieldQueueDate: 2000-01-23T04:56:07.000+00:00
+          fieldSubmitDate: 2000-01-23T04:56:07.000+00:00
           fieldSchedulerStatus: null
           fieldJobIndex: 1
         progress: 5.637376656633329
@@ -4776,7 +4728,6 @@ components:
         timepoint:
           format: double
           type: number
-      type: object
     TimeMode:
       enum:
       - TIME_POINT
@@ -4804,7 +4755,6 @@ components:
           type: array
         mode:
           $ref: '#/components/schemas/TimeMode'
-      type: object
     User:
       example:
         mySpecials:
@@ -4821,7 +4771,6 @@ components:
           items:
             $ref: '#/components/schemas/SPECIAL_CLAIM'
           type: array
-      type: object
     UserIdentityJSONSafe:
       example:
         subject: subject
@@ -4840,7 +4789,6 @@ components:
           type: string
         insertDate:
           type: string
-      type: object
     UserLoginInfoForMapping:
       example:
         password: password
@@ -4850,7 +4798,6 @@ components:
           type: string
         password:
           type: string
-      type: object
     UserRegistrationInfo:
       example:
         emailNotification: true
@@ -4869,7 +4816,6 @@ components:
           type: string
         emailNotification:
           type: boolean
-      type: object
     VCDocumentType:
       enum:
       - BIOMODEL_DOC
@@ -4880,19 +4826,19 @@ components:
     VCImageSummary:
       example:
         extent:
-          x: 7.061401241503109
-          "y": 9.301444243932576
-          z: 3.616076749251911
+          x: 5.962133916683182
+          "y": 5.637376656633329
+          z: 2.3021358869347655
         preview:
           size:
-            x: 2
-            "y": 4
-            z: 7
+            x: 7
+            "y": 9
+            z: 3
           gifEncodedData: ""
         size:
-          x: 2
-          "y": 4
-          z: 7
+          x: 7
+          "y": 9
+          z: 3
         version:
           date: 2000-01-23T04:56:07.000+00:00
           owner:
@@ -4936,7 +4882,6 @@ components:
           $ref: '#/components/schemas/GIFImage'
         softwareVersion:
           $ref: '#/components/schemas/VCellSoftwareVersion'
-      type: object
     VCSimulationIdentifier:
       example:
         owner:
@@ -4954,14 +4899,12 @@ components:
           $ref: '#/components/schemas/User'
         id:
           type: string
-      type: object
     VCellHTTPError:
       properties:
         exceptionType:
           type: string
         message:
           type: string
-      type: object
     VCellSite:
       enum:
       - alpha
@@ -5004,7 +4947,6 @@ components:
           type: integer
         description:
           type: string
-      type: object
     VariableDomain:
       enum:
       - VARIABLEDOMAIN_POSTPROCESSING
@@ -5034,7 +4976,6 @@ components:
           type: array
         mode:
           $ref: '#/components/schemas/VariableMode'
-      type: object
     VariableType:
       example:
         defaultUnits: defaultUnits
@@ -5066,7 +5007,6 @@ components:
           type: string
         typeName:
           type: string
-      type: object
     Version:
       example:
         date: 2000-01-23T04:56:07.000+00:00
@@ -5110,7 +5050,6 @@ components:
           type: string
         owner:
           $ref: '#/components/schemas/User'
-      type: object
     VersionFlag:
       example:
         archived: true
@@ -5131,7 +5070,6 @@ components:
           type: boolean
         published:
           type: boolean
-      type: object
     advancedCreate_request:
       properties:
         file:
@@ -5156,7 +5094,6 @@ components:
           type: string
         origin:
           $ref: '#/components/schemas/Origin'
-      type: object
     analyzeFile_request:
       properties:
         file:
@@ -5164,7 +5101,6 @@ components:
           type: string
         fileName:
           type: string
-      type: object
     createFromFile_request:
       properties:
         file:
@@ -5172,7 +5108,6 @@ components:
           type: string
         fieldDataName:
           type: string
-      type: object
     createFromSimulation_request:
       properties:
         simKeyReference:
@@ -5182,7 +5117,6 @@ components:
           type: integer
         newFieldDataName:
           type: string
-      type: object
     getFVSolverInputFromSBML_request:
       properties:
         sbmlFile:
@@ -5196,7 +5130,6 @@ components:
           default: 0.1
           format: double
           type: number
-      type: object
     getFVSolverInputFromVCML_request:
       properties:
         vcmlFile:
@@ -5204,7 +5137,6 @@ components:
           type: string
         simulation_name:
           type: string
-      type: object
   securitySchemes:
     openId:
       description: Authentication

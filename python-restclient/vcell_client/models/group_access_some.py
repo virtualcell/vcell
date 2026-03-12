@@ -19,11 +19,10 @@ import re  # noqa: F401
 import json
 
 
-from typing import Any, ClassVar, Dict, List, Optional, Union
-from pydantic import StrictBool, StrictFloat, StrictInt, StrictStr
+from typing import Any, ClassVar, Dict, List, Optional
+from pydantic import StrictStr
 from pydantic import Field
 from vcell_client.models.group_access import GroupAccess
-from vcell_client.models.user import User
 try:
     from typing import Self
 except ImportError:
@@ -33,13 +32,13 @@ class GroupAccessSome(GroupAccess):
     """
     GroupAccessSome
     """ # noqa: E501
-    type: StrictStr
-    hash: Optional[Union[StrictFloat, StrictInt]] = None
-    group_members: Optional[List[User]] = Field(default=None, alias="groupMembers")
-    hidden_members: Optional[List[StrictBool]] = Field(default=None, alias="hiddenMembers")
+    type: Optional[Any]
+    hash: Optional[Any] = None
+    group_members: Optional[Any] = Field(default=None, alias="groupMembers")
+    hidden_members: Optional[Any] = Field(default=None, alias="hiddenMembers")
     description: Optional[StrictStr] = None
-    hidden_group_members: Optional[List[User]] = Field(default=None, alias="hiddenGroupMembers")
-    normal_group_members: Optional[List[User]] = Field(default=None, alias="normalGroupMembers")
+    hidden_group_members: Optional[Any] = Field(default=None, alias="hiddenGroupMembers")
+    normal_group_members: Optional[Any] = Field(default=None, alias="normalGroupMembers")
     __properties: ClassVar[List[str]] = ["groupid", "description"]
 
     model_config = {

@@ -51,7 +51,7 @@ import org.vcell.restclient.JSON;
 
 public class SpatialSelectionVolume extends SpatialSelection {
   public static final String JSON_PROPERTY_TYPE = "type";
-  private String type = "Volume";
+  private Object type = Volume;
 
   public static final String JSON_PROPERTY_SYMMETRIC = "symmetric";
   private Boolean symmetric;
@@ -59,7 +59,7 @@ public class SpatialSelectionVolume extends SpatialSelection {
   public SpatialSelectionVolume() { 
   }
 
-  public SpatialSelectionVolume type(String type) {
+  public SpatialSelectionVolume type(Object type) {
     this.type = type;
     return this;
   }
@@ -68,18 +68,18 @@ public class SpatialSelectionVolume extends SpatialSelection {
    * Get type
    * @return type
   **/
-  @javax.annotation.Nonnull
+  @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
 
-  public String getType() {
+  public Object getType() {
     return type;
   }
 
 
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setType(String type) {
+  public void setType(Object type) {
     this.type = type;
   }
 

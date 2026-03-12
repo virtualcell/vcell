@@ -20,7 +20,7 @@ import json
 
 
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import StrictBool, StrictInt, StrictStr
+from pydantic import StrictBool, StrictInt
 from pydantic import Field
 from vcell_client.models.coordinate import Coordinate
 from vcell_client.models.curve import Curve
@@ -33,8 +33,8 @@ class CompositeCurve(Curve):
     """
     CompositeCurve
     """ # noqa: E501
-    type: StrictStr
-    field_curves: Optional[List[Any]] = Field(default=None, alias="fieldCurves")
+    type: Optional[Any]
+    field_curves: Optional[Any] = Field(default=None, alias="fieldCurves")
     curve_count: Optional[StrictInt] = Field(default=None, alias="curveCount")
     default_num_samples: Optional[StrictInt] = Field(default=None, alias="defaultNumSamples")
     segment_count: Optional[StrictInt] = Field(default=None, alias="segmentCount")
@@ -83,6 +83,11 @@ class CompositeCurve(Curve):
         # override the default output from pydantic by calling `to_dict()` of ending_coordinate
         if self.ending_coordinate:
             _dict['endingCoordinate'] = self.ending_coordinate.to_dict()
+        # set to None if type (nullable) is None
+        # and model_fields_set contains the field
+        if self.type is None and "type" in self.model_fields_set:
+            _dict['type'] = None
+
         return _dict
 
     @classmethod
@@ -102,7 +107,7 @@ class CompositeCurve(Curve):
         _obj = cls.model_validate({
             "bClosed": obj.get("bClosed"),
             "description": obj.get("description"),
-            "type": obj.get("type") if obj.get("type") is not None else 'CompositeCurve',
+            "type": obj.get("type"),
             "beginningCoordinate": Coordinate.from_dict(obj.get("beginningCoordinate")) if obj.get("beginningCoordinate") is not None else None,
             "defaultNumSamples": obj.get("defaultNumSamples"),
             "endingCoordinate": Coordinate.from_dict(obj.get("endingCoordinate")) if obj.get("endingCoordinate") is not None else None,

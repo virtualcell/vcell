@@ -67,7 +67,7 @@ class VCImageResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> None:
-        """delete_image_vcml
+        """Delete VC Image
 
         Remove specific image VCML.
 
@@ -134,7 +134,7 @@ class VCImageResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[None]:
-        """delete_image_vcml
+        """Delete VC Image
 
         Remove specific image VCML.
 
@@ -201,7 +201,7 @@ class VCImageResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """delete_image_vcml
+        """Delete VC Image
 
         Remove specific image VCML.
 
@@ -325,7 +325,7 @@ class VCImageResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> List[VCImageSummary]:
-        """get_image_summaries
+        """Get Summaries
 
         Return Image summaries.
 
@@ -394,7 +394,7 @@ class VCImageResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[List[VCImageSummary]]:
-        """get_image_summaries
+        """Get Summaries
 
         Return Image summaries.
 
@@ -463,7 +463,7 @@ class VCImageResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """get_image_summaries
+        """Get Summaries
 
         Return Image summaries.
 
@@ -591,7 +591,7 @@ class VCImageResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> VCImageSummary:
-        """get_image_summary
+        """Get Summary
 
         All of the miscellaneous information about an Image (Extent, ISize, preview, etc...), but not the actual Image itself.
 
@@ -662,7 +662,7 @@ class VCImageResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[VCImageSummary]:
-        """get_image_summary
+        """Get Summary
 
         All of the miscellaneous information about an Image (Extent, ISize, preview, etc...), but not the actual Image itself.
 
@@ -733,7 +733,7 @@ class VCImageResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """get_image_summary
+        """Get Summary
 
         All of the miscellaneous information about an Image (Extent, ISize, preview, etc...), but not the actual Image itself.
 
@@ -861,7 +861,7 @@ class VCImageResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> str:
-        """get_image_vcml
+        """Get VC Image
 
         Get specific image VCML.
 
@@ -933,7 +933,7 @@ class VCImageResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[str]:
-        """get_image_vcml
+        """Get VC Image
 
         Get specific image VCML.
 
@@ -1005,7 +1005,7 @@ class VCImageResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """get_image_vcml
+        """Get VC Image
 
         Get specific image VCML.
 
@@ -1136,7 +1136,7 @@ class VCImageResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> str:
-        """save_image_vcml
+        """Save VC Image
 
         Save the VCML representation of an image.
 
@@ -1211,7 +1211,7 @@ class VCImageResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[str]:
-        """save_image_vcml
+        """Save VC Image
 
         Save the VCML representation of an image.
 
@@ -1286,7 +1286,7 @@ class VCImageResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """save_image_vcml
+        """Save VC Image
 
         Save the VCML representation of an image.
 

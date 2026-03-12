@@ -67,7 +67,7 @@ export interface FieldDataResourceServiceInterface {
      * 
      * @param sourceModel 
      */
-    copyModelsFieldData(sourceModel?: SourceModel, extraHttpRequestParams?: any): Observable<{ [key: string]: ExternalDataIdentifier; }>;
+    copyModelsFieldData(sourceModel: SourceModel, extraHttpRequestParams?: any): Observable<{ [key: string]: ExternalDataIdentifier; }>;
 
     /**
      * Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
@@ -104,6 +104,6 @@ export interface FieldDataResourceServiceInterface {
      * 
      * @param fieldData 
      */
-    save(fieldData?: FieldData, extraHttpRequestParams?: any): Observable<FieldDataSavedResults>;
+    save(fieldData: FieldData, extraHttpRequestParams?: any): Observable<FieldDataSavedResults>;
 
 }

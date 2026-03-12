@@ -7,12 +7,12 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**type** | **String** |  |  |
+|**type** | **Object** |  |  |
 |**defaultNumSamples** | **Integer** |  |  [optional] |
 |**maxControlPoints** | **Integer** |  |  [optional] |
 |**minControlPoints** | **Integer** |  |  [optional] |
 |**segmentCount** | **Integer** |  |  [optional] |
-|**spatialLength** | **Double** |  |  [optional] |
+|**spatialLength** | **Object** |  |  [optional] |
 
 
 

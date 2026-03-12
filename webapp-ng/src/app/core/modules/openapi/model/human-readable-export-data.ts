@@ -19,7 +19,7 @@ export interface HumanReadableExportData {
     applicationType?: string;
     serverSavedFileName?: string;
     nonSpatial?: boolean;
-    subVolume?: { [key: string]: string; };
+    subVolume?: { [key: string]: string; } | null;
     zSlices?: number;
     tSlices?: number;
     numChannels?: number;

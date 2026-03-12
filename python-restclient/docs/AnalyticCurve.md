@@ -4,7 +4,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | **str** |  | [default to 'AnalyticCurve']
+**type** | **object** |  | 
 **exp_x** | **str** |  | [optional] 
 **exp_y** | **str** |  | [optional] 
 **exp_z** | **str** |  | [optional] 

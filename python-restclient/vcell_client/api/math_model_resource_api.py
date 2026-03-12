@@ -67,7 +67,7 @@ class MathModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> None:
-        """delete_math_model
+        """Delete Math Model
 
         Remove specific Math Model.
 
@@ -134,7 +134,7 @@ class MathModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[None]:
-        """delete_math_model
+        """Delete Math Model
 
         Remove specific Math Model.
 
@@ -201,7 +201,7 @@ class MathModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """delete_math_model
+        """Delete Math Model
 
         Remove specific Math Model.
 
@@ -325,7 +325,7 @@ class MathModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> List[MathModelSummary]:
-        """get_summaries
+        """Get Math Model Summaries
 
         Return MathModel summaries.
 
@@ -394,7 +394,7 @@ class MathModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[List[MathModelSummary]]:
-        """get_summaries
+        """Get Math Model Summaries
 
         Return MathModel summaries.
 
@@ -463,7 +463,7 @@ class MathModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """get_summaries
+        """Get Math Model Summaries
 
         Return MathModel summaries.
 
@@ -591,7 +591,7 @@ class MathModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> MathModelSummary:
-        """get_summary
+        """Get Math Model Summary
 
         All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
 
@@ -662,7 +662,7 @@ class MathModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[MathModelSummary]:
-        """get_summary
+        """Get Math Model Summary
 
         All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
 
@@ -733,7 +733,7 @@ class MathModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """get_summary
+        """Get Math Model Summary
 
         All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
 
@@ -861,7 +861,7 @@ class MathModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> str:
-        """get_vcml
+        """Get Math Model
 
         Returns MathModel in VCML format.
 
@@ -932,7 +932,7 @@ class MathModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[str]:
-        """get_vcml
+        """Get Math Model
 
         Returns MathModel in VCML format.
 
@@ -1003,7 +1003,7 @@ class MathModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """get_vcml
+        """Get Math Model
 
         Returns MathModel in VCML format.
 
@@ -1134,7 +1134,7 @@ class MathModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> str:
-        """save_math_model
+        """Save
 
 
         :param body: (required)
@@ -1213,7 +1213,7 @@ class MathModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> ApiResponse[str]:
-        """save_math_model
+        """Save
 
 
         :param body: (required)
@@ -1292,7 +1292,7 @@ class MathModelResourceApi:
         _headers: Optional[Dict[StrictStr, Any]] = None,
         _host_index: Annotated[StrictInt, Field(ge=0, le=0)] = 0,
     ) -> RESTResponseType:
-        """save_math_model
+        """Save
 
 
         :param body: (required)

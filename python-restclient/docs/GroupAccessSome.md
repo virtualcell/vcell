@@ -4,13 +4,13 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | **str** |  | [default to 'GroupAccessSome']
-**hash** | **float** |  | [optional] 
-**group_members** | [**List[User]**](User.md) |  | [optional] 
-**hidden_members** | **List[bool]** |  | [optional] 
+**type** | **object** |  | 
+**hash** | **object** |  | [optional] 
+**group_members** | **object** |  | [optional] 
+**hidden_members** | **object** |  | [optional] 
 **description** | **str** |  | [optional] 
-**hidden_group_members** | [**List[User]**](User.md) |  | [optional] 
-**normal_group_members** | [**List[User]**](User.md) |  | [optional] 
+**hidden_group_members** | **object** |  | [optional] 
+**normal_group_members** | **object** |  | [optional] 
 
 ## Example
 

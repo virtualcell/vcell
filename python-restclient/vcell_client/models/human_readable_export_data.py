@@ -38,7 +38,7 @@ class HumanReadableExportData(BaseModel):
     application_type: Optional[StrictStr] = Field(default=None, alias="applicationType")
     server_saved_file_name: Optional[StrictStr] = Field(default=None, alias="serverSavedFileName")
     non_spatial: Optional[StrictBool] = Field(default=None, alias="nonSpatial")
-    sub_volume: Optional[Dict[str, StrictStr]] = Field(default=None, alias="subVolume")
+    sub_volume: Optional[Any] = Field(default=None, alias="subVolume")
     z_slices: Optional[StrictInt] = Field(default=None, alias="zSlices")
     t_slices: Optional[StrictInt] = Field(default=None, alias="tSlices")
     num_channels: Optional[StrictInt] = Field(default=None, alias="numChannels")
@@ -80,6 +80,11 @@ class HumanReadableExportData(BaseModel):
             },
             exclude_none=True,
         )
+        # set to None if sub_volume (nullable) is None
+        # and model_fields_set contains the field
+        if self.sub_volume is None and "sub_volume" in self.model_fields_set:
+            _dict['subVolume'] = None
+
         return _dict
 
     @classmethod
@@ -104,7 +109,6 @@ class HumanReadableExportData(BaseModel):
             "applicationType": obj.get("applicationType"),
             "serverSavedFileName": obj.get("serverSavedFileName"),
             "nonSpatial": obj.get("nonSpatial"),
-            "subVolume": obj.get("subVolume"),
             "zSlices": obj.get("zSlices"),
             "tSlices": obj.get("tSlices"),
             "numChannels": obj.get("numChannels")

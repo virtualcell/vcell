@@ -20,7 +20,7 @@ import json
 
 
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import StrictInt, StrictStr
+from pydantic import StrictInt
 from pydantic import Field
 from vcell_client.models.control_point_curve import ControlPointCurve
 from vcell_client.models.coordinate import Coordinate
@@ -33,7 +33,7 @@ class Spline(ControlPointCurve):
     """
     Spline
     """ # noqa: E501
-    type: StrictStr
+    type: Optional[Any]
     default_num_samples: Optional[StrictInt] = Field(default=None, alias="defaultNumSamples")
     max_control_points: Optional[StrictInt] = Field(default=None, alias="maxControlPoints")
     min_control_points: Optional[StrictInt] = Field(default=None, alias="minControlPoints")
@@ -82,6 +82,11 @@ class Spline(ControlPointCurve):
         # override the default output from pydantic by calling `to_dict()` of ending_coordinate
         if self.ending_coordinate:
             _dict['endingCoordinate'] = self.ending_coordinate.to_dict()
+        # set to None if type (nullable) is None
+        # and model_fields_set contains the field
+        if self.type is None and "type" in self.model_fields_set:
+            _dict['type'] = None
+
         return _dict
 
     @classmethod
@@ -101,7 +106,7 @@ class Spline(ControlPointCurve):
         _obj = cls.model_validate({
             "bClosed": obj.get("bClosed"),
             "description": obj.get("description"),
-            "type": obj.get("type") if obj.get("type") is not None else 'Spline',
+            "type": obj.get("type"),
             "beginningCoordinate": Coordinate.from_dict(obj.get("beginningCoordinate")) if obj.get("beginningCoordinate") is not None else None,
             "defaultNumSamples": obj.get("defaultNumSamples"),
             "endingCoordinate": Coordinate.from_dict(obj.get("endingCoordinate")) if obj.get("endingCoordinate") is not None else None,

@@ -27,14 +27,14 @@ export interface ExportResourceServiceInterface {
     configuration: Configuration;
 
     /**
-     * 
+     * Create N 5 Export
      * Create an N5 (ImageJ compatible) export. The request must contain the standard export information, exportable data type, dataset name, and sub-volume specifications.
      * @param n5ExportRequest 
      */
-    exportN5(n5ExportRequest?: N5ExportRequest, extraHttpRequestParams?: any): Observable<number>;
+    exportN5(n5ExportRequest: N5ExportRequest, extraHttpRequestParams?: any): Observable<number>;
 
     /**
-     * 
+     * Poll Export Status
      * Get the status of your export jobs past the timestamp (Unix epoch in seconds).
      * @param timestamp 
      */

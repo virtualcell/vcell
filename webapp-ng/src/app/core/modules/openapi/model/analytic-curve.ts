@@ -14,7 +14,7 @@ import { Curve } from './curve';
 
 
 export interface AnalyticCurve extends Curve { 
-    type: string;
+    type: any | null;
     expX?: string;
     expY?: string;
     expZ?: string;

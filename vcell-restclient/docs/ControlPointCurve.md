@@ -7,10 +7,10 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**type** | **String** |  |  |
-|**controlPoints** | [**List&lt;Coordinate&gt;**](Coordinate.md) |  |  [optional] |
+|**type** | **Object** |  |  |
+|**controlPoints** | **Object** |  |  [optional] |
 |**controlPointCount** | **Integer** |  |  [optional] |
-|**controlPointsVector** | [**List&lt;Coordinate&gt;**](Coordinate.md) |  |  [optional] |
+|**controlPointsVector** | **Object** |  |  [optional] |
 |**maxControlPoints** | **Integer** |  |  [optional] |
 |**minControlPoints** | **Integer** |  |  [optional] |
 |**controlPointAddable** | **Boolean** |  |  [optional] |

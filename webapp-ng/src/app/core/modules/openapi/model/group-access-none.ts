@@ -13,7 +13,7 @@ import { GroupAccess } from './group-access';
 
 
 export interface GroupAccessNone extends GroupAccess { 
-    type: string;
+    type: any | null;
     description?: string;
 }
 

@@ -28,11 +28,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import org.vcell.restclient.model.GroupAccess;
-import org.vcell.restclient.model.User;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -58,30 +55,30 @@ import org.vcell.restclient.JSON;
 
 public class GroupAccessSome extends GroupAccess {
   public static final String JSON_PROPERTY_TYPE = "type";
-  private String type = "GroupAccessSome";
+  private Object type = GroupAccessSome;
 
   public static final String JSON_PROPERTY_HASH = "hash";
-  private BigDecimal hash;
+  private Object hash = null;
 
   public static final String JSON_PROPERTY_GROUP_MEMBERS = "groupMembers";
-  private List<User> groupMembers;
+  private Object groupMembers = null;
 
   public static final String JSON_PROPERTY_HIDDEN_MEMBERS = "hiddenMembers";
-  private List<Boolean> hiddenMembers;
+  private Object hiddenMembers = null;
 
   public static final String JSON_PROPERTY_DESCRIPTION = "description";
   private String description;
 
   public static final String JSON_PROPERTY_HIDDEN_GROUP_MEMBERS = "hiddenGroupMembers";
-  private List<User> hiddenGroupMembers;
+  private Object hiddenGroupMembers = null;
 
   public static final String JSON_PROPERTY_NORMAL_GROUP_MEMBERS = "normalGroupMembers";
-  private List<User> normalGroupMembers;
+  private Object normalGroupMembers = null;
 
   public GroupAccessSome() { 
   }
 
-  public GroupAccessSome type(String type) {
+  public GroupAccessSome type(Object type) {
     this.type = type;
     return this;
   }
@@ -90,23 +87,23 @@ public class GroupAccessSome extends GroupAccess {
    * Get type
    * @return type
   **/
-  @javax.annotation.Nonnull
+  @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
 
-  public String getType() {
+  public Object getType() {
     return type;
   }
 
 
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setType(String type) {
+  public void setType(Object type) {
     this.type = type;
   }
 
 
-  public GroupAccessSome hash(BigDecimal hash) {
+  public GroupAccessSome hash(Object hash) {
     this.hash = hash;
     return this;
   }
@@ -119,28 +116,20 @@ public class GroupAccessSome extends GroupAccess {
   @JsonProperty(JSON_PROPERTY_HASH)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public BigDecimal getHash() {
+  public Object getHash() {
     return hash;
   }
 
 
   @JsonProperty(JSON_PROPERTY_HASH)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setHash(BigDecimal hash) {
+  public void setHash(Object hash) {
     this.hash = hash;
   }
 
 
-  public GroupAccessSome groupMembers(List<User> groupMembers) {
+  public GroupAccessSome groupMembers(Object groupMembers) {
     this.groupMembers = groupMembers;
-    return this;
-  }
-
-  public GroupAccessSome addGroupMembersItem(User groupMembersItem) {
-    if (this.groupMembers == null) {
-      this.groupMembers = new ArrayList<>();
-    }
-    this.groupMembers.add(groupMembersItem);
     return this;
   }
 
@@ -152,28 +141,20 @@ public class GroupAccessSome extends GroupAccess {
   @JsonProperty(JSON_PROPERTY_GROUP_MEMBERS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<User> getGroupMembers() {
+  public Object getGroupMembers() {
     return groupMembers;
   }
 
 
   @JsonProperty(JSON_PROPERTY_GROUP_MEMBERS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setGroupMembers(List<User> groupMembers) {
+  public void setGroupMembers(Object groupMembers) {
     this.groupMembers = groupMembers;
   }
 
 
-  public GroupAccessSome hiddenMembers(List<Boolean> hiddenMembers) {
+  public GroupAccessSome hiddenMembers(Object hiddenMembers) {
     this.hiddenMembers = hiddenMembers;
-    return this;
-  }
-
-  public GroupAccessSome addHiddenMembersItem(Boolean hiddenMembersItem) {
-    if (this.hiddenMembers == null) {
-      this.hiddenMembers = new ArrayList<>();
-    }
-    this.hiddenMembers.add(hiddenMembersItem);
     return this;
   }
 
@@ -185,14 +166,14 @@ public class GroupAccessSome extends GroupAccess {
   @JsonProperty(JSON_PROPERTY_HIDDEN_MEMBERS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<Boolean> getHiddenMembers() {
+  public Object getHiddenMembers() {
     return hiddenMembers;
   }
 
 
   @JsonProperty(JSON_PROPERTY_HIDDEN_MEMBERS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setHiddenMembers(List<Boolean> hiddenMembers) {
+  public void setHiddenMembers(Object hiddenMembers) {
     this.hiddenMembers = hiddenMembers;
   }
 
@@ -222,16 +203,8 @@ public class GroupAccessSome extends GroupAccess {
   }
 
 
-  public GroupAccessSome hiddenGroupMembers(List<User> hiddenGroupMembers) {
+  public GroupAccessSome hiddenGroupMembers(Object hiddenGroupMembers) {
     this.hiddenGroupMembers = hiddenGroupMembers;
-    return this;
-  }
-
-  public GroupAccessSome addHiddenGroupMembersItem(User hiddenGroupMembersItem) {
-    if (this.hiddenGroupMembers == null) {
-      this.hiddenGroupMembers = new ArrayList<>();
-    }
-    this.hiddenGroupMembers.add(hiddenGroupMembersItem);
     return this;
   }
 
@@ -243,28 +216,20 @@ public class GroupAccessSome extends GroupAccess {
   @JsonProperty(JSON_PROPERTY_HIDDEN_GROUP_MEMBERS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<User> getHiddenGroupMembers() {
+  public Object getHiddenGroupMembers() {
     return hiddenGroupMembers;
   }
 
 
   @JsonProperty(JSON_PROPERTY_HIDDEN_GROUP_MEMBERS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setHiddenGroupMembers(List<User> hiddenGroupMembers) {
+  public void setHiddenGroupMembers(Object hiddenGroupMembers) {
     this.hiddenGroupMembers = hiddenGroupMembers;
   }
 
 
-  public GroupAccessSome normalGroupMembers(List<User> normalGroupMembers) {
+  public GroupAccessSome normalGroupMembers(Object normalGroupMembers) {
     this.normalGroupMembers = normalGroupMembers;
-    return this;
-  }
-
-  public GroupAccessSome addNormalGroupMembersItem(User normalGroupMembersItem) {
-    if (this.normalGroupMembers == null) {
-      this.normalGroupMembers = new ArrayList<>();
-    }
-    this.normalGroupMembers.add(normalGroupMembersItem);
     return this;
   }
 
@@ -276,14 +241,14 @@ public class GroupAccessSome extends GroupAccess {
   @JsonProperty(JSON_PROPERTY_NORMAL_GROUP_MEMBERS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<User> getNormalGroupMembers() {
+  public Object getNormalGroupMembers() {
     return normalGroupMembers;
   }
 
 
   @JsonProperty(JSON_PROPERTY_NORMAL_GROUP_MEMBERS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setNormalGroupMembers(List<User> normalGroupMembers) {
+  public void setNormalGroupMembers(Object normalGroupMembers) {
     this.normalGroupMembers = normalGroupMembers;
   }
 

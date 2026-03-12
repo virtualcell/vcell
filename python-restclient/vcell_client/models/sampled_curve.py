@@ -19,8 +19,8 @@ import re  # noqa: F401
 import json
 
 
-from typing import Any, ClassVar, Dict, List, Optional, Union
-from pydantic import StrictFloat, StrictInt, StrictStr
+from typing import Any, ClassVar, Dict, List, Optional
+from pydantic import StrictInt
 from pydantic import Field
 from vcell_client.models.control_point_curve import ControlPointCurve
 from vcell_client.models.coordinate import Coordinate
@@ -33,12 +33,12 @@ class SampledCurve(ControlPointCurve):
     """
     SampledCurve
     """ # noqa: E501
-    type: StrictStr
+    type: Optional[Any]
     default_num_samples: Optional[StrictInt] = Field(default=None, alias="defaultNumSamples")
     max_control_points: Optional[StrictInt] = Field(default=None, alias="maxControlPoints")
     min_control_points: Optional[StrictInt] = Field(default=None, alias="minControlPoints")
     segment_count: Optional[StrictInt] = Field(default=None, alias="segmentCount")
-    spatial_length: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="spatialLength")
+    spatial_length: Optional[Any] = Field(default=None, alias="spatialLength")
     __properties: ClassVar[List[str]] = ["bClosed", "description", "type", "beginningCoordinate", "defaultNumSamples", "endingCoordinate", "numSamplePoints", "segmentCount", "spatialLength", "closed", "valid"]
 
     model_config = {
@@ -83,6 +83,16 @@ class SampledCurve(ControlPointCurve):
         # override the default output from pydantic by calling `to_dict()` of ending_coordinate
         if self.ending_coordinate:
             _dict['endingCoordinate'] = self.ending_coordinate.to_dict()
+        # set to None if type (nullable) is None
+        # and model_fields_set contains the field
+        if self.type is None and "type" in self.model_fields_set:
+            _dict['type'] = None
+
+        # set to None if spatial_length (nullable) is None
+        # and model_fields_set contains the field
+        if self.spatial_length is None and "spatial_length" in self.model_fields_set:
+            _dict['spatialLength'] = None
+
         return _dict
 
     @classmethod
@@ -102,7 +112,7 @@ class SampledCurve(ControlPointCurve):
         _obj = cls.model_validate({
             "bClosed": obj.get("bClosed"),
             "description": obj.get("description"),
-            "type": obj.get("type") if obj.get("type") is not None else 'SampledCurve',
+            "type": obj.get("type"),
             "beginningCoordinate": Coordinate.from_dict(obj.get("beginningCoordinate")) if obj.get("beginningCoordinate") is not None else None,
             "defaultNumSamples": obj.get("defaultNumSamples"),
             "endingCoordinate": Coordinate.from_dict(obj.get("endingCoordinate")) if obj.get("endingCoordinate") is not None else None,

@@ -14,10 +14,10 @@ import { Curve } from './curve';
 
 
 export interface ControlPointCurve extends Curve { 
-    type: string;
-    controlPoints?: Array<Coordinate>;
+    type: any | null;
+    controlPoints?: any | null;
     controlPointCount?: number;
-    controlPointsVector?: Array<Coordinate>;
+    controlPointsVector?: any | null;
     maxControlPoints?: number;
     minControlPoints?: number;
     controlPointAddable?: boolean;

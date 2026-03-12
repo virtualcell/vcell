@@ -34,7 +34,7 @@ class N5ExportRequest(BaseModel):
     N5ExportRequest
     """ # noqa: E501
     standard_export_information: Optional[StandardExportInfo] = Field(default=None, alias="standardExportInformation")
-    sub_volume: Optional[Dict[str, StrictStr]] = Field(default=None, alias="subVolume")
+    sub_volume: Optional[Any] = Field(default=None, alias="subVolume")
     exportable_data_type: Optional[ExportableDataType] = Field(default=None, alias="exportableDataType")
     dataset_name: Optional[StrictStr] = Field(default=None, alias="datasetName")
     __properties: ClassVar[List[str]] = ["standardExportInformation", "subVolume", "exportableDataType", "datasetName"]
@@ -78,6 +78,11 @@ class N5ExportRequest(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of standard_export_information
         if self.standard_export_information:
             _dict['standardExportInformation'] = self.standard_export_information.to_dict()
+        # set to None if sub_volume (nullable) is None
+        # and model_fields_set contains the field
+        if self.sub_volume is None and "sub_volume" in self.model_fields_set:
+            _dict['subVolume'] = None
+
         return _dict
 
     @classmethod
@@ -96,7 +101,6 @@ class N5ExportRequest(BaseModel):
 
         _obj = cls.model_validate({
             "standardExportInformation": StandardExportInfo.from_dict(obj.get("standardExportInformation")) if obj.get("standardExportInformation") is not None else None,
-            "subVolume": obj.get("subVolume"),
             "exportableDataType": obj.get("exportableDataType"),
             "datasetName": obj.get("datasetName")
         })

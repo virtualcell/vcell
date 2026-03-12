@@ -4,10 +4,10 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | **str** |  | [default to 'Contour']
-**field_sampled_data_indexes** | **List[int]** |  | [optional] 
-**index_samples** | **List[int]** |  | [optional] 
-**sampled_data_indexes** | **List[int]** |  | [optional] 
+**type** | **object** |  | 
+**field_sampled_data_indexes** | **object** |  | [optional] 
+**index_samples** | **object** |  | [optional] 
+**sampled_data_indexes** | **object** |  | [optional] 
 
 ## Example
 

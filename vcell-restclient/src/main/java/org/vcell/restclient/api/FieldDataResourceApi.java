@@ -333,7 +333,7 @@ public class FieldDataResourceApi {
   /**
    * Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
    * 
-   * @param sourceModel  (optional)
+   * @param sourceModel  (required)
    * @return Map&lt;String, ExternalDataIdentifier&gt;
    * @throws ApiException if fails to make API call
    */
@@ -345,7 +345,7 @@ public class FieldDataResourceApi {
   /**
    * Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
    * 
-   * @param sourceModel  (optional)
+   * @param sourceModel  (required)
    * @return ApiResponse&lt;Map&lt;String, ExternalDataIdentifier&gt;&gt;
    * @throws ApiException if fails to make API call
    */
@@ -379,6 +379,10 @@ public class FieldDataResourceApi {
   }
 
   private HttpRequest.Builder copyModelsFieldDataRequestBuilder(SourceModel sourceModel) throws ApiException {
+    // verify the required parameter 'sourceModel' is set
+    if (sourceModel == null) {
+      throw new ApiException(400, "Missing the required parameter 'sourceModel' when calling copyModelsFieldData");
+    }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -815,7 +819,7 @@ public class FieldDataResourceApi {
   /**
    * Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
    * 
-   * @param fieldData  (optional)
+   * @param fieldData  (required)
    * @return FieldDataSavedResults
    * @throws ApiException if fails to make API call
    */
@@ -827,7 +831,7 @@ public class FieldDataResourceApi {
   /**
    * Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
    * 
-   * @param fieldData  (optional)
+   * @param fieldData  (required)
    * @return ApiResponse&lt;FieldDataSavedResults&gt;
    * @throws ApiException if fails to make API call
    */
@@ -861,6 +865,10 @@ public class FieldDataResourceApi {
   }
 
   private HttpRequest.Builder saveRequestBuilder(FieldData fieldData) throws ApiException {
+    // verify the required parameter 'fieldData' is set
+    if (fieldData == null) {
+      throw new ApiException(400, "Missing the required parameter 'fieldData' when calling save");
+    }
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 

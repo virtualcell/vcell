@@ -4,8 +4,8 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | **str** |  | [default to 'Membrane']
-**field_sampled_data_indexes** | **List[int]** |  | [optional] 
+**type** | **object** |  | 
+**field_sampled_data_indexes** | **object** |  | [optional] 
 **selection_source** | [**SampledCurve**](SampledCurve.md) |  | [optional] 
 
 ## Example

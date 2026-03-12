@@ -96,8 +96,8 @@ Class | Method | HTTP request | Description
 *BioModelResourceApi* | [**get_bio_model_summary**](docs/BioModelResourceApi.md#get_bio_model_summary) | **GET** /api/v1/bioModel/{bioModelID}/summary | All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
 *BioModelResourceApi* | [**get_bio_model_vcml**](docs/BioModelResourceApi.md#get_bio_model_vcml) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
 *BioModelResourceApi* | [**save_bio_model**](docs/BioModelResourceApi.md#save_bio_model) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
-*ExportResourceApi* | [**export_n5**](docs/ExportResourceApi.md#export_n5) | **POST** /api/v1/export/N5 | 
-*ExportResourceApi* | [**export_status**](docs/ExportResourceApi.md#export_status) | **GET** /api/v1/export/status | 
+*ExportResourceApi* | [**export_n5**](docs/ExportResourceApi.md#export_n5) | **POST** /api/v1/export/N5 | Create N 5 Export
+*ExportResourceApi* | [**export_status**](docs/ExportResourceApi.md#export_status) | **GET** /api/v1/export/status | Poll Export Status
 *FieldDataResourceApi* | [**advanced_create**](docs/FieldDataResourceApi.md#advanced_create) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 *FieldDataResourceApi* | [**analyze_file**](docs/FieldDataResourceApi.md#analyze_file) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
 *FieldDataResourceApi* | [**copy_models_field_data**](docs/FieldDataResourceApi.md#copy_models_field_data) | **POST** /api/v1/fieldData/copyModelsFieldData | Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
@@ -107,17 +107,17 @@ Class | Method | HTTP request | Description
 *FieldDataResourceApi* | [**get_all_ids**](docs/FieldDataResourceApi.md#get_all_ids) | **GET** /api/v1/fieldData/IDs | Get all of the ids used to identify, and retrieve field data.
 *FieldDataResourceApi* | [**get_shape_from_id**](docs/FieldDataResourceApi.md#get_shape_from_id) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
 *FieldDataResourceApi* | [**save**](docs/FieldDataResourceApi.md#save) | **POST** /api/v1/fieldData/save | Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
-*GeometryResourceApi* | [**delete_geometry**](docs/GeometryResourceApi.md#delete_geometry) | **DELETE** /api/v1/geometry/{id} | 
-*GeometryResourceApi* | [**get_geometry_summaries**](docs/GeometryResourceApi.md#get_geometry_summaries) | **GET** /api/v1/geometry/summaries | 
-*GeometryResourceApi* | [**get_geometry_summary**](docs/GeometryResourceApi.md#get_geometry_summary) | **GET** /api/v1/geometry/summary/{id} | 
-*GeometryResourceApi* | [**get_geometry_vcml**](docs/GeometryResourceApi.md#get_geometry_vcml) | **GET** /api/v1/geometry/{id} | 
-*GeometryResourceApi* | [**save_geometry**](docs/GeometryResourceApi.md#save_geometry) | **POST** /api/v1/geometry | 
+*GeometryResourceApi* | [**delete_geometry**](docs/GeometryResourceApi.md#delete_geometry) | **DELETE** /api/v1/geometry/{id} | Delete Geometry
+*GeometryResourceApi* | [**get_geometry_summaries**](docs/GeometryResourceApi.md#get_geometry_summaries) | **GET** /api/v1/geometry/summaries | Get Geometry Summaries
+*GeometryResourceApi* | [**get_geometry_summary**](docs/GeometryResourceApi.md#get_geometry_summary) | **GET** /api/v1/geometry/summary/{id} | Get Geometry Summary
+*GeometryResourceApi* | [**get_geometry_vcml**](docs/GeometryResourceApi.md#get_geometry_vcml) | **GET** /api/v1/geometry/{id} | Get Geometry
+*GeometryResourceApi* | [**save_geometry**](docs/GeometryResourceApi.md#save_geometry) | **POST** /api/v1/geometry | Save
 *HelloWorldApi* | [**get_hello_world**](docs/HelloWorldApi.md#get_hello_world) | **GET** /api/v1/helloworld | Get hello world message.
-*MathModelResourceApi* | [**delete_math_model**](docs/MathModelResourceApi.md#delete_math_model) | **DELETE** /api/v1/mathModel/{id} | 
-*MathModelResourceApi* | [**get_summaries**](docs/MathModelResourceApi.md#get_summaries) | **GET** /api/v1/mathModel/summaries | 
-*MathModelResourceApi* | [**get_summary**](docs/MathModelResourceApi.md#get_summary) | **GET** /api/v1/mathModel/summary/{id} | 
-*MathModelResourceApi* | [**get_vcml**](docs/MathModelResourceApi.md#get_vcml) | **GET** /api/v1/mathModel/{id} | 
-*MathModelResourceApi* | [**save_math_model**](docs/MathModelResourceApi.md#save_math_model) | **POST** /api/v1/mathModel | 
+*MathModelResourceApi* | [**delete_math_model**](docs/MathModelResourceApi.md#delete_math_model) | **DELETE** /api/v1/mathModel/{id} | Delete Math Model
+*MathModelResourceApi* | [**get_summaries**](docs/MathModelResourceApi.md#get_summaries) | **GET** /api/v1/mathModel/summaries | Get Math Model Summaries
+*MathModelResourceApi* | [**get_summary**](docs/MathModelResourceApi.md#get_summary) | **GET** /api/v1/mathModel/summary/{id} | Get Math Model Summary
+*MathModelResourceApi* | [**get_vcml**](docs/MathModelResourceApi.md#get_vcml) | **GET** /api/v1/mathModel/{id} | Get Math Model
+*MathModelResourceApi* | [**save_math_model**](docs/MathModelResourceApi.md#save_math_model) | **POST** /api/v1/mathModel | Save
 *PublicationResourceApi* | [**create_publication**](docs/PublicationResourceApi.md#create_publication) | **POST** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**delete_publication**](docs/PublicationResourceApi.md#delete_publication) | **DELETE** /api/v1/publications/{id} | Delete publication
 *PublicationResourceApi* | [**get_publication_by_id**](docs/PublicationResourceApi.md#get_publication_by_id) | **GET** /api/v1/publications/{id} | Get publication by ID
@@ -139,11 +139,11 @@ Class | Method | HTTP request | Description
 *UsersResourceApi* | [**process_magic_link**](docs/UsersResourceApi.md#process_magic_link) | **GET** /api/v1/users/processMagicLink | Process the magic link and map the user
 *UsersResourceApi* | [**request_recovery_email**](docs/UsersResourceApi.md#request_recovery_email) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account.
 *UsersResourceApi* | [**unmap_user**](docs/UsersResourceApi.md#unmap_user) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
-*VCImageResourceApi* | [**delete_image_vcml**](docs/VCImageResourceApi.md#delete_image_vcml) | **DELETE** /api/v1/image/{id} | 
-*VCImageResourceApi* | [**get_image_summaries**](docs/VCImageResourceApi.md#get_image_summaries) | **GET** /api/v1/image/summaries | 
-*VCImageResourceApi* | [**get_image_summary**](docs/VCImageResourceApi.md#get_image_summary) | **GET** /api/v1/image/summary/{id} | 
-*VCImageResourceApi* | [**get_image_vcml**](docs/VCImageResourceApi.md#get_image_vcml) | **GET** /api/v1/image/{id} | 
-*VCImageResourceApi* | [**save_image_vcml**](docs/VCImageResourceApi.md#save_image_vcml) | **POST** /api/v1/image | 
+*VCImageResourceApi* | [**delete_image_vcml**](docs/VCImageResourceApi.md#delete_image_vcml) | **DELETE** /api/v1/image/{id} | Delete VC Image
+*VCImageResourceApi* | [**get_image_summaries**](docs/VCImageResourceApi.md#get_image_summaries) | **GET** /api/v1/image/summaries | Get Summaries
+*VCImageResourceApi* | [**get_image_summary**](docs/VCImageResourceApi.md#get_image_summary) | **GET** /api/v1/image/summary/{id} | Get Summary
+*VCImageResourceApi* | [**get_image_vcml**](docs/VCImageResourceApi.md#get_image_vcml) | **GET** /api/v1/image/{id} | Get VC Image
+*VCImageResourceApi* | [**save_image_vcml**](docs/VCImageResourceApi.md#save_image_vcml) | **POST** /api/v1/image | Save VC Image
 
 
 ## Documentation For Models

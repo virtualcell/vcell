@@ -27,9 +27,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import org.vcell.restclient.model.Coordinate;
 import org.vcell.restclient.model.Curve;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -62,16 +60,16 @@ import org.vcell.restclient.JSON;
 
 public class ControlPointCurve extends Curve {
   public static final String JSON_PROPERTY_TYPE = "type";
-  private String type = "ControlPointCurve";
+  private Object type = ControlPointCurve;
 
   public static final String JSON_PROPERTY_CONTROL_POINTS = "controlPoints";
-  private List<Coordinate> controlPoints;
+  private Object controlPoints = null;
 
   public static final String JSON_PROPERTY_CONTROL_POINT_COUNT = "controlPointCount";
   private Integer controlPointCount;
 
   public static final String JSON_PROPERTY_CONTROL_POINTS_VECTOR = "controlPointsVector";
-  private List<Coordinate> controlPointsVector;
+  private Object controlPointsVector = null;
 
   public static final String JSON_PROPERTY_MAX_CONTROL_POINTS = "maxControlPoints";
   private Integer maxControlPoints;
@@ -88,7 +86,7 @@ public class ControlPointCurve extends Curve {
   public ControlPointCurve() { 
   }
 
-  public ControlPointCurve type(String type) {
+  public ControlPointCurve type(Object type) {
     this.type = type;
     return this;
   }
@@ -97,32 +95,24 @@ public class ControlPointCurve extends Curve {
    * Get type
    * @return type
   **/
-  @javax.annotation.Nonnull
+  @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
 
-  public String getType() {
+  public Object getType() {
     return type;
   }
 
 
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setType(String type) {
+  public void setType(Object type) {
     this.type = type;
   }
 
 
-  public ControlPointCurve controlPoints(List<Coordinate> controlPoints) {
+  public ControlPointCurve controlPoints(Object controlPoints) {
     this.controlPoints = controlPoints;
-    return this;
-  }
-
-  public ControlPointCurve addControlPointsItem(Coordinate controlPointsItem) {
-    if (this.controlPoints == null) {
-      this.controlPoints = new ArrayList<>();
-    }
-    this.controlPoints.add(controlPointsItem);
     return this;
   }
 
@@ -134,14 +124,14 @@ public class ControlPointCurve extends Curve {
   @JsonProperty(JSON_PROPERTY_CONTROL_POINTS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<Coordinate> getControlPoints() {
+  public Object getControlPoints() {
     return controlPoints;
   }
 
 
   @JsonProperty(JSON_PROPERTY_CONTROL_POINTS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setControlPoints(List<Coordinate> controlPoints) {
+  public void setControlPoints(Object controlPoints) {
     this.controlPoints = controlPoints;
   }
 
@@ -171,16 +161,8 @@ public class ControlPointCurve extends Curve {
   }
 
 
-  public ControlPointCurve controlPointsVector(List<Coordinate> controlPointsVector) {
+  public ControlPointCurve controlPointsVector(Object controlPointsVector) {
     this.controlPointsVector = controlPointsVector;
-    return this;
-  }
-
-  public ControlPointCurve addControlPointsVectorItem(Coordinate controlPointsVectorItem) {
-    if (this.controlPointsVector == null) {
-      this.controlPointsVector = new ArrayList<>();
-    }
-    this.controlPointsVector.add(controlPointsVectorItem);
     return this;
   }
 
@@ -192,14 +174,14 @@ public class ControlPointCurve extends Curve {
   @JsonProperty(JSON_PROPERTY_CONTROL_POINTS_VECTOR)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<Coordinate> getControlPointsVector() {
+  public Object getControlPointsVector() {
     return controlPointsVector;
   }
 
 
   @JsonProperty(JSON_PROPERTY_CONTROL_POINTS_VECTOR)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setControlPointsVector(List<Coordinate> controlPointsVector) {
+  public void setControlPointsVector(Object controlPointsVector) {
     this.controlPointsVector = controlPointsVector;
   }
 

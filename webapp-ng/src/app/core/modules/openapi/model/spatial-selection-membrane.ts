@@ -16,8 +16,8 @@ import { CurveSelectionInfo } from './curve-selection-info';
 
 
 export interface SpatialSelectionMembrane extends SpatialSelection { 
-    type: string;
-    fieldSampledDataIndexes?: Array<number>;
+    type: any | null;
+    fieldSampledDataIndexes?: any | null;
     selectionSource?: SampledCurve;
 }
 

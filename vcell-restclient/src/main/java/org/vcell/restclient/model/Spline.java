@@ -53,7 +53,7 @@ import org.vcell.restclient.JSON;
 
 public class Spline extends ControlPointCurve {
   public static final String JSON_PROPERTY_TYPE = "type";
-  private String type = "Spline";
+  private Object type = Spline;
 
   public static final String JSON_PROPERTY_DEFAULT_NUM_SAMPLES = "defaultNumSamples";
   private Integer defaultNumSamples;
@@ -70,7 +70,7 @@ public class Spline extends ControlPointCurve {
   public Spline() { 
   }
 
-  public Spline type(String type) {
+  public Spline type(Object type) {
     this.type = type;
     return this;
   }
@@ -79,18 +79,18 @@ public class Spline extends ControlPointCurve {
    * Get type
    * @return type
   **/
-  @javax.annotation.Nonnull
+  @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
 
-  public String getType() {
+  public Object getType() {
     return type;
   }
 
 
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setType(String type) {
+  public void setType(Object type) {
     this.type = type;
   }
 
@@ -216,6 +216,12 @@ public class Spline extends ControlPointCurve {
   @Override
   public Spline numSamplePoints(Integer numSamplePoints) {
     this.setNumSamplePoints(numSamplePoints);
+    return this;
+  }
+
+  @Override
+  public Spline spatialLength(Double spatialLength) {
+    this.setSpatialLength(spatialLength);
     return this;
   }
 

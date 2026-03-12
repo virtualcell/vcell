@@ -4,8 +4,8 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | **str** |  | [default to 'CompositeCurve']
-**field_curves** | **List[object]** |  | [optional] 
+**type** | **object** |  | 
+**field_curves** | **object** |  | [optional] 
 **curve_count** | **int** |  | [optional] 
 **default_num_samples** | **int** |  | [optional] 
 **segment_count** | **int** |  | [optional] 

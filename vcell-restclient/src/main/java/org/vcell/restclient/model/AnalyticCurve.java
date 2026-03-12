@@ -57,7 +57,7 @@ import org.vcell.restclient.JSON;
 
 public class AnalyticCurve extends Curve {
   public static final String JSON_PROPERTY_TYPE = "type";
-  private String type = "AnalyticCurve";
+  private Object type = AnalyticCurve;
 
   public static final String JSON_PROPERTY_EXP_X = "expX";
   private String expX;
@@ -86,7 +86,7 @@ public class AnalyticCurve extends Curve {
   public AnalyticCurve() { 
   }
 
-  public AnalyticCurve type(String type) {
+  public AnalyticCurve type(Object type) {
     this.type = type;
     return this;
   }
@@ -95,18 +95,18 @@ public class AnalyticCurve extends Curve {
    * Get type
    * @return type
   **/
-  @javax.annotation.Nonnull
+  @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
 
-  public String getType() {
+  public Object getType() {
     return type;
   }
 
 
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.ALWAYS)
-  public void setType(String type) {
+  public void setType(Object type) {
     this.type = type;
   }
 

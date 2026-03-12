@@ -4,17 +4,17 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 
 Method | HTTP request | Description
 ------------- | ------------- | -------------
-[**delete_image_vcml**](VCImageResourceApi.md#delete_image_vcml) | **DELETE** /api/v1/image/{id} | 
-[**get_image_summaries**](VCImageResourceApi.md#get_image_summaries) | **GET** /api/v1/image/summaries | 
-[**get_image_summary**](VCImageResourceApi.md#get_image_summary) | **GET** /api/v1/image/summary/{id} | 
-[**get_image_vcml**](VCImageResourceApi.md#get_image_vcml) | **GET** /api/v1/image/{id} | 
-[**save_image_vcml**](VCImageResourceApi.md#save_image_vcml) | **POST** /api/v1/image | 
+[**delete_image_vcml**](VCImageResourceApi.md#delete_image_vcml) | **DELETE** /api/v1/image/{id} | Delete VC Image
+[**get_image_summaries**](VCImageResourceApi.md#get_image_summaries) | **GET** /api/v1/image/summaries | Get Summaries
+[**get_image_summary**](VCImageResourceApi.md#get_image_summary) | **GET** /api/v1/image/summary/{id} | Get Summary
+[**get_image_vcml**](VCImageResourceApi.md#get_image_vcml) | **GET** /api/v1/image/{id} | Get VC Image
+[**save_image_vcml**](VCImageResourceApi.md#save_image_vcml) | **POST** /api/v1/image | Save VC Image
 
 
 # **delete_image_vcml**
 > delete_image_vcml(id)
 
-
+Delete VC Image
 
 Remove specific image VCML.
 
@@ -41,6 +41,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     id = 'id_example' # str | 
 
     try:
+        # Delete VC Image
         api_instance.delete_image_vcml(id)
     except Exception as e:
         print("Exception when calling VCImageResourceApi->delete_image_vcml: %s\n" % e)
@@ -81,7 +82,7 @@ No authorization required
 # **get_image_summaries**
 > List[VCImageSummary] get_image_summaries(include_public_and_shared=include_public_and_shared)
 
-
+Get Summaries
 
 Return Image summaries.
 
@@ -109,6 +110,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     include_public_and_shared = True # bool | Include Image summaries that are public and shared with the requester. Default is true. (optional)
 
     try:
+        # Get Summaries
         api_response = api_instance.get_image_summaries(include_public_and_shared=include_public_and_shared)
         print("The response of VCImageResourceApi->get_image_summaries:\n")
         pprint(api_response)
@@ -148,7 +150,7 @@ No authorization required
 # **get_image_summary**
 > VCImageSummary get_image_summary(id)
 
-
+Get Summary
 
 All of the miscellaneous information about an Image (Extent, ISize, preview, etc...), but not the actual Image itself.
 
@@ -176,6 +178,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     id = 'id_example' # str | 
 
     try:
+        # Get Summary
         api_response = api_instance.get_image_summary(id)
         print("The response of VCImageResourceApi->get_image_summary:\n")
         pprint(api_response)
@@ -217,7 +220,7 @@ No authorization required
 # **get_image_vcml**
 > str get_image_vcml(id)
 
-
+Get VC Image
 
 Get specific image VCML.
 
@@ -244,6 +247,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     id = 'id_example' # str | 
 
     try:
+        # Get VC Image
         api_response = api_instance.get_image_vcml(id)
         print("The response of VCImageResourceApi->get_image_vcml:\n")
         pprint(api_response)
@@ -286,7 +290,7 @@ No authorization required
 # **save_image_vcml**
 > str save_image_vcml(body, name=name)
 
-
+Save VC Image
 
 Save the VCML representation of an image.
 
@@ -314,6 +318,7 @@ with vcell_client.ApiClient(configuration) as api_client:
     name = 'name_example' # str | Name to save new ImageVCML under. Leave blank if re-saving existing ImageVCML. (optional)
 
     try:
+        # Save VC Image
         api_response = api_instance.save_image_vcml(body, name=name)
         print("The response of VCImageResourceApi->save_image_vcml:\n")
         pprint(api_response)

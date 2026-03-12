@@ -104,10 +104,13 @@ export class PublicationResourceService implements PublicationResourceServiceInt
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public createPublication(publication?: Publication, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<number>;
-    public createPublication(publication?: Publication, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<number>>;
-    public createPublication(publication?: Publication, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<number>>;
-    public createPublication(publication?: Publication, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public createPublication(publication: Publication, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<number>;
+    public createPublication(publication: Publication, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<number>>;
+    public createPublication(publication: Publication, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<number>>;
+    public createPublication(publication: Publication, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+        if (publication === null || publication === undefined) {
+            throw new Error('Required parameter publication was null or undefined when calling createPublication.');
+        }
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -352,12 +355,15 @@ export class PublicationResourceService implements PublicationResourceServiceInt
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public publishBioModels(id: number, publishModelsRequest?: PublishModelsRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any>;
-    public publishBioModels(id: number, publishModelsRequest?: PublishModelsRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<any>>;
-    public publishBioModels(id: number, publishModelsRequest?: PublishModelsRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<any>>;
-    public publishBioModels(id: number, publishModelsRequest?: PublishModelsRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public publishBioModels(id: number, publishModelsRequest: PublishModelsRequest, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any>;
+    public publishBioModels(id: number, publishModelsRequest: PublishModelsRequest, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<any>>;
+    public publishBioModels(id: number, publishModelsRequest: PublishModelsRequest, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<any>>;
+    public publishBioModels(id: number, publishModelsRequest: PublishModelsRequest, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
         if (id === null || id === undefined) {
             throw new Error('Required parameter id was null or undefined when calling publishBioModels.');
+        }
+        if (publishModelsRequest === null || publishModelsRequest === undefined) {
+            throw new Error('Required parameter publishModelsRequest was null or undefined when calling publishBioModels.');
         }
 
         let localVarHeaders = this.defaultHeaders;
@@ -426,10 +432,13 @@ export class PublicationResourceService implements PublicationResourceServiceInt
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
      */
-    public updatePublication(publication?: Publication, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<Publication>;
-    public updatePublication(publication?: Publication, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<Publication>>;
-    public updatePublication(publication?: Publication, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<Publication>>;
-    public updatePublication(publication?: Publication, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+    public updatePublication(publication: Publication, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<Publication>;
+    public updatePublication(publication: Publication, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpResponse<Publication>>;
+    public updatePublication(publication: Publication, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<HttpEvent<Publication>>;
+    public updatePublication(publication: Publication, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext}): Observable<any> {
+        if (publication === null || publication === undefined) {
+            throw new Error('Required parameter publication was null or undefined when calling updatePublication.');
+        }
 
         let localVarHeaders = this.defaultHeaders;
 

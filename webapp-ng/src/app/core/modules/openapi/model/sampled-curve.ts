@@ -14,11 +14,11 @@ import { ControlPointCurve } from './control-point-curve';
 
 
 export interface SampledCurve extends ControlPointCurve { 
-    type: string;
+    type: any | null;
     defaultNumSamples?: number;
     maxControlPoints?: number;
     minControlPoints?: number;
     segmentCount?: number;
-    spatialLength?: number;
+    spatialLength?: any | null;
 }
 

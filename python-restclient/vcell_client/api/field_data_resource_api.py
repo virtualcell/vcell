@@ -26,10 +26,9 @@ except ImportError:
 
 from pydantic import StrictBytes, StrictFloat, StrictInt, StrictStr
 
-from typing import Dict, List, Optional, Union
+from typing import Any, List, Optional, Union
 
 from vcell_client.models.extent import Extent
-from vcell_client.models.external_data_identifier import ExternalDataIdentifier
 from vcell_client.models.field_data import FieldData
 from vcell_client.models.field_data_reference import FieldDataReference
 from vcell_client.models.field_data_saved_results import FieldDataSavedResults
@@ -749,7 +748,7 @@ class FieldDataResourceApi:
     @validate_call
     def copy_models_field_data(
         self,
-        source_model: Optional[SourceModel] = None,
+        source_model: SourceModel,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -766,7 +765,7 @@ class FieldDataResourceApi:
         """Copy all existing field data from a BioModel/MathModel that you have access to, but don't own.
 
 
-        :param source_model:
+        :param source_model: (required)
         :type source_model: SourceModel
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -800,6 +799,7 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Dict[str, ExternalDataIdentifier]",
+            '400': None,
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '422': "VCellHTTPError",
@@ -820,7 +820,7 @@ class FieldDataResourceApi:
     @validate_call
     def copy_models_field_data_with_http_info(
         self,
-        source_model: Optional[SourceModel] = None,
+        source_model: SourceModel,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -837,7 +837,7 @@ class FieldDataResourceApi:
         """Copy all existing field data from a BioModel/MathModel that you have access to, but don't own.
 
 
-        :param source_model:
+        :param source_model: (required)
         :type source_model: SourceModel
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -871,6 +871,7 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Dict[str, ExternalDataIdentifier]",
+            '400': None,
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '422': "VCellHTTPError",
@@ -891,7 +892,7 @@ class FieldDataResourceApi:
     @validate_call
     def copy_models_field_data_without_preload_content(
         self,
-        source_model: Optional[SourceModel] = None,
+        source_model: SourceModel,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -908,7 +909,7 @@ class FieldDataResourceApi:
         """Copy all existing field data from a BioModel/MathModel that you have access to, but don't own.
 
 
-        :param source_model:
+        :param source_model: (required)
         :type source_model: SourceModel
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -942,6 +943,7 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "Dict[str, ExternalDataIdentifier]",
+            '400': None,
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '422': "VCellHTTPError",
@@ -2411,7 +2413,7 @@ class FieldDataResourceApi:
     @validate_call
     def save(
         self,
-        field_data: Optional[FieldData] = None,
+        field_data: FieldData,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2428,7 +2430,7 @@ class FieldDataResourceApi:
         """Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 
 
-        :param field_data:
+        :param field_data: (required)
         :type field_data: FieldData
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -2462,6 +2464,7 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
+            '400': None,
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
@@ -2482,7 +2485,7 @@ class FieldDataResourceApi:
     @validate_call
     def save_with_http_info(
         self,
-        field_data: Optional[FieldData] = None,
+        field_data: FieldData,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2499,7 +2502,7 @@ class FieldDataResourceApi:
         """Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 
 
-        :param field_data:
+        :param field_data: (required)
         :type field_data: FieldData
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -2533,6 +2536,7 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
+            '400': None,
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
@@ -2553,7 +2557,7 @@ class FieldDataResourceApi:
     @validate_call
     def save_without_preload_content(
         self,
-        field_data: Optional[FieldData] = None,
+        field_data: FieldData,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -2570,7 +2574,7 @@ class FieldDataResourceApi:
         """Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 
 
-        :param field_data:
+        :param field_data: (required)
         :type field_data: FieldData
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
@@ -2604,6 +2608,7 @@ class FieldDataResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "FieldDataSavedResults",
+            '400': None,
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",

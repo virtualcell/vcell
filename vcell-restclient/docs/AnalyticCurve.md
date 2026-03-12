@@ -7,7 +7,7 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**type** | **String** |  |  |
+|**type** | **Object** |  |  |
 |**expX** | **String** |  |  [optional] |
 |**expY** | **String** |  |  [optional] |
 |**expZ** | **String** |  |  [optional] |

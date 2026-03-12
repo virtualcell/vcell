@@ -20,7 +20,7 @@ import json
 
 
 from typing import Any, ClassVar, Dict, List, Optional, Union
-from pydantic import StrictBool, StrictInt, StrictStr
+from pydantic import StrictBool, StrictInt
 from pydantic import Field
 from vcell_client.models.coordinate import Coordinate
 from vcell_client.models.curve import Curve
@@ -33,10 +33,10 @@ class ControlPointCurve(Curve):
     """
     ControlPointCurve
     """ # noqa: E501
-    type: StrictStr
-    control_points: Optional[List[Coordinate]] = Field(default=None, alias="controlPoints")
+    type: Optional[Any]
+    control_points: Optional[Any] = Field(default=None, alias="controlPoints")
     control_point_count: Optional[StrictInt] = Field(default=None, alias="controlPointCount")
-    control_points_vector: Optional[List[Coordinate]] = Field(default=None, alias="controlPointsVector")
+    control_points_vector: Optional[Any] = Field(default=None, alias="controlPointsVector")
     max_control_points: Optional[StrictInt] = Field(default=None, alias="maxControlPoints")
     min_control_points: Optional[StrictInt] = Field(default=None, alias="minControlPoints")
     control_point_addable: Optional[StrictBool] = Field(default=None, alias="controlPointAddable")
@@ -102,6 +102,11 @@ class ControlPointCurve(Curve):
         # override the default output from pydantic by calling `to_dict()` of ending_coordinate
         if self.ending_coordinate:
             _dict['endingCoordinate'] = self.ending_coordinate.to_dict()
+        # set to None if type (nullable) is None
+        # and model_fields_set contains the field
+        if self.type is None and "type" in self.model_fields_set:
+            _dict['type'] = None
+
         return _dict
 
     @classmethod

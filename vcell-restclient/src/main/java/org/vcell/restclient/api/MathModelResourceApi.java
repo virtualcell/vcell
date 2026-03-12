@@ -89,7 +89,7 @@ public class MathModelResourceApi {
   }
 
   /**
-   * 
+   * Delete Math Model
    * Remove specific Math Model.
    * @param id  (required)
    * @throws ApiException if fails to make API call
@@ -99,7 +99,7 @@ public class MathModelResourceApi {
   }
 
   /**
-   * 
+   * Delete Math Model
    * Remove specific Math Model.
    * @param id  (required)
    * @return ApiResponse&lt;Void&gt;
@@ -164,7 +164,7 @@ public class MathModelResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * 
+   * Get Math Model Summaries
    * Return MathModel summaries.
    * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. Default is true. (optional)
    * @return List&lt;MathModelSummary&gt;
@@ -176,7 +176,7 @@ public class MathModelResourceApi {
   }
 
   /**
-   * 
+   * Get Math Model Summaries
    * Return MathModel summaries.
    * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. Default is true. (optional)
    * @return ApiResponse&lt;List&lt;MathModelSummary&gt;&gt;
@@ -246,7 +246,7 @@ public class MathModelResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * 
+   * Get Math Model Summary
    * All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
    * @param id  (required)
    * @return MathModelSummary
@@ -258,7 +258,7 @@ public class MathModelResourceApi {
   }
 
   /**
-   * 
+   * Get Math Model Summary
    * All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
    * @param id  (required)
    * @return ApiResponse&lt;MathModelSummary&gt;
@@ -318,7 +318,7 @@ public class MathModelResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * 
+   * Get Math Model
    * Returns MathModel in VCML format.
    * @param id  (required)
    * @return String
@@ -330,7 +330,7 @@ public class MathModelResourceApi {
   }
 
   /**
-   * 
+   * Get Math Model
    * Returns MathModel in VCML format.
    * @param id  (required)
    * @return ApiResponse&lt;String&gt;
@@ -390,7 +390,7 @@ public class MathModelResourceApi {
     return localVarRequestBuilder;
   }
   /**
-   * 
+   * Save
    * 
    * @param body  (required)
    * @param newName Name to save new MathModel under. Leave blank if re-saving existing MathModel. (optional)
@@ -404,7 +404,7 @@ public class MathModelResourceApi {
   }
 
   /**
-   * 
+   * Save
    * 
    * @param body  (required)
    * @param newName Name to save new MathModel under. Leave blank if re-saving existing MathModel. (optional)

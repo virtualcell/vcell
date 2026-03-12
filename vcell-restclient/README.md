@@ -119,10 +119,10 @@ Class | Method | HTTP request | Description
 *BioModelResourceApi* | [**getBioModelVCMLWithHttpInfo**](docs/BioModelResourceApi.md#getBioModelVCMLWithHttpInfo) | **GET** /api/v1/bioModel/{bioModelID}/vcml_download | Get the BioModel in VCML format.
 *BioModelResourceApi* | [**saveBioModel**](docs/BioModelResourceApi.md#saveBioModel) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
 *BioModelResourceApi* | [**saveBioModelWithHttpInfo**](docs/BioModelResourceApi.md#saveBioModelWithHttpInfo) | **POST** /api/v1/bioModel | Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
-*ExportResourceApi* | [**exportN5**](docs/ExportResourceApi.md#exportN5) | **POST** /api/v1/export/N5 | 
-*ExportResourceApi* | [**exportN5WithHttpInfo**](docs/ExportResourceApi.md#exportN5WithHttpInfo) | **POST** /api/v1/export/N5 | 
-*ExportResourceApi* | [**exportStatus**](docs/ExportResourceApi.md#exportStatus) | **GET** /api/v1/export/status | 
-*ExportResourceApi* | [**exportStatusWithHttpInfo**](docs/ExportResourceApi.md#exportStatusWithHttpInfo) | **GET** /api/v1/export/status | 
+*ExportResourceApi* | [**exportN5**](docs/ExportResourceApi.md#exportN5) | **POST** /api/v1/export/N5 | Create N 5 Export
+*ExportResourceApi* | [**exportN5WithHttpInfo**](docs/ExportResourceApi.md#exportN5WithHttpInfo) | **POST** /api/v1/export/N5 | Create N 5 Export
+*ExportResourceApi* | [**exportStatus**](docs/ExportResourceApi.md#exportStatus) | **GET** /api/v1/export/status | Poll Export Status
+*ExportResourceApi* | [**exportStatusWithHttpInfo**](docs/ExportResourceApi.md#exportStatusWithHttpInfo) | **GET** /api/v1/export/status | Poll Export Status
 *FieldDataResourceApi* | [**advancedCreate**](docs/FieldDataResourceApi.md#advancedCreate) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 *FieldDataResourceApi* | [**advancedCreateWithHttpInfo**](docs/FieldDataResourceApi.md#advancedCreateWithHttpInfo) | **POST** /api/v1/fieldData/advancedCreate | Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
 *FieldDataResourceApi* | [**analyzeFile**](docs/FieldDataResourceApi.md#analyzeFile) | **POST** /api/v1/fieldData/analyzeFile | Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
@@ -141,28 +141,28 @@ Class | Method | HTTP request | Description
 *FieldDataResourceApi* | [**getShapeFromIDWithHttpInfo**](docs/FieldDataResourceApi.md#getShapeFromIDWithHttpInfo) | **GET** /api/v1/fieldData/shape/{fieldDataID} | Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
 *FieldDataResourceApi* | [**save**](docs/FieldDataResourceApi.md#save) | **POST** /api/v1/fieldData/save | Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
 *FieldDataResourceApi* | [**saveWithHttpInfo**](docs/FieldDataResourceApi.md#saveWithHttpInfo) | **POST** /api/v1/fieldData/save | Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
-*GeometryResourceApi* | [**deleteGeometry**](docs/GeometryResourceApi.md#deleteGeometry) | **DELETE** /api/v1/geometry/{id} | 
-*GeometryResourceApi* | [**deleteGeometryWithHttpInfo**](docs/GeometryResourceApi.md#deleteGeometryWithHttpInfo) | **DELETE** /api/v1/geometry/{id} | 
-*GeometryResourceApi* | [**getGeometrySummaries**](docs/GeometryResourceApi.md#getGeometrySummaries) | **GET** /api/v1/geometry/summaries | 
-*GeometryResourceApi* | [**getGeometrySummariesWithHttpInfo**](docs/GeometryResourceApi.md#getGeometrySummariesWithHttpInfo) | **GET** /api/v1/geometry/summaries | 
-*GeometryResourceApi* | [**getGeometrySummary**](docs/GeometryResourceApi.md#getGeometrySummary) | **GET** /api/v1/geometry/summary/{id} | 
-*GeometryResourceApi* | [**getGeometrySummaryWithHttpInfo**](docs/GeometryResourceApi.md#getGeometrySummaryWithHttpInfo) | **GET** /api/v1/geometry/summary/{id} | 
-*GeometryResourceApi* | [**getGeometryVCML**](docs/GeometryResourceApi.md#getGeometryVCML) | **GET** /api/v1/geometry/{id} | 
-*GeometryResourceApi* | [**getGeometryVCMLWithHttpInfo**](docs/GeometryResourceApi.md#getGeometryVCMLWithHttpInfo) | **GET** /api/v1/geometry/{id} | 
-*GeometryResourceApi* | [**saveGeometry**](docs/GeometryResourceApi.md#saveGeometry) | **POST** /api/v1/geometry | 
-*GeometryResourceApi* | [**saveGeometryWithHttpInfo**](docs/GeometryResourceApi.md#saveGeometryWithHttpInfo) | **POST** /api/v1/geometry | 
+*GeometryResourceApi* | [**deleteGeometry**](docs/GeometryResourceApi.md#deleteGeometry) | **DELETE** /api/v1/geometry/{id} | Delete Geometry
+*GeometryResourceApi* | [**deleteGeometryWithHttpInfo**](docs/GeometryResourceApi.md#deleteGeometryWithHttpInfo) | **DELETE** /api/v1/geometry/{id} | Delete Geometry
+*GeometryResourceApi* | [**getGeometrySummaries**](docs/GeometryResourceApi.md#getGeometrySummaries) | **GET** /api/v1/geometry/summaries | Get Geometry Summaries
+*GeometryResourceApi* | [**getGeometrySummariesWithHttpInfo**](docs/GeometryResourceApi.md#getGeometrySummariesWithHttpInfo) | **GET** /api/v1/geometry/summaries | Get Geometry Summaries
+*GeometryResourceApi* | [**getGeometrySummary**](docs/GeometryResourceApi.md#getGeometrySummary) | **GET** /api/v1/geometry/summary/{id} | Get Geometry Summary
+*GeometryResourceApi* | [**getGeometrySummaryWithHttpInfo**](docs/GeometryResourceApi.md#getGeometrySummaryWithHttpInfo) | **GET** /api/v1/geometry/summary/{id} | Get Geometry Summary
+*GeometryResourceApi* | [**getGeometryVCML**](docs/GeometryResourceApi.md#getGeometryVCML) | **GET** /api/v1/geometry/{id} | Get Geometry
+*GeometryResourceApi* | [**getGeometryVCMLWithHttpInfo**](docs/GeometryResourceApi.md#getGeometryVCMLWithHttpInfo) | **GET** /api/v1/geometry/{id} | Get Geometry
+*GeometryResourceApi* | [**saveGeometry**](docs/GeometryResourceApi.md#saveGeometry) | **POST** /api/v1/geometry | Save
+*GeometryResourceApi* | [**saveGeometryWithHttpInfo**](docs/GeometryResourceApi.md#saveGeometryWithHttpInfo) | **POST** /api/v1/geometry | Save
 *HelloWorldApi* | [**getHelloWorld**](docs/HelloWorldApi.md#getHelloWorld) | **GET** /api/v1/helloworld | Get hello world message.
 *HelloWorldApi* | [**getHelloWorldWithHttpInfo**](docs/HelloWorldApi.md#getHelloWorldWithHttpInfo) | **GET** /api/v1/helloworld | Get hello world message.
-*MathModelResourceApi* | [**deleteMathModel**](docs/MathModelResourceApi.md#deleteMathModel) | **DELETE** /api/v1/mathModel/{id} | 
-*MathModelResourceApi* | [**deleteMathModelWithHttpInfo**](docs/MathModelResourceApi.md#deleteMathModelWithHttpInfo) | **DELETE** /api/v1/mathModel/{id} | 
-*MathModelResourceApi* | [**getSummaries**](docs/MathModelResourceApi.md#getSummaries) | **GET** /api/v1/mathModel/summaries | 
-*MathModelResourceApi* | [**getSummariesWithHttpInfo**](docs/MathModelResourceApi.md#getSummariesWithHttpInfo) | **GET** /api/v1/mathModel/summaries | 
-*MathModelResourceApi* | [**getSummary**](docs/MathModelResourceApi.md#getSummary) | **GET** /api/v1/mathModel/summary/{id} | 
-*MathModelResourceApi* | [**getSummaryWithHttpInfo**](docs/MathModelResourceApi.md#getSummaryWithHttpInfo) | **GET** /api/v1/mathModel/summary/{id} | 
-*MathModelResourceApi* | [**getVCML**](docs/MathModelResourceApi.md#getVCML) | **GET** /api/v1/mathModel/{id} | 
-*MathModelResourceApi* | [**getVCMLWithHttpInfo**](docs/MathModelResourceApi.md#getVCMLWithHttpInfo) | **GET** /api/v1/mathModel/{id} | 
-*MathModelResourceApi* | [**saveMathModel**](docs/MathModelResourceApi.md#saveMathModel) | **POST** /api/v1/mathModel | 
-*MathModelResourceApi* | [**saveMathModelWithHttpInfo**](docs/MathModelResourceApi.md#saveMathModelWithHttpInfo) | **POST** /api/v1/mathModel | 
+*MathModelResourceApi* | [**deleteMathModel**](docs/MathModelResourceApi.md#deleteMathModel) | **DELETE** /api/v1/mathModel/{id} | Delete Math Model
+*MathModelResourceApi* | [**deleteMathModelWithHttpInfo**](docs/MathModelResourceApi.md#deleteMathModelWithHttpInfo) | **DELETE** /api/v1/mathModel/{id} | Delete Math Model
+*MathModelResourceApi* | [**getSummaries**](docs/MathModelResourceApi.md#getSummaries) | **GET** /api/v1/mathModel/summaries | Get Math Model Summaries
+*MathModelResourceApi* | [**getSummariesWithHttpInfo**](docs/MathModelResourceApi.md#getSummariesWithHttpInfo) | **GET** /api/v1/mathModel/summaries | Get Math Model Summaries
+*MathModelResourceApi* | [**getSummary**](docs/MathModelResourceApi.md#getSummary) | **GET** /api/v1/mathModel/summary/{id} | Get Math Model Summary
+*MathModelResourceApi* | [**getSummaryWithHttpInfo**](docs/MathModelResourceApi.md#getSummaryWithHttpInfo) | **GET** /api/v1/mathModel/summary/{id} | Get Math Model Summary
+*MathModelResourceApi* | [**getVCML**](docs/MathModelResourceApi.md#getVCML) | **GET** /api/v1/mathModel/{id} | Get Math Model
+*MathModelResourceApi* | [**getVCMLWithHttpInfo**](docs/MathModelResourceApi.md#getVCMLWithHttpInfo) | **GET** /api/v1/mathModel/{id} | Get Math Model
+*MathModelResourceApi* | [**saveMathModel**](docs/MathModelResourceApi.md#saveMathModel) | **POST** /api/v1/mathModel | Save
+*MathModelResourceApi* | [**saveMathModelWithHttpInfo**](docs/MathModelResourceApi.md#saveMathModelWithHttpInfo) | **POST** /api/v1/mathModel | Save
 *PublicationResourceApi* | [**createPublication**](docs/PublicationResourceApi.md#createPublication) | **POST** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**createPublicationWithHttpInfo**](docs/PublicationResourceApi.md#createPublicationWithHttpInfo) | **POST** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**deletePublication**](docs/PublicationResourceApi.md#deletePublication) | **DELETE** /api/v1/publications/{id} | Delete publication
@@ -205,16 +205,16 @@ Class | Method | HTTP request | Description
 *UsersResourceApi* | [**requestRecoveryEmailWithHttpInfo**](docs/UsersResourceApi.md#requestRecoveryEmailWithHttpInfo) | **POST** /api/v1/users/requestRecoveryEmail | request a recovery email to link a VCell account.
 *UsersResourceApi* | [**unmapUser**](docs/UsersResourceApi.md#unmapUser) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
 *UsersResourceApi* | [**unmapUserWithHttpInfo**](docs/UsersResourceApi.md#unmapUserWithHttpInfo) | **PUT** /api/v1/users/unmapUser/{userName} | remove vcell identity mapping
-*VcImageResourceApi* | [**deleteImageVCML**](docs/VcImageResourceApi.md#deleteImageVCML) | **DELETE** /api/v1/image/{id} | 
-*VcImageResourceApi* | [**deleteImageVCMLWithHttpInfo**](docs/VcImageResourceApi.md#deleteImageVCMLWithHttpInfo) | **DELETE** /api/v1/image/{id} | 
-*VcImageResourceApi* | [**getImageSummaries**](docs/VcImageResourceApi.md#getImageSummaries) | **GET** /api/v1/image/summaries | 
-*VcImageResourceApi* | [**getImageSummariesWithHttpInfo**](docs/VcImageResourceApi.md#getImageSummariesWithHttpInfo) | **GET** /api/v1/image/summaries | 
-*VcImageResourceApi* | [**getImageSummary**](docs/VcImageResourceApi.md#getImageSummary) | **GET** /api/v1/image/summary/{id} | 
-*VcImageResourceApi* | [**getImageSummaryWithHttpInfo**](docs/VcImageResourceApi.md#getImageSummaryWithHttpInfo) | **GET** /api/v1/image/summary/{id} | 
-*VcImageResourceApi* | [**getImageVCML**](docs/VcImageResourceApi.md#getImageVCML) | **GET** /api/v1/image/{id} | 
-*VcImageResourceApi* | [**getImageVCMLWithHttpInfo**](docs/VcImageResourceApi.md#getImageVCMLWithHttpInfo) | **GET** /api/v1/image/{id} | 
-*VcImageResourceApi* | [**saveImageVCML**](docs/VcImageResourceApi.md#saveImageVCML) | **POST** /api/v1/image | 
-*VcImageResourceApi* | [**saveImageVCMLWithHttpInfo**](docs/VcImageResourceApi.md#saveImageVCMLWithHttpInfo) | **POST** /api/v1/image | 
+*VcImageResourceApi* | [**deleteImageVCML**](docs/VcImageResourceApi.md#deleteImageVCML) | **DELETE** /api/v1/image/{id} | Delete VC Image
+*VcImageResourceApi* | [**deleteImageVCMLWithHttpInfo**](docs/VcImageResourceApi.md#deleteImageVCMLWithHttpInfo) | **DELETE** /api/v1/image/{id} | Delete VC Image
+*VcImageResourceApi* | [**getImageSummaries**](docs/VcImageResourceApi.md#getImageSummaries) | **GET** /api/v1/image/summaries | Get Summaries
+*VcImageResourceApi* | [**getImageSummariesWithHttpInfo**](docs/VcImageResourceApi.md#getImageSummariesWithHttpInfo) | **GET** /api/v1/image/summaries | Get Summaries
+*VcImageResourceApi* | [**getImageSummary**](docs/VcImageResourceApi.md#getImageSummary) | **GET** /api/v1/image/summary/{id} | Get Summary
+*VcImageResourceApi* | [**getImageSummaryWithHttpInfo**](docs/VcImageResourceApi.md#getImageSummaryWithHttpInfo) | **GET** /api/v1/image/summary/{id} | Get Summary
+*VcImageResourceApi* | [**getImageVCML**](docs/VcImageResourceApi.md#getImageVCML) | **GET** /api/v1/image/{id} | Get VC Image
+*VcImageResourceApi* | [**getImageVCMLWithHttpInfo**](docs/VcImageResourceApi.md#getImageVCMLWithHttpInfo) | **GET** /api/v1/image/{id} | Get VC Image
+*VcImageResourceApi* | [**saveImageVCML**](docs/VcImageResourceApi.md#saveImageVCML) | **POST** /api/v1/image | Save VC Image
+*VcImageResourceApi* | [**saveImageVCMLWithHttpInfo**](docs/VcImageResourceApi.md#saveImageVCMLWithHttpInfo) | **POST** /api/v1/image | Save VC Image
 
 
 ## Documentation for Models
