@@ -120,7 +120,7 @@
 		<httpcore.version>4.4.13</httpcore.version>
 		<itext.version>2.1.7</itext.version>
 		<quarkus-itext.version>3.0.5</quarkus-itext.version>
-		<quarkus-logging-json.version>3.1.0</quarkus-logging-json.version>
+		<quarkus-logging-json.version>3.4.1</quarkus-logging-json.version>
 		<jackson-annotations.version>2.15.2</jackson-annotations.version>
 		<jackson-core.version>2.15.2</jackson-core.version>
 		<jackson-databind.version>2.15.2</jackson-databind.version>
@@ -164,11 +164,11 @@
 		<n5.version>3.0.0</n5.version>
 		<netcdf.version>4.3.22</netcdf.version>
 		<nitrite.version>2.1.1</nitrite.version>
-		<ojdbc-bom.version>23.3.0.23.09</ojdbc-bom.version>
+		<ojdbc-bom.version>23.6.0.24.10</ojdbc-bom.version>
 		<ome-common.version>6.0.24</ome-common.version>
 		<opencsv.version>5.7.1</opencsv.version>
 		<picocli.version>4.6.3</picocli.version>
-		<postgresql.version>42.6.0</postgresql.version>
+		<postgresql.version>42.7.7</postgresql.version>
 		<restlet-version>2.4.3</restlet-version>
 		<scifio-bf-compat.version>4.1.0</scifio-bf-compat.version>
 		<sesame-model.version>2.9.0</sesame-model.version>

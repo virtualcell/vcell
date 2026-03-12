@@ -13,6 +13,7 @@ import org.vcell.util.document.GroupAccessNone;
 import org.vcell.util.document.GroupAccessSome;
 
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 
 @OpenApiFilter(OpenApiFilter.RunStage.BUILD)
@@ -52,7 +53,7 @@ public class ManuallyAddClasses_NOT_USED implements OASFilter {
                         primType = availableType;
                     }
                 }
-                schema.type(primType);
+                schema.type(List.of(primType));
                 addedSchema.ref(field.getType().getSimpleName());
                 schema.addProperty(field.getName(), addedSchema);
             } else if (field.getType().isArray()) {
@@ -61,12 +62,12 @@ public class ManuallyAddClasses_NOT_USED implements OASFilter {
                 // Don't want array brackets [], which is why a substring is used
                 itemSchema.ref(String.format("#/components/schemas/%s", fieldTypeName.substring(0, fieldTypeName.length() - 2)));
 
-                addedSchema.type(Schema.SchemaType.ARRAY);
+                addedSchema.type(List.of(Schema.SchemaType.ARRAY));
                 addedSchema.setItems(itemSchema);
                 String fieldName = field.getName();
                 schema.addProperty(fieldName, addedSchema);
             } else{
-                schema.type(Schema.SchemaType.OBJECT);
+                schema.type(List.of(Schema.SchemaType.OBJECT));
                 addedSchema.ref(String.format("#/components/schemas/%s", field.getType().getSimpleName()));
                 schema.addProperty(field.getName(), addedSchema);
             }
