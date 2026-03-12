@@ -135,8 +135,9 @@ public class PublicationApiTest {
         PublicationResourceApi pubAPI = new PublicationResourceApi(aliceAPIClient);
         BioModelResourceApi bioModelAPI = new BioModelResourceApi(aliceAPIClient);
 
-        // Create and save a biomodel
+        // Create and save a biomodel with unique name to avoid conflicts with other tests
         BioModel realBioModel = TestEndpointUtils.defaultBiomodel();
+        realBioModel.setName("PublishTest_" + System.currentTimeMillis());
         String bioModelXml = XmlHelper.bioModelToXML(realBioModel, true);
         BioModel savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelAPI.saveBioModel(bioModelXml, null, null)));
         String savedModelKey = savedBioModel.getVersion().getVersionKey().toString();

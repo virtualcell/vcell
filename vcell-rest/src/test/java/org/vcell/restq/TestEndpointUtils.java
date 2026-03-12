@@ -135,7 +135,7 @@ public class TestEndpointUtils {
         ref.setName(biomodel.getName());
         ref.setOwnerName(biomodel.getOwnerName());
         ref.setOwnerKey(biomodel.getOwnerKey() != null ? Long.parseLong(biomodel.getOwnerKey()) : -1);
-        ref.setVersionFlag(biomodel.getPrivacy());
+        ref.setVersionFlag(biomodel.getVersionFlag());
         return ref;
     }
 
