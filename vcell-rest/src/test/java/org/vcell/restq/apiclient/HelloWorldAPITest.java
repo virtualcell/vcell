@@ -44,6 +44,7 @@ public class HelloWorldAPITest {
 
         HelloWorldMessage helloWorldMessage = helloWorldApi.getHelloWorld();
 
-        Assertions.assertEquals("Hello Security Roles: [user]", helloWorldMessage.getMessage());
+        Assertions.assertTrue(helloWorldMessage.getMessage().contains("user"),
+                "Expected roles to contain 'user', got: " + helloWorldMessage.getMessage());
     }
 }

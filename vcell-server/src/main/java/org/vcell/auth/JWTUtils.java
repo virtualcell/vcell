@@ -294,7 +294,8 @@ public class JWTUtils {
     public static JwtClaims getClaimsFromUntrustedToken(String jwt) throws InvalidJwtException {
         JwtConsumer jwtConsumer = new JwtConsumerBuilder()
                 .setSkipSignatureVerification()
-                .setVerificationKey(rsaJsonWebKey.getPublicKey()) // wrong key
+                .setSkipAllValidators()
+                .setDisableRequireSignature()
                 .build();
         return jwtConsumer.processToClaims(jwt);
     }

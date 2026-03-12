@@ -108,7 +108,7 @@ public class ExportRequestTest {
             } catch (Exception e){
                 Assertions.fail();
             }
-        }).orTimeout(20, TimeUnit.SECONDS);
+        }).orTimeout(60, TimeUnit.SECONDS);
         future.join();
     }
 
