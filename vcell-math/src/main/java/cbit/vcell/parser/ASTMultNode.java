@@ -416,7 +416,7 @@ public String infixString(int lang){
 	 
 	buffer.append("(");
 	
-	if (bAllBoolean || bNoBoolean || (lang != SimpleNode.LANGUAGE_C && lang != SimpleNode.LANGUAGE_VISIT && lang != SimpleNode.LANGUAGE_PYTHON)) { // old way
+	if (bAllBoolean || bNoBoolean || (lang != SimpleNode.LANGUAGE_C && lang != SimpleNode.LANGUAGE_VISIT && lang != SimpleNode.LANGUAGE_PYTHON&& lang != SimpleNode.LANGUAGE_NUM_EXPR)) { // old way
 		for (int i=0;i<jjtGetNumChildren();i++){
 			if (jjtGetChild(i) instanceof ASTInvertTermNode){
 				// bAllBoolean must be false here!
@@ -430,9 +430,15 @@ public String infixString(int lang){
 				if (i>0){
 					if (lang == SimpleNode.LANGUAGE_MATLAB){
 						buffer.append(" .* ");
-					} else if(lang == SimpleNode.LANGUAGE_PYTHON && bAllBoolean){
-						buffer.append(" and ");
-					} else {
+					} else if (bAllBoolean){
+						if (lang == SimpleNode.LANGUAGE_PYTHON){
+							buffer.append(" and ");
+						} else if (lang == SimpleNode.LANGUAGE_NUM_EXPR) {
+							buffer.append(" & ");
+						} else {
+							buffer.append(" * ");
+						}
+					} else { // mixed or no-boolean, and not matlab
 						buffer.append(" * ");
 					}
 				}
@@ -447,6 +453,8 @@ public String infixString(int lang){
 				if (conditionBuffer.length() > 0) {
 					if (lang == SimpleNode.LANGUAGE_PYTHON){
 						conditionBuffer.append(" and ");
+					} else if (lang == SimpleNode.LANGUAGE_NUM_EXPR) {
+						conditionBuffer.append(" & ");
 					} else {
 						conditionBuffer.append(" && ");
 					}
@@ -476,6 +484,8 @@ public String infixString(int lang){
 			}
 		}else if (lang == SimpleNode.LANGUAGE_PYTHON) {
 			buffer.append("(").append(valueBuffer).append(") if (").append(conditionBuffer).append(") else 0.0");
+		}else if (lang == SimpleNode.LANGUAGE_NUM_EXPR) {
+			buffer.append("where(").append(conditionBuffer).append(", ").append(valueBuffer).append(", 0.0)");
 		}else{
 			buffer.append("((" + conditionBuffer + ") ? (" + valueBuffer + ") : 0.0)");
 		}
