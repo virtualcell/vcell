@@ -2215,6 +2215,9 @@ components:
         privacy:
           format: int32
           type: integer
+        versionFlag:
+          format: int32
+          type: integer
         groupUsers:
           type: array
           items:

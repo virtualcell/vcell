@@ -7,6 +7,7 @@ Name | Type | Description | Notes
 **bm_key** | **str** |  | [optional] 
 **name** | **str** |  | [optional] 
 **privacy** | **int** |  | [optional] 
+**version_flag** | **int** |  | [optional] 
 **group_users** | **List[str]** |  | [optional] 
 **saved_date** | **int** |  | [optional] 
 **annot** | **str** |  | [optional] 

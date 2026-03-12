@@ -2343,18 +2343,19 @@ components:
         branchID: branchID
         physModelKey: physModelKey
         bmKey: bmKey
-        ownerName: ownerName
-        name: name
+        versionFlag: 6
         privacy: 0
         groupUsers:
         - groupUsers
         - groupUsers
         annot: annot
+        ownerKey: ownerKey
+        ownerName: ownerName
+        name: name
         simulationKeyList:
         - null
         - null
-        ownerKey: ownerKey
-        savedDate: 6
+        savedDate: 1
         applications:
         - null
         - null
@@ -2364,6 +2365,9 @@ components:
         name:
           type: string
         privacy:
+          format: int32
+          type: integer
+        versionFlag:
           format: int32
           type: integer
         groupUsers:

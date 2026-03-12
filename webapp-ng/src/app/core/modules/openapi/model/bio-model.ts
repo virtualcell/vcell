@@ -15,6 +15,7 @@ export interface BioModel {
     bmKey?: string;
     name?: string;
     privacy?: number;
+    versionFlag?: number;
     groupUsers?: Array<string>;
     savedDate?: number;
     annot?: string;

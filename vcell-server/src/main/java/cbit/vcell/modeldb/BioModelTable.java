@@ -291,6 +291,7 @@ public BioModelRep getBioModelRep(User user, ResultSet rset, DatabaseSyntax dbSy
 	KeyValue bmKey = new KeyValue(rset.getBigDecimal(table.id.toString()));
 	String name = rset.getString(table.name.toString());
 	int privacy = rset.getInt(table.privacy.toString());
+	int versionFlag = rset.getInt(table.versionFlag.toString());
 	Date date = getDate(rset, dbSyntax, table.versionDate.toString());
 	String annot = rset.getString(table.versionAnnot.toString());
 	BigDecimal branchID = rset.getBigDecimal(table.versionBranchID.toString());
@@ -342,6 +343,6 @@ public BioModelRep getBioModelRep(User user, ResultSet rset, DatabaseSyntax dbSy
 	User[] groupUserArray = groupUsers.toArray(new User[0]);
 		
 	
-	return new BioModelRep(bmKey,name,privacy,groupUserArray,date,annot,branchID,modelRef,owner,simKeyArray,simContextKeyArray);
+	return new BioModelRep(bmKey,name,privacy,versionFlag,groupUserArray,date,annot,branchID,modelRef,owner,simKeyArray,simContextKeyArray);
 }
 }
