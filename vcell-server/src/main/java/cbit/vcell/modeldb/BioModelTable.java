@@ -185,6 +185,7 @@ public String getPreparedStatement_BioModelReps(String conditions, OrderBy order
 		    bmTable.id.getQualifiedColName()+", "+
 		    bmTable.name.getQualifiedColName()+", "+
 		    bmTable.privacy.getQualifiedColName()+", "+
+		    bmTable.versionFlag.getQualifiedColName()+", "+
 		    bmTable.versionDate.getQualifiedColName()+", "+
 		    bmTable.versionAnnot.getQualifiedColName()+", "+
 		    bmTable.versionBranchID.getQualifiedColName()+", "+
