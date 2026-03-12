@@ -333,6 +333,8 @@ public ClusterVisualizationPanel getClusterVisualizationPanel() {
 		try {
 			clusterVisualizationPanel = new ClusterVisualizationPanel(this);
 			clusterVisualizationPanel.setName("ClusterVisualizationPanel");
+			SpecialtyTableRenderer str = new RenderDataViewerDoubleWithTooltip();
+			clusterVisualizationPanel.setSpecialityRenderer(str);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}

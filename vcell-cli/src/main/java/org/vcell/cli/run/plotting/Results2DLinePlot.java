@@ -5,9 +5,15 @@ import cbit.vcell.publish.PDFWriter;
 import com.lowagie.text.DocumentException;
 
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.block.BlockBorder;
 import org.jfree.chart.labels.StandardXYItemLabelGenerator;
+import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYDifferenceRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -16,7 +22,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Paper;
@@ -319,4 +327,246 @@ public class Results2DLinePlot implements ResultsLinePlot {
         pageFormat.setOrientation(PageFormat.LANDSCAPE);
         return pageFormat;
     }
+
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+
+            Random rand = new Random();
+
+            int n = 50;
+            double xMin = 0.0;
+            double xMax = 7.0;
+            double dx = (xMax - xMin) / (n - 1);
+
+            double xLower = 0.0;    // these are the limits for the x values of the axis
+            double xUpper = 7.5;
+
+            Color sinColor = new Color(31, 119, 180);   // blue
+            Color tanColor = new Color(255, 127, 14);   // orange
+
+            // --- SIN series ---
+            XYSeries sinMin = new XYSeries("sin-min");
+            XYSeries sinMax = new XYSeries("sin-max");
+            XYSeries sinMain = new XYSeries("sin");
+            XYSeries sinStd = new XYSeries("sin-std");
+
+            for (int i = 0; i < n; i++) {
+                double x = xMin + i * dx;
+                double y = Math.sin(x);
+
+                double delta = 0.2 + rand.nextDouble() * 0.2;
+                double yMin = y - delta;
+                double yMax = y + delta;
+
+                double std = 0.08 + rand.nextDouble() * 0.08;
+
+                sinMin.add(x, yMin);
+                sinMax.add(x, yMax);
+                sinMain.add(x, y);
+                sinStd.add(x, y + std);
+            }
+
+            // --- TAN series ---
+            XYSeries tanMin = new XYSeries("tan-min");
+            XYSeries tanMax = new XYSeries("tan-max");
+            XYSeries tanMain = new XYSeries("tan");
+            XYSeries tanStd = new XYSeries("tan-std");
+
+            for (int i = 0; i < n; i++) {
+                double x = xMin + i * dx;
+                double y = Math.tan(x);
+
+                if (y > 3) y = 3;
+                if (y < -3) y = -3;
+
+                double delta = 0.3 + rand.nextDouble() * 0.3;
+                double yMin = y - delta;
+                double yMax = y + delta;
+
+                double std = 0.2 + rand.nextDouble() * 0.2;
+
+                tanMin.add(x, yMin);
+                tanMax.add(x, yMax);
+                tanMain.add(x, y);
+                tanStd.add(x, y + std);
+            }
+
+            double globalMin = Double.POSITIVE_INFINITY;
+            double globalMax = Double.NEGATIVE_INFINITY;
+            for (int i = 0; i < n; i++) {
+                globalMin = Math.min(globalMin, sinMin.getY(i).doubleValue());
+                globalMin = Math.min(globalMin, tanMin.getY(i).doubleValue());
+                globalMax = Math.max(globalMax, sinMax.getY(i).doubleValue());
+                globalMax = Math.max(globalMax, tanMax.getY(i).doubleValue());
+            }
+            // Add padding
+            double pad = 0.1 * (globalMax - globalMin);
+            globalMin -= pad;
+            globalMax += pad;
+
+            // --- Datasets ---
+
+            // Dataset 0: sin min/max (for band)
+            XYSeriesCollection sinMinMaxDataset = new XYSeriesCollection();
+            sinMinMaxDataset.addSeries(sinMax); // upper
+            sinMinMaxDataset.addSeries(sinMin); // lower
+
+            // Dataset 1: tan min/max (for band)
+            XYSeriesCollection tanMinMaxDataset = new XYSeriesCollection();
+            tanMinMaxDataset.addSeries(tanMax); // upper
+            tanMinMaxDataset.addSeries(tanMin); // lower
+
+            // Dataset 2: main curves
+            XYSeriesCollection mainDataset = new XYSeriesCollection();
+            mainDataset.addSeries(sinMain);
+            mainDataset.addSeries(tanMain);
+
+            // Dataset 3: std diamonds
+            XYSeriesCollection stdDataset = new XYSeriesCollection();
+            stdDataset.addSeries(sinStd);
+            stdDataset.addSeries(tanStd);
+
+            // --- Chart skeleton ---
+            JFreeChart chart = ChartFactory.createXYLineChart(
+                    "Min/Max Bands + STD Demo",
+                    "x",
+                    "y",
+                    null,
+                    PlotOrientation.VERTICAL,
+                    true,
+                    true,
+                    false
+            );
+            XYPlot plot = chart.getXYPlot();
+
+            // Transparent backgrounds
+            chart.setBackgroundPaint(Color.WHITE);
+            plot.setBackgroundPaint(Color.WHITE);
+            plot.setOutlinePaint(null);
+            plot.setDomainGridlinePaint(new Color(180, 180, 180));  // very light
+            plot.setRangeGridlinePaint(new Color(180, 180, 180));
+
+            plot.getDomainAxis().setAutoRange(false);   // lock the axis so that they never resize
+            plot.getRangeAxis().setAutoRange(false);
+            plot.getDomainAxis().setRange(xLower, xUpper);
+            plot.getRangeAxis().setRange(globalMin, globalMax);
+
+            // --- Legend to the right
+            chart.getLegend().setPosition(RectangleEdge.RIGHT);
+            chart.getLegend().setBackgroundPaint(Color.WHITE);
+//            chart.getLegend().setFrame(BlockBorder.NONE);
+
+            // --- Renderer 0: sin band ---
+            XYDifferenceRenderer sinBandRenderer = new XYDifferenceRenderer();
+            Color sinBandColor = new Color(sinColor.getRed(), sinColor.getGreen(), sinColor.getBlue(), 40);
+            sinBandRenderer.setPositivePaint(sinBandColor);
+            sinBandRenderer.setNegativePaint(sinBandColor);
+            sinBandRenderer.setSeriesStroke(0, new BasicStroke(0f));
+            sinBandRenderer.setSeriesStroke(1, new BasicStroke(0f));
+//            sinBandRenderer.setOutlinePaint(null);
+            sinBandRenderer.setSeriesVisibleInLegend(0, false);     // hide sin-max legend entries
+            sinBandRenderer.setSeriesVisibleInLegend(1, false);
+
+            plot.setDataset(0, sinMinMaxDataset);
+            plot.setRenderer(0, sinBandRenderer);
+
+            // --- Renderer 1: tan band ---
+            XYDifferenceRenderer tanBandRenderer = new XYDifferenceRenderer();
+            Color tanBandColor = new Color(tanColor.getRed(), tanColor.getGreen(), tanColor.getBlue(), 40);
+            tanBandRenderer.setPositivePaint(tanBandColor);
+            tanBandRenderer.setNegativePaint(tanBandColor);
+            tanBandRenderer.setSeriesStroke(0, new BasicStroke(0f));
+            tanBandRenderer.setSeriesStroke(1, new BasicStroke(0f));
+//            tanBandRenderer.setOutlinePaint(null);
+            tanBandRenderer.setSeriesVisibleInLegend(0, false);
+            tanBandRenderer.setSeriesVisibleInLegend(1, false);
+
+            plot.setDataset(1, tanMinMaxDataset);
+            plot.setRenderer(1, tanBandRenderer);
+
+            // --- Renderer 2: main curves ---
+            XYLineAndShapeRenderer lineRenderer = new XYLineAndShapeRenderer(true, false);
+            lineRenderer.setSeriesPaint(0, sinColor);
+            lineRenderer.setSeriesPaint(1, tanColor);
+            lineRenderer.setSeriesStroke(0, new BasicStroke(2f));
+            lineRenderer.setSeriesStroke(1, new BasicStroke(2f));
+            lineRenderer.setSeriesVisibleInLegend(0, true);       // keep the main curves visible in Legend
+            lineRenderer.setSeriesVisibleInLegend(1, true);
+
+            plot.setDataset(2, mainDataset);
+            plot.setRenderer(2, lineRenderer);
+
+            // --- Renderer 3: STD diamonds ---
+            XYLineAndShapeRenderer stdRenderer = new XYLineAndShapeRenderer(false, true);
+            Shape diamond = createDiamondShape(4);
+
+            stdRenderer.setSeriesShape(0, diamond);
+            stdRenderer.setSeriesShape(1, diamond);
+            stdRenderer.setSeriesPaint(0, sinColor.darker());
+            stdRenderer.setSeriesPaint(1, tanColor.darker());
+            stdRenderer.setSeriesVisibleInLegend(0, false);
+            stdRenderer.setSeriesVisibleInLegend(1, false);
+
+            plot.setDataset(3, stdDataset);
+            plot.setRenderer(3, stdRenderer);
+
+            // --- ChartPanel ---
+            ChartPanel panel = new ChartPanel(chart);
+            panel.setOpaque(true);      // must be opaque for white to show
+            panel.setBackground(Color.WHITE);
+
+            // --- checkboxes to control display
+            JPanel controls = new JPanel();
+            JCheckBox cbAvg = new JCheckBox("Averages", true);
+            JCheckBox cbMinMax = new JCheckBox("Min-Max", false);
+            JCheckBox cbStd = new JCheckBox("STD", false);
+            controls.add(cbAvg);
+            controls.add(cbMinMax);
+            controls.add(cbStd);
+
+            // Averages (dataset 2)
+            cbAvg.addActionListener(e -> {
+                boolean on = cbAvg.isSelected();
+                plot.getRenderer(2).setSeriesVisible(0, on);
+                plot.getRenderer(2).setSeriesVisible(1, on);
+                lineRenderer.setSeriesVisibleInLegend(0, true);     // force legend visible
+                lineRenderer.setSeriesVisibleInLegend(1, true);
+            });
+
+            // Min-Max (datasets 0 and 1)
+            cbMinMax.addActionListener(e -> {
+                boolean on = cbMinMax.isSelected();
+                plot.setRenderer(0, on ? sinBandRenderer : null);
+                plot.setRenderer(1, on ? tanBandRenderer : null);
+            });
+
+            // STD (dataset 3)
+            cbStd.addActionListener(e -> {
+                boolean on = cbStd.isSelected();
+                stdRenderer.setSeriesVisible(0, on);
+                stdRenderer.setSeriesVisible(1, on);
+            });
+
+            // --- Frame ---
+            JFrame frame = new JFrame("JFreeChart Min/Max/STD Demo");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.add(panel, BorderLayout.CENTER);
+            frame.add(controls, BorderLayout.SOUTH);
+            frame.setSize(900, 600);
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+        });
+    }
+
+    private static Shape createDiamondShape(int size) {
+        Path2D.Double p = new Path2D.Double();
+        p.moveTo(0, -size);
+        p.lineTo(size, 0);
+        p.lineTo(0, size);
+        p.lineTo(-size, 0);
+        p.closePath();
+        return p;
+    }
+
 }

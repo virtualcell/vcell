@@ -1,5 +1,19 @@
 package cbit.vcell.solver.ode.gui;
 
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.block.BlockBorder;
+import org.jfree.chart.labels.StandardXYItemLabelGenerator;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYDifferenceRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.ui.RectangleEdge;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
 import cbit.plot.gui.ClusterPlotPanel;
 import cbit.vcell.client.data.ODEDataViewer;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
@@ -10,6 +24,7 @@ import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import org.vcell.util.ColorUtil;
 import org.vcell.util.gui.JToolBarToggleButton;
+import org.vcell.util.gui.SpecialtyTableRenderer;
 import org.vcell.util.gui.VCellIcons;
 
 import javax.swing.*;
@@ -18,11 +33,14 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.geom.Path2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
@@ -37,8 +55,6 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
     private final Map<String, Color> persistentColorMap = new LinkedHashMap<>();
     private final java.util.List<Color> globalPalette = new ArrayList<>();
     private int nextColorIndex = 0;
-
-    private ClusterSpecificationPanel.ClusterSelection currentSelection = null;
 
     private JPanel ivjJPanel1 = null;
     private JPanel ivjJPanelPlot = null;
@@ -75,12 +91,12 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
                 ClusterSpecificationPanel.ClusterSelection sel = (ClusterSpecificationPanel.ClusterSelection) evt.getNewValue();
                 ensureColorsAssigned(sel.columns);
                 try {
+                    redrawLegend(sel);      // redraw legend (one plot, multiple curves)
                     redrawPlot(sel);        // redraw plot (one plot, multiple curves)
+                    redrawDataTable(sel);   // redraw data table
                 } catch (ExpressionException e) {
                     throw new RuntimeException(e);
                 }
-                redrawLegend(sel);      // update legend (one plot, multiple curves)
-                updateDataTable(sel);   // update data table
                 return;
             }
         }
@@ -156,7 +172,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         }
         return ivjJLabelBottom;
     }
-    private ClusterPlotPanel getClusterPlotPanel() {      // actual plotting is done here
+    private ClusterPlotPanel getClusterPlotPanel() {      // actual plotting is shown here
         if (clusterPlotPanel == null) {
             try {
                 clusterPlotPanel = new ClusterPlotPanel();
@@ -165,17 +181,6 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
                     @Override
                     public void componentShown(ComponentEvent e) {
                         System.out.println("ClusterVisualizationPanel.componentShown() called, height = " + clusterPlotPanel.getHeight());
-                        // Only redraw when the panel is actually visible and sized
-                        if (currentSelection != null) {
-                            try {
-                                System.out.println("ClusterVisualizationPanel.componentShown() calling redrawPlot() with current selection: " + currentSelection);
-                                redrawPlot(currentSelection);
-                            } catch (ExpressionException ex) {
-                                ex.printStackTrace();
-                            }
-                        } else {
-                            System.out.println("ClusterVisualizationPanel.componentShown() no current selection, skipping redraw");
-                        }
                     }
                 });
 
@@ -185,7 +190,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         }
         return clusterPlotPanel;
     }
-    public JPanel getPlot2DDataPanel1() {
+    public JPanel getPlot2DDataPanel1() {               // actual table shown here
         if (ivjPlot2DDataPanel1 == null) {
             try {
                 ivjPlot2DDataPanel1 = new JPanel();
@@ -415,7 +420,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
             System.out.println("ClusterVisualizationPanel.redrawPlot() selection is null");
         }
         System.out.println("ClusterVisualizationPanel.redrawPlot(), height = " + getClusterPlotPanel().getHeight());
-        currentSelection = sel;
+//        currentSelection = sel;
         List<ColumnDescription> columns = sel.columns;
         ODESolverResultSet srs = sel.resultSet;
 
@@ -451,9 +456,333 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         getJPanelPlotLegends().revalidate();
         getJPanelPlotLegends().repaint();
     }
-    private void updateDataTable(ClusterSpecificationPanel.ClusterSelection sel) {
+    private void redrawDataTable(ClusterSpecificationPanel.ClusterSelection sel) throws ExpressionException {
         System.out.println("ClusterVisualizationPanel.updateDataTable() called");
+
+        JPanel container = getPlot2DDataPanel1();
+        container.removeAll();
+        container.setLayout(new BorderLayout());
+
+        if (sel == null || sel.resultSet == null || sel.columns == null || sel.columns.isEmpty()) {
+            container.add(new JLabel("No data to display"), BorderLayout.CENTER);
+            container.revalidate();
+            container.repaint();
+            return;
+        }
+
+        ODESolverResultSet srs = sel.resultSet;
+        java.util.List<ColumnDescription> columns = sel.columns;
+
+        // time column
+        int timeIndex = srs.findColumn("t");
+        double[] times = srs.extractColumn(timeIndex);
+        int rowCount = times.length;
+
+        // column names: t + one per selected column
+        String[] columnNames = new String[1 + columns.size()];
+        columnNames[0] = "t";
+        for (int i = 0; i < columns.size(); i++) {
+            ColumnDescription cd = columns.get(i);
+            // you can decorate with mode if you want, e.g. "[COUNTS] name"
+            columnNames[i + 1] = cd.getName();
+        }
+
+        // data
+        Object[][] data = new Object[rowCount][columnNames.length];
+        for (int r = 0; r < rowCount; r++) {
+            int c = 0;
+            data[r][c++] = times[r];
+            for (ColumnDescription cd : columns) {
+                int idx = srs.findColumn(cd.getName());
+                double[] y = srs.extractColumn(idx);
+                data[r][c++] = y[r];
+            }
+        }
+
+        JTable table = new JTable(data, columnNames);
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        table.setFillsViewportHeight(true);
+
+        autoSizeTableColumns(table);    // resize to make it look better
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        container.add(scrollPane, BorderLayout.CENTER);
+
+        container.revalidate();
+        container.repaint();
+
+    }
+    public void setSpecialityRenderer(SpecialtyTableRenderer str) {
+        // TODO: implement this
+//        getPlot2DDataPanel1().setSpecialityRenderer(str);
     }
 
+    private void autoSizeTableColumns(JTable table) {
+        final int margin = 14;  // some breathing room
+
+        for (int col = 0; col < table.getColumnCount(); col++) {
+            TableColumn column = table.getColumnModel().getColumn(col);
+
+            int maxWidth = 0;
+
+            // header width
+            TableCellRenderer headerRenderer = table.getTableHeader().getDefaultRenderer();
+            Component headerComp = headerRenderer.getTableCellRendererComponent(
+                    table, column.getHeaderValue(), false, false, 0, col);
+            maxWidth = Math.max(maxWidth, headerComp.getPreferredSize().width);
+
+            // cell widths
+            for (int row = 0; row < table.getRowCount(); row++) {
+                TableCellRenderer cellRenderer = table.getCellRenderer(row, col);
+                Component comp = table.prepareRenderer(cellRenderer, row, col);
+                maxWidth = Math.max(maxWidth, comp.getPreferredSize().width);
+            }
+
+            column.setPreferredWidth(maxWidth + margin);
+        }
+    }
+
+
+    // =================================================== Evaluate JFreeChart capabilities with a simple demo ===
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+
+            Random rand = new Random();
+
+            int n = 50;
+            double xMin = 0.0;
+            double xMax = 7.0;
+            double dx = (xMax - xMin) / (n - 1);
+
+            double xLower = 0.0;    // these are the limits for the x values of the axis
+            double xUpper = 7.5;
+
+            Color sinColor = new Color(31, 119, 180);   // blue
+            Color tanColor = new Color(255, 127, 14);   // orange
+
+            // --- SIN series ---
+            XYSeries sinMin = new XYSeries("sin-min");
+            XYSeries sinMax = new XYSeries("sin-max");
+            XYSeries sinMain = new XYSeries("sin");
+            XYSeries sinStd = new XYSeries("sin-std");
+
+            for (int i = 0; i < n; i++) {
+                double x = xMin + i * dx;
+                double y = Math.sin(x);
+
+                double delta = 0.2 + rand.nextDouble() * 0.2;
+                double yMin = y - delta;
+                double yMax = y + delta;
+
+                double std = 0.08 + rand.nextDouble() * 0.08;
+
+                sinMin.add(x, yMin);
+                sinMax.add(x, yMax);
+                sinMain.add(x, y);
+                sinStd.add(x, y + std);
+            }
+
+            // --- TAN series ---
+            XYSeries tanMin = new XYSeries("tan-min");
+            XYSeries tanMax = new XYSeries("tan-max");
+            XYSeries tanMain = new XYSeries("tan");
+            XYSeries tanStd = new XYSeries("tan-std");
+
+            for (int i = 0; i < n; i++) {
+                double x = xMin + i * dx;
+                double y = Math.tan(x);
+
+                if (y > 3) y = 3;
+                if (y < -3) y = -3;
+
+                double delta = 0.3 + rand.nextDouble() * 0.3;
+                double yMin = y - delta;
+                double yMax = y + delta;
+
+                double std = 0.2 + rand.nextDouble() * 0.2;
+
+                tanMin.add(x, yMin);
+                tanMax.add(x, yMax);
+                tanMain.add(x, y);
+                tanStd.add(x, y + std);
+            }
+
+            double globalMin = Double.POSITIVE_INFINITY;
+            double globalMax = Double.NEGATIVE_INFINITY;
+            for (int i = 0; i < n; i++) {
+                globalMin = Math.min(globalMin, sinMin.getY(i).doubleValue());
+                globalMin = Math.min(globalMin, tanMin.getY(i).doubleValue());
+                globalMax = Math.max(globalMax, sinMax.getY(i).doubleValue());
+                globalMax = Math.max(globalMax, tanMax.getY(i).doubleValue());
+            }
+            // Add padding
+            double pad = 0.1 * (globalMax - globalMin);
+            globalMin -= pad;
+            globalMax += pad;
+
+            // --- Datasets ---
+
+            // Dataset 0: sin min/max (for band)
+            XYSeriesCollection sinMinMaxDataset = new XYSeriesCollection();
+            sinMinMaxDataset.addSeries(sinMax); // upper
+            sinMinMaxDataset.addSeries(sinMin); // lower
+
+            // Dataset 1: tan min/max (for band)
+            XYSeriesCollection tanMinMaxDataset = new XYSeriesCollection();
+            tanMinMaxDataset.addSeries(tanMax); // upper
+            tanMinMaxDataset.addSeries(tanMin); // lower
+
+            // Dataset 2: main curves
+            XYSeriesCollection mainDataset = new XYSeriesCollection();
+            mainDataset.addSeries(sinMain);
+            mainDataset.addSeries(tanMain);
+
+            // Dataset 3: std diamonds
+            XYSeriesCollection stdDataset = new XYSeriesCollection();
+            stdDataset.addSeries(sinStd);
+            stdDataset.addSeries(tanStd);
+
+            // --- Chart skeleton ---
+            JFreeChart chart = ChartFactory.createXYLineChart(
+                    "Min/Max Bands + STD Demo",
+                    "x",
+                    "y",
+                    null,
+                    PlotOrientation.VERTICAL,
+                    true,
+                    true,
+                    false
+            );
+            XYPlot plot = chart.getXYPlot();
+
+            // Transparent backgrounds
+            chart.setBackgroundPaint(Color.WHITE);
+            plot.setBackgroundPaint(Color.WHITE);
+            plot.setOutlinePaint(null);
+            plot.setDomainGridlinePaint(new Color(180, 180, 180));  // very light
+            plot.setRangeGridlinePaint(new Color(180, 180, 180));
+
+            plot.getDomainAxis().setAutoRange(false);   // lock the axis so that they never resize
+            plot.getRangeAxis().setAutoRange(false);
+            plot.getDomainAxis().setRange(xLower, xUpper);
+            plot.getRangeAxis().setRange(globalMin, globalMax);
+
+            // --- Legend to the right
+            chart.getLegend().setPosition(RectangleEdge.RIGHT);
+            chart.getLegend().setBackgroundPaint(Color.WHITE);
+//            chart.getLegend().setFrame(BlockBorder.NONE);
+
+            // --- Renderer 0: sin band ---
+            XYDifferenceRenderer sinBandRenderer = new XYDifferenceRenderer();
+            Color sinBandColor = new Color(sinColor.getRed(), sinColor.getGreen(), sinColor.getBlue(), 40);
+            sinBandRenderer.setPositivePaint(sinBandColor);
+            sinBandRenderer.setNegativePaint(sinBandColor);
+            sinBandRenderer.setSeriesStroke(0, new BasicStroke(0f));
+            sinBandRenderer.setSeriesStroke(1, new BasicStroke(0f));
+//            sinBandRenderer.setOutlinePaint(null);
+            sinBandRenderer.setSeriesVisibleInLegend(0, false);     // hide sin-max legend entries
+            sinBandRenderer.setSeriesVisibleInLegend(1, false);
+
+            plot.setDataset(0, sinMinMaxDataset);
+            plot.setRenderer(0, sinBandRenderer);
+
+            // --- Renderer 1: tan band ---
+            XYDifferenceRenderer tanBandRenderer = new XYDifferenceRenderer();
+            Color tanBandColor = new Color(tanColor.getRed(), tanColor.getGreen(), tanColor.getBlue(), 40);
+            tanBandRenderer.setPositivePaint(tanBandColor);
+            tanBandRenderer.setNegativePaint(tanBandColor);
+            tanBandRenderer.setSeriesStroke(0, new BasicStroke(0f));
+            tanBandRenderer.setSeriesStroke(1, new BasicStroke(0f));
+//            tanBandRenderer.setOutlinePaint(null);
+            tanBandRenderer.setSeriesVisibleInLegend(0, false);
+            tanBandRenderer.setSeriesVisibleInLegend(1, false);
+
+            plot.setDataset(1, tanMinMaxDataset);
+            plot.setRenderer(1, tanBandRenderer);
+
+            // --- Renderer 2: main curves ---
+            XYLineAndShapeRenderer lineRenderer = new XYLineAndShapeRenderer(true, false);
+            lineRenderer.setSeriesPaint(0, sinColor);
+            lineRenderer.setSeriesPaint(1, tanColor);
+            lineRenderer.setSeriesStroke(0, new BasicStroke(2f));
+            lineRenderer.setSeriesStroke(1, new BasicStroke(2f));
+            lineRenderer.setSeriesVisibleInLegend(0, true);       // keep the main curves visible in Legend
+            lineRenderer.setSeriesVisibleInLegend(1, true);
+
+            plot.setDataset(2, mainDataset);
+            plot.setRenderer(2, lineRenderer);
+
+            // --- Renderer 3: STD diamonds ---
+            XYLineAndShapeRenderer stdRenderer = new XYLineAndShapeRenderer(false, true);
+            Shape diamond = createDiamondShape(4);
+
+            stdRenderer.setSeriesShape(0, diamond);
+            stdRenderer.setSeriesShape(1, diamond);
+            stdRenderer.setSeriesPaint(0, sinColor.darker());
+            stdRenderer.setSeriesPaint(1, tanColor.darker());
+            stdRenderer.setSeriesVisibleInLegend(0, false);
+            stdRenderer.setSeriesVisibleInLegend(1, false);
+
+            plot.setDataset(3, stdDataset);
+            plot.setRenderer(3, stdRenderer);
+
+            // --- ChartPanel ---
+            ChartPanel panel = new ChartPanel(chart);
+            panel.setOpaque(true);      // must be opaque for white to show
+            panel.setBackground(Color.WHITE);
+
+            // --- checkboxes to control display
+            JPanel controls = new JPanel();
+            JCheckBox cbAvg = new JCheckBox("Averages", true);
+            JCheckBox cbMinMax = new JCheckBox("Min-Max", false);
+            JCheckBox cbStd = new JCheckBox("STD", false);
+            controls.add(cbAvg);
+            controls.add(cbMinMax);
+            controls.add(cbStd);
+
+            // Averages (dataset 2)
+            cbAvg.addActionListener(e -> {
+                boolean on = cbAvg.isSelected();
+                plot.getRenderer(2).setSeriesVisible(0, on);
+                plot.getRenderer(2).setSeriesVisible(1, on);
+                lineRenderer.setSeriesVisibleInLegend(0, true);     // force legend visible
+                lineRenderer.setSeriesVisibleInLegend(1, true);
+            });
+
+            // Min-Max (datasets 0 and 1)
+            cbMinMax.addActionListener(e -> {
+                boolean on = cbMinMax.isSelected();
+                plot.setRenderer(0, on ? sinBandRenderer : null);
+                plot.setRenderer(1, on ? tanBandRenderer : null);
+            });
+
+            // STD (dataset 3)
+            cbStd.addActionListener(e -> {
+                boolean on = cbStd.isSelected();
+                stdRenderer.setSeriesVisible(0, on);
+                stdRenderer.setSeriesVisible(1, on);
+            });
+
+            // --- Frame ---
+            JFrame frame = new JFrame("JFreeChart Min/Max/STD Demo");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.add(panel, BorderLayout.CENTER);
+            frame.add(controls, BorderLayout.SOUTH);
+            frame.setSize(900, 600);
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+        });
+    }
+
+    private static Shape createDiamondShape(int size) {
+        Path2D.Double p = new Path2D.Double();
+        p.moveTo(0, -size);
+        p.lineTo(size, 0);
+        p.lineTo(0, size);
+        p.lineTo(-size, 0);
+        p.closePath();
+        return p;
+    }
 
 }
