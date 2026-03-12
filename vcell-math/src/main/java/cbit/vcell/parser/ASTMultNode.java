@@ -416,7 +416,7 @@ public String infixString(int lang){
 	 
 	buffer.append("(");
 	
-	if (bAllBoolean || bNoBoolean || (lang != SimpleNode.LANGUAGE_C && lang != SimpleNode.LANGUAGE_VISIT && lang != SimpleNode.LANGUAGE_PYTHON) && lang != SimpleNode.LANGUAGE_NUM_EXPR) { // old way
+	if (bAllBoolean || bNoBoolean || (lang != SimpleNode.LANGUAGE_C && lang != SimpleNode.LANGUAGE_VISIT && lang != SimpleNode.LANGUAGE_PYTHON&& lang != SimpleNode.LANGUAGE_NUM_EXPR)) { // old way
 		for (int i=0;i<jjtGetNumChildren();i++){
 			if (jjtGetChild(i) instanceof ASTInvertTermNode){
 				// bAllBoolean must be false here!
@@ -428,7 +428,9 @@ public String infixString(int lang){
 				buffer.append(jjtGetChild(i).infixString(lang));
 			}else{
 				if (i>0){
-					if (bAllBoolean){
+					if (lang == SimpleNode.LANGUAGE_MATLAB){
+						buffer.append(" .* ");
+					} else if (bAllBoolean){
 						if (lang == SimpleNode.LANGUAGE_PYTHON){
 							buffer.append(" and ");
 						} else if (lang == SimpleNode.LANGUAGE_NUM_EXPR) {
@@ -436,12 +438,8 @@ public String infixString(int lang){
 						} else {
 							buffer.append(" * ");
 						}
-					} else { // mixed or no-boolean
-						if (lang == SimpleNode.LANGUAGE_MATLAB){
-							buffer.append(" .* ");
-						} else {
-							buffer.append(" * ");
-						}
+					} else { // mixed or no-boolean, and not matlab
+						buffer.append(" * ");
 					}
 				}
 				buffer.append(jjtGetChild(i).infixString(lang));

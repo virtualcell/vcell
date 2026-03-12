@@ -2577,7 +2577,7 @@ public String infixString(int lang) {
 		}
 		case ACOT:{
 			if (lang == LANGUAGE_PYTHON){
-				buffer.append(String.format("((%s/2.0) - ", Math.PI));
+				buffer.append("(math.pi/2.0 - ");
 				buffer.append(getPythonName(FunctionType.ATAN));
 				buffer.append("(");
 				buffer.append(jjtGetChild(0).infixString(lang));
@@ -2595,8 +2595,10 @@ public String infixString(int lang) {
 		case FACTORIAL:
 			if (lang == LANGUAGE_PYTHON){
 				String name = getPythonName();
-				// Since VCell now only accepts integer-values for factorial, integer casting should be safe
-				buffer.append(name).append("(int(");
+				// Since VCell now only accepts integer-values for factorial,
+				// Before we used casting, but there's a chance after math python can generate a different round off error.
+				// Since we know VCell only accepts integer, we're safe using `round` instead of just `int`
+				buffer.append(name).append("(round(");
 				if (1 < this.jjtGetNumChildren()) throw new UnsupportedOperationException("Cannot take factorial of multiple children");
 				buffer.append(jjtGetChild(0).infixString(lang));
 				buffer.append("))");

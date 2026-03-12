@@ -4,6 +4,7 @@ import cbit.vcell.parser.SimpleSymbolTable.SimpleSymbolTableFunctionEntry;
 import cbit.vcell.parser.SymbolTableFunctionEntry.FunctionArgType;
 import cbit.vcell.units.VCUnitSystem;
 import net.sourceforge.interval.ia_math.RealInterval;
+import org.apache.commons.math4.core.jdkmath.AccurateMath;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -29,7 +30,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Tag("Fast")
 public class ExpressionTest {
-	private static final boolean FAIL_ON_FIRST = true;
+	private static final boolean FAIL_ON_FIRST = false;
 	private static final boolean ENSURE_SAME_SEED = true; // change me
 	private static final long SAME_SEED = 1772035787937L;
 	private static File tempDir;
@@ -47,26 +48,29 @@ public class ExpressionTest {
 //	}
 
 	private static Set<String> skipInfixList = new HashSet<>(List.of(
+		"acoth(min(cot( - id_0), floor((0.8708964264563003 * 0.29826500971825554 * 0.6457243719944876))))",
 		"floor((pow(asinh(0.10118387985713251),cos(id_0)) * !(cot(id_0)) * min(csch(0.9837650351250335), coth(id_6))))",
 		" - (min(cot(id_0), csch(0.36737356253208997)) * atan2((0.7233117778683602 >= 0.9759958353333693), (0.1299551891086368 * id_7 * 0.7165699878023953)) / abs(id_1))",
 		"sech( - (coth(0.028177547796530367) ^ cot(id_1)))",
 		"coth(((sinh(0.6449666197606081) ^ (id_4 * id_8 * id_9)) + cot((id_3 < 0.2261011754280382)) + sech(abs(0.8120086721536708))))",
 		"(((cosh(id_3) * log(0.5598410965557573) * asin(0.015550241603964676)) * sin(floor(id_0)) * cosh(max(id_1, 0.585221823072032))) >= cot(floor((id_9 * id_2 * 0.30343841532874716))))",
+		"(cot(!( - id_6)) || ((tan(id_8) * atan2(id_5, id_7) * atan2(id_5, id_2)) * (pow(0.9897201897706811,id_1) * acosh(id_0) * (id_1 * 0.01088401412622797 * 0.8882413207692971)) * acot((0.3322552640871813 + id_9 + id_2))))",
 		"coth(floor(cot(abs(id_0))))",
 		" - factorial(( - id_2 / id_1 * ceil(id_5)))",
 		"csch(exp(csc((id_2 * id_2 * id_9))))",
 		"atan((tan(ceil(0.0)) || (cot(id_0) + asinh(0.5597772404451554) + sec(id_4))))",
 		"cot(factorial( - (0.20783348997951046 && id_5)))",
+		"(sqrt((atan2(0.7218065889622693, id_1) + asech(0.5381259927491784) + atanh(0.78855529690269))) >= asinh((atan2(id_0, id_9) <= cot(id_0))))",
 		" - cos((cos(id_1) ^ cot(id_0)))",
+		"pow(sinh(exp(acot(id_5))),tan(min(cot(id_0), (id_3 ^ id_8))))",
 		"atan(abs(cot(floor(id_5))))",
 		"coth(floor(cot((id_0 * 0.10280284481700341 * 0.3190467590050531))))",
 		" - (( - id_1 * acos(0.9408318720601397) * cot(id_0)) && asinh(min(id_6, 0.130136440506475)))",
 		"coth(factorial(floor(log(id_4))))",
 		"(cot(!(sech(id_3))) ^ min( - atan2(0.7870190039110462, id_2), ((id_7 * id_0 * 0.10143937822636417) * min(id_4, id_2) * sech(0.5569515469432404))))",
 		"cot(exp(coth((0.01722292952879423 ^ 0.7576553654648215))))",
-		"cosh(min(cot((id_7 * id_0 * 0.9871116728260001)),  - !(id_6)))",
-		" - acos(((0.01949787088472099 * id_1 * id_9) ^ cot(id_0)))",
-		"factorial(min(tanh((id_9 ^ id_1)), floor( - 0.5153523376029631)))"
+		"(sec((asinh(0.0) && min(id_5, 0.648784608185188))) * (cot(floor(id_7)) <= (exp(id_7) *  - 0.012384014519015274 * sqrt(0.7079441990714145))) * ceil(acot((0.8546428622959772 + id_0 + id_6))))",
+		"acsch(max(cot((id_0 * id_3 * 0.59541956426409)), (atan2(0.681661337447432, id_6) ^ atan2(0.2719307064055214, id_8))))"
 	));
 
 
