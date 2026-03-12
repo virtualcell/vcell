@@ -18,7 +18,7 @@ import pprint
 import re  # noqa: F401
 import json
 
-from datetime import date
+from datetime import date, datetime
 from typing import Any, ClassVar, Dict, List, Optional
 from pydantic import BaseModel, StrictInt, StrictStr
 from pydantic import Field
@@ -45,7 +45,8 @@ class PublicationInfo(BaseModel):
     vc_document_type: Optional[VCDocumentType] = Field(default=None, alias="vcDocumentType")
     user: Optional[User] = None
     the_hash_code: Optional[StrictInt] = Field(default=None, alias="theHashCode")
-    __properties: ClassVar[List[str]] = ["publicationKey", "versionKey", "title", "authors", "citation", "pubmedid", "doi", "url", "pubdate", "vcDocumentType", "user", "theHashCode"]
+    pub_date: Optional[datetime] = Field(default=None, alias="pubDate")
+    __properties: ClassVar[List[str]] = ["publicationKey", "versionKey", "title", "authors", "citation", "pubmedid", "doi", "url", "pubdate", "vcDocumentType", "user", "theHashCode", "pubDate"]
 
     model_config = {
         "populate_by_name": True,
@@ -114,7 +115,8 @@ class PublicationInfo(BaseModel):
             "pubdate": obj.get("pubdate"),
             "vcDocumentType": obj.get("vcDocumentType"),
             "user": User.from_dict(obj.get("user")) if obj.get("user") is not None else None,
-            "theHashCode": obj.get("theHashCode")
+            "theHashCode": obj.get("theHashCode"),
+            "pubDate": obj.get("pubDate")
         })
         return _obj
 

@@ -91,6 +91,7 @@ from vcell_client.models.vc_simulation_identifier import VCSimulationIdentifier
 from vcell_client.models.v_cell_http_error import VCellHTTPError
 from vcell_client.models.v_cell_site import VCellSite
 from vcell_client.models.v_cell_software_version import VCellSoftwareVersion
+from vcell_client.models.v_cell_summary_container import VCellSummaryContainer
 from vcell_client.models.variable_domain import VariableDomain
 from vcell_client.models.variable_mode import VariableMode
 from vcell_client.models.variable_specs import VariableSpecs

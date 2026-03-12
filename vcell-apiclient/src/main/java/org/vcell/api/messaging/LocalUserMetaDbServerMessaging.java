@@ -10,36 +10,33 @@
 
 package org.vcell.api.messaging;
 
-import cbit.image.GifParsingException;
 import cbit.image.VCImageInfo;
 import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.geometry.GeometryInfo;
-import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.message.server.bootstrap.client.RpcDbServerProxy;
 import cbit.vcell.message.server.bootstrap.client.RpcSender;
-import cbit.vcell.model.*;
+import cbit.vcell.model.DBFormalSpecies;
+import cbit.vcell.model.DBSpecies;
+import cbit.vcell.model.FormalSpeciesType;
+import cbit.vcell.model.ReactionQuerySpec;
 import cbit.vcell.server.SimulationStatusPersistent;
 import cbit.vcell.server.UserMetaDbServer;
-import cbit.vcell.server.UserRegistrationOP;
-import cbit.vcell.server.UserRegistrationResults;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.api.client.ExceptionHandler;
 import org.vcell.api.client.VCellApiClient;
 import org.vcell.restclient.ApiException;
+import org.vcell.restclient.api.BioModelResourceApi;
 import org.vcell.restclient.api.VcImageResourceApi;
 import org.vcell.restclient.model.*;
 import org.vcell.restclient.utils.DtoModelTransforms;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
-import org.vcell.util.document.*;
 import org.vcell.util.document.ExternalDataIdentifier;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.SpecialUser;
 import org.vcell.util.document.User;
+import org.vcell.util.document.*;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.util.*;
 
@@ -666,16 +663,22 @@ public BigString getVCImageXML(KeyValue imageKey) throws DataAccessException, Ob
  * @throws RemoteException 
  */
 public VCInfoContainer getVCInfoContainer() throws DataAccessException {
-
+	BioModelResourceApi bioModelApi = vCellApiClient.getBioModelApi();
 	try {
-		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getVCInfoContainer()");
-		return dbServerProxy.getVCInfoContainer();
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		VCellSummaryContainer infoContainer = bioModelApi.getSummariesContainer();
+		List<VCImageSummary> imageSummaries = infoContainer.getImageSummaries();
+		List<GeometrySummary> geometrySummaries = infoContainer.getGeometrySummaries();
+		List<MathModelSummary> mathModelSummaries = infoContainer.getMathModelSummaries();
+		List<BioModelSummary> bioModelSummaries = infoContainer.getBioModelSummaries();
+		return new VCInfoContainer(null,
+				imageSummaries == null ? null : imageSummaries.stream().map(DtoModelTransforms::imageSummaryToVCImageInfo).toArray(VCImageInfo[]::new),
+				geometrySummaries == null ? null : geometrySummaries.stream().map(DtoModelTransforms::geometrySummaryToGeometryInfo).toArray(GeometryInfo[]::new),
+				mathModelSummaries == null ? null : mathModelSummaries.stream().map(DtoModelTransforms::mathModelContextToMathModel).toArray(MathModelInfo[]::new),
+				bioModelSummaries == null ? null : bioModelSummaries.stream().map(DtoModelTransforms::bioModelContextToBioModelInfo).toArray(BioModelInfo[]::new)
+				);
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Exception handler did not throw an error.", e);
 	}
 }
 

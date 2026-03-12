@@ -19,6 +19,7 @@
 |**vcDocumentType** | **VCDocumentType** |  |  [optional] |
 |**user** | [**User**](User.md) |  |  [optional] |
 |**theHashCode** | **Integer** |  |  [optional] |
+|**pubDate** | **OffsetDateTime** |  |  [optional] |
 
 
 

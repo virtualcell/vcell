@@ -19,7 +19,5 @@ export interface GroupAccessSome extends GroupAccess {
     groupMembers?: Array<User>;
     hiddenMembers?: Array<boolean>;
     description?: string;
-    hiddenGroupMembers?: Array<User>;
-    normalGroupMembers?: Array<User>;
 }
 

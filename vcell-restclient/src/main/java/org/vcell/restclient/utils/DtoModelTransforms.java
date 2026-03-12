@@ -185,10 +185,10 @@ public class DtoModelTransforms {
     }
 
     public static VersionFlag dtoToVersionFlag(org.vcell.restclient.model.VersionFlag dto){
-        if (dto.getVersionFlag() == null){
+        if (dto.getIntValue() == null){
             return null;
         }
-        return VersionFlag.fromInt(dto.getVersionFlag());
+        return VersionFlag.fromInt(dto.getIntValue());
     }
 
     public static GroupAccess dtoToGroupAccess(org.vcell.restclient.model.GroupAccess dto){
@@ -196,7 +196,6 @@ public class DtoModelTransforms {
         if (dto instanceof org.vcell.restclient.model.GroupAccessAll){
             return new GroupAccessAll();
         } else if (dto instanceof org.vcell.restclient.model.GroupAccessSome gs){
-
             boolean[] bValues = new boolean[gs.getHiddenMembers().size()];
             for (int i = 0; i < bValues.length; i++){
                 bValues[i] = gs.getHiddenMembers().get(i);
@@ -231,22 +230,22 @@ public class DtoModelTransforms {
             mathTypes[i] = dtoToBioModelMathType(dto.getAppTypes().get(i));
         }
         String[][] simNames = null;
-        if (dto.getSimNames() != null){
-            simNames = new String[dto.getSimNames().size()][];
+        if (dto.getAllSimulationNames() != null){
+            simNames = new String[dto.getAllSimulationNames().size()][];
             for (int i = 0; i < simNames.length; i++){
-                simNames[i] = dto.getSimNames().get(i).toArray(new String[0]);
+                simNames[i] = dto.getAllSimulationNames().get(i).toArray(new String[0]);
             }
         }
         String[][] simAnnots = null;
-        if (dto.getSimAnnots() != null){
-            simAnnots = new String[dto.getSimAnnots().size()][];
+        if (dto.getAllSimulationAnnots() != null){
+            simAnnots = new String[dto.getAllSimulationAnnots().size()][];
             for (int i = 0; i < simAnnots.length; i++){
-                simAnnots[i] = dto.getSimAnnots().get(i).toArray(new String[0]);
+                simAnnots[i] = dto.getAllSimulationAnnots().get(i).toArray(new String[0]);
             }
         }
-        String[] scAnnotations = dto.getScAnnots() == null ? null : dto.getScAnnots().toArray(new String[0]);
-        String[] geoNames = dto.getGeoNames() == null ? null : dto.getGeoNames().toArray(new String[0]);
-        int[] geoDims = dto.getGeoDims() == null ? null : dto.getGeoDims().stream().mapToInt(Integer::intValue).toArray();
+        String[] scAnnotations = dto.getSimulationContextAnnotations() == null ? null : dto.getSimulationContextAnnotations().toArray(new String[0]);
+        String[] geoNames = dto.getGeometryNames() == null ? null : dto.getGeometryNames().toArray(new String[0]);
+        int[] geoDims = dto.getGeometryDimensions() == null ? null : dto.getGeometryDimensions().stream().mapToInt(Integer::intValue).toArray();
         return new BioModelChildSummary(dto.getSimulationContextNames().toArray(new String[0]),
                 mathTypes, scAnnotations, simNames, simAnnots, geoNames,
                 geoDims);
@@ -264,11 +263,12 @@ public class DtoModelTransforms {
         return new PublicationInfo(new KeyValue(dto.getPublicationKey()), new KeyValue(dto.getVersionKey()),
                 dto.getTitle(), dto.getAuthors().toArray(new String[0]), dto.getCitation(),dto.getPubmedid(),
                 dto.getDoi(), dto.getUrl(), dtoToVCDocumentType(dto.getVcDocumentType()), dtoToUser(dto.getUser()),
-                new Date(dto.getPubdate().toEpochDay()));
+                new Date(dto.getPubDate().toEpochSecond()));
     }
 
     public static BioModelInfo bioModelContextToBioModelInfo(BioModelSummary summary){
-        BioModelInfo bioModelInfo = new BioModelInfo(versionDTOToVersion(summary.getVersion()), dtoToBioModelChildSummary(summary.getSummary()),
+        BioModelChildSummary childSummary = summary.getSummary() == null ? null : dtoToBioModelChildSummary(summary.getSummary());
+        BioModelInfo bioModelInfo = new BioModelInfo(versionDTOToVersion(summary.getVersion()), childSummary,
                 dtoToVCellSoftwareVersion(summary.getvCellSoftwareVersion()));
         if (summary.getPublicationInformation() != null){
             for (org.vcell.restclient.model.PublicationInfo pubInfo : summary.getPublicationInformation()){
@@ -292,9 +292,10 @@ public class DtoModelTransforms {
     }
 
     public static GeometryInfo geometrySummaryToGeometryInfo(org.vcell.restclient.model.GeometrySummary summary){
+        KeyValue imageRef = summary.getImageRef() == null ? null : new KeyValue(summary.getImageRef());
         return new GeometryInfo(DtoModelTransforms.versionDTOToVersion(summary.getVersion()),
                 summary.getDimension(), DtoModelTransforms.dtoToExtent(summary.getExtent()),
-                DtoModelTransforms.dtoToOrigin(summary.getOrigin()), new KeyValue(summary.getImageRef()),
+                DtoModelTransforms.dtoToOrigin(summary.getOrigin()), imageRef,
                 DtoModelTransforms.dtoToVCellSoftwareVersion(summary.getSoftwareVersion()));
     }
 
@@ -302,9 +303,9 @@ public class DtoModelTransforms {
         try {
             return new VCImageInfo(DtoModelTransforms.versionDTOToVersion(summary.getVersion()),
                     DtoModelTransforms.dtoToISize(summary.getSize()), DtoModelTransforms.dtoToExtent(summary.getExtent()),
-                    new GIFImage(Files.readAllBytes(summary.getPreview().getGifEncodedData().toPath())),
+                    new GIFImage(summary.getPreview().getGifEncodedData().getAbsolutePath().getBytes()),
                     DtoModelTransforms.dtoToVCellSoftwareVersion(summary.getSoftwareVersion()));
-        } catch (GifParsingException | IOException e) {
+        } catch (GifParsingException e) {
             throw new RuntimeException(e);
         }
     }
