@@ -1,24 +1,20 @@
 package cbit.vcell.solver.ode.gui;
 
+import cbit.plot.gui.ClusterDataPanel;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.block.BlockBorder;
-import org.jfree.chart.labels.StandardXYItemLabelGenerator;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYDifferenceRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.ui.RectangleEdge;
-import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
 import cbit.plot.gui.ClusterPlotPanel;
 import cbit.vcell.client.data.ODEDataViewer;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.client.task.AsynchClientTask;
-import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
@@ -61,7 +57,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
     private ClusterPlotPanel clusterPlotPanel = null;   // here are the plots being drawn
     private JLabel ivjJLabelBottom = null;
     private JPanel ivjJPanelData = null;
-    private JPanel ivjPlot2DDataPanel1 = null;          // here resides the data table
+    private ClusterDataPanel clusterDataPanel = null;   // here resides the data table
     private JPanel bottomRightPanel = null;
     private JPanel ivjJPanelLegend = null;
     private JScrollPane ivjPlotLegendsScrollPane = null;
@@ -156,7 +152,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
             ivjJPanelData = new JPanel();
             ivjJPanelData.setName("JPanelData");
             ivjJPanelData.setLayout(new BorderLayout());
-            ivjJPanelData.add(getPlot2DDataPanel1(), "Center");
+            ivjJPanelData.add(getClusterDataPanel(), BorderLayout.CENTER);
         }
         return ivjJPanelData;
     }
@@ -190,16 +186,15 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         }
         return clusterPlotPanel;
     }
-    public JPanel getPlot2DDataPanel1() {               // actual table shown here
-        if (ivjPlot2DDataPanel1 == null) {
+    public ClusterDataPanel getClusterDataPanel() {               // actual table shown here
+        if (clusterDataPanel == null) {
             try {
-                ivjPlot2DDataPanel1 = new JPanel();
-                ivjPlot2DDataPanel1.setName("Plot2DDataPanel1");
+                clusterDataPanel = new ClusterDataPanel();
             } catch (java.lang.Throwable ivjExc) {
                 handleException(ivjExc);
             }
         }
-        return ivjPlot2DDataPanel1;
+        return clusterDataPanel;
     }
 
     // ---------------------------------------------------------------------
@@ -312,7 +307,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         getJPanelPlotLegends().setBackground(color);
         getJPanel1().setBackground(color);
         getClusterPlotPanel().setBackground(color);
-        getPlot2DDataPanel1().setBackground(color);
+        getClusterDataPanel().setBackground(color);
         getJPanelData().setBackground(color);
         getJPanelPlot().setBackground(color);
 
@@ -458,88 +453,11 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
     }
     private void redrawDataTable(ClusterSpecificationPanel.ClusterSelection sel) throws ExpressionException {
         System.out.println("ClusterVisualizationPanel.updateDataTable() called");
-
-        JPanel container = getPlot2DDataPanel1();
-        container.removeAll();
-        container.setLayout(new BorderLayout());
-
-        if (sel == null || sel.resultSet == null || sel.columns == null || sel.columns.isEmpty()) {
-            container.add(new JLabel("No data to display"), BorderLayout.CENTER);
-            container.revalidate();
-            container.repaint();
-            return;
-        }
-
-        ODESolverResultSet srs = sel.resultSet;
-        java.util.List<ColumnDescription> columns = sel.columns;
-
-        // time column
-        int timeIndex = srs.findColumn("t");
-        double[] times = srs.extractColumn(timeIndex);
-        int rowCount = times.length;
-
-        // column names: t + one per selected column
-        String[] columnNames = new String[1 + columns.size()];
-        columnNames[0] = "t";
-        for (int i = 0; i < columns.size(); i++) {
-            ColumnDescription cd = columns.get(i);
-            // you can decorate with mode if you want, e.g. "[COUNTS] name"
-            columnNames[i + 1] = cd.getName();
-        }
-
-        // data
-        Object[][] data = new Object[rowCount][columnNames.length];
-        for (int r = 0; r < rowCount; r++) {
-            int c = 0;
-            data[r][c++] = times[r];
-            for (ColumnDescription cd : columns) {
-                int idx = srs.findColumn(cd.getName());
-                double[] y = srs.extractColumn(idx);
-                data[r][c++] = y[r];
-            }
-        }
-
-        JTable table = new JTable(data, columnNames);
-        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        table.setFillsViewportHeight(true);
-
-        autoSizeTableColumns(table);    // resize to make it look better
-
-        JScrollPane scrollPane = new JScrollPane(table);
-        container.add(scrollPane, BorderLayout.CENTER);
-
-        container.revalidate();
-        container.repaint();
-
+        getClusterDataPanel().updateData(sel);
     }
     public void setSpecialityRenderer(SpecialtyTableRenderer str) {
         // TODO: implement this
-//        getPlot2DDataPanel1().setSpecialityRenderer(str);
-    }
-
-    private void autoSizeTableColumns(JTable table) {
-        final int margin = 14;  // some breathing room
-
-        for (int col = 0; col < table.getColumnCount(); col++) {
-            TableColumn column = table.getColumnModel().getColumn(col);
-
-            int maxWidth = 0;
-
-            // header width
-            TableCellRenderer headerRenderer = table.getTableHeader().getDefaultRenderer();
-            Component headerComp = headerRenderer.getTableCellRendererComponent(
-                    table, column.getHeaderValue(), false, false, 0, col);
-            maxWidth = Math.max(maxWidth, headerComp.getPreferredSize().width);
-
-            // cell widths
-            for (int row = 0; row < table.getRowCount(); row++) {
-                TableCellRenderer cellRenderer = table.getCellRenderer(row, col);
-                Component comp = table.prepareRenderer(cellRenderer, row, col);
-                maxWidth = Math.max(maxWidth, comp.getPreferredSize().width);
-            }
-
-            column.setPreferredWidth(maxWidth + margin);
-        }
+        getClusterDataPanel().setSpecialityRenderer(str);
     }
 
 
