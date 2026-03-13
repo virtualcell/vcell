@@ -45,7 +45,10 @@
       <div *ngFor="let biomodelRef of publication.biomodelRefs; let i = index" class="list-item">
         <mat-card class="biomodel-card">
           <mat-card-content>
+            <mat-checkbox *ngIf="showPublishControls" [checked]="selectedBiomodelKeys.has(biomodelRef.bmKey!)" (change)="toggleBiomodelSelection(biomodelRef.bmKey!)"></mat-checkbox>
             <span>{{ "BioModel (" + biomodelRef.ownerName + " : " + biomodelRef.bmKey + " : " + biomodelRef.name + ")" }}</span>
+            <span class="version-badge" [ngClass]="getVersionFlagClass(biomodelRef.versionFlag)">{{ getVersionFlagLabel(biomodelRef.versionFlag) }}</span>
+            <span class="privacy-badge" [ngClass]="getPrivacyClass(biomodelRef.privacy)">{{ getPrivacyLabel(biomodelRef.privacy) }}</span>
             <button mat-icon-button color="warn" (click)="removeBiomodelRef(i)">
               <mat-icon>delete</mat-icon>
             </button>
@@ -66,7 +69,9 @@
       <div *ngFor="let mathmodelRef of publication.mathmodelRefs; let i = index" class="list-item">
         <mat-card class="mathmodel-card">
           <mat-card-content>
+            <mat-checkbox *ngIf="showPublishControls" [checked]="selectedMathmodelKeys.has(mathmodelRef.mmKey!)" (change)="toggleMathmodelSelection(mathmodelRef.mmKey!)"></mat-checkbox>
             <span>{{ "MathModel (" + mathmodelRef.ownerName + " : " + mathmodelRef.mmKey + " : " + mathmodelRef.name + ")" }}</span>
+            <span class="version-badge" [ngClass]="getVersionFlagClass(mathmodelRef.versionFlag)">{{ getVersionFlagLabel(mathmodelRef.versionFlag) }}</span>
             <button mat-icon-button color="warn" (click)="removeMathmodelRef(i)">
               <mat-icon>delete</mat-icon>
             </button>
@@ -84,6 +89,12 @@
     <!--      <mat-label>Date</mat-label>-->
     <!--      <input matInput type="date" [(ngModel)]="publication.date" name="date">-->
     <!--    </mat-form-field>-->
+
+    <div *ngIf="showPublishControls" class="publish-row">
+      <button mat-raised-button color="accent" type="button" (click)="publishModels()" [disabled]="selectedBiomodelKeys.size === 0 && selectedMathmodelKeys.size === 0">
+        Publish Selected Models
+      </button>
+    </div>
 
     <div class="button-row">
       <button mat-raised-button color="primary" type="button" (click)="onSave()" [disabled]="publicationForm.invalid">

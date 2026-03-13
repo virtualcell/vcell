@@ -34,6 +34,7 @@ class BioModel(BaseModel):
     bm_key: Optional[StrictStr] = Field(default=None, alias="bmKey")
     name: Optional[StrictStr] = None
     privacy: Optional[StrictInt] = None
+    version_flag: Optional[StrictInt] = Field(default=None, alias="versionFlag")
     group_users: Optional[List[StrictStr]] = Field(default=None, alias="groupUsers")
     saved_date: Optional[StrictInt] = Field(default=None, alias="savedDate")
     annot: Optional[StrictStr] = None
@@ -43,7 +44,7 @@ class BioModel(BaseModel):
     owner_key: Optional[StrictStr] = Field(default=None, alias="ownerKey")
     simulation_key_list: Optional[List[StrictStr]] = Field(default=None, alias="simulationKeyList")
     applications: Optional[List[Union[str, Any]]] = None
-    __properties: ClassVar[List[str]] = ["bmKey", "name", "privacy", "groupUsers", "savedDate", "annot", "branchID", "physModelKey", "ownerName", "ownerKey", "simulationKeyList", "applications"]
+    __properties: ClassVar[List[str]] = ["bmKey", "name", "privacy", "versionFlag", "groupUsers", "savedDate", "annot", "branchID", "physModelKey", "ownerName", "ownerKey", "simulationKeyList", "applications"]
 
     model_config = {
         "populate_by_name": True,
@@ -101,6 +102,7 @@ class BioModel(BaseModel):
             "bmKey": obj.get("bmKey"),
             "name": obj.get("name"),
             "privacy": obj.get("privacy"),
+            "versionFlag": obj.get("versionFlag"),
             "groupUsers": obj.get("groupUsers"),
             "savedDate": obj.get("savedDate"),
             "annot": obj.get("annot"),

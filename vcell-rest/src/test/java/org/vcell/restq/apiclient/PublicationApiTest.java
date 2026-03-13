@@ -14,9 +14,8 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.api.BioModelResourceApi;
 import org.vcell.restclient.api.PublicationResourceApi;
-import org.vcell.restclient.model.BiomodelRef;
 import org.vcell.restclient.model.Publication;
-import org.vcell.restclient.model.SaveBioModel;
+import org.vcell.restclient.model.PublishModelsRequest;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
@@ -102,15 +101,8 @@ public class PublicationApiTest {
         org.vcell.restclient.model.BioModel biomodel = bioModelAPI.getBioModel(savedModelKey);
 
         Publication publication = TestEndpointUtils.defaultPublication();
-        BiomodelRef bioModelRef = new BiomodelRef();
-        bioModelRef.setBmKey(Long.parseLong(savedModelKey));
-        bioModelRef.setName(biomodel.getName());
-        bioModelRef.setOwnerName(biomodel.getOwnerName());
-        bioModelRef.setVersionFlag(VersionFlag.Current.getIntValue());
-        assert biomodel.getOwnerKey() != null;
-        bioModelRef.setOwnerKey(Long.parseLong(biomodel.getOwnerKey()));
         assert publication.getBiomodelRefs() != null;
-        publication.getBiomodelRefs().add(bioModelRef);
+        publication.getBiomodelRefs().add(TestEndpointUtils.biomodelRefFromBioModel(biomodel));
         // save publication pub
         Long newPubKey = apiInstance.createPublication(publication);
         Assertions.assertNotNull(newPubKey);
@@ -136,5 +128,87 @@ public class PublicationApiTest {
 
         // remove added BioModel
         bioModelAPI.deleteBioModel(savedModelKey);
+    }
+
+    @Test
+    public void testPublishBioModels() throws Exception {
+        PublicationResourceApi pubAPI = new PublicationResourceApi(aliceAPIClient);
+        BioModelResourceApi bioModelAPI = new BioModelResourceApi(aliceAPIClient);
+
+        // Create and save a biomodel with unique name to avoid conflicts with other tests
+        BioModel realBioModel = TestEndpointUtils.defaultBiomodel();
+        realBioModel.setName("PublishTest_" + System.currentTimeMillis());
+        String bioModelXml = XmlHelper.bioModelToXML(realBioModel, true);
+        BioModel savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelAPI.saveBioModel(bioModelXml, null, null)));
+        String savedModelKey = savedBioModel.getVersion().getVersionKey().toString();
+        org.vcell.restclient.model.BioModel biomodel = bioModelAPI.getBioModel(savedModelKey);
+
+        // Create a publication with the biomodel ref queried from the database
+        Publication publication = TestEndpointUtils.defaultPublication();
+        assert publication.getBiomodelRefs() != null;
+        publication.getBiomodelRefs().add(TestEndpointUtils.biomodelRefFromBioModel(biomodel));
+        Long pubKey = pubAPI.createPublication(publication);
+
+        // Verify biomodel is not yet published
+        Publication fetchedPub = pubAPI.getPublicationById(pubKey);
+        Assertions.assertNotNull(fetchedPub.getBiomodelRefs());
+        Assertions.assertEquals(1, fetchedPub.getBiomodelRefs().size());
+        Assertions.assertNotEquals(VersionFlag.Published.getIntValue(), fetchedPub.getBiomodelRefs().get(0).getVersionFlag());
+
+        // Publish all models linked to this publication (null request = all)
+        pubAPI.publishBioModels(pubKey, null);
+
+        // Verify biomodel is now published
+        Publication publishedPub = pubAPI.getPublicationById(pubKey);
+        Assertions.assertNotNull(publishedPub.getBiomodelRefs());
+        Assertions.assertEquals(1, publishedPub.getBiomodelRefs().size());
+        Assertions.assertEquals(VersionFlag.Published.getIntValue(), publishedPub.getBiomodelRefs().get(0).getVersionFlag());
+
+        // Test selective publish with specific keys
+        PublishModelsRequest request = new PublishModelsRequest();
+        request.setBiomodelKeys(List.of(Long.parseLong(savedModelKey)));
+        pubAPI.publishBioModels(pubKey, request);
+
+        // Verify still published
+        Publication rePub = pubAPI.getPublicationById(pubKey);
+        Assertions.assertEquals(VersionFlag.Published.getIntValue(), rePub.getBiomodelRefs().get(0).getVersionFlag());
+
+        // Cleanup: unpublish before deleting (published models cannot be deleted)
+        setVersionFlag(savedModelKey, VersionFlag.Current.getIntValue());
+        pubAPI.deletePublication(pubKey);
+        bioModelAPI.deleteBioModel(savedModelKey);
+    }
+
+    private void setVersionFlag(String bioModelKey, int versionFlagValue) throws DataAccessException, SQLException {
+        Object lock = new Object();
+        java.sql.Connection connection = agroalConnectionFactory.getConnection(lock);
+        connection.prepareStatement(
+                "UPDATE vc_biomodel SET versionFlag = " + versionFlagValue +
+                        " WHERE id = " + bioModelKey
+        ).executeUpdate();
+        connection.commit();
+        connection.close();
+    }
+
+    @Test
+    public void testPublishBioModelsUnauthorized() throws Exception {
+        PublicationResourceApi alicePubAPI = new PublicationResourceApi(aliceAPIClient);
+        PublicationResourceApi bobPubAPI = new PublicationResourceApi(bobAPIClient);
+
+        // Create publication as alice (admin)
+        Publication publication = TestEndpointUtils.defaultPublication();
+        Long pubKey = alicePubAPI.createPublication(publication);
+
+        // Bob (nagios, non-curator) tries to publish - should fail with permission error
+        try {
+            bobPubAPI.publishBioModels(pubKey, null);
+            Assertions.fail("Expected ApiException for unauthorized user");
+        } catch (ApiException e) {
+            Assertions.assertTrue(e.getCode() == 403 || e.getCode() == 500,
+                    "Expected 403 or 500 error, got " + e.getCode());
+        }
+
+        // Cleanup
+        alicePubAPI.deletePublication(pubKey);
     }
 }

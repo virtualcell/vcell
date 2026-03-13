@@ -34,6 +34,7 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.VersionFlag;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
@@ -133,12 +134,70 @@ public class BioModelApiTest {
         BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelVCML));
         KeyValue bioModelKey = bioModel.getVersion().getVersionKey();
 
-        bioModelResourceApi.getBioModel(bioModelKey.toString());
+        org.vcell.restclient.model.BioModel restBioModel = bioModelResourceApi.getBioModel(bioModelKey.toString());
+        Assertions.assertNotNull(restBioModel.getVersionFlag(), "versionFlag should be populated");
+        Assertions.assertEquals(0, restBioModel.getVersionFlag(), "newly saved BioModel should have versionFlag CURRENT (0)");
 
         bioModelResourceApi.deleteBioModel(bioModelKey.toString());
         Assertions.assertThrowsExactly(ObjectNotFoundException.class, () ->
                 serverDocumentManager.getBioModelXML(new QueryHashtable(), TestEndpointUtils.administratorUser,
                         bioModelKey, false));
+    }
+
+    @Test
+    public void testCannotDeleteArchivedOrPublishedBioModel() throws PropertyVetoException, XmlParseException, IOException, ApiException, SQLException, DataAccessException {
+        BioModelResourceApi bioModelResourceApi = new BioModelResourceApi(aliceAPIClient);
+
+        String bioModelVCML = bioModelResourceApi.saveBioModel(XmlHelper.bioModelToXML(TestEndpointUtils.getTestBioModel()), null, null);
+        BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelVCML));
+        KeyValue bioModelKey = bioModel.getVersion().getVersionKey();
+
+        // Set versionFlag to ARCHIVED (1) via direct SQL
+        setVersionFlag(bioModelKey, VersionFlag.Archived.getIntValue());
+
+        // Verify the REST API returns the archived versionFlag
+        org.vcell.restclient.model.BioModel archivedModel = bioModelResourceApi.getBioModel(bioModelKey.toString());
+        Assertions.assertEquals(VersionFlag.Archived.getIntValue(), archivedModel.getVersionFlag(),
+                "versionFlag should be ARCHIVED");
+
+        // Attempt to delete archived model should fail
+        try {
+            bioModelResourceApi.deleteBioModel(bioModelKey.toString());
+            Assertions.fail("Should not be able to delete an ARCHIVED BioModel");
+        } catch (ApiException e) {
+            Assertions.assertEquals(DataAccessWebException.HTTP_CODE, e.getCode());
+        }
+
+        // Set versionFlag to PUBLISHED (3) via direct SQL
+        setVersionFlag(bioModelKey, VersionFlag.Published.getIntValue());
+
+        // Verify the REST API returns the published versionFlag
+        org.vcell.restclient.model.BioModel publishedModel = bioModelResourceApi.getBioModel(bioModelKey.toString());
+        Assertions.assertEquals(VersionFlag.Published.getIntValue(), publishedModel.getVersionFlag(),
+                "versionFlag should be PUBLISHED");
+
+        // Attempt to delete published model should fail
+        try {
+            bioModelResourceApi.deleteBioModel(bioModelKey.toString());
+            Assertions.fail("Should not be able to delete a PUBLISHED BioModel");
+        } catch (ApiException e) {
+            Assertions.assertEquals(DataAccessWebException.HTTP_CODE, e.getCode());
+        }
+
+        // Reset to CURRENT so cleanup can delete it
+        setVersionFlag(bioModelKey, VersionFlag.Current.getIntValue());
+        bioModelResourceApi.deleteBioModel(bioModelKey.toString());
+    }
+
+    private void setVersionFlag(KeyValue bioModelKey, int versionFlagValue) throws DataAccessException, SQLException {
+        Object lock = new Object();
+        java.sql.Connection connection = agroalConnectionFactory.getConnection(lock);
+        connection.prepareStatement(
+                "UPDATE vc_biomodel SET versionFlag = " + versionFlagValue +
+                " WHERE id = " + bioModelKey.toString()
+        ).executeUpdate();
+        connection.commit();
+        connection.close();
     }
 
 

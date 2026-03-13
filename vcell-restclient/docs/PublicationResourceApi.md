@@ -12,6 +12,8 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 | [**getPublicationByIdWithHttpInfo**](PublicationResourceApi.md#getPublicationByIdWithHttpInfo) | **GET** /api/v1/publications/{id} | Get publication by ID |
 | [**getPublications**](PublicationResourceApi.md#getPublications) | **GET** /api/v1/publications | Get all publications |
 | [**getPublicationsWithHttpInfo**](PublicationResourceApi.md#getPublicationsWithHttpInfo) | **GET** /api/v1/publications | Get all publications |
+| [**publishBioModels**](PublicationResourceApi.md#publishBioModels) | **PUT** /api/v1/publications/{id}/publish | Publish selected BioModels and MathModels associated with a publication |
+| [**publishBioModelsWithHttpInfo**](PublicationResourceApi.md#publishBioModelsWithHttpInfo) | **PUT** /api/v1/publications/{id}/publish | Publish selected BioModels and MathModels associated with a publication |
 | [**updatePublication**](PublicationResourceApi.md#updatePublication) | **PUT** /api/v1/publications | Update publication |
 | [**updatePublicationWithHttpInfo**](PublicationResourceApi.md#updatePublicationWithHttpInfo) | **PUT** /api/v1/publications | Update publication |
 
@@ -550,6 +552,150 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 | **200** | OK |  -  |
+| **500** | Data Access Exception |  -  |
+
+
+## publishBioModels
+
+> void publishBioModels(id, publishModelsRequest)
+
+Publish selected BioModels and MathModels associated with a publication
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.PublicationResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+        
+
+        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
+        Long id = 56L; // Long | 
+        PublishModelsRequest publishModelsRequest = new PublishModelsRequest(); // PublishModelsRequest | 
+        try {
+            apiInstance.publishBioModels(id, publishModelsRequest);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PublicationResourceApi#publishBioModels");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **Long**|  | |
+| **publishModelsRequest** | [**PublishModelsRequest**](PublishModelsRequest.md)|  | [optional] |
+
+### Return type
+
+
+null (empty response body)
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **204** | No Content |  -  |
+| **401** | Not Authenticated |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
+| **500** | Data Access Exception |  -  |
+
+## publishBioModelsWithHttpInfo
+
+> ApiResponse<Void> publishBioModels publishBioModelsWithHttpInfo(id, publishModelsRequest)
+
+Publish selected BioModels and MathModels associated with a publication
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.PublicationResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+        
+
+        PublicationResourceApi apiInstance = new PublicationResourceApi(defaultClient);
+        Long id = 56L; // Long | 
+        PublishModelsRequest publishModelsRequest = new PublishModelsRequest(); // PublishModelsRequest | 
+        try {
+            ApiResponse<Void> response = apiInstance.publishBioModelsWithHttpInfo(id, publishModelsRequest);
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling PublicationResourceApi#publishBioModels");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **id** | **Long**|  | |
+| **publishModelsRequest** | [**PublishModelsRequest**](PublishModelsRequest.md)|  | [optional] |
+
+### Return type
+
+
+ApiResponse<Void>
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: application/json
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **204** | No Content |  -  |
+| **401** | Not Authenticated |  -  |
+| **403** | Not Allowed |  -  |
+| **404** | Not found |  -  |
 | **500** | Data Access Exception |  -  |
 
 

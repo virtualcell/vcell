@@ -58,6 +58,7 @@ docs/Origin.md
 docs/Publication.md
 docs/PublicationInfo.md
 docs/PublicationResourceApi.md
+docs/PublishModelsRequest.md
 docs/SPECIALCLAIM.md
 docs/SampledCurve.md
 docs/SchedulerStatus.md
@@ -168,6 +169,7 @@ vcell_client/models/n5_export_request.py
 vcell_client/models/origin.py
 vcell_client/models/publication.py
 vcell_client/models/publication_info.py
+vcell_client/models/publish_models_request.py
 vcell_client/models/sampled_curve.py
 vcell_client/models/scheduler_status.py
 vcell_client/models/simulation_execution_status_record.py

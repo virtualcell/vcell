@@ -10,6 +10,7 @@
 |**bmKey** | **String** |  |  [optional] |
 |**name** | **String** |  |  [optional] |
 |**privacy** | **Integer** |  |  [optional] |
+|**versionFlag** | **Integer** |  |  [optional] |
 |**groupUsers** | **List&lt;String&gt;** |  |  [optional] |
 |**savedDate** | **Long** |  |  [optional] |
 |**annot** | **String** |  |  [optional] |

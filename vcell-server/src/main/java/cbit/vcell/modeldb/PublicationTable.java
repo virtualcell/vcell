@@ -109,7 +109,8 @@ public String getPreparedStatement_PublicationReps(String conditions, OrderBy or
 		   						"||"+"SQ1_"+biomodelTable.name.getQualifiedColName()+"||';'"+
 		   						"||"+"SQ1_"+userTable.id.getQualifiedColName()+string_cast+"||';'"+
 		   						"||"+"SQ1_"+userTable.userid.getQualifiedColName()+"||';'"+
-		   						"||"+"SQ1_"+biomodelTable.versionFlag.getQualifiedColName()+string_cast + concat_second_arg+")||']' "+
+		   						"||"+"SQ1_"+biomodelTable.versionFlag.getQualifiedColName()+string_cast+"||';'"+
+		   						"||"+"SQ1_"+biomodelTable.privacy.getQualifiedColName()+string_cast + concat_second_arg+")||']' "+
 		   "   from "+pubModelTable.getTableName()+" SQ1_"+pubModelTable.getTableName()+", "+
 		              biomodelTable.getTableName()+" SQ1_"+biomodelTable.getTableName()+", "+
 		              userTable.getTableName()+" SQ1_"+userTable.getTableName()+" "+
@@ -182,13 +183,14 @@ public PublicationRep getPublicationRep(ResultSet rset, DatabaseSyntax dbSyntax)
 		String[] bmRefStrings = bmRefsString.replace("[", "").replace("]", "").split(",");
 		for (String bmRefString : bmRefStrings) {
 			String bmRefComponents[] = bmRefString.split(";");
-			if (bmRefComponents.length==5){
+			if (bmRefComponents.length >= 5){
 				KeyValue bmKey = new KeyValue(bmRefComponents[0]);
 				String bmName = bmRefComponents[1];
 				KeyValue ownerKey = new KeyValue(bmRefComponents[2]);
 				String ownerUserid = bmRefComponents[3];
 				Long versionFlag = Long.valueOf(bmRefComponents[4]);
-				bmRefList.add(new BioModelReferenceRep(bmKey, bmName, new User(ownerUserid,ownerKey),versionFlag));
+				Integer privacy = bmRefComponents.length >= 6 ? Integer.valueOf(bmRefComponents[5]) : null;
+				bmRefList.add(new BioModelReferenceRep(bmKey, bmName, new User(ownerUserid,ownerKey), versionFlag, privacy));
 			}
 		}
 	}

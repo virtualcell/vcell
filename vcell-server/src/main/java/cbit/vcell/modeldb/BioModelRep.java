@@ -11,6 +11,7 @@ public class BioModelRep {
 	private final KeyValue bmKey;
 	private final String name;
 	private final int privacy;
+	private final int versionFlag;
 	private final User[] groupUsers;
 	private final Date date;
 	private final String annot;
@@ -22,12 +23,13 @@ public class BioModelRep {
 	private ArrayList<SimContextRep> simContextRepList = new ArrayList<SimContextRep>();
 	private ArrayList<SimulationRep> simulationRepList = new ArrayList<SimulationRep>();
 	
-	public BioModelRep(KeyValue bmKey, String name, int privacy, User[] groupUsers, Date date, String annot, BigDecimal branchID, KeyValue modelRef,
+	public BioModelRep(KeyValue bmKey, String name, int privacy, int versionFlag, User[] groupUsers, Date date, String annot, BigDecimal branchID, KeyValue modelRef,
 			User owner, KeyValue[] simKeyList, KeyValue[] simContextKeyList) {
 		super();
 		this.bmKey = bmKey;
 		this.name = name;
 		this.privacy = privacy;
+		this.versionFlag = versionFlag;
 		this.groupUsers = groupUsers;
 		this.date = date;
 		this.annot = annot;
@@ -48,6 +50,10 @@ public class BioModelRep {
 
 	public int getPrivacy() {
 		return privacy;
+	}
+
+	public int getVersionFlag() {
+		return versionFlag;
 	}
 
 	public User[] getGroupUsers() {

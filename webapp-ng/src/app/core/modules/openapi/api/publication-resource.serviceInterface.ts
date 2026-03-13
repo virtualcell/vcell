@@ -14,6 +14,7 @@ import { HttpHeaders }                                       from '@angular/comm
 import { Observable }                                        from 'rxjs';
 
 import { Publication } from '../model/models';
+import { PublishModelsRequest } from '../model/models';
 import { VCellHTTPError } from '../model/models';
 
 
@@ -51,6 +52,14 @@ export interface PublicationResourceServiceInterface {
      * 
      */
     getPublications(extraHttpRequestParams?: any): Observable<Array<Publication>>;
+
+    /**
+     * Publish selected BioModels and MathModels associated with a publication
+     * 
+     * @param id 
+     * @param publishModelsRequest 
+     */
+    publishBioModels(id: number, publishModelsRequest?: PublishModelsRequest, extraHttpRequestParams?: any): Observable<{}>;
 
     /**
      * Update publication

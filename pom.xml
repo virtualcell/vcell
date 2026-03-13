@@ -199,10 +199,16 @@
 
 
 	<repositories>
-		<!-- we use this because javax.media:jai_core:1.1.3 is not available in Maven Central or in the Alfresco repository -->
+		<!-- Vendored artifacts not available on Maven Central: jai_core, jai-codec, netcdf, udunits, thredds-parent -->
 		<repository>
-			<id>osgeo</id>
-			<url>https://repo.osgeo.org/repository/release/</url>
+			<id>lib-maven-repo</id>
+			<url>file://${maven.multiModuleProjectDirectory}/lib/maven-repo</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
 		<!-- needed for com.mxgraph.jgraphx -->
 		<repository>
