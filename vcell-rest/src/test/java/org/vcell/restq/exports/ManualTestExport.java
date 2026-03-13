@@ -30,15 +30,15 @@ public class ManualTestExport {
         standardExportInformation.simulationKey("264891976");
         standardExportInformation.simulationName("Frap");
         standardExportInformation.timeSpecs(new TimeSpecs()
-                .mode(TimeMode.RANGE)
+                .mode(TimeMode.TIME_RANGE)
                 .beginTimeIndex(0)
                 .endTimeIndex(1)
                 .allTimes(new ArrayList<>(){{add(0.0); add(0.05); add(0.1);}} ));
         standardExportInformation.variableSpecs(new VariableSpecs()
                 .variableNames(new ArrayList<>(){{add("Dex");}})
-                .mode(VariableMode.ONE)
+                .mode(VariableMode.VARIABLE_ONE)
         );
-        standardExportInformation.geometrySpecs(new GeometrySpecDTO().geometryMode(GeometryMode.FULL));
+        standardExportInformation.geometrySpecs(new GeometrySpecDTO().geometryMode(GeometryMode.GEOMETRY_FULL));
 
         N5ExportRequest n5ExportRequest = new N5ExportRequest();
         n5ExportRequest.standardExportInformation(standardExportInformation);
@@ -59,13 +59,13 @@ public class ManualTestExport {
                 System.out.println("---------Checking export status...---------");
                 List<ExportEvent> exportStatus = exportResourceApi.exportStatus(time);
                 for (ExportEvent exportEvent : exportStatus) {
-                    if (exportEvent.getEventType() == ExportProgressType.COMPLETE) {
+                    if (exportEvent.getEventType() == ExportProgressType.EXPORT_COMPLETE) {
                         numOfExportsCompleted++;
                         System.out.println("Export completed: " + exportEvent.getDataIdString());
-                    } else if (exportEvent.getEventType() == ExportProgressType.START || exportEvent.getEventType() == ExportProgressType.PROGRESS || exportEvent.getEventType() == ExportProgressType.ASSEMBLING) {
+                    } else if (exportEvent.getEventType() == ExportProgressType.EXPORT_START || exportEvent.getEventType() == ExportProgressType.EXPORT_PROGRESS || exportEvent.getEventType() == ExportProgressType.EXPORT_ASSEMBLING) {
                         System.out.println("Export in progress: " + exportEvent.getProgress());
                     }
-                    else if (exportEvent.getEventType() == ExportProgressType.FAILURE) {
+                    else if (exportEvent.getEventType() == ExportProgressType.EXPORT_FAILURE) {
                         System.err.println("Export failed: " + exportEvent.getDataKey());
                     }
                     if (numOfExportsCompleted == numOfExports) {

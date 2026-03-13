@@ -104,7 +104,7 @@ public class ExportRequestTest {
                     lg.debug("The event under inspection is: {}", eventUnderInspection);
                     Thread.sleep(500);
                 }
-                Assertions.assertEquals(ExportProgressType.COMPLETE, eventUnderInspection.getEventType());
+                Assertions.assertEquals(ExportProgressType.EXPORT_COMPLETE, eventUnderInspection.getEventType());
             } catch (Exception e){
                 Assertions.fail();
             }
@@ -121,12 +121,12 @@ public class ExportRequestTest {
         StandardExportInfo exportRequest = new StandardExportInfo()
                 .simulationKey(simulationID)
                 .simulationJob(0)
-                .geometrySpecs(new GeometrySpecDTO().geometryMode(GeometryMode.SELECTIONS).selections(new ArrayList<>()))
+                .geometrySpecs(new GeometrySpecDTO().geometryMode(GeometryMode.GEOMETRY_SELECTIONS).selections(new ArrayList<>()))
                 .timeSpecs(
-                        new org.vcell.restclient.model.TimeSpecs().beginTimeIndex(startTimeIndex).endTimeIndex(endTimeIndex).allTimes(Arrays.stream(allTimes).boxed().toList()).mode(TimeMode.RANGE)
+                        new org.vcell.restclient.model.TimeSpecs().beginTimeIndex(startTimeIndex).endTimeIndex(endTimeIndex).allTimes(Arrays.stream(allTimes).boxed().toList()).mode(TimeMode.TIME_RANGE)
                 )
                 .variableSpecs(
-                        new org.vcell.restclient.model.VariableSpecs().variableNames(new ArrayList<>(){{add(volumetricDataID.getName());}}).mode(VariableMode.ONE)
+                        new org.vcell.restclient.model.VariableSpecs().variableNames(new ArrayList<>(){{add(volumetricDataID.getName());}}).mode(VariableMode.VARIABLE_ONE)
                 )
                 .contextName("")
                 .simulationName(vcSimulationIdentifier.getID())

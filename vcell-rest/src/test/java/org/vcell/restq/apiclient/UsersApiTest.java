@@ -196,7 +196,7 @@ public class UsersApiTest {
         PublicationResourceApi publicationResourceApi = new PublicationResourceApi(anonymous);
 
         // public available to everyone
-        Assertions.assertDoesNotThrow(publicationResourceApi::getPublications);
+        Assertions.assertDoesNotThrow(() -> publicationResourceApi.getPublications());
 
         // anonymous user can not delete a publication (other tests exist to ensure role based access is used too)
         try{
