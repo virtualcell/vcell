@@ -41,7 +41,8 @@ class TestBiomodelRef(unittest.TestCase):
                 name = '',
                 owner_name = '',
                 owner_key = 56,
-                version_flag = 56
+                version_flag = 56,
+                privacy = 56
             )
         else:
             return BiomodelRef(

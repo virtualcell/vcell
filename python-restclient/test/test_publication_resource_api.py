@@ -55,6 +55,13 @@ class TestPublicationResourceApi(unittest.TestCase):
         """
         pass
 
+    def test_publish_bio_models(self) -> None:
+        """Test case for publish_bio_models
+
+        Publish selected BioModels and MathModels associated with a publication
+        """
+        pass
+
     def test_update_publication(self) -> None:
         """Test case for update_publication
 

@@ -38,7 +38,7 @@ class TestSimulationQueueEntryStatusRecord(unittest.TestCase):
         if include_optional:
             return SimulationQueueEntryStatusRecord(
                 field_queue_priority = 56,
-                field_queue_date = '2022-03-10T16:15:50Z',
+                field_queue_date = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 field_queue_id = 'QUEUE_ID_WAITING'
             )
         else:

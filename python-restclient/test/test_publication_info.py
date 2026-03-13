@@ -47,7 +47,7 @@ class TestPublicationInfo(unittest.TestCase):
                 pubmedid = '',
                 doi = '',
                 url = '',
-                pubdate = 'Thu Mar 10 00:00:00 UTC 2022',
+                pubdate = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date(),
                 vc_document_type = 'BIOMODEL_DOC',
                 user = vcell_client.models.user.User(
                     user_name = '', 

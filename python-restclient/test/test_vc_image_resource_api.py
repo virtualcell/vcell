@@ -30,30 +30,35 @@ class TestVCImageResourceApi(unittest.TestCase):
     def test_delete_image_vcml(self) -> None:
         """Test case for delete_image_vcml
 
+        Delete VC Image
         """
         pass
 
     def test_get_image_summaries(self) -> None:
         """Test case for get_image_summaries
 
+        Get Summaries
         """
         pass
 
     def test_get_image_summary(self) -> None:
         """Test case for get_image_summary
 
+        Get Summary
         """
         pass
 
     def test_get_image_vcml(self) -> None:
         """Test case for get_image_vcml
 
+        Get VC Image
         """
         pass
 
     def test_save_image_vcml(self) -> None:
         """Test case for save_image_vcml
 
+        Save VC Image
         """
         pass
 

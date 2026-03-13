@@ -37,7 +37,7 @@ class TestFieldDataShape(unittest.TestCase):
         model = FieldDataShape()
         if include_optional:
             return FieldDataShape(
-                extent = vcell_client.models.extent.Extent(
+                extent = vcell_client.models.origin.Origin(
                     x = 1.337, 
                     y = 1.337, 
                     z = 1.337, ),

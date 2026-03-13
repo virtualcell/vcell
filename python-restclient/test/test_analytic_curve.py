@@ -37,7 +37,7 @@ class TestAnalyticCurve(unittest.TestCase):
         model = AnalyticCurve()
         if include_optional:
             return AnalyticCurve(
-                type = 'AnalyticCurve',
+                type = None,
                 exp_x = '',
                 exp_y = '',
                 exp_z = '',
@@ -55,7 +55,7 @@ class TestAnalyticCurve(unittest.TestCase):
             )
         else:
             return AnalyticCurve(
-                type = 'AnalyticCurve',
+                type = None,
         )
         """
 

@@ -30,30 +30,35 @@ class TestMathModelResourceApi(unittest.TestCase):
     def test_delete_math_model(self) -> None:
         """Test case for delete_math_model
 
+        Delete Math Model
         """
         pass
 
     def test_get_summaries(self) -> None:
         """Test case for get_summaries
 
+        Get Math Model Summaries
         """
         pass
 
     def test_get_summary(self) -> None:
         """Test case for get_summary
 
+        Get Math Model Summary
         """
         pass
 
     def test_get_vcml(self) -> None:
         """Test case for get_vcml
 
+        Get Math Model
         """
         pass
 
     def test_save_math_model(self) -> None:
         """Test case for save_math_model
 
+        Save
         """
         pass
 

@@ -37,20 +37,10 @@ class TestControlPointCurve(unittest.TestCase):
         model = ControlPointCurve()
         if include_optional:
             return ControlPointCurve(
-                type = 'ControlPointCurve',
-                control_points = [
-                    vcell_client.models.coordinate.Coordinate(
-                        x = 1.337, 
-                        y = 1.337, 
-                        z = 1.337, )
-                    ],
+                type = None,
+                control_points = None,
                 control_point_count = 56,
-                control_points_vector = [
-                    vcell_client.models.coordinate.Coordinate(
-                        x = 1.337, 
-                        y = 1.337, 
-                        z = 1.337, )
-                    ],
+                control_points_vector = None,
                 max_control_points = 56,
                 min_control_points = 56,
                 control_point_addable = True,
@@ -58,7 +48,7 @@ class TestControlPointCurve(unittest.TestCase):
             )
         else:
             return ControlPointCurve(
-                type = 'ControlPointCurve',
+                type = None,
         )
         """
 

@@ -30,30 +30,35 @@ class TestGeometryResourceApi(unittest.TestCase):
     def test_delete_geometry(self) -> None:
         """Test case for delete_geometry
 
+        Delete Geometry
         """
         pass
 
     def test_get_geometry_summaries(self) -> None:
         """Test case for get_geometry_summaries
 
+        Get Geometry Summaries
         """
         pass
 
     def test_get_geometry_summary(self) -> None:
         """Test case for get_geometry_summary
 
+        Get Geometry Summary
         """
         pass
 
     def test_get_geometry_vcml(self) -> None:
         """Test case for get_geometry_vcml
 
+        Get Geometry
         """
         pass
 
     def test_save_geometry(self) -> None:
         """Test case for save_geometry
 
+        Save
         """
         pass
 

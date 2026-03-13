@@ -41,7 +41,7 @@ class TestVCImageSummary(unittest.TestCase):
                     x = 56, 
                     y = 56, 
                     z = 56, ),
-                extent = vcell_client.models.extent.Extent(
+                extent = vcell_client.models.origin.Origin(
                     x = 1.337, 
                     y = 1.337, 
                     z = 1.337, ),

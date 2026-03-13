@@ -37,21 +37,19 @@ class TestSpatialSelectionMembrane(unittest.TestCase):
         model = SpatialSelectionMembrane()
         if include_optional:
             return SpatialSelectionMembrane(
-                type = 'Membrane',
-                field_sampled_data_indexes = [
-                    56
-                    ],
+                type = None,
+                field_sampled_data_indexes = None,
                 selection_source = vcell_client.models.sampled_curve.SampledCurve(
-                    type = 'SampledCurve', 
+                    type = null, 
                     default_num_samples = 56, 
                     max_control_points = 56, 
                     min_control_points = 56, 
                     segment_count = 56, 
-                    spatial_length = 1.337, )
+                    spatial_length = null, )
             )
         else:
             return SpatialSelectionMembrane(
-                type = 'Membrane',
+                type = None,
         )
         """
 

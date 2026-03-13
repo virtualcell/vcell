@@ -55,7 +55,8 @@ class TestPublication(unittest.TestCase):
                         name = '', 
                         owner_name = '', 
                         owner_key = 56, 
-                        version_flag = 56, )
+                        version_flag = 56, 
+                        privacy = 56, )
                     ],
                 mathmodel_refs = [
                     vcell_client.models.mathmodel_ref.MathmodelRef(
@@ -65,7 +66,7 @@ class TestPublication(unittest.TestCase):
                         owner_key = 56, 
                         version_flag = 56, )
                     ],
-                var_date = 'Thu Mar 10 00:00:00 UTC 2022'
+                var_date = datetime.datetime.strptime('1975-12-30', '%Y-%m-%d').date()
             )
         else:
             return Publication(

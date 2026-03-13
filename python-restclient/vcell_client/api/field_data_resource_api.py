@@ -28,6 +28,7 @@ from pydantic import StrictBytes, StrictFloat, StrictInt, StrictStr
 
 from typing import Any, List, Optional, Union
 
+from vcell_client.models.external_data_identifier import ExternalDataIdentifier
 from vcell_client.models.extent import Extent
 from vcell_client.models.field_data import FieldData
 from vcell_client.models.field_data_reference import FieldDataReference

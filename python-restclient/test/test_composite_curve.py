@@ -37,10 +37,8 @@ class TestCompositeCurve(unittest.TestCase):
         model = CompositeCurve()
         if include_optional:
             return CompositeCurve(
-                type = 'CompositeCurve',
-                field_curves = [
-                    null
-                    ],
+                type = None,
+                field_curves = None,
                 curve_count = 56,
                 default_num_samples = 56,
                 segment_count = 56,
@@ -48,7 +46,7 @@ class TestCompositeCurve(unittest.TestCase):
             )
         else:
             return CompositeCurve(
-                type = 'CompositeCurve',
+                type = None,
         )
         """
 

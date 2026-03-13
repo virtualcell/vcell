@@ -50,18 +50,6 @@ class TestExportEvent(unittest.TestCase):
                 job_id = 56,
                 data_key = '',
                 data_id_string = '',
-                time_specs = vcell_client.models.time_specs.TimeSpecs(
-                    begin_time_index = 56, 
-                    end_time_index = 56, 
-                    all_times = [
-                        1.337
-                        ], 
-                    mode = 'TIME_POINT', ),
-                variable_specs = vcell_client.models.variable_specs.VariableSpecs(
-                    variable_names = [
-                        ''
-                        ], 
-                    mode = 'VARIABLE_ONE', ),
                 human_readable_data = vcell_client.models.human_readable_export_data.HumanReadableExportData(
                     simulation_name = '', 
                     biomodel_name = '', 

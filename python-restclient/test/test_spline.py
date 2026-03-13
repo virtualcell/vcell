@@ -37,7 +37,7 @@ class TestSpline(unittest.TestCase):
         model = Spline()
         if include_optional:
             return Spline(
-                type = 'Spline',
+                type = None,
                 default_num_samples = 56,
                 max_control_points = 56,
                 min_control_points = 56,
@@ -45,7 +45,7 @@ class TestSpline(unittest.TestCase):
             )
         else:
             return Spline(
-                type = 'Spline',
+                type = None,
         )
         """
 

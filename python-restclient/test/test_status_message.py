@@ -38,7 +38,7 @@ class TestStatusMessage(unittest.TestCase):
         if include_optional:
             return StatusMessage(
                 job_status = vcell_client.models.simulation_job_status_record.SimulationJobStatusRecord(
-                    field_time_data_stamp = '2022-03-10T16:15:50Z', 
+                    field_time_data_stamp = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'), 
                     field_vc_sim_id = vcell_client.models.vc_simulation_identifier.VCSimulationIdentifier(
                         simulation_key = '', 
                         owner = vcell_client.models.user.User(
@@ -48,7 +48,7 @@ class TestStatusMessage(unittest.TestCase):
                                 'admins'
                                 ], ), 
                         id = '', ), 
-                    field_submit_date = '2022-03-10T16:15:50Z', 
+                    field_submit_date = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'), 
                     field_scheduler_status = 'WAITING', 
                     field_simulation_message = vcell_client.models.simulation_message.SimulationMessage(
                         detailed_state = 'UNKNOWN', 
@@ -62,9 +62,9 @@ class TestStatusMessage(unittest.TestCase):
                     field_server_id = '', 
                     field_job_index = 56, 
                     field_simulation_execution_status = vcell_client.models.simulation_execution_status_record.SimulationExecutionStatusRecord(
-                        field_start_date = '2022-03-10T16:15:50Z', 
-                        field_latest_update_date = '2022-03-10T16:15:50Z', 
-                        field_end_date = '2022-03-10T16:15:50Z', 
+                        field_start_date = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'), 
+                        field_latest_update_date = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'), 
+                        field_end_date = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'), 
                         field_compute_host = '', 
                         field_has_data = True, 
                         field_htc_job_id = vcell_client.models.htc_job_id.HtcJobID(
@@ -72,7 +72,7 @@ class TestStatusMessage(unittest.TestCase):
                             server = '', ), ), 
                     field_simulation_queue_entry_status = vcell_client.models.simulation_queue_entry_status_record.SimulationQueueEntryStatusRecord(
                         field_queue_priority = 56, 
-                        field_queue_date = '2022-03-10T16:15:50Z', 
+                        field_queue_date = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'), 
                         field_queue_id = 'QUEUE_ID_WAITING', ), ),
                 user_name = '',
                 progress = 1.337,

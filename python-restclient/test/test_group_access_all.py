@@ -37,12 +37,12 @@ class TestGroupAccessAll(unittest.TestCase):
         model = GroupAccessAll()
         if include_optional:
             return GroupAccessAll(
-                type = 'GroupAccessAll',
+                type = None,
                 description = ''
             )
         else:
             return GroupAccessAll(
-                type = 'GroupAccessAll',
+                type = None,
         )
         """
 

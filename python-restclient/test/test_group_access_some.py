@@ -37,40 +37,17 @@ class TestGroupAccessSome(unittest.TestCase):
         model = GroupAccessSome()
         if include_optional:
             return GroupAccessSome(
-                type = 'GroupAccessSome',
-                hash = 1.337,
-                group_members = [
-                    vcell_client.models.user.User(
-                        user_name = '', 
-                        key = '', 
-                        my_specials = [
-                            'admins'
-                            ], )
-                    ],
-                hidden_members = [
-                    True
-                    ],
+                type = None,
+                hash = None,
+                group_members = None,
+                hidden_members = None,
                 description = '',
-                hidden_group_members = [
-                    vcell_client.models.user.User(
-                        user_name = '', 
-                        key = '', 
-                        my_specials = [
-                            'admins'
-                            ], )
-                    ],
-                normal_group_members = [
-                    vcell_client.models.user.User(
-                        user_name = '', 
-                        key = '', 
-                        my_specials = [
-                            'admins'
-                            ], )
-                    ]
+                hidden_group_members = None,
+                normal_group_members = None
             )
         else:
             return GroupAccessSome(
-                type = 'GroupAccessSome',
+                type = None,
         )
         """
 

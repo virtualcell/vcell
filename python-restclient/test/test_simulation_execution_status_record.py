@@ -37,9 +37,9 @@ class TestSimulationExecutionStatusRecord(unittest.TestCase):
         model = SimulationExecutionStatusRecord()
         if include_optional:
             return SimulationExecutionStatusRecord(
-                field_start_date = '2022-03-10T16:15:50Z',
-                field_latest_update_date = '2022-03-10T16:15:50Z',
-                field_end_date = '2022-03-10T16:15:50Z',
+                field_start_date = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
+                field_latest_update_date = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
+                field_end_date = datetime.datetime.strptime('2013-10-20 19:20:30.00', '%Y-%m-%d %H:%M:%S.%f'),
                 field_compute_host = '',
                 field_has_data = True,
                 field_htc_job_id = vcell_client.models.htc_job_id.HtcJobID(

@@ -37,16 +37,16 @@ class TestSampledCurve(unittest.TestCase):
         model = SampledCurve()
         if include_optional:
             return SampledCurve(
-                type = 'SampledCurve',
+                type = None,
                 default_num_samples = 56,
                 max_control_points = 56,
                 min_control_points = 56,
                 segment_count = 56,
-                spatial_length = 1.337
+                spatial_length = None
             )
         else:
             return SampledCurve(
-                type = 'SampledCurve',
+                type = None,
         )
         """
 

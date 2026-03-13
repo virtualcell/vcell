@@ -30,12 +30,14 @@ class TestExportResourceApi(unittest.TestCase):
     def test_export_n5(self) -> None:
         """Test case for export_n5
 
+        Create N 5 Export
         """
         pass
 
     def test_export_status(self) -> None:
         """Test case for export_status
 
+        Poll Export Status
         """
         pass
 

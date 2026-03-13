@@ -16,4 +16,11 @@ echo 'from vcell_client.models.composite_curve import CompositeCurve' >> $INIT_F
 sed -i '' '/^from vcell_client.models.control_point_curve import ControlPointCurve$/d' $INIT_FILE && \
 echo 'from vcell_client.models.control_point_curve import ControlPointCurve' >> $INIT_FILE
 
+# Fix missing ExternalDataIdentifier import in field_data_resource_api.py (OpenAPI generator bug)
+FIELD_DATA_API="../python-restclient/vcell_client/api/field_data_resource_api.py"
+if [ -f "$FIELD_DATA_API" ] && ! grep -q 'from vcell_client.models.external_data_identifier import ExternalDataIdentifier' "$FIELD_DATA_API"; then
+  sed -i '' 's/^from vcell_client.models.extent import Extent$/from vcell_client.models.external_data_identifier import ExternalDataIdentifier\
+from vcell_client.models.extent import Extent/' "$FIELD_DATA_API"
+fi
+
 popd

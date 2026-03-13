@@ -40,6 +40,7 @@ class TestBioModel(unittest.TestCase):
                 bm_key = '',
                 name = '',
                 privacy = 56,
+                version_flag = 56,
                 group_users = [
                     ''
                     ],
