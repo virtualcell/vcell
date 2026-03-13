@@ -185,9 +185,11 @@ private void connect() throws DataAccessException {
 	nFSimMolecularConfigurations = getVCDataManager().getNFSimMolecularConfigurations(getVCDataIdentifier());
 	LangevinBatchResultSet raw = getVCDataManager().getLangevinBatchResultSet(getVCDataIdentifier());
 	langevinSolverResultSet = new LangevinSolverResultSet(raw);		// may be null
+	if(langevinSolverResultSet != null) {
+		langevinSolverResultSet.postProcess();
+	}
 	if( langevinSolverResultSet.isAverageDataAvailable()) {
 		odeSolverResultSet = langevinSolverResultSet.getAvg();
-//		odeSolverResultSet = langevinSolverResultSet.getClusterMean();
 	}
 }
 

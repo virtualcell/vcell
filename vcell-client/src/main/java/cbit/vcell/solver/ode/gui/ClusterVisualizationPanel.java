@@ -313,7 +313,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
 
     }
 
-        private void initConnections() {
+    private void initConnections() {
         initializeGlobalPalette();      // get a stable, high contrast palette
         // group the two buttons so only one stays selected
         ButtonGroup bg = new ButtonGroup();
@@ -340,6 +340,14 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
     }
 
     public void refreshData() {
+        if(owner != null && owner.getSimulation() != null) {
+            int jobs = owner.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions().getTotalNumberOfJobs();
+            String name = owner.getSimulation().getName();
+            String str = "<html><b>" + name + "</b> [" + jobs + " job" + (jobs != 1 ? "s" : "") + "]";
+            getJBottomLabel().setText(str);
+        } else {
+            getJBottomLabel().setText(" ");
+        }
 //        simulationModelInfo = owner.getSimulationModelInfo();
 //        langevinSolverResultSet = owner.getLangevinSolverResultSet();
         System.out.println("ClusterVisualizationPanel.refreshData() called");

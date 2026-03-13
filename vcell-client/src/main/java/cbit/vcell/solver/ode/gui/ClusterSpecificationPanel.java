@@ -2,6 +2,7 @@ package cbit.vcell.solver.ode.gui;
 
 import cbit.vcell.client.data.ODEDataViewer;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.simdata.LangevinSolverResultSet;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
@@ -64,10 +65,14 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getSource() == ClusterSpecificationPanel.this.getYAxisChoice() && !e.getValueIsAdjusting()) {
+
                 // extract selected ColumnDescriptions
-                java.util.List<ColumnDescription> selected = yAxisChoiceList.getSelectedValuesList();
+                java.util.List<ColumnDescription> selected = getYAxisChoice().getSelectedValuesList();
                 DisplayMode mode = getCurrentDisplayMode();
                 ODESolverResultSet srs = getResultSetForMode(mode);
+
+                // set property to inform the list about current mode (needed for renderer)
+                yAxisChoiceList.putClientProperty("ClusterDisplayMode", mode);
 
                 // fire the event upward
                 firePropertyChange("ClusterSelection", null, new ClusterSelection(mode, selected, srs));
@@ -242,17 +247,54 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
                 public Component getListCellRendererComponent(
                         JList<?> list, Object value, int index,
                         boolean isSelected, boolean cellHasFocus) {
-
                     JLabel label = (JLabel) super.getListCellRendererComponent(
                             list, value, index, isSelected, cellHasFocus);
 
-                    ColumnDescription cd = (ColumnDescription) value;
-                    label.setText(cd.getName());   // later: cd.getName() + " (molecules)"
+                    if (value instanceof ODESolverResultSetColumnDescription cd) {
+                        // Always show the plain name
+                        String name = cd.getName();
+                        label.setText(name);
 
+                        // Gray out trivial entries
+                        if (cd.isTrivial()) {
+                            label.setForeground(Color.GRAY);
+                        } else {
+                            label.setForeground(isSelected
+                                    ? list.getSelectionForeground()
+                                    : list.getForeground());
+                        }
+
+                        // Determine tooltip based on DisplayMode
+                        DisplayMode mode = (DisplayMode)
+                                ((JComponent) list).getClientProperty("ClusterDisplayMode");
+                        if (mode == null) {
+                            label.setToolTipText(null);
+                            return label;
+                        }
+                        switch (mode) {
+                            case COUNTS:
+                                // cluster size <b>X</b> molecules
+                                label.setToolTipText(
+                                        "<html>cluster size <b>" + name + "</b> molecules</html>"
+                                );
+                                break;
+                            case MEAN:
+                            case OVERALL:
+                                label.setToolTipText("<html>" + expandStatisticName(name) + "</html>");
+                                break;
+                        }
+                    }
                     return label;
                 }
-            });
-        }
+                private String expandStatisticName(String name) {
+                    return switch (name) {
+                        case "ACS" -> "Average Cluster Size";
+                        case "SD"  -> "Standard Deviation";
+                        case "ACO" -> "Average Cluster Occupancy";
+                        default    -> name;  // fallback
+                    };
+                }
+            });        }
         return yAxisChoiceList;
     }
 

@@ -1,6 +1,9 @@
 package cbit.vcell.simdata;
 
+import cbit.vcell.math.ODESolverResultSetColumnDescription;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.util.ColumnDescription;
 
 import java.io.*;
 
@@ -68,6 +71,54 @@ public class LangevinSolverResultSet implements Serializable {
 
         } catch (ClassNotFoundException | IOException e) {
             throw new RuntimeException("Deep copy failed", e);
+        }
+    }
+
+    public void postProcess() {
+        if(isClusterDataAvailable()) {
+            ODESimData co = getClusterOverall();
+            checkTrivial(co);
+            co = getClusterMean();
+            checkTrivial(co);
+            co = getClusterCounts();
+            checkTrivial(co);
+        }
+        if(isAverageDataAvailable()) {
+            ODESimData co = getAvg();
+            checkTrivial(co);
+            co = getMin();
+            checkTrivial(co);
+            co = getMax();
+            checkTrivial(co);
+            co = getStd();
+            checkTrivial(co);
+        }
+    }
+    private static void checkTrivial(ODESimData co) {
+        ColumnDescription[] cds = co.getColumnDescriptions();
+        for(ColumnDescription columnDescription : cds) {
+            if (columnDescription instanceof ODESolverResultSetColumnDescription cd) {
+                double[] data = null;
+                int index = co.findColumn(cd.getName());
+                try {
+                    data = co.extractColumn(index);
+                } catch (ExpressionException e) {
+                    System.out.println("Failed to extract column: " + e.getMessage());
+                    continue;
+                }
+                if(data == null || data.length == 0) {
+                    continue;
+                }
+                double initial = data[0];
+                boolean isTrivial = true;
+                for(double d : data) {
+                    if(initial != d) {
+                        isTrivial = false;
+                        break;	// one mismatch is enough to know it's not trivial
+                    }
+                }
+                cd.setIsTrivial(isTrivial);
+            }
         }
     }
 

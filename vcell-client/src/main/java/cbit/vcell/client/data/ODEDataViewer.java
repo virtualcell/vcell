@@ -484,6 +484,7 @@ public void setVcDataIdentifier(VCDataIdentifier vcDataIdentifier) {
 	firePropertyChange("vcDataIdentifier", oldValue, vcDataIdentifier);
 	outputSpeciesResultsPanel.refreshData();
 	getClusterSpecificationPanel().refreshData();
+	getClusterVisualizationPanel().refreshData();
 }
 
 public void setOdeDataContext() {
