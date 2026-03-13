@@ -9,16 +9,11 @@
  */
 
 
-export type SPECIALCLAIM = 'admins' | 'powerUsers' | 'publicationEditors' | 'vcellSupport';
-
 export const SPECIALCLAIM = {
-
-    Admins: 'admins' as SPECIALCLAIM,
-
-    PowerUsers: 'powerUsers' as SPECIALCLAIM,
-
-    PublicationEditors: 'publicationEditors' as SPECIALCLAIM,
-
-    VcellSupport: 'vcellSupport' as SPECIALCLAIM
-};
+    Admins: 'admins',
+    PowerUsers: 'powerUsers',
+    PublicationEditors: 'publicationEditors',
+    VcellSupport: 'vcellSupport'
+} as const;
+export type SPECIALCLAIM = typeof SPECIALCLAIM[keyof typeof SPECIALCLAIM];
 

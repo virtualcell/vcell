@@ -36,7 +36,7 @@ import org.vcell.restclient.ApiClient;
   FieldDataSavedResults.JSON_PROPERTY_FIELD_DATA_NAME,
   FieldDataSavedResults.JSON_PROPERTY_FIELD_DATA_KEY
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class FieldDataSavedResults {
   public static final String JSON_PROPERTY_FIELD_DATA_NAME = "fieldDataName";
   @javax.annotation.Nullable
@@ -59,14 +59,14 @@ public class FieldDataSavedResults {
    * @return fieldDataName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_DATA_NAME)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_DATA_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getFieldDataName() {
     return fieldDataName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_DATA_NAME)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_DATA_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFieldDataName(@javax.annotation.Nullable String fieldDataName) {
     this.fieldDataName = fieldDataName;
@@ -83,14 +83,14 @@ public class FieldDataSavedResults {
    * @return fieldDataKey
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_DATA_KEY)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_DATA_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getFieldDataKey() {
     return fieldDataKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_DATA_KEY)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_DATA_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFieldDataKey(@javax.annotation.Nullable String fieldDataKey) {
     this.fieldDataKey = fieldDataKey;
@@ -173,12 +173,12 @@ public class FieldDataSavedResults {
 
     // add `fieldDataName` to the URL query string
     if (getFieldDataName() != null) {
-      joiner.add(String.format("%sfieldDataName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldDataName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sfieldDataName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldDataName()))));
     }
 
     // add `fieldDataKey` to the URL query string
     if (getFieldDataKey() != null) {
-      joiner.add(String.format("%sfieldDataKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldDataKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sfieldDataKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldDataKey()))));
     }
 
     return joiner.toString();

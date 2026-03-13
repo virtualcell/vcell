@@ -9,16 +9,11 @@
  */
 
 
-export type FunctionCategory = 'PREDEFINED' | 'OLDUSERDEFINED' | 'OUTPUTFUNCTION' | 'POSTPROCESSFUNCTION';
-
 export const FunctionCategory = {
-
-    Predefined: 'PREDEFINED' as FunctionCategory,
-
-    Olduserdefined: 'OLDUSERDEFINED' as FunctionCategory,
-
-    Outputfunction: 'OUTPUTFUNCTION' as FunctionCategory,
-
-    Postprocessfunction: 'POSTPROCESSFUNCTION' as FunctionCategory
-};
+    Predefined: 'PREDEFINED',
+    Olduserdefined: 'OLDUSERDEFINED',
+    Outputfunction: 'OUTPUTFUNCTION',
+    Postprocessfunction: 'POSTPROCESSFUNCTION'
+} as const;
+export type FunctionCategory = typeof FunctionCategory[keyof typeof FunctionCategory];
 

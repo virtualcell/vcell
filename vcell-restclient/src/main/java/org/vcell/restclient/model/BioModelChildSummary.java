@@ -50,7 +50,7 @@ import org.vcell.restclient.ApiClient;
   BioModelChildSummary.JSON_PROPERTY_SIMULATION_CONTEXT_NAMES,
   BioModelChildSummary.JSON_PROPERTY_APPLICATION_INFO
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class BioModelChildSummary {
   public static final String JSON_PROPERTY_SC_NAMES = "scNames";
   @javax.annotation.Nullable
@@ -121,14 +121,14 @@ public class BioModelChildSummary {
    * @return scNames
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SC_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_SC_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getScNames() {
     return scNames;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SC_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_SC_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setScNames(@javax.annotation.Nullable List<String> scNames) {
     this.scNames = scNames;
@@ -153,14 +153,14 @@ public class BioModelChildSummary {
    * @return scAnnots
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SC_ANNOTS)
+  @JsonProperty(value = JSON_PROPERTY_SC_ANNOTS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getScAnnots() {
     return scAnnots;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SC_ANNOTS)
+  @JsonProperty(value = JSON_PROPERTY_SC_ANNOTS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setScAnnots(@javax.annotation.Nullable List<String> scAnnots) {
     this.scAnnots = scAnnots;
@@ -185,14 +185,14 @@ public class BioModelChildSummary {
    * @return geoNames
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_GEO_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_GEO_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getGeoNames() {
     return geoNames;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_GEO_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_GEO_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setGeoNames(@javax.annotation.Nullable List<String> geoNames) {
     this.geoNames = geoNames;
@@ -217,14 +217,14 @@ public class BioModelChildSummary {
    * @return geoDims
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_GEO_DIMS)
+  @JsonProperty(value = JSON_PROPERTY_GEO_DIMS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<Integer> getGeoDims() {
     return geoDims;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_GEO_DIMS)
+  @JsonProperty(value = JSON_PROPERTY_GEO_DIMS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setGeoDims(@javax.annotation.Nullable List<Integer> geoDims) {
     this.geoDims = geoDims;
@@ -249,14 +249,14 @@ public class BioModelChildSummary {
    * @return appTypes
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_APP_TYPES)
+  @JsonProperty(value = JSON_PROPERTY_APP_TYPES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<MathType> getAppTypes() {
     return appTypes;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_APP_TYPES)
+  @JsonProperty(value = JSON_PROPERTY_APP_TYPES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setAppTypes(@javax.annotation.Nullable List<MathType> appTypes) {
     this.appTypes = appTypes;
@@ -281,14 +281,14 @@ public class BioModelChildSummary {
    * @return simNames
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIM_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_SIM_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<List<String>> getSimNames() {
     return simNames;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SIM_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_SIM_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSimNames(@javax.annotation.Nullable List<List<String>> simNames) {
     this.simNames = simNames;
@@ -313,14 +313,14 @@ public class BioModelChildSummary {
    * @return simAnnots
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIM_ANNOTS)
+  @JsonProperty(value = JSON_PROPERTY_SIM_ANNOTS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<List<String>> getSimAnnots() {
     return simAnnots;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SIM_ANNOTS)
+  @JsonProperty(value = JSON_PROPERTY_SIM_ANNOTS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSimAnnots(@javax.annotation.Nullable List<List<String>> simAnnots) {
     this.simAnnots = simAnnots;
@@ -345,14 +345,14 @@ public class BioModelChildSummary {
    * @return geometryDimensions
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_GEOMETRY_DIMENSIONS)
+  @JsonProperty(value = JSON_PROPERTY_GEOMETRY_DIMENSIONS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<Integer> getGeometryDimensions() {
     return geometryDimensions;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_GEOMETRY_DIMENSIONS)
+  @JsonProperty(value = JSON_PROPERTY_GEOMETRY_DIMENSIONS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setGeometryDimensions(@javax.annotation.Nullable List<Integer> geometryDimensions) {
     this.geometryDimensions = geometryDimensions;
@@ -377,14 +377,14 @@ public class BioModelChildSummary {
    * @return geometryNames
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_GEOMETRY_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_GEOMETRY_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getGeometryNames() {
     return geometryNames;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_GEOMETRY_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_GEOMETRY_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setGeometryNames(@javax.annotation.Nullable List<String> geometryNames) {
     this.geometryNames = geometryNames;
@@ -409,14 +409,14 @@ public class BioModelChildSummary {
    * @return simulationContextAnnotations
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIMULATION_CONTEXT_ANNOTATIONS)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_CONTEXT_ANNOTATIONS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getSimulationContextAnnotations() {
     return simulationContextAnnotations;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SIMULATION_CONTEXT_ANNOTATIONS)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_CONTEXT_ANNOTATIONS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSimulationContextAnnotations(@javax.annotation.Nullable List<String> simulationContextAnnotations) {
     this.simulationContextAnnotations = simulationContextAnnotations;
@@ -441,14 +441,14 @@ public class BioModelChildSummary {
    * @return simulationContextNames
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIMULATION_CONTEXT_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_CONTEXT_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getSimulationContextNames() {
     return simulationContextNames;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SIMULATION_CONTEXT_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_CONTEXT_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSimulationContextNames(@javax.annotation.Nullable List<String> simulationContextNames) {
     this.simulationContextNames = simulationContextNames;
@@ -473,14 +473,14 @@ public class BioModelChildSummary {
    * @return applicationInfo
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_APPLICATION_INFO)
+  @JsonProperty(value = JSON_PROPERTY_APPLICATION_INFO, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<ApplicationInfo> getApplicationInfo() {
     return applicationInfo;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_APPLICATION_INFO)
+  @JsonProperty(value = JSON_PROPERTY_APPLICATION_INFO, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setApplicationInfo(@javax.annotation.Nullable List<ApplicationInfo> applicationInfo) {
     this.applicationInfo = applicationInfo;
@@ -584,8 +584,8 @@ public class BioModelChildSummary {
     // add `scNames` to the URL query string
     if (getScNames() != null) {
       for (int i = 0; i < getScNames().size(); i++) {
-        joiner.add(String.format("%sscNames%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%sscNames%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getScNames().get(i)))));
       }
     }
@@ -593,8 +593,8 @@ public class BioModelChildSummary {
     // add `scAnnots` to the URL query string
     if (getScAnnots() != null) {
       for (int i = 0; i < getScAnnots().size(); i++) {
-        joiner.add(String.format("%sscAnnots%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%sscAnnots%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getScAnnots().get(i)))));
       }
     }
@@ -602,8 +602,8 @@ public class BioModelChildSummary {
     // add `geoNames` to the URL query string
     if (getGeoNames() != null) {
       for (int i = 0; i < getGeoNames().size(); i++) {
-        joiner.add(String.format("%sgeoNames%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%sgeoNames%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getGeoNames().get(i)))));
       }
     }
@@ -611,8 +611,8 @@ public class BioModelChildSummary {
     // add `geoDims` to the URL query string
     if (getGeoDims() != null) {
       for (int i = 0; i < getGeoDims().size(); i++) {
-        joiner.add(String.format("%sgeoDims%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%sgeoDims%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getGeoDims().get(i)))));
       }
     }
@@ -621,8 +621,8 @@ public class BioModelChildSummary {
     if (getAppTypes() != null) {
       for (int i = 0; i < getAppTypes().size(); i++) {
         if (getAppTypes().get(i) != null) {
-          joiner.add(String.format("%sappTypes%s%s=%s", prefix, suffix,
-              "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+          joiner.add(String.format(java.util.Locale.ROOT, "%sappTypes%s%s=%s", prefix, suffix,
+              "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
               ApiClient.urlEncode(ApiClient.valueToString(getAppTypes().get(i)))));
         }
       }
@@ -631,8 +631,8 @@ public class BioModelChildSummary {
     // add `simNames` to the URL query string
     if (getSimNames() != null) {
       for (int i = 0; i < getSimNames().size(); i++) {
-        joiner.add(String.format("%ssimNames%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%ssimNames%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getSimNames().get(i)))));
       }
     }
@@ -640,8 +640,8 @@ public class BioModelChildSummary {
     // add `simAnnots` to the URL query string
     if (getSimAnnots() != null) {
       for (int i = 0; i < getSimAnnots().size(); i++) {
-        joiner.add(String.format("%ssimAnnots%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%ssimAnnots%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getSimAnnots().get(i)))));
       }
     }
@@ -649,8 +649,8 @@ public class BioModelChildSummary {
     // add `geometryDimensions` to the URL query string
     if (getGeometryDimensions() != null) {
       for (int i = 0; i < getGeometryDimensions().size(); i++) {
-        joiner.add(String.format("%sgeometryDimensions%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%sgeometryDimensions%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getGeometryDimensions().get(i)))));
       }
     }
@@ -658,8 +658,8 @@ public class BioModelChildSummary {
     // add `geometryNames` to the URL query string
     if (getGeometryNames() != null) {
       for (int i = 0; i < getGeometryNames().size(); i++) {
-        joiner.add(String.format("%sgeometryNames%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%sgeometryNames%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getGeometryNames().get(i)))));
       }
     }
@@ -667,8 +667,8 @@ public class BioModelChildSummary {
     // add `simulationContextAnnotations` to the URL query string
     if (getSimulationContextAnnotations() != null) {
       for (int i = 0; i < getSimulationContextAnnotations().size(); i++) {
-        joiner.add(String.format("%ssimulationContextAnnotations%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%ssimulationContextAnnotations%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getSimulationContextAnnotations().get(i)))));
       }
     }
@@ -676,8 +676,8 @@ public class BioModelChildSummary {
     // add `simulationContextNames` to the URL query string
     if (getSimulationContextNames() != null) {
       for (int i = 0; i < getSimulationContextNames().size(); i++) {
-        joiner.add(String.format("%ssimulationContextNames%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%ssimulationContextNames%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getSimulationContextNames().get(i)))));
       }
     }
@@ -686,8 +686,8 @@ public class BioModelChildSummary {
     if (getApplicationInfo() != null) {
       for (int i = 0; i < getApplicationInfo().size(); i++) {
         if (getApplicationInfo().get(i) != null) {
-          joiner.add(getApplicationInfo().get(i).toUrlQueryString(String.format("%sapplicationInfo%s%s", prefix, suffix,
-          "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
+          joiner.add(getApplicationInfo().get(i).toUrlQueryString(String.format(java.util.Locale.ROOT, "%sapplicationInfo%s%s", prefix, suffix,
+          "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix))));
         }
       }
     }

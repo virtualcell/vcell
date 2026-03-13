@@ -37,7 +37,7 @@ import org.vcell.restclient.ApiClient;
   Extent.JSON_PROPERTY_Y,
   Extent.JSON_PROPERTY_Z
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class Extent {
   public static final String JSON_PROPERTY_X = "x";
   @javax.annotation.Nullable
@@ -64,14 +64,14 @@ public class Extent {
    * @return x
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_X)
+  @JsonProperty(value = JSON_PROPERTY_X, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Double getX() {
     return x;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_X)
+  @JsonProperty(value = JSON_PROPERTY_X, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setX(@javax.annotation.Nullable Double x) {
     this.x = x;
@@ -88,14 +88,14 @@ public class Extent {
    * @return y
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_Y)
+  @JsonProperty(value = JSON_PROPERTY_Y, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Double getY() {
     return y;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_Y)
+  @JsonProperty(value = JSON_PROPERTY_Y, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setY(@javax.annotation.Nullable Double y) {
     this.y = y;
@@ -112,14 +112,14 @@ public class Extent {
    * @return z
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_Z)
+  @JsonProperty(value = JSON_PROPERTY_Z, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Double getZ() {
     return z;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_Z)
+  @JsonProperty(value = JSON_PROPERTY_Z, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setZ(@javax.annotation.Nullable Double z) {
     this.z = z;
@@ -204,17 +204,17 @@ public class Extent {
 
     // add `x` to the URL query string
     if (getX() != null) {
-      joiner.add(String.format("%sx%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getX()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sx%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getX()))));
     }
 
     // add `y` to the URL query string
     if (getY() != null) {
-      joiner.add(String.format("%sy%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getY()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sy%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getY()))));
     }
 
     // add `z` to the URL query string
     if (getZ() != null) {
-      joiner.add(String.format("%sz%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getZ()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sz%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getZ()))));
     }
 
     return joiner.toString();

@@ -51,16 +51,37 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class GeometryResourceApi {
+  /**
+   * Utility class for extending HttpRequest.Builder functionality.
+   */
+  private static class HttpRequestBuilderExtensions {
+    /**
+     * Adds additional headers to the provided HttpRequest.Builder. Useful for adding method/endpoint specific headers.
+     *
+     * @param builder the HttpRequest.Builder to which headers will be added
+     * @param headers a map of header names and values to add; may be null
+     * @return the same HttpRequest.Builder instance with the additional headers set
+     */
+    static HttpRequest.Builder withAdditionalHeaders(HttpRequest.Builder builder, Map<String, String> headers) {
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                builder.header(entry.getKey(), entry.getValue());
+            }
+        }
+        return builder;
+    }
+  }
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
   private final String memberVarBaseUri;
   private final Consumer<HttpRequest.Builder> memberVarInterceptor;
   private final Duration memberVarReadTimeout;
   private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
-  private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
+  private final Consumer<HttpResponse<InputStream>> memberVarAsyncResponseInterceptor;
 
   public GeometryResourceApi() {
     this(Configuration.getDefaultApiClient());
@@ -76,8 +97,17 @@ public class GeometryResourceApi {
     memberVarAsyncResponseInterceptor = apiClient.getAsyncResponseInterceptor();
   }
 
+
   protected ApiException getApiException(String operationId, HttpResponse<InputStream> response) throws IOException {
-    String body = response.body() == null ? null : new String(response.body().readAllBytes());
+    InputStream responseBody = ApiClient.getResponseBody(response);
+    String body = null;
+    try {
+      body = responseBody == null ? null : new String(responseBody.readAllBytes());
+    } finally {
+      if (responseBody != null) {
+        responseBody.close();
+      }
+    }
     String message = formatExceptionMessage(operationId, response.statusCode(), body);
     return new ApiException(response.statusCode(), message, response.headers(), body);
   }
@@ -90,13 +120,75 @@ public class GeometryResourceApi {
   }
 
   /**
+   * Download file from the given response.
+   *
+   * @param response Response
+   * @return File
+   * @throws ApiException If fail to read file content from response and write to disk
+   */
+  public File downloadFileFromResponse(HttpResponse<InputStream> response, InputStream responseBody) throws ApiException {
+    if (responseBody == null) {
+      throw new ApiException(new IOException("Response body is empty"));
+    }
+    try {
+      File file = prepareDownloadFile(response);
+      java.nio.file.Files.copy(responseBody, file.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+      return file;
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+  }
+
+  /**
+   * <p>Prepare the file for download from the response.</p>
+   *
+   * @param response a {@link java.net.http.HttpResponse} object.
+   * @return a {@link java.io.File} object.
+   * @throws java.io.IOException if any.
+   */
+  private File prepareDownloadFile(HttpResponse<InputStream> response) throws IOException {
+    String filename = null;
+    java.util.Optional<String> contentDisposition = response.headers().firstValue("Content-Disposition");
+    if (contentDisposition.isPresent() && !"".equals(contentDisposition.get())) {
+      // Get filename from the Content-Disposition header.
+      java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("filename=['\"]?([^'\"\\s]+)['\"]?");
+      java.util.regex.Matcher matcher = pattern.matcher(contentDisposition.get());
+      if (matcher.find())
+        filename = matcher.group(1);
+    }
+    File file = null;
+    if (filename != null) {
+      java.nio.file.Path tempDir = java.nio.file.Files.createTempDirectory("swagger-gen-native");
+      java.nio.file.Path filePath = java.nio.file.Files.createFile(tempDir.resolve(filename));
+      file = filePath.toFile();
+      tempDir.toFile().deleteOnExit();   // best effort cleanup
+      file.deleteOnExit(); // best effort cleanup
+    } else {
+      file = java.nio.file.Files.createTempFile("download-", "").toFile();
+      file.deleteOnExit(); // best effort cleanup
+    }
+    return file;
+  }
+
+  /**
    * Delete Geometry
    * Remove specific Geometry.
    * @param id  (required)
    * @throws ApiException if fails to make API call
    */
-  public void deleteGeometry(String id) throws ApiException {
-    deleteGeometryWithHttpInfo(id);
+  public void deleteGeometry(@javax.annotation.Nonnull String id) throws ApiException {
+    deleteGeometry(id, null);
+  }
+
+  /**
+   * Delete Geometry
+   * Remove specific Geometry.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @throws ApiException if fails to make API call
+   */
+  public void deleteGeometry(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    deleteGeometryWithHttpInfo(id, headers);
   }
 
   /**
@@ -106,8 +198,20 @@ public class GeometryResourceApi {
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Void> deleteGeometryWithHttpInfo(String id) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = deleteGeometryRequestBuilder(id);
+  public ApiResponse<Void> deleteGeometryWithHttpInfo(@javax.annotation.Nonnull String id) throws ApiException {
+    return deleteGeometryWithHttpInfo(id, null);
+  }
+
+  /**
+   * Delete Geometry
+   * Remove specific Geometry.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> deleteGeometryWithHttpInfo(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = deleteGeometryRequestBuilder(id, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -115,9 +219,14 @@ public class GeometryResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("deleteGeometry", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody != null) {
+          localVarResponseBody.readAllBytes();
         }
         return new ApiResponse<>(
             localVarResponse.statusCode(),
@@ -125,11 +234,9 @@ public class GeometryResourceApi {
             null
         );
       } finally {
-        // Drain the InputStream
-        while (localVarResponse.body().read() != -1) {
-          // Ignore
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
         }
-        localVarResponse.body().close();
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -140,7 +247,7 @@ public class GeometryResourceApi {
     }
   }
 
-  private HttpRequest.Builder deleteGeometryRequestBuilder(String id) throws ApiException {
+  private HttpRequest.Builder deleteGeometryRequestBuilder(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'id' is set
     if (id == null) {
       throw new ApiException(400, "Missing the required parameter 'id' when calling deleteGeometry");
@@ -154,11 +261,14 @@ public class GeometryResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -172,8 +282,20 @@ public class GeometryResourceApi {
    * @return List&lt;GeometrySummary&gt;
    * @throws ApiException if fails to make API call
    */
-  public List<GeometrySummary> getGeometrySummaries(Boolean includePublicAndShared) throws ApiException {
-    ApiResponse<List<GeometrySummary>> localVarResponse = getGeometrySummariesWithHttpInfo(includePublicAndShared);
+  public List<GeometrySummary> getGeometrySummaries(@javax.annotation.Nullable Boolean includePublicAndShared) throws ApiException {
+    return getGeometrySummaries(includePublicAndShared, null);
+  }
+
+  /**
+   * Get Geometry Summaries
+   * Return Geometry summaries.
+   * @param includePublicAndShared Include Geometry summaries that are public and shared with the requester. Default is true. (optional)
+   * @param headers Optional headers to include in the request
+   * @return List&lt;GeometrySummary&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public List<GeometrySummary> getGeometrySummaries(@javax.annotation.Nullable Boolean includePublicAndShared, Map<String, String> headers) throws ApiException {
+    ApiResponse<List<GeometrySummary>> localVarResponse = getGeometrySummariesWithHttpInfo(includePublicAndShared, headers);
     return localVarResponse.getData();
   }
 
@@ -184,8 +306,20 @@ public class GeometryResourceApi {
    * @return ApiResponse&lt;List&lt;GeometrySummary&gt;&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<List<GeometrySummary>> getGeometrySummariesWithHttpInfo(Boolean includePublicAndShared) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getGeometrySummariesRequestBuilder(includePublicAndShared);
+  public ApiResponse<List<GeometrySummary>> getGeometrySummariesWithHttpInfo(@javax.annotation.Nullable Boolean includePublicAndShared) throws ApiException {
+    return getGeometrySummariesWithHttpInfo(includePublicAndShared, null);
+  }
+
+  /**
+   * Get Geometry Summaries
+   * Return Geometry summaries.
+   * @param includePublicAndShared Include Geometry summaries that are public and shared with the requester. Default is true. (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;List&lt;GeometrySummary&gt;&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<List<GeometrySummary>> getGeometrySummariesWithHttpInfo(@javax.annotation.Nullable Boolean includePublicAndShared, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getGeometrySummariesRequestBuilder(includePublicAndShared, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -193,11 +327,13 @@ public class GeometryResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getGeometrySummaries", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<List<GeometrySummary>>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -205,15 +341,21 @@ public class GeometryResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        List<GeometrySummary> responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<GeometrySummary>>() {});
+        
 
         return new ApiResponse<List<GeometrySummary>>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<GeometrySummary>>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -224,7 +366,7 @@ public class GeometryResourceApi {
     }
   }
 
-  private HttpRequest.Builder getGeometrySummariesRequestBuilder(Boolean includePublicAndShared) throws ApiException {
+  private HttpRequest.Builder getGeometrySummariesRequestBuilder(@javax.annotation.Nullable Boolean includePublicAndShared, Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -248,11 +390,14 @@ public class GeometryResourceApi {
     }
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -266,8 +411,20 @@ public class GeometryResourceApi {
    * @return GeometrySummary
    * @throws ApiException if fails to make API call
    */
-  public GeometrySummary getGeometrySummary(String id) throws ApiException {
-    ApiResponse<GeometrySummary> localVarResponse = getGeometrySummaryWithHttpInfo(id);
+  public GeometrySummary getGeometrySummary(@javax.annotation.Nonnull String id) throws ApiException {
+    return getGeometrySummary(id, null);
+  }
+
+  /**
+   * Get Geometry Summary
+   * All of the text based information about a Geometry (dimensions, extent, origin, etc...), but not the actual Geometry itself.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return GeometrySummary
+   * @throws ApiException if fails to make API call
+   */
+  public GeometrySummary getGeometrySummary(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    ApiResponse<GeometrySummary> localVarResponse = getGeometrySummaryWithHttpInfo(id, headers);
     return localVarResponse.getData();
   }
 
@@ -278,8 +435,20 @@ public class GeometryResourceApi {
    * @return ApiResponse&lt;GeometrySummary&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<GeometrySummary> getGeometrySummaryWithHttpInfo(String id) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getGeometrySummaryRequestBuilder(id);
+  public ApiResponse<GeometrySummary> getGeometrySummaryWithHttpInfo(@javax.annotation.Nonnull String id) throws ApiException {
+    return getGeometrySummaryWithHttpInfo(id, null);
+  }
+
+  /**
+   * Get Geometry Summary
+   * All of the text based information about a Geometry (dimensions, extent, origin, etc...), but not the actual Geometry itself.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;GeometrySummary&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<GeometrySummary> getGeometrySummaryWithHttpInfo(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getGeometrySummaryRequestBuilder(id, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -287,11 +456,13 @@ public class GeometryResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getGeometrySummary", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<GeometrySummary>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -299,15 +470,21 @@ public class GeometryResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        GeometrySummary responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<GeometrySummary>() {});
+        
 
         return new ApiResponse<GeometrySummary>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<GeometrySummary>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -318,7 +495,7 @@ public class GeometryResourceApi {
     }
   }
 
-  private HttpRequest.Builder getGeometrySummaryRequestBuilder(String id) throws ApiException {
+  private HttpRequest.Builder getGeometrySummaryRequestBuilder(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'id' is set
     if (id == null) {
       throw new ApiException(400, "Missing the required parameter 'id' when calling getGeometrySummary");
@@ -332,11 +509,14 @@ public class GeometryResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -350,8 +530,20 @@ public class GeometryResourceApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String getGeometryVCML(String id) throws ApiException {
-    ApiResponse<String> localVarResponse = getGeometryVCMLWithHttpInfo(id);
+  public String getGeometryVCML(@javax.annotation.Nonnull String id) throws ApiException {
+    return getGeometryVCML(id, null);
+  }
+
+  /**
+   * Get Geometry
+   * Returns &lt;Geometry&gt; as root element in VCML format.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return String
+   * @throws ApiException if fails to make API call
+   */
+  public String getGeometryVCML(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    ApiResponse<String> localVarResponse = getGeometryVCMLWithHttpInfo(id, headers);
     return localVarResponse.getData();
   }
 
@@ -362,8 +554,20 @@ public class GeometryResourceApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> getGeometryVCMLWithHttpInfo(String id) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getGeometryVCMLRequestBuilder(id);
+  public ApiResponse<String> getGeometryVCMLWithHttpInfo(@javax.annotation.Nonnull String id) throws ApiException {
+    return getGeometryVCMLWithHttpInfo(id, null);
+  }
+
+  /**
+   * Get Geometry
+   * Returns &lt;Geometry&gt; as root element in VCML format.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;String&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<String> getGeometryVCMLWithHttpInfo(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getGeometryVCMLRequestBuilder(id, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -371,11 +575,13 @@ public class GeometryResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getGeometryVCML", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<String>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -383,15 +589,21 @@ public class GeometryResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        String responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {});
+        
 
         return new ApiResponse<String>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -402,7 +614,7 @@ public class GeometryResourceApi {
     }
   }
 
-  private HttpRequest.Builder getGeometryVCMLRequestBuilder(String id) throws ApiException {
+  private HttpRequest.Builder getGeometryVCMLRequestBuilder(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'id' is set
     if (id == null) {
       throw new ApiException(400, "Missing the required parameter 'id' when calling getGeometryVCML");
@@ -416,11 +628,14 @@ public class GeometryResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/xml, application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -435,8 +650,21 @@ public class GeometryResourceApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String saveGeometry(String body, String newName) throws ApiException {
-    ApiResponse<String> localVarResponse = saveGeometryWithHttpInfo(body, newName);
+  public String saveGeometry(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String newName) throws ApiException {
+    return saveGeometry(body, newName, null);
+  }
+
+  /**
+   * Save
+   * Save&#39;s VCML with &lt;Geometry&gt; as the root element.
+   * @param body  (required)
+   * @param newName Name to save new Geometry under. Leave blank if re-saving existing Geometry. (optional)
+   * @param headers Optional headers to include in the request
+   * @return String
+   * @throws ApiException if fails to make API call
+   */
+  public String saveGeometry(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String newName, Map<String, String> headers) throws ApiException {
+    ApiResponse<String> localVarResponse = saveGeometryWithHttpInfo(body, newName, headers);
     return localVarResponse.getData();
   }
 
@@ -448,8 +676,21 @@ public class GeometryResourceApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> saveGeometryWithHttpInfo(String body, String newName) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = saveGeometryRequestBuilder(body, newName);
+  public ApiResponse<String> saveGeometryWithHttpInfo(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String newName) throws ApiException {
+    return saveGeometryWithHttpInfo(body, newName, null);
+  }
+
+  /**
+   * Save
+   * Save&#39;s VCML with &lt;Geometry&gt; as the root element.
+   * @param body  (required)
+   * @param newName Name to save new Geometry under. Leave blank if re-saving existing Geometry. (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;String&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<String> saveGeometryWithHttpInfo(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String newName, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = saveGeometryRequestBuilder(body, newName, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -457,11 +698,13 @@ public class GeometryResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("saveGeometry", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<String>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -469,15 +712,21 @@ public class GeometryResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        String responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {});
+        
 
         return new ApiResponse<String>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -488,7 +737,7 @@ public class GeometryResourceApi {
     }
   }
 
-  private HttpRequest.Builder saveGeometryRequestBuilder(String body, String newName) throws ApiException {
+  private HttpRequest.Builder saveGeometryRequestBuilder(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String newName, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'body' is set
     if (body == null) {
       throw new ApiException(400, "Missing the required parameter 'body' when calling saveGeometry");
@@ -517,11 +766,16 @@ public class GeometryResourceApi {
 
     localVarRequestBuilder.header("Content-Type", "application/xml");
     localVarRequestBuilder.header("Accept", "application/xml, application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
-    localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofString(body));
+    Supplier<InputStream> localVarRequestBodySupplier = () -> new ByteArrayInputStream(body.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    localVarRequestBuilder.header("Content-Encoding", "gzip");
+    localVarRequestBuilder.method("POST", ApiClient.gzipRequestBody(localVarRequestBodySupplier));
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }

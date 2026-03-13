@@ -9,22 +9,14 @@
  */
 
 
-export type VariableDomain = 'VARIABLEDOMAIN_POSTPROCESSING' | 'VARIABLEDOMAIN_UNKNOWN' | 'VARIABLEDOMAIN_VOLUME' | 'VARIABLEDOMAIN_MEMBRANE' | 'VARIABLEDOMAIN_CONTOUR' | 'VARIABLEDOMAIN_NONSPATIAL' | 'VARIABLEDOMAIN_POINT';
-
 export const VariableDomain = {
-
-    VariabledomainPostprocessing: 'VARIABLEDOMAIN_POSTPROCESSING' as VariableDomain,
-
-    VariabledomainUnknown: 'VARIABLEDOMAIN_UNKNOWN' as VariableDomain,
-
-    VariabledomainVolume: 'VARIABLEDOMAIN_VOLUME' as VariableDomain,
-
-    VariabledomainMembrane: 'VARIABLEDOMAIN_MEMBRANE' as VariableDomain,
-
-    VariabledomainContour: 'VARIABLEDOMAIN_CONTOUR' as VariableDomain,
-
-    VariabledomainNonspatial: 'VARIABLEDOMAIN_NONSPATIAL' as VariableDomain,
-
-    VariabledomainPoint: 'VARIABLEDOMAIN_POINT' as VariableDomain
-};
+    VariabledomainPostprocessing: 'VARIABLEDOMAIN_POSTPROCESSING',
+    VariabledomainUnknown: 'VARIABLEDOMAIN_UNKNOWN',
+    VariabledomainVolume: 'VARIABLEDOMAIN_VOLUME',
+    VariabledomainMembrane: 'VARIABLEDOMAIN_MEMBRANE',
+    VariabledomainContour: 'VARIABLEDOMAIN_CONTOUR',
+    VariabledomainNonspatial: 'VARIABLEDOMAIN_NONSPATIAL',
+    VariabledomainPoint: 'VARIABLEDOMAIN_POINT'
+} as const;
+export type VariableDomain = typeof VariableDomain[keyof typeof VariableDomain];
 

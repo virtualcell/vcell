@@ -44,7 +44,7 @@ import org.vcell.restclient.ApiClient;
   VCImageSummary.JSON_PROPERTY_PREVIEW,
   VCImageSummary.JSON_PROPERTY_SOFTWARE_VERSION
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class VCImageSummary {
   public static final String JSON_PROPERTY_SIZE = "size";
   @javax.annotation.Nullable
@@ -79,14 +79,14 @@ public class VCImageSummary {
    * @return size
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIZE)
+  @JsonProperty(value = JSON_PROPERTY_SIZE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public ISize getSize() {
     return size;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SIZE)
+  @JsonProperty(value = JSON_PROPERTY_SIZE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSize(@javax.annotation.Nullable ISize size) {
     this.size = size;
@@ -103,14 +103,14 @@ public class VCImageSummary {
    * @return extent
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_EXTENT)
+  @JsonProperty(value = JSON_PROPERTY_EXTENT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Extent getExtent() {
     return extent;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_EXTENT)
+  @JsonProperty(value = JSON_PROPERTY_EXTENT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setExtent(@javax.annotation.Nullable Extent extent) {
     this.extent = extent;
@@ -127,14 +127,14 @@ public class VCImageSummary {
    * @return version
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Version getVersion() {
     return version;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVersion(@javax.annotation.Nullable Version version) {
     this.version = version;
@@ -151,14 +151,14 @@ public class VCImageSummary {
    * @return preview
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PREVIEW)
+  @JsonProperty(value = JSON_PROPERTY_PREVIEW, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public GIFImage getPreview() {
     return preview;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_PREVIEW)
+  @JsonProperty(value = JSON_PROPERTY_PREVIEW, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setPreview(@javax.annotation.Nullable GIFImage preview) {
     this.preview = preview;
@@ -175,14 +175,14 @@ public class VCImageSummary {
    * @return softwareVersion
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_SOFTWARE_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public VCellSoftwareVersion getSoftwareVersion() {
     return softwareVersion;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_SOFTWARE_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSoftwareVersion(@javax.annotation.Nullable VCellSoftwareVersion softwareVersion) {
     this.softwareVersion = softwareVersion;

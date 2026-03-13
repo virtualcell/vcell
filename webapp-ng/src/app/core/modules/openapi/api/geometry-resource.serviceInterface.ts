@@ -26,6 +26,7 @@ export interface GeometryResourceServiceInterface {
     /**
      * Delete Geometry
      * Remove specific Geometry.
+     * @endpoint delete /api/v1/geometry/{id}
      * @param id 
      */
     deleteGeometry(id: string, extraHttpRequestParams?: any): Observable<{}>;
@@ -33,6 +34,7 @@ export interface GeometryResourceServiceInterface {
     /**
      * Get Geometry Summaries
      * Return Geometry summaries.
+     * @endpoint get /api/v1/geometry/summaries
      * @param includePublicAndShared Include Geometry summaries that are public and shared with the requester. Default is true.
      */
     getGeometrySummaries(includePublicAndShared?: boolean, extraHttpRequestParams?: any): Observable<Array<GeometrySummary>>;
@@ -40,6 +42,7 @@ export interface GeometryResourceServiceInterface {
     /**
      * Get Geometry Summary
      * All of the text based information about a Geometry (dimensions, extent, origin, etc...), but not the actual Geometry itself.
+     * @endpoint get /api/v1/geometry/summary/{id}
      * @param id 
      */
     getGeometrySummary(id: string, extraHttpRequestParams?: any): Observable<GeometrySummary>;
@@ -47,6 +50,7 @@ export interface GeometryResourceServiceInterface {
     /**
      * Get Geometry
      * Returns &lt;Geometry&gt; as root element in VCML format.
+     * @endpoint get /api/v1/geometry/{id}
      * @param id 
      */
     getGeometryVCML(id: string, extraHttpRequestParams?: any): Observable<string>;
@@ -54,6 +58,7 @@ export interface GeometryResourceServiceInterface {
     /**
      * Save
      * Save\&#39;s VCML with &lt;Geometry&gt; as the root element.
+     * @endpoint post /api/v1/geometry
      * @param body 
      * @param newName Name to save new Geometry under. Leave blank if re-saving existing Geometry.
      */

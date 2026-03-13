@@ -9,14 +9,10 @@
  */
 
 
-export type VariableMode = 'VARIABLE_ONE' | 'VARIABLE_MULTI' | 'VARIABLE_ALL';
-
 export const VariableMode = {
-
-    VariableOne: 'VARIABLE_ONE' as VariableMode,
-
-    VariableMulti: 'VARIABLE_MULTI' as VariableMode,
-
-    VariableAll: 'VARIABLE_ALL' as VariableMode
-};
+    VariableOne: 'VARIABLE_ONE',
+    VariableMulti: 'VARIABLE_MULTI',
+    VariableAll: 'VARIABLE_ALL'
+} as const;
+export type VariableMode = typeof VariableMode[keyof typeof VariableMode];
 

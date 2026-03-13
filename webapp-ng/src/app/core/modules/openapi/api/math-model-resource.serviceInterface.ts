@@ -26,6 +26,7 @@ export interface MathModelResourceServiceInterface {
     /**
      * Delete Math Model
      * Remove specific Math Model.
+     * @endpoint delete /api/v1/mathModel/{id}
      * @param id 
      */
     deleteMathModel(id: string, extraHttpRequestParams?: any): Observable<{}>;
@@ -33,6 +34,7 @@ export interface MathModelResourceServiceInterface {
     /**
      * Get Math Model Summaries
      * Return MathModel summaries.
+     * @endpoint get /api/v1/mathModel/summaries
      * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. Default is true.
      */
     getSummaries(includePublicAndShared?: boolean, extraHttpRequestParams?: any): Observable<Array<MathModelSummary>>;
@@ -40,6 +42,7 @@ export interface MathModelResourceServiceInterface {
     /**
      * Get Math Model Summary
      * All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
+     * @endpoint get /api/v1/mathModel/summary/{id}
      * @param id 
      */
     getSummary(id: string, extraHttpRequestParams?: any): Observable<MathModelSummary>;
@@ -47,6 +50,7 @@ export interface MathModelResourceServiceInterface {
     /**
      * Get Math Model
      * Returns MathModel in VCML format.
+     * @endpoint get /api/v1/mathModel/{id}
      * @param id 
      */
     getVCML(id: string, extraHttpRequestParams?: any): Observable<string>;
@@ -54,6 +58,7 @@ export interface MathModelResourceServiceInterface {
     /**
      * Save
      * 
+     * @endpoint post /api/v1/mathModel
      * @param body 
      * @param newName Name to save new MathModel under. Leave blank if re-saving existing MathModel.
      * @param simNames The name of simulations that will be prepared for future execution.

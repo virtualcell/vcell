@@ -49,7 +49,7 @@ import org.vcell.restclient.ApiClient;
   HumanReadableExportData.JSON_PROPERTY_T_SLICES,
   HumanReadableExportData.JSON_PROPERTY_NUM_CHANNELS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class HumanReadableExportData {
   public static final String JSON_PROPERTY_SIMULATION_NAME = "simulationName";
   @javax.annotation.Nullable
@@ -108,14 +108,14 @@ public class HumanReadableExportData {
    * @return simulationName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIMULATION_NAME)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getSimulationName() {
     return simulationName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SIMULATION_NAME)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSimulationName(@javax.annotation.Nullable String simulationName) {
     this.simulationName = simulationName;
@@ -132,14 +132,14 @@ public class HumanReadableExportData {
    * @return biomodelName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_BIOMODEL_NAME)
+  @JsonProperty(value = JSON_PROPERTY_BIOMODEL_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getBiomodelName() {
     return biomodelName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_BIOMODEL_NAME)
+  @JsonProperty(value = JSON_PROPERTY_BIOMODEL_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setBiomodelName(@javax.annotation.Nullable String biomodelName) {
     this.biomodelName = biomodelName;
@@ -156,14 +156,14 @@ public class HumanReadableExportData {
    * @return applicationName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_APPLICATION_NAME)
+  @JsonProperty(value = JSON_PROPERTY_APPLICATION_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getApplicationName() {
     return applicationName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_APPLICATION_NAME)
+  @JsonProperty(value = JSON_PROPERTY_APPLICATION_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setApplicationName(@javax.annotation.Nullable String applicationName) {
     this.applicationName = applicationName;
@@ -188,14 +188,14 @@ public class HumanReadableExportData {
    * @return differentParameterValues
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DIFFERENT_PARAMETER_VALUES)
+  @JsonProperty(value = JSON_PROPERTY_DIFFERENT_PARAMETER_VALUES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getDifferentParameterValues() {
     return differentParameterValues;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DIFFERENT_PARAMETER_VALUES)
+  @JsonProperty(value = JSON_PROPERTY_DIFFERENT_PARAMETER_VALUES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDifferentParameterValues(@javax.annotation.Nullable List<String> differentParameterValues) {
     this.differentParameterValues = differentParameterValues;
@@ -212,14 +212,14 @@ public class HumanReadableExportData {
    * @return applicationType
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_APPLICATION_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_APPLICATION_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getApplicationType() {
     return applicationType;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_APPLICATION_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_APPLICATION_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setApplicationType(@javax.annotation.Nullable String applicationType) {
     this.applicationType = applicationType;
@@ -236,14 +236,14 @@ public class HumanReadableExportData {
    * @return serverSavedFileName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SERVER_SAVED_FILE_NAME)
+  @JsonProperty(value = JSON_PROPERTY_SERVER_SAVED_FILE_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getServerSavedFileName() {
     return serverSavedFileName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SERVER_SAVED_FILE_NAME)
+  @JsonProperty(value = JSON_PROPERTY_SERVER_SAVED_FILE_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setServerSavedFileName(@javax.annotation.Nullable String serverSavedFileName) {
     this.serverSavedFileName = serverSavedFileName;
@@ -260,14 +260,14 @@ public class HumanReadableExportData {
    * @return nonSpatial
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_NON_SPATIAL)
+  @JsonProperty(value = JSON_PROPERTY_NON_SPATIAL, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Boolean getNonSpatial() {
     return nonSpatial;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_NON_SPATIAL)
+  @JsonProperty(value = JSON_PROPERTY_NON_SPATIAL, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setNonSpatial(@javax.annotation.Nullable Boolean nonSpatial) {
     this.nonSpatial = nonSpatial;
@@ -292,14 +292,14 @@ public class HumanReadableExportData {
    * @return subVolume
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SUB_VOLUME)
+  @JsonProperty(value = JSON_PROPERTY_SUB_VOLUME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Map<String, String> getSubVolume() {
     return subVolume;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SUB_VOLUME)
+  @JsonProperty(value = JSON_PROPERTY_SUB_VOLUME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSubVolume(@javax.annotation.Nullable Map<String, String> subVolume) {
     this.subVolume = subVolume;
@@ -316,14 +316,14 @@ public class HumanReadableExportData {
    * @return zSlices
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_Z_SLICES)
+  @JsonProperty(value = JSON_PROPERTY_Z_SLICES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getzSlices() {
     return zSlices;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_Z_SLICES)
+  @JsonProperty(value = JSON_PROPERTY_Z_SLICES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setzSlices(@javax.annotation.Nullable Integer zSlices) {
     this.zSlices = zSlices;
@@ -340,14 +340,14 @@ public class HumanReadableExportData {
    * @return tSlices
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_T_SLICES)
+  @JsonProperty(value = JSON_PROPERTY_T_SLICES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer gettSlices() {
     return tSlices;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_T_SLICES)
+  @JsonProperty(value = JSON_PROPERTY_T_SLICES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void settSlices(@javax.annotation.Nullable Integer tSlices) {
     this.tSlices = tSlices;
@@ -364,14 +364,14 @@ public class HumanReadableExportData {
    * @return numChannels
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_NUM_CHANNELS)
+  @JsonProperty(value = JSON_PROPERTY_NUM_CHANNELS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getNumChannels() {
     return numChannels;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_NUM_CHANNELS)
+  @JsonProperty(value = JSON_PROPERTY_NUM_CHANNELS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setNumChannels(@javax.annotation.Nullable Integer numChannels) {
     this.numChannels = numChannels;
@@ -472,65 +472,65 @@ public class HumanReadableExportData {
 
     // add `simulationName` to the URL query string
     if (getSimulationName() != null) {
-      joiner.add(String.format("%ssimulationName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSimulationName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%ssimulationName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSimulationName()))));
     }
 
     // add `biomodelName` to the URL query string
     if (getBiomodelName() != null) {
-      joiner.add(String.format("%sbiomodelName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBiomodelName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sbiomodelName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBiomodelName()))));
     }
 
     // add `applicationName` to the URL query string
     if (getApplicationName() != null) {
-      joiner.add(String.format("%sapplicationName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getApplicationName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sapplicationName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getApplicationName()))));
     }
 
     // add `differentParameterValues` to the URL query string
     if (getDifferentParameterValues() != null) {
       for (int i = 0; i < getDifferentParameterValues().size(); i++) {
-        joiner.add(String.format("%sdifferentParameterValues%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%sdifferentParameterValues%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getDifferentParameterValues().get(i)))));
       }
     }
 
     // add `applicationType` to the URL query string
     if (getApplicationType() != null) {
-      joiner.add(String.format("%sapplicationType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getApplicationType()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sapplicationType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getApplicationType()))));
     }
 
     // add `serverSavedFileName` to the URL query string
     if (getServerSavedFileName() != null) {
-      joiner.add(String.format("%sserverSavedFileName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getServerSavedFileName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sserverSavedFileName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getServerSavedFileName()))));
     }
 
     // add `nonSpatial` to the URL query string
     if (getNonSpatial() != null) {
-      joiner.add(String.format("%snonSpatial%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getNonSpatial()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%snonSpatial%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getNonSpatial()))));
     }
 
     // add `subVolume` to the URL query string
     if (getSubVolume() != null) {
       for (String _key : getSubVolume().keySet()) {
-        joiner.add(String.format("%ssubVolume%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, _key, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%ssubVolume%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, _key, containerSuffix),
             getSubVolume().get(_key), ApiClient.urlEncode(ApiClient.valueToString(getSubVolume().get(_key)))));
       }
     }
 
     // add `zSlices` to the URL query string
     if (getzSlices() != null) {
-      joiner.add(String.format("%szSlices%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getzSlices()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%szSlices%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getzSlices()))));
     }
 
     // add `tSlices` to the URL query string
     if (gettSlices() != null) {
-      joiner.add(String.format("%stSlices%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(gettSlices()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%stSlices%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(gettSlices()))));
     }
 
     // add `numChannels` to the URL query string
     if (getNumChannels() != null) {
-      joiner.add(String.format("%snumChannels%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getNumChannels()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%snumChannels%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getNumChannels()))));
     }
 
     return joiner.toString();

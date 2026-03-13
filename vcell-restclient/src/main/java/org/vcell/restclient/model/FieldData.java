@@ -48,7 +48,7 @@ import org.vcell.restclient.ApiClient;
   FieldData.JSON_PROPERTY_ANNOTATION,
   FieldData.JSON_PROPERTY_NAME
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class FieldData {
   public static final String JSON_PROPERTY_SHORT_SPEC_DATA = "shortSpecData";
   @javax.annotation.Nullable
@@ -107,14 +107,14 @@ public class FieldData {
    * @return shortSpecData
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SHORT_SPEC_DATA)
+  @JsonProperty(value = JSON_PROPERTY_SHORT_SPEC_DATA, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<List<List<Integer>>> getShortSpecData() {
     return shortSpecData;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SHORT_SPEC_DATA)
+  @JsonProperty(value = JSON_PROPERTY_SHORT_SPEC_DATA, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setShortSpecData(@javax.annotation.Nullable List<List<List<Integer>>> shortSpecData) {
     this.shortSpecData = shortSpecData;
@@ -139,14 +139,14 @@ public class FieldData {
    * @return doubleSpecData
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DOUBLE_SPEC_DATA)
+  @JsonProperty(value = JSON_PROPERTY_DOUBLE_SPEC_DATA, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<List<List<Double>>> getDoubleSpecData() {
     return doubleSpecData;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DOUBLE_SPEC_DATA)
+  @JsonProperty(value = JSON_PROPERTY_DOUBLE_SPEC_DATA, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDoubleSpecData(@javax.annotation.Nullable List<List<List<Double>>> doubleSpecData) {
     this.doubleSpecData = doubleSpecData;
@@ -171,14 +171,14 @@ public class FieldData {
    * @return varNames
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VAR_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_VAR_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getVarNames() {
     return varNames;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_VAR_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_VAR_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVarNames(@javax.annotation.Nullable List<String> varNames) {
     this.varNames = varNames;
@@ -203,14 +203,14 @@ public class FieldData {
    * @return times
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_TIMES)
+  @JsonProperty(value = JSON_PROPERTY_TIMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<Double> getTimes() {
     return times;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_TIMES)
+  @JsonProperty(value = JSON_PROPERTY_TIMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setTimes(@javax.annotation.Nullable List<Double> times) {
     this.times = times;
@@ -227,14 +227,14 @@ public class FieldData {
    * @return origin
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ORIGIN)
+  @JsonProperty(value = JSON_PROPERTY_ORIGIN, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Origin getOrigin() {
     return origin;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ORIGIN)
+  @JsonProperty(value = JSON_PROPERTY_ORIGIN, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setOrigin(@javax.annotation.Nullable Origin origin) {
     this.origin = origin;
@@ -251,14 +251,14 @@ public class FieldData {
    * @return extent
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_EXTENT)
+  @JsonProperty(value = JSON_PROPERTY_EXTENT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Extent getExtent() {
     return extent;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_EXTENT)
+  @JsonProperty(value = JSON_PROPERTY_EXTENT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setExtent(@javax.annotation.Nullable Extent extent) {
     this.extent = extent;
@@ -275,14 +275,14 @@ public class FieldData {
    * @return isize
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ISIZE)
+  @JsonProperty(value = JSON_PROPERTY_ISIZE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public ISize getIsize() {
     return isize;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ISIZE)
+  @JsonProperty(value = JSON_PROPERTY_ISIZE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setIsize(@javax.annotation.Nullable ISize isize) {
     this.isize = isize;
@@ -299,14 +299,14 @@ public class FieldData {
    * @return annotation
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ANNOTATION)
+  @JsonProperty(value = JSON_PROPERTY_ANNOTATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getAnnotation() {
     return annotation;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ANNOTATION)
+  @JsonProperty(value = JSON_PROPERTY_ANNOTATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setAnnotation(@javax.annotation.Nullable String annotation) {
     this.annotation = annotation;
@@ -323,14 +323,14 @@ public class FieldData {
    * @return name
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getName() {
     return name;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setName(@javax.annotation.Nullable String name) {
     this.name = name;
@@ -429,8 +429,8 @@ public class FieldData {
     if (getShortSpecData() != null) {
       for (int i = 0; i < getShortSpecData().size(); i++) {
         if (getShortSpecData().get(i) != null) {
-          joiner.add(String.format("%sshortSpecData%s%s=%s", prefix, suffix,
-              "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+          joiner.add(String.format(java.util.Locale.ROOT, "%sshortSpecData%s%s=%s", prefix, suffix,
+              "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
               ApiClient.urlEncode(ApiClient.valueToString(getShortSpecData().get(i)))));
         }
       }
@@ -440,8 +440,8 @@ public class FieldData {
     if (getDoubleSpecData() != null) {
       for (int i = 0; i < getDoubleSpecData().size(); i++) {
         if (getDoubleSpecData().get(i) != null) {
-          joiner.add(String.format("%sdoubleSpecData%s%s=%s", prefix, suffix,
-              "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+          joiner.add(String.format(java.util.Locale.ROOT, "%sdoubleSpecData%s%s=%s", prefix, suffix,
+              "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
               ApiClient.urlEncode(ApiClient.valueToString(getDoubleSpecData().get(i)))));
         }
       }
@@ -450,8 +450,8 @@ public class FieldData {
     // add `varNames` to the URL query string
     if (getVarNames() != null) {
       for (int i = 0; i < getVarNames().size(); i++) {
-        joiner.add(String.format("%svarNames%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%svarNames%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getVarNames().get(i)))));
       }
     }
@@ -459,8 +459,8 @@ public class FieldData {
     // add `times` to the URL query string
     if (getTimes() != null) {
       for (int i = 0; i < getTimes().size(); i++) {
-        joiner.add(String.format("%stimes%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%stimes%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getTimes().get(i)))));
       }
     }
@@ -482,12 +482,12 @@ public class FieldData {
 
     // add `annotation` to the URL query string
     if (getAnnotation() != null) {
-      joiner.add(String.format("%sannotation%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAnnotation()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sannotation%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAnnotation()))));
     }
 
     // add `name` to the URL query string
     if (getName() != null) {
-      joiner.add(String.format("%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
     }
 
     return joiner.toString();

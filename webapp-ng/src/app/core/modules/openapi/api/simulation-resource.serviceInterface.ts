@@ -27,6 +27,7 @@ export interface SimulationResourceServiceInterface {
     /**
      * Get the status of simulation running
      * 
+     * @endpoint get /api/v1/Simulation/{simID}/simulationStatus
      * @param simID 
      * @param bioModelID 
      * @param mathModelID 
@@ -36,6 +37,7 @@ export interface SimulationResourceServiceInterface {
     /**
      * Start a simulation.
      * 
+     * @endpoint post /api/v1/Simulation/{simID}/startSimulation
      * @param simID 
      */
     startSimulation(simID: string, extraHttpRequestParams?: any): Observable<Array<StatusMessage>>;
@@ -43,6 +45,7 @@ export interface SimulationResourceServiceInterface {
     /**
      * Stop a simulation.
      * 
+     * @endpoint post /api/v1/Simulation/{simID}/stopSimulation
      * @param simID 
      */
     stopSimulation(simID: string, extraHttpRequestParams?: any): Observable<Array<StatusMessage>>;

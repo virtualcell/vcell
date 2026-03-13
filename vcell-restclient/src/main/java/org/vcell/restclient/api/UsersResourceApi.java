@@ -55,16 +55,37 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class UsersResourceApi {
+  /**
+   * Utility class for extending HttpRequest.Builder functionality.
+   */
+  private static class HttpRequestBuilderExtensions {
+    /**
+     * Adds additional headers to the provided HttpRequest.Builder. Useful for adding method/endpoint specific headers.
+     *
+     * @param builder the HttpRequest.Builder to which headers will be added
+     * @param headers a map of header names and values to add; may be null
+     * @return the same HttpRequest.Builder instance with the additional headers set
+     */
+    static HttpRequest.Builder withAdditionalHeaders(HttpRequest.Builder builder, Map<String, String> headers) {
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                builder.header(entry.getKey(), entry.getValue());
+            }
+        }
+        return builder;
+    }
+  }
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
   private final String memberVarBaseUri;
   private final Consumer<HttpRequest.Builder> memberVarInterceptor;
   private final Duration memberVarReadTimeout;
   private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
-  private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
+  private final Consumer<HttpResponse<InputStream>> memberVarAsyncResponseInterceptor;
 
   public UsersResourceApi() {
     this(Configuration.getDefaultApiClient());
@@ -80,8 +101,17 @@ public class UsersResourceApi {
     memberVarAsyncResponseInterceptor = apiClient.getAsyncResponseInterceptor();
   }
 
+
   protected ApiException getApiException(String operationId, HttpResponse<InputStream> response) throws IOException {
-    String body = response.body() == null ? null : new String(response.body().readAllBytes());
+    InputStream responseBody = ApiClient.getResponseBody(response);
+    String body = null;
+    try {
+      body = responseBody == null ? null : new String(responseBody.readAllBytes());
+    } finally {
+      if (responseBody != null) {
+        responseBody.close();
+      }
+    }
     String message = formatExceptionMessage(operationId, response.statusCode(), body);
     return new ApiException(response.statusCode(), message, response.headers(), body);
   }
@@ -94,13 +124,75 @@ public class UsersResourceApi {
   }
 
   /**
+   * Download file from the given response.
+   *
+   * @param response Response
+   * @return File
+   * @throws ApiException If fail to read file content from response and write to disk
+   */
+  public File downloadFileFromResponse(HttpResponse<InputStream> response, InputStream responseBody) throws ApiException {
+    if (responseBody == null) {
+      throw new ApiException(new IOException("Response body is empty"));
+    }
+    try {
+      File file = prepareDownloadFile(response);
+      java.nio.file.Files.copy(responseBody, file.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+      return file;
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+  }
+
+  /**
+   * <p>Prepare the file for download from the response.</p>
+   *
+   * @param response a {@link java.net.http.HttpResponse} object.
+   * @return a {@link java.io.File} object.
+   * @throws java.io.IOException if any.
+   */
+  private File prepareDownloadFile(HttpResponse<InputStream> response) throws IOException {
+    String filename = null;
+    java.util.Optional<String> contentDisposition = response.headers().firstValue("Content-Disposition");
+    if (contentDisposition.isPresent() && !"".equals(contentDisposition.get())) {
+      // Get filename from the Content-Disposition header.
+      java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("filename=['\"]?([^'\"\\s]+)['\"]?");
+      java.util.regex.Matcher matcher = pattern.matcher(contentDisposition.get());
+      if (matcher.find())
+        filename = matcher.group(1);
+    }
+    File file = null;
+    if (filename != null) {
+      java.nio.file.Path tempDir = java.nio.file.Files.createTempDirectory("swagger-gen-native");
+      java.nio.file.Path filePath = java.nio.file.Files.createFile(tempDir.resolve(filename));
+      file = filePath.toFile();
+      tempDir.toFile().deleteOnExit();   // best effort cleanup
+      file.deleteOnExit(); // best effort cleanup
+    } else {
+      file = java.nio.file.Files.createTempFile("download-", "").toFile();
+      file.deleteOnExit(); // best effort cleanup
+    }
+    return file;
+  }
+
+  /**
    * The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
    * 
    * @param userID  (optional)
    * @throws ApiException if fails to make API call
    */
-  public void forgotLegacyPassword(String userID) throws ApiException {
-    forgotLegacyPasswordWithHttpInfo(userID);
+  public void forgotLegacyPassword(@javax.annotation.Nullable String userID) throws ApiException {
+    forgotLegacyPassword(userID, null);
+  }
+
+  /**
+   * The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
+   * 
+   * @param userID  (optional)
+   * @param headers Optional headers to include in the request
+   * @throws ApiException if fails to make API call
+   */
+  public void forgotLegacyPassword(@javax.annotation.Nullable String userID, Map<String, String> headers) throws ApiException {
+    forgotLegacyPasswordWithHttpInfo(userID, headers);
   }
 
   /**
@@ -110,8 +202,20 @@ public class UsersResourceApi {
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Void> forgotLegacyPasswordWithHttpInfo(String userID) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = forgotLegacyPasswordRequestBuilder(userID);
+  public ApiResponse<Void> forgotLegacyPasswordWithHttpInfo(@javax.annotation.Nullable String userID) throws ApiException {
+    return forgotLegacyPasswordWithHttpInfo(userID, null);
+  }
+
+  /**
+   * The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
+   * 
+   * @param userID  (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> forgotLegacyPasswordWithHttpInfo(@javax.annotation.Nullable String userID, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = forgotLegacyPasswordRequestBuilder(userID, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -119,9 +223,14 @@ public class UsersResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("forgotLegacyPassword", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody != null) {
+          localVarResponseBody.readAllBytes();
         }
         return new ApiResponse<>(
             localVarResponse.statusCode(),
@@ -129,11 +238,9 @@ public class UsersResourceApi {
             null
         );
       } finally {
-        // Drain the InputStream
-        while (localVarResponse.body().read() != -1) {
-          // Ignore
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
         }
-        localVarResponse.body().close();
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -144,7 +251,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder forgotLegacyPasswordRequestBuilder(String userID) throws ApiException {
+  private HttpRequest.Builder forgotLegacyPasswordRequestBuilder(@javax.annotation.Nullable String userID, Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -168,11 +275,14 @@ public class UsersResourceApi {
     }
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -186,7 +296,18 @@ public class UsersResourceApi {
    * @throws ApiException if fails to make API call
    */
   public AccesTokenRepresentationRecord getGuestLegacyApiToken() throws ApiException {
-    ApiResponse<AccesTokenRepresentationRecord> localVarResponse = getGuestLegacyApiTokenWithHttpInfo();
+    return getGuestLegacyApiToken(null);
+  }
+
+  /**
+   * Method to get legacy tokens for guest users
+   * 
+   * @param headers Optional headers to include in the request
+   * @return AccesTokenRepresentationRecord
+   * @throws ApiException if fails to make API call
+   */
+  public AccesTokenRepresentationRecord getGuestLegacyApiToken(Map<String, String> headers) throws ApiException {
+    ApiResponse<AccesTokenRepresentationRecord> localVarResponse = getGuestLegacyApiTokenWithHttpInfo(headers);
     return localVarResponse.getData();
   }
 
@@ -197,7 +318,18 @@ public class UsersResourceApi {
    * @throws ApiException if fails to make API call
    */
   public ApiResponse<AccesTokenRepresentationRecord> getGuestLegacyApiTokenWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getGuestLegacyApiTokenRequestBuilder();
+    return getGuestLegacyApiTokenWithHttpInfo(null);
+  }
+
+  /**
+   * Method to get legacy tokens for guest users
+   * 
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;AccesTokenRepresentationRecord&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<AccesTokenRepresentationRecord> getGuestLegacyApiTokenWithHttpInfo(Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getGuestLegacyApiTokenRequestBuilder(headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -205,11 +337,13 @@ public class UsersResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getGuestLegacyApiToken", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<AccesTokenRepresentationRecord>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -217,15 +351,21 @@ public class UsersResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        AccesTokenRepresentationRecord responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<AccesTokenRepresentationRecord>() {});
+        
 
         return new ApiResponse<AccesTokenRepresentationRecord>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<AccesTokenRepresentationRecord>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -236,7 +376,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder getGuestLegacyApiTokenRequestBuilder() throws ApiException {
+  private HttpRequest.Builder getGuestLegacyApiTokenRequestBuilder(Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -245,11 +385,14 @@ public class UsersResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -263,7 +406,18 @@ public class UsersResourceApi {
    * @throws ApiException if fails to make API call
    */
   public AccesTokenRepresentationRecord getLegacyApiToken() throws ApiException {
-    ApiResponse<AccesTokenRepresentationRecord> localVarResponse = getLegacyApiTokenWithHttpInfo();
+    return getLegacyApiToken(null);
+  }
+
+  /**
+   * Get token for legacy API
+   * 
+   * @param headers Optional headers to include in the request
+   * @return AccesTokenRepresentationRecord
+   * @throws ApiException if fails to make API call
+   */
+  public AccesTokenRepresentationRecord getLegacyApiToken(Map<String, String> headers) throws ApiException {
+    ApiResponse<AccesTokenRepresentationRecord> localVarResponse = getLegacyApiTokenWithHttpInfo(headers);
     return localVarResponse.getData();
   }
 
@@ -274,7 +428,18 @@ public class UsersResourceApi {
    * @throws ApiException if fails to make API call
    */
   public ApiResponse<AccesTokenRepresentationRecord> getLegacyApiTokenWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getLegacyApiTokenRequestBuilder();
+    return getLegacyApiTokenWithHttpInfo(null);
+  }
+
+  /**
+   * Get token for legacy API
+   * 
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;AccesTokenRepresentationRecord&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<AccesTokenRepresentationRecord> getLegacyApiTokenWithHttpInfo(Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getLegacyApiTokenRequestBuilder(headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -282,11 +447,13 @@ public class UsersResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getLegacyApiToken", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<AccesTokenRepresentationRecord>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -294,15 +461,21 @@ public class UsersResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        AccesTokenRepresentationRecord responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<AccesTokenRepresentationRecord>() {});
+        
 
         return new ApiResponse<AccesTokenRepresentationRecord>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<AccesTokenRepresentationRecord>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -313,7 +486,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder getLegacyApiTokenRequestBuilder() throws ApiException {
+  private HttpRequest.Builder getLegacyApiTokenRequestBuilder(Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -322,11 +495,14 @@ public class UsersResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -340,7 +516,18 @@ public class UsersResourceApi {
    * @throws ApiException if fails to make API call
    */
   public UserIdentityJSONSafe getMappedUser() throws ApiException {
-    ApiResponse<UserIdentityJSONSafe> localVarResponse = getMappedUserWithHttpInfo();
+    return getMappedUser(null);
+  }
+
+  /**
+   * Get mapped VCell identity
+   * 
+   * @param headers Optional headers to include in the request
+   * @return UserIdentityJSONSafe
+   * @throws ApiException if fails to make API call
+   */
+  public UserIdentityJSONSafe getMappedUser(Map<String, String> headers) throws ApiException {
+    ApiResponse<UserIdentityJSONSafe> localVarResponse = getMappedUserWithHttpInfo(headers);
     return localVarResponse.getData();
   }
 
@@ -351,7 +538,18 @@ public class UsersResourceApi {
    * @throws ApiException if fails to make API call
    */
   public ApiResponse<UserIdentityJSONSafe> getMappedUserWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getMappedUserRequestBuilder();
+    return getMappedUserWithHttpInfo(null);
+  }
+
+  /**
+   * Get mapped VCell identity
+   * 
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;UserIdentityJSONSafe&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<UserIdentityJSONSafe> getMappedUserWithHttpInfo(Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getMappedUserRequestBuilder(headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -359,11 +557,13 @@ public class UsersResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getMappedUser", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<UserIdentityJSONSafe>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -371,15 +571,21 @@ public class UsersResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        UserIdentityJSONSafe responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<UserIdentityJSONSafe>() {});
+        
 
         return new ApiResponse<UserIdentityJSONSafe>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<UserIdentityJSONSafe>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -390,7 +596,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder getMappedUserRequestBuilder() throws ApiException {
+  private HttpRequest.Builder getMappedUserRequestBuilder(Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -399,11 +605,14 @@ public class UsersResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -417,7 +626,18 @@ public class UsersResourceApi {
    * @throws ApiException if fails to make API call
    */
   public Identity getMe() throws ApiException {
-    ApiResponse<Identity> localVarResponse = getMeWithHttpInfo();
+    return getMe(null);
+  }
+
+  /**
+   * Get current user
+   * 
+   * @param headers Optional headers to include in the request
+   * @return Identity
+   * @throws ApiException if fails to make API call
+   */
+  public Identity getMe(Map<String, String> headers) throws ApiException {
+    ApiResponse<Identity> localVarResponse = getMeWithHttpInfo(headers);
     return localVarResponse.getData();
   }
 
@@ -428,7 +648,18 @@ public class UsersResourceApi {
    * @throws ApiException if fails to make API call
    */
   public ApiResponse<Identity> getMeWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getMeRequestBuilder();
+    return getMeWithHttpInfo(null);
+  }
+
+  /**
+   * Get current user
+   * 
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Identity&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Identity> getMeWithHttpInfo(Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getMeRequestBuilder(headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -436,11 +667,13 @@ public class UsersResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getMe", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<Identity>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -448,15 +681,21 @@ public class UsersResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        Identity responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Identity>() {});
+        
 
         return new ApiResponse<Identity>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Identity>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -467,7 +706,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder getMeRequestBuilder() throws ApiException {
+  private HttpRequest.Builder getMeRequestBuilder(Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -476,11 +715,14 @@ public class UsersResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -493,8 +735,19 @@ public class UsersResourceApi {
    * @param userRegistrationInfo  (required)
    * @throws ApiException if fails to make API call
    */
-  public void mapNewUser(UserRegistrationInfo userRegistrationInfo) throws ApiException {
-    mapNewUserWithHttpInfo(userRegistrationInfo);
+  public void mapNewUser(@javax.annotation.Nonnull UserRegistrationInfo userRegistrationInfo) throws ApiException {
+    mapNewUser(userRegistrationInfo, null);
+  }
+
+  /**
+   * create vcell user
+   * 
+   * @param userRegistrationInfo  (required)
+   * @param headers Optional headers to include in the request
+   * @throws ApiException if fails to make API call
+   */
+  public void mapNewUser(@javax.annotation.Nonnull UserRegistrationInfo userRegistrationInfo, Map<String, String> headers) throws ApiException {
+    mapNewUserWithHttpInfo(userRegistrationInfo, headers);
   }
 
   /**
@@ -504,8 +757,20 @@ public class UsersResourceApi {
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Void> mapNewUserWithHttpInfo(UserRegistrationInfo userRegistrationInfo) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = mapNewUserRequestBuilder(userRegistrationInfo);
+  public ApiResponse<Void> mapNewUserWithHttpInfo(@javax.annotation.Nonnull UserRegistrationInfo userRegistrationInfo) throws ApiException {
+    return mapNewUserWithHttpInfo(userRegistrationInfo, null);
+  }
+
+  /**
+   * create vcell user
+   * 
+   * @param userRegistrationInfo  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> mapNewUserWithHttpInfo(@javax.annotation.Nonnull UserRegistrationInfo userRegistrationInfo, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = mapNewUserRequestBuilder(userRegistrationInfo, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -513,9 +778,14 @@ public class UsersResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("mapNewUser", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody != null) {
+          localVarResponseBody.readAllBytes();
         }
         return new ApiResponse<>(
             localVarResponse.statusCode(),
@@ -523,11 +793,9 @@ public class UsersResourceApi {
             null
         );
       } finally {
-        // Drain the InputStream
-        while (localVarResponse.body().read() != -1) {
-          // Ignore
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
         }
-        localVarResponse.body().close();
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -538,7 +806,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder mapNewUserRequestBuilder(UserRegistrationInfo userRegistrationInfo) throws ApiException {
+  private HttpRequest.Builder mapNewUserRequestBuilder(@javax.annotation.Nonnull UserRegistrationInfo userRegistrationInfo, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'userRegistrationInfo' is set
     if (userRegistrationInfo == null) {
       throw new ApiException(400, "Missing the required parameter 'userRegistrationInfo' when calling mapNewUser");
@@ -552,16 +820,21 @@ public class UsersResourceApi {
 
     localVarRequestBuilder.header("Content-Type", "application/json");
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     try {
       byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(userRegistrationInfo);
-      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+      Supplier<InputStream> localVarRequestBodySupplier = () -> new ByteArrayInputStream(localVarPostBody);
+      localVarRequestBuilder.header("Content-Encoding", "gzip");
+      localVarRequestBuilder.method("POST", ApiClient.gzipRequestBody(localVarRequestBodySupplier));
     } catch (IOException e) {
       throw new ApiException(e);
     }
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -575,8 +848,20 @@ public class UsersResourceApi {
    * @return Boolean
    * @throws ApiException if fails to make API call
    */
-  public Boolean mapUser(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
-    ApiResponse<Boolean> localVarResponse = mapUserWithHttpInfo(userLoginInfoForMapping);
+  public Boolean mapUser(@javax.annotation.Nonnull UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
+    return mapUser(userLoginInfoForMapping, null);
+  }
+
+  /**
+   * map vcell user
+   * 
+   * @param userLoginInfoForMapping  (required)
+   * @param headers Optional headers to include in the request
+   * @return Boolean
+   * @throws ApiException if fails to make API call
+   */
+  public Boolean mapUser(@javax.annotation.Nonnull UserLoginInfoForMapping userLoginInfoForMapping, Map<String, String> headers) throws ApiException {
+    ApiResponse<Boolean> localVarResponse = mapUserWithHttpInfo(userLoginInfoForMapping, headers);
     return localVarResponse.getData();
   }
 
@@ -587,8 +872,20 @@ public class UsersResourceApi {
    * @return ApiResponse&lt;Boolean&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Boolean> mapUserWithHttpInfo(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = mapUserRequestBuilder(userLoginInfoForMapping);
+  public ApiResponse<Boolean> mapUserWithHttpInfo(@javax.annotation.Nonnull UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
+    return mapUserWithHttpInfo(userLoginInfoForMapping, null);
+  }
+
+  /**
+   * map vcell user
+   * 
+   * @param userLoginInfoForMapping  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Boolean&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Boolean> mapUserWithHttpInfo(@javax.annotation.Nonnull UserLoginInfoForMapping userLoginInfoForMapping, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = mapUserRequestBuilder(userLoginInfoForMapping, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -596,11 +893,13 @@ public class UsersResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("mapUser", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<Boolean>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -608,15 +907,21 @@ public class UsersResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        Boolean responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Boolean>() {});
+        
 
         return new ApiResponse<Boolean>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Boolean>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -627,7 +932,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder mapUserRequestBuilder(UserLoginInfoForMapping userLoginInfoForMapping) throws ApiException {
+  private HttpRequest.Builder mapUserRequestBuilder(@javax.annotation.Nonnull UserLoginInfoForMapping userLoginInfoForMapping, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'userLoginInfoForMapping' is set
     if (userLoginInfoForMapping == null) {
       throw new ApiException(400, "Missing the required parameter 'userLoginInfoForMapping' when calling mapUser");
@@ -641,16 +946,21 @@ public class UsersResourceApi {
 
     localVarRequestBuilder.header("Content-Type", "application/json");
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     try {
       byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(userLoginInfoForMapping);
-      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+      Supplier<InputStream> localVarRequestBodySupplier = () -> new ByteArrayInputStream(localVarPostBody);
+      localVarRequestBuilder.header("Content-Encoding", "gzip");
+      localVarRequestBuilder.method("POST", ApiClient.gzipRequestBody(localVarRequestBodySupplier));
     } catch (IOException e) {
       throw new ApiException(e);
     }
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -663,8 +973,19 @@ public class UsersResourceApi {
    * @param magic  (optional)
    * @throws ApiException if fails to make API call
    */
-  public void processMagicLink(String magic) throws ApiException {
-    processMagicLinkWithHttpInfo(magic);
+  public void processMagicLink(@javax.annotation.Nullable String magic) throws ApiException {
+    processMagicLink(magic, null);
+  }
+
+  /**
+   * Process the magic link and map the user
+   * 
+   * @param magic  (optional)
+   * @param headers Optional headers to include in the request
+   * @throws ApiException if fails to make API call
+   */
+  public void processMagicLink(@javax.annotation.Nullable String magic, Map<String, String> headers) throws ApiException {
+    processMagicLinkWithHttpInfo(magic, headers);
   }
 
   /**
@@ -674,8 +995,20 @@ public class UsersResourceApi {
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Void> processMagicLinkWithHttpInfo(String magic) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = processMagicLinkRequestBuilder(magic);
+  public ApiResponse<Void> processMagicLinkWithHttpInfo(@javax.annotation.Nullable String magic) throws ApiException {
+    return processMagicLinkWithHttpInfo(magic, null);
+  }
+
+  /**
+   * Process the magic link and map the user
+   * 
+   * @param magic  (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> processMagicLinkWithHttpInfo(@javax.annotation.Nullable String magic, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = processMagicLinkRequestBuilder(magic, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -683,9 +1016,14 @@ public class UsersResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("processMagicLink", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody != null) {
+          localVarResponseBody.readAllBytes();
         }
         return new ApiResponse<>(
             localVarResponse.statusCode(),
@@ -693,11 +1031,9 @@ public class UsersResourceApi {
             null
         );
       } finally {
-        // Drain the InputStream
-        while (localVarResponse.body().read() != -1) {
-          // Ignore
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
         }
-        localVarResponse.body().close();
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -708,7 +1044,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder processMagicLinkRequestBuilder(String magic) throws ApiException {
+  private HttpRequest.Builder processMagicLinkRequestBuilder(@javax.annotation.Nullable String magic, Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -732,11 +1068,14 @@ public class UsersResourceApi {
     }
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -750,8 +1089,20 @@ public class UsersResourceApi {
    * @param userID  (optional)
    * @throws ApiException if fails to make API call
    */
-  public void requestRecoveryEmail(String email, String userID) throws ApiException {
-    requestRecoveryEmailWithHttpInfo(email, userID);
+  public void requestRecoveryEmail(@javax.annotation.Nullable String email, @javax.annotation.Nullable String userID) throws ApiException {
+    requestRecoveryEmail(email, userID, null);
+  }
+
+  /**
+   * request a recovery email to link a VCell account.
+   * 
+   * @param email  (optional)
+   * @param userID  (optional)
+   * @param headers Optional headers to include in the request
+   * @throws ApiException if fails to make API call
+   */
+  public void requestRecoveryEmail(@javax.annotation.Nullable String email, @javax.annotation.Nullable String userID, Map<String, String> headers) throws ApiException {
+    requestRecoveryEmailWithHttpInfo(email, userID, headers);
   }
 
   /**
@@ -762,8 +1113,21 @@ public class UsersResourceApi {
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Void> requestRecoveryEmailWithHttpInfo(String email, String userID) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = requestRecoveryEmailRequestBuilder(email, userID);
+  public ApiResponse<Void> requestRecoveryEmailWithHttpInfo(@javax.annotation.Nullable String email, @javax.annotation.Nullable String userID) throws ApiException {
+    return requestRecoveryEmailWithHttpInfo(email, userID, null);
+  }
+
+  /**
+   * request a recovery email to link a VCell account.
+   * 
+   * @param email  (optional)
+   * @param userID  (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> requestRecoveryEmailWithHttpInfo(@javax.annotation.Nullable String email, @javax.annotation.Nullable String userID, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = requestRecoveryEmailRequestBuilder(email, userID, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -771,9 +1135,14 @@ public class UsersResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("requestRecoveryEmail", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody != null) {
+          localVarResponseBody.readAllBytes();
         }
         return new ApiResponse<>(
             localVarResponse.statusCode(),
@@ -781,11 +1150,9 @@ public class UsersResourceApi {
             null
         );
       } finally {
-        // Drain the InputStream
-        while (localVarResponse.body().read() != -1) {
-          // Ignore
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
         }
-        localVarResponse.body().close();
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -796,7 +1163,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder requestRecoveryEmailRequestBuilder(String email, String userID) throws ApiException {
+  private HttpRequest.Builder requestRecoveryEmailRequestBuilder(@javax.annotation.Nullable String email, @javax.annotation.Nullable String userID, Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -822,11 +1189,14 @@ public class UsersResourceApi {
     }
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -840,8 +1210,20 @@ public class UsersResourceApi {
    * @return Boolean
    * @throws ApiException if fails to make API call
    */
-  public Boolean unmapUser(String userName) throws ApiException {
-    ApiResponse<Boolean> localVarResponse = unmapUserWithHttpInfo(userName);
+  public Boolean unmapUser(@javax.annotation.Nonnull String userName) throws ApiException {
+    return unmapUser(userName, null);
+  }
+
+  /**
+   * remove vcell identity mapping
+   * 
+   * @param userName  (required)
+   * @param headers Optional headers to include in the request
+   * @return Boolean
+   * @throws ApiException if fails to make API call
+   */
+  public Boolean unmapUser(@javax.annotation.Nonnull String userName, Map<String, String> headers) throws ApiException {
+    ApiResponse<Boolean> localVarResponse = unmapUserWithHttpInfo(userName, headers);
     return localVarResponse.getData();
   }
 
@@ -852,8 +1234,20 @@ public class UsersResourceApi {
    * @return ApiResponse&lt;Boolean&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Boolean> unmapUserWithHttpInfo(String userName) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = unmapUserRequestBuilder(userName);
+  public ApiResponse<Boolean> unmapUserWithHttpInfo(@javax.annotation.Nonnull String userName) throws ApiException {
+    return unmapUserWithHttpInfo(userName, null);
+  }
+
+  /**
+   * remove vcell identity mapping
+   * 
+   * @param userName  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Boolean&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Boolean> unmapUserWithHttpInfo(@javax.annotation.Nonnull String userName, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = unmapUserRequestBuilder(userName, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -861,11 +1255,13 @@ public class UsersResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("unmapUser", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<Boolean>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -873,15 +1269,21 @@ public class UsersResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        Boolean responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Boolean>() {});
+        
 
         return new ApiResponse<Boolean>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Boolean>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -892,7 +1294,7 @@ public class UsersResourceApi {
     }
   }
 
-  private HttpRequest.Builder unmapUserRequestBuilder(String userName) throws ApiException {
+  private HttpRequest.Builder unmapUserRequestBuilder(@javax.annotation.Nonnull String userName, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'userName' is set
     if (userName == null) {
       throw new ApiException(400, "Missing the required parameter 'userName' when calling unmapUser");
@@ -906,11 +1308,14 @@ public class UsersResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("PUT", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }

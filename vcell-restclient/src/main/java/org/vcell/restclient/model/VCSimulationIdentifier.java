@@ -38,7 +38,7 @@ import org.vcell.restclient.ApiClient;
   VCSimulationIdentifier.JSON_PROPERTY_OWNER,
   VCSimulationIdentifier.JSON_PROPERTY_ID
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class VCSimulationIdentifier {
   public static final String JSON_PROPERTY_SIMULATION_KEY = "simulationKey";
   @javax.annotation.Nullable
@@ -65,14 +65,14 @@ public class VCSimulationIdentifier {
    * @return simulationKey
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIMULATION_KEY)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getSimulationKey() {
     return simulationKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SIMULATION_KEY)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSimulationKey(@javax.annotation.Nullable String simulationKey) {
     this.simulationKey = simulationKey;
@@ -89,14 +89,14 @@ public class VCSimulationIdentifier {
    * @return owner
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_OWNER)
+  @JsonProperty(value = JSON_PROPERTY_OWNER, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public User getOwner() {
     return owner;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_OWNER)
+  @JsonProperty(value = JSON_PROPERTY_OWNER, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setOwner(@javax.annotation.Nullable User owner) {
     this.owner = owner;
@@ -113,14 +113,14 @@ public class VCSimulationIdentifier {
    * @return id
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ID)
+  @JsonProperty(value = JSON_PROPERTY_ID, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getId() {
     return id;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ID)
+  @JsonProperty(value = JSON_PROPERTY_ID, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setId(@javax.annotation.Nullable String id) {
     this.id = id;
@@ -205,7 +205,7 @@ public class VCSimulationIdentifier {
 
     // add `simulationKey` to the URL query string
     if (getSimulationKey() != null) {
-      joiner.add(String.format("%ssimulationKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSimulationKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%ssimulationKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSimulationKey()))));
     }
 
     // add `owner` to the URL query string
@@ -215,7 +215,7 @@ public class VCSimulationIdentifier {
 
     // add `id` to the URL query string
     if (getId() != null) {
-      joiner.add(String.format("%sid%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getId()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sid%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getId()))));
     }
 
     return joiner.toString();

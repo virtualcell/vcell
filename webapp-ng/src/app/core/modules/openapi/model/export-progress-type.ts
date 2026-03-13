@@ -9,18 +9,12 @@
  */
 
 
-export type ExportProgressType = 'EXPORT_START' | 'EXPORT_COMPLETE' | 'EXPORT_FAILURE' | 'EXPORT_ASSEMBLING' | 'EXPORT_PROGRESS';
-
 export const ExportProgressType = {
-
-    ExportStart: 'EXPORT_START' as ExportProgressType,
-
-    ExportComplete: 'EXPORT_COMPLETE' as ExportProgressType,
-
-    ExportFailure: 'EXPORT_FAILURE' as ExportProgressType,
-
-    ExportAssembling: 'EXPORT_ASSEMBLING' as ExportProgressType,
-
-    ExportProgress: 'EXPORT_PROGRESS' as ExportProgressType
-};
+    ExportStart: 'EXPORT_START',
+    ExportComplete: 'EXPORT_COMPLETE',
+    ExportFailure: 'EXPORT_FAILURE',
+    ExportAssembling: 'EXPORT_ASSEMBLING',
+    ExportProgress: 'EXPORT_PROGRESS'
+} as const;
+export type ExportProgressType = typeof ExportProgressType[keyof typeof ExportProgressType];
 

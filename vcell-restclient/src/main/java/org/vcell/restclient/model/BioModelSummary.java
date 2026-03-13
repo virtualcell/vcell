@@ -44,7 +44,7 @@ import org.vcell.restclient.ApiClient;
   BioModelSummary.JSON_PROPERTY_PUBLICATION_INFORMATION,
   BioModelSummary.JSON_PROPERTY_V_CELL_SOFTWARE_VERSION
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class BioModelSummary {
   public static final String JSON_PROPERTY_VERSION = "version";
   @javax.annotation.Nullable
@@ -75,14 +75,14 @@ public class BioModelSummary {
    * @return version
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Version getVersion() {
     return version;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVersion(@javax.annotation.Nullable Version version) {
     this.version = version;
@@ -99,14 +99,14 @@ public class BioModelSummary {
    * @return summary
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SUMMARY)
+  @JsonProperty(value = JSON_PROPERTY_SUMMARY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public BioModelChildSummary getSummary() {
     return summary;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SUMMARY)
+  @JsonProperty(value = JSON_PROPERTY_SUMMARY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSummary(@javax.annotation.Nullable BioModelChildSummary summary) {
     this.summary = summary;
@@ -131,14 +131,14 @@ public class BioModelSummary {
    * @return publicationInformation
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PUBLICATION_INFORMATION)
+  @JsonProperty(value = JSON_PROPERTY_PUBLICATION_INFORMATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<PublicationInfo> getPublicationInformation() {
     return publicationInformation;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_PUBLICATION_INFORMATION)
+  @JsonProperty(value = JSON_PROPERTY_PUBLICATION_INFORMATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setPublicationInformation(@javax.annotation.Nullable List<PublicationInfo> publicationInformation) {
     this.publicationInformation = publicationInformation;
@@ -155,14 +155,14 @@ public class BioModelSummary {
    * @return vCellSoftwareVersion
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_V_CELL_SOFTWARE_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_V_CELL_SOFTWARE_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public VCellSoftwareVersion getvCellSoftwareVersion() {
     return vCellSoftwareVersion;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_V_CELL_SOFTWARE_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_V_CELL_SOFTWARE_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setvCellSoftwareVersion(@javax.annotation.Nullable VCellSoftwareVersion vCellSoftwareVersion) {
     this.vCellSoftwareVersion = vCellSoftwareVersion;
@@ -261,8 +261,8 @@ public class BioModelSummary {
     if (getPublicationInformation() != null) {
       for (int i = 0; i < getPublicationInformation().size(); i++) {
         if (getPublicationInformation().get(i) != null) {
-          joiner.add(getPublicationInformation().get(i).toUrlQueryString(String.format("%spublicationInformation%s%s", prefix, suffix,
-          "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
+          joiner.add(getPublicationInformation().get(i).toUrlQueryString(String.format(java.util.Locale.ROOT, "%spublicationInformation%s%s", prefix, suffix,
+          "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix))));
         }
       }
     }

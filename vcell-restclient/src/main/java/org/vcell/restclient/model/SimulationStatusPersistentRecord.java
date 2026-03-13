@@ -38,7 +38,7 @@ import org.vcell.restclient.ApiClient;
   SimulationStatusPersistentRecord.JSON_PROPERTY_DETAILS,
   SimulationStatusPersistentRecord.JSON_PROPERTY_HAS_DATA
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class SimulationStatusPersistentRecord {
   public static final String JSON_PROPERTY_STATUS = "status";
   @javax.annotation.Nullable
@@ -65,14 +65,14 @@ public class SimulationStatusPersistentRecord {
    * @return status
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_STATUS)
+  @JsonProperty(value = JSON_PROPERTY_STATUS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Status getStatus() {
     return status;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_STATUS)
+  @JsonProperty(value = JSON_PROPERTY_STATUS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setStatus(@javax.annotation.Nullable Status status) {
     this.status = status;
@@ -89,14 +89,14 @@ public class SimulationStatusPersistentRecord {
    * @return details
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DETAILS)
+  @JsonProperty(value = JSON_PROPERTY_DETAILS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getDetails() {
     return details;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DETAILS)
+  @JsonProperty(value = JSON_PROPERTY_DETAILS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDetails(@javax.annotation.Nullable String details) {
     this.details = details;
@@ -113,14 +113,14 @@ public class SimulationStatusPersistentRecord {
    * @return hasData
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_HAS_DATA)
+  @JsonProperty(value = JSON_PROPERTY_HAS_DATA, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Boolean getHasData() {
     return hasData;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_HAS_DATA)
+  @JsonProperty(value = JSON_PROPERTY_HAS_DATA, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setHasData(@javax.annotation.Nullable Boolean hasData) {
     this.hasData = hasData;
@@ -205,17 +205,17 @@ public class SimulationStatusPersistentRecord {
 
     // add `status` to the URL query string
     if (getStatus() != null) {
-      joiner.add(String.format("%sstatus%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getStatus()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sstatus%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getStatus()))));
     }
 
     // add `details` to the URL query string
     if (getDetails() != null) {
-      joiner.add(String.format("%sdetails%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDetails()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdetails%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDetails()))));
     }
 
     // add `hasData` to the URL query string
     if (getHasData() != null) {
-      joiner.add(String.format("%shasData%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getHasData()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%shasData%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getHasData()))));
     }
 
     return joiner.toString();

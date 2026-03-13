@@ -51,16 +51,37 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class MathModelResourceApi {
+  /**
+   * Utility class for extending HttpRequest.Builder functionality.
+   */
+  private static class HttpRequestBuilderExtensions {
+    /**
+     * Adds additional headers to the provided HttpRequest.Builder. Useful for adding method/endpoint specific headers.
+     *
+     * @param builder the HttpRequest.Builder to which headers will be added
+     * @param headers a map of header names and values to add; may be null
+     * @return the same HttpRequest.Builder instance with the additional headers set
+     */
+    static HttpRequest.Builder withAdditionalHeaders(HttpRequest.Builder builder, Map<String, String> headers) {
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                builder.header(entry.getKey(), entry.getValue());
+            }
+        }
+        return builder;
+    }
+  }
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
   private final String memberVarBaseUri;
   private final Consumer<HttpRequest.Builder> memberVarInterceptor;
   private final Duration memberVarReadTimeout;
   private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
-  private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
+  private final Consumer<HttpResponse<InputStream>> memberVarAsyncResponseInterceptor;
 
   public MathModelResourceApi() {
     this(Configuration.getDefaultApiClient());
@@ -76,8 +97,17 @@ public class MathModelResourceApi {
     memberVarAsyncResponseInterceptor = apiClient.getAsyncResponseInterceptor();
   }
 
+
   protected ApiException getApiException(String operationId, HttpResponse<InputStream> response) throws IOException {
-    String body = response.body() == null ? null : new String(response.body().readAllBytes());
+    InputStream responseBody = ApiClient.getResponseBody(response);
+    String body = null;
+    try {
+      body = responseBody == null ? null : new String(responseBody.readAllBytes());
+    } finally {
+      if (responseBody != null) {
+        responseBody.close();
+      }
+    }
     String message = formatExceptionMessage(operationId, response.statusCode(), body);
     return new ApiException(response.statusCode(), message, response.headers(), body);
   }
@@ -90,13 +120,75 @@ public class MathModelResourceApi {
   }
 
   /**
+   * Download file from the given response.
+   *
+   * @param response Response
+   * @return File
+   * @throws ApiException If fail to read file content from response and write to disk
+   */
+  public File downloadFileFromResponse(HttpResponse<InputStream> response, InputStream responseBody) throws ApiException {
+    if (responseBody == null) {
+      throw new ApiException(new IOException("Response body is empty"));
+    }
+    try {
+      File file = prepareDownloadFile(response);
+      java.nio.file.Files.copy(responseBody, file.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+      return file;
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+  }
+
+  /**
+   * <p>Prepare the file for download from the response.</p>
+   *
+   * @param response a {@link java.net.http.HttpResponse} object.
+   * @return a {@link java.io.File} object.
+   * @throws java.io.IOException if any.
+   */
+  private File prepareDownloadFile(HttpResponse<InputStream> response) throws IOException {
+    String filename = null;
+    java.util.Optional<String> contentDisposition = response.headers().firstValue("Content-Disposition");
+    if (contentDisposition.isPresent() && !"".equals(contentDisposition.get())) {
+      // Get filename from the Content-Disposition header.
+      java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("filename=['\"]?([^'\"\\s]+)['\"]?");
+      java.util.regex.Matcher matcher = pattern.matcher(contentDisposition.get());
+      if (matcher.find())
+        filename = matcher.group(1);
+    }
+    File file = null;
+    if (filename != null) {
+      java.nio.file.Path tempDir = java.nio.file.Files.createTempDirectory("swagger-gen-native");
+      java.nio.file.Path filePath = java.nio.file.Files.createFile(tempDir.resolve(filename));
+      file = filePath.toFile();
+      tempDir.toFile().deleteOnExit();   // best effort cleanup
+      file.deleteOnExit(); // best effort cleanup
+    } else {
+      file = java.nio.file.Files.createTempFile("download-", "").toFile();
+      file.deleteOnExit(); // best effort cleanup
+    }
+    return file;
+  }
+
+  /**
    * Delete Math Model
    * Remove specific Math Model.
    * @param id  (required)
    * @throws ApiException if fails to make API call
    */
-  public void deleteMathModel(String id) throws ApiException {
-    deleteMathModelWithHttpInfo(id);
+  public void deleteMathModel(@javax.annotation.Nonnull String id) throws ApiException {
+    deleteMathModel(id, null);
+  }
+
+  /**
+   * Delete Math Model
+   * Remove specific Math Model.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @throws ApiException if fails to make API call
+   */
+  public void deleteMathModel(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    deleteMathModelWithHttpInfo(id, headers);
   }
 
   /**
@@ -106,8 +198,20 @@ public class MathModelResourceApi {
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Void> deleteMathModelWithHttpInfo(String id) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = deleteMathModelRequestBuilder(id);
+  public ApiResponse<Void> deleteMathModelWithHttpInfo(@javax.annotation.Nonnull String id) throws ApiException {
+    return deleteMathModelWithHttpInfo(id, null);
+  }
+
+  /**
+   * Delete Math Model
+   * Remove specific Math Model.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> deleteMathModelWithHttpInfo(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = deleteMathModelRequestBuilder(id, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -115,9 +219,14 @@ public class MathModelResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("deleteMathModel", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody != null) {
+          localVarResponseBody.readAllBytes();
         }
         return new ApiResponse<>(
             localVarResponse.statusCode(),
@@ -125,11 +234,9 @@ public class MathModelResourceApi {
             null
         );
       } finally {
-        // Drain the InputStream
-        while (localVarResponse.body().read() != -1) {
-          // Ignore
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
         }
-        localVarResponse.body().close();
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -140,7 +247,7 @@ public class MathModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder deleteMathModelRequestBuilder(String id) throws ApiException {
+  private HttpRequest.Builder deleteMathModelRequestBuilder(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'id' is set
     if (id == null) {
       throw new ApiException(400, "Missing the required parameter 'id' when calling deleteMathModel");
@@ -154,11 +261,14 @@ public class MathModelResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -172,8 +282,20 @@ public class MathModelResourceApi {
    * @return List&lt;MathModelSummary&gt;
    * @throws ApiException if fails to make API call
    */
-  public List<MathModelSummary> getSummaries(Boolean includePublicAndShared) throws ApiException {
-    ApiResponse<List<MathModelSummary>> localVarResponse = getSummariesWithHttpInfo(includePublicAndShared);
+  public List<MathModelSummary> getSummaries(@javax.annotation.Nullable Boolean includePublicAndShared) throws ApiException {
+    return getSummaries(includePublicAndShared, null);
+  }
+
+  /**
+   * Get Math Model Summaries
+   * Return MathModel summaries.
+   * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. Default is true. (optional)
+   * @param headers Optional headers to include in the request
+   * @return List&lt;MathModelSummary&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public List<MathModelSummary> getSummaries(@javax.annotation.Nullable Boolean includePublicAndShared, Map<String, String> headers) throws ApiException {
+    ApiResponse<List<MathModelSummary>> localVarResponse = getSummariesWithHttpInfo(includePublicAndShared, headers);
     return localVarResponse.getData();
   }
 
@@ -184,8 +306,20 @@ public class MathModelResourceApi {
    * @return ApiResponse&lt;List&lt;MathModelSummary&gt;&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<List<MathModelSummary>> getSummariesWithHttpInfo(Boolean includePublicAndShared) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getSummariesRequestBuilder(includePublicAndShared);
+  public ApiResponse<List<MathModelSummary>> getSummariesWithHttpInfo(@javax.annotation.Nullable Boolean includePublicAndShared) throws ApiException {
+    return getSummariesWithHttpInfo(includePublicAndShared, null);
+  }
+
+  /**
+   * Get Math Model Summaries
+   * Return MathModel summaries.
+   * @param includePublicAndShared Include MathModel summaries that are public and shared with the requester. Default is true. (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;List&lt;MathModelSummary&gt;&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<List<MathModelSummary>> getSummariesWithHttpInfo(@javax.annotation.Nullable Boolean includePublicAndShared, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getSummariesRequestBuilder(includePublicAndShared, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -193,11 +327,13 @@ public class MathModelResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getSummaries", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<List<MathModelSummary>>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -205,15 +341,21 @@ public class MathModelResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        List<MathModelSummary> responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<MathModelSummary>>() {});
+        
 
         return new ApiResponse<List<MathModelSummary>>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<MathModelSummary>>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -224,7 +366,7 @@ public class MathModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder getSummariesRequestBuilder(Boolean includePublicAndShared) throws ApiException {
+  private HttpRequest.Builder getSummariesRequestBuilder(@javax.annotation.Nullable Boolean includePublicAndShared, Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -248,11 +390,14 @@ public class MathModelResourceApi {
     }
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -266,8 +411,20 @@ public class MathModelResourceApi {
    * @return MathModelSummary
    * @throws ApiException if fails to make API call
    */
-  public MathModelSummary getSummary(String id) throws ApiException {
-    ApiResponse<MathModelSummary> localVarResponse = getSummaryWithHttpInfo(id);
+  public MathModelSummary getSummary(@javax.annotation.Nonnull String id) throws ApiException {
+    return getSummary(id, null);
+  }
+
+  /**
+   * Get Math Model Summary
+   * All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return MathModelSummary
+   * @throws ApiException if fails to make API call
+   */
+  public MathModelSummary getSummary(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    ApiResponse<MathModelSummary> localVarResponse = getSummaryWithHttpInfo(id, headers);
     return localVarResponse.getData();
   }
 
@@ -278,8 +435,20 @@ public class MathModelResourceApi {
    * @return ApiResponse&lt;MathModelSummary&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<MathModelSummary> getSummaryWithHttpInfo(String id) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getSummaryRequestBuilder(id);
+  public ApiResponse<MathModelSummary> getSummaryWithHttpInfo(@javax.annotation.Nonnull String id) throws ApiException {
+    return getSummaryWithHttpInfo(id, null);
+  }
+
+  /**
+   * Get Math Model Summary
+   * All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;MathModelSummary&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<MathModelSummary> getSummaryWithHttpInfo(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getSummaryRequestBuilder(id, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -287,11 +456,13 @@ public class MathModelResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getSummary", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<MathModelSummary>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -299,15 +470,21 @@ public class MathModelResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        MathModelSummary responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<MathModelSummary>() {});
+        
 
         return new ApiResponse<MathModelSummary>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<MathModelSummary>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -318,7 +495,7 @@ public class MathModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder getSummaryRequestBuilder(String id) throws ApiException {
+  private HttpRequest.Builder getSummaryRequestBuilder(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'id' is set
     if (id == null) {
       throw new ApiException(400, "Missing the required parameter 'id' when calling getSummary");
@@ -332,11 +509,14 @@ public class MathModelResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -350,8 +530,20 @@ public class MathModelResourceApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String getVCML(String id) throws ApiException {
-    ApiResponse<String> localVarResponse = getVCMLWithHttpInfo(id);
+  public String getVCML(@javax.annotation.Nonnull String id) throws ApiException {
+    return getVCML(id, null);
+  }
+
+  /**
+   * Get Math Model
+   * Returns MathModel in VCML format.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return String
+   * @throws ApiException if fails to make API call
+   */
+  public String getVCML(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    ApiResponse<String> localVarResponse = getVCMLWithHttpInfo(id, headers);
     return localVarResponse.getData();
   }
 
@@ -362,8 +554,20 @@ public class MathModelResourceApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> getVCMLWithHttpInfo(String id) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getVCMLRequestBuilder(id);
+  public ApiResponse<String> getVCMLWithHttpInfo(@javax.annotation.Nonnull String id) throws ApiException {
+    return getVCMLWithHttpInfo(id, null);
+  }
+
+  /**
+   * Get Math Model
+   * Returns MathModel in VCML format.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;String&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<String> getVCMLWithHttpInfo(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getVCMLRequestBuilder(id, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -371,11 +575,13 @@ public class MathModelResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getVCML", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<String>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -383,15 +589,21 @@ public class MathModelResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        String responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {});
+        
 
         return new ApiResponse<String>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -402,7 +614,7 @@ public class MathModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder getVCMLRequestBuilder(String id) throws ApiException {
+  private HttpRequest.Builder getVCMLRequestBuilder(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'id' is set
     if (id == null) {
       throw new ApiException(400, "Missing the required parameter 'id' when calling getVCML");
@@ -416,11 +628,14 @@ public class MathModelResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/xml, application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -436,8 +651,22 @@ public class MathModelResourceApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String saveMathModel(String body, String newName, List<String> simNames) throws ApiException {
-    ApiResponse<String> localVarResponse = saveMathModelWithHttpInfo(body, newName, simNames);
+  public String saveMathModel(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String newName, @javax.annotation.Nullable List<String> simNames) throws ApiException {
+    return saveMathModel(body, newName, simNames, null);
+  }
+
+  /**
+   * Save
+   * 
+   * @param body  (required)
+   * @param newName Name to save new MathModel under. Leave blank if re-saving existing MathModel. (optional)
+   * @param simNames The name of simulations that will be prepared for future execution. (optional)
+   * @param headers Optional headers to include in the request
+   * @return String
+   * @throws ApiException if fails to make API call
+   */
+  public String saveMathModel(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String newName, @javax.annotation.Nullable List<String> simNames, Map<String, String> headers) throws ApiException {
+    ApiResponse<String> localVarResponse = saveMathModelWithHttpInfo(body, newName, simNames, headers);
     return localVarResponse.getData();
   }
 
@@ -450,8 +679,22 @@ public class MathModelResourceApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> saveMathModelWithHttpInfo(String body, String newName, List<String> simNames) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = saveMathModelRequestBuilder(body, newName, simNames);
+  public ApiResponse<String> saveMathModelWithHttpInfo(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String newName, @javax.annotation.Nullable List<String> simNames) throws ApiException {
+    return saveMathModelWithHttpInfo(body, newName, simNames, null);
+  }
+
+  /**
+   * Save
+   * 
+   * @param body  (required)
+   * @param newName Name to save new MathModel under. Leave blank if re-saving existing MathModel. (optional)
+   * @param simNames The name of simulations that will be prepared for future execution. (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;String&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<String> saveMathModelWithHttpInfo(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String newName, @javax.annotation.Nullable List<String> simNames, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = saveMathModelRequestBuilder(body, newName, simNames, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -459,11 +702,13 @@ public class MathModelResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("saveMathModel", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<String>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -471,15 +716,21 @@ public class MathModelResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        String responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {});
+        
 
         return new ApiResponse<String>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -490,7 +741,7 @@ public class MathModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder saveMathModelRequestBuilder(String body, String newName, List<String> simNames) throws ApiException {
+  private HttpRequest.Builder saveMathModelRequestBuilder(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String newName, @javax.annotation.Nullable List<String> simNames, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'body' is set
     if (body == null) {
       throw new ApiException(400, "Missing the required parameter 'body' when calling saveMathModel");
@@ -521,11 +772,16 @@ public class MathModelResourceApi {
 
     localVarRequestBuilder.header("Content-Type", "application/xml");
     localVarRequestBuilder.header("Accept", "application/xml, application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
-    localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofString(body));
+    Supplier<InputStream> localVarRequestBodySupplier = () -> new ByteArrayInputStream(body.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    localVarRequestBuilder.header("Content-Encoding", "gzip");
+    localVarRequestBuilder.method("POST", ApiClient.gzipRequestBody(localVarRequestBodySupplier));
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }

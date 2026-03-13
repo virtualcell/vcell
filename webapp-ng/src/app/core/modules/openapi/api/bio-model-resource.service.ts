@@ -11,10 +11,10 @@
 
 import { Inject, Injectable, Optional }                      from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams,
-         HttpResponse, HttpEvent, HttpParameterCodec, HttpContext 
+         HttpResponse, HttpEvent, HttpContext 
         }       from '@angular/common/http';
-import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
+import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
 import { BioModel } from '../model/bio-model';
@@ -44,9 +44,11 @@ export class BioModelResourceService extends BaseService implements BioModelReso
 
     /**
      * Delete the BioModel from VCell\&#39;s database.
+     * @endpoint delete /api/v1/bioModel/{bioModelID}
      * @param bioModelID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public deleteBioModel(bioModelID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any>;
     public deleteBioModel(bioModelID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
@@ -82,14 +84,15 @@ export class BioModelResourceService extends BaseService implements BioModelReso
         }
 
         let localVarPath = `/api/v1/bioModel/${this.configuration.encodeParam({name: "bioModelID", value: bioModelID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
-        return this.httpClient.request<any>('delete', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<any>('delete', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -97,9 +100,11 @@ export class BioModelResourceService extends BaseService implements BioModelReso
 
     /**
      * Get BioModel.
+     * @endpoint get /api/v1/bioModel/{bioModelID}
      * @param bioModelID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public getBioModel(bioModelID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<BioModel>;
     public getBioModel(bioModelID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<BioModel>>;
@@ -135,14 +140,15 @@ export class BioModelResourceService extends BaseService implements BioModelReso
         }
 
         let localVarPath = `/api/v1/bioModel/${this.configuration.encodeParam({name: "bioModelID", value: bioModelID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
-        return this.httpClient.request<BioModel>('get', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<BioModel>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -150,18 +156,27 @@ export class BioModelResourceService extends BaseService implements BioModelReso
 
     /**
      * Return BioModel summaries.
+     * @endpoint get /api/v1/bioModel/summaries
      * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester. Default is true.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public getBioModelSummaries(includePublicAndShared?: boolean, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<BioModelSummary>>;
     public getBioModelSummaries(includePublicAndShared?: boolean, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<BioModelSummary>>>;
     public getBioModelSummaries(includePublicAndShared?: boolean, observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<BioModelSummary>>>;
     public getBioModelSummaries(includePublicAndShared?: boolean, observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
 
-        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
-        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-          <any>includePublicAndShared, 'includePublicAndShared');
+        let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'includePublicAndShared',
+            <any>includePublicAndShared,
+            QueryParamStyle.Form,
+            true,
+        );
+
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -189,15 +204,16 @@ export class BioModelResourceService extends BaseService implements BioModelReso
         }
 
         let localVarPath = `/api/v1/bioModel/summaries`;
-        return this.httpClient.request<Array<BioModelSummary>>('get', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<Array<BioModelSummary>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                params: localVarQueryParameters,
+                params: localVarQueryParameters.toHttpParams(),
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -205,9 +221,11 @@ export class BioModelResourceService extends BaseService implements BioModelReso
 
     /**
      * All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
+     * @endpoint get /api/v1/bioModel/{bioModelID}/summary
      * @param bioModelID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public getBioModelSummary(bioModelID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<BioModelSummary>;
     public getBioModelSummary(bioModelID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<BioModelSummary>>;
@@ -243,14 +261,15 @@ export class BioModelResourceService extends BaseService implements BioModelReso
         }
 
         let localVarPath = `/api/v1/bioModel/${this.configuration.encodeParam({name: "bioModelID", value: bioModelID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/summary`;
-        return this.httpClient.request<BioModelSummary>('get', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<BioModelSummary>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -258,9 +277,11 @@ export class BioModelResourceService extends BaseService implements BioModelReso
 
     /**
      * Get the BioModel in VCML format.
+     * @endpoint get /api/v1/bioModel/{bioModelID}/vcml_download
      * @param bioModelID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public getBioModelVCML(bioModelID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/xml' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
     public getBioModelVCML(bioModelID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'text/xml' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
@@ -297,14 +318,15 @@ export class BioModelResourceService extends BaseService implements BioModelReso
         }
 
         let localVarPath = `/api/v1/bioModel/${this.configuration.encodeParam({name: "bioModelID", value: bioModelID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/vcml_download`;
-        return this.httpClient.request<string>('get', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<string>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -312,11 +334,13 @@ export class BioModelResourceService extends BaseService implements BioModelReso
 
     /**
      * Save\&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
+     * @endpoint post /api/v1/bioModel
      * @param body BioModelVCML which will be saved.
      * @param newName Name to save new BioModel under. Leave blank if re-saving existing BioModel.
      * @param simsRequiringUpdates The name of simulations that will be prepared for future execution.
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public saveBioModel(body: string, newName?: string, simsRequiringUpdates?: Array<string>, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<string>;
     public saveBioModel(body: string, newName?: string, simsRequiringUpdates?: Array<string>, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/xml' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<string>>;
@@ -326,15 +350,25 @@ export class BioModelResourceService extends BaseService implements BioModelReso
             throw new Error('Required parameter body was null or undefined when calling saveBioModel.');
         }
 
-        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
-        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-          <any>newName, 'newName');
-        if (simsRequiringUpdates) {
-            simsRequiringUpdates.forEach((element) => {
-                localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-                  <any>element, 'simsRequiringUpdates');
-            })
-        }
+        let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'newName',
+            <any>newName,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'simsRequiringUpdates',
+            <any>simsRequiringUpdates,
+            QueryParamStyle.Form,
+            true,
+        );
+
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -374,16 +408,17 @@ export class BioModelResourceService extends BaseService implements BioModelReso
         }
 
         let localVarPath = `/api/v1/bioModel`;
-        return this.httpClient.request<string>('post', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<string>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: body,
-                params: localVarQueryParameters,
+                params: localVarQueryParameters.toHttpParams(),
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );

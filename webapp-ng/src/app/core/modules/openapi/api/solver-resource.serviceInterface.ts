@@ -25,6 +25,7 @@ export interface SolverResourceServiceInterface {
     /**
      * Retrieve finite volume input from SBML spatial model.
      * 
+     * @endpoint post /api/v1/solver/getFVSolverInput
      * @param sbmlFile 
      * @param duration 
      * @param outputTimeStep 
@@ -34,6 +35,7 @@ export interface SolverResourceServiceInterface {
     /**
      * Retrieve finite volume input from SBML spatial model.
      * 
+     * @endpoint post /api/v1/solver/getFVSolverInputFromVCML
      * @param vcmlFile 
      * @param simulationName 
      */

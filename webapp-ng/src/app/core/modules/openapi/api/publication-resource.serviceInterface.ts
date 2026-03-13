@@ -27,6 +27,7 @@ export interface PublicationResourceServiceInterface {
     /**
      * Create publication
      * 
+     * @endpoint post /api/v1/publications
      * @param publication 
      */
     createPublication(publication: Publication, extraHttpRequestParams?: any): Observable<number>;
@@ -34,6 +35,7 @@ export interface PublicationResourceServiceInterface {
     /**
      * Delete publication
      * 
+     * @endpoint delete /api/v1/publications/{id}
      * @param id 
      */
     deletePublication(id: number, extraHttpRequestParams?: any): Observable<{}>;
@@ -41,6 +43,7 @@ export interface PublicationResourceServiceInterface {
     /**
      * Get publication by ID
      * 
+     * @endpoint get /api/v1/publications/{id}
      * @param id 
      */
     getPublicationById(id: number, extraHttpRequestParams?: any): Observable<Publication>;
@@ -48,12 +51,14 @@ export interface PublicationResourceServiceInterface {
     /**
      * Get all publications
      * 
+     * @endpoint get /api/v1/publications
      */
     getPublications(extraHttpRequestParams?: any): Observable<Array<Publication>>;
 
     /**
      * Publish selected BioModels and MathModels associated with a publication
      * 
+     * @endpoint put /api/v1/publications/{id}/publish
      * @param id 
      * @param publishModelsRequest 
      */
@@ -62,6 +67,7 @@ export interface PublicationResourceServiceInterface {
     /**
      * Update publication
      * 
+     * @endpoint put /api/v1/publications
      * @param publication 
      */
     updatePublication(publication: Publication, extraHttpRequestParams?: any): Observable<Publication>;

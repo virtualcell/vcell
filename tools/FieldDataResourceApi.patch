@@ -1,5 +1,5 @@
 diff --git a/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java b/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java
-index 684578273..d4137383a 100644
+index d32ccaf1cd..1337f17437 100644
 --- a/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java
 +++ b/vcell-restclient/src/main/java/org/vcell/restclient/api/FieldDataResourceApi.java
 @@ -12,6 +12,7 @@
@@ -10,45 +10,37 @@ index 684578273..d4137383a 100644
  import org.vcell.restclient.ApiClient;
  import org.vcell.restclient.ApiException;
  import org.vcell.restclient.ApiResponse;
-@@ -99,7 +100,7 @@ public class FieldDataResourceApi {
- 
-   /**
-    * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
--   * 
-+   *
-    * @param _file  (optional)
-    * @param fileName  (optional)
-    * @param extent  (optional)
-@@ -118,7 +119,7 @@ public class FieldDataResourceApi {
- 
-   /**
-    * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
--   * 
-+   *
-    * @param _file  (optional)
-    * @param fileName  (optional)
-    * @param extent  (optional)
-@@ -174,8 +175,13 @@ public class FieldDataResourceApi {
-     multiPartBuilder.addBinaryBody("file", _file);
-     hasFiles = true;
-     multiPartBuilder.addTextBody("fileName", fileName.toString());
--    multiPartBuilder.addTextBody("extent", extent.toString());
--    multiPartBuilder.addTextBody("iSize", iSize.toString());
-+      try {
-+          multiPartBuilder.addTextBody("extent", memberVarObjectMapper.writeValueAsString(extent));
-+          multiPartBuilder.addTextBody("iSize", memberVarObjectMapper.writeValueAsString(iSize));
-+          multiPartBuilder.addTextBody("origin", memberVarObjectMapper.writeValueAsString(origin));
-+      } catch (JsonProcessingException e) {
-+          throw new RuntimeException(e);
-+      }
+@@ -316,11 +317,18 @@ public class FieldDataResourceApi {
+     if (fileName != null) {
+         multiPartBuilder.addTextBody("fileName", fileName.toString());
+     }
+-    if (extent != null) {
+-        multiPartBuilder.addTextBody("extent", extent.toString());
+-    }
+-    if (iSize != null) {
+-        multiPartBuilder.addTextBody("iSize", iSize.toString());
++    try {
++        if (extent != null) {
++            multiPartBuilder.addTextBody("extent", memberVarObjectMapper.writeValueAsString(extent));
++        }
++        if (iSize != null) {
++            multiPartBuilder.addTextBody("iSize", memberVarObjectMapper.writeValueAsString(iSize));
++        }
++        if (origin != null) {
++            multiPartBuilder.addTextBody("origin", memberVarObjectMapper.writeValueAsString(origin));
++        }
++    } catch (JsonProcessingException e) {
++        throw new RuntimeException(e);
+     }
      for (int i=0; i < channelNames.size(); i++) {
-         multiPartBuilder.addTextBody("channelNames", channelNames.get(i).toString());
+         if (channelNames.get(i) != null) {
+@@ -335,9 +343,6 @@ public class FieldDataResourceApi {
+     if (annotation != null) {
+         multiPartBuilder.addTextBody("annotation", annotation.toString());
      }
-@@ -183,7 +189,6 @@ public class FieldDataResourceApi {
-         multiPartBuilder.addTextBody("times", times.get(i).toString());
-     }
-     multiPartBuilder.addTextBody("annotation", annotation.toString());
--    multiPartBuilder.addTextBody("origin", origin.toString());
+-    if (origin != null) {
+-        multiPartBuilder.addTextBody("origin", origin.toString());
+-    }
      HttpEntity entity = multiPartBuilder.build();
-     HttpRequest.BodyPublisher formDataPublisher;
+     Supplier<InputStream> formDataSupplier;
      if (hasFiles) {

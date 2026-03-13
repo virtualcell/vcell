@@ -51,7 +51,7 @@ import org.vcell.restclient.ApiClient;
   PublicationInfo.JSON_PROPERTY_USER,
   PublicationInfo.JSON_PROPERTY_THE_HASH_CODE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class PublicationInfo {
   public static final String JSON_PROPERTY_PUBLICATION_KEY = "publicationKey";
   @javax.annotation.Nullable
@@ -114,14 +114,14 @@ public class PublicationInfo {
    * @return publicationKey
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PUBLICATION_KEY)
+  @JsonProperty(value = JSON_PROPERTY_PUBLICATION_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getPublicationKey() {
     return publicationKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_PUBLICATION_KEY)
+  @JsonProperty(value = JSON_PROPERTY_PUBLICATION_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setPublicationKey(@javax.annotation.Nullable String publicationKey) {
     this.publicationKey = publicationKey;
@@ -138,14 +138,14 @@ public class PublicationInfo {
    * @return versionKey
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION_KEY)
+  @JsonProperty(value = JSON_PROPERTY_VERSION_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getVersionKey() {
     return versionKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_VERSION_KEY)
+  @JsonProperty(value = JSON_PROPERTY_VERSION_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVersionKey(@javax.annotation.Nullable String versionKey) {
     this.versionKey = versionKey;
@@ -162,14 +162,14 @@ public class PublicationInfo {
    * @return title
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_TITLE)
+  @JsonProperty(value = JSON_PROPERTY_TITLE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getTitle() {
     return title;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_TITLE)
+  @JsonProperty(value = JSON_PROPERTY_TITLE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setTitle(@javax.annotation.Nullable String title) {
     this.title = title;
@@ -194,14 +194,14 @@ public class PublicationInfo {
    * @return authors
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_AUTHORS)
+  @JsonProperty(value = JSON_PROPERTY_AUTHORS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getAuthors() {
     return authors;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_AUTHORS)
+  @JsonProperty(value = JSON_PROPERTY_AUTHORS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setAuthors(@javax.annotation.Nullable List<String> authors) {
     this.authors = authors;
@@ -218,14 +218,14 @@ public class PublicationInfo {
    * @return citation
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_CITATION)
+  @JsonProperty(value = JSON_PROPERTY_CITATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getCitation() {
     return citation;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_CITATION)
+  @JsonProperty(value = JSON_PROPERTY_CITATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setCitation(@javax.annotation.Nullable String citation) {
     this.citation = citation;
@@ -242,14 +242,14 @@ public class PublicationInfo {
    * @return pubmedid
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PUBMEDID)
+  @JsonProperty(value = JSON_PROPERTY_PUBMEDID, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getPubmedid() {
     return pubmedid;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_PUBMEDID)
+  @JsonProperty(value = JSON_PROPERTY_PUBMEDID, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setPubmedid(@javax.annotation.Nullable String pubmedid) {
     this.pubmedid = pubmedid;
@@ -266,14 +266,14 @@ public class PublicationInfo {
    * @return doi
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DOI)
+  @JsonProperty(value = JSON_PROPERTY_DOI, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getDoi() {
     return doi;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DOI)
+  @JsonProperty(value = JSON_PROPERTY_DOI, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDoi(@javax.annotation.Nullable String doi) {
     this.doi = doi;
@@ -290,14 +290,14 @@ public class PublicationInfo {
    * @return url
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_URL)
+  @JsonProperty(value = JSON_PROPERTY_URL, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getUrl() {
     return url;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_URL)
+  @JsonProperty(value = JSON_PROPERTY_URL, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setUrl(@javax.annotation.Nullable String url) {
     this.url = url;
@@ -314,14 +314,14 @@ public class PublicationInfo {
    * @return pubdate
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PUBDATE)
+  @JsonProperty(value = JSON_PROPERTY_PUBDATE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public LocalDate getPubdate() {
     return pubdate;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_PUBDATE)
+  @JsonProperty(value = JSON_PROPERTY_PUBDATE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setPubdate(@javax.annotation.Nullable LocalDate pubdate) {
     this.pubdate = pubdate;
@@ -338,14 +338,14 @@ public class PublicationInfo {
    * @return vcDocumentType
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VC_DOCUMENT_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_VC_DOCUMENT_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public VCDocumentType getVcDocumentType() {
     return vcDocumentType;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_VC_DOCUMENT_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_VC_DOCUMENT_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVcDocumentType(@javax.annotation.Nullable VCDocumentType vcDocumentType) {
     this.vcDocumentType = vcDocumentType;
@@ -362,14 +362,14 @@ public class PublicationInfo {
    * @return user
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_USER)
+  @JsonProperty(value = JSON_PROPERTY_USER, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public User getUser() {
     return user;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_USER)
+  @JsonProperty(value = JSON_PROPERTY_USER, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setUser(@javax.annotation.Nullable User user) {
     this.user = user;
@@ -386,14 +386,14 @@ public class PublicationInfo {
    * @return theHashCode
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_THE_HASH_CODE)
+  @JsonProperty(value = JSON_PROPERTY_THE_HASH_CODE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getTheHashCode() {
     return theHashCode;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_THE_HASH_CODE)
+  @JsonProperty(value = JSON_PROPERTY_THE_HASH_CODE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setTheHashCode(@javax.annotation.Nullable Integer theHashCode) {
     this.theHashCode = theHashCode;
@@ -496,56 +496,56 @@ public class PublicationInfo {
 
     // add `publicationKey` to the URL query string
     if (getPublicationKey() != null) {
-      joiner.add(String.format("%spublicationKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPublicationKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%spublicationKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPublicationKey()))));
     }
 
     // add `versionKey` to the URL query string
     if (getVersionKey() != null) {
-      joiner.add(String.format("%sversionKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVersionKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sversionKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVersionKey()))));
     }
 
     // add `title` to the URL query string
     if (getTitle() != null) {
-      joiner.add(String.format("%stitle%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getTitle()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%stitle%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getTitle()))));
     }
 
     // add `authors` to the URL query string
     if (getAuthors() != null) {
       for (int i = 0; i < getAuthors().size(); i++) {
-        joiner.add(String.format("%sauthors%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%sauthors%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getAuthors().get(i)))));
       }
     }
 
     // add `citation` to the URL query string
     if (getCitation() != null) {
-      joiner.add(String.format("%scitation%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getCitation()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%scitation%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getCitation()))));
     }
 
     // add `pubmedid` to the URL query string
     if (getPubmedid() != null) {
-      joiner.add(String.format("%spubmedid%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPubmedid()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%spubmedid%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPubmedid()))));
     }
 
     // add `doi` to the URL query string
     if (getDoi() != null) {
-      joiner.add(String.format("%sdoi%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDoi()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdoi%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDoi()))));
     }
 
     // add `url` to the URL query string
     if (getUrl() != null) {
-      joiner.add(String.format("%surl%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUrl()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%surl%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUrl()))));
     }
 
     // add `pubdate` to the URL query string
     if (getPubdate() != null) {
-      joiner.add(String.format("%spubdate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPubdate()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%spubdate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPubdate()))));
     }
 
     // add `vcDocumentType` to the URL query string
     if (getVcDocumentType() != null) {
-      joiner.add(String.format("%svcDocumentType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVcDocumentType()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%svcDocumentType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVcDocumentType()))));
     }
 
     // add `user` to the URL query string
@@ -555,7 +555,7 @@ public class PublicationInfo {
 
     // add `theHashCode` to the URL query string
     if (getTheHashCode() != null) {
-      joiner.add(String.format("%stheHashCode%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getTheHashCode()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%stheHashCode%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getTheHashCode()))));
     }
 
     return joiner.toString();

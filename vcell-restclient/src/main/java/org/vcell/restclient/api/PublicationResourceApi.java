@@ -52,16 +52,37 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class PublicationResourceApi {
+  /**
+   * Utility class for extending HttpRequest.Builder functionality.
+   */
+  private static class HttpRequestBuilderExtensions {
+    /**
+     * Adds additional headers to the provided HttpRequest.Builder. Useful for adding method/endpoint specific headers.
+     *
+     * @param builder the HttpRequest.Builder to which headers will be added
+     * @param headers a map of header names and values to add; may be null
+     * @return the same HttpRequest.Builder instance with the additional headers set
+     */
+    static HttpRequest.Builder withAdditionalHeaders(HttpRequest.Builder builder, Map<String, String> headers) {
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                builder.header(entry.getKey(), entry.getValue());
+            }
+        }
+        return builder;
+    }
+  }
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
   private final String memberVarBaseUri;
   private final Consumer<HttpRequest.Builder> memberVarInterceptor;
   private final Duration memberVarReadTimeout;
   private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
-  private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
+  private final Consumer<HttpResponse<InputStream>> memberVarAsyncResponseInterceptor;
 
   public PublicationResourceApi() {
     this(Configuration.getDefaultApiClient());
@@ -77,8 +98,17 @@ public class PublicationResourceApi {
     memberVarAsyncResponseInterceptor = apiClient.getAsyncResponseInterceptor();
   }
 
+
   protected ApiException getApiException(String operationId, HttpResponse<InputStream> response) throws IOException {
-    String body = response.body() == null ? null : new String(response.body().readAllBytes());
+    InputStream responseBody = ApiClient.getResponseBody(response);
+    String body = null;
+    try {
+      body = responseBody == null ? null : new String(responseBody.readAllBytes());
+    } finally {
+      if (responseBody != null) {
+        responseBody.close();
+      }
+    }
     String message = formatExceptionMessage(operationId, response.statusCode(), body);
     return new ApiException(response.statusCode(), message, response.headers(), body);
   }
@@ -91,14 +121,77 @@ public class PublicationResourceApi {
   }
 
   /**
+   * Download file from the given response.
+   *
+   * @param response Response
+   * @return File
+   * @throws ApiException If fail to read file content from response and write to disk
+   */
+  public File downloadFileFromResponse(HttpResponse<InputStream> response, InputStream responseBody) throws ApiException {
+    if (responseBody == null) {
+      throw new ApiException(new IOException("Response body is empty"));
+    }
+    try {
+      File file = prepareDownloadFile(response);
+      java.nio.file.Files.copy(responseBody, file.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+      return file;
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+  }
+
+  /**
+   * <p>Prepare the file for download from the response.</p>
+   *
+   * @param response a {@link java.net.http.HttpResponse} object.
+   * @return a {@link java.io.File} object.
+   * @throws java.io.IOException if any.
+   */
+  private File prepareDownloadFile(HttpResponse<InputStream> response) throws IOException {
+    String filename = null;
+    java.util.Optional<String> contentDisposition = response.headers().firstValue("Content-Disposition");
+    if (contentDisposition.isPresent() && !"".equals(contentDisposition.get())) {
+      // Get filename from the Content-Disposition header.
+      java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("filename=['\"]?([^'\"\\s]+)['\"]?");
+      java.util.regex.Matcher matcher = pattern.matcher(contentDisposition.get());
+      if (matcher.find())
+        filename = matcher.group(1);
+    }
+    File file = null;
+    if (filename != null) {
+      java.nio.file.Path tempDir = java.nio.file.Files.createTempDirectory("swagger-gen-native");
+      java.nio.file.Path filePath = java.nio.file.Files.createFile(tempDir.resolve(filename));
+      file = filePath.toFile();
+      tempDir.toFile().deleteOnExit();   // best effort cleanup
+      file.deleteOnExit(); // best effort cleanup
+    } else {
+      file = java.nio.file.Files.createTempFile("download-", "").toFile();
+      file.deleteOnExit(); // best effort cleanup
+    }
+    return file;
+  }
+
+  /**
    * Create publication
    * 
    * @param publication  (required)
    * @return Long
    * @throws ApiException if fails to make API call
    */
-  public Long createPublication(Publication publication) throws ApiException {
-    ApiResponse<Long> localVarResponse = createPublicationWithHttpInfo(publication);
+  public Long createPublication(@javax.annotation.Nonnull Publication publication) throws ApiException {
+    return createPublication(publication, null);
+  }
+
+  /**
+   * Create publication
+   * 
+   * @param publication  (required)
+   * @param headers Optional headers to include in the request
+   * @return Long
+   * @throws ApiException if fails to make API call
+   */
+  public Long createPublication(@javax.annotation.Nonnull Publication publication, Map<String, String> headers) throws ApiException {
+    ApiResponse<Long> localVarResponse = createPublicationWithHttpInfo(publication, headers);
     return localVarResponse.getData();
   }
 
@@ -109,8 +202,20 @@ public class PublicationResourceApi {
    * @return ApiResponse&lt;Long&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Long> createPublicationWithHttpInfo(Publication publication) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = createPublicationRequestBuilder(publication);
+  public ApiResponse<Long> createPublicationWithHttpInfo(@javax.annotation.Nonnull Publication publication) throws ApiException {
+    return createPublicationWithHttpInfo(publication, null);
+  }
+
+  /**
+   * Create publication
+   * 
+   * @param publication  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Long&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Long> createPublicationWithHttpInfo(@javax.annotation.Nonnull Publication publication, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = createPublicationRequestBuilder(publication, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -118,11 +223,13 @@ public class PublicationResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("createPublication", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<Long>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -130,15 +237,21 @@ public class PublicationResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        Long responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Long>() {});
+        
 
         return new ApiResponse<Long>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Long>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -149,7 +262,7 @@ public class PublicationResourceApi {
     }
   }
 
-  private HttpRequest.Builder createPublicationRequestBuilder(Publication publication) throws ApiException {
+  private HttpRequest.Builder createPublicationRequestBuilder(@javax.annotation.Nonnull Publication publication, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'publication' is set
     if (publication == null) {
       throw new ApiException(400, "Missing the required parameter 'publication' when calling createPublication");
@@ -163,16 +276,21 @@ public class PublicationResourceApi {
 
     localVarRequestBuilder.header("Content-Type", "application/json");
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     try {
       byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(publication);
-      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+      Supplier<InputStream> localVarRequestBodySupplier = () -> new ByteArrayInputStream(localVarPostBody);
+      localVarRequestBuilder.header("Content-Encoding", "gzip");
+      localVarRequestBuilder.method("POST", ApiClient.gzipRequestBody(localVarRequestBodySupplier));
     } catch (IOException e) {
       throw new ApiException(e);
     }
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -185,8 +303,19 @@ public class PublicationResourceApi {
    * @param id  (required)
    * @throws ApiException if fails to make API call
    */
-  public void deletePublication(Long id) throws ApiException {
-    deletePublicationWithHttpInfo(id);
+  public void deletePublication(@javax.annotation.Nonnull Long id) throws ApiException {
+    deletePublication(id, null);
+  }
+
+  /**
+   * Delete publication
+   * 
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @throws ApiException if fails to make API call
+   */
+  public void deletePublication(@javax.annotation.Nonnull Long id, Map<String, String> headers) throws ApiException {
+    deletePublicationWithHttpInfo(id, headers);
   }
 
   /**
@@ -196,8 +325,20 @@ public class PublicationResourceApi {
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Void> deletePublicationWithHttpInfo(Long id) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = deletePublicationRequestBuilder(id);
+  public ApiResponse<Void> deletePublicationWithHttpInfo(@javax.annotation.Nonnull Long id) throws ApiException {
+    return deletePublicationWithHttpInfo(id, null);
+  }
+
+  /**
+   * Delete publication
+   * 
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> deletePublicationWithHttpInfo(@javax.annotation.Nonnull Long id, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = deletePublicationRequestBuilder(id, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -205,9 +346,14 @@ public class PublicationResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("deletePublication", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody != null) {
+          localVarResponseBody.readAllBytes();
         }
         return new ApiResponse<>(
             localVarResponse.statusCode(),
@@ -215,11 +361,9 @@ public class PublicationResourceApi {
             null
         );
       } finally {
-        // Drain the InputStream
-        while (localVarResponse.body().read() != -1) {
-          // Ignore
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
         }
-        localVarResponse.body().close();
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -230,7 +374,7 @@ public class PublicationResourceApi {
     }
   }
 
-  private HttpRequest.Builder deletePublicationRequestBuilder(Long id) throws ApiException {
+  private HttpRequest.Builder deletePublicationRequestBuilder(@javax.annotation.Nonnull Long id, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'id' is set
     if (id == null) {
       throw new ApiException(400, "Missing the required parameter 'id' when calling deletePublication");
@@ -244,11 +388,14 @@ public class PublicationResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -262,8 +409,20 @@ public class PublicationResourceApi {
    * @return Publication
    * @throws ApiException if fails to make API call
    */
-  public Publication getPublicationById(Long id) throws ApiException {
-    ApiResponse<Publication> localVarResponse = getPublicationByIdWithHttpInfo(id);
+  public Publication getPublicationById(@javax.annotation.Nonnull Long id) throws ApiException {
+    return getPublicationById(id, null);
+  }
+
+  /**
+   * Get publication by ID
+   * 
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return Publication
+   * @throws ApiException if fails to make API call
+   */
+  public Publication getPublicationById(@javax.annotation.Nonnull Long id, Map<String, String> headers) throws ApiException {
+    ApiResponse<Publication> localVarResponse = getPublicationByIdWithHttpInfo(id, headers);
     return localVarResponse.getData();
   }
 
@@ -274,8 +433,20 @@ public class PublicationResourceApi {
    * @return ApiResponse&lt;Publication&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Publication> getPublicationByIdWithHttpInfo(Long id) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getPublicationByIdRequestBuilder(id);
+  public ApiResponse<Publication> getPublicationByIdWithHttpInfo(@javax.annotation.Nonnull Long id) throws ApiException {
+    return getPublicationByIdWithHttpInfo(id, null);
+  }
+
+  /**
+   * Get publication by ID
+   * 
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Publication&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Publication> getPublicationByIdWithHttpInfo(@javax.annotation.Nonnull Long id, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getPublicationByIdRequestBuilder(id, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -283,11 +454,13 @@ public class PublicationResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getPublicationById", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<Publication>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -295,15 +468,21 @@ public class PublicationResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        Publication responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Publication>() {});
+        
 
         return new ApiResponse<Publication>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Publication>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -314,7 +493,7 @@ public class PublicationResourceApi {
     }
   }
 
-  private HttpRequest.Builder getPublicationByIdRequestBuilder(Long id) throws ApiException {
+  private HttpRequest.Builder getPublicationByIdRequestBuilder(@javax.annotation.Nonnull Long id, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'id' is set
     if (id == null) {
       throw new ApiException(400, "Missing the required parameter 'id' when calling getPublicationById");
@@ -328,11 +507,14 @@ public class PublicationResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -346,7 +528,18 @@ public class PublicationResourceApi {
    * @throws ApiException if fails to make API call
    */
   public List<Publication> getPublications() throws ApiException {
-    ApiResponse<List<Publication>> localVarResponse = getPublicationsWithHttpInfo();
+    return getPublications(null);
+  }
+
+  /**
+   * Get all publications
+   * 
+   * @param headers Optional headers to include in the request
+   * @return List&lt;Publication&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public List<Publication> getPublications(Map<String, String> headers) throws ApiException {
+    ApiResponse<List<Publication>> localVarResponse = getPublicationsWithHttpInfo(headers);
     return localVarResponse.getData();
   }
 
@@ -357,7 +550,18 @@ public class PublicationResourceApi {
    * @throws ApiException if fails to make API call
    */
   public ApiResponse<List<Publication>> getPublicationsWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getPublicationsRequestBuilder();
+    return getPublicationsWithHttpInfo(null);
+  }
+
+  /**
+   * Get all publications
+   * 
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;List&lt;Publication&gt;&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<List<Publication>> getPublicationsWithHttpInfo(Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getPublicationsRequestBuilder(headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -365,11 +569,13 @@ public class PublicationResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getPublications", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<List<Publication>>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -377,15 +583,21 @@ public class PublicationResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        List<Publication> responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<Publication>>() {});
+        
 
         return new ApiResponse<List<Publication>>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<Publication>>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -396,7 +608,7 @@ public class PublicationResourceApi {
     }
   }
 
-  private HttpRequest.Builder getPublicationsRequestBuilder() throws ApiException {
+  private HttpRequest.Builder getPublicationsRequestBuilder(Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -405,11 +617,14 @@ public class PublicationResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -423,8 +638,20 @@ public class PublicationResourceApi {
    * @param publishModelsRequest  (required)
    * @throws ApiException if fails to make API call
    */
-  public void publishBioModels(Long id, PublishModelsRequest publishModelsRequest) throws ApiException {
-    publishBioModelsWithHttpInfo(id, publishModelsRequest);
+  public void publishBioModels(@javax.annotation.Nonnull Long id, @javax.annotation.Nonnull PublishModelsRequest publishModelsRequest) throws ApiException {
+    publishBioModels(id, publishModelsRequest, null);
+  }
+
+  /**
+   * Publish selected BioModels and MathModels associated with a publication
+   * 
+   * @param id  (required)
+   * @param publishModelsRequest  (required)
+   * @param headers Optional headers to include in the request
+   * @throws ApiException if fails to make API call
+   */
+  public void publishBioModels(@javax.annotation.Nonnull Long id, @javax.annotation.Nonnull PublishModelsRequest publishModelsRequest, Map<String, String> headers) throws ApiException {
+    publishBioModelsWithHttpInfo(id, publishModelsRequest, headers);
   }
 
   /**
@@ -435,8 +662,21 @@ public class PublicationResourceApi {
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Void> publishBioModelsWithHttpInfo(Long id, PublishModelsRequest publishModelsRequest) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = publishBioModelsRequestBuilder(id, publishModelsRequest);
+  public ApiResponse<Void> publishBioModelsWithHttpInfo(@javax.annotation.Nonnull Long id, @javax.annotation.Nonnull PublishModelsRequest publishModelsRequest) throws ApiException {
+    return publishBioModelsWithHttpInfo(id, publishModelsRequest, null);
+  }
+
+  /**
+   * Publish selected BioModels and MathModels associated with a publication
+   * 
+   * @param id  (required)
+   * @param publishModelsRequest  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> publishBioModelsWithHttpInfo(@javax.annotation.Nonnull Long id, @javax.annotation.Nonnull PublishModelsRequest publishModelsRequest, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = publishBioModelsRequestBuilder(id, publishModelsRequest, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -444,9 +684,14 @@ public class PublicationResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("publishBioModels", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody != null) {
+          localVarResponseBody.readAllBytes();
         }
         return new ApiResponse<>(
             localVarResponse.statusCode(),
@@ -454,11 +699,9 @@ public class PublicationResourceApi {
             null
         );
       } finally {
-        // Drain the InputStream
-        while (localVarResponse.body().read() != -1) {
-          // Ignore
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
         }
-        localVarResponse.body().close();
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -469,7 +712,7 @@ public class PublicationResourceApi {
     }
   }
 
-  private HttpRequest.Builder publishBioModelsRequestBuilder(Long id, PublishModelsRequest publishModelsRequest) throws ApiException {
+  private HttpRequest.Builder publishBioModelsRequestBuilder(@javax.annotation.Nonnull Long id, @javax.annotation.Nonnull PublishModelsRequest publishModelsRequest, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'id' is set
     if (id == null) {
       throw new ApiException(400, "Missing the required parameter 'id' when calling publishBioModels");
@@ -488,16 +731,21 @@ public class PublicationResourceApi {
 
     localVarRequestBuilder.header("Content-Type", "application/json");
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     try {
       byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(publishModelsRequest);
-      localVarRequestBuilder.method("PUT", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+      Supplier<InputStream> localVarRequestBodySupplier = () -> new ByteArrayInputStream(localVarPostBody);
+      localVarRequestBuilder.header("Content-Encoding", "gzip");
+      localVarRequestBuilder.method("PUT", ApiClient.gzipRequestBody(localVarRequestBodySupplier));
     } catch (IOException e) {
       throw new ApiException(e);
     }
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -511,8 +759,20 @@ public class PublicationResourceApi {
    * @return Publication
    * @throws ApiException if fails to make API call
    */
-  public Publication updatePublication(Publication publication) throws ApiException {
-    ApiResponse<Publication> localVarResponse = updatePublicationWithHttpInfo(publication);
+  public Publication updatePublication(@javax.annotation.Nonnull Publication publication) throws ApiException {
+    return updatePublication(publication, null);
+  }
+
+  /**
+   * Update publication
+   * 
+   * @param publication  (required)
+   * @param headers Optional headers to include in the request
+   * @return Publication
+   * @throws ApiException if fails to make API call
+   */
+  public Publication updatePublication(@javax.annotation.Nonnull Publication publication, Map<String, String> headers) throws ApiException {
+    ApiResponse<Publication> localVarResponse = updatePublicationWithHttpInfo(publication, headers);
     return localVarResponse.getData();
   }
 
@@ -523,8 +783,20 @@ public class PublicationResourceApi {
    * @return ApiResponse&lt;Publication&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Publication> updatePublicationWithHttpInfo(Publication publication) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = updatePublicationRequestBuilder(publication);
+  public ApiResponse<Publication> updatePublicationWithHttpInfo(@javax.annotation.Nonnull Publication publication) throws ApiException {
+    return updatePublicationWithHttpInfo(publication, null);
+  }
+
+  /**
+   * Update publication
+   * 
+   * @param publication  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Publication&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Publication> updatePublicationWithHttpInfo(@javax.annotation.Nonnull Publication publication, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = updatePublicationRequestBuilder(publication, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -532,11 +804,13 @@ public class PublicationResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("updatePublication", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<Publication>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -544,15 +818,21 @@ public class PublicationResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        Publication responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Publication>() {});
+        
 
         return new ApiResponse<Publication>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Publication>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -563,7 +843,7 @@ public class PublicationResourceApi {
     }
   }
 
-  private HttpRequest.Builder updatePublicationRequestBuilder(Publication publication) throws ApiException {
+  private HttpRequest.Builder updatePublicationRequestBuilder(@javax.annotation.Nonnull Publication publication, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'publication' is set
     if (publication == null) {
       throw new ApiException(400, "Missing the required parameter 'publication' when calling updatePublication");
@@ -577,16 +857,21 @@ public class PublicationResourceApi {
 
     localVarRequestBuilder.header("Content-Type", "application/json");
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     try {
       byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(publication);
-      localVarRequestBuilder.method("PUT", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+      Supplier<InputStream> localVarRequestBodySupplier = () -> new ByteArrayInputStream(localVarPostBody);
+      localVarRequestBuilder.header("Content-Encoding", "gzip");
+      localVarRequestBuilder.method("PUT", ApiClient.gzipRequestBody(localVarRequestBodySupplier));
     } catch (IOException e) {
       throw new ApiException(e);
     }
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }

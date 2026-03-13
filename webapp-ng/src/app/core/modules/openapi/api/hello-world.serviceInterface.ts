@@ -26,6 +26,7 @@ export interface HelloWorldServiceInterface {
     /**
      * Get hello world message.
      * 
+     * @endpoint get /api/v1/helloworld
      */
     getHelloWorld(extraHttpRequestParams?: any): Observable<HelloWorldMessage>;
 

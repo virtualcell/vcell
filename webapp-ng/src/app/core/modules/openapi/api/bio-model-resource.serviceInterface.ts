@@ -27,6 +27,7 @@ export interface BioModelResourceServiceInterface {
     /**
      * Delete the BioModel from VCell\&#39;s database.
      * 
+     * @endpoint delete /api/v1/bioModel/{bioModelID}
      * @param bioModelID 
      */
     deleteBioModel(bioModelID: string, extraHttpRequestParams?: any): Observable<{}>;
@@ -34,6 +35,7 @@ export interface BioModelResourceServiceInterface {
     /**
      * Get BioModel.
      * 
+     * @endpoint get /api/v1/bioModel/{bioModelID}
      * @param bioModelID 
      */
     getBioModel(bioModelID: string, extraHttpRequestParams?: any): Observable<BioModel>;
@@ -41,6 +43,7 @@ export interface BioModelResourceServiceInterface {
     /**
      * Return BioModel summaries.
      * 
+     * @endpoint get /api/v1/bioModel/summaries
      * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester. Default is true.
      */
     getBioModelSummaries(includePublicAndShared?: boolean, extraHttpRequestParams?: any): Observable<Array<BioModelSummary>>;
@@ -48,6 +51,7 @@ export interface BioModelResourceServiceInterface {
     /**
      * All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
      * 
+     * @endpoint get /api/v1/bioModel/{bioModelID}/summary
      * @param bioModelID 
      */
     getBioModelSummary(bioModelID: string, extraHttpRequestParams?: any): Observable<BioModelSummary>;
@@ -55,6 +59,7 @@ export interface BioModelResourceServiceInterface {
     /**
      * Get the BioModel in VCML format.
      * 
+     * @endpoint get /api/v1/bioModel/{bioModelID}/vcml_download
      * @param bioModelID 
      */
     getBioModelVCML(bioModelID: string, extraHttpRequestParams?: any): Observable<string>;
@@ -62,6 +67,7 @@ export interface BioModelResourceServiceInterface {
     /**
      * Save\&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
      * 
+     * @endpoint post /api/v1/bioModel
      * @param body BioModelVCML which will be saved.
      * @param newName Name to save new BioModel under. Leave blank if re-saving existing BioModel.
      * @param simsRequiringUpdates The name of simulations that will be prepared for future execution.

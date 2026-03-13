@@ -45,7 +45,7 @@ import org.vcell.restclient.ApiClient;
   CurveSelectionInfo.JSON_PROPERTY_FIELD_DIRECTION_NEGATIVE,
   CurveSelectionInfo.JSON_PROPERTY_CROSSING
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class CurveSelectionInfo {
   public static final String JSON_PROPERTY_FIELD_CURVE = "fieldCurve";
   @javax.annotation.Nullable
@@ -100,14 +100,14 @@ public class CurveSelectionInfo {
    * @return fieldCurve
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_CURVE)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_CURVE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Curve getFieldCurve() {
     return fieldCurve;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_CURVE)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_CURVE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFieldCurve(@javax.annotation.Nullable Curve fieldCurve) {
     this.fieldCurve = fieldCurve;
@@ -124,14 +124,14 @@ public class CurveSelectionInfo {
    * @return fieldType
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getFieldType() {
     return fieldType;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFieldType(@javax.annotation.Nullable Integer fieldType) {
     this.fieldType = fieldType;
@@ -148,14 +148,14 @@ public class CurveSelectionInfo {
    * @return fieldControlPoint
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_CONTROL_POINT)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_CONTROL_POINT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getFieldControlPoint() {
     return fieldControlPoint;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_CONTROL_POINT)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_CONTROL_POINT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFieldControlPoint(@javax.annotation.Nullable Integer fieldControlPoint) {
     this.fieldControlPoint = fieldControlPoint;
@@ -172,14 +172,14 @@ public class CurveSelectionInfo {
    * @return fieldSegment
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_SEGMENT)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_SEGMENT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getFieldSegment() {
     return fieldSegment;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_SEGMENT)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_SEGMENT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFieldSegment(@javax.annotation.Nullable Integer fieldSegment) {
     this.fieldSegment = fieldSegment;
@@ -196,14 +196,14 @@ public class CurveSelectionInfo {
    * @return fieldU
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_U)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_U, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Double getFieldU() {
     return fieldU;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_U)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_U, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFieldU(@javax.annotation.Nullable Double fieldU) {
     this.fieldU = fieldU;
@@ -220,14 +220,14 @@ public class CurveSelectionInfo {
    * @return fieldUExtended
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_U_EXTENDED)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_U_EXTENDED, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Double getFieldUExtended() {
     return fieldUExtended;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_U_EXTENDED)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_U_EXTENDED, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFieldUExtended(@javax.annotation.Nullable Double fieldUExtended) {
     this.fieldUExtended = fieldUExtended;
@@ -244,14 +244,14 @@ public class CurveSelectionInfo {
    * @return fieldControlPointExtended
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_CONTROL_POINT_EXTENDED)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_CONTROL_POINT_EXTENDED, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getFieldControlPointExtended() {
     return fieldControlPointExtended;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_CONTROL_POINT_EXTENDED)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_CONTROL_POINT_EXTENDED, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFieldControlPointExtended(@javax.annotation.Nullable Integer fieldControlPointExtended) {
     this.fieldControlPointExtended = fieldControlPointExtended;
@@ -268,14 +268,14 @@ public class CurveSelectionInfo {
    * @return fieldSegmentExtended
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_SEGMENT_EXTENDED)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_SEGMENT_EXTENDED, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getFieldSegmentExtended() {
     return fieldSegmentExtended;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_SEGMENT_EXTENDED)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_SEGMENT_EXTENDED, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFieldSegmentExtended(@javax.annotation.Nullable Integer fieldSegmentExtended) {
     this.fieldSegmentExtended = fieldSegmentExtended;
@@ -292,14 +292,14 @@ public class CurveSelectionInfo {
    * @return fieldDirectionNegative
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_DIRECTION_NEGATIVE)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_DIRECTION_NEGATIVE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Boolean getFieldDirectionNegative() {
     return fieldDirectionNegative;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_DIRECTION_NEGATIVE)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_DIRECTION_NEGATIVE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFieldDirectionNegative(@javax.annotation.Nullable Boolean fieldDirectionNegative) {
     this.fieldDirectionNegative = fieldDirectionNegative;
@@ -316,14 +316,14 @@ public class CurveSelectionInfo {
    * @return crossing
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_CROSSING)
+  @JsonProperty(value = JSON_PROPERTY_CROSSING, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Boolean getCrossing() {
     return crossing;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_CROSSING)
+  @JsonProperty(value = JSON_PROPERTY_CROSSING, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setCrossing(@javax.annotation.Nullable Boolean crossing) {
     this.crossing = crossing;
@@ -427,47 +427,47 @@ public class CurveSelectionInfo {
 
     // add `fieldType` to the URL query string
     if (getFieldType() != null) {
-      joiner.add(String.format("%sfieldType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldType()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sfieldType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldType()))));
     }
 
     // add `fieldControlPoint` to the URL query string
     if (getFieldControlPoint() != null) {
-      joiner.add(String.format("%sfieldControlPoint%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldControlPoint()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sfieldControlPoint%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldControlPoint()))));
     }
 
     // add `fieldSegment` to the URL query string
     if (getFieldSegment() != null) {
-      joiner.add(String.format("%sfieldSegment%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldSegment()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sfieldSegment%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldSegment()))));
     }
 
     // add `fieldU` to the URL query string
     if (getFieldU() != null) {
-      joiner.add(String.format("%sfieldU%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldU()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sfieldU%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldU()))));
     }
 
     // add `fieldUExtended` to the URL query string
     if (getFieldUExtended() != null) {
-      joiner.add(String.format("%sfieldUExtended%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldUExtended()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sfieldUExtended%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldUExtended()))));
     }
 
     // add `fieldControlPointExtended` to the URL query string
     if (getFieldControlPointExtended() != null) {
-      joiner.add(String.format("%sfieldControlPointExtended%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldControlPointExtended()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sfieldControlPointExtended%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldControlPointExtended()))));
     }
 
     // add `fieldSegmentExtended` to the URL query string
     if (getFieldSegmentExtended() != null) {
-      joiner.add(String.format("%sfieldSegmentExtended%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldSegmentExtended()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sfieldSegmentExtended%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldSegmentExtended()))));
     }
 
     // add `fieldDirectionNegative` to the URL query string
     if (getFieldDirectionNegative() != null) {
-      joiner.add(String.format("%sfieldDirectionNegative%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldDirectionNegative()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sfieldDirectionNegative%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldDirectionNegative()))));
     }
 
     // add `crossing` to the URL query string
     if (getCrossing() != null) {
-      joiner.add(String.format("%scrossing%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getCrossing()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%scrossing%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getCrossing()))));
     }
 
     return joiner.toString();

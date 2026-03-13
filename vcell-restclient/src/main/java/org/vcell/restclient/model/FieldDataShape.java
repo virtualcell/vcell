@@ -45,7 +45,7 @@ import org.vcell.restclient.ApiClient;
   FieldDataShape.JSON_PROPERTY_DATA_IDENTIFIER,
   FieldDataShape.JSON_PROPERTY_TIMES
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class FieldDataShape {
   public static final String JSON_PROPERTY_EXTENT = "extent";
   @javax.annotation.Nullable
@@ -80,14 +80,14 @@ public class FieldDataShape {
    * @return extent
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_EXTENT)
+  @JsonProperty(value = JSON_PROPERTY_EXTENT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Extent getExtent() {
     return extent;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_EXTENT)
+  @JsonProperty(value = JSON_PROPERTY_EXTENT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setExtent(@javax.annotation.Nullable Extent extent) {
     this.extent = extent;
@@ -104,14 +104,14 @@ public class FieldDataShape {
    * @return origin
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ORIGIN)
+  @JsonProperty(value = JSON_PROPERTY_ORIGIN, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Origin getOrigin() {
     return origin;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ORIGIN)
+  @JsonProperty(value = JSON_PROPERTY_ORIGIN, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setOrigin(@javax.annotation.Nullable Origin origin) {
     this.origin = origin;
@@ -128,14 +128,14 @@ public class FieldDataShape {
    * @return isize
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ISIZE)
+  @JsonProperty(value = JSON_PROPERTY_ISIZE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public ISize getIsize() {
     return isize;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ISIZE)
+  @JsonProperty(value = JSON_PROPERTY_ISIZE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setIsize(@javax.annotation.Nullable ISize isize) {
     this.isize = isize;
@@ -160,14 +160,14 @@ public class FieldDataShape {
    * @return dataIdentifier
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DATA_IDENTIFIER)
+  @JsonProperty(value = JSON_PROPERTY_DATA_IDENTIFIER, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<DataIdentifier> getDataIdentifier() {
     return dataIdentifier;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DATA_IDENTIFIER)
+  @JsonProperty(value = JSON_PROPERTY_DATA_IDENTIFIER, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDataIdentifier(@javax.annotation.Nullable List<DataIdentifier> dataIdentifier) {
     this.dataIdentifier = dataIdentifier;
@@ -192,14 +192,14 @@ public class FieldDataShape {
    * @return times
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_TIMES)
+  @JsonProperty(value = JSON_PROPERTY_TIMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<Double> getTimes() {
     return times;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_TIMES)
+  @JsonProperty(value = JSON_PROPERTY_TIMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setTimes(@javax.annotation.Nullable List<Double> times) {
     this.times = times;
@@ -305,8 +305,8 @@ public class FieldDataShape {
     if (getDataIdentifier() != null) {
       for (int i = 0; i < getDataIdentifier().size(); i++) {
         if (getDataIdentifier().get(i) != null) {
-          joiner.add(getDataIdentifier().get(i).toUrlQueryString(String.format("%sdataIdentifier%s%s", prefix, suffix,
-          "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
+          joiner.add(getDataIdentifier().get(i).toUrlQueryString(String.format(java.util.Locale.ROOT, "%sdataIdentifier%s%s", prefix, suffix,
+          "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix))));
         }
       }
     }
@@ -314,8 +314,8 @@ public class FieldDataShape {
     // add `times` to the URL query string
     if (getTimes() != null) {
       for (int i = 0; i < getTimes().size(); i++) {
-        joiner.add(String.format("%stimes%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%stimes%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getTimes().get(i)))));
       }
     }

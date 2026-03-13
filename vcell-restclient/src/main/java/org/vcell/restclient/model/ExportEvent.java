@@ -46,7 +46,7 @@ import org.vcell.restclient.ApiClient;
   ExportEvent.JSON_PROPERTY_DATA_ID_STRING,
   ExportEvent.JSON_PROPERTY_HUMAN_READABLE_DATA
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class ExportEvent {
   public static final String JSON_PROPERTY_EVENT_TYPE = "eventType";
   @javax.annotation.Nullable
@@ -97,14 +97,14 @@ public class ExportEvent {
    * @return eventType
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_EVENT_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_EVENT_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public ExportProgressType getEventType() {
     return eventType;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_EVENT_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_EVENT_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setEventType(@javax.annotation.Nullable ExportProgressType eventType) {
     this.eventType = eventType;
@@ -121,14 +121,14 @@ public class ExportEvent {
    * @return progress
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PROGRESS)
+  @JsonProperty(value = JSON_PROPERTY_PROGRESS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Double getProgress() {
     return progress;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_PROGRESS)
+  @JsonProperty(value = JSON_PROPERTY_PROGRESS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setProgress(@javax.annotation.Nullable Double progress) {
     this.progress = progress;
@@ -145,14 +145,14 @@ public class ExportEvent {
    * @return format
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FORMAT)
+  @JsonProperty(value = JSON_PROPERTY_FORMAT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getFormat() {
     return format;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FORMAT)
+  @JsonProperty(value = JSON_PROPERTY_FORMAT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFormat(@javax.annotation.Nullable String format) {
     this.format = format;
@@ -169,14 +169,14 @@ public class ExportEvent {
    * @return location
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_LOCATION)
+  @JsonProperty(value = JSON_PROPERTY_LOCATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getLocation() {
     return location;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_LOCATION)
+  @JsonProperty(value = JSON_PROPERTY_LOCATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setLocation(@javax.annotation.Nullable String location) {
     this.location = location;
@@ -193,14 +193,14 @@ public class ExportEvent {
    * @return user
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_USER)
+  @JsonProperty(value = JSON_PROPERTY_USER, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public User getUser() {
     return user;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_USER)
+  @JsonProperty(value = JSON_PROPERTY_USER, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setUser(@javax.annotation.Nullable User user) {
     this.user = user;
@@ -217,14 +217,14 @@ public class ExportEvent {
    * @return jobID
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_JOB_I_D)
+  @JsonProperty(value = JSON_PROPERTY_JOB_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Long getJobID() {
     return jobID;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_JOB_I_D)
+  @JsonProperty(value = JSON_PROPERTY_JOB_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setJobID(@javax.annotation.Nullable Long jobID) {
     this.jobID = jobID;
@@ -241,14 +241,14 @@ public class ExportEvent {
    * @return dataKey
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DATA_KEY)
+  @JsonProperty(value = JSON_PROPERTY_DATA_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getDataKey() {
     return dataKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DATA_KEY)
+  @JsonProperty(value = JSON_PROPERTY_DATA_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDataKey(@javax.annotation.Nullable String dataKey) {
     this.dataKey = dataKey;
@@ -265,14 +265,14 @@ public class ExportEvent {
    * @return dataIdString
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DATA_ID_STRING)
+  @JsonProperty(value = JSON_PROPERTY_DATA_ID_STRING, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getDataIdString() {
     return dataIdString;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DATA_ID_STRING)
+  @JsonProperty(value = JSON_PROPERTY_DATA_ID_STRING, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDataIdString(@javax.annotation.Nullable String dataIdString) {
     this.dataIdString = dataIdString;
@@ -289,14 +289,14 @@ public class ExportEvent {
    * @return humanReadableData
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_HUMAN_READABLE_DATA)
+  @JsonProperty(value = JSON_PROPERTY_HUMAN_READABLE_DATA, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public HumanReadableExportData getHumanReadableData() {
     return humanReadableData;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_HUMAN_READABLE_DATA)
+  @JsonProperty(value = JSON_PROPERTY_HUMAN_READABLE_DATA, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setHumanReadableData(@javax.annotation.Nullable HumanReadableExportData humanReadableData) {
     this.humanReadableData = humanReadableData;
@@ -393,22 +393,22 @@ public class ExportEvent {
 
     // add `eventType` to the URL query string
     if (getEventType() != null) {
-      joiner.add(String.format("%seventType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getEventType()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%seventType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getEventType()))));
     }
 
     // add `progress` to the URL query string
     if (getProgress() != null) {
-      joiner.add(String.format("%sprogress%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getProgress()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sprogress%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getProgress()))));
     }
 
     // add `format` to the URL query string
     if (getFormat() != null) {
-      joiner.add(String.format("%sformat%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFormat()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sformat%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFormat()))));
     }
 
     // add `location` to the URL query string
     if (getLocation() != null) {
-      joiner.add(String.format("%slocation%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getLocation()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%slocation%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getLocation()))));
     }
 
     // add `user` to the URL query string
@@ -418,17 +418,17 @@ public class ExportEvent {
 
     // add `jobID` to the URL query string
     if (getJobID() != null) {
-      joiner.add(String.format("%sjobID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getJobID()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sjobID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getJobID()))));
     }
 
     // add `dataKey` to the URL query string
     if (getDataKey() != null) {
-      joiner.add(String.format("%sdataKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDataKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdataKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDataKey()))));
     }
 
     // add `dataIdString` to the URL query string
     if (getDataIdString() != null) {
-      joiner.add(String.format("%sdataIdString%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDataIdString()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdataIdString%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDataIdString()))));
     }
 
     // add `humanReadableData` to the URL query string

@@ -39,7 +39,7 @@ import org.vcell.restclient.ApiClient;
   SimulationQueueEntryStatusRecord.JSON_PROPERTY_FIELD_QUEUE_DATE,
   SimulationQueueEntryStatusRecord.JSON_PROPERTY_FIELD_QUEUE_I_D
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class SimulationQueueEntryStatusRecord {
   public static final String JSON_PROPERTY_FIELD_QUEUE_PRIORITY = "fieldQueuePriority";
   @javax.annotation.Nullable
@@ -66,14 +66,14 @@ public class SimulationQueueEntryStatusRecord {
    * @return fieldQueuePriority
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_QUEUE_PRIORITY)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_QUEUE_PRIORITY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getFieldQueuePriority() {
     return fieldQueuePriority;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_QUEUE_PRIORITY)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_QUEUE_PRIORITY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFieldQueuePriority(@javax.annotation.Nullable Integer fieldQueuePriority) {
     this.fieldQueuePriority = fieldQueuePriority;
@@ -90,14 +90,14 @@ public class SimulationQueueEntryStatusRecord {
    * @return fieldQueueDate
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_QUEUE_DATE)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_QUEUE_DATE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public OffsetDateTime getFieldQueueDate() {
     return fieldQueueDate;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_QUEUE_DATE)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_QUEUE_DATE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFieldQueueDate(@javax.annotation.Nullable OffsetDateTime fieldQueueDate) {
     this.fieldQueueDate = fieldQueueDate;
@@ -114,14 +114,14 @@ public class SimulationQueueEntryStatusRecord {
    * @return fieldQueueID
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_QUEUE_I_D)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_QUEUE_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public SimulationQueueID getFieldQueueID() {
     return fieldQueueID;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_QUEUE_I_D)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_QUEUE_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFieldQueueID(@javax.annotation.Nullable SimulationQueueID fieldQueueID) {
     this.fieldQueueID = fieldQueueID;
@@ -206,17 +206,17 @@ public class SimulationQueueEntryStatusRecord {
 
     // add `fieldQueuePriority` to the URL query string
     if (getFieldQueuePriority() != null) {
-      joiner.add(String.format("%sfieldQueuePriority%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldQueuePriority()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sfieldQueuePriority%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldQueuePriority()))));
     }
 
     // add `fieldQueueDate` to the URL query string
     if (getFieldQueueDate() != null) {
-      joiner.add(String.format("%sfieldQueueDate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldQueueDate()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sfieldQueueDate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldQueueDate()))));
     }
 
     // add `fieldQueueID` to the URL query string
     if (getFieldQueueID() != null) {
-      joiner.add(String.format("%sfieldQueueID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldQueueID()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sfieldQueueID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldQueueID()))));
     }
 
     return joiner.toString();

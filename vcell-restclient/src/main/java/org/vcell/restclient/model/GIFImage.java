@@ -38,7 +38,7 @@ import org.vcell.restclient.ApiClient;
   GIFImage.JSON_PROPERTY_GIF_ENCODED_DATA,
   GIFImage.JSON_PROPERTY_SIZE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class GIFImage {
   public static final String JSON_PROPERTY_GIF_ENCODED_DATA = "gifEncodedData";
   @javax.annotation.Nullable
@@ -61,14 +61,14 @@ public class GIFImage {
    * @return gifEncodedData
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_GIF_ENCODED_DATA)
+  @JsonProperty(value = JSON_PROPERTY_GIF_ENCODED_DATA, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public File getGifEncodedData() {
     return gifEncodedData;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_GIF_ENCODED_DATA)
+  @JsonProperty(value = JSON_PROPERTY_GIF_ENCODED_DATA, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setGifEncodedData(@javax.annotation.Nullable File gifEncodedData) {
     this.gifEncodedData = gifEncodedData;
@@ -85,14 +85,14 @@ public class GIFImage {
    * @return size
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIZE)
+  @JsonProperty(value = JSON_PROPERTY_SIZE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public ISize getSize() {
     return size;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SIZE)
+  @JsonProperty(value = JSON_PROPERTY_SIZE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSize(@javax.annotation.Nullable ISize size) {
     this.size = size;
@@ -175,7 +175,7 @@ public class GIFImage {
 
     // add `gifEncodedData` to the URL query string
     if (getGifEncodedData() != null) {
-      joiner.add(String.format("%sgifEncodedData%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getGifEncodedData()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sgifEncodedData%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getGifEncodedData()))));
     }
 
     // add `size` to the URL query string

@@ -46,7 +46,7 @@ import org.vcell.restclient.ApiClient;
   MathModelSummary.JSON_PROPERTY_PUBLICATION_INFOS,
   MathModelSummary.JSON_PROPERTY_ANNOTATED_FUNCTIONS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class MathModelSummary {
   public static final String JSON_PROPERTY_VERSION = "version";
   @javax.annotation.Nullable
@@ -85,14 +85,14 @@ public class MathModelSummary {
    * @return version
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Version getVersion() {
     return version;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVersion(@javax.annotation.Nullable Version version) {
     this.version = version;
@@ -109,14 +109,14 @@ public class MathModelSummary {
    * @return keyValue
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_KEY_VALUE)
+  @JsonProperty(value = JSON_PROPERTY_KEY_VALUE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getKeyValue() {
     return keyValue;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_KEY_VALUE)
+  @JsonProperty(value = JSON_PROPERTY_KEY_VALUE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setKeyValue(@javax.annotation.Nullable String keyValue) {
     this.keyValue = keyValue;
@@ -133,14 +133,14 @@ public class MathModelSummary {
    * @return modelInfo
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_MODEL_INFO)
+  @JsonProperty(value = JSON_PROPERTY_MODEL_INFO, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public MathModelChildSummary getModelInfo() {
     return modelInfo;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_MODEL_INFO)
+  @JsonProperty(value = JSON_PROPERTY_MODEL_INFO, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setModelInfo(@javax.annotation.Nullable MathModelChildSummary modelInfo) {
     this.modelInfo = modelInfo;
@@ -157,14 +157,14 @@ public class MathModelSummary {
    * @return softwareVersion
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_SOFTWARE_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public VCellSoftwareVersion getSoftwareVersion() {
     return softwareVersion;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_SOFTWARE_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSoftwareVersion(@javax.annotation.Nullable VCellSoftwareVersion softwareVersion) {
     this.softwareVersion = softwareVersion;
@@ -189,14 +189,14 @@ public class MathModelSummary {
    * @return publicationInfos
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PUBLICATION_INFOS)
+  @JsonProperty(value = JSON_PROPERTY_PUBLICATION_INFOS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<PublicationInfo> getPublicationInfos() {
     return publicationInfos;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_PUBLICATION_INFOS)
+  @JsonProperty(value = JSON_PROPERTY_PUBLICATION_INFOS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setPublicationInfos(@javax.annotation.Nullable List<PublicationInfo> publicationInfos) {
     this.publicationInfos = publicationInfos;
@@ -213,14 +213,14 @@ public class MathModelSummary {
    * @return annotatedFunctions
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ANNOTATED_FUNCTIONS)
+  @JsonProperty(value = JSON_PROPERTY_ANNOTATED_FUNCTIONS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getAnnotatedFunctions() {
     return annotatedFunctions;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ANNOTATED_FUNCTIONS)
+  @JsonProperty(value = JSON_PROPERTY_ANNOTATED_FUNCTIONS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setAnnotatedFunctions(@javax.annotation.Nullable String annotatedFunctions) {
     this.annotatedFunctions = annotatedFunctions;
@@ -316,7 +316,7 @@ public class MathModelSummary {
 
     // add `keyValue` to the URL query string
     if (getKeyValue() != null) {
-      joiner.add(String.format("%skeyValue%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getKeyValue()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%skeyValue%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getKeyValue()))));
     }
 
     // add `modelInfo` to the URL query string
@@ -333,15 +333,15 @@ public class MathModelSummary {
     if (getPublicationInfos() != null) {
       for (int i = 0; i < getPublicationInfos().size(); i++) {
         if (getPublicationInfos().get(i) != null) {
-          joiner.add(getPublicationInfos().get(i).toUrlQueryString(String.format("%spublicationInfos%s%s", prefix, suffix,
-          "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
+          joiner.add(getPublicationInfos().get(i).toUrlQueryString(String.format(java.util.Locale.ROOT, "%spublicationInfos%s%s", prefix, suffix,
+          "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix))));
         }
       }
     }
 
     // add `annotatedFunctions` to the URL query string
     if (getAnnotatedFunctions() != null) {
-      joiner.add(String.format("%sannotatedFunctions%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAnnotatedFunctions()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sannotatedFunctions%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAnnotatedFunctions()))));
     }
 
     return joiner.toString();

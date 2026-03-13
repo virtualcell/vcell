@@ -107,6 +107,8 @@ src/main/java/org/vcell/restclient/Configuration.java
 src/main/java/org/vcell/restclient/JSON.java
 src/main/java/org/vcell/restclient/Pair.java
 src/main/java/org/vcell/restclient/RFC3339DateFormat.java
+src/main/java/org/vcell/restclient/RFC3339InstantDeserializer.java
+src/main/java/org/vcell/restclient/RFC3339JavaTimeModule.java
 src/main/java/org/vcell/restclient/ServerConfiguration.java
 src/main/java/org/vcell/restclient/ServerVariable.java
 src/main/java/org/vcell/restclient/api/AdminResourceApi.java

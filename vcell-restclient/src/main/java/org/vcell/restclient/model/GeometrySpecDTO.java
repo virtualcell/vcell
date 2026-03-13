@@ -42,7 +42,7 @@ import org.vcell.restclient.ApiClient;
   GeometrySpecDTO.JSON_PROPERTY_SLICE_NUMBER,
   GeometrySpecDTO.JSON_PROPERTY_GEOMETRY_MODE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class GeometrySpecDTO {
   public static final String JSON_PROPERTY_SELECTIONS = "selections";
   @javax.annotation.Nullable
@@ -81,14 +81,14 @@ public class GeometrySpecDTO {
    * @return selections
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SELECTIONS)
+  @JsonProperty(value = JSON_PROPERTY_SELECTIONS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<SpatialSelection> getSelections() {
     return selections;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SELECTIONS)
+  @JsonProperty(value = JSON_PROPERTY_SELECTIONS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSelections(@javax.annotation.Nullable List<SpatialSelection> selections) {
     this.selections = selections;
@@ -105,14 +105,14 @@ public class GeometrySpecDTO {
    * @return axis
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_AXIS)
+  @JsonProperty(value = JSON_PROPERTY_AXIS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getAxis() {
     return axis;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_AXIS)
+  @JsonProperty(value = JSON_PROPERTY_AXIS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setAxis(@javax.annotation.Nullable Integer axis) {
     this.axis = axis;
@@ -129,14 +129,14 @@ public class GeometrySpecDTO {
    * @return sliceNumber
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SLICE_NUMBER)
+  @JsonProperty(value = JSON_PROPERTY_SLICE_NUMBER, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getSliceNumber() {
     return sliceNumber;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SLICE_NUMBER)
+  @JsonProperty(value = JSON_PROPERTY_SLICE_NUMBER, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSliceNumber(@javax.annotation.Nullable Integer sliceNumber) {
     this.sliceNumber = sliceNumber;
@@ -153,14 +153,14 @@ public class GeometrySpecDTO {
    * @return geometryMode
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_GEOMETRY_MODE)
+  @JsonProperty(value = JSON_PROPERTY_GEOMETRY_MODE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public GeometryMode getGeometryMode() {
     return geometryMode;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_GEOMETRY_MODE)
+  @JsonProperty(value = JSON_PROPERTY_GEOMETRY_MODE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setGeometryMode(@javax.annotation.Nullable GeometryMode geometryMode) {
     this.geometryMode = geometryMode;
@@ -249,25 +249,25 @@ public class GeometrySpecDTO {
     if (getSelections() != null) {
       for (int i = 0; i < getSelections().size(); i++) {
         if (getSelections().get(i) != null) {
-          joiner.add(getSelections().get(i).toUrlQueryString(String.format("%sselections%s%s", prefix, suffix,
-          "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
+          joiner.add(getSelections().get(i).toUrlQueryString(String.format(java.util.Locale.ROOT, "%sselections%s%s", prefix, suffix,
+          "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix))));
         }
       }
     }
 
     // add `axis` to the URL query string
     if (getAxis() != null) {
-      joiner.add(String.format("%saxis%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAxis()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%saxis%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAxis()))));
     }
 
     // add `sliceNumber` to the URL query string
     if (getSliceNumber() != null) {
-      joiner.add(String.format("%ssliceNumber%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSliceNumber()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%ssliceNumber%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSliceNumber()))));
     }
 
     // add `geometryMode` to the URL query string
     if (getGeometryMode() != null) {
-      joiner.add(String.format("%sgeometryMode%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getGeometryMode()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sgeometryMode%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getGeometryMode()))));
     }
 
     return joiner.toString();

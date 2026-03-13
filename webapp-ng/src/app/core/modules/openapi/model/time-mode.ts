@@ -9,12 +9,9 @@
  */
 
 
-export type TimeMode = 'TIME_POINT' | 'TIME_RANGE';
-
 export const TimeMode = {
-
-    TimePoint: 'TIME_POINT' as TimeMode,
-
-    TimeRange: 'TIME_RANGE' as TimeMode
-};
+    TimePoint: 'TIME_POINT',
+    TimeRange: 'TIME_RANGE'
+} as const;
+export type TimeMode = typeof TimeMode[keyof typeof TimeMode];
 

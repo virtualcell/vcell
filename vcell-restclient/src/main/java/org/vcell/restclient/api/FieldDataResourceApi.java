@@ -61,16 +61,37 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class FieldDataResourceApi {
+  /**
+   * Utility class for extending HttpRequest.Builder functionality.
+   */
+  private static class HttpRequestBuilderExtensions {
+    /**
+     * Adds additional headers to the provided HttpRequest.Builder. Useful for adding method/endpoint specific headers.
+     *
+     * @param builder the HttpRequest.Builder to which headers will be added
+     * @param headers a map of header names and values to add; may be null
+     * @return the same HttpRequest.Builder instance with the additional headers set
+     */
+    static HttpRequest.Builder withAdditionalHeaders(HttpRequest.Builder builder, Map<String, String> headers) {
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                builder.header(entry.getKey(), entry.getValue());
+            }
+        }
+        return builder;
+    }
+  }
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
   private final String memberVarBaseUri;
   private final Consumer<HttpRequest.Builder> memberVarInterceptor;
   private final Duration memberVarReadTimeout;
   private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
-  private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
+  private final Consumer<HttpResponse<InputStream>> memberVarAsyncResponseInterceptor;
 
   public FieldDataResourceApi() {
     this(Configuration.getDefaultApiClient());
@@ -86,8 +107,17 @@ public class FieldDataResourceApi {
     memberVarAsyncResponseInterceptor = apiClient.getAsyncResponseInterceptor();
   }
 
+
   protected ApiException getApiException(String operationId, HttpResponse<InputStream> response) throws IOException {
-    String body = response.body() == null ? null : new String(response.body().readAllBytes());
+    InputStream responseBody = ApiClient.getResponseBody(response);
+    String body = null;
+    try {
+      body = responseBody == null ? null : new String(responseBody.readAllBytes());
+    } finally {
+      if (responseBody != null) {
+        responseBody.close();
+      }
+    }
     String message = formatExceptionMessage(operationId, response.statusCode(), body);
     return new ApiException(response.statusCode(), message, response.headers(), body);
   }
@@ -100,8 +130,59 @@ public class FieldDataResourceApi {
   }
 
   /**
-   * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
+   * Download file from the given response.
    *
+   * @param response Response
+   * @return File
+   * @throws ApiException If fail to read file content from response and write to disk
+   */
+  public File downloadFileFromResponse(HttpResponse<InputStream> response, InputStream responseBody) throws ApiException {
+    if (responseBody == null) {
+      throw new ApiException(new IOException("Response body is empty"));
+    }
+    try {
+      File file = prepareDownloadFile(response);
+      java.nio.file.Files.copy(responseBody, file.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+      return file;
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+  }
+
+  /**
+   * <p>Prepare the file for download from the response.</p>
+   *
+   * @param response a {@link java.net.http.HttpResponse} object.
+   * @return a {@link java.io.File} object.
+   * @throws java.io.IOException if any.
+   */
+  private File prepareDownloadFile(HttpResponse<InputStream> response) throws IOException {
+    String filename = null;
+    java.util.Optional<String> contentDisposition = response.headers().firstValue("Content-Disposition");
+    if (contentDisposition.isPresent() && !"".equals(contentDisposition.get())) {
+      // Get filename from the Content-Disposition header.
+      java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("filename=['\"]?([^'\"\\s]+)['\"]?");
+      java.util.regex.Matcher matcher = pattern.matcher(contentDisposition.get());
+      if (matcher.find())
+        filename = matcher.group(1);
+    }
+    File file = null;
+    if (filename != null) {
+      java.nio.file.Path tempDir = java.nio.file.Files.createTempDirectory("swagger-gen-native");
+      java.nio.file.Path filePath = java.nio.file.Files.createFile(tempDir.resolve(filename));
+      file = filePath.toFile();
+      tempDir.toFile().deleteOnExit();   // best effort cleanup
+      file.deleteOnExit(); // best effort cleanup
+    } else {
+      file = java.nio.file.Files.createTempFile("download-", "").toFile();
+      file.deleteOnExit(); // best effort cleanup
+    }
+    return file;
+  }
+
+  /**
+   * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
+   * 
    * @param _file  (optional)
    * @param fileName  (optional)
    * @param extent  (optional)
@@ -113,14 +194,33 @@ public class FieldDataResourceApi {
    * @return FieldDataSavedResults
    * @throws ApiException if fails to make API call
    */
-  public FieldDataSavedResults advancedCreate(File _file, String fileName, Extent extent, ISize iSize, List<String> channelNames, List<Double> times, String annotation, Origin origin) throws ApiException {
-    ApiResponse<FieldDataSavedResults> localVarResponse = advancedCreateWithHttpInfo(_file, fileName, extent, iSize, channelNames, times, annotation, origin);
+  public FieldDataSavedResults advancedCreate(@javax.annotation.Nullable File _file, @javax.annotation.Nullable String fileName, @javax.annotation.Nullable Extent extent, @javax.annotation.Nullable ISize iSize, @javax.annotation.Nullable List<String> channelNames, @javax.annotation.Nullable List<Double> times, @javax.annotation.Nullable String annotation, @javax.annotation.Nullable Origin origin) throws ApiException {
+    return advancedCreate(_file, fileName, extent, iSize, channelNames, times, annotation, origin, null);
+  }
+
+  /**
+   * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
+   * 
+   * @param _file  (optional)
+   * @param fileName  (optional)
+   * @param extent  (optional)
+   * @param iSize  (optional)
+   * @param channelNames  (optional)
+   * @param times  (optional)
+   * @param annotation  (optional)
+   * @param origin  (optional)
+   * @param headers Optional headers to include in the request
+   * @return FieldDataSavedResults
+   * @throws ApiException if fails to make API call
+   */
+  public FieldDataSavedResults advancedCreate(@javax.annotation.Nullable File _file, @javax.annotation.Nullable String fileName, @javax.annotation.Nullable Extent extent, @javax.annotation.Nullable ISize iSize, @javax.annotation.Nullable List<String> channelNames, @javax.annotation.Nullable List<Double> times, @javax.annotation.Nullable String annotation, @javax.annotation.Nullable Origin origin, Map<String, String> headers) throws ApiException {
+    ApiResponse<FieldDataSavedResults> localVarResponse = advancedCreateWithHttpInfo(_file, fileName, extent, iSize, channelNames, times, annotation, origin, headers);
     return localVarResponse.getData();
   }
 
   /**
    * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
-   *
+   * 
    * @param _file  (optional)
    * @param fileName  (optional)
    * @param extent  (optional)
@@ -132,8 +232,27 @@ public class FieldDataResourceApi {
    * @return ApiResponse&lt;FieldDataSavedResults&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<FieldDataSavedResults> advancedCreateWithHttpInfo(File _file, String fileName, Extent extent, ISize iSize, List<String> channelNames, List<Double> times, String annotation, Origin origin) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = advancedCreateRequestBuilder(_file, fileName, extent, iSize, channelNames, times, annotation, origin);
+  public ApiResponse<FieldDataSavedResults> advancedCreateWithHttpInfo(@javax.annotation.Nullable File _file, @javax.annotation.Nullable String fileName, @javax.annotation.Nullable Extent extent, @javax.annotation.Nullable ISize iSize, @javax.annotation.Nullable List<String> channelNames, @javax.annotation.Nullable List<Double> times, @javax.annotation.Nullable String annotation, @javax.annotation.Nullable Origin origin) throws ApiException {
+    return advancedCreateWithHttpInfo(_file, fileName, extent, iSize, channelNames, times, annotation, origin, null);
+  }
+
+  /**
+   * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
+   * 
+   * @param _file  (optional)
+   * @param fileName  (optional)
+   * @param extent  (optional)
+   * @param iSize  (optional)
+   * @param channelNames  (optional)
+   * @param times  (optional)
+   * @param annotation  (optional)
+   * @param origin  (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;FieldDataSavedResults&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<FieldDataSavedResults> advancedCreateWithHttpInfo(@javax.annotation.Nullable File _file, @javax.annotation.Nullable String fileName, @javax.annotation.Nullable Extent extent, @javax.annotation.Nullable ISize iSize, @javax.annotation.Nullable List<String> channelNames, @javax.annotation.Nullable List<Double> times, @javax.annotation.Nullable String annotation, @javax.annotation.Nullable Origin origin, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = advancedCreateRequestBuilder(_file, fileName, extent, iSize, channelNames, times, annotation, origin, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -141,11 +260,13 @@ public class FieldDataResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("advancedCreate", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<FieldDataSavedResults>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -153,15 +274,21 @@ public class FieldDataResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        FieldDataSavedResults responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<FieldDataSavedResults>() {});
+        
 
         return new ApiResponse<FieldDataSavedResults>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<FieldDataSavedResults>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -172,7 +299,7 @@ public class FieldDataResourceApi {
     }
   }
 
-  private HttpRequest.Builder advancedCreateRequestBuilder(File _file, String fileName, Extent extent, ISize iSize, List<String> channelNames, List<Double> times, String annotation, Origin origin) throws ApiException {
+  private HttpRequest.Builder advancedCreateRequestBuilder(@javax.annotation.Nullable File _file, @javax.annotation.Nullable String fileName, @javax.annotation.Nullable Extent extent, @javax.annotation.Nullable ISize iSize, @javax.annotation.Nullable List<String> channelNames, @javax.annotation.Nullable List<Double> times, @javax.annotation.Nullable String annotation, @javax.annotation.Nullable Origin origin, Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -181,28 +308,43 @@ public class FieldDataResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     MultipartEntityBuilder multiPartBuilder = MultipartEntityBuilder.create();
     boolean hasFiles = false;
     multiPartBuilder.addBinaryBody("file", _file);
     hasFiles = true;
-    multiPartBuilder.addTextBody("fileName", fileName.toString());
-      try {
-          multiPartBuilder.addTextBody("extent", memberVarObjectMapper.writeValueAsString(extent));
-          multiPartBuilder.addTextBody("iSize", memberVarObjectMapper.writeValueAsString(iSize));
-          multiPartBuilder.addTextBody("origin", memberVarObjectMapper.writeValueAsString(origin));
-      } catch (JsonProcessingException e) {
-          throw new RuntimeException(e);
-      }
+    if (fileName != null) {
+        multiPartBuilder.addTextBody("fileName", fileName.toString());
+    }
+    try {
+        if (extent != null) {
+            multiPartBuilder.addTextBody("extent", memberVarObjectMapper.writeValueAsString(extent));
+        }
+        if (iSize != null) {
+            multiPartBuilder.addTextBody("iSize", memberVarObjectMapper.writeValueAsString(iSize));
+        }
+        if (origin != null) {
+            multiPartBuilder.addTextBody("origin", memberVarObjectMapper.writeValueAsString(origin));
+        }
+    } catch (JsonProcessingException e) {
+        throw new RuntimeException(e);
+    }
     for (int i=0; i < channelNames.size(); i++) {
-        multiPartBuilder.addTextBody("channelNames", channelNames.get(i).toString());
+        if (channelNames.get(i) != null) {
+            multiPartBuilder.addTextBody("channelNames", channelNames.get(i).toString());
+        }
     }
     for (int i=0; i < times.size(); i++) {
-        multiPartBuilder.addTextBody("times", times.get(i).toString());
+        if (times.get(i) != null) {
+            multiPartBuilder.addTextBody("times", times.get(i).toString());
+        }
     }
-    multiPartBuilder.addTextBody("annotation", annotation.toString());
+    if (annotation != null) {
+        multiPartBuilder.addTextBody("annotation", annotation.toString());
+    }
     HttpEntity entity = multiPartBuilder.build();
-    HttpRequest.BodyPublisher formDataPublisher;
+    Supplier<InputStream> formDataSupplier;
     if (hasFiles) {
         Pipe pipe;
         try {
@@ -217,7 +359,7 @@ public class FieldDataResourceApi {
                 e.printStackTrace();
             }
         }).start();
-        formDataPublisher = HttpRequest.BodyPublishers.ofInputStream(() -> Channels.newInputStream(pipe.source()));
+        formDataSupplier = () -> Channels.newInputStream(pipe.source());
     } else {
         ByteArrayOutputStream formOutputStream = new ByteArrayOutputStream();
         try {
@@ -225,15 +367,18 @@ public class FieldDataResourceApi {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        formDataPublisher = HttpRequest.BodyPublishers
-            .ofInputStream(() -> new ByteArrayInputStream(formOutputStream.toByteArray()));
+        byte[] formBytes = formOutputStream.toByteArray();
+        formDataSupplier = () -> new ByteArrayInputStream(formBytes);
     }
     localVarRequestBuilder
         .header("Content-Type", entity.getContentType().getValue())
-        .method("POST", formDataPublisher);
+        .header("Content-Encoding", "gzip")
+        .method("POST", ApiClient.gzipRequestBody(formDataSupplier));
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -248,8 +393,21 @@ public class FieldDataResourceApi {
    * @return FieldData
    * @throws ApiException if fails to make API call
    */
-  public FieldData analyzeFile(File _file, String fileName) throws ApiException {
-    ApiResponse<FieldData> localVarResponse = analyzeFileWithHttpInfo(_file, fileName);
+  public FieldData analyzeFile(@javax.annotation.Nullable File _file, @javax.annotation.Nullable String fileName) throws ApiException {
+    return analyzeFile(_file, fileName, null);
+  }
+
+  /**
+   * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+   * 
+   * @param _file  (optional)
+   * @param fileName  (optional)
+   * @param headers Optional headers to include in the request
+   * @return FieldData
+   * @throws ApiException if fails to make API call
+   */
+  public FieldData analyzeFile(@javax.annotation.Nullable File _file, @javax.annotation.Nullable String fileName, Map<String, String> headers) throws ApiException {
+    ApiResponse<FieldData> localVarResponse = analyzeFileWithHttpInfo(_file, fileName, headers);
     return localVarResponse.getData();
   }
 
@@ -261,8 +419,21 @@ public class FieldDataResourceApi {
    * @return ApiResponse&lt;FieldData&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<FieldData> analyzeFileWithHttpInfo(File _file, String fileName) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = analyzeFileRequestBuilder(_file, fileName);
+  public ApiResponse<FieldData> analyzeFileWithHttpInfo(@javax.annotation.Nullable File _file, @javax.annotation.Nullable String fileName) throws ApiException {
+    return analyzeFileWithHttpInfo(_file, fileName, null);
+  }
+
+  /**
+   * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+   * 
+   * @param _file  (optional)
+   * @param fileName  (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;FieldData&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<FieldData> analyzeFileWithHttpInfo(@javax.annotation.Nullable File _file, @javax.annotation.Nullable String fileName, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = analyzeFileRequestBuilder(_file, fileName, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -270,11 +441,13 @@ public class FieldDataResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("analyzeFile", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<FieldData>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -282,15 +455,21 @@ public class FieldDataResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        FieldData responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<FieldData>() {});
+        
 
         return new ApiResponse<FieldData>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<FieldData>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -301,7 +480,7 @@ public class FieldDataResourceApi {
     }
   }
 
-  private HttpRequest.Builder analyzeFileRequestBuilder(File _file, String fileName) throws ApiException {
+  private HttpRequest.Builder analyzeFileRequestBuilder(@javax.annotation.Nullable File _file, @javax.annotation.Nullable String fileName, Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -310,14 +489,17 @@ public class FieldDataResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     MultipartEntityBuilder multiPartBuilder = MultipartEntityBuilder.create();
     boolean hasFiles = false;
     multiPartBuilder.addBinaryBody("file", _file);
     hasFiles = true;
-    multiPartBuilder.addTextBody("fileName", fileName.toString());
+    if (fileName != null) {
+        multiPartBuilder.addTextBody("fileName", fileName.toString());
+    }
     HttpEntity entity = multiPartBuilder.build();
-    HttpRequest.BodyPublisher formDataPublisher;
+    Supplier<InputStream> formDataSupplier;
     if (hasFiles) {
         Pipe pipe;
         try {
@@ -332,7 +514,7 @@ public class FieldDataResourceApi {
                 e.printStackTrace();
             }
         }).start();
-        formDataPublisher = HttpRequest.BodyPublishers.ofInputStream(() -> Channels.newInputStream(pipe.source()));
+        formDataSupplier = () -> Channels.newInputStream(pipe.source());
     } else {
         ByteArrayOutputStream formOutputStream = new ByteArrayOutputStream();
         try {
@@ -340,15 +522,18 @@ public class FieldDataResourceApi {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        formDataPublisher = HttpRequest.BodyPublishers
-            .ofInputStream(() -> new ByteArrayInputStream(formOutputStream.toByteArray()));
+        byte[] formBytes = formOutputStream.toByteArray();
+        formDataSupplier = () -> new ByteArrayInputStream(formBytes);
     }
     localVarRequestBuilder
         .header("Content-Type", entity.getContentType().getValue())
-        .method("POST", formDataPublisher);
+        .header("Content-Encoding", "gzip")
+        .method("POST", ApiClient.gzipRequestBody(formDataSupplier));
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -362,8 +547,20 @@ public class FieldDataResourceApi {
    * @return Map&lt;String, ExternalDataIdentifier&gt;
    * @throws ApiException if fails to make API call
    */
-  public Map<String, ExternalDataIdentifier> copyModelsFieldData(SourceModel sourceModel) throws ApiException {
-    ApiResponse<Map<String, ExternalDataIdentifier>> localVarResponse = copyModelsFieldDataWithHttpInfo(sourceModel);
+  public Map<String, ExternalDataIdentifier> copyModelsFieldData(@javax.annotation.Nonnull SourceModel sourceModel) throws ApiException {
+    return copyModelsFieldData(sourceModel, null);
+  }
+
+  /**
+   * Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
+   * 
+   * @param sourceModel  (required)
+   * @param headers Optional headers to include in the request
+   * @return Map&lt;String, ExternalDataIdentifier&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public Map<String, ExternalDataIdentifier> copyModelsFieldData(@javax.annotation.Nonnull SourceModel sourceModel, Map<String, String> headers) throws ApiException {
+    ApiResponse<Map<String, ExternalDataIdentifier>> localVarResponse = copyModelsFieldDataWithHttpInfo(sourceModel, headers);
     return localVarResponse.getData();
   }
 
@@ -374,8 +571,20 @@ public class FieldDataResourceApi {
    * @return ApiResponse&lt;Map&lt;String, ExternalDataIdentifier&gt;&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Map<String, ExternalDataIdentifier>> copyModelsFieldDataWithHttpInfo(SourceModel sourceModel) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = copyModelsFieldDataRequestBuilder(sourceModel);
+  public ApiResponse<Map<String, ExternalDataIdentifier>> copyModelsFieldDataWithHttpInfo(@javax.annotation.Nonnull SourceModel sourceModel) throws ApiException {
+    return copyModelsFieldDataWithHttpInfo(sourceModel, null);
+  }
+
+  /**
+   * Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
+   * 
+   * @param sourceModel  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Map&lt;String, ExternalDataIdentifier&gt;&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Map<String, ExternalDataIdentifier>> copyModelsFieldDataWithHttpInfo(@javax.annotation.Nonnull SourceModel sourceModel, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = copyModelsFieldDataRequestBuilder(sourceModel, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -383,11 +592,13 @@ public class FieldDataResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("copyModelsFieldData", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<Map<String, ExternalDataIdentifier>>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -395,15 +606,21 @@ public class FieldDataResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        Map<String, ExternalDataIdentifier> responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Map<String, ExternalDataIdentifier>>() {});
+        
 
         return new ApiResponse<Map<String, ExternalDataIdentifier>>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Map<String, ExternalDataIdentifier>>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -414,7 +631,7 @@ public class FieldDataResourceApi {
     }
   }
 
-  private HttpRequest.Builder copyModelsFieldDataRequestBuilder(SourceModel sourceModel) throws ApiException {
+  private HttpRequest.Builder copyModelsFieldDataRequestBuilder(@javax.annotation.Nonnull SourceModel sourceModel, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'sourceModel' is set
     if (sourceModel == null) {
       throw new ApiException(400, "Missing the required parameter 'sourceModel' when calling copyModelsFieldData");
@@ -428,16 +645,21 @@ public class FieldDataResourceApi {
 
     localVarRequestBuilder.header("Content-Type", "application/json");
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     try {
       byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(sourceModel);
-      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+      Supplier<InputStream> localVarRequestBodySupplier = () -> new ByteArrayInputStream(localVarPostBody);
+      localVarRequestBuilder.header("Content-Encoding", "gzip");
+      localVarRequestBuilder.method("POST", ApiClient.gzipRequestBody(localVarRequestBodySupplier));
     } catch (IOException e) {
       throw new ApiException(e);
     }
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -452,8 +674,21 @@ public class FieldDataResourceApi {
    * @return FieldDataSavedResults
    * @throws ApiException if fails to make API call
    */
-  public FieldDataSavedResults createFromFile(File _file, String fieldDataName) throws ApiException {
-    ApiResponse<FieldDataSavedResults> localVarResponse = createFromFileWithHttpInfo(_file, fieldDataName);
+  public FieldDataSavedResults createFromFile(@javax.annotation.Nullable File _file, @javax.annotation.Nullable String fieldDataName) throws ApiException {
+    return createFromFile(_file, fieldDataName, null);
+  }
+
+  /**
+   * Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
+   * 
+   * @param _file  (optional)
+   * @param fieldDataName  (optional)
+   * @param headers Optional headers to include in the request
+   * @return FieldDataSavedResults
+   * @throws ApiException if fails to make API call
+   */
+  public FieldDataSavedResults createFromFile(@javax.annotation.Nullable File _file, @javax.annotation.Nullable String fieldDataName, Map<String, String> headers) throws ApiException {
+    ApiResponse<FieldDataSavedResults> localVarResponse = createFromFileWithHttpInfo(_file, fieldDataName, headers);
     return localVarResponse.getData();
   }
 
@@ -465,8 +700,21 @@ public class FieldDataResourceApi {
    * @return ApiResponse&lt;FieldDataSavedResults&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<FieldDataSavedResults> createFromFileWithHttpInfo(File _file, String fieldDataName) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = createFromFileRequestBuilder(_file, fieldDataName);
+  public ApiResponse<FieldDataSavedResults> createFromFileWithHttpInfo(@javax.annotation.Nullable File _file, @javax.annotation.Nullable String fieldDataName) throws ApiException {
+    return createFromFileWithHttpInfo(_file, fieldDataName, null);
+  }
+
+  /**
+   * Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
+   * 
+   * @param _file  (optional)
+   * @param fieldDataName  (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;FieldDataSavedResults&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<FieldDataSavedResults> createFromFileWithHttpInfo(@javax.annotation.Nullable File _file, @javax.annotation.Nullable String fieldDataName, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = createFromFileRequestBuilder(_file, fieldDataName, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -474,11 +722,13 @@ public class FieldDataResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("createFromFile", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<FieldDataSavedResults>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -486,15 +736,21 @@ public class FieldDataResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        FieldDataSavedResults responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<FieldDataSavedResults>() {});
+        
 
         return new ApiResponse<FieldDataSavedResults>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<FieldDataSavedResults>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -505,7 +761,7 @@ public class FieldDataResourceApi {
     }
   }
 
-  private HttpRequest.Builder createFromFileRequestBuilder(File _file, String fieldDataName) throws ApiException {
+  private HttpRequest.Builder createFromFileRequestBuilder(@javax.annotation.Nullable File _file, @javax.annotation.Nullable String fieldDataName, Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -514,14 +770,17 @@ public class FieldDataResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     MultipartEntityBuilder multiPartBuilder = MultipartEntityBuilder.create();
     boolean hasFiles = false;
     multiPartBuilder.addBinaryBody("file", _file);
     hasFiles = true;
-    multiPartBuilder.addTextBody("fieldDataName", fieldDataName.toString());
+    if (fieldDataName != null) {
+        multiPartBuilder.addTextBody("fieldDataName", fieldDataName.toString());
+    }
     HttpEntity entity = multiPartBuilder.build();
-    HttpRequest.BodyPublisher formDataPublisher;
+    Supplier<InputStream> formDataSupplier;
     if (hasFiles) {
         Pipe pipe;
         try {
@@ -536,7 +795,7 @@ public class FieldDataResourceApi {
                 e.printStackTrace();
             }
         }).start();
-        formDataPublisher = HttpRequest.BodyPublishers.ofInputStream(() -> Channels.newInputStream(pipe.source()));
+        formDataSupplier = () -> Channels.newInputStream(pipe.source());
     } else {
         ByteArrayOutputStream formOutputStream = new ByteArrayOutputStream();
         try {
@@ -544,15 +803,18 @@ public class FieldDataResourceApi {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        formDataPublisher = HttpRequest.BodyPublishers
-            .ofInputStream(() -> new ByteArrayInputStream(formOutputStream.toByteArray()));
+        byte[] formBytes = formOutputStream.toByteArray();
+        formDataSupplier = () -> new ByteArrayInputStream(formBytes);
     }
     localVarRequestBuilder
         .header("Content-Type", entity.getContentType().getValue())
-        .method("POST", formDataPublisher);
+        .header("Content-Encoding", "gzip")
+        .method("POST", ApiClient.gzipRequestBody(formDataSupplier));
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -567,8 +829,21 @@ public class FieldDataResourceApi {
    * @param newFieldDataName  (optional)
    * @throws ApiException if fails to make API call
    */
-  public void createFromSimulation(String simKeyReference, Integer jobIndex, String newFieldDataName) throws ApiException {
-    createFromSimulationWithHttpInfo(simKeyReference, jobIndex, newFieldDataName);
+  public void createFromSimulation(@javax.annotation.Nullable String simKeyReference, @javax.annotation.Nullable Integer jobIndex, @javax.annotation.Nullable String newFieldDataName) throws ApiException {
+    createFromSimulation(simKeyReference, jobIndex, newFieldDataName, null);
+  }
+
+  /**
+   * Create new field data from existing simulation results.
+   * 
+   * @param simKeyReference  (optional)
+   * @param jobIndex  (optional)
+   * @param newFieldDataName  (optional)
+   * @param headers Optional headers to include in the request
+   * @throws ApiException if fails to make API call
+   */
+  public void createFromSimulation(@javax.annotation.Nullable String simKeyReference, @javax.annotation.Nullable Integer jobIndex, @javax.annotation.Nullable String newFieldDataName, Map<String, String> headers) throws ApiException {
+    createFromSimulationWithHttpInfo(simKeyReference, jobIndex, newFieldDataName, headers);
   }
 
   /**
@@ -580,8 +855,22 @@ public class FieldDataResourceApi {
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Void> createFromSimulationWithHttpInfo(String simKeyReference, Integer jobIndex, String newFieldDataName) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = createFromSimulationRequestBuilder(simKeyReference, jobIndex, newFieldDataName);
+  public ApiResponse<Void> createFromSimulationWithHttpInfo(@javax.annotation.Nullable String simKeyReference, @javax.annotation.Nullable Integer jobIndex, @javax.annotation.Nullable String newFieldDataName) throws ApiException {
+    return createFromSimulationWithHttpInfo(simKeyReference, jobIndex, newFieldDataName, null);
+  }
+
+  /**
+   * Create new field data from existing simulation results.
+   * 
+   * @param simKeyReference  (optional)
+   * @param jobIndex  (optional)
+   * @param newFieldDataName  (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> createFromSimulationWithHttpInfo(@javax.annotation.Nullable String simKeyReference, @javax.annotation.Nullable Integer jobIndex, @javax.annotation.Nullable String newFieldDataName, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = createFromSimulationRequestBuilder(simKeyReference, jobIndex, newFieldDataName, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -589,9 +878,14 @@ public class FieldDataResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("createFromSimulation", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody != null) {
+          localVarResponseBody.readAllBytes();
         }
         return new ApiResponse<>(
             localVarResponse.statusCode(),
@@ -599,11 +893,9 @@ public class FieldDataResourceApi {
             null
         );
       } finally {
-        // Drain the InputStream
-        while (localVarResponse.body().read() != -1) {
-          // Ignore
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
         }
-        localVarResponse.body().close();
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -614,7 +906,7 @@ public class FieldDataResourceApi {
     }
   }
 
-  private HttpRequest.Builder createFromSimulationRequestBuilder(String simKeyReference, Integer jobIndex, String newFieldDataName) throws ApiException {
+  private HttpRequest.Builder createFromSimulationRequestBuilder(@javax.annotation.Nullable String simKeyReference, @javax.annotation.Nullable Integer jobIndex, @javax.annotation.Nullable String newFieldDataName, Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -623,6 +915,7 @@ public class FieldDataResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     List<NameValuePair> formValues = new ArrayList<>();
     if (simKeyReference != null) {
@@ -641,13 +934,17 @@ public class FieldDataResourceApi {
     } catch (IOException e) {
         throw new RuntimeException(e);
     }
+    byte[] formBytes = formOutputStream.toByteArray();
+    Supplier<InputStream> formDataSupplier = () -> new ByteArrayInputStream(formBytes);
     localVarRequestBuilder
         .header("Content-Type", entity.getContentType().getValue())
-        .method("POST", HttpRequest.BodyPublishers
-            .ofInputStream(() -> new ByteArrayInputStream(formOutputStream.toByteArray())));
+        .header("Content-Encoding", "gzip")
+        .method("POST", ApiClient.gzipRequestBody(formDataSupplier));
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -660,8 +957,19 @@ public class FieldDataResourceApi {
    * @param fieldDataID  (required)
    * @throws ApiException if fails to make API call
    */
-  public void delete(String fieldDataID) throws ApiException {
-    deleteWithHttpInfo(fieldDataID);
+  public void delete(@javax.annotation.Nonnull String fieldDataID) throws ApiException {
+    delete(fieldDataID, null);
+  }
+
+  /**
+   * Delete the selected field data.
+   * 
+   * @param fieldDataID  (required)
+   * @param headers Optional headers to include in the request
+   * @throws ApiException if fails to make API call
+   */
+  public void delete(@javax.annotation.Nonnull String fieldDataID, Map<String, String> headers) throws ApiException {
+    deleteWithHttpInfo(fieldDataID, headers);
   }
 
   /**
@@ -671,8 +979,20 @@ public class FieldDataResourceApi {
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Void> deleteWithHttpInfo(String fieldDataID) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = deleteRequestBuilder(fieldDataID);
+  public ApiResponse<Void> deleteWithHttpInfo(@javax.annotation.Nonnull String fieldDataID) throws ApiException {
+    return deleteWithHttpInfo(fieldDataID, null);
+  }
+
+  /**
+   * Delete the selected field data.
+   * 
+   * @param fieldDataID  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> deleteWithHttpInfo(@javax.annotation.Nonnull String fieldDataID, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = deleteRequestBuilder(fieldDataID, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -680,9 +1000,14 @@ public class FieldDataResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("delete", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody != null) {
+          localVarResponseBody.readAllBytes();
         }
         return new ApiResponse<>(
             localVarResponse.statusCode(),
@@ -690,11 +1015,9 @@ public class FieldDataResourceApi {
             null
         );
       } finally {
-        // Drain the InputStream
-        while (localVarResponse.body().read() != -1) {
-          // Ignore
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
         }
-        localVarResponse.body().close();
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -705,7 +1028,7 @@ public class FieldDataResourceApi {
     }
   }
 
-  private HttpRequest.Builder deleteRequestBuilder(String fieldDataID) throws ApiException {
+  private HttpRequest.Builder deleteRequestBuilder(@javax.annotation.Nonnull String fieldDataID, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'fieldDataID' is set
     if (fieldDataID == null) {
       throw new ApiException(400, "Missing the required parameter 'fieldDataID' when calling delete");
@@ -719,11 +1042,14 @@ public class FieldDataResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -737,7 +1063,18 @@ public class FieldDataResourceApi {
    * @throws ApiException if fails to make API call
    */
   public List<FieldDataReference> getAllIDs() throws ApiException {
-    ApiResponse<List<FieldDataReference>> localVarResponse = getAllIDsWithHttpInfo();
+    return getAllIDs(null);
+  }
+
+  /**
+   * Get all of the ids used to identify, and retrieve field data.
+   * 
+   * @param headers Optional headers to include in the request
+   * @return List&lt;FieldDataReference&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public List<FieldDataReference> getAllIDs(Map<String, String> headers) throws ApiException {
+    ApiResponse<List<FieldDataReference>> localVarResponse = getAllIDsWithHttpInfo(headers);
     return localVarResponse.getData();
   }
 
@@ -748,7 +1085,18 @@ public class FieldDataResourceApi {
    * @throws ApiException if fails to make API call
    */
   public ApiResponse<List<FieldDataReference>> getAllIDsWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getAllIDsRequestBuilder();
+    return getAllIDsWithHttpInfo(null);
+  }
+
+  /**
+   * Get all of the ids used to identify, and retrieve field data.
+   * 
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;List&lt;FieldDataReference&gt;&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<List<FieldDataReference>> getAllIDsWithHttpInfo(Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getAllIDsRequestBuilder(headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -756,11 +1104,13 @@ public class FieldDataResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getAllIDs", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<List<FieldDataReference>>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -768,15 +1118,21 @@ public class FieldDataResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        List<FieldDataReference> responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<FieldDataReference>>() {});
+        
 
         return new ApiResponse<List<FieldDataReference>>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<FieldDataReference>>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -787,7 +1143,7 @@ public class FieldDataResourceApi {
     }
   }
 
-  private HttpRequest.Builder getAllIDsRequestBuilder() throws ApiException {
+  private HttpRequest.Builder getAllIDsRequestBuilder(Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -796,11 +1152,14 @@ public class FieldDataResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -814,8 +1173,20 @@ public class FieldDataResourceApi {
    * @return FieldDataShape
    * @throws ApiException if fails to make API call
    */
-  public FieldDataShape getShapeFromID(String fieldDataID) throws ApiException {
-    ApiResponse<FieldDataShape> localVarResponse = getShapeFromIDWithHttpInfo(fieldDataID);
+  public FieldDataShape getShapeFromID(@javax.annotation.Nonnull String fieldDataID) throws ApiException {
+    return getShapeFromID(fieldDataID, null);
+  }
+
+  /**
+   * Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
+   * 
+   * @param fieldDataID  (required)
+   * @param headers Optional headers to include in the request
+   * @return FieldDataShape
+   * @throws ApiException if fails to make API call
+   */
+  public FieldDataShape getShapeFromID(@javax.annotation.Nonnull String fieldDataID, Map<String, String> headers) throws ApiException {
+    ApiResponse<FieldDataShape> localVarResponse = getShapeFromIDWithHttpInfo(fieldDataID, headers);
     return localVarResponse.getData();
   }
 
@@ -826,8 +1197,20 @@ public class FieldDataResourceApi {
    * @return ApiResponse&lt;FieldDataShape&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<FieldDataShape> getShapeFromIDWithHttpInfo(String fieldDataID) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getShapeFromIDRequestBuilder(fieldDataID);
+  public ApiResponse<FieldDataShape> getShapeFromIDWithHttpInfo(@javax.annotation.Nonnull String fieldDataID) throws ApiException {
+    return getShapeFromIDWithHttpInfo(fieldDataID, null);
+  }
+
+  /**
+   * Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
+   * 
+   * @param fieldDataID  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;FieldDataShape&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<FieldDataShape> getShapeFromIDWithHttpInfo(@javax.annotation.Nonnull String fieldDataID, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getShapeFromIDRequestBuilder(fieldDataID, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -835,11 +1218,13 @@ public class FieldDataResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getShapeFromID", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<FieldDataShape>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -847,15 +1232,21 @@ public class FieldDataResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        FieldDataShape responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<FieldDataShape>() {});
+        
 
         return new ApiResponse<FieldDataShape>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<FieldDataShape>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -866,7 +1257,7 @@ public class FieldDataResourceApi {
     }
   }
 
-  private HttpRequest.Builder getShapeFromIDRequestBuilder(String fieldDataID) throws ApiException {
+  private HttpRequest.Builder getShapeFromIDRequestBuilder(@javax.annotation.Nonnull String fieldDataID, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'fieldDataID' is set
     if (fieldDataID == null) {
       throw new ApiException(400, "Missing the required parameter 'fieldDataID' when calling getShapeFromID");
@@ -880,11 +1271,14 @@ public class FieldDataResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -898,8 +1292,20 @@ public class FieldDataResourceApi {
    * @return FieldDataSavedResults
    * @throws ApiException if fails to make API call
    */
-  public FieldDataSavedResults save(FieldData fieldData) throws ApiException {
-    ApiResponse<FieldDataSavedResults> localVarResponse = saveWithHttpInfo(fieldData);
+  public FieldDataSavedResults save(@javax.annotation.Nonnull FieldData fieldData) throws ApiException {
+    return save(fieldData, null);
+  }
+
+  /**
+   * Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
+   * 
+   * @param fieldData  (required)
+   * @param headers Optional headers to include in the request
+   * @return FieldDataSavedResults
+   * @throws ApiException if fails to make API call
+   */
+  public FieldDataSavedResults save(@javax.annotation.Nonnull FieldData fieldData, Map<String, String> headers) throws ApiException {
+    ApiResponse<FieldDataSavedResults> localVarResponse = saveWithHttpInfo(fieldData, headers);
     return localVarResponse.getData();
   }
 
@@ -910,8 +1316,20 @@ public class FieldDataResourceApi {
    * @return ApiResponse&lt;FieldDataSavedResults&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<FieldDataSavedResults> saveWithHttpInfo(FieldData fieldData) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = saveRequestBuilder(fieldData);
+  public ApiResponse<FieldDataSavedResults> saveWithHttpInfo(@javax.annotation.Nonnull FieldData fieldData) throws ApiException {
+    return saveWithHttpInfo(fieldData, null);
+  }
+
+  /**
+   * Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
+   * 
+   * @param fieldData  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;FieldDataSavedResults&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<FieldDataSavedResults> saveWithHttpInfo(@javax.annotation.Nonnull FieldData fieldData, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = saveRequestBuilder(fieldData, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -919,11 +1337,13 @@ public class FieldDataResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("save", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<FieldDataSavedResults>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -931,15 +1351,21 @@ public class FieldDataResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        FieldDataSavedResults responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<FieldDataSavedResults>() {});
+        
 
         return new ApiResponse<FieldDataSavedResults>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<FieldDataSavedResults>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -950,7 +1376,7 @@ public class FieldDataResourceApi {
     }
   }
 
-  private HttpRequest.Builder saveRequestBuilder(FieldData fieldData) throws ApiException {
+  private HttpRequest.Builder saveRequestBuilder(@javax.annotation.Nonnull FieldData fieldData, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'fieldData' is set
     if (fieldData == null) {
       throw new ApiException(400, "Missing the required parameter 'fieldData' when calling save");
@@ -964,16 +1390,21 @@ public class FieldDataResourceApi {
 
     localVarRequestBuilder.header("Content-Type", "application/json");
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     try {
       byte[] localVarPostBody = memberVarObjectMapper.writeValueAsBytes(fieldData);
-      localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofByteArray(localVarPostBody));
+      Supplier<InputStream> localVarRequestBodySupplier = () -> new ByteArrayInputStream(localVarPostBody);
+      localVarRequestBuilder.header("Content-Encoding", "gzip");
+      localVarRequestBuilder.method("POST", ApiClient.gzipRequestBody(localVarRequestBodySupplier));
     } catch (IOException e) {
       throw new ApiException(e);
     }
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }

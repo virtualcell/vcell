@@ -49,7 +49,7 @@ import org.vcell.restclient.ApiClient;
   BioModel.JSON_PROPERTY_SIMULATION_KEY_LIST,
   BioModel.JSON_PROPERTY_APPLICATIONS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class BioModel {
   public static final String JSON_PROPERTY_BM_KEY = "bmKey";
   @javax.annotation.Nullable
@@ -116,14 +116,14 @@ public class BioModel {
    * @return bmKey
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_BM_KEY)
+  @JsonProperty(value = JSON_PROPERTY_BM_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getBmKey() {
     return bmKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_BM_KEY)
+  @JsonProperty(value = JSON_PROPERTY_BM_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setBmKey(@javax.annotation.Nullable String bmKey) {
     this.bmKey = bmKey;
@@ -140,14 +140,14 @@ public class BioModel {
    * @return name
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getName() {
     return name;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setName(@javax.annotation.Nullable String name) {
     this.name = name;
@@ -164,14 +164,14 @@ public class BioModel {
    * @return privacy
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PRIVACY)
+  @JsonProperty(value = JSON_PROPERTY_PRIVACY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getPrivacy() {
     return privacy;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_PRIVACY)
+  @JsonProperty(value = JSON_PROPERTY_PRIVACY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setPrivacy(@javax.annotation.Nullable Integer privacy) {
     this.privacy = privacy;
@@ -188,14 +188,14 @@ public class BioModel {
    * @return versionFlag
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
+  @JsonProperty(value = JSON_PROPERTY_VERSION_FLAG, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getVersionFlag() {
     return versionFlag;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
+  @JsonProperty(value = JSON_PROPERTY_VERSION_FLAG, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVersionFlag(@javax.annotation.Nullable Integer versionFlag) {
     this.versionFlag = versionFlag;
@@ -220,14 +220,14 @@ public class BioModel {
    * @return groupUsers
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_GROUP_USERS)
+  @JsonProperty(value = JSON_PROPERTY_GROUP_USERS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getGroupUsers() {
     return groupUsers;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_GROUP_USERS)
+  @JsonProperty(value = JSON_PROPERTY_GROUP_USERS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setGroupUsers(@javax.annotation.Nullable List<String> groupUsers) {
     this.groupUsers = groupUsers;
@@ -244,14 +244,14 @@ public class BioModel {
    * @return savedDate
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SAVED_DATE)
+  @JsonProperty(value = JSON_PROPERTY_SAVED_DATE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Long getSavedDate() {
     return savedDate;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SAVED_DATE)
+  @JsonProperty(value = JSON_PROPERTY_SAVED_DATE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSavedDate(@javax.annotation.Nullable Long savedDate) {
     this.savedDate = savedDate;
@@ -268,14 +268,14 @@ public class BioModel {
    * @return annot
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ANNOT)
+  @JsonProperty(value = JSON_PROPERTY_ANNOT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getAnnot() {
     return annot;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ANNOT)
+  @JsonProperty(value = JSON_PROPERTY_ANNOT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setAnnot(@javax.annotation.Nullable String annot) {
     this.annot = annot;
@@ -292,14 +292,14 @@ public class BioModel {
    * @return branchID
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_BRANCH_I_D)
+  @JsonProperty(value = JSON_PROPERTY_BRANCH_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getBranchID() {
     return branchID;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_BRANCH_I_D)
+  @JsonProperty(value = JSON_PROPERTY_BRANCH_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setBranchID(@javax.annotation.Nullable String branchID) {
     this.branchID = branchID;
@@ -316,14 +316,14 @@ public class BioModel {
    * @return physModelKey
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PHYS_MODEL_KEY)
+  @JsonProperty(value = JSON_PROPERTY_PHYS_MODEL_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getPhysModelKey() {
     return physModelKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_PHYS_MODEL_KEY)
+  @JsonProperty(value = JSON_PROPERTY_PHYS_MODEL_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setPhysModelKey(@javax.annotation.Nullable String physModelKey) {
     this.physModelKey = physModelKey;
@@ -340,14 +340,14 @@ public class BioModel {
    * @return ownerName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_OWNER_NAME)
+  @JsonProperty(value = JSON_PROPERTY_OWNER_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getOwnerName() {
     return ownerName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_OWNER_NAME)
+  @JsonProperty(value = JSON_PROPERTY_OWNER_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setOwnerName(@javax.annotation.Nullable String ownerName) {
     this.ownerName = ownerName;
@@ -364,14 +364,14 @@ public class BioModel {
    * @return ownerKey
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_OWNER_KEY)
+  @JsonProperty(value = JSON_PROPERTY_OWNER_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getOwnerKey() {
     return ownerKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_OWNER_KEY)
+  @JsonProperty(value = JSON_PROPERTY_OWNER_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setOwnerKey(@javax.annotation.Nullable String ownerKey) {
     this.ownerKey = ownerKey;
@@ -396,14 +396,14 @@ public class BioModel {
    * @return simulationKeyList
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIMULATION_KEY_LIST)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_KEY_LIST, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getSimulationKeyList() {
     return simulationKeyList;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SIMULATION_KEY_LIST)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_KEY_LIST, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSimulationKeyList(@javax.annotation.Nullable List<String> simulationKeyList) {
     this.simulationKeyList = simulationKeyList;
@@ -428,14 +428,14 @@ public class BioModel {
    * @return applications
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_APPLICATIONS)
+  @JsonProperty(value = JSON_PROPERTY_APPLICATIONS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<Object> getApplications() {
     return applications;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_APPLICATIONS)
+  @JsonProperty(value = JSON_PROPERTY_APPLICATIONS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setApplications(@javax.annotation.Nullable List<Object> applications) {
     this.applications = applications;
@@ -540,68 +540,68 @@ public class BioModel {
 
     // add `bmKey` to the URL query string
     if (getBmKey() != null) {
-      joiner.add(String.format("%sbmKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBmKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sbmKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBmKey()))));
     }
 
     // add `name` to the URL query string
     if (getName() != null) {
-      joiner.add(String.format("%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
     }
 
     // add `privacy` to the URL query string
     if (getPrivacy() != null) {
-      joiner.add(String.format("%sprivacy%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPrivacy()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sprivacy%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPrivacy()))));
     }
 
     // add `versionFlag` to the URL query string
     if (getVersionFlag() != null) {
-      joiner.add(String.format("%sversionFlag%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVersionFlag()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sversionFlag%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVersionFlag()))));
     }
 
     // add `groupUsers` to the URL query string
     if (getGroupUsers() != null) {
       for (int i = 0; i < getGroupUsers().size(); i++) {
-        joiner.add(String.format("%sgroupUsers%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%sgroupUsers%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getGroupUsers().get(i)))));
       }
     }
 
     // add `savedDate` to the URL query string
     if (getSavedDate() != null) {
-      joiner.add(String.format("%ssavedDate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSavedDate()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%ssavedDate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSavedDate()))));
     }
 
     // add `annot` to the URL query string
     if (getAnnot() != null) {
-      joiner.add(String.format("%sannot%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAnnot()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sannot%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAnnot()))));
     }
 
     // add `branchID` to the URL query string
     if (getBranchID() != null) {
-      joiner.add(String.format("%sbranchID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBranchID()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sbranchID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBranchID()))));
     }
 
     // add `physModelKey` to the URL query string
     if (getPhysModelKey() != null) {
-      joiner.add(String.format("%sphysModelKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPhysModelKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sphysModelKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPhysModelKey()))));
     }
 
     // add `ownerName` to the URL query string
     if (getOwnerName() != null) {
-      joiner.add(String.format("%sownerName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getOwnerName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sownerName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getOwnerName()))));
     }
 
     // add `ownerKey` to the URL query string
     if (getOwnerKey() != null) {
-      joiner.add(String.format("%sownerKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getOwnerKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sownerKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getOwnerKey()))));
     }
 
     // add `simulationKeyList` to the URL query string
     if (getSimulationKeyList() != null) {
       for (int i = 0; i < getSimulationKeyList().size(); i++) {
-        joiner.add(String.format("%ssimulationKeyList%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%ssimulationKeyList%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getSimulationKeyList().get(i)))));
       }
     }
@@ -609,8 +609,8 @@ public class BioModel {
     // add `applications` to the URL query string
     if (getApplications() != null) {
       for (int i = 0; i < getApplications().size(); i++) {
-        joiner.add(String.format("%sapplications%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%sapplications%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getApplications().get(i)))));
       }
     }

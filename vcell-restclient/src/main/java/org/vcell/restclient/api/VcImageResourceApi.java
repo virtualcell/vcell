@@ -51,16 +51,37 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class VcImageResourceApi {
+  /**
+   * Utility class for extending HttpRequest.Builder functionality.
+   */
+  private static class HttpRequestBuilderExtensions {
+    /**
+     * Adds additional headers to the provided HttpRequest.Builder. Useful for adding method/endpoint specific headers.
+     *
+     * @param builder the HttpRequest.Builder to which headers will be added
+     * @param headers a map of header names and values to add; may be null
+     * @return the same HttpRequest.Builder instance with the additional headers set
+     */
+    static HttpRequest.Builder withAdditionalHeaders(HttpRequest.Builder builder, Map<String, String> headers) {
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                builder.header(entry.getKey(), entry.getValue());
+            }
+        }
+        return builder;
+    }
+  }
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
   private final String memberVarBaseUri;
   private final Consumer<HttpRequest.Builder> memberVarInterceptor;
   private final Duration memberVarReadTimeout;
   private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
-  private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
+  private final Consumer<HttpResponse<InputStream>> memberVarAsyncResponseInterceptor;
 
   public VcImageResourceApi() {
     this(Configuration.getDefaultApiClient());
@@ -76,8 +97,17 @@ public class VcImageResourceApi {
     memberVarAsyncResponseInterceptor = apiClient.getAsyncResponseInterceptor();
   }
 
+
   protected ApiException getApiException(String operationId, HttpResponse<InputStream> response) throws IOException {
-    String body = response.body() == null ? null : new String(response.body().readAllBytes());
+    InputStream responseBody = ApiClient.getResponseBody(response);
+    String body = null;
+    try {
+      body = responseBody == null ? null : new String(responseBody.readAllBytes());
+    } finally {
+      if (responseBody != null) {
+        responseBody.close();
+      }
+    }
     String message = formatExceptionMessage(operationId, response.statusCode(), body);
     return new ApiException(response.statusCode(), message, response.headers(), body);
   }
@@ -90,13 +120,75 @@ public class VcImageResourceApi {
   }
 
   /**
+   * Download file from the given response.
+   *
+   * @param response Response
+   * @return File
+   * @throws ApiException If fail to read file content from response and write to disk
+   */
+  public File downloadFileFromResponse(HttpResponse<InputStream> response, InputStream responseBody) throws ApiException {
+    if (responseBody == null) {
+      throw new ApiException(new IOException("Response body is empty"));
+    }
+    try {
+      File file = prepareDownloadFile(response);
+      java.nio.file.Files.copy(responseBody, file.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+      return file;
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+  }
+
+  /**
+   * <p>Prepare the file for download from the response.</p>
+   *
+   * @param response a {@link java.net.http.HttpResponse} object.
+   * @return a {@link java.io.File} object.
+   * @throws java.io.IOException if any.
+   */
+  private File prepareDownloadFile(HttpResponse<InputStream> response) throws IOException {
+    String filename = null;
+    java.util.Optional<String> contentDisposition = response.headers().firstValue("Content-Disposition");
+    if (contentDisposition.isPresent() && !"".equals(contentDisposition.get())) {
+      // Get filename from the Content-Disposition header.
+      java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("filename=['\"]?([^'\"\\s]+)['\"]?");
+      java.util.regex.Matcher matcher = pattern.matcher(contentDisposition.get());
+      if (matcher.find())
+        filename = matcher.group(1);
+    }
+    File file = null;
+    if (filename != null) {
+      java.nio.file.Path tempDir = java.nio.file.Files.createTempDirectory("swagger-gen-native");
+      java.nio.file.Path filePath = java.nio.file.Files.createFile(tempDir.resolve(filename));
+      file = filePath.toFile();
+      tempDir.toFile().deleteOnExit();   // best effort cleanup
+      file.deleteOnExit(); // best effort cleanup
+    } else {
+      file = java.nio.file.Files.createTempFile("download-", "").toFile();
+      file.deleteOnExit(); // best effort cleanup
+    }
+    return file;
+  }
+
+  /**
    * Delete VC Image
    * Remove specific image VCML.
    * @param id  (required)
    * @throws ApiException if fails to make API call
    */
-  public void deleteImageVCML(String id) throws ApiException {
-    deleteImageVCMLWithHttpInfo(id);
+  public void deleteImageVCML(@javax.annotation.Nonnull String id) throws ApiException {
+    deleteImageVCML(id, null);
+  }
+
+  /**
+   * Delete VC Image
+   * Remove specific image VCML.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @throws ApiException if fails to make API call
+   */
+  public void deleteImageVCML(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    deleteImageVCMLWithHttpInfo(id, headers);
   }
 
   /**
@@ -106,8 +198,20 @@ public class VcImageResourceApi {
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Void> deleteImageVCMLWithHttpInfo(String id) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = deleteImageVCMLRequestBuilder(id);
+  public ApiResponse<Void> deleteImageVCMLWithHttpInfo(@javax.annotation.Nonnull String id) throws ApiException {
+    return deleteImageVCMLWithHttpInfo(id, null);
+  }
+
+  /**
+   * Delete VC Image
+   * Remove specific image VCML.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> deleteImageVCMLWithHttpInfo(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = deleteImageVCMLRequestBuilder(id, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -115,9 +219,14 @@ public class VcImageResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("deleteImageVCML", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody != null) {
+          localVarResponseBody.readAllBytes();
         }
         return new ApiResponse<>(
             localVarResponse.statusCode(),
@@ -125,11 +234,9 @@ public class VcImageResourceApi {
             null
         );
       } finally {
-        // Drain the InputStream
-        while (localVarResponse.body().read() != -1) {
-          // Ignore
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
         }
-        localVarResponse.body().close();
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -140,7 +247,7 @@ public class VcImageResourceApi {
     }
   }
 
-  private HttpRequest.Builder deleteImageVCMLRequestBuilder(String id) throws ApiException {
+  private HttpRequest.Builder deleteImageVCMLRequestBuilder(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'id' is set
     if (id == null) {
       throw new ApiException(400, "Missing the required parameter 'id' when calling deleteImageVCML");
@@ -154,11 +261,14 @@ public class VcImageResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -172,8 +282,20 @@ public class VcImageResourceApi {
    * @return List&lt;VCImageSummary&gt;
    * @throws ApiException if fails to make API call
    */
-  public List<VCImageSummary> getImageSummaries(Boolean includePublicAndShared) throws ApiException {
-    ApiResponse<List<VCImageSummary>> localVarResponse = getImageSummariesWithHttpInfo(includePublicAndShared);
+  public List<VCImageSummary> getImageSummaries(@javax.annotation.Nullable Boolean includePublicAndShared) throws ApiException {
+    return getImageSummaries(includePublicAndShared, null);
+  }
+
+  /**
+   * Get Summaries
+   * Return Image summaries.
+   * @param includePublicAndShared Include Image summaries that are public and shared with the requester. Default is true. (optional)
+   * @param headers Optional headers to include in the request
+   * @return List&lt;VCImageSummary&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public List<VCImageSummary> getImageSummaries(@javax.annotation.Nullable Boolean includePublicAndShared, Map<String, String> headers) throws ApiException {
+    ApiResponse<List<VCImageSummary>> localVarResponse = getImageSummariesWithHttpInfo(includePublicAndShared, headers);
     return localVarResponse.getData();
   }
 
@@ -184,8 +306,20 @@ public class VcImageResourceApi {
    * @return ApiResponse&lt;List&lt;VCImageSummary&gt;&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<List<VCImageSummary>> getImageSummariesWithHttpInfo(Boolean includePublicAndShared) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getImageSummariesRequestBuilder(includePublicAndShared);
+  public ApiResponse<List<VCImageSummary>> getImageSummariesWithHttpInfo(@javax.annotation.Nullable Boolean includePublicAndShared) throws ApiException {
+    return getImageSummariesWithHttpInfo(includePublicAndShared, null);
+  }
+
+  /**
+   * Get Summaries
+   * Return Image summaries.
+   * @param includePublicAndShared Include Image summaries that are public and shared with the requester. Default is true. (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;List&lt;VCImageSummary&gt;&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<List<VCImageSummary>> getImageSummariesWithHttpInfo(@javax.annotation.Nullable Boolean includePublicAndShared, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getImageSummariesRequestBuilder(includePublicAndShared, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -193,11 +327,13 @@ public class VcImageResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getImageSummaries", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<List<VCImageSummary>>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -205,15 +341,21 @@ public class VcImageResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        List<VCImageSummary> responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<VCImageSummary>>() {});
+        
 
         return new ApiResponse<List<VCImageSummary>>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<VCImageSummary>>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -224,7 +366,7 @@ public class VcImageResourceApi {
     }
   }
 
-  private HttpRequest.Builder getImageSummariesRequestBuilder(Boolean includePublicAndShared) throws ApiException {
+  private HttpRequest.Builder getImageSummariesRequestBuilder(@javax.annotation.Nullable Boolean includePublicAndShared, Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -248,11 +390,14 @@ public class VcImageResourceApi {
     }
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -266,8 +411,20 @@ public class VcImageResourceApi {
    * @return VCImageSummary
    * @throws ApiException if fails to make API call
    */
-  public VCImageSummary getImageSummary(String id) throws ApiException {
-    ApiResponse<VCImageSummary> localVarResponse = getImageSummaryWithHttpInfo(id);
+  public VCImageSummary getImageSummary(@javax.annotation.Nonnull String id) throws ApiException {
+    return getImageSummary(id, null);
+  }
+
+  /**
+   * Get Summary
+   * All of the miscellaneous information about an Image (Extent, ISize, preview, etc...), but not the actual Image itself.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return VCImageSummary
+   * @throws ApiException if fails to make API call
+   */
+  public VCImageSummary getImageSummary(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    ApiResponse<VCImageSummary> localVarResponse = getImageSummaryWithHttpInfo(id, headers);
     return localVarResponse.getData();
   }
 
@@ -278,8 +435,20 @@ public class VcImageResourceApi {
    * @return ApiResponse&lt;VCImageSummary&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<VCImageSummary> getImageSummaryWithHttpInfo(String id) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getImageSummaryRequestBuilder(id);
+  public ApiResponse<VCImageSummary> getImageSummaryWithHttpInfo(@javax.annotation.Nonnull String id) throws ApiException {
+    return getImageSummaryWithHttpInfo(id, null);
+  }
+
+  /**
+   * Get Summary
+   * All of the miscellaneous information about an Image (Extent, ISize, preview, etc...), but not the actual Image itself.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;VCImageSummary&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<VCImageSummary> getImageSummaryWithHttpInfo(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getImageSummaryRequestBuilder(id, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -287,11 +456,13 @@ public class VcImageResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getImageSummary", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<VCImageSummary>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -299,15 +470,21 @@ public class VcImageResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        VCImageSummary responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<VCImageSummary>() {});
+        
 
         return new ApiResponse<VCImageSummary>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<VCImageSummary>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -318,7 +495,7 @@ public class VcImageResourceApi {
     }
   }
 
-  private HttpRequest.Builder getImageSummaryRequestBuilder(String id) throws ApiException {
+  private HttpRequest.Builder getImageSummaryRequestBuilder(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'id' is set
     if (id == null) {
       throw new ApiException(400, "Missing the required parameter 'id' when calling getImageSummary");
@@ -332,11 +509,14 @@ public class VcImageResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -350,8 +530,20 @@ public class VcImageResourceApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String getImageVCML(String id) throws ApiException {
-    ApiResponse<String> localVarResponse = getImageVCMLWithHttpInfo(id);
+  public String getImageVCML(@javax.annotation.Nonnull String id) throws ApiException {
+    return getImageVCML(id, null);
+  }
+
+  /**
+   * Get VC Image
+   * Get specific image VCML.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return String
+   * @throws ApiException if fails to make API call
+   */
+  public String getImageVCML(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    ApiResponse<String> localVarResponse = getImageVCMLWithHttpInfo(id, headers);
     return localVarResponse.getData();
   }
 
@@ -362,8 +554,20 @@ public class VcImageResourceApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> getImageVCMLWithHttpInfo(String id) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getImageVCMLRequestBuilder(id);
+  public ApiResponse<String> getImageVCMLWithHttpInfo(@javax.annotation.Nonnull String id) throws ApiException {
+    return getImageVCMLWithHttpInfo(id, null);
+  }
+
+  /**
+   * Get VC Image
+   * Get specific image VCML.
+   * @param id  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;String&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<String> getImageVCMLWithHttpInfo(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getImageVCMLRequestBuilder(id, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -371,6 +575,7 @@ public class VcImageResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getImageVCML", localVarResponse);
@@ -378,7 +583,8 @@ public class VcImageResourceApi {
         // for plain text response
         if (localVarResponse.headers().map().containsKey("Content-Type") &&
                 "text/plain".equalsIgnoreCase(localVarResponse.headers().map().get("Content-Type").get(0).split(";")[0].trim())) {
-          java.util.Scanner s = new java.util.Scanner(localVarResponse.body()).useDelimiter("\\A");
+          localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+          java.util.Scanner s = new java.util.Scanner(localVarResponseBody == null ? InputStream.nullInputStream() : localVarResponseBody).useDelimiter("\\A");
           String responseBodyText = s.hasNext() ? s.next() : "";
           return new ApiResponse<String>(
                   localVarResponse.statusCode(),
@@ -389,6 +595,9 @@ public class VcImageResourceApi {
             throw new RuntimeException("Error! The response Content-Type is supposed to be `text/plain` but it's not: " + localVarResponse);
         }
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -399,7 +608,7 @@ public class VcImageResourceApi {
     }
   }
 
-  private HttpRequest.Builder getImageVCMLRequestBuilder(String id) throws ApiException {
+  private HttpRequest.Builder getImageVCMLRequestBuilder(@javax.annotation.Nonnull String id, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'id' is set
     if (id == null) {
       throw new ApiException(400, "Missing the required parameter 'id' when calling getImageVCML");
@@ -413,11 +622,14 @@ public class VcImageResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "text/plain, application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -432,8 +644,21 @@ public class VcImageResourceApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String saveImageVCML(String body, String name) throws ApiException {
-    ApiResponse<String> localVarResponse = saveImageVCMLWithHttpInfo(body, name);
+  public String saveImageVCML(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String name) throws ApiException {
+    return saveImageVCML(body, name, null);
+  }
+
+  /**
+   * Save VC Image
+   * Save the VCML representation of an image.
+   * @param body  (required)
+   * @param name Name to save new ImageVCML under. Leave blank if re-saving existing ImageVCML. (optional)
+   * @param headers Optional headers to include in the request
+   * @return String
+   * @throws ApiException if fails to make API call
+   */
+  public String saveImageVCML(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String name, Map<String, String> headers) throws ApiException {
+    ApiResponse<String> localVarResponse = saveImageVCMLWithHttpInfo(body, name, headers);
     return localVarResponse.getData();
   }
 
@@ -445,8 +670,21 @@ public class VcImageResourceApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> saveImageVCMLWithHttpInfo(String body, String name) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = saveImageVCMLRequestBuilder(body, name);
+  public ApiResponse<String> saveImageVCMLWithHttpInfo(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String name) throws ApiException {
+    return saveImageVCMLWithHttpInfo(body, name, null);
+  }
+
+  /**
+   * Save VC Image
+   * Save the VCML representation of an image.
+   * @param body  (required)
+   * @param name Name to save new ImageVCML under. Leave blank if re-saving existing ImageVCML. (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;String&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<String> saveImageVCMLWithHttpInfo(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String name, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = saveImageVCMLRequestBuilder(body, name, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -454,6 +692,7 @@ public class VcImageResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("saveImageVCML", localVarResponse);
@@ -461,7 +700,8 @@ public class VcImageResourceApi {
         // for plain text response
         if (localVarResponse.headers().map().containsKey("Content-Type") &&
                 "text/plain".equalsIgnoreCase(localVarResponse.headers().map().get("Content-Type").get(0).split(";")[0].trim())) {
-          java.util.Scanner s = new java.util.Scanner(localVarResponse.body()).useDelimiter("\\A");
+          localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+          java.util.Scanner s = new java.util.Scanner(localVarResponseBody == null ? InputStream.nullInputStream() : localVarResponseBody).useDelimiter("\\A");
           String responseBodyText = s.hasNext() ? s.next() : "";
           return new ApiResponse<String>(
                   localVarResponse.statusCode(),
@@ -472,6 +712,9 @@ public class VcImageResourceApi {
             throw new RuntimeException("Error! The response Content-Type is supposed to be `text/plain` but it's not: " + localVarResponse);
         }
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -482,7 +725,7 @@ public class VcImageResourceApi {
     }
   }
 
-  private HttpRequest.Builder saveImageVCMLRequestBuilder(String body, String name) throws ApiException {
+  private HttpRequest.Builder saveImageVCMLRequestBuilder(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String name, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'body' is set
     if (body == null) {
       throw new ApiException(400, "Missing the required parameter 'body' when calling saveImageVCML");
@@ -511,11 +754,16 @@ public class VcImageResourceApi {
 
     localVarRequestBuilder.header("Content-Type", "application/json");
     localVarRequestBuilder.header("Accept", "text/plain, application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
-    localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofString(body));
+    Supplier<InputStream> localVarRequestBodySupplier = () -> new ByteArrayInputStream(body.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    localVarRequestBuilder.header("Content-Encoding", "gzip");
+    localVarRequestBuilder.method("POST", ApiClient.gzipRequestBody(localVarRequestBodySupplier));
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }

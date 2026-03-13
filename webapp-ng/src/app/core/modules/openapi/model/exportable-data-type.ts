@@ -9,14 +9,10 @@
  */
 
 
-export type ExportableDataType = 'ODE_VARIABLE_DATA' | 'PDE_VARIABLE_DATA' | 'PDE_PARTICLE_DATA';
-
 export const ExportableDataType = {
-
-    OdeVariableData: 'ODE_VARIABLE_DATA' as ExportableDataType,
-
-    PdeVariableData: 'PDE_VARIABLE_DATA' as ExportableDataType,
-
-    PdeParticleData: 'PDE_PARTICLE_DATA' as ExportableDataType
-};
+    OdeVariableData: 'ODE_VARIABLE_DATA',
+    PdeVariableData: 'PDE_VARIABLE_DATA',
+    PdeParticleData: 'PDE_PARTICLE_DATA'
+} as const;
+export type ExportableDataType = typeof ExportableDataType[keyof typeof ExportableDataType];
 

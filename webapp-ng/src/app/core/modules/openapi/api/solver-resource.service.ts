@@ -11,10 +11,10 @@
 
 import { Inject, Injectable, Optional }                      from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams,
-         HttpResponse, HttpEvent, HttpParameterCodec, HttpContext 
+         HttpResponse, HttpEvent, HttpContext 
         }       from '@angular/common/http';
-import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
+import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
 import { VCellHTTPError } from '../model/v-cell-http-error';
@@ -40,11 +40,13 @@ export class SolverResourceService extends BaseService implements SolverResource
 
     /**
      * Retrieve finite volume input from SBML spatial model.
+     * @endpoint post /api/v1/solver/getFVSolverInput
      * @param sbmlFile 
      * @param duration 
      * @param outputTimeStep 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public getFVSolverInputFromSBML(sbmlFile?: Blob, duration?: number, outputTimeStep?: number, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Blob>;
     public getFVSolverInputFromSBML(sbmlFile?: Blob, duration?: number, outputTimeStep?: number, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Blob>>;
@@ -95,15 +97,16 @@ export class SolverResourceService extends BaseService implements SolverResource
         }
 
         let localVarPath = `/api/v1/solver/getFVSolverInput`;
-        return this.httpClient.request('post', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,
                 responseType: "blob",
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -111,10 +114,12 @@ export class SolverResourceService extends BaseService implements SolverResource
 
     /**
      * Retrieve finite volume input from SBML spatial model.
+     * @endpoint post /api/v1/solver/getFVSolverInputFromVCML
      * @param vcmlFile 
      * @param simulationName 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public getFVSolverInputFromVCML(vcmlFile?: Blob, simulationName?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Blob>;
     public getFVSolverInputFromVCML(vcmlFile?: Blob, simulationName?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/octet-stream' | 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Blob>>;
@@ -162,15 +167,16 @@ export class SolverResourceService extends BaseService implements SolverResource
         }
 
         let localVarPath = `/api/v1/solver/getFVSolverInputFromVCML`;
-        return this.httpClient.request('post', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,
                 responseType: "blob",
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );

@@ -42,7 +42,7 @@ import org.vcell.restclient.ApiClient;
   ExternalDataIdentifier.JSON_PROPERTY_PARAMETER_SCAN_TYPE,
   ExternalDataIdentifier.JSON_PROPERTY_DATA_KEY
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class ExternalDataIdentifier {
   public static final String JSON_PROPERTY_KEY = "key";
   @javax.annotation.Nullable
@@ -85,14 +85,14 @@ public class ExternalDataIdentifier {
    * @return key
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_KEY)
+  @JsonProperty(value = JSON_PROPERTY_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getKey() {
     return key;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_KEY)
+  @JsonProperty(value = JSON_PROPERTY_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setKey(@javax.annotation.Nullable String key) {
     this.key = key;
@@ -109,14 +109,14 @@ public class ExternalDataIdentifier {
    * @return owner
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_OWNER)
+  @JsonProperty(value = JSON_PROPERTY_OWNER, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public User getOwner() {
     return owner;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_OWNER)
+  @JsonProperty(value = JSON_PROPERTY_OWNER, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setOwner(@javax.annotation.Nullable User owner) {
     this.owner = owner;
@@ -133,14 +133,14 @@ public class ExternalDataIdentifier {
    * @return name
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getName() {
     return name;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setName(@javax.annotation.Nullable String name) {
     this.name = name;
@@ -157,14 +157,14 @@ public class ExternalDataIdentifier {
    * @return jobIndex
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_JOB_INDEX)
+  @JsonProperty(value = JSON_PROPERTY_JOB_INDEX, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getJobIndex() {
     return jobIndex;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_JOB_INDEX)
+  @JsonProperty(value = JSON_PROPERTY_JOB_INDEX, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setJobIndex(@javax.annotation.Nullable Integer jobIndex) {
     this.jobIndex = jobIndex;
@@ -181,14 +181,14 @@ public class ExternalDataIdentifier {
    * @return simulationKey
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIMULATION_KEY)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getSimulationKey() {
     return simulationKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SIMULATION_KEY)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSimulationKey(@javax.annotation.Nullable String simulationKey) {
     this.simulationKey = simulationKey;
@@ -205,14 +205,14 @@ public class ExternalDataIdentifier {
    * @return parameterScanType
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PARAMETER_SCAN_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_PARAMETER_SCAN_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Boolean getParameterScanType() {
     return parameterScanType;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_PARAMETER_SCAN_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_PARAMETER_SCAN_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setParameterScanType(@javax.annotation.Nullable Boolean parameterScanType) {
     this.parameterScanType = parameterScanType;
@@ -229,14 +229,14 @@ public class ExternalDataIdentifier {
    * @return dataKey
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DATA_KEY)
+  @JsonProperty(value = JSON_PROPERTY_DATA_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getDataKey() {
     return dataKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DATA_KEY)
+  @JsonProperty(value = JSON_PROPERTY_DATA_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDataKey(@javax.annotation.Nullable String dataKey) {
     this.dataKey = dataKey;
@@ -329,7 +329,7 @@ public class ExternalDataIdentifier {
 
     // add `key` to the URL query string
     if (getKey() != null) {
-      joiner.add(String.format("%skey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%skey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getKey()))));
     }
 
     // add `owner` to the URL query string
@@ -339,27 +339,27 @@ public class ExternalDataIdentifier {
 
     // add `name` to the URL query string
     if (getName() != null) {
-      joiner.add(String.format("%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
     }
 
     // add `jobIndex` to the URL query string
     if (getJobIndex() != null) {
-      joiner.add(String.format("%sjobIndex%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getJobIndex()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sjobIndex%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getJobIndex()))));
     }
 
     // add `simulationKey` to the URL query string
     if (getSimulationKey() != null) {
-      joiner.add(String.format("%ssimulationKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSimulationKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%ssimulationKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSimulationKey()))));
     }
 
     // add `parameterScanType` to the URL query string
     if (getParameterScanType() != null) {
-      joiner.add(String.format("%sparameterScanType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getParameterScanType()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sparameterScanType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getParameterScanType()))));
     }
 
     // add `dataKey` to the URL query string
     if (getDataKey() != null) {
-      joiner.add(String.format("%sdataKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDataKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdataKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDataKey()))));
     }
 
     return joiner.toString();

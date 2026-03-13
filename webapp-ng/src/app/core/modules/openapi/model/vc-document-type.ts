@@ -9,16 +9,11 @@
  */
 
 
-export type VCDocumentType = 'BIOMODEL_DOC' | 'MATHMODEL_DOC' | 'GEOMETRY_DOC' | 'EXTERNALFILE_DOC';
-
 export const VCDocumentType = {
-
-    BiomodelDoc: 'BIOMODEL_DOC' as VCDocumentType,
-
-    MathmodelDoc: 'MATHMODEL_DOC' as VCDocumentType,
-
-    GeometryDoc: 'GEOMETRY_DOC' as VCDocumentType,
-
-    ExternalfileDoc: 'EXTERNALFILE_DOC' as VCDocumentType
-};
+    BiomodelDoc: 'BIOMODEL_DOC',
+    MathmodelDoc: 'MATHMODEL_DOC',
+    GeometryDoc: 'GEOMETRY_DOC',
+    ExternalfileDoc: 'EXTERNALFILE_DOC'
+} as const;
+export type VCDocumentType = typeof VCDocumentType[keyof typeof VCDocumentType];
 

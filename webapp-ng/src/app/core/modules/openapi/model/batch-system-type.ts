@@ -9,14 +9,10 @@
  */
 
 
-export type BatchSystemType = 'PBS' | 'SGE' | 'SLURM';
-
 export const BatchSystemType = {
-
-    Pbs: 'PBS' as BatchSystemType,
-
-    Sge: 'SGE' as BatchSystemType,
-
-    Slurm: 'SLURM' as BatchSystemType
-};
+    Pbs: 'PBS',
+    Sge: 'SGE',
+    Slurm: 'SLURM'
+} as const;
+export type BatchSystemType = typeof BatchSystemType[keyof typeof BatchSystemType];
 

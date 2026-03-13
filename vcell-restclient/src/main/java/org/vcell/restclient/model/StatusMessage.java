@@ -39,7 +39,7 @@ import org.vcell.restclient.ApiClient;
   StatusMessage.JSON_PROPERTY_PROGRESS,
   StatusMessage.JSON_PROPERTY_TIMEPOINT
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class StatusMessage {
   public static final String JSON_PROPERTY_JOB_STATUS = "jobStatus";
   @javax.annotation.Nullable
@@ -70,14 +70,14 @@ public class StatusMessage {
    * @return jobStatus
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_JOB_STATUS)
+  @JsonProperty(value = JSON_PROPERTY_JOB_STATUS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public SimulationJobStatusRecord getJobStatus() {
     return jobStatus;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_JOB_STATUS)
+  @JsonProperty(value = JSON_PROPERTY_JOB_STATUS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setJobStatus(@javax.annotation.Nullable SimulationJobStatusRecord jobStatus) {
     this.jobStatus = jobStatus;
@@ -94,14 +94,14 @@ public class StatusMessage {
    * @return userName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_USER_NAME)
+  @JsonProperty(value = JSON_PROPERTY_USER_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getUserName() {
     return userName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_USER_NAME)
+  @JsonProperty(value = JSON_PROPERTY_USER_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setUserName(@javax.annotation.Nullable String userName) {
     this.userName = userName;
@@ -118,14 +118,14 @@ public class StatusMessage {
    * @return progress
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PROGRESS)
+  @JsonProperty(value = JSON_PROPERTY_PROGRESS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Double getProgress() {
     return progress;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_PROGRESS)
+  @JsonProperty(value = JSON_PROPERTY_PROGRESS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setProgress(@javax.annotation.Nullable Double progress) {
     this.progress = progress;
@@ -142,14 +142,14 @@ public class StatusMessage {
    * @return timepoint
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_TIMEPOINT)
+  @JsonProperty(value = JSON_PROPERTY_TIMEPOINT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Double getTimepoint() {
     return timepoint;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_TIMEPOINT)
+  @JsonProperty(value = JSON_PROPERTY_TIMEPOINT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setTimepoint(@javax.annotation.Nullable Double timepoint) {
     this.timepoint = timepoint;
@@ -241,17 +241,17 @@ public class StatusMessage {
 
     // add `userName` to the URL query string
     if (getUserName() != null) {
-      joiner.add(String.format("%suserName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUserName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%suserName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUserName()))));
     }
 
     // add `progress` to the URL query string
     if (getProgress() != null) {
-      joiner.add(String.format("%sprogress%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getProgress()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sprogress%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getProgress()))));
     }
 
     // add `timepoint` to the URL query string
     if (getTimepoint() != null) {
-      joiner.add(String.format("%stimepoint%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getTimepoint()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%stimepoint%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getTimepoint()))));
     }
 
     return joiner.toString();

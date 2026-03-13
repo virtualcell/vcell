@@ -34,6 +34,7 @@ export interface FieldDataResourceServiceInterface {
     /**
      * Delete the selected field data.
      * 
+     * @endpoint delete /api/v1/fieldData/delete/{fieldDataID}
      * @param fieldDataID 
      */
     _delete(fieldDataID: string, extraHttpRequestParams?: any): Observable<{}>;
@@ -41,6 +42,7 @@ export interface FieldDataResourceServiceInterface {
     /**
      * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
      * 
+     * @endpoint post /api/v1/fieldData/advancedCreate
      * @param file 
      * @param fileName 
      * @param extent 
@@ -55,6 +57,7 @@ export interface FieldDataResourceServiceInterface {
     /**
      * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
      * 
+     * @endpoint post /api/v1/fieldData/analyzeFile
      * @param file 
      * @param fileName 
      */
@@ -63,6 +66,7 @@ export interface FieldDataResourceServiceInterface {
     /**
      * Copy all existing field data from a BioModel/MathModel that you have access to, but don\&#39;t own.
      * 
+     * @endpoint post /api/v1/fieldData/copyModelsFieldData
      * @param sourceModel 
      */
     copyModelsFieldData(sourceModel: SourceModel, extraHttpRequestParams?: any): Observable<{ [key: string]: ExternalDataIdentifier; }>;
@@ -70,6 +74,7 @@ export interface FieldDataResourceServiceInterface {
     /**
      * Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
      * 
+     * @endpoint post /api/v1/fieldData/createFromFile
      * @param file 
      * @param fieldDataName 
      */
@@ -78,6 +83,7 @@ export interface FieldDataResourceServiceInterface {
     /**
      * Create new field data from existing simulation results.
      * 
+     * @endpoint post /api/v1/fieldData/createFromSimulation
      * @param simKeyReference 
      * @param jobIndex 
      * @param newFieldDataName 
@@ -87,12 +93,14 @@ export interface FieldDataResourceServiceInterface {
     /**
      * Get all of the ids used to identify, and retrieve field data.
      * 
+     * @endpoint get /api/v1/fieldData/IDs
      */
     getAllIDs(extraHttpRequestParams?: any): Observable<Array<FieldDataReference>>;
 
     /**
      * Get the shape of the field data. That is it\&#39;s size, origin, extent, times, and data identifiers.
      * 
+     * @endpoint get /api/v1/fieldData/shape/{fieldDataID}
      * @param fieldDataID 
      */
     getShapeFromID(fieldDataID: string, extraHttpRequestParams?: any): Observable<FieldDataShape>;
@@ -100,6 +108,7 @@ export interface FieldDataResourceServiceInterface {
     /**
      * Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
      * 
+     * @endpoint post /api/v1/fieldData/save
      * @param fieldData 
      */
     save(fieldData: FieldData, extraHttpRequestParams?: any): Observable<FieldDataSavedResults>;

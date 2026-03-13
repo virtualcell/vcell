@@ -9,14 +9,10 @@
  */
 
 
-export type GeometryMode = 'GEOMETRY_SELECTIONS' | 'GEOMETRY_SLICE' | 'GEOMETRY_FULL';
-
 export const GeometryMode = {
-
-    GeometrySelections: 'GEOMETRY_SELECTIONS' as GeometryMode,
-
-    GeometrySlice: 'GEOMETRY_SLICE' as GeometryMode,
-
-    GeometryFull: 'GEOMETRY_FULL' as GeometryMode
-};
+    GeometrySelections: 'GEOMETRY_SELECTIONS',
+    GeometrySlice: 'GEOMETRY_SLICE',
+    GeometryFull: 'GEOMETRY_FULL'
+} as const;
+export type GeometryMode = typeof GeometryMode[keyof typeof GeometryMode];
 

@@ -42,7 +42,7 @@ import org.vcell.restclient.ApiClient;
   N5ExportRequest.JSON_PROPERTY_EXPORTABLE_DATA_TYPE,
   N5ExportRequest.JSON_PROPERTY_DATASET_NAME
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class N5ExportRequest {
   public static final String JSON_PROPERTY_STANDARD_EXPORT_INFORMATION = "standardExportInformation";
   @javax.annotation.Nullable
@@ -73,14 +73,14 @@ public class N5ExportRequest {
    * @return standardExportInformation
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_STANDARD_EXPORT_INFORMATION)
+  @JsonProperty(value = JSON_PROPERTY_STANDARD_EXPORT_INFORMATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public StandardExportInfo getStandardExportInformation() {
     return standardExportInformation;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_STANDARD_EXPORT_INFORMATION)
+  @JsonProperty(value = JSON_PROPERTY_STANDARD_EXPORT_INFORMATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setStandardExportInformation(@javax.annotation.Nullable StandardExportInfo standardExportInformation) {
     this.standardExportInformation = standardExportInformation;
@@ -105,14 +105,14 @@ public class N5ExportRequest {
    * @return subVolume
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SUB_VOLUME)
+  @JsonProperty(value = JSON_PROPERTY_SUB_VOLUME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Map<String, String> getSubVolume() {
     return subVolume;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SUB_VOLUME)
+  @JsonProperty(value = JSON_PROPERTY_SUB_VOLUME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSubVolume(@javax.annotation.Nullable Map<String, String> subVolume) {
     this.subVolume = subVolume;
@@ -129,14 +129,14 @@ public class N5ExportRequest {
    * @return exportableDataType
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_EXPORTABLE_DATA_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_EXPORTABLE_DATA_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public ExportableDataType getExportableDataType() {
     return exportableDataType;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_EXPORTABLE_DATA_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_EXPORTABLE_DATA_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setExportableDataType(@javax.annotation.Nullable ExportableDataType exportableDataType) {
     this.exportableDataType = exportableDataType;
@@ -153,14 +153,14 @@ public class N5ExportRequest {
    * @return datasetName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DATASET_NAME)
+  @JsonProperty(value = JSON_PROPERTY_DATASET_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getDatasetName() {
     return datasetName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DATASET_NAME)
+  @JsonProperty(value = JSON_PROPERTY_DATASET_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDatasetName(@javax.annotation.Nullable String datasetName) {
     this.datasetName = datasetName;
@@ -253,20 +253,20 @@ public class N5ExportRequest {
     // add `subVolume` to the URL query string
     if (getSubVolume() != null) {
       for (String _key : getSubVolume().keySet()) {
-        joiner.add(String.format("%ssubVolume%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, _key, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%ssubVolume%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, _key, containerSuffix),
             getSubVolume().get(_key), ApiClient.urlEncode(ApiClient.valueToString(getSubVolume().get(_key)))));
       }
     }
 
     // add `exportableDataType` to the URL query string
     if (getExportableDataType() != null) {
-      joiner.add(String.format("%sexportableDataType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getExportableDataType()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sexportableDataType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getExportableDataType()))));
     }
 
     // add `datasetName` to the URL query string
     if (getDatasetName() != null) {
-      joiner.add(String.format("%sdatasetName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDatasetName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdatasetName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDatasetName()))));
     }
 
     return joiner.toString();

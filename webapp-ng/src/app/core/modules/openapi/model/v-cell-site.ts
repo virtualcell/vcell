@@ -9,18 +9,12 @@
  */
 
 
-export type VCellSite = 'alpha' | 'beta' | 'rel' | 'other' | 'unknown';
-
 export const VCellSite = {
-
-    Alpha: 'alpha' as VCellSite,
-
-    Beta: 'beta' as VCellSite,
-
-    Rel: 'rel' as VCellSite,
-
-    Other: 'other' as VCellSite,
-
-    Unknown: 'unknown' as VCellSite
-};
+    Alpha: 'alpha',
+    Beta: 'beta',
+    Rel: 'rel',
+    Other: 'other',
+    Unknown: 'unknown'
+} as const;
+export type VCellSite = typeof VCellSite[keyof typeof VCellSite];
 

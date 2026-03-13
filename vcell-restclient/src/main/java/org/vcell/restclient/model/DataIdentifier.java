@@ -43,7 +43,7 @@ import org.vcell.restclient.ApiClient;
   DataIdentifier.JSON_PROPERTY_FUNCTION,
   DataIdentifier.JSON_PROPERTY_VISIBLE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class DataIdentifier {
   public static final String JSON_PROPERTY_NAME = "name";
   @javax.annotation.Nullable
@@ -86,14 +86,14 @@ public class DataIdentifier {
    * @return name
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getName() {
     return name;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setName(@javax.annotation.Nullable String name) {
     this.name = name;
@@ -110,14 +110,14 @@ public class DataIdentifier {
    * @return displayName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DISPLAY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_DISPLAY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getDisplayName() {
     return displayName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DISPLAY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_DISPLAY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDisplayName(@javax.annotation.Nullable String displayName) {
     this.displayName = displayName;
@@ -134,14 +134,14 @@ public class DataIdentifier {
    * @return variableType
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VARIABLE_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_VARIABLE_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public VariableType getVariableType() {
     return variableType;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_VARIABLE_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_VARIABLE_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVariableType(@javax.annotation.Nullable VariableType variableType) {
     this.variableType = variableType;
@@ -158,14 +158,14 @@ public class DataIdentifier {
    * @return domain
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DOMAIN)
+  @JsonProperty(value = JSON_PROPERTY_DOMAIN, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Domain getDomain() {
     return domain;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DOMAIN)
+  @JsonProperty(value = JSON_PROPERTY_DOMAIN, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDomain(@javax.annotation.Nullable Domain domain) {
     this.domain = domain;
@@ -182,14 +182,14 @@ public class DataIdentifier {
    * @return bFunction
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_B_FUNCTION)
+  @JsonProperty(value = JSON_PROPERTY_B_FUNCTION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Boolean getbFunction() {
     return bFunction;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_B_FUNCTION)
+  @JsonProperty(value = JSON_PROPERTY_B_FUNCTION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setbFunction(@javax.annotation.Nullable Boolean bFunction) {
     this.bFunction = bFunction;
@@ -206,14 +206,14 @@ public class DataIdentifier {
    * @return function
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FUNCTION)
+  @JsonProperty(value = JSON_PROPERTY_FUNCTION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Boolean getFunction() {
     return function;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FUNCTION)
+  @JsonProperty(value = JSON_PROPERTY_FUNCTION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFunction(@javax.annotation.Nullable Boolean function) {
     this.function = function;
@@ -230,14 +230,14 @@ public class DataIdentifier {
    * @return visible
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VISIBLE)
+  @JsonProperty(value = JSON_PROPERTY_VISIBLE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Boolean getVisible() {
     return visible;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_VISIBLE)
+  @JsonProperty(value = JSON_PROPERTY_VISIBLE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVisible(@javax.annotation.Nullable Boolean visible) {
     this.visible = visible;
@@ -330,12 +330,12 @@ public class DataIdentifier {
 
     // add `name` to the URL query string
     if (getName() != null) {
-      joiner.add(String.format("%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
     }
 
     // add `displayName` to the URL query string
     if (getDisplayName() != null) {
-      joiner.add(String.format("%sdisplayName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDisplayName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdisplayName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDisplayName()))));
     }
 
     // add `variableType` to the URL query string
@@ -350,17 +350,17 @@ public class DataIdentifier {
 
     // add `bFunction` to the URL query string
     if (getbFunction() != null) {
-      joiner.add(String.format("%sbFunction%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getbFunction()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sbFunction%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getbFunction()))));
     }
 
     // add `function` to the URL query string
     if (getFunction() != null) {
-      joiner.add(String.format("%sfunction%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFunction()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sfunction%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFunction()))));
     }
 
     // add `visible` to the URL query string
     if (getVisible() != null) {
-      joiner.add(String.format("%svisible%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVisible()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%svisible%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVisible()))));
     }
 
     return joiner.toString();

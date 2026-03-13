@@ -39,7 +39,7 @@ import org.vcell.restclient.ApiClient;
   ApplicationInfo.JSON_PROPERTY_DIMENSIONS,
   ApplicationInfo.JSON_PROPERTY_GEOMETRY_NAME
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class ApplicationInfo {
   public static final String JSON_PROPERTY_NAME = "name";
   @javax.annotation.Nullable
@@ -70,14 +70,14 @@ public class ApplicationInfo {
    * @return name
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getName() {
     return name;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setName(@javax.annotation.Nullable String name) {
     this.name = name;
@@ -94,14 +94,14 @@ public class ApplicationInfo {
    * @return type
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public MathType getType() {
     return type;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setType(@javax.annotation.Nullable MathType type) {
     this.type = type;
@@ -118,14 +118,14 @@ public class ApplicationInfo {
    * @return dimensions
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DIMENSIONS)
+  @JsonProperty(value = JSON_PROPERTY_DIMENSIONS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getDimensions() {
     return dimensions;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DIMENSIONS)
+  @JsonProperty(value = JSON_PROPERTY_DIMENSIONS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDimensions(@javax.annotation.Nullable Integer dimensions) {
     this.dimensions = dimensions;
@@ -142,14 +142,14 @@ public class ApplicationInfo {
    * @return geometryName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_GEOMETRY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_GEOMETRY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getGeometryName() {
     return geometryName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_GEOMETRY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_GEOMETRY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setGeometryName(@javax.annotation.Nullable String geometryName) {
     this.geometryName = geometryName;
@@ -236,22 +236,22 @@ public class ApplicationInfo {
 
     // add `name` to the URL query string
     if (getName() != null) {
-      joiner.add(String.format("%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
     }
 
     // add `type` to the URL query string
     if (getType() != null) {
-      joiner.add(String.format("%stype%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getType()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%stype%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getType()))));
     }
 
     // add `dimensions` to the URL query string
     if (getDimensions() != null) {
-      joiner.add(String.format("%sdimensions%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDimensions()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdimensions%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDimensions()))));
     }
 
     // add `geometryName` to the URL query string
     if (getGeometryName() != null) {
-      joiner.add(String.format("%sgeometryName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getGeometryName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sgeometryName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getGeometryName()))));
     }
 
     return joiner.toString();

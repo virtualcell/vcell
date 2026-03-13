@@ -41,7 +41,7 @@ import org.vcell.restclient.ApiClient;
   TimeSpecs.JSON_PROPERTY_ALL_TIMES,
   TimeSpecs.JSON_PROPERTY_MODE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class TimeSpecs {
   public static final String JSON_PROPERTY_BEGIN_TIME_INDEX = "beginTimeIndex";
   @javax.annotation.Nullable
@@ -72,14 +72,14 @@ public class TimeSpecs {
    * @return beginTimeIndex
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_BEGIN_TIME_INDEX)
+  @JsonProperty(value = JSON_PROPERTY_BEGIN_TIME_INDEX, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getBeginTimeIndex() {
     return beginTimeIndex;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_BEGIN_TIME_INDEX)
+  @JsonProperty(value = JSON_PROPERTY_BEGIN_TIME_INDEX, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setBeginTimeIndex(@javax.annotation.Nullable Integer beginTimeIndex) {
     this.beginTimeIndex = beginTimeIndex;
@@ -96,14 +96,14 @@ public class TimeSpecs {
    * @return endTimeIndex
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_END_TIME_INDEX)
+  @JsonProperty(value = JSON_PROPERTY_END_TIME_INDEX, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getEndTimeIndex() {
     return endTimeIndex;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_END_TIME_INDEX)
+  @JsonProperty(value = JSON_PROPERTY_END_TIME_INDEX, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setEndTimeIndex(@javax.annotation.Nullable Integer endTimeIndex) {
     this.endTimeIndex = endTimeIndex;
@@ -128,14 +128,14 @@ public class TimeSpecs {
    * @return allTimes
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ALL_TIMES)
+  @JsonProperty(value = JSON_PROPERTY_ALL_TIMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<Double> getAllTimes() {
     return allTimes;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ALL_TIMES)
+  @JsonProperty(value = JSON_PROPERTY_ALL_TIMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setAllTimes(@javax.annotation.Nullable List<Double> allTimes) {
     this.allTimes = allTimes;
@@ -152,14 +152,14 @@ public class TimeSpecs {
    * @return mode
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_MODE)
+  @JsonProperty(value = JSON_PROPERTY_MODE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public TimeMode getMode() {
     return mode;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_MODE)
+  @JsonProperty(value = JSON_PROPERTY_MODE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setMode(@javax.annotation.Nullable TimeMode mode) {
     this.mode = mode;
@@ -246,26 +246,26 @@ public class TimeSpecs {
 
     // add `beginTimeIndex` to the URL query string
     if (getBeginTimeIndex() != null) {
-      joiner.add(String.format("%sbeginTimeIndex%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBeginTimeIndex()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sbeginTimeIndex%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBeginTimeIndex()))));
     }
 
     // add `endTimeIndex` to the URL query string
     if (getEndTimeIndex() != null) {
-      joiner.add(String.format("%sendTimeIndex%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getEndTimeIndex()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sendTimeIndex%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getEndTimeIndex()))));
     }
 
     // add `allTimes` to the URL query string
     if (getAllTimes() != null) {
       for (int i = 0; i < getAllTimes().size(); i++) {
-        joiner.add(String.format("%sallTimes%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%sallTimes%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getAllTimes().get(i)))));
       }
     }
 
     // add `mode` to the URL query string
     if (getMode() != null) {
-      joiner.add(String.format("%smode%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMode()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%smode%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMode()))));
     }
 
     return joiner.toString();

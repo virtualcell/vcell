@@ -40,7 +40,7 @@ import org.vcell.restclient.ApiClient;
   SimulationMessage.JSON_PROPERTY_HTC_JOB_ID,
   SimulationMessage.JSON_PROPERTY_DISPLAY_MESSAGE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class SimulationMessage {
   public static final String JSON_PROPERTY_DETAILED_STATE = "detailedState";
   @javax.annotation.Nullable
@@ -71,14 +71,14 @@ public class SimulationMessage {
    * @return detailedState
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DETAILED_STATE)
+  @JsonProperty(value = JSON_PROPERTY_DETAILED_STATE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public DetailedState getDetailedState() {
     return detailedState;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DETAILED_STATE)
+  @JsonProperty(value = JSON_PROPERTY_DETAILED_STATE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDetailedState(@javax.annotation.Nullable DetailedState detailedState) {
     this.detailedState = detailedState;
@@ -95,14 +95,14 @@ public class SimulationMessage {
    * @return message
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_MESSAGE)
+  @JsonProperty(value = JSON_PROPERTY_MESSAGE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getMessage() {
     return message;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_MESSAGE)
+  @JsonProperty(value = JSON_PROPERTY_MESSAGE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setMessage(@javax.annotation.Nullable String message) {
     this.message = message;
@@ -119,14 +119,14 @@ public class SimulationMessage {
    * @return htcJobId
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_HTC_JOB_ID)
+  @JsonProperty(value = JSON_PROPERTY_HTC_JOB_ID, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public HtcJobID getHtcJobId() {
     return htcJobId;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_HTC_JOB_ID)
+  @JsonProperty(value = JSON_PROPERTY_HTC_JOB_ID, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setHtcJobId(@javax.annotation.Nullable HtcJobID htcJobId) {
     this.htcJobId = htcJobId;
@@ -143,14 +143,14 @@ public class SimulationMessage {
    * @return displayMessage
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DISPLAY_MESSAGE)
+  @JsonProperty(value = JSON_PROPERTY_DISPLAY_MESSAGE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getDisplayMessage() {
     return displayMessage;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DISPLAY_MESSAGE)
+  @JsonProperty(value = JSON_PROPERTY_DISPLAY_MESSAGE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDisplayMessage(@javax.annotation.Nullable String displayMessage) {
     this.displayMessage = displayMessage;
@@ -237,12 +237,12 @@ public class SimulationMessage {
 
     // add `detailedState` to the URL query string
     if (getDetailedState() != null) {
-      joiner.add(String.format("%sdetailedState%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDetailedState()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdetailedState%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDetailedState()))));
     }
 
     // add `message` to the URL query string
     if (getMessage() != null) {
-      joiner.add(String.format("%smessage%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMessage()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%smessage%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMessage()))));
     }
 
     // add `htcJobId` to the URL query string
@@ -252,7 +252,7 @@ public class SimulationMessage {
 
     // add `displayMessage` to the URL query string
     if (getDisplayMessage() != null) {
-      joiner.add(String.format("%sdisplayMessage%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDisplayMessage()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdisplayMessage%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDisplayMessage()))));
     }
 
     return joiner.toString();

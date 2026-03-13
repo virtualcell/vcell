@@ -36,7 +36,7 @@ class GroupAccessSome(GroupAccess):
     description: Optional[StrictStr] = None
     hidden_group_members: Optional[List[User]] = Field(default=None, alias="hiddenGroupMembers")
     normal_group_members: Optional[List[User]] = Field(default=None, alias="normalGroupMembers")
-    __properties: ClassVar[List[str]] = ["groupid", "description"]
+    __properties: ClassVar[List[str]] = ["groupid", "description", "type", "hash", "groupMembers", "hiddenMembers", "hiddenGroupMembers", "normalGroupMembers"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -77,6 +77,27 @@ class GroupAccessSome(GroupAccess):
             exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of each item in group_members (list)
+        _items = []
+        if self.group_members:
+            for _item_group_members in self.group_members:
+                if _item_group_members:
+                    _items.append(_item_group_members.to_dict())
+            _dict['groupMembers'] = _items
+        # override the default output from pydantic by calling `to_dict()` of each item in hidden_group_members (list)
+        _items = []
+        if self.hidden_group_members:
+            for _item_hidden_group_members in self.hidden_group_members:
+                if _item_hidden_group_members:
+                    _items.append(_item_hidden_group_members.to_dict())
+            _dict['hiddenGroupMembers'] = _items
+        # override the default output from pydantic by calling `to_dict()` of each item in normal_group_members (list)
+        _items = []
+        if self.normal_group_members:
+            for _item_normal_group_members in self.normal_group_members:
+                if _item_normal_group_members:
+                    _items.append(_item_normal_group_members.to_dict())
+            _dict['normalGroupMembers'] = _items
         return _dict
 
     @classmethod
@@ -95,7 +116,13 @@ class GroupAccessSome(GroupAccess):
 
         _obj = cls.model_validate({
             "groupid": obj.get("groupid"),
-            "description": obj.get("description")
+            "description": obj.get("description"),
+            "type": obj.get("type") if obj.get("type") is not None else 'GroupAccessSome',
+            "hash": obj.get("hash"),
+            "groupMembers": [User.from_dict(_item) for _item in obj["groupMembers"]] if obj.get("groupMembers") is not None else None,
+            "hiddenMembers": obj.get("hiddenMembers"),
+            "hiddenGroupMembers": [User.from_dict(_item) for _item in obj["hiddenGroupMembers"]] if obj.get("hiddenGroupMembers") is not None else None,
+            "normalGroupMembers": [User.from_dict(_item) for _item in obj["normalGroupMembers"]] if obj.get("normalGroupMembers") is not None else None
         })
         return _obj
 

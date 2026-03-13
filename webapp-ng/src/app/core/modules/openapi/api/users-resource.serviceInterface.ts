@@ -30,6 +30,7 @@ export interface UsersResourceServiceInterface {
     /**
      * The end user has forgotten the legacy password they used for VCell, so they will be emailed it.
      * 
+     * @endpoint post /api/v1/users/forgotLegacyPassword
      * @param userID 
      */
     forgotLegacyPassword(userID?: string, extraHttpRequestParams?: any): Observable<{}>;
@@ -37,30 +38,35 @@ export interface UsersResourceServiceInterface {
     /**
      * Method to get legacy tokens for guest users
      * 
+     * @endpoint post /api/v1/users/guestBearerToken
      */
     getGuestLegacyApiToken(extraHttpRequestParams?: any): Observable<AccesTokenRepresentationRecord>;
 
     /**
      * Get token for legacy API
      * 
+     * @endpoint post /api/v1/users/bearerToken
      */
     getLegacyApiToken(extraHttpRequestParams?: any): Observable<AccesTokenRepresentationRecord>;
 
     /**
      * Get mapped VCell identity
      * 
+     * @endpoint get /api/v1/users/mappedUser
      */
     getMappedUser(extraHttpRequestParams?: any): Observable<UserIdentityJSONSafe>;
 
     /**
      * Get current user
      * 
+     * @endpoint get /api/v1/users/me
      */
     getMe(extraHttpRequestParams?: any): Observable<Identity>;
 
     /**
      * create vcell user
      * 
+     * @endpoint post /api/v1/users/newUser
      * @param userRegistrationInfo 
      */
     mapNewUser(userRegistrationInfo: UserRegistrationInfo, extraHttpRequestParams?: any): Observable<{}>;
@@ -68,6 +74,7 @@ export interface UsersResourceServiceInterface {
     /**
      * map vcell user
      * 
+     * @endpoint post /api/v1/users/mapUser
      * @param userLoginInfoForMapping 
      */
     mapUser(userLoginInfoForMapping: UserLoginInfoForMapping, extraHttpRequestParams?: any): Observable<boolean>;
@@ -75,6 +82,7 @@ export interface UsersResourceServiceInterface {
     /**
      * Process the magic link and map the user
      * 
+     * @endpoint get /api/v1/users/processMagicLink
      * @param magic 
      */
     processMagicLink(magic?: string, extraHttpRequestParams?: any): Observable<{}>;
@@ -82,6 +90,7 @@ export interface UsersResourceServiceInterface {
     /**
      * request a recovery email to link a VCell account.
      * 
+     * @endpoint post /api/v1/users/requestRecoveryEmail
      * @param email 
      * @param userID 
      */
@@ -90,6 +99,7 @@ export interface UsersResourceServiceInterface {
     /**
      * remove vcell identity mapping
      * 
+     * @endpoint put /api/v1/users/unmapUser/{userName}
      * @param userName 
      */
     unmapUser(userName: string, extraHttpRequestParams?: any): Observable<boolean>;

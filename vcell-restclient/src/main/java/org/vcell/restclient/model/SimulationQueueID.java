@@ -73,7 +73,7 @@ public enum SimulationQueueID {
       prefix = "";
     }
 
-    return String.format("%s=%s", prefix, this.toString());
+    return String.format(java.util.Locale.ROOT, "%s=%s", prefix, this.toString());
   }
 
 }

@@ -48,7 +48,7 @@ import org.vcell.restclient.ApiClient;
   Version.JSON_PROPERTY_NAME,
   Version.JSON_PROPERTY_OWNER
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class Version {
   public static final String JSON_PROPERTY_VERSION_KEY = "versionKey";
   @javax.annotation.Nullable
@@ -99,14 +99,14 @@ public class Version {
    * @return versionKey
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION_KEY)
+  @JsonProperty(value = JSON_PROPERTY_VERSION_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getVersionKey() {
     return versionKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_VERSION_KEY)
+  @JsonProperty(value = JSON_PROPERTY_VERSION_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVersionKey(@javax.annotation.Nullable String versionKey) {
     this.versionKey = versionKey;
@@ -123,14 +123,14 @@ public class Version {
    * @return annot
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ANNOT)
+  @JsonProperty(value = JSON_PROPERTY_ANNOT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getAnnot() {
     return annot;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ANNOT)
+  @JsonProperty(value = JSON_PROPERTY_ANNOT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setAnnot(@javax.annotation.Nullable String annot) {
     this.annot = annot;
@@ -147,14 +147,14 @@ public class Version {
    * @return branchID
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_BRANCH_I_D)
+  @JsonProperty(value = JSON_PROPERTY_BRANCH_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public BigDecimal getBranchID() {
     return branchID;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_BRANCH_I_D)
+  @JsonProperty(value = JSON_PROPERTY_BRANCH_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setBranchID(@javax.annotation.Nullable BigDecimal branchID) {
     this.branchID = branchID;
@@ -171,14 +171,14 @@ public class Version {
    * @return branchPointRefKey
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_BRANCH_POINT_REF_KEY)
+  @JsonProperty(value = JSON_PROPERTY_BRANCH_POINT_REF_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getBranchPointRefKey() {
     return branchPointRefKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_BRANCH_POINT_REF_KEY)
+  @JsonProperty(value = JSON_PROPERTY_BRANCH_POINT_REF_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setBranchPointRefKey(@javax.annotation.Nullable String branchPointRefKey) {
     this.branchPointRefKey = branchPointRefKey;
@@ -195,14 +195,14 @@ public class Version {
    * @return date
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DATE)
+  @JsonProperty(value = JSON_PROPERTY_DATE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public OffsetDateTime getDate() {
     return date;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DATE)
+  @JsonProperty(value = JSON_PROPERTY_DATE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDate(@javax.annotation.Nullable OffsetDateTime date) {
     this.date = date;
@@ -219,14 +219,14 @@ public class Version {
    * @return flag
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FLAG)
+  @JsonProperty(value = JSON_PROPERTY_FLAG, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public VersionFlag getFlag() {
     return flag;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FLAG)
+  @JsonProperty(value = JSON_PROPERTY_FLAG, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFlag(@javax.annotation.Nullable VersionFlag flag) {
     this.flag = flag;
@@ -243,14 +243,14 @@ public class Version {
    * @return groupAccess
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_GROUP_ACCESS)
+  @JsonProperty(value = JSON_PROPERTY_GROUP_ACCESS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public GroupAccess getGroupAccess() {
     return groupAccess;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_GROUP_ACCESS)
+  @JsonProperty(value = JSON_PROPERTY_GROUP_ACCESS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setGroupAccess(@javax.annotation.Nullable GroupAccess groupAccess) {
     this.groupAccess = groupAccess;
@@ -267,14 +267,14 @@ public class Version {
    * @return name
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getName() {
     return name;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setName(@javax.annotation.Nullable String name) {
     this.name = name;
@@ -291,14 +291,14 @@ public class Version {
    * @return owner
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_OWNER)
+  @JsonProperty(value = JSON_PROPERTY_OWNER, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public User getOwner() {
     return owner;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_OWNER)
+  @JsonProperty(value = JSON_PROPERTY_OWNER, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setOwner(@javax.annotation.Nullable User owner) {
     this.owner = owner;
@@ -395,27 +395,27 @@ public class Version {
 
     // add `versionKey` to the URL query string
     if (getVersionKey() != null) {
-      joiner.add(String.format("%sversionKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVersionKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sversionKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVersionKey()))));
     }
 
     // add `annot` to the URL query string
     if (getAnnot() != null) {
-      joiner.add(String.format("%sannot%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAnnot()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sannot%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAnnot()))));
     }
 
     // add `branchID` to the URL query string
     if (getBranchID() != null) {
-      joiner.add(String.format("%sbranchID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBranchID()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sbranchID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBranchID()))));
     }
 
     // add `branchPointRefKey` to the URL query string
     if (getBranchPointRefKey() != null) {
-      joiner.add(String.format("%sbranchPointRefKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBranchPointRefKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sbranchPointRefKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBranchPointRefKey()))));
     }
 
     // add `date` to the URL query string
     if (getDate() != null) {
-      joiner.add(String.format("%sdate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDate()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDate()))));
     }
 
     // add `flag` to the URL query string
@@ -430,7 +430,7 @@ public class Version {
 
     // add `name` to the URL query string
     if (getName() != null) {
-      joiner.add(String.format("%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
     }
 
     // add `owner` to the URL query string

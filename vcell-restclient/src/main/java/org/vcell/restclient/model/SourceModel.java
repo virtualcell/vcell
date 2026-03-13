@@ -37,7 +37,7 @@ import org.vcell.restclient.ApiClient;
   SourceModel.JSON_PROPERTY_MODEL_I_D,
   SourceModel.JSON_PROPERTY_MODEL_TYPE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class SourceModel {
   public static final String JSON_PROPERTY_MODEL_I_D = "modelID";
   @javax.annotation.Nullable
@@ -60,14 +60,14 @@ public class SourceModel {
    * @return modelID
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_MODEL_I_D)
+  @JsonProperty(value = JSON_PROPERTY_MODEL_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getModelID() {
     return modelID;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_MODEL_I_D)
+  @JsonProperty(value = JSON_PROPERTY_MODEL_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setModelID(@javax.annotation.Nullable String modelID) {
     this.modelID = modelID;
@@ -84,14 +84,14 @@ public class SourceModel {
    * @return modelType
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_MODEL_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_MODEL_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public ModelType getModelType() {
     return modelType;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_MODEL_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_MODEL_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setModelType(@javax.annotation.Nullable ModelType modelType) {
     this.modelType = modelType;
@@ -174,12 +174,12 @@ public class SourceModel {
 
     // add `modelID` to the URL query string
     if (getModelID() != null) {
-      joiner.add(String.format("%smodelID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getModelID()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%smodelID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getModelID()))));
     }
 
     // add `modelType` to the URL query string
     if (getModelType() != null) {
-      joiner.add(String.format("%smodelType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getModelType()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%smodelType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getModelType()))));
     }
 
     return joiner.toString();

@@ -119,4 +119,6 @@ model/vc-simulation-identifier.ts
 model/version-flag.ts
 model/version.ts
 param.ts
+provide-api.ts
+query.params.ts
 variables.ts

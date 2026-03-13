@@ -40,7 +40,7 @@ import org.vcell.restclient.ApiClient;
   UserIdentityJSONSafe.JSON_PROPERTY_SUBJECT,
   UserIdentityJSONSafe.JSON_PROPERTY_INSERT_DATE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class UserIdentityJSONSafe {
   public static final String JSON_PROPERTY_MAPPED = "mapped";
   @javax.annotation.Nullable
@@ -75,14 +75,14 @@ public class UserIdentityJSONSafe {
    * @return mapped
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_MAPPED)
+  @JsonProperty(value = JSON_PROPERTY_MAPPED, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Boolean getMapped() {
     return mapped;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_MAPPED)
+  @JsonProperty(value = JSON_PROPERTY_MAPPED, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setMapped(@javax.annotation.Nullable Boolean mapped) {
     this.mapped = mapped;
@@ -99,14 +99,14 @@ public class UserIdentityJSONSafe {
    * @return userName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_USER_NAME)
+  @JsonProperty(value = JSON_PROPERTY_USER_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getUserName() {
     return userName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_USER_NAME)
+  @JsonProperty(value = JSON_PROPERTY_USER_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setUserName(@javax.annotation.Nullable String userName) {
     this.userName = userName;
@@ -123,14 +123,14 @@ public class UserIdentityJSONSafe {
    * @return id
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ID)
+  @JsonProperty(value = JSON_PROPERTY_ID, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public BigDecimal getId() {
     return id;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ID)
+  @JsonProperty(value = JSON_PROPERTY_ID, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setId(@javax.annotation.Nullable BigDecimal id) {
     this.id = id;
@@ -147,14 +147,14 @@ public class UserIdentityJSONSafe {
    * @return subject
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SUBJECT)
+  @JsonProperty(value = JSON_PROPERTY_SUBJECT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getSubject() {
     return subject;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SUBJECT)
+  @JsonProperty(value = JSON_PROPERTY_SUBJECT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSubject(@javax.annotation.Nullable String subject) {
     this.subject = subject;
@@ -171,14 +171,14 @@ public class UserIdentityJSONSafe {
    * @return insertDate
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_INSERT_DATE)
+  @JsonProperty(value = JSON_PROPERTY_INSERT_DATE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getInsertDate() {
     return insertDate;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_INSERT_DATE)
+  @JsonProperty(value = JSON_PROPERTY_INSERT_DATE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setInsertDate(@javax.annotation.Nullable String insertDate) {
     this.insertDate = insertDate;
@@ -267,27 +267,27 @@ public class UserIdentityJSONSafe {
 
     // add `mapped` to the URL query string
     if (getMapped() != null) {
-      joiner.add(String.format("%smapped%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMapped()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%smapped%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMapped()))));
     }
 
     // add `userName` to the URL query string
     if (getUserName() != null) {
-      joiner.add(String.format("%suserName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUserName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%suserName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUserName()))));
     }
 
     // add `id` to the URL query string
     if (getId() != null) {
-      joiner.add(String.format("%sid%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getId()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sid%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getId()))));
     }
 
     // add `subject` to the URL query string
     if (getSubject() != null) {
-      joiner.add(String.format("%ssubject%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSubject()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%ssubject%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSubject()))));
     }
 
     // add `insertDate` to the URL query string
     if (getInsertDate() != null) {
-      joiner.add(String.format("%sinsertDate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getInsertDate()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sinsertDate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getInsertDate()))));
     }
 
     return joiner.toString();

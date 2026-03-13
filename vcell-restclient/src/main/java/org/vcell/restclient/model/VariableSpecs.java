@@ -39,7 +39,7 @@ import org.vcell.restclient.ApiClient;
   VariableSpecs.JSON_PROPERTY_VARIABLE_NAMES,
   VariableSpecs.JSON_PROPERTY_MODE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class VariableSpecs {
   public static final String JSON_PROPERTY_VARIABLE_NAMES = "variableNames";
   @javax.annotation.Nullable
@@ -70,14 +70,14 @@ public class VariableSpecs {
    * @return variableNames
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VARIABLE_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_VARIABLE_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getVariableNames() {
     return variableNames;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_VARIABLE_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_VARIABLE_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVariableNames(@javax.annotation.Nullable List<String> variableNames) {
     this.variableNames = variableNames;
@@ -94,14 +94,14 @@ public class VariableSpecs {
    * @return mode
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_MODE)
+  @JsonProperty(value = JSON_PROPERTY_MODE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public VariableMode getMode() {
     return mode;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_MODE)
+  @JsonProperty(value = JSON_PROPERTY_MODE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setMode(@javax.annotation.Nullable VariableMode mode) {
     this.mode = mode;
@@ -185,15 +185,15 @@ public class VariableSpecs {
     // add `variableNames` to the URL query string
     if (getVariableNames() != null) {
       for (int i = 0; i < getVariableNames().size(); i++) {
-        joiner.add(String.format("%svariableNames%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%svariableNames%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getVariableNames().get(i)))));
       }
     }
 
     // add `mode` to the URL query string
     if (getMode() != null) {
-      joiner.add(String.format("%smode%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMode()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%smode%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMode()))));
     }
 
     return joiner.toString();

@@ -9,12 +9,9 @@
  */
 
 
-export type ModelType = 'BIOMODEL' | 'MATHMODEL';
-
 export const ModelType = {
-
-    Biomodel: 'BIOMODEL' as ModelType,
-
-    Mathmodel: 'MATHMODEL' as ModelType
-};
+    Biomodel: 'BIOMODEL',
+    Mathmodel: 'MATHMODEL'
+} as const;
+export type ModelType = typeof ModelType[keyof typeof ModelType];
 

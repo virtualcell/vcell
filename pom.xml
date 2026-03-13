@@ -121,11 +121,11 @@
 		<itext.version>2.1.7</itext.version>
 		<quarkus-itext.version>3.0.5</quarkus-itext.version>
 		<quarkus-logging-json.version>3.4.1</quarkus-logging-json.version>
-		<jackson-annotations.version>2.15.2</jackson-annotations.version>
-		<jackson-core.version>2.15.2</jackson-core.version>
-		<jackson-databind.version>2.15.2</jackson-databind.version>
-		<jackson-dataformat-yaml.version>2.15.2</jackson-dataformat-yaml.version>
-		<jackson-datatype.version>2.15.2</jackson-datatype.version>
+		<jackson-annotations.version>2.19.2</jackson-annotations.version>
+		<jackson-core.version>2.19.2</jackson-core.version>
+		<jackson-databind.version>2.19.2</jackson-databind.version>
+		<jackson-dataformat-yaml.version>2.19.2</jackson-dataformat-yaml.version>
+		<jackson-datatype.version>2.19.2</jackson-datatype.version>
 		<jakarta-annotation.version>1.3.5</jakarta-annotation.version>
 		<jama.version>1.0.3</jama.version>
 		<jaxb-api.version>2.3.0</jaxb-api.version>

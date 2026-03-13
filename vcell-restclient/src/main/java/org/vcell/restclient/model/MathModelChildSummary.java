@@ -42,7 +42,7 @@ import org.vcell.restclient.ApiClient;
   MathModelChildSummary.JSON_PROPERTY_SIMULATION_ANNOTATIONS,
   MathModelChildSummary.JSON_PROPERTY_SIMULATION_NAMES
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class MathModelChildSummary {
   public static final String JSON_PROPERTY_MODEL_TYPE = "modelType";
   @javax.annotation.Nullable
@@ -77,14 +77,14 @@ public class MathModelChildSummary {
    * @return modelType
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_MODEL_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_MODEL_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public MathType getModelType() {
     return modelType;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_MODEL_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_MODEL_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setModelType(@javax.annotation.Nullable MathType modelType) {
     this.modelType = modelType;
@@ -101,14 +101,14 @@ public class MathModelChildSummary {
    * @return geometryDimension
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_GEOMETRY_DIMENSION)
+  @JsonProperty(value = JSON_PROPERTY_GEOMETRY_DIMENSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getGeometryDimension() {
     return geometryDimension;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_GEOMETRY_DIMENSION)
+  @JsonProperty(value = JSON_PROPERTY_GEOMETRY_DIMENSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setGeometryDimension(@javax.annotation.Nullable Integer geometryDimension) {
     this.geometryDimension = geometryDimension;
@@ -125,14 +125,14 @@ public class MathModelChildSummary {
    * @return geometryName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_GEOMETRY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_GEOMETRY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getGeometryName() {
     return geometryName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_GEOMETRY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_GEOMETRY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setGeometryName(@javax.annotation.Nullable String geometryName) {
     this.geometryName = geometryName;
@@ -157,14 +157,14 @@ public class MathModelChildSummary {
    * @return simulationAnnotations
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIMULATION_ANNOTATIONS)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_ANNOTATIONS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getSimulationAnnotations() {
     return simulationAnnotations;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SIMULATION_ANNOTATIONS)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_ANNOTATIONS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSimulationAnnotations(@javax.annotation.Nullable List<String> simulationAnnotations) {
     this.simulationAnnotations = simulationAnnotations;
@@ -189,14 +189,14 @@ public class MathModelChildSummary {
    * @return simulationNames
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIMULATION_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getSimulationNames() {
     return simulationNames;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SIMULATION_NAMES)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATION_NAMES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSimulationNames(@javax.annotation.Nullable List<String> simulationNames) {
     this.simulationNames = simulationNames;
@@ -285,24 +285,24 @@ public class MathModelChildSummary {
 
     // add `modelType` to the URL query string
     if (getModelType() != null) {
-      joiner.add(String.format("%smodelType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getModelType()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%smodelType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getModelType()))));
     }
 
     // add `geometryDimension` to the URL query string
     if (getGeometryDimension() != null) {
-      joiner.add(String.format("%sgeometryDimension%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getGeometryDimension()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sgeometryDimension%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getGeometryDimension()))));
     }
 
     // add `geometryName` to the URL query string
     if (getGeometryName() != null) {
-      joiner.add(String.format("%sgeometryName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getGeometryName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sgeometryName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getGeometryName()))));
     }
 
     // add `simulationAnnotations` to the URL query string
     if (getSimulationAnnotations() != null) {
       for (int i = 0; i < getSimulationAnnotations().size(); i++) {
-        joiner.add(String.format("%ssimulationAnnotations%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%ssimulationAnnotations%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getSimulationAnnotations().get(i)))));
       }
     }
@@ -310,8 +310,8 @@ public class MathModelChildSummary {
     // add `simulationNames` to the URL query string
     if (getSimulationNames() != null) {
       for (int i = 0; i < getSimulationNames().size(); i++) {
-        joiner.add(String.format("%ssimulationNames%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%ssimulationNames%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getSimulationNames().get(i)))));
       }
     }

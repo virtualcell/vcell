@@ -34,7 +34,7 @@ class SpatialSelectionContour(SpatialSelection):
     field_sampled_data_indexes: Optional[List[StrictInt]] = Field(default=None, alias="fieldSampledDataIndexes")
     index_samples: Optional[List[StrictInt]] = Field(default=None, alias="indexSamples")
     sampled_data_indexes: Optional[List[StrictInt]] = Field(default=None, alias="sampledDataIndexes")
-    __properties: ClassVar[List[str]] = ["curveSelectionInfo", "varType", "type", "smallestMeshCellDimensionLength", "variableType", "closed", "point"]
+    __properties: ClassVar[List[str]] = ["curveSelectionInfo", "varType", "type", "smallestMeshCellDimensionLength", "variableType", "closed", "point", "fieldSampledDataIndexes", "indexSamples", "sampledDataIndexes"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -107,7 +107,10 @@ class SpatialSelectionContour(SpatialSelection):
             "smallestMeshCellDimensionLength": obj.get("smallestMeshCellDimensionLength"),
             "variableType": VariableType.from_dict(obj["variableType"]) if obj.get("variableType") is not None else None,
             "closed": obj.get("closed"),
-            "point": obj.get("point")
+            "point": obj.get("point"),
+            "fieldSampledDataIndexes": obj.get("fieldSampledDataIndexes"),
+            "indexSamples": obj.get("indexSamples"),
+            "sampledDataIndexes": obj.get("sampledDataIndexes")
         })
         return _obj
 

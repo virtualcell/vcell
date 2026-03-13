@@ -32,7 +32,7 @@ class SpatialSelectionVolume(SpatialSelection):
     """ # noqa: E501
     type: StrictStr
     symmetric: Optional[StrictBool] = None
-    __properties: ClassVar[List[str]] = ["curveSelectionInfo", "varType", "type", "smallestMeshCellDimensionLength", "variableType", "closed", "point"]
+    __properties: ClassVar[List[str]] = ["curveSelectionInfo", "varType", "type", "smallestMeshCellDimensionLength", "variableType", "closed", "point", "symmetric"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -105,7 +105,8 @@ class SpatialSelectionVolume(SpatialSelection):
             "smallestMeshCellDimensionLength": obj.get("smallestMeshCellDimensionLength"),
             "variableType": VariableType.from_dict(obj["variableType"]) if obj.get("variableType") is not None else None,
             "closed": obj.get("closed"),
-            "point": obj.get("point")
+            "point": obj.get("point"),
+            "symmetric": obj.get("symmetric")
         })
         return _obj
 

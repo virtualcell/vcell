@@ -35,7 +35,7 @@ class CompositeCurve(Curve):
     default_num_samples: Optional[StrictInt] = Field(default=None, alias="defaultNumSamples")
     segment_count: Optional[StrictInt] = Field(default=None, alias="segmentCount")
     valid: Optional[StrictBool] = None
-    __properties: ClassVar[List[str]] = ["bClosed", "description", "type", "beginningCoordinate", "defaultNumSamples", "endingCoordinate", "numSamplePoints", "segmentCount", "spatialLength", "closed", "valid"]
+    __properties: ClassVar[List[str]] = ["bClosed", "description", "type", "beginningCoordinate", "defaultNumSamples", "endingCoordinate", "numSamplePoints", "segmentCount", "spatialLength", "closed", "valid", "fieldCurves", "curveCount"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -109,7 +109,9 @@ class CompositeCurve(Curve):
             "segmentCount": obj.get("segmentCount"),
             "spatialLength": obj.get("spatialLength"),
             "closed": obj.get("closed"),
-            "valid": obj.get("valid")
+            "valid": obj.get("valid"),
+            "fieldCurves": obj.get("fieldCurves"),
+            "curveCount": obj.get("curveCount")
         })
         return _obj
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-generatorCliImage=openapitools/openapi-generator-cli:v7.12.0
+generatorCliImage=openapitools/openapi-generator-cli:v7.20.0
 
 scriptDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 parentDir="$(dirname "$scriptDir")"
@@ -22,7 +22,7 @@ docker run --rm -v ${parentDir}:/vcell \
     -o /vcell/vcell-restclient \
     -c /vcell/tools/java-config.yaml
 
-# Apply the patch to AdminResourceApi.java to treat getUsage() as a PDF file rather than a JSON file
+# Apply the patch to FieldDataResourceApi.java to serialize complex objects as JSON in multipart forms
 pushd "${parentDir}" || { echo "Failed to change directory to ${parentDir}"; exit 1; }
 if ! git apply "${scriptDir}/FieldDataResourceApi.patch"; then
   echo "Failed to apply FieldDataResourceApi.patch"

@@ -51,16 +51,37 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class SolverResourceApi {
+  /**
+   * Utility class for extending HttpRequest.Builder functionality.
+   */
+  private static class HttpRequestBuilderExtensions {
+    /**
+     * Adds additional headers to the provided HttpRequest.Builder. Useful for adding method/endpoint specific headers.
+     *
+     * @param builder the HttpRequest.Builder to which headers will be added
+     * @param headers a map of header names and values to add; may be null
+     * @return the same HttpRequest.Builder instance with the additional headers set
+     */
+    static HttpRequest.Builder withAdditionalHeaders(HttpRequest.Builder builder, Map<String, String> headers) {
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                builder.header(entry.getKey(), entry.getValue());
+            }
+        }
+        return builder;
+    }
+  }
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
   private final String memberVarBaseUri;
   private final Consumer<HttpRequest.Builder> memberVarInterceptor;
   private final Duration memberVarReadTimeout;
   private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
-  private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
+  private final Consumer<HttpResponse<InputStream>> memberVarAsyncResponseInterceptor;
 
   public SolverResourceApi() {
     this(Configuration.getDefaultApiClient());
@@ -76,8 +97,17 @@ public class SolverResourceApi {
     memberVarAsyncResponseInterceptor = apiClient.getAsyncResponseInterceptor();
   }
 
+
   protected ApiException getApiException(String operationId, HttpResponse<InputStream> response) throws IOException {
-    String body = response.body() == null ? null : new String(response.body().readAllBytes());
+    InputStream responseBody = ApiClient.getResponseBody(response);
+    String body = null;
+    try {
+      body = responseBody == null ? null : new String(responseBody.readAllBytes());
+    } finally {
+      if (responseBody != null) {
+        responseBody.close();
+      }
+    }
     String message = formatExceptionMessage(operationId, response.statusCode(), body);
     return new ApiException(response.statusCode(), message, response.headers(), body);
   }
@@ -90,6 +120,57 @@ public class SolverResourceApi {
   }
 
   /**
+   * Download file from the given response.
+   *
+   * @param response Response
+   * @return File
+   * @throws ApiException If fail to read file content from response and write to disk
+   */
+  public File downloadFileFromResponse(HttpResponse<InputStream> response, InputStream responseBody) throws ApiException {
+    if (responseBody == null) {
+      throw new ApiException(new IOException("Response body is empty"));
+    }
+    try {
+      File file = prepareDownloadFile(response);
+      java.nio.file.Files.copy(responseBody, file.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+      return file;
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+  }
+
+  /**
+   * <p>Prepare the file for download from the response.</p>
+   *
+   * @param response a {@link java.net.http.HttpResponse} object.
+   * @return a {@link java.io.File} object.
+   * @throws java.io.IOException if any.
+   */
+  private File prepareDownloadFile(HttpResponse<InputStream> response) throws IOException {
+    String filename = null;
+    java.util.Optional<String> contentDisposition = response.headers().firstValue("Content-Disposition");
+    if (contentDisposition.isPresent() && !"".equals(contentDisposition.get())) {
+      // Get filename from the Content-Disposition header.
+      java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("filename=['\"]?([^'\"\\s]+)['\"]?");
+      java.util.regex.Matcher matcher = pattern.matcher(contentDisposition.get());
+      if (matcher.find())
+        filename = matcher.group(1);
+    }
+    File file = null;
+    if (filename != null) {
+      java.nio.file.Path tempDir = java.nio.file.Files.createTempDirectory("swagger-gen-native");
+      java.nio.file.Path filePath = java.nio.file.Files.createFile(tempDir.resolve(filename));
+      file = filePath.toFile();
+      tempDir.toFile().deleteOnExit();   // best effort cleanup
+      file.deleteOnExit(); // best effort cleanup
+    } else {
+      file = java.nio.file.Files.createTempFile("download-", "").toFile();
+      file.deleteOnExit(); // best effort cleanup
+    }
+    return file;
+  }
+
+  /**
    * Retrieve finite volume input from SBML spatial model.
    * 
    * @param sbmlFile  (optional)
@@ -98,8 +179,22 @@ public class SolverResourceApi {
    * @return File
    * @throws ApiException if fails to make API call
    */
-  public File getFVSolverInputFromSBML(File sbmlFile, Double duration, Double outputTimeStep) throws ApiException {
-    ApiResponse<File> localVarResponse = getFVSolverInputFromSBMLWithHttpInfo(sbmlFile, duration, outputTimeStep);
+  public File getFVSolverInputFromSBML(@javax.annotation.Nullable File sbmlFile, @javax.annotation.Nullable Double duration, @javax.annotation.Nullable Double outputTimeStep) throws ApiException {
+    return getFVSolverInputFromSBML(sbmlFile, duration, outputTimeStep, null);
+  }
+
+  /**
+   * Retrieve finite volume input from SBML spatial model.
+   * 
+   * @param sbmlFile  (optional)
+   * @param duration  (optional, default to 5.0)
+   * @param outputTimeStep  (optional, default to 0.1)
+   * @param headers Optional headers to include in the request
+   * @return File
+   * @throws ApiException if fails to make API call
+   */
+  public File getFVSolverInputFromSBML(@javax.annotation.Nullable File sbmlFile, @javax.annotation.Nullable Double duration, @javax.annotation.Nullable Double outputTimeStep, Map<String, String> headers) throws ApiException {
+    ApiResponse<File> localVarResponse = getFVSolverInputFromSBMLWithHttpInfo(sbmlFile, duration, outputTimeStep, headers);
     return localVarResponse.getData();
   }
 
@@ -112,8 +207,22 @@ public class SolverResourceApi {
    * @return ApiResponse&lt;File&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<File> getFVSolverInputFromSBMLWithHttpInfo(File sbmlFile, Double duration, Double outputTimeStep) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getFVSolverInputFromSBMLRequestBuilder(sbmlFile, duration, outputTimeStep);
+  public ApiResponse<File> getFVSolverInputFromSBMLWithHttpInfo(@javax.annotation.Nullable File sbmlFile, @javax.annotation.Nullable Double duration, @javax.annotation.Nullable Double outputTimeStep) throws ApiException {
+    return getFVSolverInputFromSBMLWithHttpInfo(sbmlFile, duration, outputTimeStep, null);
+  }
+
+  /**
+   * Retrieve finite volume input from SBML spatial model.
+   * 
+   * @param sbmlFile  (optional)
+   * @param duration  (optional, default to 5.0)
+   * @param outputTimeStep  (optional, default to 0.1)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;File&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<File> getFVSolverInputFromSBMLWithHttpInfo(@javax.annotation.Nullable File sbmlFile, @javax.annotation.Nullable Double duration, @javax.annotation.Nullable Double outputTimeStep, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getFVSolverInputFromSBMLRequestBuilder(sbmlFile, duration, outputTimeStep, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -121,11 +230,13 @@ public class SolverResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getFVSolverInputFromSBML", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<File>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -133,15 +244,20 @@ public class SolverResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        // Handle file downloading.
+        File responseValue = downloadFileFromResponse(localVarResponse, localVarResponseBody);
+        
 
         return new ApiResponse<File>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<File>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -152,7 +268,7 @@ public class SolverResourceApi {
     }
   }
 
-  private HttpRequest.Builder getFVSolverInputFromSBMLRequestBuilder(File sbmlFile, Double duration, Double outputTimeStep) throws ApiException {
+  private HttpRequest.Builder getFVSolverInputFromSBMLRequestBuilder(@javax.annotation.Nullable File sbmlFile, @javax.annotation.Nullable Double duration, @javax.annotation.Nullable Double outputTimeStep, Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -161,15 +277,20 @@ public class SolverResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/octet-stream, application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     MultipartEntityBuilder multiPartBuilder = MultipartEntityBuilder.create();
     boolean hasFiles = false;
     multiPartBuilder.addBinaryBody("sbmlFile", sbmlFile);
     hasFiles = true;
-    multiPartBuilder.addTextBody("duration", duration.toString());
-    multiPartBuilder.addTextBody("output_time_step", outputTimeStep.toString());
+    if (duration != null) {
+        multiPartBuilder.addTextBody("duration", duration.toString());
+    }
+    if (outputTimeStep != null) {
+        multiPartBuilder.addTextBody("output_time_step", outputTimeStep.toString());
+    }
     HttpEntity entity = multiPartBuilder.build();
-    HttpRequest.BodyPublisher formDataPublisher;
+    Supplier<InputStream> formDataSupplier;
     if (hasFiles) {
         Pipe pipe;
         try {
@@ -184,7 +305,7 @@ public class SolverResourceApi {
                 e.printStackTrace();
             }
         }).start();
-        formDataPublisher = HttpRequest.BodyPublishers.ofInputStream(() -> Channels.newInputStream(pipe.source()));
+        formDataSupplier = () -> Channels.newInputStream(pipe.source());
     } else {
         ByteArrayOutputStream formOutputStream = new ByteArrayOutputStream();
         try {
@@ -192,15 +313,18 @@ public class SolverResourceApi {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        formDataPublisher = HttpRequest.BodyPublishers
-            .ofInputStream(() -> new ByteArrayInputStream(formOutputStream.toByteArray()));
+        byte[] formBytes = formOutputStream.toByteArray();
+        formDataSupplier = () -> new ByteArrayInputStream(formBytes);
     }
     localVarRequestBuilder
         .header("Content-Type", entity.getContentType().getValue())
-        .method("POST", formDataPublisher);
+        .header("Content-Encoding", "gzip")
+        .method("POST", ApiClient.gzipRequestBody(formDataSupplier));
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -215,8 +339,21 @@ public class SolverResourceApi {
    * @return File
    * @throws ApiException if fails to make API call
    */
-  public File getFVSolverInputFromVCML(File vcmlFile, String simulationName) throws ApiException {
-    ApiResponse<File> localVarResponse = getFVSolverInputFromVCMLWithHttpInfo(vcmlFile, simulationName);
+  public File getFVSolverInputFromVCML(@javax.annotation.Nullable File vcmlFile, @javax.annotation.Nullable String simulationName) throws ApiException {
+    return getFVSolverInputFromVCML(vcmlFile, simulationName, null);
+  }
+
+  /**
+   * Retrieve finite volume input from SBML spatial model.
+   * 
+   * @param vcmlFile  (optional)
+   * @param simulationName  (optional)
+   * @param headers Optional headers to include in the request
+   * @return File
+   * @throws ApiException if fails to make API call
+   */
+  public File getFVSolverInputFromVCML(@javax.annotation.Nullable File vcmlFile, @javax.annotation.Nullable String simulationName, Map<String, String> headers) throws ApiException {
+    ApiResponse<File> localVarResponse = getFVSolverInputFromVCMLWithHttpInfo(vcmlFile, simulationName, headers);
     return localVarResponse.getData();
   }
 
@@ -228,8 +365,21 @@ public class SolverResourceApi {
    * @return ApiResponse&lt;File&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<File> getFVSolverInputFromVCMLWithHttpInfo(File vcmlFile, String simulationName) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getFVSolverInputFromVCMLRequestBuilder(vcmlFile, simulationName);
+  public ApiResponse<File> getFVSolverInputFromVCMLWithHttpInfo(@javax.annotation.Nullable File vcmlFile, @javax.annotation.Nullable String simulationName) throws ApiException {
+    return getFVSolverInputFromVCMLWithHttpInfo(vcmlFile, simulationName, null);
+  }
+
+  /**
+   * Retrieve finite volume input from SBML spatial model.
+   * 
+   * @param vcmlFile  (optional)
+   * @param simulationName  (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;File&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<File> getFVSolverInputFromVCMLWithHttpInfo(@javax.annotation.Nullable File vcmlFile, @javax.annotation.Nullable String simulationName, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getFVSolverInputFromVCMLRequestBuilder(vcmlFile, simulationName, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -237,11 +387,13 @@ public class SolverResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getFVSolverInputFromVCML", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<File>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -249,15 +401,20 @@ public class SolverResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        // Handle file downloading.
+        File responseValue = downloadFileFromResponse(localVarResponse, localVarResponseBody);
+        
 
         return new ApiResponse<File>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<File>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -268,7 +425,7 @@ public class SolverResourceApi {
     }
   }
 
-  private HttpRequest.Builder getFVSolverInputFromVCMLRequestBuilder(File vcmlFile, String simulationName) throws ApiException {
+  private HttpRequest.Builder getFVSolverInputFromVCMLRequestBuilder(@javax.annotation.Nullable File vcmlFile, @javax.annotation.Nullable String simulationName, Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -277,14 +434,17 @@ public class SolverResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/octet-stream, application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     MultipartEntityBuilder multiPartBuilder = MultipartEntityBuilder.create();
     boolean hasFiles = false;
     multiPartBuilder.addBinaryBody("vcmlFile", vcmlFile);
     hasFiles = true;
-    multiPartBuilder.addTextBody("simulation_name", simulationName.toString());
+    if (simulationName != null) {
+        multiPartBuilder.addTextBody("simulation_name", simulationName.toString());
+    }
     HttpEntity entity = multiPartBuilder.build();
-    HttpRequest.BodyPublisher formDataPublisher;
+    Supplier<InputStream> formDataSupplier;
     if (hasFiles) {
         Pipe pipe;
         try {
@@ -299,7 +459,7 @@ public class SolverResourceApi {
                 e.printStackTrace();
             }
         }).start();
-        formDataPublisher = HttpRequest.BodyPublishers.ofInputStream(() -> Channels.newInputStream(pipe.source()));
+        formDataSupplier = () -> Channels.newInputStream(pipe.source());
     } else {
         ByteArrayOutputStream formOutputStream = new ByteArrayOutputStream();
         try {
@@ -307,15 +467,18 @@ public class SolverResourceApi {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        formDataPublisher = HttpRequest.BodyPublishers
-            .ofInputStream(() -> new ByteArrayInputStream(formOutputStream.toByteArray()));
+        byte[] formBytes = formOutputStream.toByteArray();
+        formDataSupplier = () -> new ByteArrayInputStream(formBytes);
     }
     localVarRequestBuilder
         .header("Content-Type", entity.getContentType().getValue())
-        .method("POST", formDataPublisher);
+        .header("Content-Encoding", "gzip")
+        .method("POST", ApiClient.gzipRequestBody(formDataSupplier));
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }

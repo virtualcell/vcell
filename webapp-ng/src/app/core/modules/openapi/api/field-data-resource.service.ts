@@ -11,10 +11,10 @@
 
 import { Inject, Injectable, Optional }                      from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams,
-         HttpResponse, HttpEvent, HttpParameterCodec, HttpContext 
+         HttpResponse, HttpEvent, HttpContext 
         }       from '@angular/common/http';
-import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
+import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
 import { Extent } from '../model/extent';
@@ -58,9 +58,11 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
 
     /**
      * Delete the selected field data.
+     * @endpoint delete /api/v1/fieldData/delete/{fieldDataID}
      * @param fieldDataID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public _delete(fieldDataID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any>;
     public _delete(fieldDataID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
@@ -98,14 +100,15 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
         }
 
         let localVarPath = `/api/v1/fieldData/delete/${this.configuration.encodeParam({name: "fieldDataID", value: fieldDataID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
-        return this.httpClient.request<any>('delete', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<any>('delete', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -113,6 +116,7 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
 
     /**
      * Create Field Data with granular detail in one request.The following files are accepted: .tif and .zip.
+     * @endpoint post /api/v1/fieldData/advancedCreate
      * @param file 
      * @param fileName 
      * @param extent 
@@ -123,6 +127,7 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
      * @param origin 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public advancedCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<FieldDataSavedResults>;
     public advancedCreate(file?: Blob, fileName?: string, extent?: Extent, iSize?: ISize, channelNames?: Array<string>, times?: Array<number>, annotation?: string, origin?: Origin, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<FieldDataSavedResults>>;
@@ -204,15 +209,16 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
         }
 
         let localVarPath = `/api/v1/fieldData/advancedCreate`;
-        return this.httpClient.request<FieldDataSavedResults>('post', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<FieldDataSavedResults>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -220,10 +226,12 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
 
     /**
      * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
+     * @endpoint post /api/v1/fieldData/analyzeFile
      * @param file 
      * @param fileName 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public analyzeFile(file?: Blob, fileName?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<FieldData>;
     public analyzeFile(file?: Blob, fileName?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<FieldData>>;
@@ -283,15 +291,16 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
         }
 
         let localVarPath = `/api/v1/fieldData/analyzeFile`;
-        return this.httpClient.request<FieldData>('post', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<FieldData>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -299,9 +308,11 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
 
     /**
      * Copy all existing field data from a BioModel/MathModel that you have access to, but don\&#39;t own.
+     * @endpoint post /api/v1/fieldData/copyModelsFieldData
      * @param sourceModel 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public copyModelsFieldData(sourceModel: SourceModel, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<{ [key: string]: ExternalDataIdentifier; }>;
     public copyModelsFieldData(sourceModel: SourceModel, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<{ [key: string]: ExternalDataIdentifier; }>>;
@@ -348,15 +359,16 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
         }
 
         let localVarPath = `/api/v1/fieldData/copyModelsFieldData`;
-        return this.httpClient.request<{ [key: string]: ExternalDataIdentifier; }>('post', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<{ [key: string]: ExternalDataIdentifier; }>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: sourceModel,
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -364,10 +376,12 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
 
     /**
      * Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
+     * @endpoint post /api/v1/fieldData/createFromFile
      * @param file 
      * @param fieldDataName 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public createFromFile(file?: Blob, fieldDataName?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<FieldDataSavedResults>;
     public createFromFile(file?: Blob, fieldDataName?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<FieldDataSavedResults>>;
@@ -427,15 +441,16 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
         }
 
         let localVarPath = `/api/v1/fieldData/createFromFile`;
-        return this.httpClient.request<FieldDataSavedResults>('post', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<FieldDataSavedResults>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -443,11 +458,13 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
 
     /**
      * Create new field data from existing simulation results.
+     * @endpoint post /api/v1/fieldData/createFromSimulation
      * @param simKeyReference 
      * @param jobIndex 
      * @param newFieldDataName 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public createFromSimulation(simKeyReference?: string, jobIndex?: number, newFieldDataName?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any>;
     public createFromSimulation(simKeyReference?: string, jobIndex?: number, newFieldDataName?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<any>>;
@@ -507,15 +524,16 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
         }
 
         let localVarPath = `/api/v1/fieldData/createFromSimulation`;
-        return this.httpClient.request<any>('post', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<any>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: localVarConvertFormParamsToString ? localVarFormParams.toString() : localVarFormParams,
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -523,8 +541,10 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
 
     /**
      * Get all of the ids used to identify, and retrieve field data.
+     * @endpoint get /api/v1/fieldData/IDs
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public getAllIDs(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<FieldDataReference>>;
     public getAllIDs(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<FieldDataReference>>>;
@@ -559,14 +579,15 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
         }
 
         let localVarPath = `/api/v1/fieldData/IDs`;
-        return this.httpClient.request<Array<FieldDataReference>>('get', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<Array<FieldDataReference>>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -574,9 +595,11 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
 
     /**
      * Get the shape of the field data. That is it\&#39;s size, origin, extent, times, and data identifiers.
+     * @endpoint get /api/v1/fieldData/shape/{fieldDataID}
      * @param fieldDataID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public getShapeFromID(fieldDataID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<FieldDataShape>;
     public getShapeFromID(fieldDataID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<FieldDataShape>>;
@@ -614,14 +637,15 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
         }
 
         let localVarPath = `/api/v1/fieldData/shape/${this.configuration.encodeParam({name: "fieldDataID", value: fieldDataID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
-        return this.httpClient.request<FieldDataShape>('get', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<FieldDataShape>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -629,9 +653,11 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
 
     /**
      * Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
+     * @endpoint post /api/v1/fieldData/save
      * @param fieldData 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public save(fieldData: FieldData, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<FieldDataSavedResults>;
     public save(fieldData: FieldData, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<FieldDataSavedResults>>;
@@ -678,15 +704,16 @@ export class FieldDataResourceService extends BaseService implements FieldDataRe
         }
 
         let localVarPath = `/api/v1/fieldData/save`;
-        return this.httpClient.request<FieldDataSavedResults>('post', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<FieldDataSavedResults>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: fieldData,
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );

@@ -30,7 +30,7 @@ class GroupAccessAll(GroupAccess):
     """ # noqa: E501
     type: StrictStr
     description: Optional[StrictStr] = None
-    __properties: ClassVar[List[str]] = ["groupid", "description"]
+    __properties: ClassVar[List[str]] = ["groupid", "description", "type"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -89,7 +89,8 @@ class GroupAccessAll(GroupAccess):
 
         _obj = cls.model_validate({
             "groupid": obj.get("groupid"),
-            "description": obj.get("description")
+            "description": obj.get("description"),
+            "type": obj.get("type") if obj.get("type") is not None else 'GroupAccessAll'
         })
         return _obj
 

@@ -4,7 +4,7 @@ VCell API
 
 - API version: 1.0.1
 
-- Generator version: 7.12.0
+- Generator version: 7.20.0
 
 VCell API
 

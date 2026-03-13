@@ -39,7 +39,7 @@ import org.vcell.restclient.ApiClient;
   MathmodelRef.JSON_PROPERTY_OWNER_KEY,
   MathmodelRef.JSON_PROPERTY_VERSION_FLAG
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class MathmodelRef {
   public static final String JSON_PROPERTY_MM_KEY = "mmKey";
   @javax.annotation.Nullable
@@ -74,14 +74,14 @@ public class MathmodelRef {
    * @return mmKey
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_MM_KEY)
+  @JsonProperty(value = JSON_PROPERTY_MM_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Long getMmKey() {
     return mmKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_MM_KEY)
+  @JsonProperty(value = JSON_PROPERTY_MM_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setMmKey(@javax.annotation.Nullable Long mmKey) {
     this.mmKey = mmKey;
@@ -98,14 +98,14 @@ public class MathmodelRef {
    * @return name
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getName() {
     return name;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setName(@javax.annotation.Nullable String name) {
     this.name = name;
@@ -122,14 +122,14 @@ public class MathmodelRef {
    * @return ownerName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_OWNER_NAME)
+  @JsonProperty(value = JSON_PROPERTY_OWNER_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getOwnerName() {
     return ownerName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_OWNER_NAME)
+  @JsonProperty(value = JSON_PROPERTY_OWNER_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setOwnerName(@javax.annotation.Nullable String ownerName) {
     this.ownerName = ownerName;
@@ -146,14 +146,14 @@ public class MathmodelRef {
    * @return ownerKey
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_OWNER_KEY)
+  @JsonProperty(value = JSON_PROPERTY_OWNER_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Long getOwnerKey() {
     return ownerKey;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_OWNER_KEY)
+  @JsonProperty(value = JSON_PROPERTY_OWNER_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setOwnerKey(@javax.annotation.Nullable Long ownerKey) {
     this.ownerKey = ownerKey;
@@ -170,14 +170,14 @@ public class MathmodelRef {
    * @return versionFlag
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
+  @JsonProperty(value = JSON_PROPERTY_VERSION_FLAG, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getVersionFlag() {
     return versionFlag;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
+  @JsonProperty(value = JSON_PROPERTY_VERSION_FLAG, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVersionFlag(@javax.annotation.Nullable Integer versionFlag) {
     this.versionFlag = versionFlag;
@@ -266,27 +266,27 @@ public class MathmodelRef {
 
     // add `mmKey` to the URL query string
     if (getMmKey() != null) {
-      joiner.add(String.format("%smmKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMmKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%smmKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMmKey()))));
     }
 
     // add `name` to the URL query string
     if (getName() != null) {
-      joiner.add(String.format("%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
     }
 
     // add `ownerName` to the URL query string
     if (getOwnerName() != null) {
-      joiner.add(String.format("%sownerName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getOwnerName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sownerName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getOwnerName()))));
     }
 
     // add `ownerKey` to the URL query string
     if (getOwnerKey() != null) {
-      joiner.add(String.format("%sownerKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getOwnerKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sownerKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getOwnerKey()))));
     }
 
     // add `versionFlag` to the URL query string
     if (getVersionFlag() != null) {
-      joiner.add(String.format("%sversionFlag%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVersionFlag()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sversionFlag%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVersionFlag()))));
     }
 
     return joiner.toString();

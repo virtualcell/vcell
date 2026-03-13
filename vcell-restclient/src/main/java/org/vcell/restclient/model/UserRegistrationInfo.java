@@ -39,7 +39,7 @@ import org.vcell.restclient.ApiClient;
   UserRegistrationInfo.JSON_PROPERTY_COUNTRY,
   UserRegistrationInfo.JSON_PROPERTY_EMAIL_NOTIFICATION
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class UserRegistrationInfo {
   public static final String JSON_PROPERTY_USER_I_D = "userID";
   @javax.annotation.Nullable
@@ -74,14 +74,14 @@ public class UserRegistrationInfo {
    * @return userID
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_USER_I_D)
+  @JsonProperty(value = JSON_PROPERTY_USER_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getUserID() {
     return userID;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_USER_I_D)
+  @JsonProperty(value = JSON_PROPERTY_USER_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setUserID(@javax.annotation.Nullable String userID) {
     this.userID = userID;
@@ -98,14 +98,14 @@ public class UserRegistrationInfo {
    * @return title
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_TITLE)
+  @JsonProperty(value = JSON_PROPERTY_TITLE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getTitle() {
     return title;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_TITLE)
+  @JsonProperty(value = JSON_PROPERTY_TITLE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setTitle(@javax.annotation.Nullable String title) {
     this.title = title;
@@ -122,14 +122,14 @@ public class UserRegistrationInfo {
    * @return organization
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ORGANIZATION)
+  @JsonProperty(value = JSON_PROPERTY_ORGANIZATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getOrganization() {
     return organization;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ORGANIZATION)
+  @JsonProperty(value = JSON_PROPERTY_ORGANIZATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setOrganization(@javax.annotation.Nullable String organization) {
     this.organization = organization;
@@ -146,14 +146,14 @@ public class UserRegistrationInfo {
    * @return country
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_COUNTRY)
+  @JsonProperty(value = JSON_PROPERTY_COUNTRY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getCountry() {
     return country;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_COUNTRY)
+  @JsonProperty(value = JSON_PROPERTY_COUNTRY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setCountry(@javax.annotation.Nullable String country) {
     this.country = country;
@@ -170,14 +170,14 @@ public class UserRegistrationInfo {
    * @return emailNotification
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_EMAIL_NOTIFICATION)
+  @JsonProperty(value = JSON_PROPERTY_EMAIL_NOTIFICATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Boolean getEmailNotification() {
     return emailNotification;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_EMAIL_NOTIFICATION)
+  @JsonProperty(value = JSON_PROPERTY_EMAIL_NOTIFICATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setEmailNotification(@javax.annotation.Nullable Boolean emailNotification) {
     this.emailNotification = emailNotification;
@@ -266,27 +266,27 @@ public class UserRegistrationInfo {
 
     // add `userID` to the URL query string
     if (getUserID() != null) {
-      joiner.add(String.format("%suserID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUserID()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%suserID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUserID()))));
     }
 
     // add `title` to the URL query string
     if (getTitle() != null) {
-      joiner.add(String.format("%stitle%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getTitle()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%stitle%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getTitle()))));
     }
 
     // add `organization` to the URL query string
     if (getOrganization() != null) {
-      joiner.add(String.format("%sorganization%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getOrganization()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sorganization%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getOrganization()))));
     }
 
     // add `country` to the URL query string
     if (getCountry() != null) {
-      joiner.add(String.format("%scountry%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getCountry()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%scountry%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getCountry()))));
     }
 
     // add `emailNotification` to the URL query string
     if (getEmailNotification() != null) {
-      joiner.add(String.format("%semailNotification%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getEmailNotification()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%semailNotification%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getEmailNotification()))));
     }
 
     return joiner.toString();

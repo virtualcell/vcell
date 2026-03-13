@@ -38,7 +38,7 @@ class AnalyticCurve(Curve):
     default_num_samples: Optional[StrictInt] = Field(default=None, alias="defaultNumSamples")
     segment_count: Optional[StrictInt] = Field(default=None, alias="segmentCount")
     valid: Optional[StrictBool] = None
-    __properties: ClassVar[List[str]] = ["bClosed", "description", "type", "beginningCoordinate", "defaultNumSamples", "endingCoordinate", "numSamplePoints", "segmentCount", "spatialLength", "closed", "valid"]
+    __properties: ClassVar[List[str]] = ["bClosed", "description", "type", "beginningCoordinate", "defaultNumSamples", "endingCoordinate", "numSamplePoints", "segmentCount", "spatialLength", "closed", "valid", "expX", "expY", "expZ", "offset", "analyticOffset"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -85,6 +85,12 @@ class AnalyticCurve(Curve):
         # override the default output from pydantic by calling `to_dict()` of ending_coordinate
         if self.ending_coordinate:
             _dict['endingCoordinate'] = self.ending_coordinate.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of offset
+        if self.offset:
+            _dict['offset'] = self.offset.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of analytic_offset
+        if self.analytic_offset:
+            _dict['analyticOffset'] = self.analytic_offset.to_dict()
         return _dict
 
     @classmethod
@@ -112,7 +118,12 @@ class AnalyticCurve(Curve):
             "segmentCount": obj.get("segmentCount"),
             "spatialLength": obj.get("spatialLength"),
             "closed": obj.get("closed"),
-            "valid": obj.get("valid")
+            "valid": obj.get("valid"),
+            "expX": obj.get("expX"),
+            "expY": obj.get("expY"),
+            "expZ": obj.get("expZ"),
+            "offset": Coordinate.from_dict(obj["offset"]) if obj.get("offset") is not None else None,
+            "analyticOffset": Coordinate.from_dict(obj["analyticOffset"]) if obj.get("analyticOffset") is not None else None
         })
         return _obj
 

@@ -38,7 +38,7 @@ import org.vcell.restclient.ApiClient;
   PublishModelsRequest.JSON_PROPERTY_BIOMODEL_KEYS,
   PublishModelsRequest.JSON_PROPERTY_MATHMODEL_KEYS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class PublishModelsRequest {
   public static final String JSON_PROPERTY_BIOMODEL_KEYS = "biomodelKeys";
   @javax.annotation.Nullable
@@ -69,14 +69,14 @@ public class PublishModelsRequest {
    * @return biomodelKeys
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_BIOMODEL_KEYS)
+  @JsonProperty(value = JSON_PROPERTY_BIOMODEL_KEYS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<Long> getBiomodelKeys() {
     return biomodelKeys;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_BIOMODEL_KEYS)
+  @JsonProperty(value = JSON_PROPERTY_BIOMODEL_KEYS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setBiomodelKeys(@javax.annotation.Nullable List<Long> biomodelKeys) {
     this.biomodelKeys = biomodelKeys;
@@ -101,14 +101,14 @@ public class PublishModelsRequest {
    * @return mathmodelKeys
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_MATHMODEL_KEYS)
+  @JsonProperty(value = JSON_PROPERTY_MATHMODEL_KEYS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<Long> getMathmodelKeys() {
     return mathmodelKeys;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_MATHMODEL_KEYS)
+  @JsonProperty(value = JSON_PROPERTY_MATHMODEL_KEYS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setMathmodelKeys(@javax.annotation.Nullable List<Long> mathmodelKeys) {
     this.mathmodelKeys = mathmodelKeys;
@@ -192,8 +192,8 @@ public class PublishModelsRequest {
     // add `biomodelKeys` to the URL query string
     if (getBiomodelKeys() != null) {
       for (int i = 0; i < getBiomodelKeys().size(); i++) {
-        joiner.add(String.format("%sbiomodelKeys%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%sbiomodelKeys%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getBiomodelKeys().get(i)))));
       }
     }
@@ -201,8 +201,8 @@ public class PublishModelsRequest {
     // add `mathmodelKeys` to the URL query string
     if (getMathmodelKeys() != null) {
       for (int i = 0; i < getMathmodelKeys().size(); i++) {
-        joiner.add(String.format("%smathmodelKeys%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%smathmodelKeys%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getMathmodelKeys().get(i)))));
       }
     }

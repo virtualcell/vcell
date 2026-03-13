@@ -44,7 +44,7 @@ import org.vcell.restclient.ApiClient;
   GeometrySummary.JSON_PROPERTY_VERSION,
   GeometrySummary.JSON_PROPERTY_SOFTWARE_VERSION
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class GeometrySummary {
   public static final String JSON_PROPERTY_DIMENSION = "dimension";
   @javax.annotation.Nullable
@@ -83,14 +83,14 @@ public class GeometrySummary {
    * @return dimension
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DIMENSION)
+  @JsonProperty(value = JSON_PROPERTY_DIMENSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getDimension() {
     return dimension;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DIMENSION)
+  @JsonProperty(value = JSON_PROPERTY_DIMENSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDimension(@javax.annotation.Nullable Integer dimension) {
     this.dimension = dimension;
@@ -107,14 +107,14 @@ public class GeometrySummary {
    * @return origin
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ORIGIN)
+  @JsonProperty(value = JSON_PROPERTY_ORIGIN, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Origin getOrigin() {
     return origin;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ORIGIN)
+  @JsonProperty(value = JSON_PROPERTY_ORIGIN, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setOrigin(@javax.annotation.Nullable Origin origin) {
     this.origin = origin;
@@ -131,14 +131,14 @@ public class GeometrySummary {
    * @return extent
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_EXTENT)
+  @JsonProperty(value = JSON_PROPERTY_EXTENT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Extent getExtent() {
     return extent;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_EXTENT)
+  @JsonProperty(value = JSON_PROPERTY_EXTENT, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setExtent(@javax.annotation.Nullable Extent extent) {
     this.extent = extent;
@@ -155,14 +155,14 @@ public class GeometrySummary {
    * @return imageRef
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_IMAGE_REF)
+  @JsonProperty(value = JSON_PROPERTY_IMAGE_REF, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getImageRef() {
     return imageRef;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_IMAGE_REF)
+  @JsonProperty(value = JSON_PROPERTY_IMAGE_REF, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setImageRef(@javax.annotation.Nullable String imageRef) {
     this.imageRef = imageRef;
@@ -179,14 +179,14 @@ public class GeometrySummary {
    * @return version
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Version getVersion() {
     return version;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVersion(@javax.annotation.Nullable Version version) {
     this.version = version;
@@ -203,14 +203,14 @@ public class GeometrySummary {
    * @return softwareVersion
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_SOFTWARE_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public VCellSoftwareVersion getSoftwareVersion() {
     return softwareVersion;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
+  @JsonProperty(value = JSON_PROPERTY_SOFTWARE_VERSION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSoftwareVersion(@javax.annotation.Nullable VCellSoftwareVersion softwareVersion) {
     this.softwareVersion = softwareVersion;
@@ -301,7 +301,7 @@ public class GeometrySummary {
 
     // add `dimension` to the URL query string
     if (getDimension() != null) {
-      joiner.add(String.format("%sdimension%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDimension()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdimension%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDimension()))));
     }
 
     // add `origin` to the URL query string
@@ -316,7 +316,7 @@ public class GeometrySummary {
 
     // add `imageRef` to the URL query string
     if (getImageRef() != null) {
-      joiner.add(String.format("%simageRef%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getImageRef()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%simageRef%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getImageRef()))));
     }
 
     // add `version` to the URL query string

@@ -40,7 +40,7 @@ import org.vcell.restclient.ApiClient;
   Identity.JSON_PROPERTY_ATTRIBUTES,
   Identity.JSON_PROPERTY_CREDENTIALS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class Identity {
   public static final String JSON_PROPERTY_PRINCIPAL_NAME = "principal_name";
   @javax.annotation.Nullable
@@ -71,14 +71,14 @@ public class Identity {
    * @return principalName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PRINCIPAL_NAME)
+  @JsonProperty(value = JSON_PROPERTY_PRINCIPAL_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getPrincipalName() {
     return principalName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_PRINCIPAL_NAME)
+  @JsonProperty(value = JSON_PROPERTY_PRINCIPAL_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setPrincipalName(@javax.annotation.Nullable String principalName) {
     this.principalName = principalName;
@@ -103,14 +103,14 @@ public class Identity {
    * @return roles
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ROLES)
+  @JsonProperty(value = JSON_PROPERTY_ROLES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getRoles() {
     return roles;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ROLES)
+  @JsonProperty(value = JSON_PROPERTY_ROLES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setRoles(@javax.annotation.Nullable List<String> roles) {
     this.roles = roles;
@@ -135,14 +135,14 @@ public class Identity {
    * @return attributes
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ATTRIBUTES)
+  @JsonProperty(value = JSON_PROPERTY_ATTRIBUTES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getAttributes() {
     return attributes;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ATTRIBUTES)
+  @JsonProperty(value = JSON_PROPERTY_ATTRIBUTES, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setAttributes(@javax.annotation.Nullable List<String> attributes) {
     this.attributes = attributes;
@@ -167,14 +167,14 @@ public class Identity {
    * @return credentials
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_CREDENTIALS)
+  @JsonProperty(value = JSON_PROPERTY_CREDENTIALS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getCredentials() {
     return credentials;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_CREDENTIALS)
+  @JsonProperty(value = JSON_PROPERTY_CREDENTIALS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setCredentials(@javax.annotation.Nullable List<String> credentials) {
     this.credentials = credentials;
@@ -261,14 +261,14 @@ public class Identity {
 
     // add `principal_name` to the URL query string
     if (getPrincipalName() != null) {
-      joiner.add(String.format("%sprincipal_name%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPrincipalName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sprincipal_name%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPrincipalName()))));
     }
 
     // add `roles` to the URL query string
     if (getRoles() != null) {
       for (int i = 0; i < getRoles().size(); i++) {
-        joiner.add(String.format("%sroles%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%sroles%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getRoles().get(i)))));
       }
     }
@@ -276,8 +276,8 @@ public class Identity {
     // add `attributes` to the URL query string
     if (getAttributes() != null) {
       for (int i = 0; i < getAttributes().size(); i++) {
-        joiner.add(String.format("%sattributes%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%sattributes%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getAttributes().get(i)))));
       }
     }
@@ -285,8 +285,8 @@ public class Identity {
     // add `credentials` to the URL query string
     if (getCredentials() != null) {
       for (int i = 0; i < getCredentials().size(); i++) {
-        joiner.add(String.format("%scredentials%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%scredentials%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getCredentials().get(i)))));
       }
     }

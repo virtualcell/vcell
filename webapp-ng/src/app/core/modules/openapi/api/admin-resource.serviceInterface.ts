@@ -25,6 +25,7 @@ export interface AdminResourceServiceInterface {
     /**
      * Get usage summary
      * 
+     * @endpoint get /api/v1/admin/usage
      */
     getUsage(extraHttpRequestParams?: any): Observable<Blob>;
 

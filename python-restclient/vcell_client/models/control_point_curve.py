@@ -43,7 +43,7 @@ class ControlPointCurve(Curve):
     min_control_points: Optional[StrictInt] = Field(default=None, alias="minControlPoints")
     control_point_addable: Optional[StrictBool] = Field(default=None, alias="controlPointAddable")
     valid: Optional[StrictBool] = None
-    __properties: ClassVar[List[str]] = ["bClosed", "description", "type", "beginningCoordinate", "defaultNumSamples", "endingCoordinate", "numSamplePoints", "segmentCount", "spatialLength", "closed", "valid"]
+    __properties: ClassVar[List[str]] = ["bClosed", "description", "type", "beginningCoordinate", "defaultNumSamples", "endingCoordinate", "numSamplePoints", "segmentCount", "spatialLength", "closed", "valid", "controlPoints", "controlPointCount", "controlPointsVector", "maxControlPoints", "minControlPoints", "controlPointAddable"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -107,6 +107,20 @@ class ControlPointCurve(Curve):
         # override the default output from pydantic by calling `to_dict()` of ending_coordinate
         if self.ending_coordinate:
             _dict['endingCoordinate'] = self.ending_coordinate.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of each item in control_points (list)
+        _items = []
+        if self.control_points:
+            for _item_control_points in self.control_points:
+                if _item_control_points:
+                    _items.append(_item_control_points.to_dict())
+            _dict['controlPoints'] = _items
+        # override the default output from pydantic by calling `to_dict()` of each item in control_points_vector (list)
+        _items = []
+        if self.control_points_vector:
+            for _item_control_points_vector in self.control_points_vector:
+                if _item_control_points_vector:
+                    _items.append(_item_control_points_vector.to_dict())
+            _dict['controlPointsVector'] = _items
         return _dict
 
     @classmethod

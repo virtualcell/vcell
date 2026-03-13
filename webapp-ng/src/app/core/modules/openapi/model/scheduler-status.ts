@@ -9,22 +9,14 @@
  */
 
 
-export type SchedulerStatus = 'WAITING' | 'QUEUED' | 'DISPATCHED' | 'RUNNING' | 'COMPLETED' | 'STOPPED' | 'FAILED';
-
 export const SchedulerStatus = {
-
-    Waiting: 'WAITING' as SchedulerStatus,
-
-    Queued: 'QUEUED' as SchedulerStatus,
-
-    Dispatched: 'DISPATCHED' as SchedulerStatus,
-
-    Running: 'RUNNING' as SchedulerStatus,
-
-    Completed: 'COMPLETED' as SchedulerStatus,
-
-    Stopped: 'STOPPED' as SchedulerStatus,
-
-    Failed: 'FAILED' as SchedulerStatus
-};
+    Waiting: 'WAITING',
+    Queued: 'QUEUED',
+    Dispatched: 'DISPATCHED',
+    Running: 'RUNNING',
+    Completed: 'COMPLETED',
+    Stopped: 'STOPPED',
+    Failed: 'FAILED'
+} as const;
+export type SchedulerStatus = typeof SchedulerStatus[keyof typeof SchedulerStatus];
 

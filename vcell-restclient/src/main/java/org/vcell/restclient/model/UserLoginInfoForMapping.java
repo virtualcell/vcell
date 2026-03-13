@@ -36,7 +36,7 @@ import org.vcell.restclient.ApiClient;
   UserLoginInfoForMapping.JSON_PROPERTY_USER_I_D,
   UserLoginInfoForMapping.JSON_PROPERTY_PASSWORD
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class UserLoginInfoForMapping {
   public static final String JSON_PROPERTY_USER_I_D = "userID";
   @javax.annotation.Nullable
@@ -59,14 +59,14 @@ public class UserLoginInfoForMapping {
    * @return userID
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_USER_I_D)
+  @JsonProperty(value = JSON_PROPERTY_USER_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getUserID() {
     return userID;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_USER_I_D)
+  @JsonProperty(value = JSON_PROPERTY_USER_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setUserID(@javax.annotation.Nullable String userID) {
     this.userID = userID;
@@ -83,14 +83,14 @@ public class UserLoginInfoForMapping {
    * @return password
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PASSWORD)
+  @JsonProperty(value = JSON_PROPERTY_PASSWORD, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getPassword() {
     return password;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_PASSWORD)
+  @JsonProperty(value = JSON_PROPERTY_PASSWORD, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setPassword(@javax.annotation.Nullable String password) {
     this.password = password;
@@ -173,12 +173,12 @@ public class UserLoginInfoForMapping {
 
     // add `userID` to the URL query string
     if (getUserID() != null) {
-      joiner.add(String.format("%suserID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUserID()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%suserID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUserID()))));
     }
 
     // add `password` to the URL query string
     if (getPassword() != null) {
-      joiner.add(String.format("%spassword%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPassword()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%spassword%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPassword()))));
     }
 
     return joiner.toString();

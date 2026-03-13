@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.InputStream;
+import java.io.IOException;
+import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -33,6 +35,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
 import java.util.function.Consumer;
+import java.util.Optional;
+import java.util.zip.GZIPInputStream;
+import java.util.function.Supplier;
+import java.util.Objects;
+import java.util.zip.GZIPOutputStream;
 import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -50,20 +57,20 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * <p>The setter methods of this class return the current object to facilitate
  * a fluent style of configuration.</p>
  */
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class ApiClient {
 
-  private HttpClient.Builder builder;
-  private ObjectMapper mapper;
-  private String scheme;
-  private String host;
-  private int port;
-  private String basePath;
-  private Consumer<HttpRequest.Builder> interceptor;
-  private Consumer<HttpResponse<InputStream>> responseInterceptor;
-  private Consumer<HttpResponse<String>> asyncResponseInterceptor;
-  private Duration readTimeout;
-  private Duration connectTimeout;
+  protected HttpClient.Builder builder;
+  protected ObjectMapper mapper;
+  protected String scheme;
+  protected String host;
+  protected int port;
+  protected String basePath;
+  protected Consumer<HttpRequest.Builder> interceptor;
+  protected Consumer<HttpResponse<InputStream>> responseInterceptor;
+  protected Consumer<HttpResponse<InputStream>> asyncResponseInterceptor;
+  protected Duration readTimeout;
+  protected Duration connectTimeout;
 
   public static String valueToString(Object value) {
     if (value == null) {
@@ -165,7 +172,7 @@ public class ApiClient {
   public ApiClient() {
     this.builder = createDefaultHttpClientBuilder();
     this.mapper = createDefaultObjectMapper();
-    updateBaseUri(getDefaultBaseUri());
+    updateBaseUri("https://vcell.cam.uchc.edu");
     interceptor = null;
     readTimeout = null;
     connectTimeout = null;
@@ -183,7 +190,7 @@ public class ApiClient {
   public ApiClient(HttpClient.Builder builder, ObjectMapper mapper, String baseUri) {
     this.builder = builder;
     this.mapper = mapper;
-    updateBaseUri(baseUri != null ? baseUri : getDefaultBaseUri());
+    updateBaseUri(baseUri != null ? baseUri : "https://vcell.cam.uchc.edu");
     interceptor = null;
     readTimeout = null;
     connectTimeout = null;
@@ -201,11 +208,12 @@ public class ApiClient {
     mapper.enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING);
     mapper.disable(DeserializationFeature.ADJUST_DATES_TO_CONTEXT_TIME_ZONE);
     mapper.registerModule(new JavaTimeModule());
+    mapper.registerModule(new RFC3339JavaTimeModule());
     return mapper;
   }
 
-  private String getDefaultBaseUri() {
-    return "https://vcell.cam.uchc.edu";
+  protected final String getDefaultBaseUri() {
+    return basePath;
   }
 
   public static HttpClient.Builder createDefaultHttpClientBuilder() {
@@ -381,7 +389,7 @@ public class ApiClient {
    *                    of null resets the interceptor to a no-op.
    * @return This object.
    */
-  public ApiClient setAsyncResponseInterceptor(Consumer<HttpResponse<String>> interceptor) {
+  public ApiClient setAsyncResponseInterceptor(Consumer<HttpResponse<InputStream>> interceptor) {
     this.asyncResponseInterceptor = interceptor;
     return this;
   }
@@ -391,7 +399,7 @@ public class ApiClient {
    *
    * @return The custom interceptor that was set, or null if there isn't any.
    */
-  public Consumer<HttpResponse<String>> getAsyncResponseInterceptor() {
+  public Consumer<HttpResponse<InputStream>> getAsyncResponseInterceptor() {
     return asyncResponseInterceptor;
   }
 
@@ -450,5 +458,144 @@ public class ApiClient {
    */
   public Duration getConnectTimeout() {
     return connectTimeout;
+  }
+
+  /**
+   * Returns the response body InputStream, transparently decoding gzip-compressed
+   * payloads when the server sets {@code Content-Encoding: gzip}.
+   *
+   * @param response HTTP response whose body should be consumed
+   * @return Original or decompressed InputStream for the response body
+   * @throws IOException if the response body cannot be accessed or wrapping fails
+   */
+  public static InputStream getResponseBody(HttpResponse<InputStream> response) throws IOException {
+    if (response == null) {
+      return null;
+    }
+    InputStream body = response.body();
+    if (body == null) {
+      return null;
+    }
+    Optional<String> encoding = response.headers().firstValue("Content-Encoding");
+    if (encoding.isPresent()) {
+      for (String token : encoding.get().split(",")) {
+        if ("gzip".equalsIgnoreCase(token.trim())) {
+          return new GZIPInputStream(body, 8192);
+        }
+      }
+    }
+    return body;
+  }
+
+  /**
+   * Wraps a request body supplier with a streaming GZIP compressor so large payloads
+   * can be sent without buffering the entire contents in memory.
+   *
+   * @param bodySupplier Supplies the original request body InputStream
+   * @return BodyPublisher that emits gzip-compressed bytes from the supplied stream
+   */
+  public static HttpRequest.BodyPublisher gzipRequestBody(Supplier<InputStream> bodySupplier) {
+    Objects.requireNonNull(bodySupplier, "bodySupplier must not be null");
+    return HttpRequest.BodyPublishers.ofInputStream(() -> new GzipCompressingInputStream(bodySupplier));
+  }
+
+  private static final class GzipCompressingInputStream extends InputStream {
+    private final Supplier<InputStream> supplier;
+    private final byte[] readBuffer = new byte[8192];
+    private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    private InputStream source;
+    private GZIPOutputStream gzipStream;
+    private byte[] currentChunk = new byte[0];
+    private int chunkPosition = 0;
+    private boolean finished = false;
+
+    private GzipCompressingInputStream(Supplier<InputStream> supplier) {
+      this.supplier = Objects.requireNonNull(supplier, "bodySupplier must not be null");
+    }
+
+    private void ensureInitialized() throws IOException {
+      if (source == null) {
+        source = Objects.requireNonNull(supplier.get(), "bodySupplier returned null InputStream");
+        gzipStream = new GZIPOutputStream(buffer, true);
+      }
+    }
+
+    private boolean fillBuffer() throws IOException {
+      while (chunkPosition >= currentChunk.length) {
+        buffer.reset();
+        ensureInitialized();
+        if (finished) {
+          return false;
+        }
+        int bytesRead = source.read(readBuffer);
+        if (bytesRead == -1) {
+          gzipStream.finish();
+          gzipStream.close();
+          source.close();
+          finished = true;
+        } else {
+          gzipStream.write(readBuffer, 0, bytesRead);
+          gzipStream.flush();
+        }
+        currentChunk = buffer.toByteArray();
+        chunkPosition = 0;
+        if (currentChunk.length == 0 && !finished) {
+          continue;
+        }
+        if (currentChunk.length == 0 && finished) {
+          return false;
+        }
+        return true;
+      }
+      return true;
+    }
+
+    @Override
+    public int read() throws IOException {
+      if (!fillBuffer()) {
+        return -1;
+      }
+      return currentChunk[chunkPosition++] & 0xFF;
+    }
+
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+      if (len == 0) {
+        return 0;
+      }
+      if (!fillBuffer()) {
+        return -1;
+      }
+      int bytesToCopy = Math.min(len, currentChunk.length - chunkPosition);
+      System.arraycopy(currentChunk, chunkPosition, b, off, bytesToCopy);
+      chunkPosition += bytesToCopy;
+      return bytesToCopy;
+    }
+
+    @Override
+    public void close() throws IOException {
+      IOException exception = null;
+      if (source != null) {
+        try {
+          source.close();
+        } catch (IOException e) {
+          exception = e;
+        } finally {
+          source = null;
+        }
+      }
+      if (gzipStream != null) {
+        try {
+          gzipStream.close();
+        } catch (IOException e) {
+          exception = exception == null ? e : exception;
+        } finally {
+          gzipStream = null;
+        }
+      }
+      if (exception != null) {
+        throw exception;
+      }
+    }
   }
 }

@@ -36,7 +36,7 @@ import org.vcell.restclient.ApiClient;
   VCellHTTPError.JSON_PROPERTY_EXCEPTION_TYPE,
   VCellHTTPError.JSON_PROPERTY_MESSAGE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class VCellHTTPError {
   public static final String JSON_PROPERTY_EXCEPTION_TYPE = "exceptionType";
   @javax.annotation.Nullable
@@ -59,14 +59,14 @@ public class VCellHTTPError {
    * @return exceptionType
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_EXCEPTION_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_EXCEPTION_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getExceptionType() {
     return exceptionType;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_EXCEPTION_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_EXCEPTION_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setExceptionType(@javax.annotation.Nullable String exceptionType) {
     this.exceptionType = exceptionType;
@@ -83,14 +83,14 @@ public class VCellHTTPError {
    * @return message
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_MESSAGE)
+  @JsonProperty(value = JSON_PROPERTY_MESSAGE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getMessage() {
     return message;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_MESSAGE)
+  @JsonProperty(value = JSON_PROPERTY_MESSAGE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setMessage(@javax.annotation.Nullable String message) {
     this.message = message;
@@ -173,12 +173,12 @@ public class VCellHTTPError {
 
     // add `exceptionType` to the URL query string
     if (getExceptionType() != null) {
-      joiner.add(String.format("%sexceptionType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getExceptionType()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sexceptionType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getExceptionType()))));
     }
 
     // add `message` to the URL query string
     if (getMessage() != null) {
-      joiner.add(String.format("%smessage%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMessage()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%smessage%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMessage()))));
     }
 
     return joiner.toString();

@@ -9,18 +9,12 @@
  */
 
 
-export type MathType = 'RuleBased' | 'Stochastic' | 'Deterministic' | 'SpringSaLaD' | 'Unknown';
-
 export const MathType = {
-
-    RuleBased: 'RuleBased' as MathType,
-
-    Stochastic: 'Stochastic' as MathType,
-
-    Deterministic: 'Deterministic' as MathType,
-
-    SpringSaLaD: 'SpringSaLaD' as MathType,
-
-    Unknown: 'Unknown' as MathType
-};
+    RuleBased: 'RuleBased',
+    Stochastic: 'Stochastic',
+    Deterministic: 'Deterministic',
+    SpringSaLaD: 'SpringSaLaD',
+    Unknown: 'Unknown'
+} as const;
+export type MathType = typeof MathType[keyof typeof MathType];
 

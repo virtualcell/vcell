@@ -34,7 +34,7 @@ class SpatialSelectionMembrane(SpatialSelection):
     type: StrictStr
     field_sampled_data_indexes: Optional[List[StrictInt]] = Field(default=None, alias="fieldSampledDataIndexes")
     selection_source: Optional[SampledCurve] = Field(default=None, alias="selectionSource")
-    __properties: ClassVar[List[str]] = ["curveSelectionInfo", "varType", "type", "smallestMeshCellDimensionLength", "variableType", "closed", "point"]
+    __properties: ClassVar[List[str]] = ["curveSelectionInfo", "varType", "type", "smallestMeshCellDimensionLength", "variableType", "closed", "point", "fieldSampledDataIndexes", "selectionSource"]
 
     model_config = ConfigDict(
         populate_by_name=True,
@@ -84,6 +84,9 @@ class SpatialSelectionMembrane(SpatialSelection):
         # override the default output from pydantic by calling `to_dict()` of variable_type
         if self.variable_type:
             _dict['variableType'] = self.variable_type.to_dict()
+        # override the default output from pydantic by calling `to_dict()` of selection_source
+        if self.selection_source:
+            _dict['selectionSource'] = self.selection_source.to_dict()
         return _dict
 
     @classmethod
@@ -107,7 +110,9 @@ class SpatialSelectionMembrane(SpatialSelection):
             "smallestMeshCellDimensionLength": obj.get("smallestMeshCellDimensionLength"),
             "variableType": VariableType.from_dict(obj["variableType"]) if obj.get("variableType") is not None else None,
             "closed": obj.get("closed"),
-            "point": obj.get("point")
+            "point": obj.get("point"),
+            "fieldSampledDataIndexes": obj.get("fieldSampledDataIndexes"),
+            "selectionSource": SampledCurve.from_dict(obj["selectionSource"]) if obj.get("selectionSource") is not None else None
         })
         return _obj
 

@@ -44,25 +44,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SimulationStatusPersistentRecord'
+                $ref: "#/components/schemas/SimulationStatusPersistentRecord"
           description: OK
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -89,26 +89,26 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/StatusMessage'
+                  $ref: "#/components/schemas/StatusMessage"
                 type: array
           description: OK
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -135,26 +135,26 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/StatusMessage'
+                  $ref: "#/components/schemas/StatusMessage"
                 type: array
           description: OK
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -179,19 +179,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -245,7 +245,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           description: Not Allowed
@@ -253,13 +253,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Unprocessable content submitted
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -291,14 +291,14 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/BioModelSummary'
+                  $ref: "#/components/schemas/BioModelSummary"
                 type: array
           description: OK
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Return BioModel summaries.
       tags:
@@ -323,19 +323,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Delete the BioModel from VCell's database.
       tags:
@@ -357,25 +357,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BioModel'
+                $ref: "#/components/schemas/BioModel"
           description: OK
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Get BioModel.
       tags:
@@ -398,19 +398,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BioModelSummary'
+                $ref: "#/components/schemas/BioModelSummary"
           description: OK
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: "All of the text based information about a BioModel (summary, version,\
         \ publication status, etc...), but not the actual BioModel itself."
@@ -440,19 +440,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Get the BioModel in VCML format.
       tags:
@@ -470,7 +470,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/N5ExportRequest'
+              $ref: "#/components/schemas/N5ExportRequest"
         required: true
       responses:
         "200":
@@ -484,13 +484,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Bad Request.
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           description: Not Allowed
@@ -498,13 +498,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Unprocessable content submitted
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -535,14 +535,14 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/ExportEvent'
+                  $ref: "#/components/schemas/ExportEvent"
                 type: array
           description: OK
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           description: Not Allowed
@@ -550,7 +550,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -569,26 +569,26 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/FieldDataReference'
+                  $ref: "#/components/schemas/FieldDataReference"
                 type: array
           description: OK
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -630,20 +630,20 @@ paths:
                 contentType: application/json
                 style: form
             schema:
-              $ref: '#/components/schemas/advancedCreate_request'
+              $ref: "#/components/schemas/advancedCreate_request"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldDataSavedResults'
+                $ref: "#/components/schemas/FieldDataSavedResults"
           description: OK
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           description: Not Allowed
@@ -651,13 +651,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Unprocessable content submitted
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -676,20 +676,20 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/analyzeFile_request'
+              $ref: "#/components/schemas/analyzeFile_request"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldData'
+                $ref: "#/components/schemas/FieldData"
           description: OK
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           description: Not Allowed
@@ -697,13 +697,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Unprocessable content submitted
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -724,7 +724,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SourceModel'
+              $ref: "#/components/schemas/SourceModel"
         required: true
       responses:
         "200":
@@ -732,7 +732,7 @@ paths:
             application/json:
               schema:
                 additionalProperties:
-                  $ref: '#/components/schemas/ExternalDataIdentifier'
+                  $ref: "#/components/schemas/ExternalDataIdentifier"
           description: OK
         "400":
           description: Bad Request
@@ -740,25 +740,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "422":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Unprocessable content submitted
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -781,20 +781,20 @@ paths:
                 contentType: application/octet-stream
                 style: form
             schema:
-              $ref: '#/components/schemas/createFromFile_request'
+              $ref: "#/components/schemas/createFromFile_request"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldDataSavedResults'
+                $ref: "#/components/schemas/FieldDataSavedResults"
           description: OK
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           description: Not Allowed
@@ -802,13 +802,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Unprocessable content submitted
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -827,7 +827,7 @@ paths:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/createFromSimulation_request'
+              $ref: "#/components/schemas/createFromSimulation_request"
         required: true
       responses:
         "201":
@@ -838,19 +838,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -879,19 +879,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -908,14 +908,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FieldData'
+              $ref: "#/components/schemas/FieldData"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldDataSavedResults'
+                $ref: "#/components/schemas/FieldDataSavedResults"
           description: OK
         "400":
           description: Bad Request
@@ -923,7 +923,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           description: Not Allowed
@@ -931,13 +931,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Unprocessable content submitted
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -965,31 +965,31 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/FieldDataShape'
+                $ref: "#/components/schemas/FieldDataShape"
           description: OK
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -1031,7 +1031,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           description: Not Allowed
@@ -1039,13 +1039,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Unprocessable content submitted
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -1077,14 +1077,14 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/GeometrySummary'
+                  $ref: "#/components/schemas/GeometrySummary"
                 type: array
           description: OK
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Get Geometry Summaries
       tags:
@@ -1109,25 +1109,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GeometrySummary'
+                $ref: "#/components/schemas/GeometrySummary"
           description: OK
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Get Geometry Summary
       tags:
@@ -1153,25 +1153,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Delete Geometry
       tags:
@@ -1200,19 +1200,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Get Geometry
       tags:
@@ -1228,13 +1228,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/HelloWorldMessage'
+                $ref: "#/components/schemas/HelloWorldMessage"
           description: OK
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
       summary: Get hello world message.
       tags:
@@ -1272,19 +1272,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "422":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Unprocessable content submitted
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Save VC Image
       tags:
@@ -1313,14 +1313,14 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/VCImageSummary'
+                  $ref: "#/components/schemas/VCImageSummary"
                 type: array
           description: OK
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Get Summaries
       tags:
@@ -1345,25 +1345,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCImageSummary'
+                $ref: "#/components/schemas/VCImageSummary"
           description: OK
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Get Summary
       tags:
@@ -1389,25 +1389,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Delete VC Image
       tags:
@@ -1436,25 +1436,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not found
         "422":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Unprocessable content submitted
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Get VC Image
       tags:
@@ -1502,7 +1502,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           description: Not Allowed
@@ -1510,13 +1510,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Unprocessable content submitted
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -1548,14 +1548,14 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/MathModelSummary'
+                  $ref: "#/components/schemas/MathModelSummary"
                 type: array
           description: OK
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Get Math Model Summaries
       tags:
@@ -1580,25 +1580,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/MathModelSummary'
+                $ref: "#/components/schemas/MathModelSummary"
           description: OK
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Get Math Model Summary
       tags:
@@ -1624,25 +1624,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Delete Math Model
       tags:
@@ -1671,19 +1671,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Get Math Model
       tags:
@@ -1700,14 +1700,14 @@ paths:
             application/json:
               schema:
                 items:
-                  $ref: '#/components/schemas/Publication'
+                  $ref: "#/components/schemas/Publication"
                 type: array
           description: OK
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Get all publications
       tags:
@@ -1720,7 +1720,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Publication'
+              $ref: "#/components/schemas/Publication"
         required: true
       responses:
         "200":
@@ -1736,19 +1736,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -1765,14 +1765,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/Publication'
+              $ref: "#/components/schemas/Publication"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Publication'
+                $ref: "#/components/schemas/Publication"
           description: OK
         "400":
           description: Bad Request
@@ -1780,19 +1780,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -1822,25 +1822,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -1866,13 +1866,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Publication'
+                $ref: "#/components/schemas/Publication"
           description: OK
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Get publication by ID
       tags:
@@ -1895,7 +1895,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PublishModelsRequest'
+              $ref: "#/components/schemas/PublishModelsRequest"
         required: true
       responses:
         "204":
@@ -1906,25 +1906,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "404":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -1942,7 +1942,7 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/getFVSolverInputFromSBML_request'
+              $ref: "#/components/schemas/getFVSolverInputFromSBML_request"
         required: true
       responses:
         "200":
@@ -1956,7 +1956,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Unprocessable content submitted
       summary: Retrieve finite volume input from SBML spatial model.
       tags:
@@ -1972,7 +1972,7 @@ paths:
         content:
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/getFVSolverInputFromVCML_request'
+              $ref: "#/components/schemas/getFVSolverInputFromVCML_request"
         required: true
       responses:
         "200":
@@ -1986,7 +1986,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Unprocessable content submitted
       summary: Retrieve finite volume input from SBML spatial model.
       tags:
@@ -2003,13 +2003,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccesTokenRepresentationRecord'
+                $ref: "#/components/schemas/AccesTokenRepresentationRecord"
           description: OK
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           description: Not Allowed
@@ -2017,7 +2017,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -2064,13 +2064,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccesTokenRepresentationRecord'
+                $ref: "#/components/schemas/AccesTokenRepresentationRecord"
           description: OK
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Method to get legacy tokens for guest users
       tags:
@@ -2084,7 +2084,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserLoginInfoForMapping'
+              $ref: "#/components/schemas/UserLoginInfoForMapping"
         required: true
       responses:
         "200":
@@ -2099,19 +2099,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -2130,13 +2130,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserIdentityJSONSafe'
+                $ref: "#/components/schemas/UserIdentityJSONSafe"
           description: "Successful, returning the identity"
         "401":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           description: Not Allowed
@@ -2144,13 +2144,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Conflict with server state.
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -2168,7 +2168,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Identity'
+                $ref: "#/components/schemas/Identity"
           description: OK
       summary: Get current user
       tags:
@@ -2182,7 +2182,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserRegistrationInfo'
+              $ref: "#/components/schemas/UserRegistrationInfo"
         required: true
       responses:
         "200":
@@ -2193,7 +2193,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           description: Not Allowed
@@ -2203,7 +2203,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -2234,13 +2234,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       summary: Process the magic link and map the user
       tags:
@@ -2274,7 +2274,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           description: Not Allowed
@@ -2282,13 +2282,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not found
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -2320,19 +2320,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Authenticated
         "403":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Not Allowed
         "500":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VCellHTTPError'
+                $ref: "#/components/schemas/VCellHTTPError"
           description: Data Access Exception
       security:
       - openId:
@@ -2366,30 +2366,34 @@ components:
           type: string
     AnalyticCurve:
       allOf:
-      - $ref: '#/components/schemas/Curve'
-      properties:
-        type:
-          default: AnalyticCurve
-        expX:
-          type: string
-        expY:
-          type: string
-        expZ:
-          type: string
-        offset:
-          $ref: '#/components/schemas/Coordinate'
-        analyticOffset:
-          $ref: '#/components/schemas/Coordinate'
-        defaultNumSamples:
-          format: int32
-          type: integer
-        segmentCount:
-          format: int32
-          type: integer
-        valid:
-          type: boolean
-      required:
-      - type
+      - $ref: "#/components/schemas/Curve"
+      - properties:
+          type:
+            default: AnalyticCurve
+            type: string
+          expX:
+            $ref: "#/components/schemas/Expression"
+          expY:
+            $ref: "#/components/schemas/Expression"
+          expZ:
+            $ref: "#/components/schemas/Expression"
+          offset:
+            $ref: "#/components/schemas/Coordinate"
+          analyticOffset:
+            $ref: "#/components/schemas/Coordinate"
+          defaultNumSamples:
+            format: int32
+            type: integer
+          segmentCount:
+            format: int32
+            type: integer
+          valid:
+            type: boolean
+        required:
+        - type
+        type: object
+        example: null
+      example: null
     AnnotatedFunctionDTO:
       example:
         functionName: functionName
@@ -2416,11 +2420,11 @@ components:
         error:
           type: string
         domain:
-          $ref: '#/components/schemas/Domain'
+          $ref: "#/components/schemas/Domain"
         functionType:
-          $ref: '#/components/schemas/VariableType'
+          $ref: "#/components/schemas/VariableType"
         category:
-          $ref: '#/components/schemas/FunctionCategory'
+          $ref: "#/components/schemas/FunctionCategory"
     Application:
       type: object
     ApplicationInfo:
@@ -2433,7 +2437,7 @@ components:
         name:
           type: string
         type:
-          $ref: '#/components/schemas/MathType'
+          $ref: "#/components/schemas/MathType"
         dimensions:
           format: int32
           type: integer
@@ -2496,11 +2500,11 @@ components:
           type: string
         simulationKeyList:
           items:
-            $ref: '#/components/schemas/KeyValue'
+            $ref: "#/components/schemas/KeyValue"
           type: array
         applications:
           items:
-            $ref: '#/components/schemas/Application'
+            $ref: "#/components/schemas/Application"
           type: array
     BioModelChildSummary:
       example:
@@ -2570,7 +2574,7 @@ components:
           type: array
         appTypes:
           items:
-            $ref: '#/components/schemas/MathType'
+            $ref: "#/components/schemas/MathType"
           type: array
         simNames:
           items:
@@ -2603,7 +2607,7 @@ components:
           type: array
         applicationInfo:
           items:
-            $ref: '#/components/schemas/ApplicationInfo'
+            $ref: "#/components/schemas/ApplicationInfo"
           type: array
     BioModelSummary:
       example:
@@ -2727,15 +2731,15 @@ components:
           versionNumber: versionNumber
       properties:
         version:
-          $ref: '#/components/schemas/Version'
+          $ref: "#/components/schemas/Version"
         summary:
-          $ref: '#/components/schemas/BioModelChildSummary'
+          $ref: "#/components/schemas/BioModelChildSummary"
         publicationInformation:
           items:
-            $ref: '#/components/schemas/PublicationInfo'
+            $ref: "#/components/schemas/PublicationInfo"
           type: array
         vCellSoftwareVersion:
-          $ref: '#/components/schemas/VCellSoftwareVersion'
+          $ref: "#/components/schemas/VCellSoftwareVersion"
     BiomodelRef:
       example:
         bmKey: 5
@@ -2763,57 +2767,68 @@ components:
           type: integer
     CompositeCurve:
       allOf:
-      - $ref: '#/components/schemas/Curve'
-      properties:
-        type:
-          default: CompositeCurve
-        fieldCurves:
-          items: {}
-        curveCount:
-          format: int32
-          type: integer
-        defaultNumSamples:
-          format: int32
-          type: integer
-        segmentCount:
-          format: int32
-          type: integer
-        valid:
-          type: boolean
-      required:
-      - type
+      - $ref: "#/components/schemas/Curve"
+      - properties:
+          type:
+            default: CompositeCurve
+            type: string
+          fieldCurves:
+            items: {}
+            type: array
+          curveCount:
+            format: int32
+            type: integer
+          defaultNumSamples:
+            format: int32
+            type: integer
+          segmentCount:
+            format: int32
+            type: integer
+          valid:
+            type: boolean
+        required:
+        - type
+        type: object
+        example: null
+      example: null
     ControlPointCurve:
       allOf:
-      - $ref: '#/components/schemas/Curve'
+      - $ref: "#/components/schemas/Curve"
+      - properties:
+          type:
+            default: ControlPointCurve
+            type: string
+          controlPoints:
+            items:
+              $ref: "#/components/schemas/Coordinate"
+            type: array
+          controlPointCount:
+            format: int32
+            type: integer
+          controlPointsVector:
+            items:
+              $ref: "#/components/schemas/Coordinate"
+            type: array
+          maxControlPoints:
+            format: int32
+            type: integer
+          minControlPoints:
+            format: int32
+            type: integer
+          controlPointAddable:
+            type: boolean
+          valid:
+            type: boolean
+        required:
+        - type
+        type: object
+        example: null
       discriminator:
         mapping:
-          Spline: '#/components/schemas/Spline'
-          SampledCurve: '#/components/schemas/SampledCurve'
+          Spline: "#/components/schemas/Spline"
+          SampledCurve: "#/components/schemas/SampledCurve"
         propertyName: type
-      properties:
-        type:
-          default: ControlPointCurve
-        controlPoints:
-          items:
-            $ref: '#/components/schemas/Coordinate'
-        controlPointCount:
-          format: int32
-          type: integer
-        controlPointsVector:
-          items:
-            $ref: '#/components/schemas/Coordinate'
-        maxControlPoints:
-          format: int32
-          type: integer
-        minControlPoints:
-          format: int32
-          type: integer
-        controlPointAddable:
-          type: boolean
-        valid:
-          type: boolean
-      required:
-      - type
+      example: null
     Coordinate:
       example:
         x: 1.4658129805029452
@@ -2832,9 +2847,9 @@ components:
     Curve:
       discriminator:
         mapping:
-          AnalyticCurve: '#/components/schemas/AnalyticCurve'
-          CompositeCurve: '#/components/schemas/CompositeCurve'
-          ControlPointCurve: '#/components/schemas/ControlPointCurve'
+          AnalyticCurve: "#/components/schemas/AnalyticCurve"
+          CompositeCurve: "#/components/schemas/CompositeCurve"
+          ControlPointCurve: "#/components/schemas/ControlPointCurve"
         propertyName: type
       example:
         spatialLength: 3.616076749251911
@@ -2862,12 +2877,12 @@ components:
         type:
           type: string
         beginningCoordinate:
-          $ref: '#/components/schemas/Coordinate'
+          $ref: "#/components/schemas/Coordinate"
         defaultNumSamples:
           format: int32
           type: integer
         endingCoordinate:
-          $ref: '#/components/schemas/Coordinate'
+          $ref: "#/components/schemas/Coordinate"
         numSamplePoints:
           format: int32
           type: integer
@@ -2914,7 +2929,7 @@ components:
         fieldSegmentExtended: 6
       properties:
         fieldCurve:
-          $ref: '#/components/schemas/Curve'
+          $ref: "#/components/schemas/Curve"
         fieldType:
           format: int32
           type: integer
@@ -2965,9 +2980,9 @@ components:
         displayName:
           type: string
         variableType:
-          $ref: '#/components/schemas/VariableType'
+          $ref: "#/components/schemas/VariableType"
         domain:
-          $ref: '#/components/schemas/Domain'
+          $ref: "#/components/schemas/Domain"
         bFunction:
           type: boolean
         function:
@@ -3068,7 +3083,7 @@ components:
           key: key
       properties:
         eventType:
-          $ref: '#/components/schemas/ExportProgressType'
+          $ref: "#/components/schemas/ExportProgressType"
         progress:
           format: double
           type: number
@@ -3077,7 +3092,7 @@ components:
         location:
           type: string
         user:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
         jobID:
           format: int64
           type: integer
@@ -3086,7 +3101,7 @@ components:
         dataIdString:
           type: string
         humanReadableData:
-          $ref: '#/components/schemas/HumanReadableExportData'
+          $ref: "#/components/schemas/HumanReadableExportData"
     ExportProgressType:
       enum:
       - EXPORT_START
@@ -3142,7 +3157,7 @@ components:
         key:
           type: string
         owner:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
         name:
           type: string
         jobIndex:
@@ -3223,11 +3238,11 @@ components:
             type: number
           type: array
         origin:
-          $ref: '#/components/schemas/Origin'
+          $ref: "#/components/schemas/Origin"
         extent:
-          $ref: '#/components/schemas/Extent'
+          $ref: "#/components/schemas/Extent"
         isize:
-          $ref: '#/components/schemas/ISize'
+          $ref: "#/components/schemas/ISize"
         annotation:
           type: string
         name:
@@ -3253,12 +3268,12 @@ components:
         - null
       properties:
         fieldDataID:
-          $ref: '#/components/schemas/ExternalDataIdentifier'
+          $ref: "#/components/schemas/ExternalDataIdentifier"
         annotation:
           type: string
         simulationsReferencingThisID:
           items:
-            $ref: '#/components/schemas/KeyValue'
+            $ref: "#/components/schemas/KeyValue"
           type: array
     FieldDataSavedResults:
       example:
@@ -3323,14 +3338,14 @@ components:
           name: name
       properties:
         extent:
-          $ref: '#/components/schemas/Extent'
+          $ref: "#/components/schemas/Extent"
         origin:
-          $ref: '#/components/schemas/Origin'
+          $ref: "#/components/schemas/Origin"
         isize:
-          $ref: '#/components/schemas/ISize'
+          $ref: "#/components/schemas/ISize"
         dataIdentifier:
           items:
-            $ref: '#/components/schemas/DataIdentifier'
+            $ref: "#/components/schemas/DataIdentifier"
           type: array
         times:
           items:
@@ -3356,7 +3371,7 @@ components:
           format: binary
           type: string
         size:
-          $ref: '#/components/schemas/ISize'
+          $ref: "#/components/schemas/ISize"
     GeometryMode:
       enum:
       - GEOMETRY_SELECTIONS
@@ -3476,7 +3491,7 @@ components:
       properties:
         selections:
           items:
-            $ref: '#/components/schemas/SpatialSelection'
+            $ref: "#/components/schemas/SpatialSelection"
           type: array
         axis:
           format: int32
@@ -3485,7 +3500,7 @@ components:
           format: int32
           type: integer
         geometryMode:
-          $ref: '#/components/schemas/GeometryMode'
+          $ref: "#/components/schemas/GeometryMode"
     GeometrySummary:
       example:
         extent:
@@ -3535,21 +3550,21 @@ components:
           format: int32
           type: integer
         origin:
-          $ref: '#/components/schemas/Origin'
+          $ref: "#/components/schemas/Origin"
         extent:
-          $ref: '#/components/schemas/Extent'
+          $ref: "#/components/schemas/Extent"
         imageRef:
           type: string
         version:
-          $ref: '#/components/schemas/Version'
+          $ref: "#/components/schemas/Version"
         softwareVersion:
-          $ref: '#/components/schemas/VCellSoftwareVersion'
+          $ref: "#/components/schemas/VCellSoftwareVersion"
     GroupAccess:
       discriminator:
         mapping:
-          GroupAccessNone: '#/components/schemas/GroupAccessNone'
-          GroupAccessSome: '#/components/schemas/GroupAccessSome'
-          GroupAccessAll: '#/components/schemas/GroupAccessAll'
+          GroupAccessNone: "#/components/schemas/GroupAccessNone"
+          GroupAccessSome: "#/components/schemas/GroupAccessSome"
+          GroupAccessAll: "#/components/schemas/GroupAccessAll"
         propertyName: type
       example:
         groupid: 5.962133916683182
@@ -3563,47 +3578,64 @@ components:
       - groupid
     GroupAccessAll:
       allOf:
-      - $ref: '#/components/schemas/GroupAccess'
-      properties:
-        type:
-          default: GroupAccessAll
-        description:
-          type: string
-      required:
-      - type
+      - $ref: "#/components/schemas/GroupAccess"
+      - properties:
+          type:
+            default: GroupAccessAll
+            type: string
+          description:
+            type: string
+        required:
+        - type
+        type: object
+        example: null
+      example: null
     GroupAccessNone:
       allOf:
-      - $ref: '#/components/schemas/GroupAccess'
-      properties:
-        type:
-          default: GroupAccessNone
-        description:
-          type: string
-      required:
-      - type
+      - $ref: "#/components/schemas/GroupAccess"
+      - properties:
+          type:
+            default: GroupAccessNone
+            type: string
+          description:
+            type: string
+        required:
+        - type
+        type: object
+        example: null
+      example: null
     GroupAccessSome:
       allOf:
-      - $ref: '#/components/schemas/GroupAccess'
-      properties:
-        type:
-          default: GroupAccessSome
-        hash: {}
-        groupMembers:
-          items:
-            $ref: '#/components/schemas/User'
-        hiddenMembers:
-          items:
-            type: boolean
-        description:
-          type: string
-        hiddenGroupMembers:
-          items:
-            $ref: '#/components/schemas/User'
-        normalGroupMembers:
-          items:
-            $ref: '#/components/schemas/User'
-      required:
-      - type
+      - $ref: "#/components/schemas/GroupAccess"
+      - properties:
+          type:
+            default: GroupAccessSome
+            type: string
+          hash:
+            type: number
+          groupMembers:
+            items:
+              $ref: "#/components/schemas/User"
+            type: array
+          hiddenMembers:
+            items:
+              type: boolean
+            type: array
+          description:
+            type: string
+          hiddenGroupMembers:
+            items:
+              $ref: "#/components/schemas/User"
+            type: array
+          normalGroupMembers:
+            items:
+              $ref: "#/components/schemas/User"
+            type: array
+        required:
+        - type
+        type: object
+        example: null
+      example: null
     HelloWorldMessage:
       example:
         message: message
@@ -3622,7 +3654,7 @@ components:
         server:
           type: string
         batchSystemType:
-          $ref: '#/components/schemas/BatchSystemType'
+          $ref: "#/components/schemas/BatchSystemType"
     HumanReadableExportData:
       example:
         numChannels: 5
@@ -3728,7 +3760,7 @@ components:
         modelType: RuleBased
       properties:
         modelType:
-          $ref: '#/components/schemas/MathType'
+          $ref: "#/components/schemas/MathType"
         geometryDimension:
           format: int32
           type: integer
@@ -3829,16 +3861,16 @@ components:
           pubdate: 2000-01-23
       properties:
         version:
-          $ref: '#/components/schemas/Version'
+          $ref: "#/components/schemas/Version"
         keyValue:
           type: string
         modelInfo:
-          $ref: '#/components/schemas/MathModelChildSummary'
+          $ref: "#/components/schemas/MathModelChildSummary"
         softwareVersion:
-          $ref: '#/components/schemas/VCellSoftwareVersion'
+          $ref: "#/components/schemas/VCellSoftwareVersion"
         publicationInfos:
           items:
-            $ref: '#/components/schemas/PublicationInfo'
+            $ref: "#/components/schemas/PublicationInfo"
           type: array
         annotatedFunctions:
           type: string
@@ -4043,12 +4075,12 @@ components:
             - 9.369310271410669
       properties:
         standardExportInformation:
-          $ref: '#/components/schemas/StandardExportInfo'
+          $ref: "#/components/schemas/StandardExportInfo"
         subVolume:
           additionalProperties:
             type: string
         exportableDataType:
-          $ref: '#/components/schemas/ExportableDataType'
+          $ref: "#/components/schemas/ExportableDataType"
         datasetName:
           type: string
     Origin:
@@ -4140,11 +4172,11 @@ components:
           type: integer
         biomodelRefs:
           items:
-            $ref: '#/components/schemas/BiomodelRef'
+            $ref: "#/components/schemas/BiomodelRef"
           type: array
         mathmodelRefs:
           items:
-            $ref: '#/components/schemas/MathmodelRef'
+            $ref: "#/components/schemas/MathmodelRef"
           type: array
         date:
           format: date
@@ -4193,9 +4225,9 @@ components:
           format: date
           type: string
         vcDocumentType:
-          $ref: '#/components/schemas/VCDocumentType'
+          $ref: "#/components/schemas/VCDocumentType"
         user:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
         theHashCode:
           format: int32
           type: integer
@@ -4227,26 +4259,31 @@ components:
       type: string
     SampledCurve:
       allOf:
-      - $ref: '#/components/schemas/ControlPointCurve'
-      properties:
-        type:
-          default: SampledCurve
-        defaultNumSamples:
-          format: int32
-          type: integer
-        maxControlPoints:
-          format: int32
-          type: integer
-        minControlPoints:
-          format: int32
-          type: integer
-        segmentCount:
-          format: int32
-          type: integer
-        spatialLength:
-          format: double
-      required:
-      - type
+      - $ref: "#/components/schemas/ControlPointCurve"
+      - properties:
+          type:
+            default: SampledCurve
+            type: string
+          defaultNumSamples:
+            format: int32
+            type: integer
+          maxControlPoints:
+            format: int32
+            type: integer
+          minControlPoints:
+            format: int32
+            type: integer
+          segmentCount:
+            format: int32
+            type: integer
+          spatialLength:
+            format: double
+            type: number
+        required:
+        - type
+        type: object
+        example: null
+      example: null
     SchedulerStatus:
       enum:
       - WAITING
@@ -4283,7 +4320,7 @@ components:
         fieldHasData:
           type: boolean
         fieldHtcJobID:
-          $ref: '#/components/schemas/HtcJobID'
+          $ref: "#/components/schemas/HtcJobID"
     SimulationJobStatusRecord:
       example:
         fieldSimulationMessage:
@@ -4328,14 +4365,14 @@ components:
           format: date-time
           type: string
         fieldVCSimID:
-          $ref: '#/components/schemas/VCSimulationIdentifier'
+          $ref: "#/components/schemas/VCSimulationIdentifier"
         fieldSubmitDate:
           format: date-time
           type: string
         fieldSchedulerStatus:
-          $ref: '#/components/schemas/SchedulerStatus'
+          $ref: "#/components/schemas/SchedulerStatus"
         fieldSimulationMessage:
-          $ref: '#/components/schemas/SimulationMessage'
+          $ref: "#/components/schemas/SimulationMessage"
         fieldTaskID:
           format: int32
           type: integer
@@ -4345,9 +4382,9 @@ components:
           format: int32
           type: integer
         fieldSimulationExecutionStatus:
-          $ref: '#/components/schemas/SimulationExecutionStatusRecord'
+          $ref: "#/components/schemas/SimulationExecutionStatusRecord"
         fieldSimulationQueueEntryStatus:
-          $ref: '#/components/schemas/SimulationQueueEntryStatusRecord'
+          $ref: "#/components/schemas/SimulationQueueEntryStatusRecord"
     SimulationMessage:
       example:
         htcJobId:
@@ -4359,11 +4396,11 @@ components:
         message: message
       properties:
         detailedState:
-          $ref: '#/components/schemas/DetailedState'
+          $ref: "#/components/schemas/DetailedState"
         message:
           type: string
         htcJobId:
-          $ref: '#/components/schemas/HtcJobID'
+          $ref: "#/components/schemas/HtcJobID"
         displayMessage:
           type: string
     SimulationQueueEntryStatusRecord:
@@ -4379,7 +4416,7 @@ components:
           format: date-time
           type: string
         fieldQueueID:
-          $ref: '#/components/schemas/SimulationQueueID'
+          $ref: "#/components/schemas/SimulationQueueID"
     SimulationQueueID:
       enum:
       - QUEUE_ID_WAITING
@@ -4393,7 +4430,7 @@ components:
         status: UNKNOWN
       properties:
         status:
-          $ref: '#/components/schemas/Status'
+          $ref: "#/components/schemas/Status"
         details:
           type: string
         hasData:
@@ -4406,13 +4443,13 @@ components:
         modelID:
           type: string
         modelType:
-          $ref: '#/components/schemas/ModelType'
+          $ref: "#/components/schemas/ModelType"
     SpatialSelection:
       discriminator:
         mapping:
-          Membrane: '#/components/schemas/SpatialSelectionMembrane'
-          Contour: '#/components/schemas/SpatialSelectionContour'
-          Volume: '#/components/schemas/SpatialSelectionVolume'
+          Membrane: "#/components/schemas/SpatialSelectionMembrane"
+          Contour: "#/components/schemas/SpatialSelectionContour"
+          Volume: "#/components/schemas/SpatialSelectionVolume"
         propertyName: type
       example:
         variableType:
@@ -4469,16 +4506,16 @@ components:
           fieldSegmentExtended: 6
       properties:
         curveSelectionInfo:
-          $ref: '#/components/schemas/CurveSelectionInfo'
+          $ref: "#/components/schemas/CurveSelectionInfo"
         varType:
-          $ref: '#/components/schemas/VariableType'
+          $ref: "#/components/schemas/VariableType"
         type:
           type: string
         smallestMeshCellDimensionLength:
           format: double
           type: number
         variableType:
-          $ref: '#/components/schemas/VariableType'
+          $ref: "#/components/schemas/VariableType"
         closed:
           type: boolean
         point:
@@ -4487,64 +4524,88 @@ components:
       - type
     SpatialSelectionContour:
       allOf:
-      - $ref: '#/components/schemas/SpatialSelection'
-      properties:
-        type:
-          default: Contour
-        fieldSampledDataIndexes:
-          items:
-            format: int32
-        indexSamples:
-          items:
-            format: int32
-        sampledDataIndexes:
-          items:
-            format: int32
-      required:
-      - type
+      - $ref: "#/components/schemas/SpatialSelection"
+      - properties:
+          type:
+            default: Contour
+            type: string
+          fieldSampledDataIndexes:
+            items:
+              format: int32
+              type: integer
+            type: array
+          indexSamples:
+            items:
+              format: int32
+              type: integer
+            type: array
+          sampledDataIndexes:
+            items:
+              format: int32
+              type: integer
+            type: array
+        required:
+        - type
+        type: object
+        example: null
+      example: null
     SpatialSelectionMembrane:
       allOf:
-      - $ref: '#/components/schemas/SpatialSelection'
-      properties:
-        type:
-          default: Membrane
-        fieldSampledDataIndexes:
-          items:
-            format: int32
-        selectionSource:
-          $ref: '#/components/schemas/SampledCurve'
-      required:
-      - type
+      - $ref: "#/components/schemas/SpatialSelection"
+      - properties:
+          type:
+            default: Membrane
+            type: string
+          fieldSampledDataIndexes:
+            items:
+              format: int32
+              type: integer
+            type: array
+          selectionSource:
+            $ref: "#/components/schemas/SampledCurve"
+        required:
+        - type
+        type: object
+        example: null
+      example: null
     SpatialSelectionVolume:
       allOf:
-      - $ref: '#/components/schemas/SpatialSelection'
-      properties:
-        type:
-          default: Volume
-        symmetric:
-          type: boolean
-      required:
-      - type
+      - $ref: "#/components/schemas/SpatialSelection"
+      - properties:
+          type:
+            default: Volume
+            type: string
+          symmetric:
+            type: boolean
+        required:
+        - type
+        type: object
+        example: null
+      example: null
     Spline:
       allOf:
-      - $ref: '#/components/schemas/ControlPointCurve'
-      properties:
-        type:
-          default: Spline
-        defaultNumSamples:
-          format: int32
-          type: integer
-        maxControlPoints:
-          format: int32
-          type: integer
-        minControlPoints:
-          format: int32
-          type: integer
-        segmentCount:
-          format: int32
-          type: integer
-      required:
-      - type
+      - $ref: "#/components/schemas/ControlPointCurve"
+      - properties:
+          type:
+            default: Spline
+            type: string
+          defaultNumSamples:
+            format: int32
+            type: integer
+          maxControlPoints:
+            format: int32
+            type: integer
+          minControlPoints:
+            format: int32
+            type: integer
+          segmentCount:
+            format: int32
+            type: integer
+        required:
+        - type
+        type: object
+        example: null
+      example: null
     StandardExportInfo:
       example:
         contextName: contextName
@@ -4708,7 +4769,7 @@ components:
       properties:
         outputContext:
           items:
-            $ref: '#/components/schemas/AnnotatedFunctionDTO'
+            $ref: "#/components/schemas/AnnotatedFunctionDTO"
           type: array
         contextName:
           type: string
@@ -4720,11 +4781,11 @@ components:
           format: int32
           type: integer
         geometrySpecs:
-          $ref: '#/components/schemas/GeometrySpecDTO'
+          $ref: "#/components/schemas/GeometrySpecDTO"
         timeSpecs:
-          $ref: '#/components/schemas/TimeSpecs'
+          $ref: "#/components/schemas/TimeSpecs"
         variableSpecs:
-          $ref: '#/components/schemas/VariableSpecs'
+          $ref: "#/components/schemas/VariableSpecs"
     Status:
       enum:
       - UNKNOWN
@@ -4785,7 +4846,7 @@ components:
         timepoint: 2.3021358869347655
       properties:
         jobStatus:
-          $ref: '#/components/schemas/SimulationJobStatusRecord'
+          $ref: "#/components/schemas/SimulationJobStatusRecord"
         userName:
           type: string
         progress:
@@ -4820,7 +4881,7 @@ components:
             type: number
           type: array
         mode:
-          $ref: '#/components/schemas/TimeMode'
+          $ref: "#/components/schemas/TimeMode"
     User:
       example:
         mySpecials:
@@ -4835,7 +4896,7 @@ components:
           type: string
         mySpecials:
           items:
-            $ref: '#/components/schemas/SPECIAL_CLAIM'
+            $ref: "#/components/schemas/SPECIAL_CLAIM"
           type: array
     UserIdentityJSONSafe:
       example:
@@ -4939,15 +5000,15 @@ components:
           versionNumber: versionNumber
       properties:
         size:
-          $ref: '#/components/schemas/ISize'
+          $ref: "#/components/schemas/ISize"
         extent:
-          $ref: '#/components/schemas/Extent'
+          $ref: "#/components/schemas/Extent"
         version:
-          $ref: '#/components/schemas/Version'
+          $ref: "#/components/schemas/Version"
         preview:
-          $ref: '#/components/schemas/GIFImage'
+          $ref: "#/components/schemas/GIFImage"
         softwareVersion:
-          $ref: '#/components/schemas/VCellSoftwareVersion'
+          $ref: "#/components/schemas/VCellSoftwareVersion"
     VCSimulationIdentifier:
       example:
         owner:
@@ -4962,7 +5023,7 @@ components:
         simulationKey:
           type: string
         owner:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
         id:
           type: string
     VCellHTTPError:
@@ -4997,7 +5058,7 @@ components:
         softwareVersionString:
           type: string
         vcellSite:
-          $ref: '#/components/schemas/VCellSite'
+          $ref: "#/components/schemas/VCellSite"
         buildNumber:
           type: string
         versionNumber:
@@ -5044,7 +5105,7 @@ components:
             type: string
           type: array
         mode:
-          $ref: '#/components/schemas/VariableMode'
+          $ref: "#/components/schemas/VariableMode"
     VariableType:
       example:
         defaultUnits: defaultUnits
@@ -5061,7 +5122,7 @@ components:
           format: int32
           type: integer
         variableDomain:
-          $ref: '#/components/schemas/VariableDomain'
+          $ref: "#/components/schemas/VariableDomain"
         name:
           type: string
         units:
@@ -5112,13 +5173,13 @@ components:
           format: date-time
           type: string
         flag:
-          $ref: '#/components/schemas/VersionFlag'
+          $ref: "#/components/schemas/VersionFlag"
         groupAccess:
-          $ref: '#/components/schemas/GroupAccess'
+          $ref: "#/components/schemas/GroupAccess"
         name:
           type: string
         owner:
-          $ref: '#/components/schemas/User'
+          $ref: "#/components/schemas/User"
     VersionFlag:
       example:
         archived: true
@@ -5147,9 +5208,9 @@ components:
         fileName:
           type: string
         extent:
-          $ref: '#/components/schemas/Extent'
+          $ref: "#/components/schemas/Extent"
         iSize:
-          $ref: '#/components/schemas/ISize'
+          $ref: "#/components/schemas/ISize"
         channelNames:
           items:
             type: string
@@ -5162,7 +5223,7 @@ components:
         annotation:
           type: string
         origin:
-          $ref: '#/components/schemas/Origin'
+          $ref: "#/components/schemas/Origin"
     analyzeFile_request:
       properties:
         file:

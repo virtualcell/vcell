@@ -9,32 +9,19 @@
  */
 
 
-export type Status = 'UNKNOWN' | 'NEVER_RAN' | 'START_REQUESTED' | 'DISPATCHED' | 'WAITING' | 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'STOP_REQUESTED' | 'STOPPED' | 'NOT_SAVED';
-
 export const Status = {
-
-    Unknown: 'UNKNOWN' as Status,
-
-    NeverRan: 'NEVER_RAN' as Status,
-
-    StartRequested: 'START_REQUESTED' as Status,
-
-    Dispatched: 'DISPATCHED' as Status,
-
-    Waiting: 'WAITING' as Status,
-
-    Queued: 'QUEUED' as Status,
-
-    Running: 'RUNNING' as Status,
-
-    Completed: 'COMPLETED' as Status,
-
-    Failed: 'FAILED' as Status,
-
-    StopRequested: 'STOP_REQUESTED' as Status,
-
-    Stopped: 'STOPPED' as Status,
-
-    NotSaved: 'NOT_SAVED' as Status
-};
+    Unknown: 'UNKNOWN',
+    NeverRan: 'NEVER_RAN',
+    StartRequested: 'START_REQUESTED',
+    Dispatched: 'DISPATCHED',
+    Waiting: 'WAITING',
+    Queued: 'QUEUED',
+    Running: 'RUNNING',
+    Completed: 'COMPLETED',
+    Failed: 'FAILED',
+    StopRequested: 'STOP_REQUESTED',
+    Stopped: 'STOPPED',
+    NotSaved: 'NOT_SAVED'
+} as const;
+export type Status = typeof Status[keyof typeof Status];
 

@@ -9,14 +9,10 @@
  */
 
 
-export type SimulationQueueID = 'QUEUE_ID_WAITING' | 'QUEUE_ID_SIMULATIONJOB' | 'QUEUE_ID_NULL';
-
 export const SimulationQueueID = {
-
-    QueueIdWaiting: 'QUEUE_ID_WAITING' as SimulationQueueID,
-
-    QueueIdSimulationjob: 'QUEUE_ID_SIMULATIONJOB' as SimulationQueueID,
-
-    QueueIdNull: 'QUEUE_ID_NULL' as SimulationQueueID
-};
+    QueueIdWaiting: 'QUEUE_ID_WAITING',
+    QueueIdSimulationjob: 'QUEUE_ID_SIMULATIONJOB',
+    QueueIdNull: 'QUEUE_ID_NULL'
+} as const;
+export type SimulationQueueID = typeof SimulationQueueID[keyof typeof SimulationQueueID];
 

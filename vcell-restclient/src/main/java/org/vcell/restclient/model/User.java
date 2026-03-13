@@ -40,7 +40,7 @@ import org.vcell.restclient.ApiClient;
   User.JSON_PROPERTY_KEY,
   User.JSON_PROPERTY_MY_SPECIALS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class User {
   public static final String JSON_PROPERTY_USER_NAME = "userName";
   @javax.annotation.Nullable
@@ -67,14 +67,14 @@ public class User {
    * @return userName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_USER_NAME)
+  @JsonProperty(value = JSON_PROPERTY_USER_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getUserName() {
     return userName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_USER_NAME)
+  @JsonProperty(value = JSON_PROPERTY_USER_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setUserName(@javax.annotation.Nullable String userName) {
     this.userName = userName;
@@ -91,14 +91,14 @@ public class User {
    * @return key
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_KEY)
+  @JsonProperty(value = JSON_PROPERTY_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getKey() {
     return key;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_KEY)
+  @JsonProperty(value = JSON_PROPERTY_KEY, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setKey(@javax.annotation.Nullable String key) {
     this.key = key;
@@ -123,14 +123,14 @@ public class User {
    * @return mySpecials
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_MY_SPECIALS)
+  @JsonProperty(value = JSON_PROPERTY_MY_SPECIALS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<SPECIALCLAIM> getMySpecials() {
     return mySpecials;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_MY_SPECIALS)
+  @JsonProperty(value = JSON_PROPERTY_MY_SPECIALS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setMySpecials(@javax.annotation.Nullable List<SPECIALCLAIM> mySpecials) {
     this.mySpecials = mySpecials;
@@ -215,20 +215,20 @@ public class User {
 
     // add `userName` to the URL query string
     if (getUserName() != null) {
-      joiner.add(String.format("%suserName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUserName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%suserName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUserName()))));
     }
 
     // add `key` to the URL query string
     if (getKey() != null) {
-      joiner.add(String.format("%skey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getKey()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%skey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getKey()))));
     }
 
     // add `mySpecials` to the URL query string
     if (getMySpecials() != null) {
       for (int i = 0; i < getMySpecials().size(); i++) {
         if (getMySpecials().get(i) != null) {
-          joiner.add(String.format("%smySpecials%s%s=%s", prefix, suffix,
-              "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+          joiner.add(String.format(java.util.Locale.ROOT, "%smySpecials%s%s=%s", prefix, suffix,
+              "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
               ApiClient.urlEncode(ApiClient.valueToString(getMySpecials().get(i)))));
         }
       }

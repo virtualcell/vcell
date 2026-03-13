@@ -44,7 +44,7 @@ import org.vcell.restclient.ApiClient;
   VariableType.JSON_PROPERTY_DEFAULT_UNITS,
   VariableType.JSON_PROPERTY_TYPE_NAME
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class VariableType {
   public static final String JSON_PROPERTY_TYPE = "type";
   @javax.annotation.Nullable
@@ -95,14 +95,14 @@ public class VariableType {
    * @return type
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Integer getType() {
     return type;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_TYPE)
+  @JsonProperty(value = JSON_PROPERTY_TYPE, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setType(@javax.annotation.Nullable Integer type) {
     this.type = type;
@@ -119,14 +119,14 @@ public class VariableType {
    * @return variableDomain
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_VARIABLE_DOMAIN)
+  @JsonProperty(value = JSON_PROPERTY_VARIABLE_DOMAIN, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public VariableDomain getVariableDomain() {
     return variableDomain;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_VARIABLE_DOMAIN)
+  @JsonProperty(value = JSON_PROPERTY_VARIABLE_DOMAIN, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVariableDomain(@javax.annotation.Nullable VariableDomain variableDomain) {
     this.variableDomain = variableDomain;
@@ -143,14 +143,14 @@ public class VariableType {
    * @return name
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getName() {
     return name;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_NAME)
+  @JsonProperty(value = JSON_PROPERTY_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setName(@javax.annotation.Nullable String name) {
     this.name = name;
@@ -167,14 +167,14 @@ public class VariableType {
    * @return units
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_UNITS)
+  @JsonProperty(value = JSON_PROPERTY_UNITS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getUnits() {
     return units;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_UNITS)
+  @JsonProperty(value = JSON_PROPERTY_UNITS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setUnits(@javax.annotation.Nullable String units) {
     this.units = units;
@@ -191,14 +191,14 @@ public class VariableType {
    * @return label
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_LABEL)
+  @JsonProperty(value = JSON_PROPERTY_LABEL, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getLabel() {
     return label;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_LABEL)
+  @JsonProperty(value = JSON_PROPERTY_LABEL, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setLabel(@javax.annotation.Nullable String label) {
     this.label = label;
@@ -215,14 +215,14 @@ public class VariableType {
    * @return legacyWarn
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_LEGACY_WARN)
+  @JsonProperty(value = JSON_PROPERTY_LEGACY_WARN, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public Boolean getLegacyWarn() {
     return legacyWarn;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_LEGACY_WARN)
+  @JsonProperty(value = JSON_PROPERTY_LEGACY_WARN, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setLegacyWarn(@javax.annotation.Nullable Boolean legacyWarn) {
     this.legacyWarn = legacyWarn;
@@ -239,14 +239,14 @@ public class VariableType {
    * @return defaultLabel
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DEFAULT_LABEL)
+  @JsonProperty(value = JSON_PROPERTY_DEFAULT_LABEL, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getDefaultLabel() {
     return defaultLabel;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DEFAULT_LABEL)
+  @JsonProperty(value = JSON_PROPERTY_DEFAULT_LABEL, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDefaultLabel(@javax.annotation.Nullable String defaultLabel) {
     this.defaultLabel = defaultLabel;
@@ -263,14 +263,14 @@ public class VariableType {
    * @return defaultUnits
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DEFAULT_UNITS)
+  @JsonProperty(value = JSON_PROPERTY_DEFAULT_UNITS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getDefaultUnits() {
     return defaultUnits;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_DEFAULT_UNITS)
+  @JsonProperty(value = JSON_PROPERTY_DEFAULT_UNITS, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setDefaultUnits(@javax.annotation.Nullable String defaultUnits) {
     this.defaultUnits = defaultUnits;
@@ -287,14 +287,14 @@ public class VariableType {
    * @return typeName
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_TYPE_NAME)
+  @JsonProperty(value = JSON_PROPERTY_TYPE_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getTypeName() {
     return typeName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_TYPE_NAME)
+  @JsonProperty(value = JSON_PROPERTY_TYPE_NAME, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setTypeName(@javax.annotation.Nullable String typeName) {
     this.typeName = typeName;
@@ -391,47 +391,47 @@ public class VariableType {
 
     // add `type` to the URL query string
     if (getType() != null) {
-      joiner.add(String.format("%stype%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getType()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%stype%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getType()))));
     }
 
     // add `variableDomain` to the URL query string
     if (getVariableDomain() != null) {
-      joiner.add(String.format("%svariableDomain%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVariableDomain()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%svariableDomain%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVariableDomain()))));
     }
 
     // add `name` to the URL query string
     if (getName() != null) {
-      joiner.add(String.format("%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
     }
 
     // add `units` to the URL query string
     if (getUnits() != null) {
-      joiner.add(String.format("%sunits%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUnits()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sunits%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUnits()))));
     }
 
     // add `label` to the URL query string
     if (getLabel() != null) {
-      joiner.add(String.format("%slabel%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getLabel()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%slabel%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getLabel()))));
     }
 
     // add `legacyWarn` to the URL query string
     if (getLegacyWarn() != null) {
-      joiner.add(String.format("%slegacyWarn%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getLegacyWarn()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%slegacyWarn%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getLegacyWarn()))));
     }
 
     // add `defaultLabel` to the URL query string
     if (getDefaultLabel() != null) {
-      joiner.add(String.format("%sdefaultLabel%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDefaultLabel()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdefaultLabel%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDefaultLabel()))));
     }
 
     // add `defaultUnits` to the URL query string
     if (getDefaultUnits() != null) {
-      joiner.add(String.format("%sdefaultUnits%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDefaultUnits()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sdefaultUnits%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDefaultUnits()))));
     }
 
     // add `typeName` to the URL query string
     if (getTypeName() != null) {
-      joiner.add(String.format("%stypeName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getTypeName()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%stypeName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getTypeName()))));
     }
 
     return joiner.toString();

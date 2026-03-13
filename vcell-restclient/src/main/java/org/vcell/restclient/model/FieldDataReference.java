@@ -40,7 +40,7 @@ import org.vcell.restclient.ApiClient;
   FieldDataReference.JSON_PROPERTY_ANNOTATION,
   FieldDataReference.JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class FieldDataReference {
   public static final String JSON_PROPERTY_FIELD_DATA_I_D = "fieldDataID";
   @javax.annotation.Nullable
@@ -67,14 +67,14 @@ public class FieldDataReference {
    * @return fieldDataID
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_FIELD_DATA_I_D)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_DATA_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public ExternalDataIdentifier getFieldDataID() {
     return fieldDataID;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_FIELD_DATA_I_D)
+  @JsonProperty(value = JSON_PROPERTY_FIELD_DATA_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setFieldDataID(@javax.annotation.Nullable ExternalDataIdentifier fieldDataID) {
     this.fieldDataID = fieldDataID;
@@ -91,14 +91,14 @@ public class FieldDataReference {
    * @return annotation
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ANNOTATION)
+  @JsonProperty(value = JSON_PROPERTY_ANNOTATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public String getAnnotation() {
     return annotation;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_ANNOTATION)
+  @JsonProperty(value = JSON_PROPERTY_ANNOTATION, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setAnnotation(@javax.annotation.Nullable String annotation) {
     this.annotation = annotation;
@@ -123,14 +123,14 @@ public class FieldDataReference {
    * @return simulationsReferencingThisID
    */
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public List<String> getSimulationsReferencingThisID() {
     return simulationsReferencingThisID;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D)
+  @JsonProperty(value = JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D, required = false)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setSimulationsReferencingThisID(@javax.annotation.Nullable List<String> simulationsReferencingThisID) {
     this.simulationsReferencingThisID = simulationsReferencingThisID;
@@ -220,14 +220,14 @@ public class FieldDataReference {
 
     // add `annotation` to the URL query string
     if (getAnnotation() != null) {
-      joiner.add(String.format("%sannotation%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAnnotation()))));
+      joiner.add(String.format(java.util.Locale.ROOT, "%sannotation%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAnnotation()))));
     }
 
     // add `simulationsReferencingThisID` to the URL query string
     if (getSimulationsReferencingThisID() != null) {
       for (int i = 0; i < getSimulationsReferencingThisID().size(); i++) {
-        joiner.add(String.format("%ssimulationsReferencingThisID%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+        joiner.add(String.format(java.util.Locale.ROOT, "%ssimulationsReferencingThisID%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format(java.util.Locale.ROOT, "%s%d%s", containerPrefix, i, containerSuffix),
             ApiClient.urlEncode(ApiClient.valueToString(getSimulationsReferencingThisID().get(i)))));
       }
     }

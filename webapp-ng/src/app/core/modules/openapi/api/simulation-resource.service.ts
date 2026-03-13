@@ -11,10 +11,10 @@
 
 import { Inject, Injectable, Optional }                      from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams,
-         HttpResponse, HttpEvent, HttpParameterCodec, HttpContext 
+         HttpResponse, HttpEvent, HttpContext 
         }       from '@angular/common/http';
-import { CustomHttpParameterCodec }                          from '../encoder';
 import { Observable }                                        from 'rxjs';
+import { OpenApiHttpParams, QueryParamStyle } from '../query.params';
 
 // @ts-ignore
 import { SimulationStatusPersistentRecord } from '../model/simulation-status-persistent-record';
@@ -44,11 +44,13 @@ export class SimulationResourceService extends BaseService implements Simulation
 
     /**
      * Get the status of simulation running
+     * @endpoint get /api/v1/Simulation/{simID}/simulationStatus
      * @param simID 
      * @param bioModelID 
      * @param mathModelID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public getSimulationStatus(simID: string, bioModelID?: string, mathModelID?: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<SimulationStatusPersistentRecord>;
     public getSimulationStatus(simID: string, bioModelID?: string, mathModelID?: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<SimulationStatusPersistentRecord>>;
@@ -58,11 +60,25 @@ export class SimulationResourceService extends BaseService implements Simulation
             throw new Error('Required parameter simID was null or undefined when calling getSimulationStatus.');
         }
 
-        let localVarQueryParameters = new HttpParams({encoder: this.encoder});
-        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-          <any>bioModelID, 'bioModelID');
-        localVarQueryParameters = this.addToHttpParams(localVarQueryParameters,
-          <any>mathModelID, 'mathModelID');
+        let localVarQueryParameters = new OpenApiHttpParams(this.encoder);
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'bioModelID',
+            <any>bioModelID,
+            QueryParamStyle.Form,
+            true,
+        );
+
+
+        localVarQueryParameters = this.addToHttpParams(
+            localVarQueryParameters,
+            'mathModelID',
+            <any>mathModelID,
+            QueryParamStyle.Form,
+            true,
+        );
+
 
         let localVarHeaders = this.defaultHeaders;
 
@@ -92,15 +108,16 @@ export class SimulationResourceService extends BaseService implements Simulation
         }
 
         let localVarPath = `/api/v1/Simulation/${this.configuration.encodeParam({name: "simID", value: simID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/simulationStatus`;
-        return this.httpClient.request<SimulationStatusPersistentRecord>('get', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<SimulationStatusPersistentRecord>('get', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
-                params: localVarQueryParameters,
+                params: localVarQueryParameters.toHttpParams(),
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -108,9 +125,11 @@ export class SimulationResourceService extends BaseService implements Simulation
 
     /**
      * Start a simulation.
+     * @endpoint post /api/v1/Simulation/{simID}/startSimulation
      * @param simID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public startSimulation(simID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<StatusMessage>>;
     public startSimulation(simID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<StatusMessage>>>;
@@ -148,14 +167,15 @@ export class SimulationResourceService extends BaseService implements Simulation
         }
 
         let localVarPath = `/api/v1/Simulation/${this.configuration.encodeParam({name: "simID", value: simID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/startSimulation`;
-        return this.httpClient.request<Array<StatusMessage>>('post', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<Array<StatusMessage>>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );
@@ -163,9 +183,11 @@ export class SimulationResourceService extends BaseService implements Simulation
 
     /**
      * Stop a simulation.
+     * @endpoint post /api/v1/Simulation/{simID}/stopSimulation
      * @param simID 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
+     * @param options additional options
      */
     public stopSimulation(simID: string, observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<StatusMessage>>;
     public stopSimulation(simID: string, observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<StatusMessage>>>;
@@ -203,14 +225,15 @@ export class SimulationResourceService extends BaseService implements Simulation
         }
 
         let localVarPath = `/api/v1/Simulation/${this.configuration.encodeParam({name: "simID", value: simID, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/stopSimulation`;
-        return this.httpClient.request<Array<StatusMessage>>('post', `${this.configuration.basePath}${localVarPath}`,
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<Array<StatusMessage>>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
-                withCredentials: this.configuration.withCredentials,
+                ...(withCredentials ? { withCredentials } : {}),
                 headers: localVarHeaders,
                 observe: observe,
-                transferCache: localVarTransferCache,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
                 reportProgress: reportProgress
             }
         );

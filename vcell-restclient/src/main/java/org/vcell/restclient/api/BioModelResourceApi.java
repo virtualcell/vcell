@@ -46,16 +46,37 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.20.0")
 public class BioModelResourceApi {
+  /**
+   * Utility class for extending HttpRequest.Builder functionality.
+   */
+  private static class HttpRequestBuilderExtensions {
+    /**
+     * Adds additional headers to the provided HttpRequest.Builder. Useful for adding method/endpoint specific headers.
+     *
+     * @param builder the HttpRequest.Builder to which headers will be added
+     * @param headers a map of header names and values to add; may be null
+     * @return the same HttpRequest.Builder instance with the additional headers set
+     */
+    static HttpRequest.Builder withAdditionalHeaders(HttpRequest.Builder builder, Map<String, String> headers) {
+        if (headers != null) {
+            for (Map.Entry<String, String> entry : headers.entrySet()) {
+                builder.header(entry.getKey(), entry.getValue());
+            }
+        }
+        return builder;
+    }
+  }
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
   private final String memberVarBaseUri;
   private final Consumer<HttpRequest.Builder> memberVarInterceptor;
   private final Duration memberVarReadTimeout;
   private final Consumer<HttpResponse<InputStream>> memberVarResponseInterceptor;
-  private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
+  private final Consumer<HttpResponse<InputStream>> memberVarAsyncResponseInterceptor;
 
   public BioModelResourceApi() {
     this(Configuration.getDefaultApiClient());
@@ -71,8 +92,17 @@ public class BioModelResourceApi {
     memberVarAsyncResponseInterceptor = apiClient.getAsyncResponseInterceptor();
   }
 
+
   protected ApiException getApiException(String operationId, HttpResponse<InputStream> response) throws IOException {
-    String body = response.body() == null ? null : new String(response.body().readAllBytes());
+    InputStream responseBody = ApiClient.getResponseBody(response);
+    String body = null;
+    try {
+      body = responseBody == null ? null : new String(responseBody.readAllBytes());
+    } finally {
+      if (responseBody != null) {
+        responseBody.close();
+      }
+    }
     String message = formatExceptionMessage(operationId, response.statusCode(), body);
     return new ApiException(response.statusCode(), message, response.headers(), body);
   }
@@ -85,13 +115,75 @@ public class BioModelResourceApi {
   }
 
   /**
+   * Download file from the given response.
+   *
+   * @param response Response
+   * @return File
+   * @throws ApiException If fail to read file content from response and write to disk
+   */
+  public File downloadFileFromResponse(HttpResponse<InputStream> response, InputStream responseBody) throws ApiException {
+    if (responseBody == null) {
+      throw new ApiException(new IOException("Response body is empty"));
+    }
+    try {
+      File file = prepareDownloadFile(response);
+      java.nio.file.Files.copy(responseBody, file.toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+      return file;
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+  }
+
+  /**
+   * <p>Prepare the file for download from the response.</p>
+   *
+   * @param response a {@link java.net.http.HttpResponse} object.
+   * @return a {@link java.io.File} object.
+   * @throws java.io.IOException if any.
+   */
+  private File prepareDownloadFile(HttpResponse<InputStream> response) throws IOException {
+    String filename = null;
+    java.util.Optional<String> contentDisposition = response.headers().firstValue("Content-Disposition");
+    if (contentDisposition.isPresent() && !"".equals(contentDisposition.get())) {
+      // Get filename from the Content-Disposition header.
+      java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("filename=['\"]?([^'\"\\s]+)['\"]?");
+      java.util.regex.Matcher matcher = pattern.matcher(contentDisposition.get());
+      if (matcher.find())
+        filename = matcher.group(1);
+    }
+    File file = null;
+    if (filename != null) {
+      java.nio.file.Path tempDir = java.nio.file.Files.createTempDirectory("swagger-gen-native");
+      java.nio.file.Path filePath = java.nio.file.Files.createFile(tempDir.resolve(filename));
+      file = filePath.toFile();
+      tempDir.toFile().deleteOnExit();   // best effort cleanup
+      file.deleteOnExit(); // best effort cleanup
+    } else {
+      file = java.nio.file.Files.createTempFile("download-", "").toFile();
+      file.deleteOnExit(); // best effort cleanup
+    }
+    return file;
+  }
+
+  /**
    * Delete the BioModel from VCell&#39;s database.
    * 
    * @param bioModelID  (required)
    * @throws ApiException if fails to make API call
    */
-  public void deleteBioModel(String bioModelID) throws ApiException {
-    deleteBioModelWithHttpInfo(bioModelID);
+  public void deleteBioModel(@javax.annotation.Nonnull String bioModelID) throws ApiException {
+    deleteBioModel(bioModelID, null);
+  }
+
+  /**
+   * Delete the BioModel from VCell&#39;s database.
+   * 
+   * @param bioModelID  (required)
+   * @param headers Optional headers to include in the request
+   * @throws ApiException if fails to make API call
+   */
+  public void deleteBioModel(@javax.annotation.Nonnull String bioModelID, Map<String, String> headers) throws ApiException {
+    deleteBioModelWithHttpInfo(bioModelID, headers);
   }
 
   /**
@@ -101,8 +193,20 @@ public class BioModelResourceApi {
    * @return ApiResponse&lt;Void&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<Void> deleteBioModelWithHttpInfo(String bioModelID) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = deleteBioModelRequestBuilder(bioModelID);
+  public ApiResponse<Void> deleteBioModelWithHttpInfo(@javax.annotation.Nonnull String bioModelID) throws ApiException {
+    return deleteBioModelWithHttpInfo(bioModelID, null);
+  }
+
+  /**
+   * Delete the BioModel from VCell&#39;s database.
+   * 
+   * @param bioModelID  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;Void&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<Void> deleteBioModelWithHttpInfo(@javax.annotation.Nonnull String bioModelID, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = deleteBioModelRequestBuilder(bioModelID, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -110,9 +214,14 @@ public class BioModelResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("deleteBioModel", localVarResponse);
+        }
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody != null) {
+          localVarResponseBody.readAllBytes();
         }
         return new ApiResponse<>(
             localVarResponse.statusCode(),
@@ -120,11 +229,9 @@ public class BioModelResourceApi {
             null
         );
       } finally {
-        // Drain the InputStream
-        while (localVarResponse.body().read() != -1) {
-          // Ignore
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
         }
-        localVarResponse.body().close();
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -135,7 +242,7 @@ public class BioModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder deleteBioModelRequestBuilder(String bioModelID) throws ApiException {
+  private HttpRequest.Builder deleteBioModelRequestBuilder(@javax.annotation.Nonnull String bioModelID, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'bioModelID' is set
     if (bioModelID == null) {
       throw new ApiException(400, "Missing the required parameter 'bioModelID' when calling deleteBioModel");
@@ -149,11 +256,14 @@ public class BioModelResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("DELETE", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -167,8 +277,20 @@ public class BioModelResourceApi {
    * @return BioModel
    * @throws ApiException if fails to make API call
    */
-  public BioModel getBioModel(String bioModelID) throws ApiException {
-    ApiResponse<BioModel> localVarResponse = getBioModelWithHttpInfo(bioModelID);
+  public BioModel getBioModel(@javax.annotation.Nonnull String bioModelID) throws ApiException {
+    return getBioModel(bioModelID, null);
+  }
+
+  /**
+   * Get BioModel.
+   * 
+   * @param bioModelID  (required)
+   * @param headers Optional headers to include in the request
+   * @return BioModel
+   * @throws ApiException if fails to make API call
+   */
+  public BioModel getBioModel(@javax.annotation.Nonnull String bioModelID, Map<String, String> headers) throws ApiException {
+    ApiResponse<BioModel> localVarResponse = getBioModelWithHttpInfo(bioModelID, headers);
     return localVarResponse.getData();
   }
 
@@ -179,8 +301,20 @@ public class BioModelResourceApi {
    * @return ApiResponse&lt;BioModel&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<BioModel> getBioModelWithHttpInfo(String bioModelID) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getBioModelRequestBuilder(bioModelID);
+  public ApiResponse<BioModel> getBioModelWithHttpInfo(@javax.annotation.Nonnull String bioModelID) throws ApiException {
+    return getBioModelWithHttpInfo(bioModelID, null);
+  }
+
+  /**
+   * Get BioModel.
+   * 
+   * @param bioModelID  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;BioModel&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<BioModel> getBioModelWithHttpInfo(@javax.annotation.Nonnull String bioModelID, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getBioModelRequestBuilder(bioModelID, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -188,11 +322,13 @@ public class BioModelResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getBioModel", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<BioModel>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -200,15 +336,21 @@ public class BioModelResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        BioModel responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<BioModel>() {});
+        
 
         return new ApiResponse<BioModel>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<BioModel>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -219,7 +361,7 @@ public class BioModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder getBioModelRequestBuilder(String bioModelID) throws ApiException {
+  private HttpRequest.Builder getBioModelRequestBuilder(@javax.annotation.Nonnull String bioModelID, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'bioModelID' is set
     if (bioModelID == null) {
       throw new ApiException(400, "Missing the required parameter 'bioModelID' when calling getBioModel");
@@ -233,11 +375,14 @@ public class BioModelResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -251,8 +396,20 @@ public class BioModelResourceApi {
    * @return List&lt;BioModelSummary&gt;
    * @throws ApiException if fails to make API call
    */
-  public List<BioModelSummary> getBioModelSummaries(Boolean includePublicAndShared) throws ApiException {
-    ApiResponse<List<BioModelSummary>> localVarResponse = getBioModelSummariesWithHttpInfo(includePublicAndShared);
+  public List<BioModelSummary> getBioModelSummaries(@javax.annotation.Nullable Boolean includePublicAndShared) throws ApiException {
+    return getBioModelSummaries(includePublicAndShared, null);
+  }
+
+  /**
+   * Return BioModel summaries.
+   * 
+   * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester. Default is true. (optional)
+   * @param headers Optional headers to include in the request
+   * @return List&lt;BioModelSummary&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public List<BioModelSummary> getBioModelSummaries(@javax.annotation.Nullable Boolean includePublicAndShared, Map<String, String> headers) throws ApiException {
+    ApiResponse<List<BioModelSummary>> localVarResponse = getBioModelSummariesWithHttpInfo(includePublicAndShared, headers);
     return localVarResponse.getData();
   }
 
@@ -263,8 +420,20 @@ public class BioModelResourceApi {
    * @return ApiResponse&lt;List&lt;BioModelSummary&gt;&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<List<BioModelSummary>> getBioModelSummariesWithHttpInfo(Boolean includePublicAndShared) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getBioModelSummariesRequestBuilder(includePublicAndShared);
+  public ApiResponse<List<BioModelSummary>> getBioModelSummariesWithHttpInfo(@javax.annotation.Nullable Boolean includePublicAndShared) throws ApiException {
+    return getBioModelSummariesWithHttpInfo(includePublicAndShared, null);
+  }
+
+  /**
+   * Return BioModel summaries.
+   * 
+   * @param includePublicAndShared Includes BioModel summaries that are public or shared with requester. Default is true. (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;List&lt;BioModelSummary&gt;&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<List<BioModelSummary>> getBioModelSummariesWithHttpInfo(@javax.annotation.Nullable Boolean includePublicAndShared, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getBioModelSummariesRequestBuilder(includePublicAndShared, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -272,11 +441,13 @@ public class BioModelResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getBioModelSummaries", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<List<BioModelSummary>>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -284,15 +455,21 @@ public class BioModelResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        List<BioModelSummary> responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<BioModelSummary>>() {});
+        
 
         return new ApiResponse<List<BioModelSummary>>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<BioModelSummary>>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -303,7 +480,7 @@ public class BioModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder getBioModelSummariesRequestBuilder(Boolean includePublicAndShared) throws ApiException {
+  private HttpRequest.Builder getBioModelSummariesRequestBuilder(@javax.annotation.Nullable Boolean includePublicAndShared, Map<String, String> headers) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
@@ -327,11 +504,14 @@ public class BioModelResourceApi {
     }
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -345,8 +525,20 @@ public class BioModelResourceApi {
    * @return BioModelSummary
    * @throws ApiException if fails to make API call
    */
-  public BioModelSummary getBioModelSummary(String bioModelID) throws ApiException {
-    ApiResponse<BioModelSummary> localVarResponse = getBioModelSummaryWithHttpInfo(bioModelID);
+  public BioModelSummary getBioModelSummary(@javax.annotation.Nonnull String bioModelID) throws ApiException {
+    return getBioModelSummary(bioModelID, null);
+  }
+
+  /**
+   * All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
+   * 
+   * @param bioModelID  (required)
+   * @param headers Optional headers to include in the request
+   * @return BioModelSummary
+   * @throws ApiException if fails to make API call
+   */
+  public BioModelSummary getBioModelSummary(@javax.annotation.Nonnull String bioModelID, Map<String, String> headers) throws ApiException {
+    ApiResponse<BioModelSummary> localVarResponse = getBioModelSummaryWithHttpInfo(bioModelID, headers);
     return localVarResponse.getData();
   }
 
@@ -357,8 +549,20 @@ public class BioModelResourceApi {
    * @return ApiResponse&lt;BioModelSummary&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<BioModelSummary> getBioModelSummaryWithHttpInfo(String bioModelID) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getBioModelSummaryRequestBuilder(bioModelID);
+  public ApiResponse<BioModelSummary> getBioModelSummaryWithHttpInfo(@javax.annotation.Nonnull String bioModelID) throws ApiException {
+    return getBioModelSummaryWithHttpInfo(bioModelID, null);
+  }
+
+  /**
+   * All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
+   * 
+   * @param bioModelID  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;BioModelSummary&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<BioModelSummary> getBioModelSummaryWithHttpInfo(@javax.annotation.Nonnull String bioModelID, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getBioModelSummaryRequestBuilder(bioModelID, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -366,11 +570,13 @@ public class BioModelResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getBioModelSummary", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<BioModelSummary>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -378,15 +584,21 @@ public class BioModelResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        BioModelSummary responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<BioModelSummary>() {});
+        
 
         return new ApiResponse<BioModelSummary>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<BioModelSummary>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -397,7 +609,7 @@ public class BioModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder getBioModelSummaryRequestBuilder(String bioModelID) throws ApiException {
+  private HttpRequest.Builder getBioModelSummaryRequestBuilder(@javax.annotation.Nonnull String bioModelID, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'bioModelID' is set
     if (bioModelID == null) {
       throw new ApiException(400, "Missing the required parameter 'bioModelID' when calling getBioModelSummary");
@@ -411,11 +623,14 @@ public class BioModelResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -429,8 +644,20 @@ public class BioModelResourceApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String getBioModelVCML(String bioModelID) throws ApiException {
-    ApiResponse<String> localVarResponse = getBioModelVCMLWithHttpInfo(bioModelID);
+  public String getBioModelVCML(@javax.annotation.Nonnull String bioModelID) throws ApiException {
+    return getBioModelVCML(bioModelID, null);
+  }
+
+  /**
+   * Get the BioModel in VCML format.
+   * 
+   * @param bioModelID  (required)
+   * @param headers Optional headers to include in the request
+   * @return String
+   * @throws ApiException if fails to make API call
+   */
+  public String getBioModelVCML(@javax.annotation.Nonnull String bioModelID, Map<String, String> headers) throws ApiException {
+    ApiResponse<String> localVarResponse = getBioModelVCMLWithHttpInfo(bioModelID, headers);
     return localVarResponse.getData();
   }
 
@@ -441,8 +668,20 @@ public class BioModelResourceApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> getBioModelVCMLWithHttpInfo(String bioModelID) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getBioModelVCMLRequestBuilder(bioModelID);
+  public ApiResponse<String> getBioModelVCMLWithHttpInfo(@javax.annotation.Nonnull String bioModelID) throws ApiException {
+    return getBioModelVCMLWithHttpInfo(bioModelID, null);
+  }
+
+  /**
+   * Get the BioModel in VCML format.
+   * 
+   * @param bioModelID  (required)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;String&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<String> getBioModelVCMLWithHttpInfo(@javax.annotation.Nonnull String bioModelID, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getBioModelVCMLRequestBuilder(bioModelID, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -450,11 +689,13 @@ public class BioModelResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getBioModelVCML", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<String>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -462,15 +703,21 @@ public class BioModelResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        String responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {});
+        
 
         return new ApiResponse<String>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -481,7 +728,7 @@ public class BioModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder getBioModelVCMLRequestBuilder(String bioModelID) throws ApiException {
+  private HttpRequest.Builder getBioModelVCMLRequestBuilder(@javax.annotation.Nonnull String bioModelID, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'bioModelID' is set
     if (bioModelID == null) {
       throw new ApiException(400, "Missing the required parameter 'bioModelID' when calling getBioModelVCML");
@@ -495,11 +742,14 @@ public class BioModelResourceApi {
     localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "text/xml, application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
     localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
@@ -515,8 +765,22 @@ public class BioModelResourceApi {
    * @return String
    * @throws ApiException if fails to make API call
    */
-  public String saveBioModel(String body, String newName, List<String> simsRequiringUpdates) throws ApiException {
-    ApiResponse<String> localVarResponse = saveBioModelWithHttpInfo(body, newName, simsRequiringUpdates);
+  public String saveBioModel(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String newName, @javax.annotation.Nullable List<String> simsRequiringUpdates) throws ApiException {
+    return saveBioModel(body, newName, simsRequiringUpdates, null);
+  }
+
+  /**
+   * Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
+   * 
+   * @param body BioModelVCML which will be saved. (required)
+   * @param newName Name to save new BioModel under. Leave blank if re-saving existing BioModel. (optional)
+   * @param simsRequiringUpdates The name of simulations that will be prepared for future execution. (optional)
+   * @param headers Optional headers to include in the request
+   * @return String
+   * @throws ApiException if fails to make API call
+   */
+  public String saveBioModel(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String newName, @javax.annotation.Nullable List<String> simsRequiringUpdates, Map<String, String> headers) throws ApiException {
+    ApiResponse<String> localVarResponse = saveBioModelWithHttpInfo(body, newName, simsRequiringUpdates, headers);
     return localVarResponse.getData();
   }
 
@@ -529,8 +793,22 @@ public class BioModelResourceApi {
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<String> saveBioModelWithHttpInfo(String body, String newName, List<String> simsRequiringUpdates) throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = saveBioModelRequestBuilder(body, newName, simsRequiringUpdates);
+  public ApiResponse<String> saveBioModelWithHttpInfo(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String newName, @javax.annotation.Nullable List<String> simsRequiringUpdates) throws ApiException {
+    return saveBioModelWithHttpInfo(body, newName, simsRequiringUpdates, null);
+  }
+
+  /**
+   * Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
+   * 
+   * @param body BioModelVCML which will be saved. (required)
+   * @param newName Name to save new BioModel under. Leave blank if re-saving existing BioModel. (optional)
+   * @param simsRequiringUpdates The name of simulations that will be prepared for future execution. (optional)
+   * @param headers Optional headers to include in the request
+   * @return ApiResponse&lt;String&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<String> saveBioModelWithHttpInfo(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String newName, @javax.annotation.Nullable List<String> simsRequiringUpdates, Map<String, String> headers) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = saveBioModelRequestBuilder(body, newName, simsRequiringUpdates, headers);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -538,11 +816,13 @@ public class BioModelResourceApi {
       if (memberVarResponseInterceptor != null) {
         memberVarResponseInterceptor.accept(localVarResponse);
       }
+      InputStream localVarResponseBody = null;
       try {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("saveBioModel", localVarResponse);
         }
-        if (localVarResponse.body() == null) {
+        localVarResponseBody = ApiClient.getResponseBody(localVarResponse);
+        if (localVarResponseBody == null) {
           return new ApiResponse<String>(
               localVarResponse.statusCode(),
               localVarResponse.headers().map(),
@@ -550,15 +830,21 @@ public class BioModelResourceApi {
           );
         }
 
-        String responseBody = new String(localVarResponse.body().readAllBytes());
-        localVarResponse.body().close();
+        
+        
+        String responseBody = new String(localVarResponseBody.readAllBytes());
+        String responseValue = responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {});
+        
 
         return new ApiResponse<String>(
             localVarResponse.statusCode(),
             localVarResponse.headers().map(),
-            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {})
+            responseValue
         );
       } finally {
+        if (localVarResponseBody != null) {
+          localVarResponseBody.close();
+        }
       }
     } catch (IOException e) {
       throw new ApiException(e);
@@ -569,7 +855,7 @@ public class BioModelResourceApi {
     }
   }
 
-  private HttpRequest.Builder saveBioModelRequestBuilder(String body, String newName, List<String> simsRequiringUpdates) throws ApiException {
+  private HttpRequest.Builder saveBioModelRequestBuilder(@javax.annotation.Nonnull String body, @javax.annotation.Nullable String newName, @javax.annotation.Nullable List<String> simsRequiringUpdates, Map<String, String> headers) throws ApiException {
     // verify the required parameter 'body' is set
     if (body == null) {
       throw new ApiException(400, "Missing the required parameter 'body' when calling saveBioModel");
@@ -600,11 +886,16 @@ public class BioModelResourceApi {
 
     localVarRequestBuilder.header("Content-Type", "application/xml");
     localVarRequestBuilder.header("Accept", "application/xml, application/json");
+    localVarRequestBuilder.header("Accept-Encoding", "gzip");
 
-    localVarRequestBuilder.method("POST", HttpRequest.BodyPublishers.ofString(body));
+    Supplier<InputStream> localVarRequestBodySupplier = () -> new ByteArrayInputStream(body.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    localVarRequestBuilder.header("Content-Encoding", "gzip");
+    localVarRequestBuilder.method("POST", ApiClient.gzipRequestBody(localVarRequestBodySupplier));
     if (memberVarReadTimeout != null) {
       localVarRequestBuilder.timeout(memberVarReadTimeout);
     }
+    // Add custom headers if provided
+    localVarRequestBuilder = HttpRequestBuilderExtensions.withAdditionalHeaders(localVarRequestBuilder, headers);
     if (memberVarInterceptor != null) {
       memberVarInterceptor.accept(localVarRequestBuilder);
     }
