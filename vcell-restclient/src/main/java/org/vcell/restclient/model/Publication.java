@@ -33,6 +33,7 @@ import org.vcell.restclient.model.MathmodelRef;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * Publication
  */
@@ -51,63 +52,75 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   Publication.JSON_PROPERTY_MATHMODEL_REFS,
   Publication.JSON_PROPERTY_DATE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class Publication {
   public static final String JSON_PROPERTY_PUB_KEY = "pubKey";
+  @javax.annotation.Nullable
   private Long pubKey;
 
   public static final String JSON_PROPERTY_TITLE = "title";
+  @javax.annotation.Nullable
   private String title;
 
   public static final String JSON_PROPERTY_AUTHORS = "authors";
-  private List<String> authors;
+  @javax.annotation.Nullable
+  private List<String> authors = new ArrayList<>();
 
   public static final String JSON_PROPERTY_YEAR = "year";
+  @javax.annotation.Nullable
   private Integer year;
 
   public static final String JSON_PROPERTY_CITATION = "citation";
+  @javax.annotation.Nullable
   private String citation;
 
   public static final String JSON_PROPERTY_PUBMEDID = "pubmedid";
+  @javax.annotation.Nullable
   private String pubmedid;
 
   public static final String JSON_PROPERTY_DOI = "doi";
+  @javax.annotation.Nullable
   private String doi;
 
   public static final String JSON_PROPERTY_ENDNOTEID = "endnoteid";
+  @javax.annotation.Nullable
   private Integer endnoteid;
 
   public static final String JSON_PROPERTY_URL = "url";
+  @javax.annotation.Nullable
   private String url;
 
   public static final String JSON_PROPERTY_WITTID = "wittid";
+  @javax.annotation.Nullable
   private Integer wittid;
 
   public static final String JSON_PROPERTY_BIOMODEL_REFS = "biomodelRefs";
-  private List<BiomodelRef> biomodelRefs;
+  @javax.annotation.Nullable
+  private List<BiomodelRef> biomodelRefs = new ArrayList<>();
 
   public static final String JSON_PROPERTY_MATHMODEL_REFS = "mathmodelRefs";
-  private List<MathmodelRef> mathmodelRefs;
+  @javax.annotation.Nullable
+  private List<MathmodelRef> mathmodelRefs = new ArrayList<>();
 
   public static final String JSON_PROPERTY_DATE = "date";
+  @javax.annotation.Nullable
   private LocalDate date;
 
   public Publication() { 
   }
 
-  public Publication pubKey(Long pubKey) {
+  public Publication pubKey(@javax.annotation.Nullable Long pubKey) {
     this.pubKey = pubKey;
     return this;
   }
 
-   /**
+  /**
    * Get pubKey
    * @return pubKey
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_PUB_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Long getPubKey() {
     return pubKey;
   }
@@ -115,24 +128,23 @@ public class Publication {
 
   @JsonProperty(JSON_PROPERTY_PUB_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPubKey(Long pubKey) {
+  public void setPubKey(@javax.annotation.Nullable Long pubKey) {
     this.pubKey = pubKey;
   }
 
 
-  public Publication title(String title) {
+  public Publication title(@javax.annotation.Nullable String title) {
     this.title = title;
     return this;
   }
 
-   /**
+  /**
    * Get title
    * @return title
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TITLE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getTitle() {
     return title;
   }
@@ -140,12 +152,12 @@ public class Publication {
 
   @JsonProperty(JSON_PROPERTY_TITLE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setTitle(String title) {
+  public void setTitle(@javax.annotation.Nullable String title) {
     this.title = title;
   }
 
 
-  public Publication authors(List<String> authors) {
+  public Publication authors(@javax.annotation.Nullable List<String> authors) {
     this.authors = authors;
     return this;
   }
@@ -158,14 +170,13 @@ public class Publication {
     return this;
   }
 
-   /**
+  /**
    * Get authors
    * @return authors
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_AUTHORS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<String> getAuthors() {
     return authors;
   }
@@ -173,24 +184,23 @@ public class Publication {
 
   @JsonProperty(JSON_PROPERTY_AUTHORS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setAuthors(List<String> authors) {
+  public void setAuthors(@javax.annotation.Nullable List<String> authors) {
     this.authors = authors;
   }
 
 
-  public Publication year(Integer year) {
+  public Publication year(@javax.annotation.Nullable Integer year) {
     this.year = year;
     return this;
   }
 
-   /**
+  /**
    * Get year
    * @return year
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_YEAR)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getYear() {
     return year;
   }
@@ -198,24 +208,23 @@ public class Publication {
 
   @JsonProperty(JSON_PROPERTY_YEAR)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setYear(Integer year) {
+  public void setYear(@javax.annotation.Nullable Integer year) {
     this.year = year;
   }
 
 
-  public Publication citation(String citation) {
+  public Publication citation(@javax.annotation.Nullable String citation) {
     this.citation = citation;
     return this;
   }
 
-   /**
+  /**
    * Get citation
    * @return citation
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_CITATION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getCitation() {
     return citation;
   }
@@ -223,24 +232,23 @@ public class Publication {
 
   @JsonProperty(JSON_PROPERTY_CITATION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setCitation(String citation) {
+  public void setCitation(@javax.annotation.Nullable String citation) {
     this.citation = citation;
   }
 
 
-  public Publication pubmedid(String pubmedid) {
+  public Publication pubmedid(@javax.annotation.Nullable String pubmedid) {
     this.pubmedid = pubmedid;
     return this;
   }
 
-   /**
+  /**
    * Get pubmedid
    * @return pubmedid
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_PUBMEDID)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getPubmedid() {
     return pubmedid;
   }
@@ -248,24 +256,23 @@ public class Publication {
 
   @JsonProperty(JSON_PROPERTY_PUBMEDID)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPubmedid(String pubmedid) {
+  public void setPubmedid(@javax.annotation.Nullable String pubmedid) {
     this.pubmedid = pubmedid;
   }
 
 
-  public Publication doi(String doi) {
+  public Publication doi(@javax.annotation.Nullable String doi) {
     this.doi = doi;
     return this;
   }
 
-   /**
+  /**
    * Get doi
    * @return doi
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DOI)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getDoi() {
     return doi;
   }
@@ -273,24 +280,23 @@ public class Publication {
 
   @JsonProperty(JSON_PROPERTY_DOI)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDoi(String doi) {
+  public void setDoi(@javax.annotation.Nullable String doi) {
     this.doi = doi;
   }
 
 
-  public Publication endnoteid(Integer endnoteid) {
+  public Publication endnoteid(@javax.annotation.Nullable Integer endnoteid) {
     this.endnoteid = endnoteid;
     return this;
   }
 
-   /**
+  /**
    * Get endnoteid
    * @return endnoteid
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ENDNOTEID)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getEndnoteid() {
     return endnoteid;
   }
@@ -298,24 +304,23 @@ public class Publication {
 
   @JsonProperty(JSON_PROPERTY_ENDNOTEID)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setEndnoteid(Integer endnoteid) {
+  public void setEndnoteid(@javax.annotation.Nullable Integer endnoteid) {
     this.endnoteid = endnoteid;
   }
 
 
-  public Publication url(String url) {
+  public Publication url(@javax.annotation.Nullable String url) {
     this.url = url;
     return this;
   }
 
-   /**
+  /**
    * Get url
    * @return url
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_URL)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getUrl() {
     return url;
   }
@@ -323,24 +328,23 @@ public class Publication {
 
   @JsonProperty(JSON_PROPERTY_URL)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setUrl(String url) {
+  public void setUrl(@javax.annotation.Nullable String url) {
     this.url = url;
   }
 
 
-  public Publication wittid(Integer wittid) {
+  public Publication wittid(@javax.annotation.Nullable Integer wittid) {
     this.wittid = wittid;
     return this;
   }
 
-   /**
+  /**
    * Get wittid
    * @return wittid
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_WITTID)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getWittid() {
     return wittid;
   }
@@ -348,12 +352,12 @@ public class Publication {
 
   @JsonProperty(JSON_PROPERTY_WITTID)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setWittid(Integer wittid) {
+  public void setWittid(@javax.annotation.Nullable Integer wittid) {
     this.wittid = wittid;
   }
 
 
-  public Publication biomodelRefs(List<BiomodelRef> biomodelRefs) {
+  public Publication biomodelRefs(@javax.annotation.Nullable List<BiomodelRef> biomodelRefs) {
     this.biomodelRefs = biomodelRefs;
     return this;
   }
@@ -366,14 +370,13 @@ public class Publication {
     return this;
   }
 
-   /**
+  /**
    * Get biomodelRefs
    * @return biomodelRefs
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_BIOMODEL_REFS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<BiomodelRef> getBiomodelRefs() {
     return biomodelRefs;
   }
@@ -381,12 +384,12 @@ public class Publication {
 
   @JsonProperty(JSON_PROPERTY_BIOMODEL_REFS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setBiomodelRefs(List<BiomodelRef> biomodelRefs) {
+  public void setBiomodelRefs(@javax.annotation.Nullable List<BiomodelRef> biomodelRefs) {
     this.biomodelRefs = biomodelRefs;
   }
 
 
-  public Publication mathmodelRefs(List<MathmodelRef> mathmodelRefs) {
+  public Publication mathmodelRefs(@javax.annotation.Nullable List<MathmodelRef> mathmodelRefs) {
     this.mathmodelRefs = mathmodelRefs;
     return this;
   }
@@ -399,14 +402,13 @@ public class Publication {
     return this;
   }
 
-   /**
+  /**
    * Get mathmodelRefs
    * @return mathmodelRefs
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_MATHMODEL_REFS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<MathmodelRef> getMathmodelRefs() {
     return mathmodelRefs;
   }
@@ -414,24 +416,23 @@ public class Publication {
 
   @JsonProperty(JSON_PROPERTY_MATHMODEL_REFS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setMathmodelRefs(List<MathmodelRef> mathmodelRefs) {
+  public void setMathmodelRefs(@javax.annotation.Nullable List<MathmodelRef> mathmodelRefs) {
     this.mathmodelRefs = mathmodelRefs;
   }
 
 
-  public Publication date(LocalDate date) {
+  public Publication date(@javax.annotation.Nullable LocalDate date) {
     this.date = date;
     return this;
   }
 
-   /**
+  /**
    * Get date
    * @return date
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public LocalDate getDate() {
     return date;
   }
@@ -439,7 +440,7 @@ public class Publication {
 
   @JsonProperty(JSON_PROPERTY_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDate(LocalDate date) {
+  public void setDate(@javax.annotation.Nullable LocalDate date) {
     this.date = date;
   }
 
@@ -542,12 +543,12 @@ public class Publication {
 
     // add `pubKey` to the URL query string
     if (getPubKey() != null) {
-      joiner.add(String.format("%spubKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPubKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%spubKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPubKey()))));
     }
 
     // add `title` to the URL query string
     if (getTitle() != null) {
-      joiner.add(String.format("%stitle%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getTitle()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%stitle%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getTitle()))));
     }
 
     // add `authors` to the URL query string
@@ -555,43 +556,43 @@ public class Publication {
       for (int i = 0; i < getAuthors().size(); i++) {
         joiner.add(String.format("%sauthors%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getAuthors().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+            ApiClient.urlEncode(ApiClient.valueToString(getAuthors().get(i)))));
       }
     }
 
     // add `year` to the URL query string
     if (getYear() != null) {
-      joiner.add(String.format("%syear%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getYear()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%syear%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getYear()))));
     }
 
     // add `citation` to the URL query string
     if (getCitation() != null) {
-      joiner.add(String.format("%scitation%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getCitation()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%scitation%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getCitation()))));
     }
 
     // add `pubmedid` to the URL query string
     if (getPubmedid() != null) {
-      joiner.add(String.format("%spubmedid%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPubmedid()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%spubmedid%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPubmedid()))));
     }
 
     // add `doi` to the URL query string
     if (getDoi() != null) {
-      joiner.add(String.format("%sdoi%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDoi()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sdoi%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDoi()))));
     }
 
     // add `endnoteid` to the URL query string
     if (getEndnoteid() != null) {
-      joiner.add(String.format("%sendnoteid%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getEndnoteid()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sendnoteid%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getEndnoteid()))));
     }
 
     // add `url` to the URL query string
     if (getUrl() != null) {
-      joiner.add(String.format("%surl%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getUrl()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%surl%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUrl()))));
     }
 
     // add `wittid` to the URL query string
     if (getWittid() != null) {
-      joiner.add(String.format("%swittid%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getWittid()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%swittid%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getWittid()))));
     }
 
     // add `biomodelRefs` to the URL query string
@@ -616,7 +617,7 @@ public class Publication {
 
     // add `date` to the URL query string
     if (getDate() != null) {
-      joiner.add(String.format("%sdate%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDate()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sdate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDate()))));
     }
 
     return joiner.toString();

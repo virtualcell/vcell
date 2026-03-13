@@ -32,6 +32,7 @@ import org.vcell.restclient.model.Version;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * GeometrySummary
  */
@@ -43,42 +44,47 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   GeometrySummary.JSON_PROPERTY_VERSION,
   GeometrySummary.JSON_PROPERTY_SOFTWARE_VERSION
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class GeometrySummary {
   public static final String JSON_PROPERTY_DIMENSION = "dimension";
+  @javax.annotation.Nullable
   private Integer dimension;
 
   public static final String JSON_PROPERTY_ORIGIN = "origin";
+  @javax.annotation.Nullable
   private Origin origin;
 
   public static final String JSON_PROPERTY_EXTENT = "extent";
+  @javax.annotation.Nullable
   private Extent extent;
 
   public static final String JSON_PROPERTY_IMAGE_REF = "imageRef";
+  @javax.annotation.Nullable
   private String imageRef;
 
   public static final String JSON_PROPERTY_VERSION = "version";
+  @javax.annotation.Nullable
   private Version version;
 
   public static final String JSON_PROPERTY_SOFTWARE_VERSION = "softwareVersion";
+  @javax.annotation.Nullable
   private VCellSoftwareVersion softwareVersion;
 
   public GeometrySummary() { 
   }
 
-  public GeometrySummary dimension(Integer dimension) {
+  public GeometrySummary dimension(@javax.annotation.Nullable Integer dimension) {
     this.dimension = dimension;
     return this;
   }
 
-   /**
+  /**
    * Get dimension
    * @return dimension
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DIMENSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getDimension() {
     return dimension;
   }
@@ -86,24 +92,23 @@ public class GeometrySummary {
 
   @JsonProperty(JSON_PROPERTY_DIMENSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDimension(Integer dimension) {
+  public void setDimension(@javax.annotation.Nullable Integer dimension) {
     this.dimension = dimension;
   }
 
 
-  public GeometrySummary origin(Origin origin) {
+  public GeometrySummary origin(@javax.annotation.Nullable Origin origin) {
     this.origin = origin;
     return this;
   }
 
-   /**
+  /**
    * Get origin
    * @return origin
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ORIGIN)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Origin getOrigin() {
     return origin;
   }
@@ -111,24 +116,23 @@ public class GeometrySummary {
 
   @JsonProperty(JSON_PROPERTY_ORIGIN)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setOrigin(Origin origin) {
+  public void setOrigin(@javax.annotation.Nullable Origin origin) {
     this.origin = origin;
   }
 
 
-  public GeometrySummary extent(Extent extent) {
+  public GeometrySummary extent(@javax.annotation.Nullable Extent extent) {
     this.extent = extent;
     return this;
   }
 
-   /**
+  /**
    * Get extent
    * @return extent
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_EXTENT)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Extent getExtent() {
     return extent;
   }
@@ -136,24 +140,23 @@ public class GeometrySummary {
 
   @JsonProperty(JSON_PROPERTY_EXTENT)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setExtent(Extent extent) {
+  public void setExtent(@javax.annotation.Nullable Extent extent) {
     this.extent = extent;
   }
 
 
-  public GeometrySummary imageRef(String imageRef) {
+  public GeometrySummary imageRef(@javax.annotation.Nullable String imageRef) {
     this.imageRef = imageRef;
     return this;
   }
 
-   /**
+  /**
    * Get imageRef
    * @return imageRef
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_IMAGE_REF)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getImageRef() {
     return imageRef;
   }
@@ -161,24 +164,23 @@ public class GeometrySummary {
 
   @JsonProperty(JSON_PROPERTY_IMAGE_REF)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setImageRef(String imageRef) {
+  public void setImageRef(@javax.annotation.Nullable String imageRef) {
     this.imageRef = imageRef;
   }
 
 
-  public GeometrySummary version(Version version) {
+  public GeometrySummary version(@javax.annotation.Nullable Version version) {
     this.version = version;
     return this;
   }
 
-   /**
+  /**
    * Get version
    * @return version
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Version getVersion() {
     return version;
   }
@@ -186,24 +188,23 @@ public class GeometrySummary {
 
   @JsonProperty(JSON_PROPERTY_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersion(Version version) {
+  public void setVersion(@javax.annotation.Nullable Version version) {
     this.version = version;
   }
 
 
-  public GeometrySummary softwareVersion(VCellSoftwareVersion softwareVersion) {
+  public GeometrySummary softwareVersion(@javax.annotation.Nullable VCellSoftwareVersion softwareVersion) {
     this.softwareVersion = softwareVersion;
     return this;
   }
 
-   /**
+  /**
    * Get softwareVersion
    * @return softwareVersion
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public VCellSoftwareVersion getSoftwareVersion() {
     return softwareVersion;
   }
@@ -211,7 +212,7 @@ public class GeometrySummary {
 
   @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSoftwareVersion(VCellSoftwareVersion softwareVersion) {
+  public void setSoftwareVersion(@javax.annotation.Nullable VCellSoftwareVersion softwareVersion) {
     this.softwareVersion = softwareVersion;
   }
 
@@ -300,7 +301,7 @@ public class GeometrySummary {
 
     // add `dimension` to the URL query string
     if (getDimension() != null) {
-      joiner.add(String.format("%sdimension%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDimension()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sdimension%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDimension()))));
     }
 
     // add `origin` to the URL query string
@@ -315,7 +316,7 @@ public class GeometrySummary {
 
     // add `imageRef` to the URL query string
     if (getImageRef() != null) {
-      joiner.add(String.format("%simageRef%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getImageRef()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%simageRef%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getImageRef()))));
     }
 
     // add `version` to the URL query string

@@ -34,6 +34,7 @@ import org.vcell.restclient.model.Version;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * MathModelSummary
  */
@@ -45,42 +46,47 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   MathModelSummary.JSON_PROPERTY_PUBLICATION_INFOS,
   MathModelSummary.JSON_PROPERTY_ANNOTATED_FUNCTIONS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class MathModelSummary {
   public static final String JSON_PROPERTY_VERSION = "version";
+  @javax.annotation.Nullable
   private Version version;
 
   public static final String JSON_PROPERTY_KEY_VALUE = "keyValue";
+  @javax.annotation.Nullable
   private String keyValue;
 
   public static final String JSON_PROPERTY_MODEL_INFO = "modelInfo";
+  @javax.annotation.Nullable
   private MathModelChildSummary modelInfo;
 
   public static final String JSON_PROPERTY_SOFTWARE_VERSION = "softwareVersion";
+  @javax.annotation.Nullable
   private VCellSoftwareVersion softwareVersion;
 
   public static final String JSON_PROPERTY_PUBLICATION_INFOS = "publicationInfos";
-  private List<PublicationInfo> publicationInfos;
+  @javax.annotation.Nullable
+  private List<PublicationInfo> publicationInfos = new ArrayList<>();
 
   public static final String JSON_PROPERTY_ANNOTATED_FUNCTIONS = "annotatedFunctions";
+  @javax.annotation.Nullable
   private String annotatedFunctions;
 
   public MathModelSummary() { 
   }
 
-  public MathModelSummary version(Version version) {
+  public MathModelSummary version(@javax.annotation.Nullable Version version) {
     this.version = version;
     return this;
   }
 
-   /**
+  /**
    * Get version
    * @return version
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Version getVersion() {
     return version;
   }
@@ -88,24 +94,23 @@ public class MathModelSummary {
 
   @JsonProperty(JSON_PROPERTY_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersion(Version version) {
+  public void setVersion(@javax.annotation.Nullable Version version) {
     this.version = version;
   }
 
 
-  public MathModelSummary keyValue(String keyValue) {
+  public MathModelSummary keyValue(@javax.annotation.Nullable String keyValue) {
     this.keyValue = keyValue;
     return this;
   }
 
-   /**
+  /**
    * Get keyValue
    * @return keyValue
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_KEY_VALUE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getKeyValue() {
     return keyValue;
   }
@@ -113,24 +118,23 @@ public class MathModelSummary {
 
   @JsonProperty(JSON_PROPERTY_KEY_VALUE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setKeyValue(String keyValue) {
+  public void setKeyValue(@javax.annotation.Nullable String keyValue) {
     this.keyValue = keyValue;
   }
 
 
-  public MathModelSummary modelInfo(MathModelChildSummary modelInfo) {
+  public MathModelSummary modelInfo(@javax.annotation.Nullable MathModelChildSummary modelInfo) {
     this.modelInfo = modelInfo;
     return this;
   }
 
-   /**
+  /**
    * Get modelInfo
    * @return modelInfo
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_MODEL_INFO)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public MathModelChildSummary getModelInfo() {
     return modelInfo;
   }
@@ -138,24 +142,23 @@ public class MathModelSummary {
 
   @JsonProperty(JSON_PROPERTY_MODEL_INFO)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setModelInfo(MathModelChildSummary modelInfo) {
+  public void setModelInfo(@javax.annotation.Nullable MathModelChildSummary modelInfo) {
     this.modelInfo = modelInfo;
   }
 
 
-  public MathModelSummary softwareVersion(VCellSoftwareVersion softwareVersion) {
+  public MathModelSummary softwareVersion(@javax.annotation.Nullable VCellSoftwareVersion softwareVersion) {
     this.softwareVersion = softwareVersion;
     return this;
   }
 
-   /**
+  /**
    * Get softwareVersion
    * @return softwareVersion
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public VCellSoftwareVersion getSoftwareVersion() {
     return softwareVersion;
   }
@@ -163,12 +166,12 @@ public class MathModelSummary {
 
   @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSoftwareVersion(VCellSoftwareVersion softwareVersion) {
+  public void setSoftwareVersion(@javax.annotation.Nullable VCellSoftwareVersion softwareVersion) {
     this.softwareVersion = softwareVersion;
   }
 
 
-  public MathModelSummary publicationInfos(List<PublicationInfo> publicationInfos) {
+  public MathModelSummary publicationInfos(@javax.annotation.Nullable List<PublicationInfo> publicationInfos) {
     this.publicationInfos = publicationInfos;
     return this;
   }
@@ -181,14 +184,13 @@ public class MathModelSummary {
     return this;
   }
 
-   /**
+  /**
    * Get publicationInfos
    * @return publicationInfos
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_PUBLICATION_INFOS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<PublicationInfo> getPublicationInfos() {
     return publicationInfos;
   }
@@ -196,24 +198,23 @@ public class MathModelSummary {
 
   @JsonProperty(JSON_PROPERTY_PUBLICATION_INFOS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPublicationInfos(List<PublicationInfo> publicationInfos) {
+  public void setPublicationInfos(@javax.annotation.Nullable List<PublicationInfo> publicationInfos) {
     this.publicationInfos = publicationInfos;
   }
 
 
-  public MathModelSummary annotatedFunctions(String annotatedFunctions) {
+  public MathModelSummary annotatedFunctions(@javax.annotation.Nullable String annotatedFunctions) {
     this.annotatedFunctions = annotatedFunctions;
     return this;
   }
 
-   /**
+  /**
    * Get annotatedFunctions
    * @return annotatedFunctions
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ANNOTATED_FUNCTIONS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getAnnotatedFunctions() {
     return annotatedFunctions;
   }
@@ -221,7 +222,7 @@ public class MathModelSummary {
 
   @JsonProperty(JSON_PROPERTY_ANNOTATED_FUNCTIONS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setAnnotatedFunctions(String annotatedFunctions) {
+  public void setAnnotatedFunctions(@javax.annotation.Nullable String annotatedFunctions) {
     this.annotatedFunctions = annotatedFunctions;
   }
 
@@ -315,7 +316,7 @@ public class MathModelSummary {
 
     // add `keyValue` to the URL query string
     if (getKeyValue() != null) {
-      joiner.add(String.format("%skeyValue%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getKeyValue()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%skeyValue%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getKeyValue()))));
     }
 
     // add `modelInfo` to the URL query string
@@ -340,7 +341,7 @@ public class MathModelSummary {
 
     // add `annotatedFunctions` to the URL query string
     if (getAnnotatedFunctions() != null) {
-      joiner.add(String.format("%sannotatedFunctions%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getAnnotatedFunctions()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sannotatedFunctions%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAnnotatedFunctions()))));
     }
 
     return joiner.toString();

@@ -18,14 +18,10 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictBool, StrictInt, StrictStr
-from pydantic import Field
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class HumanReadableExportData(BaseModel):
     """
@@ -38,16 +34,17 @@ class HumanReadableExportData(BaseModel):
     application_type: Optional[StrictStr] = Field(default=None, alias="applicationType")
     server_saved_file_name: Optional[StrictStr] = Field(default=None, alias="serverSavedFileName")
     non_spatial: Optional[StrictBool] = Field(default=None, alias="nonSpatial")
-    sub_volume: Optional[Any] = Field(default=None, alias="subVolume")
+    sub_volume: Optional[Dict[str, StrictStr]] = Field(default=None, alias="subVolume")
     z_slices: Optional[StrictInt] = Field(default=None, alias="zSlices")
     t_slices: Optional[StrictInt] = Field(default=None, alias="tSlices")
     num_channels: Optional[StrictInt] = Field(default=None, alias="numChannels")
     __properties: ClassVar[List[str]] = ["simulationName", "biomodelName", "applicationName", "differentParameterValues", "applicationType", "serverSavedFileName", "nonSpatial", "subVolume", "zSlices", "tSlices", "numChannels"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -60,7 +57,7 @@ class HumanReadableExportData(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of HumanReadableExportData from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -74,21 +71,18 @@ class HumanReadableExportData(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
-        # set to None if sub_volume (nullable) is None
-        # and model_fields_set contains the field
-        if self.sub_volume is None and "sub_volume" in self.model_fields_set:
-            _dict['subVolume'] = None
-
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of HumanReadableExportData from a dict"""
         if obj is None:
             return None
@@ -109,6 +103,7 @@ class HumanReadableExportData(BaseModel):
             "applicationType": obj.get("applicationType"),
             "serverSavedFileName": obj.get("serverSavedFileName"),
             "nonSpatial": obj.get("nonSpatial"),
+            "subVolume": obj.get("subVolume"),
             "zSlices": obj.get("zSlices"),
             "tSlices": obj.get("tSlices"),
             "numChannels": obj.get("numChannels")

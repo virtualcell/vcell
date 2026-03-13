@@ -18,16 +18,12 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictBool, StrictStr
-from pydantic import Field
 from vcell_client.models.domain import Domain
 from vcell_client.models.variable_type import VariableType
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class DataIdentifier(BaseModel):
     """
@@ -42,10 +38,11 @@ class DataIdentifier(BaseModel):
     visible: Optional[StrictBool] = None
     __properties: ClassVar[List[str]] = ["name", "displayName", "variableType", "domain", "bFunction", "function", "visible"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -58,7 +55,7 @@ class DataIdentifier(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of DataIdentifier from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -72,10 +69,12 @@ class DataIdentifier(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of variable_type
@@ -87,7 +86,7 @@ class DataIdentifier(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of DataIdentifier from a dict"""
         if obj is None:
             return None
@@ -103,8 +102,8 @@ class DataIdentifier(BaseModel):
         _obj = cls.model_validate({
             "name": obj.get("name"),
             "displayName": obj.get("displayName"),
-            "variableType": VariableType.from_dict(obj.get("variableType")) if obj.get("variableType") is not None else None,
-            "domain": Domain.from_dict(obj.get("domain")) if obj.get("domain") is not None else None,
+            "variableType": VariableType.from_dict(obj["variableType"]) if obj.get("variableType") is not None else None,
+            "domain": Domain.from_dict(obj["domain"]) if obj.get("domain") is not None else None,
             "bFunction": obj.get("bFunction"),
             "function": obj.get("function"),
             "visible": obj.get("visible")

@@ -15,6 +15,7 @@ package org.vcell.restclient.api;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
 import org.vcell.restclient.Pair;
 
 import java.io.File;
@@ -51,7 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class SolverResourceApi {
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
@@ -62,7 +63,7 @@ public class SolverResourceApi {
   private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
   public SolverResourceApi() {
-    this(new ApiClient());
+    this(Configuration.getDefaultApiClient());
   }
 
   public SolverResourceApi(ApiClient apiClient) {
@@ -124,10 +125,21 @@ public class SolverResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getFVSolverInputFromSBML", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<File>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<File>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<File>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<File>() {})
         );
       } finally {
       }
@@ -194,6 +206,7 @@ public class SolverResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Retrieve finite volume input from SBML spatial model.
    * 
@@ -228,10 +241,21 @@ public class SolverResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getFVSolverInputFromVCML", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<File>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<File>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<File>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<File>() {})
         );
       } finally {
       }
@@ -297,4 +321,5 @@ public class SolverResourceApi {
     }
     return localVarRequestBuilder;
   }
+
 }

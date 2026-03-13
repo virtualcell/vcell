@@ -7,7 +7,7 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**type** | **Object** |  |  |
+|**type** | **String** |  |  |
 |**defaultNumSamples** | **Integer** |  |  [optional] |
 |**maxControlPoints** | **Integer** |  |  [optional] |
 |**minControlPoints** | **Integer** |  |  [optional] |

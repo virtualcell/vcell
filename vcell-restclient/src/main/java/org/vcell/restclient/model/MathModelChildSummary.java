@@ -31,6 +31,7 @@ import org.vcell.restclient.model.MathType;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * MathModelChildSummary
  */
@@ -41,39 +42,43 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   MathModelChildSummary.JSON_PROPERTY_SIMULATION_ANNOTATIONS,
   MathModelChildSummary.JSON_PROPERTY_SIMULATION_NAMES
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class MathModelChildSummary {
   public static final String JSON_PROPERTY_MODEL_TYPE = "modelType";
+  @javax.annotation.Nullable
   private MathType modelType;
 
   public static final String JSON_PROPERTY_GEOMETRY_DIMENSION = "geometryDimension";
+  @javax.annotation.Nullable
   private Integer geometryDimension;
 
   public static final String JSON_PROPERTY_GEOMETRY_NAME = "geometryName";
+  @javax.annotation.Nullable
   private String geometryName;
 
   public static final String JSON_PROPERTY_SIMULATION_ANNOTATIONS = "simulationAnnotations";
-  private List<String> simulationAnnotations;
+  @javax.annotation.Nullable
+  private List<String> simulationAnnotations = new ArrayList<>();
 
   public static final String JSON_PROPERTY_SIMULATION_NAMES = "simulationNames";
-  private List<String> simulationNames;
+  @javax.annotation.Nullable
+  private List<String> simulationNames = new ArrayList<>();
 
   public MathModelChildSummary() { 
   }
 
-  public MathModelChildSummary modelType(MathType modelType) {
+  public MathModelChildSummary modelType(@javax.annotation.Nullable MathType modelType) {
     this.modelType = modelType;
     return this;
   }
 
-   /**
+  /**
    * Get modelType
    * @return modelType
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_MODEL_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public MathType getModelType() {
     return modelType;
   }
@@ -81,24 +86,23 @@ public class MathModelChildSummary {
 
   @JsonProperty(JSON_PROPERTY_MODEL_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setModelType(MathType modelType) {
+  public void setModelType(@javax.annotation.Nullable MathType modelType) {
     this.modelType = modelType;
   }
 
 
-  public MathModelChildSummary geometryDimension(Integer geometryDimension) {
+  public MathModelChildSummary geometryDimension(@javax.annotation.Nullable Integer geometryDimension) {
     this.geometryDimension = geometryDimension;
     return this;
   }
 
-   /**
+  /**
    * Get geometryDimension
    * @return geometryDimension
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_GEOMETRY_DIMENSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getGeometryDimension() {
     return geometryDimension;
   }
@@ -106,24 +110,23 @@ public class MathModelChildSummary {
 
   @JsonProperty(JSON_PROPERTY_GEOMETRY_DIMENSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setGeometryDimension(Integer geometryDimension) {
+  public void setGeometryDimension(@javax.annotation.Nullable Integer geometryDimension) {
     this.geometryDimension = geometryDimension;
   }
 
 
-  public MathModelChildSummary geometryName(String geometryName) {
+  public MathModelChildSummary geometryName(@javax.annotation.Nullable String geometryName) {
     this.geometryName = geometryName;
     return this;
   }
 
-   /**
+  /**
    * Get geometryName
    * @return geometryName
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_GEOMETRY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getGeometryName() {
     return geometryName;
   }
@@ -131,12 +134,12 @@ public class MathModelChildSummary {
 
   @JsonProperty(JSON_PROPERTY_GEOMETRY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setGeometryName(String geometryName) {
+  public void setGeometryName(@javax.annotation.Nullable String geometryName) {
     this.geometryName = geometryName;
   }
 
 
-  public MathModelChildSummary simulationAnnotations(List<String> simulationAnnotations) {
+  public MathModelChildSummary simulationAnnotations(@javax.annotation.Nullable List<String> simulationAnnotations) {
     this.simulationAnnotations = simulationAnnotations;
     return this;
   }
@@ -149,14 +152,13 @@ public class MathModelChildSummary {
     return this;
   }
 
-   /**
+  /**
    * Get simulationAnnotations
    * @return simulationAnnotations
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SIMULATION_ANNOTATIONS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<String> getSimulationAnnotations() {
     return simulationAnnotations;
   }
@@ -164,12 +166,12 @@ public class MathModelChildSummary {
 
   @JsonProperty(JSON_PROPERTY_SIMULATION_ANNOTATIONS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimulationAnnotations(List<String> simulationAnnotations) {
+  public void setSimulationAnnotations(@javax.annotation.Nullable List<String> simulationAnnotations) {
     this.simulationAnnotations = simulationAnnotations;
   }
 
 
-  public MathModelChildSummary simulationNames(List<String> simulationNames) {
+  public MathModelChildSummary simulationNames(@javax.annotation.Nullable List<String> simulationNames) {
     this.simulationNames = simulationNames;
     return this;
   }
@@ -182,14 +184,13 @@ public class MathModelChildSummary {
     return this;
   }
 
-   /**
+  /**
    * Get simulationNames
    * @return simulationNames
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SIMULATION_NAMES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<String> getSimulationNames() {
     return simulationNames;
   }
@@ -197,7 +198,7 @@ public class MathModelChildSummary {
 
   @JsonProperty(JSON_PROPERTY_SIMULATION_NAMES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimulationNames(List<String> simulationNames) {
+  public void setSimulationNames(@javax.annotation.Nullable List<String> simulationNames) {
     this.simulationNames = simulationNames;
   }
 
@@ -284,17 +285,17 @@ public class MathModelChildSummary {
 
     // add `modelType` to the URL query string
     if (getModelType() != null) {
-      joiner.add(String.format("%smodelType%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getModelType()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%smodelType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getModelType()))));
     }
 
     // add `geometryDimension` to the URL query string
     if (getGeometryDimension() != null) {
-      joiner.add(String.format("%sgeometryDimension%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getGeometryDimension()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sgeometryDimension%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getGeometryDimension()))));
     }
 
     // add `geometryName` to the URL query string
     if (getGeometryName() != null) {
-      joiner.add(String.format("%sgeometryName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getGeometryName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sgeometryName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getGeometryName()))));
     }
 
     // add `simulationAnnotations` to the URL query string
@@ -302,7 +303,7 @@ public class MathModelChildSummary {
       for (int i = 0; i < getSimulationAnnotations().size(); i++) {
         joiner.add(String.format("%ssimulationAnnotations%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getSimulationAnnotations().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+            ApiClient.urlEncode(ApiClient.valueToString(getSimulationAnnotations().get(i)))));
       }
     }
 
@@ -311,7 +312,7 @@ public class MathModelChildSummary {
       for (int i = 0; i < getSimulationNames().size(); i++) {
         joiner.add(String.format("%ssimulationNames%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getSimulationNames().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+            ApiClient.urlEncode(ApiClient.valueToString(getSimulationNames().get(i)))));
       }
     }
 

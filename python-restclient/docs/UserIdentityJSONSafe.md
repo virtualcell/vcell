@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **mapped** | **bool** |  | [optional] 
@@ -20,12 +21,12 @@ json = "{}"
 # create an instance of UserIdentityJSONSafe from a JSON string
 user_identity_json_safe_instance = UserIdentityJSONSafe.from_json(json)
 # print the JSON string representation of the object
-print UserIdentityJSONSafe.to_json()
+print(UserIdentityJSONSafe.to_json())
 
 # convert the object into a dict
 user_identity_json_safe_dict = user_identity_json_safe_instance.to_dict()
 # create an instance of UserIdentityJSONSafe from a dict
-user_identity_json_safe_form_dict = user_identity_json_safe.from_dict(user_identity_json_safe_dict)
+user_identity_json_safe_from_dict = UserIdentityJSONSafe.from_dict(user_identity_json_safe_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

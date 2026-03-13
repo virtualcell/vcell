@@ -4,6 +4,8 @@ VCell API
 
 - API version: 1.0.1
 
+- Generator version: 7.12.0
+
 VCell API
 
   For more information, please visit [https://vcell.org](https://vcell.org)

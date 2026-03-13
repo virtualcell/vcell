@@ -29,6 +29,7 @@ import org.vcell.restclient.model.VariableDomain;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * VariableType
  */
@@ -43,51 +44,59 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   VariableType.JSON_PROPERTY_DEFAULT_UNITS,
   VariableType.JSON_PROPERTY_TYPE_NAME
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class VariableType {
   public static final String JSON_PROPERTY_TYPE = "type";
+  @javax.annotation.Nullable
   private Integer type;
 
   public static final String JSON_PROPERTY_VARIABLE_DOMAIN = "variableDomain";
+  @javax.annotation.Nullable
   private VariableDomain variableDomain;
 
   public static final String JSON_PROPERTY_NAME = "name";
+  @javax.annotation.Nullable
   private String name;
 
   public static final String JSON_PROPERTY_UNITS = "units";
+  @javax.annotation.Nullable
   private String units;
 
   public static final String JSON_PROPERTY_LABEL = "label";
+  @javax.annotation.Nullable
   private String label;
 
   public static final String JSON_PROPERTY_LEGACY_WARN = "legacyWarn";
+  @javax.annotation.Nullable
   private Boolean legacyWarn;
 
   public static final String JSON_PROPERTY_DEFAULT_LABEL = "defaultLabel";
+  @javax.annotation.Nullable
   private String defaultLabel;
 
   public static final String JSON_PROPERTY_DEFAULT_UNITS = "defaultUnits";
+  @javax.annotation.Nullable
   private String defaultUnits;
 
   public static final String JSON_PROPERTY_TYPE_NAME = "typeName";
+  @javax.annotation.Nullable
   private String typeName;
 
   public VariableType() { 
   }
 
-  public VariableType type(Integer type) {
+  public VariableType type(@javax.annotation.Nullable Integer type) {
     this.type = type;
     return this;
   }
 
-   /**
+  /**
    * Get type
    * @return type
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getType() {
     return type;
   }
@@ -95,24 +104,23 @@ public class VariableType {
 
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setType(Integer type) {
+  public void setType(@javax.annotation.Nullable Integer type) {
     this.type = type;
   }
 
 
-  public VariableType variableDomain(VariableDomain variableDomain) {
+  public VariableType variableDomain(@javax.annotation.Nullable VariableDomain variableDomain) {
     this.variableDomain = variableDomain;
     return this;
   }
 
-   /**
+  /**
    * Get variableDomain
    * @return variableDomain
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_VARIABLE_DOMAIN)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public VariableDomain getVariableDomain() {
     return variableDomain;
   }
@@ -120,24 +128,23 @@ public class VariableType {
 
   @JsonProperty(JSON_PROPERTY_VARIABLE_DOMAIN)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVariableDomain(VariableDomain variableDomain) {
+  public void setVariableDomain(@javax.annotation.Nullable VariableDomain variableDomain) {
     this.variableDomain = variableDomain;
   }
 
 
-  public VariableType name(String name) {
+  public VariableType name(@javax.annotation.Nullable String name) {
     this.name = name;
     return this;
   }
 
-   /**
+  /**
    * Get name
    * @return name
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getName() {
     return name;
   }
@@ -145,24 +152,23 @@ public class VariableType {
 
   @JsonProperty(JSON_PROPERTY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setName(String name) {
+  public void setName(@javax.annotation.Nullable String name) {
     this.name = name;
   }
 
 
-  public VariableType units(String units) {
+  public VariableType units(@javax.annotation.Nullable String units) {
     this.units = units;
     return this;
   }
 
-   /**
+  /**
    * Get units
    * @return units
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_UNITS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getUnits() {
     return units;
   }
@@ -170,24 +176,23 @@ public class VariableType {
 
   @JsonProperty(JSON_PROPERTY_UNITS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setUnits(String units) {
+  public void setUnits(@javax.annotation.Nullable String units) {
     this.units = units;
   }
 
 
-  public VariableType label(String label) {
+  public VariableType label(@javax.annotation.Nullable String label) {
     this.label = label;
     return this;
   }
 
-   /**
+  /**
    * Get label
    * @return label
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_LABEL)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getLabel() {
     return label;
   }
@@ -195,24 +200,23 @@ public class VariableType {
 
   @JsonProperty(JSON_PROPERTY_LABEL)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setLabel(String label) {
+  public void setLabel(@javax.annotation.Nullable String label) {
     this.label = label;
   }
 
 
-  public VariableType legacyWarn(Boolean legacyWarn) {
+  public VariableType legacyWarn(@javax.annotation.Nullable Boolean legacyWarn) {
     this.legacyWarn = legacyWarn;
     return this;
   }
 
-   /**
+  /**
    * Get legacyWarn
    * @return legacyWarn
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_LEGACY_WARN)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Boolean getLegacyWarn() {
     return legacyWarn;
   }
@@ -220,24 +224,23 @@ public class VariableType {
 
   @JsonProperty(JSON_PROPERTY_LEGACY_WARN)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setLegacyWarn(Boolean legacyWarn) {
+  public void setLegacyWarn(@javax.annotation.Nullable Boolean legacyWarn) {
     this.legacyWarn = legacyWarn;
   }
 
 
-  public VariableType defaultLabel(String defaultLabel) {
+  public VariableType defaultLabel(@javax.annotation.Nullable String defaultLabel) {
     this.defaultLabel = defaultLabel;
     return this;
   }
 
-   /**
+  /**
    * Get defaultLabel
    * @return defaultLabel
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DEFAULT_LABEL)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getDefaultLabel() {
     return defaultLabel;
   }
@@ -245,24 +248,23 @@ public class VariableType {
 
   @JsonProperty(JSON_PROPERTY_DEFAULT_LABEL)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDefaultLabel(String defaultLabel) {
+  public void setDefaultLabel(@javax.annotation.Nullable String defaultLabel) {
     this.defaultLabel = defaultLabel;
   }
 
 
-  public VariableType defaultUnits(String defaultUnits) {
+  public VariableType defaultUnits(@javax.annotation.Nullable String defaultUnits) {
     this.defaultUnits = defaultUnits;
     return this;
   }
 
-   /**
+  /**
    * Get defaultUnits
    * @return defaultUnits
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DEFAULT_UNITS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getDefaultUnits() {
     return defaultUnits;
   }
@@ -270,24 +272,23 @@ public class VariableType {
 
   @JsonProperty(JSON_PROPERTY_DEFAULT_UNITS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDefaultUnits(String defaultUnits) {
+  public void setDefaultUnits(@javax.annotation.Nullable String defaultUnits) {
     this.defaultUnits = defaultUnits;
   }
 
 
-  public VariableType typeName(String typeName) {
+  public VariableType typeName(@javax.annotation.Nullable String typeName) {
     this.typeName = typeName;
     return this;
   }
 
-   /**
+  /**
    * Get typeName
    * @return typeName
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TYPE_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getTypeName() {
     return typeName;
   }
@@ -295,7 +296,7 @@ public class VariableType {
 
   @JsonProperty(JSON_PROPERTY_TYPE_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setTypeName(String typeName) {
+  public void setTypeName(@javax.annotation.Nullable String typeName) {
     this.typeName = typeName;
   }
 
@@ -390,47 +391,47 @@ public class VariableType {
 
     // add `type` to the URL query string
     if (getType() != null) {
-      joiner.add(String.format("%stype%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getType()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%stype%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getType()))));
     }
 
     // add `variableDomain` to the URL query string
     if (getVariableDomain() != null) {
-      joiner.add(String.format("%svariableDomain%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getVariableDomain()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%svariableDomain%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVariableDomain()))));
     }
 
     // add `name` to the URL query string
     if (getName() != null) {
-      joiner.add(String.format("%sname%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
     }
 
     // add `units` to the URL query string
     if (getUnits() != null) {
-      joiner.add(String.format("%sunits%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getUnits()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sunits%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUnits()))));
     }
 
     // add `label` to the URL query string
     if (getLabel() != null) {
-      joiner.add(String.format("%slabel%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getLabel()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%slabel%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getLabel()))));
     }
 
     // add `legacyWarn` to the URL query string
     if (getLegacyWarn() != null) {
-      joiner.add(String.format("%slegacyWarn%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getLegacyWarn()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%slegacyWarn%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getLegacyWarn()))));
     }
 
     // add `defaultLabel` to the URL query string
     if (getDefaultLabel() != null) {
-      joiner.add(String.format("%sdefaultLabel%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDefaultLabel()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sdefaultLabel%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDefaultLabel()))));
     }
 
     // add `defaultUnits` to the URL query string
     if (getDefaultUnits() != null) {
-      joiner.add(String.format("%sdefaultUnits%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDefaultUnits()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sdefaultUnits%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDefaultUnits()))));
     }
 
     // add `typeName` to the URL query string
     if (getTypeName() != null) {
-      joiner.add(String.format("%stypeName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getTypeName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%stypeName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getTypeName()))));
     }
 
     return joiner.toString();

@@ -14,9 +14,8 @@ Get usage summary
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -49,6 +48,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 
 ### Parameters
+
 This endpoint does not need any parameter.
 
 ### Return type
@@ -65,6 +65,7 @@ This endpoint does not need any parameter.
  - **Accept**: application/pdf, application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | The PDF report |  -  |

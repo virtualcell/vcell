@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **function_name** | **str** |  | [optional] 
@@ -21,12 +22,12 @@ json = "{}"
 # create an instance of AnnotatedFunctionDTO from a JSON string
 annotated_function_dto_instance = AnnotatedFunctionDTO.from_json(json)
 # print the JSON string representation of the object
-print AnnotatedFunctionDTO.to_json()
+print(AnnotatedFunctionDTO.to_json())
 
 # convert the object into a dict
 annotated_function_dto_dict = annotated_function_dto_instance.to_dict()
 # create an instance of AnnotatedFunctionDTO from a dict
-annotated_function_dto_form_dict = annotated_function_dto.from_dict(annotated_function_dto_dict)
+annotated_function_dto_from_dict = AnnotatedFunctionDTO.from_dict(annotated_function_dto_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

@@ -28,6 +28,7 @@ import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * AccesTokenRepresentationRecord
  */
@@ -38,39 +39,43 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   AccesTokenRepresentationRecord.JSON_PROPERTY_USER_ID,
   AccesTokenRepresentationRecord.JSON_PROPERTY_USER_KEY
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class AccesTokenRepresentationRecord {
   public static final String JSON_PROPERTY_TOKEN = "token";
+  @javax.annotation.Nullable
   private String token;
 
   public static final String JSON_PROPERTY_CREATION_DATE_SECONDS = "creationDateSeconds";
+  @javax.annotation.Nullable
   private Long creationDateSeconds;
 
   public static final String JSON_PROPERTY_EXPIRE_DATE_SECONDS = "expireDateSeconds";
+  @javax.annotation.Nullable
   private Long expireDateSeconds;
 
   public static final String JSON_PROPERTY_USER_ID = "userId";
+  @javax.annotation.Nullable
   private String userId;
 
   public static final String JSON_PROPERTY_USER_KEY = "userKey";
+  @javax.annotation.Nullable
   private String userKey;
 
   public AccesTokenRepresentationRecord() { 
   }
 
-  public AccesTokenRepresentationRecord token(String token) {
+  public AccesTokenRepresentationRecord token(@javax.annotation.Nullable String token) {
     this.token = token;
     return this;
   }
 
-   /**
+  /**
    * Get token
    * @return token
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TOKEN)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getToken() {
     return token;
   }
@@ -78,24 +83,23 @@ public class AccesTokenRepresentationRecord {
 
   @JsonProperty(JSON_PROPERTY_TOKEN)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setToken(String token) {
+  public void setToken(@javax.annotation.Nullable String token) {
     this.token = token;
   }
 
 
-  public AccesTokenRepresentationRecord creationDateSeconds(Long creationDateSeconds) {
+  public AccesTokenRepresentationRecord creationDateSeconds(@javax.annotation.Nullable Long creationDateSeconds) {
     this.creationDateSeconds = creationDateSeconds;
     return this;
   }
 
-   /**
+  /**
    * Get creationDateSeconds
    * @return creationDateSeconds
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_CREATION_DATE_SECONDS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Long getCreationDateSeconds() {
     return creationDateSeconds;
   }
@@ -103,24 +107,23 @@ public class AccesTokenRepresentationRecord {
 
   @JsonProperty(JSON_PROPERTY_CREATION_DATE_SECONDS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setCreationDateSeconds(Long creationDateSeconds) {
+  public void setCreationDateSeconds(@javax.annotation.Nullable Long creationDateSeconds) {
     this.creationDateSeconds = creationDateSeconds;
   }
 
 
-  public AccesTokenRepresentationRecord expireDateSeconds(Long expireDateSeconds) {
+  public AccesTokenRepresentationRecord expireDateSeconds(@javax.annotation.Nullable Long expireDateSeconds) {
     this.expireDateSeconds = expireDateSeconds;
     return this;
   }
 
-   /**
+  /**
    * Get expireDateSeconds
    * @return expireDateSeconds
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_EXPIRE_DATE_SECONDS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Long getExpireDateSeconds() {
     return expireDateSeconds;
   }
@@ -128,24 +131,23 @@ public class AccesTokenRepresentationRecord {
 
   @JsonProperty(JSON_PROPERTY_EXPIRE_DATE_SECONDS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setExpireDateSeconds(Long expireDateSeconds) {
+  public void setExpireDateSeconds(@javax.annotation.Nullable Long expireDateSeconds) {
     this.expireDateSeconds = expireDateSeconds;
   }
 
 
-  public AccesTokenRepresentationRecord userId(String userId) {
+  public AccesTokenRepresentationRecord userId(@javax.annotation.Nullable String userId) {
     this.userId = userId;
     return this;
   }
 
-   /**
+  /**
    * Get userId
    * @return userId
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_USER_ID)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getUserId() {
     return userId;
   }
@@ -153,24 +155,23 @@ public class AccesTokenRepresentationRecord {
 
   @JsonProperty(JSON_PROPERTY_USER_ID)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setUserId(String userId) {
+  public void setUserId(@javax.annotation.Nullable String userId) {
     this.userId = userId;
   }
 
 
-  public AccesTokenRepresentationRecord userKey(String userKey) {
+  public AccesTokenRepresentationRecord userKey(@javax.annotation.Nullable String userKey) {
     this.userKey = userKey;
     return this;
   }
 
-   /**
+  /**
    * Get userKey
    * @return userKey
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_USER_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getUserKey() {
     return userKey;
   }
@@ -178,7 +179,7 @@ public class AccesTokenRepresentationRecord {
 
   @JsonProperty(JSON_PROPERTY_USER_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setUserKey(String userKey) {
+  public void setUserKey(@javax.annotation.Nullable String userKey) {
     this.userKey = userKey;
   }
 
@@ -265,27 +266,27 @@ public class AccesTokenRepresentationRecord {
 
     // add `token` to the URL query string
     if (getToken() != null) {
-      joiner.add(String.format("%stoken%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getToken()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%stoken%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getToken()))));
     }
 
     // add `creationDateSeconds` to the URL query string
     if (getCreationDateSeconds() != null) {
-      joiner.add(String.format("%screationDateSeconds%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getCreationDateSeconds()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%screationDateSeconds%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getCreationDateSeconds()))));
     }
 
     // add `expireDateSeconds` to the URL query string
     if (getExpireDateSeconds() != null) {
-      joiner.add(String.format("%sexpireDateSeconds%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getExpireDateSeconds()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sexpireDateSeconds%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getExpireDateSeconds()))));
     }
 
     // add `userId` to the URL query string
     if (getUserId() != null) {
-      joiner.add(String.format("%suserId%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getUserId()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%suserId%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUserId()))));
     }
 
     // add `userKey` to the URL query string
     if (getUserKey() != null) {
-      joiner.add(String.format("%suserKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getUserKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%suserKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUserKey()))));
     }
 
     return joiner.toString();

@@ -18,16 +18,12 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictInt
-from pydantic import Field
 from vcell_client.models.geometry_mode import GeometryMode
 from vcell_client.models.spatial_selection import SpatialSelection
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class GeometrySpecDTO(BaseModel):
     """
@@ -39,10 +35,11 @@ class GeometrySpecDTO(BaseModel):
     geometry_mode: Optional[GeometryMode] = Field(default=None, alias="geometryMode")
     __properties: ClassVar[List[str]] = ["selections", "axis", "sliceNumber", "geometryMode"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -55,7 +52,7 @@ class GeometrySpecDTO(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of GeometrySpecDTO from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -69,23 +66,25 @@ class GeometrySpecDTO(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of each item in selections (list)
         _items = []
         if self.selections:
-            for _item in self.selections:
-                if _item:
-                    _items.append(_item.to_dict())
+            for _item_selections in self.selections:
+                if _item_selections:
+                    _items.append(_item_selections.to_dict())
             _dict['selections'] = _items
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of GeometrySpecDTO from a dict"""
         if obj is None:
             return None
@@ -99,7 +98,7 @@ class GeometrySpecDTO(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in GeometrySpecDTO) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "selections": [SpatialSelection.from_dict(_item) for _item in obj.get("selections")] if obj.get("selections") is not None else None,
+            "selections": [SpatialSelection.from_dict(_item) for _item in obj["selections"]] if obj.get("selections") is not None else None,
             "axis": obj.get("axis"),
             "sliceNumber": obj.get("sliceNumber"),
             "geometryMode": obj.get("geometryMode")

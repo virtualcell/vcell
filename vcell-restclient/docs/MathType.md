@@ -5,13 +5,13 @@
 ## Enum
 
 
-* `RULEBASED` (value: `"RuleBased"`)
+* `RULE_BASED` (value: `"RuleBased"`)
 
 * `STOCHASTIC` (value: `"Stochastic"`)
 
 * `DETERMINISTIC` (value: `"Deterministic"`)
 
-* `SPRINGSALAD` (value: `"SpringSaLaD"`)
+* `SPRING_SA_LA_D` (value: `"SpringSaLaD"`)
 
 * `UNKNOWN` (value: `"Unknown"`)
 

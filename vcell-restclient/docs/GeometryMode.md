@@ -5,11 +5,11 @@
 ## Enum
 
 
-* `SELECTIONS` (value: `"GEOMETRY_SELECTIONS"`)
+* `GEOMETRY_SELECTIONS` (value: `"GEOMETRY_SELECTIONS"`)
 
-* `SLICE` (value: `"GEOMETRY_SLICE"`)
+* `GEOMETRY_SLICE` (value: `"GEOMETRY_SLICE"`)
 
-* `FULL` (value: `"GEOMETRY_FULL"`)
+* `GEOMETRY_FULL` (value: `"GEOMETRY_FULL"`)
 
 
 

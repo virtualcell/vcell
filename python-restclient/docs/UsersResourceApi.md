@@ -23,9 +23,8 @@ The end user has forgotten the legacy password they used for VCell, so they will
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -58,6 +57,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **user_id** | **str**|  | [optional] 
@@ -76,6 +76,7 @@ void (empty response body)
  - **Accept**: Not defined
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Legacy password sent in email |  -  |
@@ -92,9 +93,8 @@ Method to get legacy tokens for guest users
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.acces_token_representation_record import AccesTokenRepresentationRecord
 from vcell_client.rest import ApiException
@@ -124,6 +124,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 
 ### Parameters
+
 This endpoint does not need any parameter.
 
 ### Return type
@@ -140,6 +141,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -154,9 +156,8 @@ Get token for legacy API
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.acces_token_representation_record import AccesTokenRepresentationRecord
 from vcell_client.rest import ApiException
@@ -190,6 +191,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 
 ### Parameters
+
 This endpoint does not need any parameter.
 
 ### Return type
@@ -206,6 +208,7 @@ This endpoint does not need any parameter.
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -222,9 +225,8 @@ Get mapped VCell identity
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.user_identity_json_safe import UserIdentityJSONSafe
 from vcell_client.rest import ApiException
@@ -258,6 +260,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 
 ### Parameters
+
 This endpoint does not need any parameter.
 
 ### Return type
@@ -274,6 +277,7 @@ This endpoint does not need any parameter.
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Successful, returning the identity |  -  |
@@ -291,9 +295,8 @@ Get current user
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.identity import Identity
 from vcell_client.rest import ApiException
@@ -323,6 +326,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 
 ### Parameters
+
 This endpoint does not need any parameter.
 
 ### Return type
@@ -339,6 +343,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -352,9 +357,8 @@ create vcell user
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.user_registration_info import UserRegistrationInfo
 from vcell_client.rest import ApiException
@@ -388,6 +392,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **user_registration_info** | [**UserRegistrationInfo**](UserRegistrationInfo.md)|  | 
@@ -406,6 +411,7 @@ void (empty response body)
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | Successful, returning the identity |  -  |
@@ -424,9 +430,8 @@ map vcell user
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.user_login_info_for_mapping import UserLoginInfoForMapping
 from vcell_client.rest import ApiException
@@ -462,6 +467,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **user_login_info_for_mapping** | [**UserLoginInfoForMapping**](UserLoginInfoForMapping.md)|  | 
@@ -480,6 +486,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -497,9 +504,8 @@ Process the magic link and map the user
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -528,6 +534,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **magic** | **str**|  | [optional] 
@@ -546,6 +553,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | User mapped successfully |  -  |
@@ -562,9 +570,8 @@ request a recovery email to link a VCell account.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -598,6 +605,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **email** | **str**|  | [optional] 
@@ -617,6 +625,7 @@ void (empty response body)
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | magic link sent in email if appropriate |  -  |
@@ -635,9 +644,8 @@ remove vcell identity mapping
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -672,6 +680,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **user_name** | **str**|  | 
@@ -690,6 +699,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |

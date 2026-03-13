@@ -30,11 +30,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public enum GeometryMode {
   
-  SELECTIONS("GEOMETRY_SELECTIONS"),
+  GEOMETRY_SELECTIONS("GEOMETRY_SELECTIONS"),
   
-  SLICE("GEOMETRY_SLICE"),
+  GEOMETRY_SLICE("GEOMETRY_SLICE"),
   
-  FULL("GEOMETRY_FULL");
+  GEOMETRY_FULL("GEOMETRY_FULL");
 
   private String value;
 

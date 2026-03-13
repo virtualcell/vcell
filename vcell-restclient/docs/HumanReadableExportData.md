@@ -14,7 +14,7 @@
 |**applicationType** | **String** |  |  [optional] |
 |**serverSavedFileName** | **String** |  |  [optional] |
 |**nonSpatial** | **Boolean** |  |  [optional] |
-|**subVolume** |  |  |  [optional] |
+|**subVolume** | **Map&lt;String, String&gt;** |  |  [optional] |
 |**zSlices** | **Integer** |  |  [optional] |
 |**tSlices** | **Integer** |  |  [optional] |
 |**numChannels** | **Integer** |  |  [optional] |

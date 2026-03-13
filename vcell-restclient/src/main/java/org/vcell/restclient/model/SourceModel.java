@@ -29,6 +29,7 @@ import org.vcell.restclient.model.ModelType;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * SourceModel
  */
@@ -36,30 +37,31 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   SourceModel.JSON_PROPERTY_MODEL_I_D,
   SourceModel.JSON_PROPERTY_MODEL_TYPE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class SourceModel {
   public static final String JSON_PROPERTY_MODEL_I_D = "modelID";
+  @javax.annotation.Nullable
   private String modelID;
 
   public static final String JSON_PROPERTY_MODEL_TYPE = "modelType";
+  @javax.annotation.Nullable
   private ModelType modelType;
 
   public SourceModel() { 
   }
 
-  public SourceModel modelID(String modelID) {
+  public SourceModel modelID(@javax.annotation.Nullable String modelID) {
     this.modelID = modelID;
     return this;
   }
 
-   /**
+  /**
    * Get modelID
    * @return modelID
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_MODEL_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getModelID() {
     return modelID;
   }
@@ -67,24 +69,23 @@ public class SourceModel {
 
   @JsonProperty(JSON_PROPERTY_MODEL_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setModelID(String modelID) {
+  public void setModelID(@javax.annotation.Nullable String modelID) {
     this.modelID = modelID;
   }
 
 
-  public SourceModel modelType(ModelType modelType) {
+  public SourceModel modelType(@javax.annotation.Nullable ModelType modelType) {
     this.modelType = modelType;
     return this;
   }
 
-   /**
+  /**
    * Get modelType
    * @return modelType
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_MODEL_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public ModelType getModelType() {
     return modelType;
   }
@@ -92,7 +93,7 @@ public class SourceModel {
 
   @JsonProperty(JSON_PROPERTY_MODEL_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setModelType(ModelType modelType) {
+  public void setModelType(@javax.annotation.Nullable ModelType modelType) {
     this.modelType = modelType;
   }
 
@@ -173,12 +174,12 @@ public class SourceModel {
 
     // add `modelID` to the URL query string
     if (getModelID() != null) {
-      joiner.add(String.format("%smodelID%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getModelID()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%smodelID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getModelID()))));
     }
 
     // add `modelType` to the URL query string
     if (getModelType() != null) {
-      joiner.add(String.format("%smodelType%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getModelType()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%smodelType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getModelType()))));
     }
 
     return joiner.toString();

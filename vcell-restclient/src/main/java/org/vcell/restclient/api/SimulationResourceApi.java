@@ -15,6 +15,7 @@ package org.vcell.restclient.api;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.SimulationStatusPersistentRecord;
@@ -52,7 +53,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class SimulationResourceApi {
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
@@ -63,7 +64,7 @@ public class SimulationResourceApi {
   private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
   public SimulationResourceApi() {
-    this(new ApiClient());
+    this(Configuration.getDefaultApiClient());
   }
 
   public SimulationResourceApi(ApiClient apiClient) {
@@ -125,10 +126,21 @@ public class SimulationResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getSimulationStatus", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<SimulationStatusPersistentRecord>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<SimulationStatusPersistentRecord>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<SimulationStatusPersistentRecord>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<SimulationStatusPersistentRecord>() {})
         );
       } finally {
       }
@@ -182,6 +194,7 @@ public class SimulationResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Start a simulation.
    * 
@@ -214,10 +227,21 @@ public class SimulationResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("startSimulation", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<List<StatusMessage>>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<List<StatusMessage>>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<List<StatusMessage>>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<StatusMessage>>() {})
         );
       } finally {
       }
@@ -254,6 +278,7 @@ public class SimulationResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Stop a simulation.
    * 
@@ -286,10 +311,21 @@ public class SimulationResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("stopSimulation", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<List<StatusMessage>>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<List<StatusMessage>>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<List<StatusMessage>>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<StatusMessage>>() {})
         );
       } finally {
       }
@@ -326,4 +362,5 @@ public class SimulationResourceApi {
     }
     return localVarRequestBuilder;
   }
+
 }

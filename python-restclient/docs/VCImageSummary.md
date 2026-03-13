@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **size** | [**ISize**](ISize.md) |  | [optional] 
@@ -20,12 +21,12 @@ json = "{}"
 # create an instance of VCImageSummary from a JSON string
 vc_image_summary_instance = VCImageSummary.from_json(json)
 # print the JSON string representation of the object
-print VCImageSummary.to_json()
+print(VCImageSummary.to_json())
 
 # convert the object into a dict
 vc_image_summary_dict = vc_image_summary_instance.to_dict()
 # create an instance of VCImageSummary from a dict
-vc_image_summary_form_dict = vc_image_summary.from_dict(vc_image_summary_dict)
+vc_image_summary_from_dict = VCImageSummary.from_dict(vc_image_summary_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

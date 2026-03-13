@@ -30,6 +30,7 @@ import org.vcell.restclient.model.HtcJobID;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * SimulationExecutionStatusRecord
  */
@@ -41,42 +42,47 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   SimulationExecutionStatusRecord.JSON_PROPERTY_FIELD_HAS_DATA,
   SimulationExecutionStatusRecord.JSON_PROPERTY_FIELD_HTC_JOB_I_D
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class SimulationExecutionStatusRecord {
   public static final String JSON_PROPERTY_FIELD_START_DATE = "fieldStartDate";
+  @javax.annotation.Nullable
   private OffsetDateTime fieldStartDate;
 
   public static final String JSON_PROPERTY_FIELD_LATEST_UPDATE_DATE = "fieldLatestUpdateDate";
+  @javax.annotation.Nullable
   private OffsetDateTime fieldLatestUpdateDate;
 
   public static final String JSON_PROPERTY_FIELD_END_DATE = "fieldEndDate";
+  @javax.annotation.Nullable
   private OffsetDateTime fieldEndDate;
 
   public static final String JSON_PROPERTY_FIELD_COMPUTE_HOST = "fieldComputeHost";
+  @javax.annotation.Nullable
   private String fieldComputeHost;
 
   public static final String JSON_PROPERTY_FIELD_HAS_DATA = "fieldHasData";
+  @javax.annotation.Nullable
   private Boolean fieldHasData;
 
   public static final String JSON_PROPERTY_FIELD_HTC_JOB_I_D = "fieldHtcJobID";
+  @javax.annotation.Nullable
   private HtcJobID fieldHtcJobID;
 
   public SimulationExecutionStatusRecord() { 
   }
 
-  public SimulationExecutionStatusRecord fieldStartDate(OffsetDateTime fieldStartDate) {
+  public SimulationExecutionStatusRecord fieldStartDate(@javax.annotation.Nullable OffsetDateTime fieldStartDate) {
     this.fieldStartDate = fieldStartDate;
     return this;
   }
 
-   /**
+  /**
    * Get fieldStartDate
    * @return fieldStartDate
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_START_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public OffsetDateTime getFieldStartDate() {
     return fieldStartDate;
   }
@@ -84,24 +90,23 @@ public class SimulationExecutionStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_START_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldStartDate(OffsetDateTime fieldStartDate) {
+  public void setFieldStartDate(@javax.annotation.Nullable OffsetDateTime fieldStartDate) {
     this.fieldStartDate = fieldStartDate;
   }
 
 
-  public SimulationExecutionStatusRecord fieldLatestUpdateDate(OffsetDateTime fieldLatestUpdateDate) {
+  public SimulationExecutionStatusRecord fieldLatestUpdateDate(@javax.annotation.Nullable OffsetDateTime fieldLatestUpdateDate) {
     this.fieldLatestUpdateDate = fieldLatestUpdateDate;
     return this;
   }
 
-   /**
+  /**
    * Get fieldLatestUpdateDate
    * @return fieldLatestUpdateDate
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_LATEST_UPDATE_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public OffsetDateTime getFieldLatestUpdateDate() {
     return fieldLatestUpdateDate;
   }
@@ -109,24 +114,23 @@ public class SimulationExecutionStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_LATEST_UPDATE_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldLatestUpdateDate(OffsetDateTime fieldLatestUpdateDate) {
+  public void setFieldLatestUpdateDate(@javax.annotation.Nullable OffsetDateTime fieldLatestUpdateDate) {
     this.fieldLatestUpdateDate = fieldLatestUpdateDate;
   }
 
 
-  public SimulationExecutionStatusRecord fieldEndDate(OffsetDateTime fieldEndDate) {
+  public SimulationExecutionStatusRecord fieldEndDate(@javax.annotation.Nullable OffsetDateTime fieldEndDate) {
     this.fieldEndDate = fieldEndDate;
     return this;
   }
 
-   /**
+  /**
    * Get fieldEndDate
    * @return fieldEndDate
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_END_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public OffsetDateTime getFieldEndDate() {
     return fieldEndDate;
   }
@@ -134,24 +138,23 @@ public class SimulationExecutionStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_END_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldEndDate(OffsetDateTime fieldEndDate) {
+  public void setFieldEndDate(@javax.annotation.Nullable OffsetDateTime fieldEndDate) {
     this.fieldEndDate = fieldEndDate;
   }
 
 
-  public SimulationExecutionStatusRecord fieldComputeHost(String fieldComputeHost) {
+  public SimulationExecutionStatusRecord fieldComputeHost(@javax.annotation.Nullable String fieldComputeHost) {
     this.fieldComputeHost = fieldComputeHost;
     return this;
   }
 
-   /**
+  /**
    * Get fieldComputeHost
    * @return fieldComputeHost
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_COMPUTE_HOST)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getFieldComputeHost() {
     return fieldComputeHost;
   }
@@ -159,24 +162,23 @@ public class SimulationExecutionStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_COMPUTE_HOST)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldComputeHost(String fieldComputeHost) {
+  public void setFieldComputeHost(@javax.annotation.Nullable String fieldComputeHost) {
     this.fieldComputeHost = fieldComputeHost;
   }
 
 
-  public SimulationExecutionStatusRecord fieldHasData(Boolean fieldHasData) {
+  public SimulationExecutionStatusRecord fieldHasData(@javax.annotation.Nullable Boolean fieldHasData) {
     this.fieldHasData = fieldHasData;
     return this;
   }
 
-   /**
+  /**
    * Get fieldHasData
    * @return fieldHasData
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_HAS_DATA)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Boolean getFieldHasData() {
     return fieldHasData;
   }
@@ -184,24 +186,23 @@ public class SimulationExecutionStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_HAS_DATA)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldHasData(Boolean fieldHasData) {
+  public void setFieldHasData(@javax.annotation.Nullable Boolean fieldHasData) {
     this.fieldHasData = fieldHasData;
   }
 
 
-  public SimulationExecutionStatusRecord fieldHtcJobID(HtcJobID fieldHtcJobID) {
+  public SimulationExecutionStatusRecord fieldHtcJobID(@javax.annotation.Nullable HtcJobID fieldHtcJobID) {
     this.fieldHtcJobID = fieldHtcJobID;
     return this;
   }
 
-   /**
+  /**
    * Get fieldHtcJobID
    * @return fieldHtcJobID
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_HTC_JOB_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public HtcJobID getFieldHtcJobID() {
     return fieldHtcJobID;
   }
@@ -209,7 +210,7 @@ public class SimulationExecutionStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_HTC_JOB_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldHtcJobID(HtcJobID fieldHtcJobID) {
+  public void setFieldHtcJobID(@javax.annotation.Nullable HtcJobID fieldHtcJobID) {
     this.fieldHtcJobID = fieldHtcJobID;
   }
 
@@ -298,27 +299,27 @@ public class SimulationExecutionStatusRecord {
 
     // add `fieldStartDate` to the URL query string
     if (getFieldStartDate() != null) {
-      joiner.add(String.format("%sfieldStartDate%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldStartDate()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldStartDate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldStartDate()))));
     }
 
     // add `fieldLatestUpdateDate` to the URL query string
     if (getFieldLatestUpdateDate() != null) {
-      joiner.add(String.format("%sfieldLatestUpdateDate%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldLatestUpdateDate()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldLatestUpdateDate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldLatestUpdateDate()))));
     }
 
     // add `fieldEndDate` to the URL query string
     if (getFieldEndDate() != null) {
-      joiner.add(String.format("%sfieldEndDate%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldEndDate()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldEndDate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldEndDate()))));
     }
 
     // add `fieldComputeHost` to the URL query string
     if (getFieldComputeHost() != null) {
-      joiner.add(String.format("%sfieldComputeHost%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldComputeHost()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldComputeHost%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldComputeHost()))));
     }
 
     // add `fieldHasData` to the URL query string
     if (getFieldHasData() != null) {
-      joiner.add(String.format("%sfieldHasData%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldHasData()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldHasData%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldHasData()))));
     }
 
     // add `fieldHtcJobID` to the URL query string

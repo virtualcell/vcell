@@ -32,6 +32,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * HumanReadableExportData
  */
@@ -48,57 +49,67 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   HumanReadableExportData.JSON_PROPERTY_T_SLICES,
   HumanReadableExportData.JSON_PROPERTY_NUM_CHANNELS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class HumanReadableExportData {
   public static final String JSON_PROPERTY_SIMULATION_NAME = "simulationName";
+  @javax.annotation.Nullable
   private String simulationName;
 
   public static final String JSON_PROPERTY_BIOMODEL_NAME = "biomodelName";
+  @javax.annotation.Nullable
   private String biomodelName;
 
   public static final String JSON_PROPERTY_APPLICATION_NAME = "applicationName";
+  @javax.annotation.Nullable
   private String applicationName;
 
   public static final String JSON_PROPERTY_DIFFERENT_PARAMETER_VALUES = "differentParameterValues";
-  private List<String> differentParameterValues;
+  @javax.annotation.Nullable
+  private List<String> differentParameterValues = new ArrayList<>();
 
   public static final String JSON_PROPERTY_APPLICATION_TYPE = "applicationType";
+  @javax.annotation.Nullable
   private String applicationType;
 
   public static final String JSON_PROPERTY_SERVER_SAVED_FILE_NAME = "serverSavedFileName";
+  @javax.annotation.Nullable
   private String serverSavedFileName;
 
   public static final String JSON_PROPERTY_NON_SPATIAL = "nonSpatial";
+  @javax.annotation.Nullable
   private Boolean nonSpatial;
 
   public static final String JSON_PROPERTY_SUB_VOLUME = "subVolume";
-  private Map<String, String> subVolume;
+  @javax.annotation.Nullable
+  private Map<String, String> subVolume = new HashMap<>();
 
   public static final String JSON_PROPERTY_Z_SLICES = "zSlices";
+  @javax.annotation.Nullable
   private Integer zSlices;
 
   public static final String JSON_PROPERTY_T_SLICES = "tSlices";
+  @javax.annotation.Nullable
   private Integer tSlices;
 
   public static final String JSON_PROPERTY_NUM_CHANNELS = "numChannels";
+  @javax.annotation.Nullable
   private Integer numChannels;
 
   public HumanReadableExportData() { 
   }
 
-  public HumanReadableExportData simulationName(String simulationName) {
+  public HumanReadableExportData simulationName(@javax.annotation.Nullable String simulationName) {
     this.simulationName = simulationName;
     return this;
   }
 
-   /**
+  /**
    * Get simulationName
    * @return simulationName
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SIMULATION_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getSimulationName() {
     return simulationName;
   }
@@ -106,24 +117,23 @@ public class HumanReadableExportData {
 
   @JsonProperty(JSON_PROPERTY_SIMULATION_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimulationName(String simulationName) {
+  public void setSimulationName(@javax.annotation.Nullable String simulationName) {
     this.simulationName = simulationName;
   }
 
 
-  public HumanReadableExportData biomodelName(String biomodelName) {
+  public HumanReadableExportData biomodelName(@javax.annotation.Nullable String biomodelName) {
     this.biomodelName = biomodelName;
     return this;
   }
 
-   /**
+  /**
    * Get biomodelName
    * @return biomodelName
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_BIOMODEL_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getBiomodelName() {
     return biomodelName;
   }
@@ -131,24 +141,23 @@ public class HumanReadableExportData {
 
   @JsonProperty(JSON_PROPERTY_BIOMODEL_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setBiomodelName(String biomodelName) {
+  public void setBiomodelName(@javax.annotation.Nullable String biomodelName) {
     this.biomodelName = biomodelName;
   }
 
 
-  public HumanReadableExportData applicationName(String applicationName) {
+  public HumanReadableExportData applicationName(@javax.annotation.Nullable String applicationName) {
     this.applicationName = applicationName;
     return this;
   }
 
-   /**
+  /**
    * Get applicationName
    * @return applicationName
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_APPLICATION_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getApplicationName() {
     return applicationName;
   }
@@ -156,12 +165,12 @@ public class HumanReadableExportData {
 
   @JsonProperty(JSON_PROPERTY_APPLICATION_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setApplicationName(String applicationName) {
+  public void setApplicationName(@javax.annotation.Nullable String applicationName) {
     this.applicationName = applicationName;
   }
 
 
-  public HumanReadableExportData differentParameterValues(List<String> differentParameterValues) {
+  public HumanReadableExportData differentParameterValues(@javax.annotation.Nullable List<String> differentParameterValues) {
     this.differentParameterValues = differentParameterValues;
     return this;
   }
@@ -174,14 +183,13 @@ public class HumanReadableExportData {
     return this;
   }
 
-   /**
+  /**
    * Get differentParameterValues
    * @return differentParameterValues
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DIFFERENT_PARAMETER_VALUES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<String> getDifferentParameterValues() {
     return differentParameterValues;
   }
@@ -189,24 +197,23 @@ public class HumanReadableExportData {
 
   @JsonProperty(JSON_PROPERTY_DIFFERENT_PARAMETER_VALUES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDifferentParameterValues(List<String> differentParameterValues) {
+  public void setDifferentParameterValues(@javax.annotation.Nullable List<String> differentParameterValues) {
     this.differentParameterValues = differentParameterValues;
   }
 
 
-  public HumanReadableExportData applicationType(String applicationType) {
+  public HumanReadableExportData applicationType(@javax.annotation.Nullable String applicationType) {
     this.applicationType = applicationType;
     return this;
   }
 
-   /**
+  /**
    * Get applicationType
    * @return applicationType
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_APPLICATION_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getApplicationType() {
     return applicationType;
   }
@@ -214,24 +221,23 @@ public class HumanReadableExportData {
 
   @JsonProperty(JSON_PROPERTY_APPLICATION_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setApplicationType(String applicationType) {
+  public void setApplicationType(@javax.annotation.Nullable String applicationType) {
     this.applicationType = applicationType;
   }
 
 
-  public HumanReadableExportData serverSavedFileName(String serverSavedFileName) {
+  public HumanReadableExportData serverSavedFileName(@javax.annotation.Nullable String serverSavedFileName) {
     this.serverSavedFileName = serverSavedFileName;
     return this;
   }
 
-   /**
+  /**
    * Get serverSavedFileName
    * @return serverSavedFileName
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SERVER_SAVED_FILE_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getServerSavedFileName() {
     return serverSavedFileName;
   }
@@ -239,24 +245,23 @@ public class HumanReadableExportData {
 
   @JsonProperty(JSON_PROPERTY_SERVER_SAVED_FILE_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setServerSavedFileName(String serverSavedFileName) {
+  public void setServerSavedFileName(@javax.annotation.Nullable String serverSavedFileName) {
     this.serverSavedFileName = serverSavedFileName;
   }
 
 
-  public HumanReadableExportData nonSpatial(Boolean nonSpatial) {
+  public HumanReadableExportData nonSpatial(@javax.annotation.Nullable Boolean nonSpatial) {
     this.nonSpatial = nonSpatial;
     return this;
   }
 
-   /**
+  /**
    * Get nonSpatial
    * @return nonSpatial
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_NON_SPATIAL)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Boolean getNonSpatial() {
     return nonSpatial;
   }
@@ -264,24 +269,31 @@ public class HumanReadableExportData {
 
   @JsonProperty(JSON_PROPERTY_NON_SPATIAL)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setNonSpatial(Boolean nonSpatial) {
+  public void setNonSpatial(@javax.annotation.Nullable Boolean nonSpatial) {
     this.nonSpatial = nonSpatial;
   }
 
 
-  public HumanReadableExportData subVolume(Map<String, String> subVolume) {
+  public HumanReadableExportData subVolume(@javax.annotation.Nullable Map<String, String> subVolume) {
     this.subVolume = subVolume;
     return this;
   }
 
-   /**
+  public HumanReadableExportData putSubVolumeItem(String key, String subVolumeItem) {
+    if (this.subVolume == null) {
+      this.subVolume = new HashMap<>();
+    }
+    this.subVolume.put(key, subVolumeItem);
+    return this;
+  }
+
+  /**
    * Get subVolume
    * @return subVolume
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SUB_VOLUME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Map<String, String> getSubVolume() {
     return subVolume;
   }
@@ -289,24 +301,23 @@ public class HumanReadableExportData {
 
   @JsonProperty(JSON_PROPERTY_SUB_VOLUME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSubVolume(Map<String, String> subVolume) {
+  public void setSubVolume(@javax.annotation.Nullable Map<String, String> subVolume) {
     this.subVolume = subVolume;
   }
 
 
-  public HumanReadableExportData zSlices(Integer zSlices) {
+  public HumanReadableExportData zSlices(@javax.annotation.Nullable Integer zSlices) {
     this.zSlices = zSlices;
     return this;
   }
 
-   /**
+  /**
    * Get zSlices
    * @return zSlices
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_Z_SLICES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getzSlices() {
     return zSlices;
   }
@@ -314,24 +325,23 @@ public class HumanReadableExportData {
 
   @JsonProperty(JSON_PROPERTY_Z_SLICES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setzSlices(Integer zSlices) {
+  public void setzSlices(@javax.annotation.Nullable Integer zSlices) {
     this.zSlices = zSlices;
   }
 
 
-  public HumanReadableExportData tSlices(Integer tSlices) {
+  public HumanReadableExportData tSlices(@javax.annotation.Nullable Integer tSlices) {
     this.tSlices = tSlices;
     return this;
   }
 
-   /**
+  /**
    * Get tSlices
    * @return tSlices
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_T_SLICES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer gettSlices() {
     return tSlices;
   }
@@ -339,24 +349,23 @@ public class HumanReadableExportData {
 
   @JsonProperty(JSON_PROPERTY_T_SLICES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void settSlices(Integer tSlices) {
+  public void settSlices(@javax.annotation.Nullable Integer tSlices) {
     this.tSlices = tSlices;
   }
 
 
-  public HumanReadableExportData numChannels(Integer numChannels) {
+  public HumanReadableExportData numChannels(@javax.annotation.Nullable Integer numChannels) {
     this.numChannels = numChannels;
     return this;
   }
 
-   /**
+  /**
    * Get numChannels
    * @return numChannels
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_NUM_CHANNELS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getNumChannels() {
     return numChannels;
   }
@@ -364,7 +373,7 @@ public class HumanReadableExportData {
 
   @JsonProperty(JSON_PROPERTY_NUM_CHANNELS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setNumChannels(Integer numChannels) {
+  public void setNumChannels(@javax.annotation.Nullable Integer numChannels) {
     this.numChannels = numChannels;
   }
 
@@ -463,17 +472,17 @@ public class HumanReadableExportData {
 
     // add `simulationName` to the URL query string
     if (getSimulationName() != null) {
-      joiner.add(String.format("%ssimulationName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSimulationName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%ssimulationName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSimulationName()))));
     }
 
     // add `biomodelName` to the URL query string
     if (getBiomodelName() != null) {
-      joiner.add(String.format("%sbiomodelName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getBiomodelName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sbiomodelName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBiomodelName()))));
     }
 
     // add `applicationName` to the URL query string
     if (getApplicationName() != null) {
-      joiner.add(String.format("%sapplicationName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getApplicationName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sapplicationName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getApplicationName()))));
     }
 
     // add `differentParameterValues` to the URL query string
@@ -481,43 +490,47 @@ public class HumanReadableExportData {
       for (int i = 0; i < getDifferentParameterValues().size(); i++) {
         joiner.add(String.format("%sdifferentParameterValues%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getDifferentParameterValues().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+            ApiClient.urlEncode(ApiClient.valueToString(getDifferentParameterValues().get(i)))));
       }
     }
 
     // add `applicationType` to the URL query string
     if (getApplicationType() != null) {
-      joiner.add(String.format("%sapplicationType%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getApplicationType()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sapplicationType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getApplicationType()))));
     }
 
     // add `serverSavedFileName` to the URL query string
     if (getServerSavedFileName() != null) {
-      joiner.add(String.format("%sserverSavedFileName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getServerSavedFileName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sserverSavedFileName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getServerSavedFileName()))));
     }
 
     // add `nonSpatial` to the URL query string
     if (getNonSpatial() != null) {
-      joiner.add(String.format("%snonSpatial%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getNonSpatial()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%snonSpatial%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getNonSpatial()))));
     }
 
     // add `subVolume` to the URL query string
     if (getSubVolume() != null) {
-      joiner.add(String.format("%ssubVolume%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSubVolume()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      for (String _key : getSubVolume().keySet()) {
+        joiner.add(String.format("%ssubVolume%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, _key, containerSuffix),
+            getSubVolume().get(_key), ApiClient.urlEncode(ApiClient.valueToString(getSubVolume().get(_key)))));
+      }
     }
 
     // add `zSlices` to the URL query string
     if (getzSlices() != null) {
-      joiner.add(String.format("%szSlices%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getzSlices()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%szSlices%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getzSlices()))));
     }
 
     // add `tSlices` to the URL query string
     if (gettSlices() != null) {
-      joiner.add(String.format("%stSlices%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(gettSlices()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%stSlices%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(gettSlices()))));
     }
 
     // add `numChannels` to the URL query string
     if (getNumChannels() != null) {
-      joiner.add(String.format("%snumChannels%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getNumChannels()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%snumChannels%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getNumChannels()))));
     }
 
     return joiner.toString();

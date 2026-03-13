@@ -30,6 +30,7 @@ import org.vcell.restclient.model.SimulationQueueID;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * SimulationQueueEntryStatusRecord
  */
@@ -38,33 +39,35 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   SimulationQueueEntryStatusRecord.JSON_PROPERTY_FIELD_QUEUE_DATE,
   SimulationQueueEntryStatusRecord.JSON_PROPERTY_FIELD_QUEUE_I_D
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class SimulationQueueEntryStatusRecord {
   public static final String JSON_PROPERTY_FIELD_QUEUE_PRIORITY = "fieldQueuePriority";
+  @javax.annotation.Nullable
   private Integer fieldQueuePriority;
 
   public static final String JSON_PROPERTY_FIELD_QUEUE_DATE = "fieldQueueDate";
+  @javax.annotation.Nullable
   private OffsetDateTime fieldQueueDate;
 
   public static final String JSON_PROPERTY_FIELD_QUEUE_I_D = "fieldQueueID";
+  @javax.annotation.Nullable
   private SimulationQueueID fieldQueueID;
 
   public SimulationQueueEntryStatusRecord() { 
   }
 
-  public SimulationQueueEntryStatusRecord fieldQueuePriority(Integer fieldQueuePriority) {
+  public SimulationQueueEntryStatusRecord fieldQueuePriority(@javax.annotation.Nullable Integer fieldQueuePriority) {
     this.fieldQueuePriority = fieldQueuePriority;
     return this;
   }
 
-   /**
+  /**
    * Get fieldQueuePriority
    * @return fieldQueuePriority
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_QUEUE_PRIORITY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getFieldQueuePriority() {
     return fieldQueuePriority;
   }
@@ -72,24 +75,23 @@ public class SimulationQueueEntryStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_QUEUE_PRIORITY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldQueuePriority(Integer fieldQueuePriority) {
+  public void setFieldQueuePriority(@javax.annotation.Nullable Integer fieldQueuePriority) {
     this.fieldQueuePriority = fieldQueuePriority;
   }
 
 
-  public SimulationQueueEntryStatusRecord fieldQueueDate(OffsetDateTime fieldQueueDate) {
+  public SimulationQueueEntryStatusRecord fieldQueueDate(@javax.annotation.Nullable OffsetDateTime fieldQueueDate) {
     this.fieldQueueDate = fieldQueueDate;
     return this;
   }
 
-   /**
+  /**
    * Get fieldQueueDate
    * @return fieldQueueDate
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_QUEUE_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public OffsetDateTime getFieldQueueDate() {
     return fieldQueueDate;
   }
@@ -97,24 +99,23 @@ public class SimulationQueueEntryStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_QUEUE_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldQueueDate(OffsetDateTime fieldQueueDate) {
+  public void setFieldQueueDate(@javax.annotation.Nullable OffsetDateTime fieldQueueDate) {
     this.fieldQueueDate = fieldQueueDate;
   }
 
 
-  public SimulationQueueEntryStatusRecord fieldQueueID(SimulationQueueID fieldQueueID) {
+  public SimulationQueueEntryStatusRecord fieldQueueID(@javax.annotation.Nullable SimulationQueueID fieldQueueID) {
     this.fieldQueueID = fieldQueueID;
     return this;
   }
 
-   /**
+  /**
    * Get fieldQueueID
    * @return fieldQueueID
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_QUEUE_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public SimulationQueueID getFieldQueueID() {
     return fieldQueueID;
   }
@@ -122,7 +123,7 @@ public class SimulationQueueEntryStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_QUEUE_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldQueueID(SimulationQueueID fieldQueueID) {
+  public void setFieldQueueID(@javax.annotation.Nullable SimulationQueueID fieldQueueID) {
     this.fieldQueueID = fieldQueueID;
   }
 
@@ -205,17 +206,17 @@ public class SimulationQueueEntryStatusRecord {
 
     // add `fieldQueuePriority` to the URL query string
     if (getFieldQueuePriority() != null) {
-      joiner.add(String.format("%sfieldQueuePriority%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldQueuePriority()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldQueuePriority%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldQueuePriority()))));
     }
 
     // add `fieldQueueDate` to the URL query string
     if (getFieldQueueDate() != null) {
-      joiner.add(String.format("%sfieldQueueDate%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldQueueDate()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldQueueDate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldQueueDate()))));
     }
 
     // add `fieldQueueID` to the URL query string
     if (getFieldQueueID() != null) {
-      joiner.add(String.format("%sfieldQueueID%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldQueueID()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldQueueID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldQueueID()))));
     }
 
     return joiner.toString();

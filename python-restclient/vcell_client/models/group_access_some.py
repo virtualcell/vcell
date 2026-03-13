@@ -18,33 +18,31 @@ import pprint
 import re  # noqa: F401
 import json
 
-
-from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import StrictStr
-from pydantic import Field
+from pydantic import ConfigDict, Field, StrictBool, StrictFloat, StrictInt, StrictStr
+from typing import Any, ClassVar, Dict, List, Optional, Union
 from vcell_client.models.group_access import GroupAccess
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from vcell_client.models.user import User
+from typing import Optional, Set
+from typing_extensions import Self
 
 class GroupAccessSome(GroupAccess):
     """
     GroupAccessSome
     """ # noqa: E501
-    type: Optional[Any]
-    hash: Optional[Any] = None
-    group_members: Optional[Any] = Field(default=None, alias="groupMembers")
-    hidden_members: Optional[Any] = Field(default=None, alias="hiddenMembers")
+    type: StrictStr
+    hash: Optional[Union[StrictFloat, StrictInt]] = None
+    group_members: Optional[List[User]] = Field(default=None, alias="groupMembers")
+    hidden_members: Optional[List[StrictBool]] = Field(default=None, alias="hiddenMembers")
     description: Optional[StrictStr] = None
-    hidden_group_members: Optional[Any] = Field(default=None, alias="hiddenGroupMembers")
-    normal_group_members: Optional[Any] = Field(default=None, alias="normalGroupMembers")
+    hidden_group_members: Optional[List[User]] = Field(default=None, alias="hiddenGroupMembers")
+    normal_group_members: Optional[List[User]] = Field(default=None, alias="normalGroupMembers")
     __properties: ClassVar[List[str]] = ["groupid", "description"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -57,7 +55,7 @@ class GroupAccessSome(GroupAccess):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of GroupAccessSome from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -71,16 +69,18 @@ class GroupAccessSome(GroupAccess):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of GroupAccessSome from a dict"""
         if obj is None:
             return None

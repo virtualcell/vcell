@@ -18,17 +18,13 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional, Union
-from pydantic import BaseModel, StrictFloat, StrictInt, StrictStr
-from pydantic import Field
 from vcell_client.models.extent import Extent
 from vcell_client.models.i_size import ISize
 from vcell_client.models.origin import Origin
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class FieldData(BaseModel):
     """
@@ -45,10 +41,11 @@ class FieldData(BaseModel):
     name: Optional[StrictStr] = None
     __properties: ClassVar[List[str]] = ["shortSpecData", "doubleSpecData", "varNames", "times", "origin", "extent", "isize", "annotation", "name"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -61,7 +58,7 @@ class FieldData(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of FieldData from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -75,10 +72,12 @@ class FieldData(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of origin
@@ -93,7 +92,7 @@ class FieldData(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of FieldData from a dict"""
         if obj is None:
             return None
@@ -111,9 +110,9 @@ class FieldData(BaseModel):
             "doubleSpecData": obj.get("doubleSpecData"),
             "varNames": obj.get("varNames"),
             "times": obj.get("times"),
-            "origin": Origin.from_dict(obj.get("origin")) if obj.get("origin") is not None else None,
-            "extent": Extent.from_dict(obj.get("extent")) if obj.get("extent") is not None else None,
-            "isize": ISize.from_dict(obj.get("isize")) if obj.get("isize") is not None else None,
+            "origin": Origin.from_dict(obj["origin"]) if obj.get("origin") is not None else None,
+            "extent": Extent.from_dict(obj["extent"]) if obj.get("extent") is not None else None,
+            "isize": ISize.from_dict(obj["isize"]) if obj.get("isize") is not None else None,
             "annotation": obj.get("annotation"),
             "name": obj.get("name")
         })

@@ -18,31 +18,28 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictStr
-from pydantic import Field
 from vcell_client.models.exportable_data_type import ExportableDataType
 from vcell_client.models.standard_export_info import StandardExportInfo
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class N5ExportRequest(BaseModel):
     """
     N5ExportRequest
     """ # noqa: E501
     standard_export_information: Optional[StandardExportInfo] = Field(default=None, alias="standardExportInformation")
-    sub_volume: Optional[Any] = Field(default=None, alias="subVolume")
+    sub_volume: Optional[Dict[str, StrictStr]] = Field(default=None, alias="subVolume")
     exportable_data_type: Optional[ExportableDataType] = Field(default=None, alias="exportableDataType")
     dataset_name: Optional[StrictStr] = Field(default=None, alias="datasetName")
     __properties: ClassVar[List[str]] = ["standardExportInformation", "subVolume", "exportableDataType", "datasetName"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -55,7 +52,7 @@ class N5ExportRequest(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of N5ExportRequest from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -69,24 +66,21 @@ class N5ExportRequest(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of standard_export_information
         if self.standard_export_information:
             _dict['standardExportInformation'] = self.standard_export_information.to_dict()
-        # set to None if sub_volume (nullable) is None
-        # and model_fields_set contains the field
-        if self.sub_volume is None and "sub_volume" in self.model_fields_set:
-            _dict['subVolume'] = None
-
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of N5ExportRequest from a dict"""
         if obj is None:
             return None
@@ -100,7 +94,8 @@ class N5ExportRequest(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in N5ExportRequest) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "standardExportInformation": StandardExportInfo.from_dict(obj.get("standardExportInformation")) if obj.get("standardExportInformation") is not None else None,
+            "standardExportInformation": StandardExportInfo.from_dict(obj["standardExportInformation"]) if obj.get("standardExportInformation") is not None else None,
+            "subVolume": obj.get("subVolume"),
             "exportableDataType": obj.get("exportableDataType"),
             "datasetName": obj.get("datasetName")
         })

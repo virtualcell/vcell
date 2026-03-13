@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **x** | **float** |  | [optional] 
@@ -18,12 +19,12 @@ json = "{}"
 # create an instance of Coordinate from a JSON string
 coordinate_instance = Coordinate.from_json(json)
 # print the JSON string representation of the object
-print Coordinate.to_json()
+print(Coordinate.to_json())
 
 # convert the object into a dict
 coordinate_dict = coordinate_instance.to_dict()
 # create an instance of Coordinate from a dict
-coordinate_form_dict = coordinate.from_dict(coordinate_dict)
+coordinate_from_dict = Coordinate.from_dict(coordinate_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

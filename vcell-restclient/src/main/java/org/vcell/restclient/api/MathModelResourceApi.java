@@ -15,6 +15,7 @@ package org.vcell.restclient.api;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.MathModelSummary;
@@ -51,7 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class MathModelResourceApi {
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
@@ -62,7 +63,7 @@ public class MathModelResourceApi {
   private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
   public MathModelResourceApi() {
-    this(new ApiClient());
+    this(Configuration.getDefaultApiClient());
   }
 
   public MathModelResourceApi(ApiClient apiClient) {
@@ -118,15 +119,15 @@ public class MathModelResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("deleteMathModel", localVarResponse);
         }
-        return new ApiResponse<Void>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          null
+        return new ApiResponse<>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            null
         );
       } finally {
         // Drain the InputStream
         while (localVarResponse.body().read() != -1) {
-            // Ignore
+          // Ignore
         }
         localVarResponse.body().close();
       }
@@ -163,6 +164,7 @@ public class MathModelResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get Math Model Summaries
    * Return MathModel summaries.
@@ -195,10 +197,21 @@ public class MathModelResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getSummaries", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<List<MathModelSummary>>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<List<MathModelSummary>>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<List<MathModelSummary>>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<MathModelSummary>>() {})
         );
       } finally {
       }
@@ -245,6 +258,7 @@ public class MathModelResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get Math Model Summary
    * All of the text based information about a MathModel (summary, version, publication status, etc...), but not the actual MathModel itself.
@@ -277,10 +291,21 @@ public class MathModelResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getSummary", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<MathModelSummary>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<MathModelSummary>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<MathModelSummary>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<MathModelSummary>() {})
         );
       } finally {
       }
@@ -317,6 +342,7 @@ public class MathModelResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get Math Model
    * Returns MathModel in VCML format.
@@ -349,10 +375,21 @@ public class MathModelResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getVCML", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<String>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<String>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<String>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {})
         );
       } finally {
       }
@@ -389,12 +426,13 @@ public class MathModelResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Save
    * 
    * @param body  (required)
    * @param newName Name to save new MathModel under. Leave blank if re-saving existing MathModel. (optional)
-   * @param simNames The name of simulations that will be prepared for future execution. (optional
+   * @param simNames The name of simulations that will be prepared for future execution. (optional)
    * @return String
    * @throws ApiException if fails to make API call
    */
@@ -408,7 +446,7 @@ public class MathModelResourceApi {
    * 
    * @param body  (required)
    * @param newName Name to save new MathModel under. Leave blank if re-saving existing MathModel. (optional)
-   * @param simNames The name of simulations that will be prepared for future execution. (optional
+   * @param simNames The name of simulations that will be prepared for future execution. (optional)
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
@@ -425,10 +463,21 @@ public class MathModelResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("saveMathModel", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<String>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<String>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<String>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {})
         );
       } finally {
       }
@@ -482,4 +531,5 @@ public class MathModelResourceApi {
     }
     return localVarRequestBuilder;
   }
+
 }

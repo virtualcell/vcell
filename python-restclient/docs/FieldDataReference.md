@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **field_data_id** | [**ExternalDataIdentifier**](ExternalDataIdentifier.md) |  | [optional] 
@@ -18,12 +19,12 @@ json = "{}"
 # create an instance of FieldDataReference from a JSON string
 field_data_reference_instance = FieldDataReference.from_json(json)
 # print the JSON string representation of the object
-print FieldDataReference.to_json()
+print(FieldDataReference.to_json())
 
 # convert the object into a dict
 field_data_reference_dict = field_data_reference_instance.to_dict()
 # create an instance of FieldDataReference from a dict
-field_data_reference_form_dict = field_data_reference.from_dict(field_data_reference_dict)
+field_data_reference_from_dict = FieldDataReference.from_dict(field_data_reference_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

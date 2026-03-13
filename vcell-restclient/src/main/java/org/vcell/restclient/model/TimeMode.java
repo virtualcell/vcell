@@ -30,9 +30,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public enum TimeMode {
   
-  POINT("TIME_POINT"),
+  TIME_POINT("TIME_POINT"),
   
-  RANGE("TIME_RANGE");
+  TIME_RANGE("TIME_RANGE");
 
   private String value;
 

@@ -19,9 +19,8 @@ Delete the BioModel from VCell's database.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -50,6 +49,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **bio_model_id** | **str**|  | 
@@ -68,6 +68,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **204** | No Content |  -  |
@@ -84,9 +85,8 @@ Get BioModel.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.bio_model import BioModel
 from vcell_client.rest import ApiException
@@ -118,6 +118,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **bio_model_id** | **str**|  | 
@@ -136,6 +137,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -152,9 +154,8 @@ Return BioModel summaries.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.bio_model_summary import BioModelSummary
 from vcell_client.rest import ApiException
@@ -186,6 +187,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **include_public_and_shared** | **bool**| Includes BioModel summaries that are public or shared with requester. Default is true. | [optional] 
@@ -204,6 +206,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -218,9 +221,8 @@ All of the text based information about a BioModel (summary, version, publicatio
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.bio_model_summary import BioModelSummary
 from vcell_client.rest import ApiException
@@ -252,6 +254,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **bio_model_id** | **str**|  | 
@@ -270,6 +273,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -285,9 +289,8 @@ Get the BioModel in VCML format.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -318,6 +321,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **bio_model_id** | **str**|  | 
@@ -336,6 +340,7 @@ No authorization required
  - **Accept**: text/xml, application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -352,9 +357,8 @@ Save's the given BioModel. Optional parameters of name and simulations to update
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -391,6 +395,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **body** | **str**| BioModelVCML which will be saved. | 
@@ -411,6 +416,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/xml, application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |

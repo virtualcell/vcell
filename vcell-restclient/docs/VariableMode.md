@@ -5,11 +5,11 @@
 ## Enum
 
 
-* `ONE` (value: `"VARIABLE_ONE"`)
+* `VARIABLE_ONE` (value: `"VARIABLE_ONE"`)
 
-* `MULTI` (value: `"VARIABLE_MULTI"`)
+* `VARIABLE_MULTI` (value: `"VARIABLE_MULTI"`)
 
-* `ALL` (value: `"VARIABLE_ALL"`)
+* `VARIABLE_ALL` (value: `"VARIABLE_ALL"`)
 
 
 

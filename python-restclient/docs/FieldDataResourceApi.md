@@ -22,9 +22,8 @@ Create Field Data with granular detail in one request.The following files are ac
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.extent import Extent
 from vcell_client.models.field_data_saved_results import FieldDataSavedResults
@@ -70,6 +69,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **file** | **bytearray**|  | [optional] 
@@ -95,6 +95,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -112,9 +113,8 @@ Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.field_data import FieldData
 from vcell_client.rest import ApiException
@@ -151,6 +151,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **file** | **bytearray**|  | [optional] 
@@ -170,6 +171,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -187,10 +189,10 @@ Copy all existing field data from a BioModel/MathModel that you have access to, 
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
+from vcell_client.models.external_data_identifier import ExternalDataIdentifier
 from vcell_client.models.source_model import SourceModel
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -225,6 +227,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **source_model** | [**SourceModel**](SourceModel.md)|  | 
@@ -243,6 +246,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -261,9 +265,8 @@ Submit a .zip or .tif file that converts into field data, with all defaults deri
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.field_data_saved_results import FieldDataSavedResults
 from vcell_client.rest import ApiException
@@ -300,6 +303,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **file** | **bytearray**|  | [optional] 
@@ -319,6 +323,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -336,9 +341,8 @@ Create new field data from existing simulation results.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -373,6 +377,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **sim_key_reference** | **str**|  | [optional] 
@@ -393,6 +398,7 @@ void (empty response body)
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **201** | Created |  -  |
@@ -410,9 +416,8 @@ Delete the selected field data.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -445,6 +450,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **field_data_id** | **str**|  | 
@@ -463,6 +469,7 @@ void (empty response body)
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **204** | No Content |  -  |
@@ -479,9 +486,8 @@ Get all of the ids used to identify, and retrieve field data.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.field_data_reference import FieldDataReference
 from vcell_client.rest import ApiException
@@ -515,6 +521,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 
 ### Parameters
+
 This endpoint does not need any parameter.
 
 ### Return type
@@ -531,6 +538,7 @@ This endpoint does not need any parameter.
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -547,9 +555,8 @@ Get the shape of the field data. That is it's size, origin, extent, times, and d
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.field_data_shape import FieldDataShape
 from vcell_client.rest import ApiException
@@ -585,6 +592,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **field_data_id** | **str**|  | 
@@ -603,6 +611,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -620,9 +629,8 @@ Take the generated field data, and save it to the server. User may adjust the an
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.field_data import FieldData
 from vcell_client.models.field_data_saved_results import FieldDataSavedResults
@@ -659,6 +667,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **field_data** | [**FieldData**](FieldData.md)|  | 
@@ -677,6 +686,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |

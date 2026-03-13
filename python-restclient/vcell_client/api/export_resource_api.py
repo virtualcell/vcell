@@ -12,26 +12,17 @@
     Do not edit the class manually.
 """  # noqa: E501
 
-
-import io
 import warnings
-
 from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
-from typing import Dict, List, Optional, Tuple, Union, Any
-
-try:
-    from typing import Annotated
-except ImportError:
-    from typing_extensions import Annotated
+from typing import Any, Dict, List, Optional, Tuple, Union
+from typing_extensions import Annotated
 
 from pydantic import StrictInt
-
 from typing import List, Optional
-
 from vcell_client.models.export_event import ExportEvent
 from vcell_client.models.n5_export_request import N5ExportRequest
 
-from vcell_client.api_client import ApiClient
+from vcell_client.api_client import ApiClient, RequestSerialized
 from vcell_client.api_response import ApiResponse
 from vcell_client.rest import RESTResponseType
 
@@ -108,8 +99,7 @@ class ExportResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -181,8 +171,7 @@ class ExportResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -254,8 +243,7 @@ class ExportResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -271,19 +259,20 @@ class ExportResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -296,11 +285,12 @@ class ExportResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
         # set the HTTP header `Content-Type`
         if _content_type:
@@ -396,8 +386,7 @@ class ExportResourceApi:
             '200': "List[ExportEvent]",
             '401': "VCellHTTPError",
             '403': None,
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -467,8 +456,7 @@ class ExportResourceApi:
             '200': "List[ExportEvent]",
             '401': "VCellHTTPError",
             '403': None,
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -538,8 +526,7 @@ class ExportResourceApi:
             '200': "List[ExportEvent]",
             '401': "VCellHTTPError",
             '403': None,
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -555,19 +542,20 @@ class ExportResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -582,11 +570,12 @@ class ExportResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting

@@ -30,6 +30,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * Identity
  */
@@ -39,36 +40,39 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   Identity.JSON_PROPERTY_ATTRIBUTES,
   Identity.JSON_PROPERTY_CREDENTIALS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class Identity {
   public static final String JSON_PROPERTY_PRINCIPAL_NAME = "principal_name";
+  @javax.annotation.Nullable
   private String principalName;
 
   public static final String JSON_PROPERTY_ROLES = "roles";
-  private List<String> roles;
+  @javax.annotation.Nullable
+  private List<String> roles = new ArrayList<>();
 
   public static final String JSON_PROPERTY_ATTRIBUTES = "attributes";
-  private List<String> attributes;
+  @javax.annotation.Nullable
+  private List<String> attributes = new ArrayList<>();
 
   public static final String JSON_PROPERTY_CREDENTIALS = "credentials";
-  private List<String> credentials;
+  @javax.annotation.Nullable
+  private List<String> credentials = new ArrayList<>();
 
   public Identity() { 
   }
 
-  public Identity principalName(String principalName) {
+  public Identity principalName(@javax.annotation.Nullable String principalName) {
     this.principalName = principalName;
     return this;
   }
 
-   /**
+  /**
    * Get principalName
    * @return principalName
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_PRINCIPAL_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getPrincipalName() {
     return principalName;
   }
@@ -76,12 +80,12 @@ public class Identity {
 
   @JsonProperty(JSON_PROPERTY_PRINCIPAL_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPrincipalName(String principalName) {
+  public void setPrincipalName(@javax.annotation.Nullable String principalName) {
     this.principalName = principalName;
   }
 
 
-  public Identity roles(List<String> roles) {
+  public Identity roles(@javax.annotation.Nullable List<String> roles) {
     this.roles = roles;
     return this;
   }
@@ -94,14 +98,13 @@ public class Identity {
     return this;
   }
 
-   /**
+  /**
    * Get roles
    * @return roles
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ROLES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<String> getRoles() {
     return roles;
   }
@@ -109,12 +112,12 @@ public class Identity {
 
   @JsonProperty(JSON_PROPERTY_ROLES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setRoles(List<String> roles) {
+  public void setRoles(@javax.annotation.Nullable List<String> roles) {
     this.roles = roles;
   }
 
 
-  public Identity attributes(List<String> attributes) {
+  public Identity attributes(@javax.annotation.Nullable List<String> attributes) {
     this.attributes = attributes;
     return this;
   }
@@ -127,14 +130,13 @@ public class Identity {
     return this;
   }
 
-   /**
+  /**
    * Get attributes
    * @return attributes
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ATTRIBUTES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<String> getAttributes() {
     return attributes;
   }
@@ -142,12 +144,12 @@ public class Identity {
 
   @JsonProperty(JSON_PROPERTY_ATTRIBUTES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setAttributes(List<String> attributes) {
+  public void setAttributes(@javax.annotation.Nullable List<String> attributes) {
     this.attributes = attributes;
   }
 
 
-  public Identity credentials(List<String> credentials) {
+  public Identity credentials(@javax.annotation.Nullable List<String> credentials) {
     this.credentials = credentials;
     return this;
   }
@@ -160,14 +162,13 @@ public class Identity {
     return this;
   }
 
-   /**
+  /**
    * Get credentials
    * @return credentials
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_CREDENTIALS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<String> getCredentials() {
     return credentials;
   }
@@ -175,7 +176,7 @@ public class Identity {
 
   @JsonProperty(JSON_PROPERTY_CREDENTIALS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setCredentials(List<String> credentials) {
+  public void setCredentials(@javax.annotation.Nullable List<String> credentials) {
     this.credentials = credentials;
   }
 
@@ -260,7 +261,7 @@ public class Identity {
 
     // add `principal_name` to the URL query string
     if (getPrincipalName() != null) {
-      joiner.add(String.format("%sprincipal_name%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPrincipalName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sprincipal_name%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPrincipalName()))));
     }
 
     // add `roles` to the URL query string
@@ -268,7 +269,7 @@ public class Identity {
       for (int i = 0; i < getRoles().size(); i++) {
         joiner.add(String.format("%sroles%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getRoles().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+            ApiClient.urlEncode(ApiClient.valueToString(getRoles().get(i)))));
       }
     }
 
@@ -277,7 +278,7 @@ public class Identity {
       for (int i = 0; i < getAttributes().size(); i++) {
         joiner.add(String.format("%sattributes%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getAttributes().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+            ApiClient.urlEncode(ApiClient.valueToString(getAttributes().get(i)))));
       }
     }
 
@@ -286,7 +287,7 @@ public class Identity {
       for (int i = 0; i < getCredentials().size(); i++) {
         joiner.add(String.format("%scredentials%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getCredentials().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+            ApiClient.urlEncode(ApiClient.valueToString(getCredentials().get(i)))));
       }
     }
 

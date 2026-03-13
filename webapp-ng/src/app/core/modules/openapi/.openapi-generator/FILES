@@ -1,5 +1,6 @@
 .gitignore
 README.md
+api.base.service.ts
 api.module.ts
 api/admin-resource.service.ts
 api/admin-resource.serviceInterface.ts

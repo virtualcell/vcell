@@ -18,18 +18,14 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictInt, StrictStr
-from pydantic import Field
 from vcell_client.models.annotated_function_dto import AnnotatedFunctionDTO
 from vcell_client.models.geometry_spec_dto import GeometrySpecDTO
 from vcell_client.models.time_specs import TimeSpecs
 from vcell_client.models.variable_specs import VariableSpecs
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class StandardExportInfo(BaseModel):
     """
@@ -45,10 +41,11 @@ class StandardExportInfo(BaseModel):
     variable_specs: Optional[VariableSpecs] = Field(default=None, alias="variableSpecs")
     __properties: ClassVar[List[str]] = ["outputContext", "contextName", "simulationName", "simulationKey", "simulationJob", "geometrySpecs", "timeSpecs", "variableSpecs"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -61,7 +58,7 @@ class StandardExportInfo(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of StandardExportInfo from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -75,18 +72,20 @@ class StandardExportInfo(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of each item in output_context (list)
         _items = []
         if self.output_context:
-            for _item in self.output_context:
-                if _item:
-                    _items.append(_item.to_dict())
+            for _item_output_context in self.output_context:
+                if _item_output_context:
+                    _items.append(_item_output_context.to_dict())
             _dict['outputContext'] = _items
         # override the default output from pydantic by calling `to_dict()` of geometry_specs
         if self.geometry_specs:
@@ -100,7 +99,7 @@ class StandardExportInfo(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of StandardExportInfo from a dict"""
         if obj is None:
             return None
@@ -114,14 +113,14 @@ class StandardExportInfo(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in StandardExportInfo) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "outputContext": [AnnotatedFunctionDTO.from_dict(_item) for _item in obj.get("outputContext")] if obj.get("outputContext") is not None else None,
+            "outputContext": [AnnotatedFunctionDTO.from_dict(_item) for _item in obj["outputContext"]] if obj.get("outputContext") is not None else None,
             "contextName": obj.get("contextName"),
             "simulationName": obj.get("simulationName"),
             "simulationKey": obj.get("simulationKey"),
             "simulationJob": obj.get("simulationJob"),
-            "geometrySpecs": GeometrySpecDTO.from_dict(obj.get("geometrySpecs")) if obj.get("geometrySpecs") is not None else None,
-            "timeSpecs": TimeSpecs.from_dict(obj.get("timeSpecs")) if obj.get("timeSpecs") is not None else None,
-            "variableSpecs": VariableSpecs.from_dict(obj.get("variableSpecs")) if obj.get("variableSpecs") is not None else None
+            "geometrySpecs": GeometrySpecDTO.from_dict(obj["geometrySpecs"]) if obj.get("geometrySpecs") is not None else None,
+            "timeSpecs": TimeSpecs.from_dict(obj["timeSpecs"]) if obj.get("timeSpecs") is not None else None,
+            "variableSpecs": VariableSpecs.from_dict(obj["variableSpecs"]) if obj.get("variableSpecs") is not None else None
         })
         return _obj
 

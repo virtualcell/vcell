@@ -18,18 +18,14 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel
-from pydantic import Field
 from vcell_client.models.bio_model_child_summary import BioModelChildSummary
 from vcell_client.models.publication_info import PublicationInfo
 from vcell_client.models.v_cell_software_version import VCellSoftwareVersion
 from vcell_client.models.version import Version
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class BioModelSummary(BaseModel):
     """
@@ -41,10 +37,11 @@ class BioModelSummary(BaseModel):
     v_cell_software_version: Optional[VCellSoftwareVersion] = Field(default=None, alias="vCellSoftwareVersion")
     __properties: ClassVar[List[str]] = ["version", "summary", "publicationInformation", "vCellSoftwareVersion"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -57,7 +54,7 @@ class BioModelSummary(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of BioModelSummary from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -71,10 +68,12 @@ class BioModelSummary(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of version
@@ -86,9 +85,9 @@ class BioModelSummary(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of each item in publication_information (list)
         _items = []
         if self.publication_information:
-            for _item in self.publication_information:
-                if _item:
-                    _items.append(_item.to_dict())
+            for _item_publication_information in self.publication_information:
+                if _item_publication_information:
+                    _items.append(_item_publication_information.to_dict())
             _dict['publicationInformation'] = _items
         # override the default output from pydantic by calling `to_dict()` of v_cell_software_version
         if self.v_cell_software_version:
@@ -96,7 +95,7 @@ class BioModelSummary(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of BioModelSummary from a dict"""
         if obj is None:
             return None
@@ -110,10 +109,10 @@ class BioModelSummary(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in BioModelSummary) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "version": Version.from_dict(obj.get("version")) if obj.get("version") is not None else None,
-            "summary": BioModelChildSummary.from_dict(obj.get("summary")) if obj.get("summary") is not None else None,
-            "publicationInformation": [PublicationInfo.from_dict(_item) for _item in obj.get("publicationInformation")] if obj.get("publicationInformation") is not None else None,
-            "vCellSoftwareVersion": VCellSoftwareVersion.from_dict(obj.get("vCellSoftwareVersion")) if obj.get("vCellSoftwareVersion") is not None else None
+            "version": Version.from_dict(obj["version"]) if obj.get("version") is not None else None,
+            "summary": BioModelChildSummary.from_dict(obj["summary"]) if obj.get("summary") is not None else None,
+            "publicationInformation": [PublicationInfo.from_dict(_item) for _item in obj["publicationInformation"]] if obj.get("publicationInformation") is not None else None,
+            "vCellSoftwareVersion": VCellSoftwareVersion.from_dict(obj["vCellSoftwareVersion"]) if obj.get("vCellSoftwareVersion") is not None else None
         })
         return _obj
 

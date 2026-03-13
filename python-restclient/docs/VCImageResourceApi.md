@@ -20,9 +20,8 @@ Remove specific image VCML.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -51,6 +50,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **str**|  | 
@@ -69,6 +69,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **204** | No Content |  -  |
@@ -88,9 +89,8 @@ Return Image summaries.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.vc_image_summary import VCImageSummary
 from vcell_client.rest import ApiException
@@ -122,6 +122,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **include_public_and_shared** | **bool**| Include Image summaries that are public and shared with the requester. Default is true. | [optional] 
@@ -140,6 +141,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -156,9 +158,8 @@ All of the miscellaneous information about an Image (Extent, ISize, preview, etc
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.vc_image_summary import VCImageSummary
 from vcell_client.rest import ApiException
@@ -190,6 +191,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **str**|  | 
@@ -208,6 +210,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -226,9 +229,8 @@ Get specific image VCML.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -259,6 +261,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **str**|  | 
@@ -277,6 +280,7 @@ No authorization required
  - **Accept**: text/plain, application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -296,9 +300,8 @@ Save the VCML representation of an image.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -330,6 +333,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **body** | **str**|  | 
@@ -349,6 +353,7 @@ No authorization required
  - **Accept**: text/plain, application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |

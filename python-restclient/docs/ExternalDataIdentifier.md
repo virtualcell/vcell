@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **key** | **str** |  | [optional] 
@@ -22,12 +23,12 @@ json = "{}"
 # create an instance of ExternalDataIdentifier from a JSON string
 external_data_identifier_instance = ExternalDataIdentifier.from_json(json)
 # print the JSON string representation of the object
-print ExternalDataIdentifier.to_json()
+print(ExternalDataIdentifier.to_json())
 
 # convert the object into a dict
 external_data_identifier_dict = external_data_identifier_instance.to_dict()
 # create an instance of ExternalDataIdentifier from a dict
-external_data_identifier_form_dict = external_data_identifier.from_dict(external_data_identifier_dict)
+external_data_identifier_from_dict = ExternalDataIdentifier.from_dict(external_data_identifier_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

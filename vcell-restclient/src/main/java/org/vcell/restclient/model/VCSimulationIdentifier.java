@@ -29,6 +29,7 @@ import org.vcell.restclient.model.User;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * VCSimulationIdentifier
  */
@@ -37,33 +38,35 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   VCSimulationIdentifier.JSON_PROPERTY_OWNER,
   VCSimulationIdentifier.JSON_PROPERTY_ID
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class VCSimulationIdentifier {
   public static final String JSON_PROPERTY_SIMULATION_KEY = "simulationKey";
+  @javax.annotation.Nullable
   private String simulationKey;
 
   public static final String JSON_PROPERTY_OWNER = "owner";
+  @javax.annotation.Nullable
   private User owner;
 
   public static final String JSON_PROPERTY_ID = "id";
+  @javax.annotation.Nullable
   private String id;
 
   public VCSimulationIdentifier() { 
   }
 
-  public VCSimulationIdentifier simulationKey(String simulationKey) {
+  public VCSimulationIdentifier simulationKey(@javax.annotation.Nullable String simulationKey) {
     this.simulationKey = simulationKey;
     return this;
   }
 
-   /**
+  /**
    * Get simulationKey
    * @return simulationKey
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SIMULATION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getSimulationKey() {
     return simulationKey;
   }
@@ -71,24 +74,23 @@ public class VCSimulationIdentifier {
 
   @JsonProperty(JSON_PROPERTY_SIMULATION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimulationKey(String simulationKey) {
+  public void setSimulationKey(@javax.annotation.Nullable String simulationKey) {
     this.simulationKey = simulationKey;
   }
 
 
-  public VCSimulationIdentifier owner(User owner) {
+  public VCSimulationIdentifier owner(@javax.annotation.Nullable User owner) {
     this.owner = owner;
     return this;
   }
 
-   /**
+  /**
    * Get owner
    * @return owner
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_OWNER)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public User getOwner() {
     return owner;
   }
@@ -96,24 +98,23 @@ public class VCSimulationIdentifier {
 
   @JsonProperty(JSON_PROPERTY_OWNER)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setOwner(User owner) {
+  public void setOwner(@javax.annotation.Nullable User owner) {
     this.owner = owner;
   }
 
 
-  public VCSimulationIdentifier id(String id) {
+  public VCSimulationIdentifier id(@javax.annotation.Nullable String id) {
     this.id = id;
     return this;
   }
 
-   /**
+  /**
    * Get id
    * @return id
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ID)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getId() {
     return id;
   }
@@ -121,7 +122,7 @@ public class VCSimulationIdentifier {
 
   @JsonProperty(JSON_PROPERTY_ID)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setId(String id) {
+  public void setId(@javax.annotation.Nullable String id) {
     this.id = id;
   }
 
@@ -204,7 +205,7 @@ public class VCSimulationIdentifier {
 
     // add `simulationKey` to the URL query string
     if (getSimulationKey() != null) {
-      joiner.add(String.format("%ssimulationKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSimulationKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%ssimulationKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSimulationKey()))));
     }
 
     // add `owner` to the URL query string
@@ -214,7 +215,7 @@ public class VCSimulationIdentifier {
 
     // add `id` to the URL query string
     if (getId() != null) {
-      joiner.add(String.format("%sid%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getId()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sid%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getId()))));
     }
 
     return joiner.toString();

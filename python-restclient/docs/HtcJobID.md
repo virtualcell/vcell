@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **job_number** | **int** |  | [optional] 
@@ -18,12 +19,12 @@ json = "{}"
 # create an instance of HtcJobID from a JSON string
 htc_job_id_instance = HtcJobID.from_json(json)
 # print the JSON string representation of the object
-print HtcJobID.to_json()
+print(HtcJobID.to_json())
 
 # convert the object into a dict
 htc_job_id_dict = htc_job_id_instance.to_dict()
 # create an instance of HtcJobID from a dict
-htc_job_id_form_dict = htc_job_id.from_dict(htc_job_id_dict)
+htc_job_id_from_dict = HtcJobID.from_dict(htc_job_id_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

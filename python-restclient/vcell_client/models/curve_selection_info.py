@@ -18,15 +18,11 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictFloat, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional, Union
-from pydantic import BaseModel, StrictBool, StrictFloat, StrictInt
-from pydantic import Field
 from vcell_client.models.curve import Curve
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class CurveSelectionInfo(BaseModel):
     """
@@ -44,10 +40,11 @@ class CurveSelectionInfo(BaseModel):
     crossing: Optional[StrictBool] = None
     __properties: ClassVar[List[str]] = ["fieldCurve", "fieldType", "fieldControlPoint", "fieldSegment", "fieldU", "fieldUExtended", "fieldControlPointExtended", "fieldSegmentExtended", "fieldDirectionNegative", "crossing"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -60,7 +57,7 @@ class CurveSelectionInfo(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of CurveSelectionInfo from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -74,10 +71,12 @@ class CurveSelectionInfo(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of field_curve
@@ -86,7 +85,7 @@ class CurveSelectionInfo(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of CurveSelectionInfo from a dict"""
         if obj is None:
             return None
@@ -100,7 +99,7 @@ class CurveSelectionInfo(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in CurveSelectionInfo) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "fieldCurve": Curve.from_dict(obj.get("fieldCurve")) if obj.get("fieldCurve") is not None else None,
+            "fieldCurve": Curve.from_dict(obj["fieldCurve"]) if obj.get("fieldCurve") is not None else None,
             "fieldType": obj.get("fieldType"),
             "fieldControlPoint": obj.get("fieldControlPoint"),
             "fieldSegment": obj.get("fieldSegment"),

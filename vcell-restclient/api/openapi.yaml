@@ -70,7 +70,8 @@ paths:
       summary: Get the status of simulation running
       tags:
       - Simulation Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/Simulation/{simID}/startSimulation:
     post:
       operationId: startSimulation
@@ -115,7 +116,8 @@ paths:
       summary: Start a simulation.
       tags:
       - Simulation Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/Simulation/{simID}/stopSimulation:
     post:
       operationId: stopSimulation
@@ -160,7 +162,8 @@ paths:
       summary: Stop a simulation.
       tags:
       - Simulation Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/admin/usage:
     get:
       operationId: getUsage
@@ -196,7 +199,9 @@ paths:
       summary: Get usage summary
       tags:
       - Admin Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
+      - application/pdf
   /api/v1/bioModel:
     post:
       operationId: saveBioModel
@@ -264,7 +269,9 @@ paths:
       tags:
       - Bio Model Resource
       x-content-type: application/xml
-      x-accepts: application/json
+      x-accepts:
+      - application/json
+      - application/xml
   /api/v1/bioModel/summaries:
     get:
       operationId: getBioModelSummaries
@@ -296,7 +303,8 @@ paths:
       summary: Return BioModel summaries.
       tags:
       - Bio Model Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/bioModel/{bioModelID}:
     delete:
       operationId: deleteBioModel
@@ -332,7 +340,8 @@ paths:
       summary: Delete the BioModel from VCell's database.
       tags:
       - Bio Model Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
     get:
       operationId: getBioModel
       parameters:
@@ -371,7 +380,8 @@ paths:
       summary: Get BioModel.
       tags:
       - Bio Model Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/bioModel/{bioModelID}/summary:
     get:
       operationId: getBioModelSummary
@@ -406,7 +416,8 @@ paths:
         \ publication status, etc...), but not the actual BioModel itself."
       tags:
       - Bio Model Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/bioModel/{bioModelID}/vcml_download:
     get:
       operationId: getBioModelVCML
@@ -446,7 +457,9 @@ paths:
       summary: Get the BioModel in VCML format.
       tags:
       - Bio Model Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
+      - text/xml
   /api/v1/export/N5:
     post:
       description: "Create an N5 (ImageJ compatible) export. The request must contain\
@@ -500,7 +513,8 @@ paths:
       tags:
       - Export Resource
       x-content-type: application/json
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/export/status:
     get:
       description: Get the status of your export jobs past the timestamp (Unix epoch
@@ -544,7 +558,8 @@ paths:
       summary: Poll Export Status
       tags:
       - Export Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/fieldData/IDs:
     get:
       operationId: getAllIDs
@@ -581,7 +596,8 @@ paths:
       summary: "Get all of the ids used to identify, and retrieve field data."
       tags:
       - Field Data Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/fieldData/advancedCreate:
     post:
       operationId: advancedCreate
@@ -651,7 +667,8 @@ paths:
       tags:
       - Field Data Resource
       x-content-type: multipart/form-data
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/fieldData/analyzeFile:
     post:
       operationId: analyzeFile
@@ -698,7 +715,8 @@ paths:
       tags:
       - Field Data Resource
       x-content-type: multipart/form-data
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/fieldData/copyModelsFieldData:
     post:
       operationId: copyModelsFieldData
@@ -750,7 +768,8 @@ paths:
       tags:
       - Field Data Resource
       x-content-type: application/json
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/fieldData/createFromFile:
     post:
       operationId: createFromFile
@@ -799,7 +818,8 @@ paths:
       tags:
       - Field Data Resource
       x-content-type: multipart/form-data
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/fieldData/createFromSimulation:
     post:
       operationId: createFromSimulation
@@ -839,7 +859,8 @@ paths:
       tags:
       - Field Data Resource
       x-content-type: application/x-www-form-urlencoded
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/fieldData/delete/{fieldDataID}:
     delete:
       operationId: delete
@@ -878,7 +899,8 @@ paths:
       summary: Delete the selected field data.
       tags:
       - Field Data Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/fieldData/save:
     post:
       operationId: save
@@ -925,7 +947,8 @@ paths:
       tags:
       - Field Data Resource
       x-content-type: application/json
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/fieldData/shape/{fieldDataID}:
     get:
       operationId: getShapeFromID
@@ -975,7 +998,8 @@ paths:
         \ times, and data identifiers."
       tags:
       - Field Data Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/geometry:
     post:
       description: Save's VCML with <Geometry> as the root element.
@@ -1030,7 +1054,9 @@ paths:
       tags:
       - Geometry Resource
       x-content-type: application/xml
-      x-accepts: application/json
+      x-accepts:
+      - application/json
+      - application/xml
   /api/v1/geometry/summaries:
     get:
       description: Return Geometry summaries.
@@ -1063,7 +1089,8 @@ paths:
       summary: Get Geometry Summaries
       tags:
       - Geometry Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/geometry/summary/{id}:
     get:
       description: "All of the text based information about a Geometry (dimensions,\
@@ -1105,7 +1132,8 @@ paths:
       summary: Get Geometry Summary
       tags:
       - Geometry Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/geometry/{id}:
     delete:
       description: Remove specific Geometry.
@@ -1148,7 +1176,8 @@ paths:
       summary: Delete Geometry
       tags:
       - Geometry Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
     get:
       description: Returns <Geometry> as root element in VCML format.
       operationId: getGeometryVCML
@@ -1188,7 +1217,9 @@ paths:
       summary: Get Geometry
       tags:
       - Geometry Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
+      - application/xml
   /api/v1/helloworld:
     get:
       operationId: getHelloWorld
@@ -1208,7 +1239,8 @@ paths:
       summary: Get hello world message.
       tags:
       - Hello World
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/image:
     post:
       description: Save the VCML representation of an image.
@@ -1258,7 +1290,9 @@ paths:
       tags:
       - VC Image Resource
       x-content-type: application/json
-      x-accepts: application/json
+      x-accepts:
+      - application/json
+      - text/plain
   /api/v1/image/summaries:
     get:
       description: Return Image summaries.
@@ -1291,7 +1325,8 @@ paths:
       summary: Get Summaries
       tags:
       - VC Image Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/image/summary/{id}:
     get:
       description: "All of the miscellaneous information about an Image (Extent, ISize,\
@@ -1333,7 +1368,8 @@ paths:
       summary: Get Summary
       tags:
       - VC Image Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/image/{id}:
     delete:
       description: Remove specific image VCML.
@@ -1376,7 +1412,8 @@ paths:
       summary: Delete VC Image
       tags:
       - VC Image Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
     get:
       description: Get specific image VCML.
       operationId: getImageVCML
@@ -1422,7 +1459,9 @@ paths:
       summary: Get VC Image
       tags:
       - VC Image Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
+      - text/plain
   /api/v1/mathModel:
     post:
       operationId: saveMathModel
@@ -1486,7 +1525,9 @@ paths:
       tags:
       - Math Model Resource
       x-content-type: application/xml
-      x-accepts: application/json
+      x-accepts:
+      - application/json
+      - application/xml
   /api/v1/mathModel/summaries:
     get:
       description: Return MathModel summaries.
@@ -1519,7 +1560,8 @@ paths:
       summary: Get Math Model Summaries
       tags:
       - Math Model Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/mathModel/summary/{id}:
     get:
       description: "All of the text based information about a MathModel (summary,\
@@ -1561,7 +1603,8 @@ paths:
       summary: Get Math Model Summary
       tags:
       - Math Model Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/mathModel/{id}:
     delete:
       description: Remove specific Math Model.
@@ -1604,7 +1647,8 @@ paths:
       summary: Delete Math Model
       tags:
       - Math Model Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
     get:
       description: Returns MathModel in VCML format.
       operationId: getVCML
@@ -1644,7 +1688,9 @@ paths:
       summary: Get Math Model
       tags:
       - Math Model Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
+      - application/xml
   /api/v1/publications:
     get:
       operationId: getPublications
@@ -1666,7 +1712,8 @@ paths:
       summary: Get all publications
       tags:
       - Publication Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
     post:
       operationId: createPublication
       requestBody:
@@ -1710,7 +1757,8 @@ paths:
       tags:
       - Publication Resource
       x-content-type: application/json
-      x-accepts: application/json
+      x-accepts:
+      - application/json
     put:
       operationId: updatePublication
       requestBody:
@@ -1753,7 +1801,8 @@ paths:
       tags:
       - Publication Resource
       x-content-type: application/json
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/publications/{id}:
     delete:
       operationId: deletePublication
@@ -1799,7 +1848,8 @@ paths:
       summary: Delete publication
       tags:
       - Publication Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
     get:
       operationId: getPublicationById
       parameters:
@@ -1827,7 +1877,8 @@ paths:
       summary: Get publication by ID
       tags:
       - Publication Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/publications/{id}/publish:
     put:
       operationId: publishBioModels
@@ -1882,7 +1933,8 @@ paths:
       tags:
       - Publication Resource
       x-content-type: application/json
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/solver/getFVSolverInput:
     post:
       operationId: getFVSolverInputFromSBML
@@ -1910,7 +1962,9 @@ paths:
       tags:
       - Solver Resource
       x-content-type: multipart/form-data
-      x-accepts: application/json
+      x-accepts:
+      - application/json
+      - application/octet-stream
   /api/v1/solver/getFVSolverInputFromVCML:
     post:
       operationId: getFVSolverInputFromVCML
@@ -1938,7 +1992,9 @@ paths:
       tags:
       - Solver Resource
       x-content-type: multipart/form-data
-      x-accepts: application/json
+      x-accepts:
+      - application/json
+      - application/octet-stream
   /api/v1/users/bearerToken:
     post:
       operationId: getLegacyApiToken
@@ -1969,7 +2025,8 @@ paths:
       summary: Get token for legacy API
       tags:
       - Users Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/users/forgotLegacyPassword:
     post:
       operationId: forgotLegacyPassword
@@ -1997,7 +2054,8 @@ paths:
         \ so they will be emailed it."
       tags:
       - Users Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/users/guestBearerToken:
     post:
       operationId: getGuestLegacyApiToken
@@ -2017,7 +2075,8 @@ paths:
       summary: Method to get legacy tokens for guest users
       tags:
       - Users Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/users/mapUser:
     post:
       operationId: mapUser
@@ -2061,7 +2120,8 @@ paths:
       tags:
       - Users Resource
       x-content-type: application/json
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/users/mappedUser:
     get:
       operationId: getMappedUser
@@ -2098,7 +2158,8 @@ paths:
       summary: Get mapped VCell identity
       tags:
       - Users Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/users/me:
     get:
       operationId: getMe
@@ -2112,7 +2173,8 @@ paths:
       summary: Get current user
       tags:
       - Users Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/users/newUser:
     post:
       operationId: mapNewUser
@@ -2150,7 +2212,8 @@ paths:
       tags:
       - Users Resource
       x-content-type: application/json
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/users/processMagicLink:
     get:
       operationId: processMagicLink
@@ -2182,7 +2245,8 @@ paths:
       summary: Process the magic link and map the user
       tags:
       - Users Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/users/requestRecoveryEmail:
     post:
       operationId: requestRecoveryEmail
@@ -2232,7 +2296,8 @@ paths:
       summary: request a recovery email to link a VCell account.
       tags:
       - Users Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
   /api/v1/users/unmapUser/{userName}:
     put:
       operationId: unmapUser
@@ -2275,7 +2340,8 @@ paths:
       summary: remove vcell identity mapping
       tags:
       - Users Resource
-      x-accepts: application/json
+      x-accepts:
+      - application/json
 components:
   schemas:
     AccesTokenRepresentationRecord:
@@ -2337,10 +2403,10 @@ components:
           units: units
           label: label
           type: 0
-          variableDomain: null
+          variableDomain: VARIABLEDOMAIN_POSTPROCESSING
           legacyWarn: true
         error: error
-        category: null
+        category: PREDEFINED
         functionExpression: functionExpression
       properties:
         functionName:
@@ -2465,8 +2531,8 @@ components:
         - 5
         - 5
         appTypes:
-        - null
-        - null
+        - RuleBased
+        - RuleBased
         scNames:
         - scNames
         - scNames
@@ -2569,8 +2635,8 @@ components:
           - 5
           - 5
           appTypes:
-          - null
-          - null
+          - RuleBased
+          - RuleBased
           scNames:
           - scNames
           - scNames
@@ -2589,7 +2655,7 @@ components:
           - - simNames
             - simNames
         publicationInformation:
-        - vcDocumentType: null
+        - vcDocumentType: BIOMODEL_DOC
           theHashCode: 9
           citation: citation
           title: title
@@ -2597,8 +2663,8 @@ components:
           pubmedid: pubmedid
           user:
             mySpecials:
-            - null
-            - null
+            - admins
+            - admins
             userName: userName
             key: key
           url: url
@@ -2608,7 +2674,7 @@ components:
           - authors
           doi: doi
           pubdate: 2000-01-23
-        - vcDocumentType: null
+        - vcDocumentType: BIOMODEL_DOC
           theHashCode: 9
           citation: citation
           title: title
@@ -2616,8 +2682,8 @@ components:
           pubmedid: pubmedid
           user:
             mySpecials:
-            - null
-            - null
+            - admins
+            - admins
             userName: userName
             key: key
           url: url
@@ -2631,8 +2697,8 @@ components:
           date: 2000-01-23T04:56:07.000+00:00
           owner:
             mySpecials:
-            - null
-            - null
+            - admins
+            - admins
             userName: userName
             key: key
           branchID: 0.8008281904610115
@@ -2650,7 +2716,7 @@ components:
           branchPointRefKey: branchPointRefKey
           versionKey: versionKey
         vCellSoftwareVersion:
-          vcellSite: null
+          vcellSite: alpha
           patchVersion: 4
           buildInt: 7
           description: description
@@ -2884,7 +2950,7 @@ components:
           units: units
           label: label
           type: 0
-          variableDomain: null
+          variableDomain: VARIABLEDOMAIN_POSTPROCESSING
           legacyWarn: true
         visible: true
         displayName: displayName
@@ -2993,11 +3059,11 @@ components:
           applicationName: applicationName
         progress: 0.8008281904610115
         location: location
-        eventType: null
+        eventType: EXPORT_START
         user:
           mySpecials:
-          - null
-          - null
+          - admins
+          - admins
           userName: userName
           key: key
       properties:
@@ -3062,8 +3128,8 @@ components:
       example:
         owner:
           mySpecials:
-          - null
-          - null
+          - admins
+          - admins
           userName: userName
           key: key
         dataKey: dataKey
@@ -3172,8 +3238,8 @@ components:
         fieldDataID:
           owner:
             mySpecials:
-            - null
-            - null
+            - admins
+            - admins
             userName: userName
             key: key
           dataKey: dataKey
@@ -3229,7 +3295,7 @@ components:
             units: units
             label: label
             type: 0
-            variableDomain: null
+            variableDomain: VARIABLEDOMAIN_POSTPROCESSING
             legacyWarn: true
           visible: true
           displayName: displayName
@@ -3246,7 +3312,7 @@ components:
             units: units
             label: label
             type: 0
-            variableDomain: null
+            variableDomain: VARIABLEDOMAIN_POSTPROCESSING
             legacyWarn: true
           visible: true
           displayName: displayName
@@ -3308,7 +3374,7 @@ components:
             units: units
             label: label
             type: 0
-            variableDomain: null
+            variableDomain: VARIABLEDOMAIN_POSTPROCESSING
             legacyWarn: true
           varType:
             defaultUnits: defaultUnits
@@ -3318,7 +3384,7 @@ components:
             units: units
             label: label
             type: 0
-            variableDomain: null
+            variableDomain: VARIABLEDOMAIN_POSTPROCESSING
             legacyWarn: true
           smallestMeshCellDimensionLength: 7.457744773683766
           closed: true
@@ -3360,7 +3426,7 @@ components:
             units: units
             label: label
             type: 0
-            variableDomain: null
+            variableDomain: VARIABLEDOMAIN_POSTPROCESSING
             legacyWarn: true
           varType:
             defaultUnits: defaultUnits
@@ -3370,7 +3436,7 @@ components:
             units: units
             label: label
             type: 0
-            variableDomain: null
+            variableDomain: VARIABLEDOMAIN_POSTPROCESSING
             legacyWarn: true
           smallestMeshCellDimensionLength: 7.457744773683766
           closed: true
@@ -3405,7 +3471,7 @@ components:
             fieldU: 1.2315135367772556
             fieldSegmentExtended: 6
         sliceNumber: 4
-        geometryMode: null
+        geometryMode: GEOMETRY_SELECTIONS
         axis: 1
       properties:
         selections:
@@ -3436,8 +3502,8 @@ components:
           date: 2000-01-23T04:56:07.000+00:00
           owner:
             mySpecials:
-            - null
-            - null
+            - admins
+            - admins
             userName: userName
             key: key
           branchID: 0.8008281904610115
@@ -3455,7 +3521,7 @@ components:
           branchPointRefKey: branchPointRefKey
           versionKey: versionKey
         softwareVersion:
-          vcellSite: null
+          vcellSite: alpha
           patchVersion: 4
           buildInt: 7
           description: description
@@ -3547,7 +3613,7 @@ components:
     HtcJobID:
       example:
         server: server
-        batchSystemType: null
+        batchSystemType: PBS
         jobNumber: 0
       properties:
         jobNumber:
@@ -3659,7 +3725,7 @@ components:
         - simulationNames
         geometryName: geometryName
         geometryDimension: 0
-        modelType: null
+        modelType: RuleBased
       properties:
         modelType:
           $ref: '#/components/schemas/MathType'
@@ -3687,15 +3753,15 @@ components:
           - simulationNames
           geometryName: geometryName
           geometryDimension: 0
-          modelType: null
+          modelType: RuleBased
         keyValue: keyValue
         annotatedFunctions: annotatedFunctions
         version:
           date: 2000-01-23T04:56:07.000+00:00
           owner:
             mySpecials:
-            - null
-            - null
+            - admins
+            - admins
             userName: userName
             key: key
           branchID: 0.8008281904610115
@@ -3713,7 +3779,7 @@ components:
           branchPointRefKey: branchPointRefKey
           versionKey: versionKey
         softwareVersion:
-          vcellSite: null
+          vcellSite: alpha
           patchVersion: 4
           buildInt: 7
           description: description
@@ -3723,7 +3789,7 @@ components:
           softwareVersionString: softwareVersionString
           versionNumber: versionNumber
         publicationInfos:
-        - vcDocumentType: null
+        - vcDocumentType: BIOMODEL_DOC
           theHashCode: 9
           citation: citation
           title: title
@@ -3731,8 +3797,8 @@ components:
           pubmedid: pubmedid
           user:
             mySpecials:
-            - null
-            - null
+            - admins
+            - admins
             userName: userName
             key: key
           url: url
@@ -3742,7 +3808,7 @@ components:
           - authors
           doi: doi
           pubdate: 2000-01-23
-        - vcDocumentType: null
+        - vcDocumentType: BIOMODEL_DOC
           theHashCode: 9
           citation: citation
           title: title
@@ -3750,8 +3816,8 @@ components:
           pubmedid: pubmedid
           user:
             mySpecials:
-            - null
-            - null
+            - admins
+            - admins
             userName: userName
             key: key
           url: url
@@ -3814,13 +3880,13 @@ components:
       example:
         subVolume:
           key: subVolume
-        exportableDataType: null
+        exportableDataType: ODE_VARIABLE_DATA
         datasetName: datasetName
         standardExportInformation:
           contextName: contextName
           simulationKey: simulationKey
           variableSpecs:
-            mode: null
+            mode: VARIABLE_ONE
             variableNames:
             - variableNames
             - variableNames
@@ -3835,7 +3901,7 @@ components:
                 units: units
                 label: label
                 type: 0
-                variableDomain: null
+                variableDomain: VARIABLEDOMAIN_POSTPROCESSING
                 legacyWarn: true
               varType:
                 defaultUnits: defaultUnits
@@ -3845,7 +3911,7 @@ components:
                 units: units
                 label: label
                 type: 0
-                variableDomain: null
+                variableDomain: VARIABLEDOMAIN_POSTPROCESSING
                 legacyWarn: true
               smallestMeshCellDimensionLength: 7.457744773683766
               closed: true
@@ -3887,7 +3953,7 @@ components:
                 units: units
                 label: label
                 type: 0
-                variableDomain: null
+                variableDomain: VARIABLEDOMAIN_POSTPROCESSING
                 legacyWarn: true
               varType:
                 defaultUnits: defaultUnits
@@ -3897,7 +3963,7 @@ components:
                 units: units
                 label: label
                 type: 0
-                variableDomain: null
+                variableDomain: VARIABLEDOMAIN_POSTPROCESSING
                 legacyWarn: true
               smallestMeshCellDimensionLength: 7.457744773683766
               closed: true
@@ -3932,7 +3998,7 @@ components:
                 fieldU: 1.2315135367772556
                 fieldSegmentExtended: 6
             sliceNumber: 4
-            geometryMode: null
+            geometryMode: GEOMETRY_SELECTIONS
             axis: 1
           outputContext:
           - functionName: functionName
@@ -3946,10 +4012,10 @@ components:
               units: units
               label: label
               type: 0
-              variableDomain: null
+              variableDomain: VARIABLEDOMAIN_POSTPROCESSING
               legacyWarn: true
             error: error
-            category: null
+            category: PREDEFINED
             functionExpression: functionExpression
           - functionName: functionName
             domain:
@@ -3962,14 +4028,14 @@ components:
               units: units
               label: label
               type: 0
-              variableDomain: null
+              variableDomain: VARIABLEDOMAIN_POSTPROCESSING
               legacyWarn: true
             error: error
-            category: null
+            category: PREDEFINED
             functionExpression: functionExpression
           simulationJob: 6
           timeSpecs:
-            mode: null
+            mode: TIME_POINT
             endTimeIndex: 9
             beginTimeIndex: 5
             allTimes:
@@ -4085,7 +4151,7 @@ components:
           type: string
     PublicationInfo:
       example:
-        vcDocumentType: null
+        vcDocumentType: BIOMODEL_DOC
         theHashCode: 9
         citation: citation
         title: title
@@ -4093,8 +4159,8 @@ components:
         pubmedid: pubmedid
         user:
           mySpecials:
-          - null
-          - null
+          - admins
+          - admins
           userName: userName
           key: key
         url: url
@@ -4200,7 +4266,7 @@ components:
         fieldComputeHost: fieldComputeHost
         fieldHtcJobID:
           server: server
-          batchSystemType: null
+          batchSystemType: PBS
           jobNumber: 0
       properties:
         fieldStartDate:
@@ -4223,10 +4289,10 @@ components:
         fieldSimulationMessage:
           htcJobId:
             server: server
-            batchSystemType: null
+            batchSystemType: PBS
             jobNumber: 0
           displayMessage: displayMessage
-          detailedState: null
+          detailedState: UNKNOWN
           message: message
         fieldTimeDataStamp: 2000-01-23T04:56:07.000+00:00
         fieldServerID: fieldServerID
@@ -4238,13 +4304,13 @@ components:
           fieldComputeHost: fieldComputeHost
           fieldHtcJobID:
             server: server
-            batchSystemType: null
+            batchSystemType: PBS
             jobNumber: 0
         fieldVCSimID:
           owner:
             mySpecials:
-            - null
-            - null
+            - admins
+            - admins
             userName: userName
             key: key
           simulationKey: simulationKey
@@ -4252,10 +4318,10 @@ components:
         fieldTaskID: 6
         fieldSimulationQueueEntryStatus:
           fieldQueuePriority: 5
-          fieldQueueID: null
+          fieldQueueID: QUEUE_ID_WAITING
           fieldQueueDate: 2000-01-23T04:56:07.000+00:00
         fieldSubmitDate: 2000-01-23T04:56:07.000+00:00
-        fieldSchedulerStatus: null
+        fieldSchedulerStatus: WAITING
         fieldJobIndex: 1
       properties:
         fieldTimeDataStamp:
@@ -4286,10 +4352,10 @@ components:
       example:
         htcJobId:
           server: server
-          batchSystemType: null
+          batchSystemType: PBS
           jobNumber: 0
         displayMessage: displayMessage
-        detailedState: null
+        detailedState: UNKNOWN
         message: message
       properties:
         detailedState:
@@ -4303,7 +4369,7 @@ components:
     SimulationQueueEntryStatusRecord:
       example:
         fieldQueuePriority: 5
-        fieldQueueID: null
+        fieldQueueID: QUEUE_ID_WAITING
         fieldQueueDate: 2000-01-23T04:56:07.000+00:00
       properties:
         fieldQueuePriority:
@@ -4324,7 +4390,7 @@ components:
       example:
         hasData: true
         details: details
-        status: null
+        status: UNKNOWN
       properties:
         status:
           $ref: '#/components/schemas/Status'
@@ -4335,7 +4401,7 @@ components:
     SourceModel:
       example:
         modelID: modelID
-        modelType: null
+        modelType: BIOMODEL
       properties:
         modelID:
           type: string
@@ -4357,7 +4423,7 @@ components:
           units: units
           label: label
           type: 0
-          variableDomain: null
+          variableDomain: VARIABLEDOMAIN_POSTPROCESSING
           legacyWarn: true
         varType:
           defaultUnits: defaultUnits
@@ -4367,7 +4433,7 @@ components:
           units: units
           label: label
           type: 0
-          variableDomain: null
+          variableDomain: VARIABLEDOMAIN_POSTPROCESSING
           legacyWarn: true
         smallestMeshCellDimensionLength: 7.457744773683766
         closed: true
@@ -4484,7 +4550,7 @@ components:
         contextName: contextName
         simulationKey: simulationKey
         variableSpecs:
-          mode: null
+          mode: VARIABLE_ONE
           variableNames:
           - variableNames
           - variableNames
@@ -4499,7 +4565,7 @@ components:
               units: units
               label: label
               type: 0
-              variableDomain: null
+              variableDomain: VARIABLEDOMAIN_POSTPROCESSING
               legacyWarn: true
             varType:
               defaultUnits: defaultUnits
@@ -4509,7 +4575,7 @@ components:
               units: units
               label: label
               type: 0
-              variableDomain: null
+              variableDomain: VARIABLEDOMAIN_POSTPROCESSING
               legacyWarn: true
             smallestMeshCellDimensionLength: 7.457744773683766
             closed: true
@@ -4551,7 +4617,7 @@ components:
               units: units
               label: label
               type: 0
-              variableDomain: null
+              variableDomain: VARIABLEDOMAIN_POSTPROCESSING
               legacyWarn: true
             varType:
               defaultUnits: defaultUnits
@@ -4561,7 +4627,7 @@ components:
               units: units
               label: label
               type: 0
-              variableDomain: null
+              variableDomain: VARIABLEDOMAIN_POSTPROCESSING
               legacyWarn: true
             smallestMeshCellDimensionLength: 7.457744773683766
             closed: true
@@ -4596,7 +4662,7 @@ components:
               fieldU: 1.2315135367772556
               fieldSegmentExtended: 6
           sliceNumber: 4
-          geometryMode: null
+          geometryMode: GEOMETRY_SELECTIONS
           axis: 1
         outputContext:
         - functionName: functionName
@@ -4610,10 +4676,10 @@ components:
             units: units
             label: label
             type: 0
-            variableDomain: null
+            variableDomain: VARIABLEDOMAIN_POSTPROCESSING
             legacyWarn: true
           error: error
-          category: null
+          category: PREDEFINED
           functionExpression: functionExpression
         - functionName: functionName
           domain:
@@ -4626,14 +4692,14 @@ components:
             units: units
             label: label
             type: 0
-            variableDomain: null
+            variableDomain: VARIABLEDOMAIN_POSTPROCESSING
             legacyWarn: true
           error: error
-          category: null
+          category: PREDEFINED
           functionExpression: functionExpression
         simulationJob: 6
         timeSpecs:
-          mode: null
+          mode: TIME_POINT
           endTimeIndex: 9
           beginTimeIndex: 5
           allTimes:
@@ -4680,10 +4746,10 @@ components:
           fieldSimulationMessage:
             htcJobId:
               server: server
-              batchSystemType: null
+              batchSystemType: PBS
               jobNumber: 0
             displayMessage: displayMessage
-            detailedState: null
+            detailedState: UNKNOWN
             message: message
           fieldTimeDataStamp: 2000-01-23T04:56:07.000+00:00
           fieldServerID: fieldServerID
@@ -4695,13 +4761,13 @@ components:
             fieldComputeHost: fieldComputeHost
             fieldHtcJobID:
               server: server
-              batchSystemType: null
+              batchSystemType: PBS
               jobNumber: 0
           fieldVCSimID:
             owner:
               mySpecials:
-              - null
-              - null
+              - admins
+              - admins
               userName: userName
               key: key
             simulationKey: simulationKey
@@ -4709,10 +4775,10 @@ components:
           fieldTaskID: 6
           fieldSimulationQueueEntryStatus:
             fieldQueuePriority: 5
-            fieldQueueID: null
+            fieldQueueID: QUEUE_ID_WAITING
             fieldQueueDate: 2000-01-23T04:56:07.000+00:00
           fieldSubmitDate: 2000-01-23T04:56:07.000+00:00
-          fieldSchedulerStatus: null
+          fieldSchedulerStatus: WAITING
           fieldJobIndex: 1
         progress: 5.637376656633329
         userName: userName
@@ -4735,7 +4801,7 @@ components:
       type: string
     TimeSpecs:
       example:
-        mode: null
+        mode: TIME_POINT
         endTimeIndex: 9
         beginTimeIndex: 5
         allTimes:
@@ -4758,8 +4824,8 @@ components:
     User:
       example:
         mySpecials:
-        - null
-        - null
+        - admins
+        - admins
         userName: userName
         key: key
       properties:
@@ -4843,8 +4909,8 @@ components:
           date: 2000-01-23T04:56:07.000+00:00
           owner:
             mySpecials:
-            - null
-            - null
+            - admins
+            - admins
             userName: userName
             key: key
           branchID: 0.8008281904610115
@@ -4862,7 +4928,7 @@ components:
           branchPointRefKey: branchPointRefKey
           versionKey: versionKey
         softwareVersion:
-          vcellSite: null
+          vcellSite: alpha
           patchVersion: 4
           buildInt: 7
           description: description
@@ -4886,8 +4952,8 @@ components:
       example:
         owner:
           mySpecials:
-          - null
-          - null
+          - admins
+          - admins
           userName: userName
           key: key
         simulationKey: simulationKey
@@ -4900,6 +4966,9 @@ components:
         id:
           type: string
     VCellHTTPError:
+      example:
+        exceptionType: exceptionType
+        message: message
       properties:
         exceptionType:
           type: string
@@ -4915,7 +4984,7 @@ components:
       type: string
     VCellSoftwareVersion:
       example:
-        vcellSite: null
+        vcellSite: alpha
         patchVersion: 4
         buildInt: 7
         description: description
@@ -4965,7 +5034,7 @@ components:
       type: string
     VariableSpecs:
       example:
-        mode: null
+        mode: VARIABLE_ONE
         variableNames:
         - variableNames
         - variableNames
@@ -4985,7 +5054,7 @@ components:
         units: units
         label: label
         type: 0
-        variableDomain: null
+        variableDomain: VARIABLEDOMAIN_POSTPROCESSING
         legacyWarn: true
       properties:
         type:
@@ -5012,8 +5081,8 @@ components:
         date: 2000-01-23T04:56:07.000+00:00
         owner:
           mySpecials:
-          - null
-          - null
+          - admins
+          - admins
           userName: userName
           key: key
         branchID: 0.8008281904610115

@@ -30,6 +30,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * PublishModelsRequest
  */
@@ -37,18 +38,20 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   PublishModelsRequest.JSON_PROPERTY_BIOMODEL_KEYS,
   PublishModelsRequest.JSON_PROPERTY_MATHMODEL_KEYS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class PublishModelsRequest {
   public static final String JSON_PROPERTY_BIOMODEL_KEYS = "biomodelKeys";
-  private List<Long> biomodelKeys;
+  @javax.annotation.Nullable
+  private List<Long> biomodelKeys = new ArrayList<>();
 
   public static final String JSON_PROPERTY_MATHMODEL_KEYS = "mathmodelKeys";
-  private List<Long> mathmodelKeys;
+  @javax.annotation.Nullable
+  private List<Long> mathmodelKeys = new ArrayList<>();
 
   public PublishModelsRequest() { 
   }
 
-  public PublishModelsRequest biomodelKeys(List<Long> biomodelKeys) {
+  public PublishModelsRequest biomodelKeys(@javax.annotation.Nullable List<Long> biomodelKeys) {
     this.biomodelKeys = biomodelKeys;
     return this;
   }
@@ -61,14 +64,13 @@ public class PublishModelsRequest {
     return this;
   }
 
-   /**
+  /**
    * Get biomodelKeys
    * @return biomodelKeys
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_BIOMODEL_KEYS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<Long> getBiomodelKeys() {
     return biomodelKeys;
   }
@@ -76,12 +78,12 @@ public class PublishModelsRequest {
 
   @JsonProperty(JSON_PROPERTY_BIOMODEL_KEYS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setBiomodelKeys(List<Long> biomodelKeys) {
+  public void setBiomodelKeys(@javax.annotation.Nullable List<Long> biomodelKeys) {
     this.biomodelKeys = biomodelKeys;
   }
 
 
-  public PublishModelsRequest mathmodelKeys(List<Long> mathmodelKeys) {
+  public PublishModelsRequest mathmodelKeys(@javax.annotation.Nullable List<Long> mathmodelKeys) {
     this.mathmodelKeys = mathmodelKeys;
     return this;
   }
@@ -94,14 +96,13 @@ public class PublishModelsRequest {
     return this;
   }
 
-   /**
+  /**
    * Get mathmodelKeys
    * @return mathmodelKeys
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_MATHMODEL_KEYS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<Long> getMathmodelKeys() {
     return mathmodelKeys;
   }
@@ -109,7 +110,7 @@ public class PublishModelsRequest {
 
   @JsonProperty(JSON_PROPERTY_MATHMODEL_KEYS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setMathmodelKeys(List<Long> mathmodelKeys) {
+  public void setMathmodelKeys(@javax.annotation.Nullable List<Long> mathmodelKeys) {
     this.mathmodelKeys = mathmodelKeys;
   }
 
@@ -193,7 +194,7 @@ public class PublishModelsRequest {
       for (int i = 0; i < getBiomodelKeys().size(); i++) {
         joiner.add(String.format("%sbiomodelKeys%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getBiomodelKeys().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+            ApiClient.urlEncode(ApiClient.valueToString(getBiomodelKeys().get(i)))));
       }
     }
 
@@ -202,7 +203,7 @@ public class PublishModelsRequest {
       for (int i = 0; i < getMathmodelKeys().size(); i++) {
         joiner.add(String.format("%smathmodelKeys%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getMathmodelKeys().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+            ApiClient.urlEncode(ApiClient.valueToString(getMathmodelKeys().get(i)))));
       }
     }
 

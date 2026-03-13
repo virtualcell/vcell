@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **bm_key** | **str** |  | [optional] 
@@ -28,12 +29,12 @@ json = "{}"
 # create an instance of BioModel from a JSON string
 bio_model_instance = BioModel.from_json(json)
 # print the JSON string representation of the object
-print BioModel.to_json()
+print(BioModel.to_json())
 
 # convert the object into a dict
 bio_model_dict = bio_model_instance.to_dict()
 # create an instance of BioModel from a dict
-bio_model_form_dict = bio_model.from_dict(bio_model_dict)
+bio_model_from_dict = BioModel.from_dict(bio_model_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

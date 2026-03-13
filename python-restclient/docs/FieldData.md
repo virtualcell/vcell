@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **short_spec_data** | **List[List[List[int]]]** |  | [optional] 
@@ -24,12 +25,12 @@ json = "{}"
 # create an instance of FieldData from a JSON string
 field_data_instance = FieldData.from_json(json)
 # print the JSON string representation of the object
-print FieldData.to_json()
+print(FieldData.to_json())
 
 # convert the object into a dict
 field_data_dict = field_data_instance.to_dict()
 # create an instance of FieldData from a dict
-field_data_form_dict = field_data.from_dict(field_data_dict)
+field_data_from_dict = FieldData.from_dict(field_data_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

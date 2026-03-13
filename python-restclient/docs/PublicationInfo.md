@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **publication_key** | **str** |  | [optional] 
@@ -27,12 +28,12 @@ json = "{}"
 # create an instance of PublicationInfo from a JSON string
 publication_info_instance = PublicationInfo.from_json(json)
 # print the JSON string representation of the object
-print PublicationInfo.to_json()
+print(PublicationInfo.to_json())
 
 # convert the object into a dict
 publication_info_dict = publication_info_instance.to_dict()
 # create an instance of PublicationInfo from a dict
-publication_info_form_dict = publication_info.from_dict(publication_info_dict)
+publication_info_from_dict = PublicationInfo.from_dict(publication_info_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

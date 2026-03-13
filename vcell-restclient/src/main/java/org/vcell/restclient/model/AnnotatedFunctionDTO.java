@@ -31,6 +31,7 @@ import org.vcell.restclient.model.VariableType;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * AnnotatedFunctionDTO
  */
@@ -42,42 +43,47 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   AnnotatedFunctionDTO.JSON_PROPERTY_FUNCTION_TYPE,
   AnnotatedFunctionDTO.JSON_PROPERTY_CATEGORY
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class AnnotatedFunctionDTO {
   public static final String JSON_PROPERTY_FUNCTION_NAME = "functionName";
+  @javax.annotation.Nullable
   private String functionName;
 
   public static final String JSON_PROPERTY_FUNCTION_EXPRESSION = "functionExpression";
+  @javax.annotation.Nullable
   private String functionExpression;
 
   public static final String JSON_PROPERTY_ERROR = "error";
+  @javax.annotation.Nullable
   private String error;
 
   public static final String JSON_PROPERTY_DOMAIN = "domain";
+  @javax.annotation.Nullable
   private Domain domain;
 
   public static final String JSON_PROPERTY_FUNCTION_TYPE = "functionType";
+  @javax.annotation.Nullable
   private VariableType functionType;
 
   public static final String JSON_PROPERTY_CATEGORY = "category";
+  @javax.annotation.Nullable
   private FunctionCategory category;
 
   public AnnotatedFunctionDTO() { 
   }
 
-  public AnnotatedFunctionDTO functionName(String functionName) {
+  public AnnotatedFunctionDTO functionName(@javax.annotation.Nullable String functionName) {
     this.functionName = functionName;
     return this;
   }
 
-   /**
+  /**
    * Get functionName
    * @return functionName
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FUNCTION_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getFunctionName() {
     return functionName;
   }
@@ -85,24 +91,23 @@ public class AnnotatedFunctionDTO {
 
   @JsonProperty(JSON_PROPERTY_FUNCTION_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFunctionName(String functionName) {
+  public void setFunctionName(@javax.annotation.Nullable String functionName) {
     this.functionName = functionName;
   }
 
 
-  public AnnotatedFunctionDTO functionExpression(String functionExpression) {
+  public AnnotatedFunctionDTO functionExpression(@javax.annotation.Nullable String functionExpression) {
     this.functionExpression = functionExpression;
     return this;
   }
 
-   /**
+  /**
    * Get functionExpression
    * @return functionExpression
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FUNCTION_EXPRESSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getFunctionExpression() {
     return functionExpression;
   }
@@ -110,24 +115,23 @@ public class AnnotatedFunctionDTO {
 
   @JsonProperty(JSON_PROPERTY_FUNCTION_EXPRESSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFunctionExpression(String functionExpression) {
+  public void setFunctionExpression(@javax.annotation.Nullable String functionExpression) {
     this.functionExpression = functionExpression;
   }
 
 
-  public AnnotatedFunctionDTO error(String error) {
+  public AnnotatedFunctionDTO error(@javax.annotation.Nullable String error) {
     this.error = error;
     return this;
   }
 
-   /**
+  /**
    * Get error
    * @return error
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ERROR)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getError() {
     return error;
   }
@@ -135,24 +139,23 @@ public class AnnotatedFunctionDTO {
 
   @JsonProperty(JSON_PROPERTY_ERROR)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setError(String error) {
+  public void setError(@javax.annotation.Nullable String error) {
     this.error = error;
   }
 
 
-  public AnnotatedFunctionDTO domain(Domain domain) {
+  public AnnotatedFunctionDTO domain(@javax.annotation.Nullable Domain domain) {
     this.domain = domain;
     return this;
   }
 
-   /**
+  /**
    * Get domain
    * @return domain
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DOMAIN)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Domain getDomain() {
     return domain;
   }
@@ -160,24 +163,23 @@ public class AnnotatedFunctionDTO {
 
   @JsonProperty(JSON_PROPERTY_DOMAIN)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDomain(Domain domain) {
+  public void setDomain(@javax.annotation.Nullable Domain domain) {
     this.domain = domain;
   }
 
 
-  public AnnotatedFunctionDTO functionType(VariableType functionType) {
+  public AnnotatedFunctionDTO functionType(@javax.annotation.Nullable VariableType functionType) {
     this.functionType = functionType;
     return this;
   }
 
-   /**
+  /**
    * Get functionType
    * @return functionType
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FUNCTION_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public VariableType getFunctionType() {
     return functionType;
   }
@@ -185,24 +187,23 @@ public class AnnotatedFunctionDTO {
 
   @JsonProperty(JSON_PROPERTY_FUNCTION_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFunctionType(VariableType functionType) {
+  public void setFunctionType(@javax.annotation.Nullable VariableType functionType) {
     this.functionType = functionType;
   }
 
 
-  public AnnotatedFunctionDTO category(FunctionCategory category) {
+  public AnnotatedFunctionDTO category(@javax.annotation.Nullable FunctionCategory category) {
     this.category = category;
     return this;
   }
 
-   /**
+  /**
    * Get category
    * @return category
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_CATEGORY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public FunctionCategory getCategory() {
     return category;
   }
@@ -210,7 +211,7 @@ public class AnnotatedFunctionDTO {
 
   @JsonProperty(JSON_PROPERTY_CATEGORY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setCategory(FunctionCategory category) {
+  public void setCategory(@javax.annotation.Nullable FunctionCategory category) {
     this.category = category;
   }
 
@@ -299,17 +300,17 @@ public class AnnotatedFunctionDTO {
 
     // add `functionName` to the URL query string
     if (getFunctionName() != null) {
-      joiner.add(String.format("%sfunctionName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFunctionName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfunctionName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFunctionName()))));
     }
 
     // add `functionExpression` to the URL query string
     if (getFunctionExpression() != null) {
-      joiner.add(String.format("%sfunctionExpression%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFunctionExpression()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfunctionExpression%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFunctionExpression()))));
     }
 
     // add `error` to the URL query string
     if (getError() != null) {
-      joiner.add(String.format("%serror%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getError()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%serror%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getError()))));
     }
 
     // add `domain` to the URL query string
@@ -324,7 +325,7 @@ public class AnnotatedFunctionDTO {
 
     // add `category` to the URL query string
     if (getCategory() != null) {
-      joiner.add(String.format("%scategory%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getCategory()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%scategory%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getCategory()))));
     }
 
     return joiner.toString();

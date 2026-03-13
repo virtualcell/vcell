@@ -28,6 +28,7 @@ import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * FieldDataSavedResults
  */
@@ -35,30 +36,31 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   FieldDataSavedResults.JSON_PROPERTY_FIELD_DATA_NAME,
   FieldDataSavedResults.JSON_PROPERTY_FIELD_DATA_KEY
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class FieldDataSavedResults {
   public static final String JSON_PROPERTY_FIELD_DATA_NAME = "fieldDataName";
+  @javax.annotation.Nullable
   private String fieldDataName;
 
   public static final String JSON_PROPERTY_FIELD_DATA_KEY = "fieldDataKey";
+  @javax.annotation.Nullable
   private String fieldDataKey;
 
   public FieldDataSavedResults() { 
   }
 
-  public FieldDataSavedResults fieldDataName(String fieldDataName) {
+  public FieldDataSavedResults fieldDataName(@javax.annotation.Nullable String fieldDataName) {
     this.fieldDataName = fieldDataName;
     return this;
   }
 
-   /**
+  /**
    * Get fieldDataName
    * @return fieldDataName
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_DATA_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getFieldDataName() {
     return fieldDataName;
   }
@@ -66,24 +68,23 @@ public class FieldDataSavedResults {
 
   @JsonProperty(JSON_PROPERTY_FIELD_DATA_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldDataName(String fieldDataName) {
+  public void setFieldDataName(@javax.annotation.Nullable String fieldDataName) {
     this.fieldDataName = fieldDataName;
   }
 
 
-  public FieldDataSavedResults fieldDataKey(String fieldDataKey) {
+  public FieldDataSavedResults fieldDataKey(@javax.annotation.Nullable String fieldDataKey) {
     this.fieldDataKey = fieldDataKey;
     return this;
   }
 
-   /**
+  /**
    * Get fieldDataKey
    * @return fieldDataKey
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_DATA_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getFieldDataKey() {
     return fieldDataKey;
   }
@@ -91,7 +92,7 @@ public class FieldDataSavedResults {
 
   @JsonProperty(JSON_PROPERTY_FIELD_DATA_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldDataKey(String fieldDataKey) {
+  public void setFieldDataKey(@javax.annotation.Nullable String fieldDataKey) {
     this.fieldDataKey = fieldDataKey;
   }
 
@@ -172,12 +173,12 @@ public class FieldDataSavedResults {
 
     // add `fieldDataName` to the URL query string
     if (getFieldDataName() != null) {
-      joiner.add(String.format("%sfieldDataName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldDataName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldDataName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldDataName()))));
     }
 
     // add `fieldDataKey` to the URL query string
     if (getFieldDataKey() != null) {
-      joiner.add(String.format("%sfieldDataKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldDataKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldDataKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldDataKey()))));
     }
 
     return joiner.toString();

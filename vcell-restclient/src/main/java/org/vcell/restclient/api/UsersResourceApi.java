@@ -15,6 +15,7 @@ package org.vcell.restclient.api;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.AccesTokenRepresentationRecord;
@@ -55,7 +56,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class UsersResourceApi {
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
@@ -66,7 +67,7 @@ public class UsersResourceApi {
   private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
   public UsersResourceApi() {
-    this(new ApiClient());
+    this(Configuration.getDefaultApiClient());
   }
 
   public UsersResourceApi(ApiClient apiClient) {
@@ -122,15 +123,15 @@ public class UsersResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("forgotLegacyPassword", localVarResponse);
         }
-        return new ApiResponse<Void>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          null
+        return new ApiResponse<>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            null
         );
       } finally {
         // Drain the InputStream
         while (localVarResponse.body().read() != -1) {
-            // Ignore
+          // Ignore
         }
         localVarResponse.body().close();
       }
@@ -177,6 +178,7 @@ public class UsersResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Method to get legacy tokens for guest users
    * 
@@ -207,10 +209,21 @@ public class UsersResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getGuestLegacyApiToken", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<AccesTokenRepresentationRecord>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<AccesTokenRepresentationRecord>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<AccesTokenRepresentationRecord>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<AccesTokenRepresentationRecord>() {})
         );
       } finally {
       }
@@ -242,6 +255,7 @@ public class UsersResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get token for legacy API
    * 
@@ -272,10 +286,21 @@ public class UsersResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getLegacyApiToken", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<AccesTokenRepresentationRecord>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<AccesTokenRepresentationRecord>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<AccesTokenRepresentationRecord>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<AccesTokenRepresentationRecord>() {})
         );
       } finally {
       }
@@ -307,6 +332,7 @@ public class UsersResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get mapped VCell identity
    * 
@@ -337,10 +363,21 @@ public class UsersResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getMappedUser", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<UserIdentityJSONSafe>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<UserIdentityJSONSafe>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<UserIdentityJSONSafe>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<UserIdentityJSONSafe>() {})
         );
       } finally {
       }
@@ -372,6 +409,7 @@ public class UsersResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get current user
    * 
@@ -402,10 +440,21 @@ public class UsersResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getMe", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<Identity>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<Identity>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Identity>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Identity>() {})
         );
       } finally {
       }
@@ -437,6 +486,7 @@ public class UsersResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * create vcell user
    * 
@@ -467,15 +517,15 @@ public class UsersResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("mapNewUser", localVarResponse);
         }
-        return new ApiResponse<Void>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          null
+        return new ApiResponse<>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            null
         );
       } finally {
         // Drain the InputStream
         while (localVarResponse.body().read() != -1) {
-            // Ignore
+          // Ignore
         }
         localVarResponse.body().close();
       }
@@ -517,6 +567,7 @@ public class UsersResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * map vcell user
    * 
@@ -549,10 +600,21 @@ public class UsersResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("mapUser", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<Boolean>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<Boolean>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Boolean>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Boolean>() {})
         );
       } finally {
       }
@@ -594,6 +656,7 @@ public class UsersResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Process the magic link and map the user
    * 
@@ -624,15 +687,15 @@ public class UsersResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("processMagicLink", localVarResponse);
         }
-        return new ApiResponse<Void>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          null
+        return new ApiResponse<>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            null
         );
       } finally {
         // Drain the InputStream
         while (localVarResponse.body().read() != -1) {
-            // Ignore
+          // Ignore
         }
         localVarResponse.body().close();
       }
@@ -679,6 +742,7 @@ public class UsersResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * request a recovery email to link a VCell account.
    * 
@@ -711,15 +775,15 @@ public class UsersResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("requestRecoveryEmail", localVarResponse);
         }
-        return new ApiResponse<Void>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          null
+        return new ApiResponse<>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            null
         );
       } finally {
         // Drain the InputStream
         while (localVarResponse.body().read() != -1) {
-            // Ignore
+          // Ignore
         }
         localVarResponse.body().close();
       }
@@ -768,6 +832,7 @@ public class UsersResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * remove vcell identity mapping
    * 
@@ -800,10 +865,21 @@ public class UsersResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("unmapUser", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<Boolean>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<Boolean>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Boolean>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Boolean>() {})
         );
       } finally {
       }
@@ -840,4 +916,5 @@ public class UsersResourceApi {
     }
     return localVarRequestBuilder;
   }
+
 }

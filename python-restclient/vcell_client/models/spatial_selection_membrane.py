@@ -18,32 +18,29 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-
-from pydantic import Field
 from vcell_client.models.curve_selection_info import CurveSelectionInfo
 from vcell_client.models.sampled_curve import SampledCurve
 from vcell_client.models.spatial_selection import SpatialSelection
 from vcell_client.models.variable_type import VariableType
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class SpatialSelectionMembrane(SpatialSelection):
     """
     SpatialSelectionMembrane
     """ # noqa: E501
-    type: Optional[Any]
-    field_sampled_data_indexes: Optional[Any] = Field(default=None, alias="fieldSampledDataIndexes")
+    type: StrictStr
+    field_sampled_data_indexes: Optional[List[StrictInt]] = Field(default=None, alias="fieldSampledDataIndexes")
     selection_source: Optional[SampledCurve] = Field(default=None, alias="selectionSource")
     __properties: ClassVar[List[str]] = ["curveSelectionInfo", "varType", "type", "smallestMeshCellDimensionLength", "variableType", "closed", "point"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -56,7 +53,7 @@ class SpatialSelectionMembrane(SpatialSelection):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of SpatialSelectionMembrane from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -70,10 +67,12 @@ class SpatialSelectionMembrane(SpatialSelection):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of curve_selection_info
@@ -85,15 +84,10 @@ class SpatialSelectionMembrane(SpatialSelection):
         # override the default output from pydantic by calling `to_dict()` of variable_type
         if self.variable_type:
             _dict['variableType'] = self.variable_type.to_dict()
-        # set to None if type (nullable) is None
-        # and model_fields_set contains the field
-        if self.type is None and "type" in self.model_fields_set:
-            _dict['type'] = None
-
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of SpatialSelectionMembrane from a dict"""
         if obj is None:
             return None
@@ -107,11 +101,11 @@ class SpatialSelectionMembrane(SpatialSelection):
                 raise ValueError("Error due to additional fields (not defined in SpatialSelectionMembrane) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "curveSelectionInfo": CurveSelectionInfo.from_dict(obj.get("curveSelectionInfo")) if obj.get("curveSelectionInfo") is not None else None,
-            "varType": VariableType.from_dict(obj.get("varType")) if obj.get("varType") is not None else None,
-            "type": obj.get("type"),
+            "curveSelectionInfo": CurveSelectionInfo.from_dict(obj["curveSelectionInfo"]) if obj.get("curveSelectionInfo") is not None else None,
+            "varType": VariableType.from_dict(obj["varType"]) if obj.get("varType") is not None else None,
+            "type": obj.get("type") if obj.get("type") is not None else 'Membrane',
             "smallestMeshCellDimensionLength": obj.get("smallestMeshCellDimensionLength"),
-            "variableType": VariableType.from_dict(obj.get("variableType")) if obj.get("variableType") is not None else None,
+            "variableType": VariableType.from_dict(obj["variableType"]) if obj.get("variableType") is not None else None,
             "closed": obj.get("closed"),
             "point": obj.get("point")
         })

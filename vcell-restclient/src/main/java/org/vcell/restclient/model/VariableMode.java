@@ -30,11 +30,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public enum VariableMode {
   
-  ONE("VARIABLE_ONE"),
+  VARIABLE_ONE("VARIABLE_ONE"),
   
-  MULTI("VARIABLE_MULTI"),
+  VARIABLE_MULTI("VARIABLE_MULTI"),
   
-  ALL("VARIABLE_ALL");
+  VARIABLE_ALL("VARIABLE_ALL");
 
   private String value;
 

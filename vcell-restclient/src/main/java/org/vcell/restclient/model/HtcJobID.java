@@ -29,6 +29,7 @@ import org.vcell.restclient.model.BatchSystemType;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * HtcJobID
  */
@@ -37,33 +38,35 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   HtcJobID.JSON_PROPERTY_SERVER,
   HtcJobID.JSON_PROPERTY_BATCH_SYSTEM_TYPE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class HtcJobID {
   public static final String JSON_PROPERTY_JOB_NUMBER = "jobNumber";
+  @javax.annotation.Nullable
   private Long jobNumber;
 
   public static final String JSON_PROPERTY_SERVER = "server";
+  @javax.annotation.Nullable
   private String server;
 
   public static final String JSON_PROPERTY_BATCH_SYSTEM_TYPE = "batchSystemType";
+  @javax.annotation.Nullable
   private BatchSystemType batchSystemType;
 
   public HtcJobID() { 
   }
 
-  public HtcJobID jobNumber(Long jobNumber) {
+  public HtcJobID jobNumber(@javax.annotation.Nullable Long jobNumber) {
     this.jobNumber = jobNumber;
     return this;
   }
 
-   /**
+  /**
    * Get jobNumber
    * @return jobNumber
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_JOB_NUMBER)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Long getJobNumber() {
     return jobNumber;
   }
@@ -71,24 +74,23 @@ public class HtcJobID {
 
   @JsonProperty(JSON_PROPERTY_JOB_NUMBER)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setJobNumber(Long jobNumber) {
+  public void setJobNumber(@javax.annotation.Nullable Long jobNumber) {
     this.jobNumber = jobNumber;
   }
 
 
-  public HtcJobID server(String server) {
+  public HtcJobID server(@javax.annotation.Nullable String server) {
     this.server = server;
     return this;
   }
 
-   /**
+  /**
    * Get server
    * @return server
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SERVER)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getServer() {
     return server;
   }
@@ -96,24 +98,23 @@ public class HtcJobID {
 
   @JsonProperty(JSON_PROPERTY_SERVER)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setServer(String server) {
+  public void setServer(@javax.annotation.Nullable String server) {
     this.server = server;
   }
 
 
-  public HtcJobID batchSystemType(BatchSystemType batchSystemType) {
+  public HtcJobID batchSystemType(@javax.annotation.Nullable BatchSystemType batchSystemType) {
     this.batchSystemType = batchSystemType;
     return this;
   }
 
-   /**
+  /**
    * Get batchSystemType
    * @return batchSystemType
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_BATCH_SYSTEM_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public BatchSystemType getBatchSystemType() {
     return batchSystemType;
   }
@@ -121,7 +122,7 @@ public class HtcJobID {
 
   @JsonProperty(JSON_PROPERTY_BATCH_SYSTEM_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setBatchSystemType(BatchSystemType batchSystemType) {
+  public void setBatchSystemType(@javax.annotation.Nullable BatchSystemType batchSystemType) {
     this.batchSystemType = batchSystemType;
   }
 
@@ -204,17 +205,17 @@ public class HtcJobID {
 
     // add `jobNumber` to the URL query string
     if (getJobNumber() != null) {
-      joiner.add(String.format("%sjobNumber%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getJobNumber()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sjobNumber%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getJobNumber()))));
     }
 
     // add `server` to the URL query string
     if (getServer() != null) {
-      joiner.add(String.format("%sserver%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getServer()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sserver%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getServer()))));
     }
 
     // add `batchSystemType` to the URL query string
     if (getBatchSystemType() != null) {
-      joiner.add(String.format("%sbatchSystemType%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getBatchSystemType()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sbatchSystemType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBatchSystemType()))));
     }
 
     return joiner.toString();

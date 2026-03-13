@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **field_start_date** | **datetime** |  | [optional] 
@@ -21,12 +22,12 @@ json = "{}"
 # create an instance of SimulationExecutionStatusRecord from a JSON string
 simulation_execution_status_record_instance = SimulationExecutionStatusRecord.from_json(json)
 # print the JSON string representation of the object
-print SimulationExecutionStatusRecord.to_json()
+print(SimulationExecutionStatusRecord.to_json())
 
 # convert the object into a dict
 simulation_execution_status_record_dict = simulation_execution_status_record_instance.to_dict()
 # create an instance of SimulationExecutionStatusRecord from a dict
-simulation_execution_status_record_form_dict = simulation_execution_status_record.from_dict(simulation_execution_status_record_dict)
+simulation_execution_status_record_from_dict = SimulationExecutionStatusRecord.from_dict(simulation_execution_status_record_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

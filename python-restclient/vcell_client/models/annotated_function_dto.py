@@ -18,17 +18,13 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictStr
-from pydantic import Field
 from vcell_client.models.domain import Domain
 from vcell_client.models.function_category import FunctionCategory
 from vcell_client.models.variable_type import VariableType
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class AnnotatedFunctionDTO(BaseModel):
     """
@@ -42,10 +38,11 @@ class AnnotatedFunctionDTO(BaseModel):
     category: Optional[FunctionCategory] = None
     __properties: ClassVar[List[str]] = ["functionName", "functionExpression", "error", "domain", "functionType", "category"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -58,7 +55,7 @@ class AnnotatedFunctionDTO(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of AnnotatedFunctionDTO from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -72,10 +69,12 @@ class AnnotatedFunctionDTO(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of domain
@@ -87,7 +86,7 @@ class AnnotatedFunctionDTO(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of AnnotatedFunctionDTO from a dict"""
         if obj is None:
             return None
@@ -104,8 +103,8 @@ class AnnotatedFunctionDTO(BaseModel):
             "functionName": obj.get("functionName"),
             "functionExpression": obj.get("functionExpression"),
             "error": obj.get("error"),
-            "domain": Domain.from_dict(obj.get("domain")) if obj.get("domain") is not None else None,
-            "functionType": VariableType.from_dict(obj.get("functionType")) if obj.get("functionType") is not None else None,
+            "domain": Domain.from_dict(obj["domain"]) if obj.get("domain") is not None else None,
+            "functionType": VariableType.from_dict(obj["functionType"]) if obj.get("functionType") is not None else None,
             "category": obj.get("category")
         })
         return _obj

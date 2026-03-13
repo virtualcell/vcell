@@ -32,11 +32,11 @@ public enum SPECIALCLAIM {
   
   ADMINS("admins"),
   
-  POWERUSERS("powerUsers"),
+  POWER_USERS("powerUsers"),
   
-  PUBLICATIONEDITORS("publicationEditors"),
+  PUBLICATION_EDITORS("publicationEditors"),
   
-  VCELLSUPPORT("vcellSupport");
+  VCELL_SUPPORT("vcellSupport");
 
   private String value;
 

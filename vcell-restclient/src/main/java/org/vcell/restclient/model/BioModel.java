@@ -30,6 +30,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * BioModel
  */
@@ -48,63 +49,75 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   BioModel.JSON_PROPERTY_SIMULATION_KEY_LIST,
   BioModel.JSON_PROPERTY_APPLICATIONS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class BioModel {
   public static final String JSON_PROPERTY_BM_KEY = "bmKey";
+  @javax.annotation.Nullable
   private String bmKey;
 
   public static final String JSON_PROPERTY_NAME = "name";
+  @javax.annotation.Nullable
   private String name;
 
   public static final String JSON_PROPERTY_PRIVACY = "privacy";
+  @javax.annotation.Nullable
   private Integer privacy;
 
   public static final String JSON_PROPERTY_VERSION_FLAG = "versionFlag";
+  @javax.annotation.Nullable
   private Integer versionFlag;
 
   public static final String JSON_PROPERTY_GROUP_USERS = "groupUsers";
-  private List<String> groupUsers;
+  @javax.annotation.Nullable
+  private List<String> groupUsers = new ArrayList<>();
 
   public static final String JSON_PROPERTY_SAVED_DATE = "savedDate";
+  @javax.annotation.Nullable
   private Long savedDate;
 
   public static final String JSON_PROPERTY_ANNOT = "annot";
+  @javax.annotation.Nullable
   private String annot;
 
   public static final String JSON_PROPERTY_BRANCH_I_D = "branchID";
+  @javax.annotation.Nullable
   private String branchID;
 
   public static final String JSON_PROPERTY_PHYS_MODEL_KEY = "physModelKey";
+  @javax.annotation.Nullable
   private String physModelKey;
 
   public static final String JSON_PROPERTY_OWNER_NAME = "ownerName";
+  @javax.annotation.Nullable
   private String ownerName;
 
   public static final String JSON_PROPERTY_OWNER_KEY = "ownerKey";
+  @javax.annotation.Nullable
   private String ownerKey;
 
   public static final String JSON_PROPERTY_SIMULATION_KEY_LIST = "simulationKeyList";
-  private List<String> simulationKeyList;
+  @javax.annotation.Nullable
+  private List<String> simulationKeyList = new ArrayList<>();
 
   public static final String JSON_PROPERTY_APPLICATIONS = "applications";
-  private List<Object> applications;
+  @javax.annotation.Nullable
+  private List<Object> applications = new ArrayList<>();
 
   public BioModel() { 
   }
 
-  public BioModel bmKey(String bmKey) {
+  public BioModel bmKey(@javax.annotation.Nullable String bmKey) {
     this.bmKey = bmKey;
     return this;
   }
 
-   /**
+  /**
    * Get bmKey
    * @return bmKey
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_BM_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getBmKey() {
     return bmKey;
   }
@@ -112,24 +125,23 @@ public class BioModel {
 
   @JsonProperty(JSON_PROPERTY_BM_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setBmKey(String bmKey) {
+  public void setBmKey(@javax.annotation.Nullable String bmKey) {
     this.bmKey = bmKey;
   }
 
 
-  public BioModel name(String name) {
+  public BioModel name(@javax.annotation.Nullable String name) {
     this.name = name;
     return this;
   }
 
-   /**
+  /**
    * Get name
    * @return name
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getName() {
     return name;
   }
@@ -137,24 +149,23 @@ public class BioModel {
 
   @JsonProperty(JSON_PROPERTY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setName(String name) {
+  public void setName(@javax.annotation.Nullable String name) {
     this.name = name;
   }
 
 
-  public BioModel privacy(Integer privacy) {
+  public BioModel privacy(@javax.annotation.Nullable Integer privacy) {
     this.privacy = privacy;
     return this;
   }
 
-   /**
+  /**
    * Get privacy
    * @return privacy
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_PRIVACY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getPrivacy() {
     return privacy;
   }
@@ -162,24 +173,23 @@ public class BioModel {
 
   @JsonProperty(JSON_PROPERTY_PRIVACY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPrivacy(Integer privacy) {
+  public void setPrivacy(@javax.annotation.Nullable Integer privacy) {
     this.privacy = privacy;
   }
 
 
-  public BioModel versionFlag(Integer versionFlag) {
+  public BioModel versionFlag(@javax.annotation.Nullable Integer versionFlag) {
     this.versionFlag = versionFlag;
     return this;
   }
 
-   /**
+  /**
    * Get versionFlag
    * @return versionFlag
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getVersionFlag() {
     return versionFlag;
   }
@@ -187,12 +197,12 @@ public class BioModel {
 
   @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersionFlag(Integer versionFlag) {
+  public void setVersionFlag(@javax.annotation.Nullable Integer versionFlag) {
     this.versionFlag = versionFlag;
   }
 
 
-  public BioModel groupUsers(List<String> groupUsers) {
+  public BioModel groupUsers(@javax.annotation.Nullable List<String> groupUsers) {
     this.groupUsers = groupUsers;
     return this;
   }
@@ -205,14 +215,13 @@ public class BioModel {
     return this;
   }
 
-   /**
+  /**
    * Get groupUsers
    * @return groupUsers
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_GROUP_USERS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<String> getGroupUsers() {
     return groupUsers;
   }
@@ -220,24 +229,23 @@ public class BioModel {
 
   @JsonProperty(JSON_PROPERTY_GROUP_USERS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setGroupUsers(List<String> groupUsers) {
+  public void setGroupUsers(@javax.annotation.Nullable List<String> groupUsers) {
     this.groupUsers = groupUsers;
   }
 
 
-  public BioModel savedDate(Long savedDate) {
+  public BioModel savedDate(@javax.annotation.Nullable Long savedDate) {
     this.savedDate = savedDate;
     return this;
   }
 
-   /**
+  /**
    * Get savedDate
    * @return savedDate
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SAVED_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Long getSavedDate() {
     return savedDate;
   }
@@ -245,24 +253,23 @@ public class BioModel {
 
   @JsonProperty(JSON_PROPERTY_SAVED_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSavedDate(Long savedDate) {
+  public void setSavedDate(@javax.annotation.Nullable Long savedDate) {
     this.savedDate = savedDate;
   }
 
 
-  public BioModel annot(String annot) {
+  public BioModel annot(@javax.annotation.Nullable String annot) {
     this.annot = annot;
     return this;
   }
 
-   /**
+  /**
    * Get annot
    * @return annot
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ANNOT)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getAnnot() {
     return annot;
   }
@@ -270,24 +277,23 @@ public class BioModel {
 
   @JsonProperty(JSON_PROPERTY_ANNOT)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setAnnot(String annot) {
+  public void setAnnot(@javax.annotation.Nullable String annot) {
     this.annot = annot;
   }
 
 
-  public BioModel branchID(String branchID) {
+  public BioModel branchID(@javax.annotation.Nullable String branchID) {
     this.branchID = branchID;
     return this;
   }
 
-   /**
+  /**
    * Get branchID
    * @return branchID
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_BRANCH_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getBranchID() {
     return branchID;
   }
@@ -295,24 +301,23 @@ public class BioModel {
 
   @JsonProperty(JSON_PROPERTY_BRANCH_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setBranchID(String branchID) {
+  public void setBranchID(@javax.annotation.Nullable String branchID) {
     this.branchID = branchID;
   }
 
 
-  public BioModel physModelKey(String physModelKey) {
+  public BioModel physModelKey(@javax.annotation.Nullable String physModelKey) {
     this.physModelKey = physModelKey;
     return this;
   }
 
-   /**
+  /**
    * Get physModelKey
    * @return physModelKey
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_PHYS_MODEL_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getPhysModelKey() {
     return physModelKey;
   }
@@ -320,24 +325,23 @@ public class BioModel {
 
   @JsonProperty(JSON_PROPERTY_PHYS_MODEL_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPhysModelKey(String physModelKey) {
+  public void setPhysModelKey(@javax.annotation.Nullable String physModelKey) {
     this.physModelKey = physModelKey;
   }
 
 
-  public BioModel ownerName(String ownerName) {
+  public BioModel ownerName(@javax.annotation.Nullable String ownerName) {
     this.ownerName = ownerName;
     return this;
   }
 
-   /**
+  /**
    * Get ownerName
    * @return ownerName
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_OWNER_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getOwnerName() {
     return ownerName;
   }
@@ -345,24 +349,23 @@ public class BioModel {
 
   @JsonProperty(JSON_PROPERTY_OWNER_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setOwnerName(String ownerName) {
+  public void setOwnerName(@javax.annotation.Nullable String ownerName) {
     this.ownerName = ownerName;
   }
 
 
-  public BioModel ownerKey(String ownerKey) {
+  public BioModel ownerKey(@javax.annotation.Nullable String ownerKey) {
     this.ownerKey = ownerKey;
     return this;
   }
 
-   /**
+  /**
    * Get ownerKey
    * @return ownerKey
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_OWNER_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getOwnerKey() {
     return ownerKey;
   }
@@ -370,12 +373,12 @@ public class BioModel {
 
   @JsonProperty(JSON_PROPERTY_OWNER_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setOwnerKey(String ownerKey) {
+  public void setOwnerKey(@javax.annotation.Nullable String ownerKey) {
     this.ownerKey = ownerKey;
   }
 
 
-  public BioModel simulationKeyList(List<String> simulationKeyList) {
+  public BioModel simulationKeyList(@javax.annotation.Nullable List<String> simulationKeyList) {
     this.simulationKeyList = simulationKeyList;
     return this;
   }
@@ -388,14 +391,13 @@ public class BioModel {
     return this;
   }
 
-   /**
+  /**
    * Get simulationKeyList
    * @return simulationKeyList
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SIMULATION_KEY_LIST)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<String> getSimulationKeyList() {
     return simulationKeyList;
   }
@@ -403,12 +405,12 @@ public class BioModel {
 
   @JsonProperty(JSON_PROPERTY_SIMULATION_KEY_LIST)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimulationKeyList(List<String> simulationKeyList) {
+  public void setSimulationKeyList(@javax.annotation.Nullable List<String> simulationKeyList) {
     this.simulationKeyList = simulationKeyList;
   }
 
 
-  public BioModel applications(List<Object> applications) {
+  public BioModel applications(@javax.annotation.Nullable List<Object> applications) {
     this.applications = applications;
     return this;
   }
@@ -421,14 +423,13 @@ public class BioModel {
     return this;
   }
 
-   /**
+  /**
    * Get applications
    * @return applications
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_APPLICATIONS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<Object> getApplications() {
     return applications;
   }
@@ -436,7 +437,7 @@ public class BioModel {
 
   @JsonProperty(JSON_PROPERTY_APPLICATIONS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setApplications(List<Object> applications) {
+  public void setApplications(@javax.annotation.Nullable List<Object> applications) {
     this.applications = applications;
   }
 
@@ -539,22 +540,22 @@ public class BioModel {
 
     // add `bmKey` to the URL query string
     if (getBmKey() != null) {
-      joiner.add(String.format("%sbmKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getBmKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sbmKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBmKey()))));
     }
 
     // add `name` to the URL query string
     if (getName() != null) {
-      joiner.add(String.format("%sname%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
     }
 
     // add `privacy` to the URL query string
     if (getPrivacy() != null) {
-      joiner.add(String.format("%sprivacy%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPrivacy()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sprivacy%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPrivacy()))));
     }
 
     // add `versionFlag` to the URL query string
     if (getVersionFlag() != null) {
-      joiner.add(String.format("%sversionFlag%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getVersionFlag()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sversionFlag%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVersionFlag()))));
     }
 
     // add `groupUsers` to the URL query string
@@ -562,38 +563,38 @@ public class BioModel {
       for (int i = 0; i < getGroupUsers().size(); i++) {
         joiner.add(String.format("%sgroupUsers%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getGroupUsers().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+            ApiClient.urlEncode(ApiClient.valueToString(getGroupUsers().get(i)))));
       }
     }
 
     // add `savedDate` to the URL query string
     if (getSavedDate() != null) {
-      joiner.add(String.format("%ssavedDate%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSavedDate()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%ssavedDate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSavedDate()))));
     }
 
     // add `annot` to the URL query string
     if (getAnnot() != null) {
-      joiner.add(String.format("%sannot%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getAnnot()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sannot%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAnnot()))));
     }
 
     // add `branchID` to the URL query string
     if (getBranchID() != null) {
-      joiner.add(String.format("%sbranchID%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getBranchID()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sbranchID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBranchID()))));
     }
 
     // add `physModelKey` to the URL query string
     if (getPhysModelKey() != null) {
-      joiner.add(String.format("%sphysModelKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPhysModelKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sphysModelKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPhysModelKey()))));
     }
 
     // add `ownerName` to the URL query string
     if (getOwnerName() != null) {
-      joiner.add(String.format("%sownerName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getOwnerName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sownerName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getOwnerName()))));
     }
 
     // add `ownerKey` to the URL query string
     if (getOwnerKey() != null) {
-      joiner.add(String.format("%sownerKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getOwnerKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sownerKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getOwnerKey()))));
     }
 
     // add `simulationKeyList` to the URL query string
@@ -601,7 +602,7 @@ public class BioModel {
       for (int i = 0; i < getSimulationKeyList().size(); i++) {
         joiner.add(String.format("%ssimulationKeyList%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getSimulationKeyList().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+            ApiClient.urlEncode(ApiClient.valueToString(getSimulationKeyList().get(i)))));
       }
     }
 
@@ -610,7 +611,7 @@ public class BioModel {
       for (int i = 0; i < getApplications().size(); i++) {
         joiner.add(String.format("%sapplications%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getApplications().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+            ApiClient.urlEncode(ApiClient.valueToString(getApplications().get(i)))));
       }
     }
 

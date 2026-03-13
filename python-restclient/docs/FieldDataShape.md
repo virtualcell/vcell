@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **extent** | [**Extent**](Extent.md) |  | [optional] 
@@ -20,12 +21,12 @@ json = "{}"
 # create an instance of FieldDataShape from a JSON string
 field_data_shape_instance = FieldDataShape.from_json(json)
 # print the JSON string representation of the object
-print FieldDataShape.to_json()
+print(FieldDataShape.to_json())
 
 # convert the object into a dict
 field_data_shape_dict = field_data_shape_instance.to_dict()
 # create an instance of FieldDataShape from a dict
-field_data_shape_form_dict = field_data_shape.from_dict(field_data_shape_dict)
+field_data_shape_from_dict = FieldDataShape.from_dict(field_data_shape_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

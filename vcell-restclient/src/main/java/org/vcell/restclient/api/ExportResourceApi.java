@@ -15,6 +15,7 @@ package org.vcell.restclient.api;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.ExportEvent;
@@ -46,7 +47,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class ExportResourceApi {
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
@@ -57,7 +58,7 @@ public class ExportResourceApi {
   private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
   public ExportResourceApi() {
-    this(new ApiClient());
+    this(Configuration.getDefaultApiClient());
   }
 
   public ExportResourceApi(ApiClient apiClient) {
@@ -115,10 +116,21 @@ public class ExportResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("exportN5", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<Long>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<Long>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Long>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Long>() {})
         );
       } finally {
       }
@@ -160,6 +172,7 @@ public class ExportResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Poll Export Status
    * Get the status of your export jobs past the timestamp (Unix epoch in seconds).
@@ -192,10 +205,21 @@ public class ExportResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("exportStatus", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<List<ExportEvent>>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<List<ExportEvent>>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<List<ExportEvent>>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<ExportEvent>>() {})
         );
       } finally {
       }
@@ -242,4 +266,5 @@ public class ExportResourceApi {
     }
     return localVarRequestBuilder;
   }
+
 }

@@ -15,6 +15,7 @@ package org.vcell.restclient.api;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.Publication;
@@ -52,7 +53,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class PublicationResourceApi {
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
@@ -63,7 +64,7 @@ public class PublicationResourceApi {
   private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
   public PublicationResourceApi() {
-    this(new ApiClient());
+    this(Configuration.getDefaultApiClient());
   }
 
   public PublicationResourceApi(ApiClient apiClient) {
@@ -121,10 +122,21 @@ public class PublicationResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("createPublication", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<Long>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<Long>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Long>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Long>() {})
         );
       } finally {
       }
@@ -166,6 +178,7 @@ public class PublicationResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Delete publication
    * 
@@ -196,15 +209,15 @@ public class PublicationResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("deletePublication", localVarResponse);
         }
-        return new ApiResponse<Void>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          null
+        return new ApiResponse<>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            null
         );
       } finally {
         // Drain the InputStream
         while (localVarResponse.body().read() != -1) {
-            // Ignore
+          // Ignore
         }
         localVarResponse.body().close();
       }
@@ -241,6 +254,7 @@ public class PublicationResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get publication by ID
    * 
@@ -273,10 +287,21 @@ public class PublicationResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getPublicationById", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<Publication>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<Publication>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Publication>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Publication>() {})
         );
       } finally {
       }
@@ -313,6 +338,7 @@ public class PublicationResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get all publications
    * 
@@ -343,10 +369,21 @@ public class PublicationResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getPublications", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<List<Publication>>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<List<Publication>>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<List<Publication>>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<Publication>>() {})
         );
       } finally {
       }
@@ -378,6 +415,7 @@ public class PublicationResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Publish selected BioModels and MathModels associated with a publication
    * 
@@ -410,15 +448,15 @@ public class PublicationResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("publishBioModels", localVarResponse);
         }
-        return new ApiResponse<Void>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          null
+        return new ApiResponse<>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            null
         );
       } finally {
         // Drain the InputStream
         while (localVarResponse.body().read() != -1) {
-            // Ignore
+          // Ignore
         }
         localVarResponse.body().close();
       }
@@ -465,6 +503,7 @@ public class PublicationResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Update publication
    * 
@@ -497,10 +536,21 @@ public class PublicationResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("updatePublication", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<Publication>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<Publication>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Publication>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Publication>() {})
         );
       } finally {
       }
@@ -542,4 +592,5 @@ public class PublicationResourceApi {
     }
     return localVarRequestBuilder;
   }
+
 }

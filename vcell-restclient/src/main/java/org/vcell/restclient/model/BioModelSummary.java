@@ -34,6 +34,7 @@ import org.vcell.restclient.model.Version;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * BioModelSummary
  */
@@ -43,36 +44,39 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   BioModelSummary.JSON_PROPERTY_PUBLICATION_INFORMATION,
   BioModelSummary.JSON_PROPERTY_V_CELL_SOFTWARE_VERSION
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class BioModelSummary {
   public static final String JSON_PROPERTY_VERSION = "version";
+  @javax.annotation.Nullable
   private Version version;
 
   public static final String JSON_PROPERTY_SUMMARY = "summary";
+  @javax.annotation.Nullable
   private BioModelChildSummary summary;
 
   public static final String JSON_PROPERTY_PUBLICATION_INFORMATION = "publicationInformation";
-  private List<PublicationInfo> publicationInformation;
+  @javax.annotation.Nullable
+  private List<PublicationInfo> publicationInformation = new ArrayList<>();
 
   public static final String JSON_PROPERTY_V_CELL_SOFTWARE_VERSION = "vCellSoftwareVersion";
+  @javax.annotation.Nullable
   private VCellSoftwareVersion vCellSoftwareVersion;
 
   public BioModelSummary() { 
   }
 
-  public BioModelSummary version(Version version) {
+  public BioModelSummary version(@javax.annotation.Nullable Version version) {
     this.version = version;
     return this;
   }
 
-   /**
+  /**
    * Get version
    * @return version
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Version getVersion() {
     return version;
   }
@@ -80,24 +84,23 @@ public class BioModelSummary {
 
   @JsonProperty(JSON_PROPERTY_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersion(Version version) {
+  public void setVersion(@javax.annotation.Nullable Version version) {
     this.version = version;
   }
 
 
-  public BioModelSummary summary(BioModelChildSummary summary) {
+  public BioModelSummary summary(@javax.annotation.Nullable BioModelChildSummary summary) {
     this.summary = summary;
     return this;
   }
 
-   /**
+  /**
    * Get summary
    * @return summary
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SUMMARY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public BioModelChildSummary getSummary() {
     return summary;
   }
@@ -105,12 +108,12 @@ public class BioModelSummary {
 
   @JsonProperty(JSON_PROPERTY_SUMMARY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSummary(BioModelChildSummary summary) {
+  public void setSummary(@javax.annotation.Nullable BioModelChildSummary summary) {
     this.summary = summary;
   }
 
 
-  public BioModelSummary publicationInformation(List<PublicationInfo> publicationInformation) {
+  public BioModelSummary publicationInformation(@javax.annotation.Nullable List<PublicationInfo> publicationInformation) {
     this.publicationInformation = publicationInformation;
     return this;
   }
@@ -123,14 +126,13 @@ public class BioModelSummary {
     return this;
   }
 
-   /**
+  /**
    * Get publicationInformation
    * @return publicationInformation
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_PUBLICATION_INFORMATION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<PublicationInfo> getPublicationInformation() {
     return publicationInformation;
   }
@@ -138,24 +140,23 @@ public class BioModelSummary {
 
   @JsonProperty(JSON_PROPERTY_PUBLICATION_INFORMATION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPublicationInformation(List<PublicationInfo> publicationInformation) {
+  public void setPublicationInformation(@javax.annotation.Nullable List<PublicationInfo> publicationInformation) {
     this.publicationInformation = publicationInformation;
   }
 
 
-  public BioModelSummary vCellSoftwareVersion(VCellSoftwareVersion vCellSoftwareVersion) {
+  public BioModelSummary vCellSoftwareVersion(@javax.annotation.Nullable VCellSoftwareVersion vCellSoftwareVersion) {
     this.vCellSoftwareVersion = vCellSoftwareVersion;
     return this;
   }
 
-   /**
+  /**
    * Get vCellSoftwareVersion
    * @return vCellSoftwareVersion
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_V_CELL_SOFTWARE_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public VCellSoftwareVersion getvCellSoftwareVersion() {
     return vCellSoftwareVersion;
   }
@@ -163,7 +164,7 @@ public class BioModelSummary {
 
   @JsonProperty(JSON_PROPERTY_V_CELL_SOFTWARE_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setvCellSoftwareVersion(VCellSoftwareVersion vCellSoftwareVersion) {
+  public void setvCellSoftwareVersion(@javax.annotation.Nullable VCellSoftwareVersion vCellSoftwareVersion) {
     this.vCellSoftwareVersion = vCellSoftwareVersion;
   }
 

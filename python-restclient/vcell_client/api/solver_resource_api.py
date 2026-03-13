@@ -12,24 +12,15 @@
     Do not edit the class manually.
 """  # noqa: E501
 
-
-import io
 import warnings
-
 from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
-from typing import Dict, List, Optional, Tuple, Union, Any
-
-try:
-    from typing import Annotated
-except ImportError:
-    from typing_extensions import Annotated
+from typing import Any, Dict, List, Optional, Tuple, Union
+from typing_extensions import Annotated
 
 from pydantic import StrictBytes, StrictFloat, StrictInt, StrictStr
+from typing import Optional, Tuple, Union
 
-from typing import Optional, Union
-
-
-from vcell_client.api_client import ApiClient
+from vcell_client.api_client import ApiClient, RequestSerialized
 from vcell_client.api_response import ApiResponse
 from vcell_client.rest import RESTResponseType
 
@@ -50,7 +41,7 @@ class SolverResourceApi:
     @validate_call
     def get_fv_solver_input_from_sbml(
         self,
-        sbml_file: Optional[Union[StrictBytes, StrictStr]] = None,
+        sbml_file: Optional[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]]] = None,
         duration: Optional[Union[StrictFloat, StrictInt]] = None,
         output_time_step: Optional[Union[StrictFloat, StrictInt]] = None,
         _request_timeout: Union[
@@ -109,8 +100,7 @@ class SolverResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bytearray",
-            '422': "VCellHTTPError"
-            
+            '422': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -126,7 +116,7 @@ class SolverResourceApi:
     @validate_call
     def get_fv_solver_input_from_sbml_with_http_info(
         self,
-        sbml_file: Optional[Union[StrictBytes, StrictStr]] = None,
+        sbml_file: Optional[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]]] = None,
         duration: Optional[Union[StrictFloat, StrictInt]] = None,
         output_time_step: Optional[Union[StrictFloat, StrictInt]] = None,
         _request_timeout: Union[
@@ -185,8 +175,7 @@ class SolverResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bytearray",
-            '422': "VCellHTTPError"
-            
+            '422': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -202,7 +191,7 @@ class SolverResourceApi:
     @validate_call
     def get_fv_solver_input_from_sbml_without_preload_content(
         self,
-        sbml_file: Optional[Union[StrictBytes, StrictStr]] = None,
+        sbml_file: Optional[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]]] = None,
         duration: Optional[Union[StrictFloat, StrictInt]] = None,
         output_time_step: Optional[Union[StrictFloat, StrictInt]] = None,
         _request_timeout: Union[
@@ -261,8 +250,7 @@ class SolverResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bytearray",
-            '422': "VCellHTTPError"
-            
+            '422': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -280,19 +268,20 @@ class SolverResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -309,12 +298,13 @@ class SolverResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/octet-stream', 
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/octet-stream', 
+                    'application/json'
+                ]
+            )
 
         # set the HTTP header `Content-Type`
         if _content_type:
@@ -355,7 +345,7 @@ class SolverResourceApi:
     @validate_call
     def get_fv_solver_input_from_vcml(
         self,
-        vcml_file: Optional[Union[StrictBytes, StrictStr]] = None,
+        vcml_file: Optional[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]]] = None,
         simulation_name: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
@@ -410,8 +400,7 @@ class SolverResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bytearray",
-            '422': "VCellHTTPError"
-            
+            '422': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -427,7 +416,7 @@ class SolverResourceApi:
     @validate_call
     def get_fv_solver_input_from_vcml_with_http_info(
         self,
-        vcml_file: Optional[Union[StrictBytes, StrictStr]] = None,
+        vcml_file: Optional[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]]] = None,
         simulation_name: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
@@ -482,8 +471,7 @@ class SolverResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bytearray",
-            '422': "VCellHTTPError"
-            
+            '422': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -499,7 +487,7 @@ class SolverResourceApi:
     @validate_call
     def get_fv_solver_input_from_vcml_without_preload_content(
         self,
-        vcml_file: Optional[Union[StrictBytes, StrictStr]] = None,
+        vcml_file: Optional[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]]] = None,
         simulation_name: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
@@ -554,8 +542,7 @@ class SolverResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "bytearray",
-            '422': "VCellHTTPError"
-            
+            '422': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -572,19 +559,20 @@ class SolverResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -599,12 +587,13 @@ class SolverResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/octet-stream', 
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/octet-stream', 
+                    'application/json'
+                ]
+            )
 
         # set the HTTP header `Content-Type`
         if _content_type:

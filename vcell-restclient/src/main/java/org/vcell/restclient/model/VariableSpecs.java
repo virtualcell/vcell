@@ -31,6 +31,7 @@ import org.vcell.restclient.model.VariableMode;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * VariableSpecs
  */
@@ -38,18 +39,20 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   VariableSpecs.JSON_PROPERTY_VARIABLE_NAMES,
   VariableSpecs.JSON_PROPERTY_MODE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class VariableSpecs {
   public static final String JSON_PROPERTY_VARIABLE_NAMES = "variableNames";
-  private List<String> variableNames;
+  @javax.annotation.Nullable
+  private List<String> variableNames = new ArrayList<>();
 
   public static final String JSON_PROPERTY_MODE = "mode";
+  @javax.annotation.Nullable
   private VariableMode mode;
 
   public VariableSpecs() { 
   }
 
-  public VariableSpecs variableNames(List<String> variableNames) {
+  public VariableSpecs variableNames(@javax.annotation.Nullable List<String> variableNames) {
     this.variableNames = variableNames;
     return this;
   }
@@ -62,14 +65,13 @@ public class VariableSpecs {
     return this;
   }
 
-   /**
+  /**
    * Get variableNames
    * @return variableNames
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_VARIABLE_NAMES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<String> getVariableNames() {
     return variableNames;
   }
@@ -77,24 +79,23 @@ public class VariableSpecs {
 
   @JsonProperty(JSON_PROPERTY_VARIABLE_NAMES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVariableNames(List<String> variableNames) {
+  public void setVariableNames(@javax.annotation.Nullable List<String> variableNames) {
     this.variableNames = variableNames;
   }
 
 
-  public VariableSpecs mode(VariableMode mode) {
+  public VariableSpecs mode(@javax.annotation.Nullable VariableMode mode) {
     this.mode = mode;
     return this;
   }
 
-   /**
+  /**
    * Get mode
    * @return mode
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_MODE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public VariableMode getMode() {
     return mode;
   }
@@ -102,7 +103,7 @@ public class VariableSpecs {
 
   @JsonProperty(JSON_PROPERTY_MODE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setMode(VariableMode mode) {
+  public void setMode(@javax.annotation.Nullable VariableMode mode) {
     this.mode = mode;
   }
 
@@ -186,13 +187,13 @@ public class VariableSpecs {
       for (int i = 0; i < getVariableNames().size(); i++) {
         joiner.add(String.format("%svariableNames%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getVariableNames().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+            ApiClient.urlEncode(ApiClient.valueToString(getVariableNames().get(i)))));
       }
     }
 
     // add `mode` to the URL query string
     if (getMode() != null) {
-      joiner.add(String.format("%smode%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getMode()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%smode%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMode()))));
     }
 
     return joiner.toString();

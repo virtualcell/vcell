@@ -18,17 +18,13 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional, Union
-from pydantic import BaseModel, StrictFloat, StrictInt, StrictStr
-from pydantic import Field
 from vcell_client.models.export_progress_type import ExportProgressType
 from vcell_client.models.human_readable_export_data import HumanReadableExportData
 from vcell_client.models.user import User
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class ExportEvent(BaseModel):
     """
@@ -45,10 +41,11 @@ class ExportEvent(BaseModel):
     human_readable_data: Optional[HumanReadableExportData] = Field(default=None, alias="humanReadableData")
     __properties: ClassVar[List[str]] = ["eventType", "progress", "format", "location", "user", "jobID", "dataKey", "dataIdString", "humanReadableData"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -61,7 +58,7 @@ class ExportEvent(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of ExportEvent from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -75,10 +72,12 @@ class ExportEvent(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of user
@@ -90,7 +89,7 @@ class ExportEvent(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of ExportEvent from a dict"""
         if obj is None:
             return None
@@ -108,11 +107,11 @@ class ExportEvent(BaseModel):
             "progress": obj.get("progress"),
             "format": obj.get("format"),
             "location": obj.get("location"),
-            "user": User.from_dict(obj.get("user")) if obj.get("user") is not None else None,
+            "user": User.from_dict(obj["user"]) if obj.get("user") is not None else None,
             "jobID": obj.get("jobID"),
             "dataKey": obj.get("dataKey"),
             "dataIdString": obj.get("dataIdString"),
-            "humanReadableData": HumanReadableExportData.from_dict(obj.get("humanReadableData")) if obj.get("humanReadableData") is not None else None
+            "humanReadableData": HumanReadableExportData.from_dict(obj["humanReadableData"]) if obj.get("humanReadableData") is not None else None
         })
         return _obj
 

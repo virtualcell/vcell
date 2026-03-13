@@ -15,6 +15,7 @@ package org.vcell.restclient.api;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.VCImageSummary;
@@ -51,7 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class VcImageResourceApi {
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
@@ -62,7 +63,7 @@ public class VcImageResourceApi {
   private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
   public VcImageResourceApi() {
-    this(new ApiClient());
+    this(Configuration.getDefaultApiClient());
   }
 
   public VcImageResourceApi(ApiClient apiClient) {
@@ -118,15 +119,15 @@ public class VcImageResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("deleteImageVCML", localVarResponse);
         }
-        return new ApiResponse<Void>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          null
+        return new ApiResponse<>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            null
         );
       } finally {
         // Drain the InputStream
         while (localVarResponse.body().read() != -1) {
-            // Ignore
+          // Ignore
         }
         localVarResponse.body().close();
       }
@@ -163,6 +164,7 @@ public class VcImageResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get Summaries
    * Return Image summaries.
@@ -195,10 +197,21 @@ public class VcImageResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getImageSummaries", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<List<VCImageSummary>>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<List<VCImageSummary>>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<List<VCImageSummary>>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<VCImageSummary>>() {})
         );
       } finally {
       }
@@ -245,6 +258,7 @@ public class VcImageResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get Summary
    * All of the miscellaneous information about an Image (Extent, ISize, preview, etc...), but not the actual Image itself.
@@ -277,10 +291,21 @@ public class VcImageResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getImageSummary", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<VCImageSummary>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<VCImageSummary>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<VCImageSummary>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<VCImageSummary>() {})
         );
       } finally {
       }
@@ -317,6 +342,7 @@ public class VcImageResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get VC Image
    * Get specific image VCML.
@@ -397,6 +423,7 @@ public class VcImageResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Save VC Image
    * Save the VCML representation of an image.
@@ -494,4 +521,5 @@ public class VcImageResourceApi {
     }
     return localVarRequestBuilder;
   }
+
 }

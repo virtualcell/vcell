@@ -19,9 +19,8 @@ Create publication
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.publication import Publication
 from vcell_client.rest import ApiException
@@ -57,6 +56,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **publication** | [**Publication**](Publication.md)|  | 
@@ -75,6 +75,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -92,9 +93,8 @@ Delete publication
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -127,6 +127,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **int**|  | 
@@ -145,6 +146,7 @@ void (empty response body)
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **204** | No Content |  -  |
@@ -162,9 +164,8 @@ Get publication by ID
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.publication import Publication
 from vcell_client.rest import ApiException
@@ -196,6 +197,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **int**|  | 
@@ -214,6 +216,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -228,9 +231,8 @@ Get all publications
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.publication import Publication
 from vcell_client.rest import ApiException
@@ -260,6 +262,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 
 ### Parameters
+
 This endpoint does not need any parameter.
 
 ### Return type
@@ -276,6 +279,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -290,9 +294,8 @@ Publish selected BioModels and MathModels associated with a publication
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.publish_models_request import PublishModelsRequest
 from vcell_client.rest import ApiException
@@ -327,6 +330,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **int**|  | 
@@ -346,6 +350,7 @@ void (empty response body)
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **204** | No Content |  -  |
@@ -364,9 +369,8 @@ Update publication
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.publication import Publication
 from vcell_client.rest import ApiException
@@ -402,6 +406,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **publication** | [**Publication**](Publication.md)|  | 
@@ -420,6 +425,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |

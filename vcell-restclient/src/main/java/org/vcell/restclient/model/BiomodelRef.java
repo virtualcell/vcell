@@ -28,6 +28,7 @@ import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * BiomodelRef
  */
@@ -39,42 +40,47 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   BiomodelRef.JSON_PROPERTY_VERSION_FLAG,
   BiomodelRef.JSON_PROPERTY_PRIVACY
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class BiomodelRef {
   public static final String JSON_PROPERTY_BM_KEY = "bmKey";
+  @javax.annotation.Nullable
   private Long bmKey;
 
   public static final String JSON_PROPERTY_NAME = "name";
+  @javax.annotation.Nullable
   private String name;
 
   public static final String JSON_PROPERTY_OWNER_NAME = "ownerName";
+  @javax.annotation.Nullable
   private String ownerName;
 
   public static final String JSON_PROPERTY_OWNER_KEY = "ownerKey";
+  @javax.annotation.Nullable
   private Long ownerKey;
 
   public static final String JSON_PROPERTY_VERSION_FLAG = "versionFlag";
+  @javax.annotation.Nullable
   private Integer versionFlag;
 
   public static final String JSON_PROPERTY_PRIVACY = "privacy";
+  @javax.annotation.Nullable
   private Integer privacy;
 
   public BiomodelRef() { 
   }
 
-  public BiomodelRef bmKey(Long bmKey) {
+  public BiomodelRef bmKey(@javax.annotation.Nullable Long bmKey) {
     this.bmKey = bmKey;
     return this;
   }
 
-   /**
+  /**
    * Get bmKey
    * @return bmKey
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_BM_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Long getBmKey() {
     return bmKey;
   }
@@ -82,24 +88,23 @@ public class BiomodelRef {
 
   @JsonProperty(JSON_PROPERTY_BM_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setBmKey(Long bmKey) {
+  public void setBmKey(@javax.annotation.Nullable Long bmKey) {
     this.bmKey = bmKey;
   }
 
 
-  public BiomodelRef name(String name) {
+  public BiomodelRef name(@javax.annotation.Nullable String name) {
     this.name = name;
     return this;
   }
 
-   /**
+  /**
    * Get name
    * @return name
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getName() {
     return name;
   }
@@ -107,24 +112,23 @@ public class BiomodelRef {
 
   @JsonProperty(JSON_PROPERTY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setName(String name) {
+  public void setName(@javax.annotation.Nullable String name) {
     this.name = name;
   }
 
 
-  public BiomodelRef ownerName(String ownerName) {
+  public BiomodelRef ownerName(@javax.annotation.Nullable String ownerName) {
     this.ownerName = ownerName;
     return this;
   }
 
-   /**
+  /**
    * Get ownerName
    * @return ownerName
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_OWNER_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getOwnerName() {
     return ownerName;
   }
@@ -132,24 +136,23 @@ public class BiomodelRef {
 
   @JsonProperty(JSON_PROPERTY_OWNER_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setOwnerName(String ownerName) {
+  public void setOwnerName(@javax.annotation.Nullable String ownerName) {
     this.ownerName = ownerName;
   }
 
 
-  public BiomodelRef ownerKey(Long ownerKey) {
+  public BiomodelRef ownerKey(@javax.annotation.Nullable Long ownerKey) {
     this.ownerKey = ownerKey;
     return this;
   }
 
-   /**
+  /**
    * Get ownerKey
    * @return ownerKey
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_OWNER_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Long getOwnerKey() {
     return ownerKey;
   }
@@ -157,24 +160,23 @@ public class BiomodelRef {
 
   @JsonProperty(JSON_PROPERTY_OWNER_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setOwnerKey(Long ownerKey) {
+  public void setOwnerKey(@javax.annotation.Nullable Long ownerKey) {
     this.ownerKey = ownerKey;
   }
 
 
-  public BiomodelRef versionFlag(Integer versionFlag) {
+  public BiomodelRef versionFlag(@javax.annotation.Nullable Integer versionFlag) {
     this.versionFlag = versionFlag;
     return this;
   }
 
-   /**
+  /**
    * Get versionFlag
    * @return versionFlag
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getVersionFlag() {
     return versionFlag;
   }
@@ -182,24 +184,23 @@ public class BiomodelRef {
 
   @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersionFlag(Integer versionFlag) {
+  public void setVersionFlag(@javax.annotation.Nullable Integer versionFlag) {
     this.versionFlag = versionFlag;
   }
 
 
-  public BiomodelRef privacy(Integer privacy) {
+  public BiomodelRef privacy(@javax.annotation.Nullable Integer privacy) {
     this.privacy = privacy;
     return this;
   }
 
-   /**
+  /**
    * Get privacy
    * @return privacy
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_PRIVACY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getPrivacy() {
     return privacy;
   }
@@ -207,7 +208,7 @@ public class BiomodelRef {
 
   @JsonProperty(JSON_PROPERTY_PRIVACY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPrivacy(Integer privacy) {
+  public void setPrivacy(@javax.annotation.Nullable Integer privacy) {
     this.privacy = privacy;
   }
 
@@ -296,32 +297,32 @@ public class BiomodelRef {
 
     // add `bmKey` to the URL query string
     if (getBmKey() != null) {
-      joiner.add(String.format("%sbmKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getBmKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sbmKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBmKey()))));
     }
 
     // add `name` to the URL query string
     if (getName() != null) {
-      joiner.add(String.format("%sname%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
     }
 
     // add `ownerName` to the URL query string
     if (getOwnerName() != null) {
-      joiner.add(String.format("%sownerName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getOwnerName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sownerName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getOwnerName()))));
     }
 
     // add `ownerKey` to the URL query string
     if (getOwnerKey() != null) {
-      joiner.add(String.format("%sownerKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getOwnerKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sownerKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getOwnerKey()))));
     }
 
     // add `versionFlag` to the URL query string
     if (getVersionFlag() != null) {
-      joiner.add(String.format("%sversionFlag%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getVersionFlag()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sversionFlag%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVersionFlag()))));
     }
 
     // add `privacy` to the URL query string
     if (getPrivacy() != null) {
-      joiner.add(String.format("%sprivacy%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPrivacy()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sprivacy%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPrivacy()))));
     }
 
     return joiner.toString();

@@ -15,6 +15,7 @@ package org.vcell.restclient.api;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.BioModel;
@@ -46,7 +47,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class BioModelResourceApi {
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
@@ -57,7 +58,7 @@ public class BioModelResourceApi {
   private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
   public BioModelResourceApi() {
-    this(new ApiClient());
+    this(Configuration.getDefaultApiClient());
   }
 
   public BioModelResourceApi(ApiClient apiClient) {
@@ -113,15 +114,15 @@ public class BioModelResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("deleteBioModel", localVarResponse);
         }
-        return new ApiResponse<Void>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          null
+        return new ApiResponse<>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            null
         );
       } finally {
         // Drain the InputStream
         while (localVarResponse.body().read() != -1) {
-            // Ignore
+          // Ignore
         }
         localVarResponse.body().close();
       }
@@ -158,6 +159,7 @@ public class BioModelResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get BioModel.
    * 
@@ -190,10 +192,21 @@ public class BioModelResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getBioModel", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<BioModel>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<BioModel>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<BioModel>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<BioModel>() {})
         );
       } finally {
       }
@@ -230,6 +243,7 @@ public class BioModelResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Return BioModel summaries.
    * 
@@ -262,10 +276,21 @@ public class BioModelResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getBioModelSummaries", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<List<BioModelSummary>>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<List<BioModelSummary>>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<List<BioModelSummary>>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<BioModelSummary>>() {})
         );
       } finally {
       }
@@ -312,6 +337,7 @@ public class BioModelResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * All of the text based information about a BioModel (summary, version, publication status, etc...), but not the actual BioModel itself.
    * 
@@ -344,10 +370,21 @@ public class BioModelResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getBioModelSummary", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<BioModelSummary>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<BioModelSummary>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<BioModelSummary>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<BioModelSummary>() {})
         );
       } finally {
       }
@@ -384,6 +421,7 @@ public class BioModelResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get the BioModel in VCML format.
    * 
@@ -416,10 +454,21 @@ public class BioModelResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getBioModelVCML", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<String>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<String>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<String>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {})
         );
       } finally {
       }
@@ -456,12 +505,13 @@ public class BioModelResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Save&#39;s the given BioModel. Optional parameters of name and simulations to update due to math changes. Returns saved BioModel as VCML.
    * 
    * @param body BioModelVCML which will be saved. (required)
    * @param newName Name to save new BioModel under. Leave blank if re-saving existing BioModel. (optional)
-   * @param simsRequiringUpdates The name of simulations that will be prepared for future execution. (optional
+   * @param simsRequiringUpdates The name of simulations that will be prepared for future execution. (optional)
    * @return String
    * @throws ApiException if fails to make API call
    */
@@ -475,7 +525,7 @@ public class BioModelResourceApi {
    * 
    * @param body BioModelVCML which will be saved. (required)
    * @param newName Name to save new BioModel under. Leave blank if re-saving existing BioModel. (optional)
-   * @param simsRequiringUpdates The name of simulations that will be prepared for future execution. (optional
+   * @param simsRequiringUpdates The name of simulations that will be prepared for future execution. (optional)
    * @return ApiResponse&lt;String&gt;
    * @throws ApiException if fails to make API call
    */
@@ -492,10 +542,21 @@ public class BioModelResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("saveBioModel", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<String>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<String>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<String>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {})
         );
       } finally {
       }
@@ -549,4 +610,5 @@ public class BioModelResourceApi {
     }
     return localVarRequestBuilder;
   }
+
 }

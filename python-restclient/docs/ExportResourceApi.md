@@ -17,9 +17,8 @@ Create an N5 (ImageJ compatible) export. The request must contain the standard e
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.n5_export_request import N5ExportRequest
 from vcell_client.rest import ApiException
@@ -55,6 +54,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **n5_export_request** | [**N5ExportRequest**](N5ExportRequest.md)|  | 
@@ -73,6 +73,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -93,9 +94,8 @@ Get the status of your export jobs past the timestamp (Unix epoch in seconds).
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.export_event import ExportEvent
 from vcell_client.rest import ApiException
@@ -131,6 +131,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **timestamp** | **int**|  | [optional] 
@@ -149,6 +150,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |

@@ -1,9 +1,21 @@
 # VariableDomain
 
 
-## Properties
-Name | Type | Description | Notes
------------- | ------------- | ------------- | -------------
+## Enum
+
+* `VARIABLEDOMAIN_POSTPROCESSING` (value: `'VARIABLEDOMAIN_POSTPROCESSING'`)
+
+* `VARIABLEDOMAIN_UNKNOWN` (value: `'VARIABLEDOMAIN_UNKNOWN'`)
+
+* `VARIABLEDOMAIN_VOLUME` (value: `'VARIABLEDOMAIN_VOLUME'`)
+
+* `VARIABLEDOMAIN_MEMBRANE` (value: `'VARIABLEDOMAIN_MEMBRANE'`)
+
+* `VARIABLEDOMAIN_CONTOUR` (value: `'VARIABLEDOMAIN_CONTOUR'`)
+
+* `VARIABLEDOMAIN_NONSPATIAL` (value: `'VARIABLEDOMAIN_NONSPATIAL'`)
+
+* `VARIABLEDOMAIN_POINT` (value: `'VARIABLEDOMAIN_POINT'`)
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

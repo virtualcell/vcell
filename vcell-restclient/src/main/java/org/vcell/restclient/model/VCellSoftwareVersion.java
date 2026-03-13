@@ -29,6 +29,7 @@ import org.vcell.restclient.model.VCellSite;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * VCellSoftwareVersion
  */
@@ -43,51 +44,59 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   VCellSoftwareVersion.JSON_PROPERTY_BUILD_INT,
   VCellSoftwareVersion.JSON_PROPERTY_DESCRIPTION
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class VCellSoftwareVersion {
   public static final String JSON_PROPERTY_SOFTWARE_VERSION_STRING = "softwareVersionString";
+  @javax.annotation.Nullable
   private String softwareVersionString;
 
   public static final String JSON_PROPERTY_VCELL_SITE = "vcellSite";
+  @javax.annotation.Nullable
   private VCellSite vcellSite;
 
   public static final String JSON_PROPERTY_BUILD_NUMBER = "buildNumber";
+  @javax.annotation.Nullable
   private String buildNumber;
 
   public static final String JSON_PROPERTY_VERSION_NUMBER = "versionNumber";
+  @javax.annotation.Nullable
   private String versionNumber;
 
   public static final String JSON_PROPERTY_MAJOR_VERSION = "majorVersion";
+  @javax.annotation.Nullable
   private Integer majorVersion;
 
   public static final String JSON_PROPERTY_MINOR_VERSION = "minorVersion";
+  @javax.annotation.Nullable
   private Integer minorVersion;
 
   public static final String JSON_PROPERTY_PATCH_VERSION = "patchVersion";
+  @javax.annotation.Nullable
   private Integer patchVersion;
 
   public static final String JSON_PROPERTY_BUILD_INT = "buildInt";
+  @javax.annotation.Nullable
   private Integer buildInt;
 
   public static final String JSON_PROPERTY_DESCRIPTION = "description";
+  @javax.annotation.Nullable
   private String description;
 
   public VCellSoftwareVersion() { 
   }
 
-  public VCellSoftwareVersion softwareVersionString(String softwareVersionString) {
+  public VCellSoftwareVersion softwareVersionString(@javax.annotation.Nullable String softwareVersionString) {
     this.softwareVersionString = softwareVersionString;
     return this;
   }
 
-   /**
+  /**
    * Get softwareVersionString
    * @return softwareVersionString
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION_STRING)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getSoftwareVersionString() {
     return softwareVersionString;
   }
@@ -95,24 +104,23 @@ public class VCellSoftwareVersion {
 
   @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION_STRING)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSoftwareVersionString(String softwareVersionString) {
+  public void setSoftwareVersionString(@javax.annotation.Nullable String softwareVersionString) {
     this.softwareVersionString = softwareVersionString;
   }
 
 
-  public VCellSoftwareVersion vcellSite(VCellSite vcellSite) {
+  public VCellSoftwareVersion vcellSite(@javax.annotation.Nullable VCellSite vcellSite) {
     this.vcellSite = vcellSite;
     return this;
   }
 
-   /**
+  /**
    * Get vcellSite
    * @return vcellSite
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_VCELL_SITE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public VCellSite getVcellSite() {
     return vcellSite;
   }
@@ -120,24 +128,23 @@ public class VCellSoftwareVersion {
 
   @JsonProperty(JSON_PROPERTY_VCELL_SITE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVcellSite(VCellSite vcellSite) {
+  public void setVcellSite(@javax.annotation.Nullable VCellSite vcellSite) {
     this.vcellSite = vcellSite;
   }
 
 
-  public VCellSoftwareVersion buildNumber(String buildNumber) {
+  public VCellSoftwareVersion buildNumber(@javax.annotation.Nullable String buildNumber) {
     this.buildNumber = buildNumber;
     return this;
   }
 
-   /**
+  /**
    * Get buildNumber
    * @return buildNumber
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_BUILD_NUMBER)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getBuildNumber() {
     return buildNumber;
   }
@@ -145,24 +152,23 @@ public class VCellSoftwareVersion {
 
   @JsonProperty(JSON_PROPERTY_BUILD_NUMBER)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setBuildNumber(String buildNumber) {
+  public void setBuildNumber(@javax.annotation.Nullable String buildNumber) {
     this.buildNumber = buildNumber;
   }
 
 
-  public VCellSoftwareVersion versionNumber(String versionNumber) {
+  public VCellSoftwareVersion versionNumber(@javax.annotation.Nullable String versionNumber) {
     this.versionNumber = versionNumber;
     return this;
   }
 
-   /**
+  /**
    * Get versionNumber
    * @return versionNumber
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_VERSION_NUMBER)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getVersionNumber() {
     return versionNumber;
   }
@@ -170,24 +176,23 @@ public class VCellSoftwareVersion {
 
   @JsonProperty(JSON_PROPERTY_VERSION_NUMBER)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersionNumber(String versionNumber) {
+  public void setVersionNumber(@javax.annotation.Nullable String versionNumber) {
     this.versionNumber = versionNumber;
   }
 
 
-  public VCellSoftwareVersion majorVersion(Integer majorVersion) {
+  public VCellSoftwareVersion majorVersion(@javax.annotation.Nullable Integer majorVersion) {
     this.majorVersion = majorVersion;
     return this;
   }
 
-   /**
+  /**
    * Get majorVersion
    * @return majorVersion
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_MAJOR_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getMajorVersion() {
     return majorVersion;
   }
@@ -195,24 +200,23 @@ public class VCellSoftwareVersion {
 
   @JsonProperty(JSON_PROPERTY_MAJOR_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setMajorVersion(Integer majorVersion) {
+  public void setMajorVersion(@javax.annotation.Nullable Integer majorVersion) {
     this.majorVersion = majorVersion;
   }
 
 
-  public VCellSoftwareVersion minorVersion(Integer minorVersion) {
+  public VCellSoftwareVersion minorVersion(@javax.annotation.Nullable Integer minorVersion) {
     this.minorVersion = minorVersion;
     return this;
   }
 
-   /**
+  /**
    * Get minorVersion
    * @return minorVersion
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_MINOR_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getMinorVersion() {
     return minorVersion;
   }
@@ -220,24 +224,23 @@ public class VCellSoftwareVersion {
 
   @JsonProperty(JSON_PROPERTY_MINOR_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setMinorVersion(Integer minorVersion) {
+  public void setMinorVersion(@javax.annotation.Nullable Integer minorVersion) {
     this.minorVersion = minorVersion;
   }
 
 
-  public VCellSoftwareVersion patchVersion(Integer patchVersion) {
+  public VCellSoftwareVersion patchVersion(@javax.annotation.Nullable Integer patchVersion) {
     this.patchVersion = patchVersion;
     return this;
   }
 
-   /**
+  /**
    * Get patchVersion
    * @return patchVersion
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_PATCH_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getPatchVersion() {
     return patchVersion;
   }
@@ -245,24 +248,23 @@ public class VCellSoftwareVersion {
 
   @JsonProperty(JSON_PROPERTY_PATCH_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPatchVersion(Integer patchVersion) {
+  public void setPatchVersion(@javax.annotation.Nullable Integer patchVersion) {
     this.patchVersion = patchVersion;
   }
 
 
-  public VCellSoftwareVersion buildInt(Integer buildInt) {
+  public VCellSoftwareVersion buildInt(@javax.annotation.Nullable Integer buildInt) {
     this.buildInt = buildInt;
     return this;
   }
 
-   /**
+  /**
    * Get buildInt
    * @return buildInt
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_BUILD_INT)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getBuildInt() {
     return buildInt;
   }
@@ -270,24 +272,23 @@ public class VCellSoftwareVersion {
 
   @JsonProperty(JSON_PROPERTY_BUILD_INT)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setBuildInt(Integer buildInt) {
+  public void setBuildInt(@javax.annotation.Nullable Integer buildInt) {
     this.buildInt = buildInt;
   }
 
 
-  public VCellSoftwareVersion description(String description) {
+  public VCellSoftwareVersion description(@javax.annotation.Nullable String description) {
     this.description = description;
     return this;
   }
 
-   /**
+  /**
    * Get description
    * @return description
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DESCRIPTION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getDescription() {
     return description;
   }
@@ -295,7 +296,7 @@ public class VCellSoftwareVersion {
 
   @JsonProperty(JSON_PROPERTY_DESCRIPTION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDescription(String description) {
+  public void setDescription(@javax.annotation.Nullable String description) {
     this.description = description;
   }
 
@@ -390,47 +391,47 @@ public class VCellSoftwareVersion {
 
     // add `softwareVersionString` to the URL query string
     if (getSoftwareVersionString() != null) {
-      joiner.add(String.format("%ssoftwareVersionString%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSoftwareVersionString()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%ssoftwareVersionString%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSoftwareVersionString()))));
     }
 
     // add `vcellSite` to the URL query string
     if (getVcellSite() != null) {
-      joiner.add(String.format("%svcellSite%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getVcellSite()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%svcellSite%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVcellSite()))));
     }
 
     // add `buildNumber` to the URL query string
     if (getBuildNumber() != null) {
-      joiner.add(String.format("%sbuildNumber%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getBuildNumber()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sbuildNumber%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBuildNumber()))));
     }
 
     // add `versionNumber` to the URL query string
     if (getVersionNumber() != null) {
-      joiner.add(String.format("%sversionNumber%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getVersionNumber()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sversionNumber%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVersionNumber()))));
     }
 
     // add `majorVersion` to the URL query string
     if (getMajorVersion() != null) {
-      joiner.add(String.format("%smajorVersion%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getMajorVersion()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%smajorVersion%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMajorVersion()))));
     }
 
     // add `minorVersion` to the URL query string
     if (getMinorVersion() != null) {
-      joiner.add(String.format("%sminorVersion%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getMinorVersion()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sminorVersion%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMinorVersion()))));
     }
 
     // add `patchVersion` to the URL query string
     if (getPatchVersion() != null) {
-      joiner.add(String.format("%spatchVersion%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPatchVersion()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%spatchVersion%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPatchVersion()))));
     }
 
     // add `buildInt` to the URL query string
     if (getBuildInt() != null) {
-      joiner.add(String.format("%sbuildInt%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getBuildInt()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sbuildInt%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getBuildInt()))));
     }
 
     // add `description` to the URL query string
     if (getDescription() != null) {
-      joiner.add(String.format("%sdescription%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDescription()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sdescription%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDescription()))));
     }
 
     return joiner.toString();

@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **field_curve** | [**Curve**](Curve.md) |  | [optional] 
@@ -25,12 +26,12 @@ json = "{}"
 # create an instance of CurveSelectionInfo from a JSON string
 curve_selection_info_instance = CurveSelectionInfo.from_json(json)
 # print the JSON string representation of the object
-print CurveSelectionInfo.to_json()
+print(CurveSelectionInfo.to_json())
 
 # convert the object into a dict
 curve_selection_info_dict = curve_selection_info_instance.to_dict()
 # create an instance of CurveSelectionInfo from a dict
-curve_selection_info_form_dict = curve_selection_info.from_dict(curve_selection_info_dict)
+curve_selection_info_from_dict = CurveSelectionInfo.from_dict(curve_selection_info_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

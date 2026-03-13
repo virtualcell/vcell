@@ -2,9 +2,10 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | **object** |  | 
+**type** | **str** |  | [default to 'GroupAccessNone']
 **description** | **str** |  | [optional] 
 
 ## Example
@@ -17,12 +18,12 @@ json = "{}"
 # create an instance of GroupAccessNone from a JSON string
 group_access_none_instance = GroupAccessNone.from_json(json)
 # print the JSON string representation of the object
-print GroupAccessNone.to_json()
+print(GroupAccessNone.to_json())
 
 # convert the object into a dict
 group_access_none_dict = group_access_none_instance.to_dict()
 # create an instance of GroupAccessNone from a dict
-group_access_none_form_dict = group_access_none.from_dict(group_access_none_dict)
+group_access_none_from_dict = GroupAccessNone.from_dict(group_access_none_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

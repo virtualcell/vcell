@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **field_time_data_stamp** | **datetime** |  | [optional] 
@@ -25,12 +26,12 @@ json = "{}"
 # create an instance of SimulationJobStatusRecord from a JSON string
 simulation_job_status_record_instance = SimulationJobStatusRecord.from_json(json)
 # print the JSON string representation of the object
-print SimulationJobStatusRecord.to_json()
+print(SimulationJobStatusRecord.to_json())
 
 # convert the object into a dict
 simulation_job_status_record_dict = simulation_job_status_record_instance.to_dict()
 # create an instance of SimulationJobStatusRecord from a dict
-simulation_job_status_record_form_dict = simulation_job_status_record.from_dict(simulation_job_status_record_dict)
+simulation_job_status_record_from_dict = SimulationJobStatusRecord.from_dict(simulation_job_status_record_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

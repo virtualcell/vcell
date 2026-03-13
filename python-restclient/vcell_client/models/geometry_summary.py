@@ -18,18 +18,14 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictInt, StrictStr
-from pydantic import Field
 from vcell_client.models.extent import Extent
 from vcell_client.models.origin import Origin
 from vcell_client.models.v_cell_software_version import VCellSoftwareVersion
 from vcell_client.models.version import Version
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class GeometrySummary(BaseModel):
     """
@@ -43,10 +39,11 @@ class GeometrySummary(BaseModel):
     software_version: Optional[VCellSoftwareVersion] = Field(default=None, alias="softwareVersion")
     __properties: ClassVar[List[str]] = ["dimension", "origin", "extent", "imageRef", "version", "softwareVersion"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -59,7 +56,7 @@ class GeometrySummary(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of GeometrySummary from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -73,10 +70,12 @@ class GeometrySummary(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of origin
@@ -94,7 +93,7 @@ class GeometrySummary(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of GeometrySummary from a dict"""
         if obj is None:
             return None
@@ -109,11 +108,11 @@ class GeometrySummary(BaseModel):
 
         _obj = cls.model_validate({
             "dimension": obj.get("dimension"),
-            "origin": Origin.from_dict(obj.get("origin")) if obj.get("origin") is not None else None,
-            "extent": Extent.from_dict(obj.get("extent")) if obj.get("extent") is not None else None,
+            "origin": Origin.from_dict(obj["origin"]) if obj.get("origin") is not None else None,
+            "extent": Extent.from_dict(obj["extent"]) if obj.get("extent") is not None else None,
             "imageRef": obj.get("imageRef"),
-            "version": Version.from_dict(obj.get("version")) if obj.get("version") is not None else None,
-            "softwareVersion": VCellSoftwareVersion.from_dict(obj.get("softwareVersion")) if obj.get("softwareVersion") is not None else None
+            "version": Version.from_dict(obj["version"]) if obj.get("version") is not None else None,
+            "softwareVersion": VCellSoftwareVersion.from_dict(obj["softwareVersion"]) if obj.get("softwareVersion") is not None else None
         })
         return _obj
 

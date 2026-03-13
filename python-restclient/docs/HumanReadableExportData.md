@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **simulation_name** | **str** |  | [optional] 
@@ -26,12 +27,12 @@ json = "{}"
 # create an instance of HumanReadableExportData from a JSON string
 human_readable_export_data_instance = HumanReadableExportData.from_json(json)
 # print the JSON string representation of the object
-print HumanReadableExportData.to_json()
+print(HumanReadableExportData.to_json())
 
 # convert the object into a dict
 human_readable_export_data_dict = human_readable_export_data_instance.to_dict()
 # create an instance of HumanReadableExportData from a dict
-human_readable_export_data_form_dict = human_readable_export_data.from_dict(human_readable_export_data_dict)
+human_readable_export_data_from_dict = HumanReadableExportData.from_dict(human_readable_export_data_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

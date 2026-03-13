@@ -28,6 +28,7 @@ import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * ISize
  */
@@ -36,33 +37,35 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   ISize.JSON_PROPERTY_Y,
   ISize.JSON_PROPERTY_Z
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class ISize {
   public static final String JSON_PROPERTY_X = "x";
+  @javax.annotation.Nullable
   private Integer x;
 
   public static final String JSON_PROPERTY_Y = "y";
+  @javax.annotation.Nullable
   private Integer y;
 
   public static final String JSON_PROPERTY_Z = "z";
+  @javax.annotation.Nullable
   private Integer z;
 
   public ISize() { 
   }
 
-  public ISize x(Integer x) {
+  public ISize x(@javax.annotation.Nullable Integer x) {
     this.x = x;
     return this;
   }
 
-   /**
+  /**
    * Get x
    * @return x
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_X)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getX() {
     return x;
   }
@@ -70,24 +73,23 @@ public class ISize {
 
   @JsonProperty(JSON_PROPERTY_X)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setX(Integer x) {
+  public void setX(@javax.annotation.Nullable Integer x) {
     this.x = x;
   }
 
 
-  public ISize y(Integer y) {
+  public ISize y(@javax.annotation.Nullable Integer y) {
     this.y = y;
     return this;
   }
 
-   /**
+  /**
    * Get y
    * @return y
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_Y)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getY() {
     return y;
   }
@@ -95,24 +97,23 @@ public class ISize {
 
   @JsonProperty(JSON_PROPERTY_Y)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setY(Integer y) {
+  public void setY(@javax.annotation.Nullable Integer y) {
     this.y = y;
   }
 
 
-  public ISize z(Integer z) {
+  public ISize z(@javax.annotation.Nullable Integer z) {
     this.z = z;
     return this;
   }
 
-   /**
+  /**
    * Get z
    * @return z
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_Z)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getZ() {
     return z;
   }
@@ -120,7 +121,7 @@ public class ISize {
 
   @JsonProperty(JSON_PROPERTY_Z)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setZ(Integer z) {
+  public void setZ(@javax.annotation.Nullable Integer z) {
     this.z = z;
   }
 
@@ -203,17 +204,17 @@ public class ISize {
 
     // add `x` to the URL query string
     if (getX() != null) {
-      joiner.add(String.format("%sx%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getX()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sx%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getX()))));
     }
 
     // add `y` to the URL query string
     if (getY() != null) {
-      joiner.add(String.format("%sy%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getY()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sy%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getY()))));
     }
 
     // add `z` to the URL query string
     if (getZ() != null) {
-      joiner.add(String.format("%sz%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getZ()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sz%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getZ()))));
     }
 
     return joiner.toString();

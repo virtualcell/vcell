@@ -18,15 +18,20 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from importlib import import_module
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictFloat, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional, Union
-from pydantic import BaseModel, StrictBool, StrictFloat, StrictInt, StrictStr
-from pydantic import Field
 from vcell_client.models.coordinate import Coordinate
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
+
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from vcell_client.models.analytic_curve import AnalyticCurve
+    from vcell_client.models.composite_curve import CompositeCurve
+    from vcell_client.models.control_point_curve import ControlPointCurve
+    from vcell_client.models.sampled_curve import SampledCurve
+    from vcell_client.models.spline import Spline
 
 class Curve(BaseModel):
     """
@@ -45,14 +50,15 @@ class Curve(BaseModel):
     valid: Optional[StrictBool] = None
     __properties: ClassVar[List[str]] = ["bClosed", "description", "type", "beginningCoordinate", "defaultNumSamples", "endingCoordinate", "numSamplePoints", "segmentCount", "spatialLength", "closed", "valid"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     # JSON field name that stores the object type
-    __discriminator_property_name: ClassVar[List[str]] = 'type'
+    __discriminator_property_name: ClassVar[str] = 'type'
 
     # discriminator mappings
     __discriminator_value_class_map: ClassVar[Dict[str, str]] = {
@@ -60,7 +66,7 @@ class Curve(BaseModel):
     }
 
     @classmethod
-    def get_discriminator_value(cls, obj: Dict) -> str:
+    def get_discriminator_value(cls, obj: Dict[str, Any]) -> Optional[str]:
         """Returns the discriminator value (object type) of the data"""
         discriminator_value = obj[cls.__discriminator_property_name]
         if discriminator_value:
@@ -78,7 +84,7 @@ class Curve(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Union[Self, Self, Self]:
+    def from_json(cls, json_str: str) -> Optional[Union[AnalyticCurve, CompositeCurve, ControlPointCurve, SampledCurve, Spline]]:
         """Create an instance of Curve from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -92,10 +98,12 @@ class Curve(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of beginning_coordinate
@@ -107,23 +115,23 @@ class Curve(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Union[Self, Self, Self]:
+    def from_dict(cls, obj: Dict[str, Any]) -> Optional[Union[AnalyticCurve, CompositeCurve, ControlPointCurve, SampledCurve, Spline]]:
         """Create an instance of Curve from a dict"""
         # look up the object type based on discriminator mapping
         object_type = cls.get_discriminator_value(obj)
-        if object_type:
-            klass = globals()[object_type]
-            return klass.from_dict(obj)
-        else:
-            raise ValueError("Curve failed to lookup discriminator value from " +
-                             json.dumps(obj) + ". Discriminator property name: " + cls.__discriminator_property_name +
-                             ", mapping: " + json.dumps(cls.__discriminator_value_class_map))
+        if object_type ==  'AnalyticCurve':
+            return import_module("vcell_client.models.analytic_curve").AnalyticCurve.from_dict(obj)
+        if object_type ==  'CompositeCurve':
+            return import_module("vcell_client.models.composite_curve").CompositeCurve.from_dict(obj)
+        if object_type ==  'ControlPointCurve':
+            return import_module("vcell_client.models.control_point_curve").ControlPointCurve.from_dict(obj)
+        if object_type ==  'SampledCurve':
+            return import_module("vcell_client.models.sampled_curve").SampledCurve.from_dict(obj)
+        if object_type ==  'Spline':
+            return import_module("vcell_client.models.spline").Spline.from_dict(obj)
 
-from vcell_client.models.analytic_curve import AnalyticCurve
-from vcell_client.models.composite_curve import CompositeCurve
-from vcell_client.models.control_point_curve import ControlPointCurve
-from vcell_client.models.sampled_curve import SampledCurve
-from vcell_client.models.spline import Spline
-# TODO: Rewrite to not use raise_errors
-Curve.model_rebuild(raise_errors=False)
+        raise ValueError("Curve failed to lookup discriminator value from " +
+                            json.dumps(obj) + ". Discriminator property name: " + cls.__discriminator_property_name +
+                            ", mapping: " + json.dumps(cls.__discriminator_value_class_map))
+
 

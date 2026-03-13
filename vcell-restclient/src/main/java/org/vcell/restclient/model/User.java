@@ -31,6 +31,7 @@ import org.vcell.restclient.model.SPECIALCLAIM;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * User
  */
@@ -39,33 +40,35 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   User.JSON_PROPERTY_KEY,
   User.JSON_PROPERTY_MY_SPECIALS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class User {
   public static final String JSON_PROPERTY_USER_NAME = "userName";
+  @javax.annotation.Nullable
   private String userName;
 
   public static final String JSON_PROPERTY_KEY = "key";
+  @javax.annotation.Nullable
   private String key;
 
   public static final String JSON_PROPERTY_MY_SPECIALS = "mySpecials";
-  private List<SPECIALCLAIM> mySpecials;
+  @javax.annotation.Nullable
+  private List<SPECIALCLAIM> mySpecials = new ArrayList<>();
 
   public User() { 
   }
 
-  public User userName(String userName) {
+  public User userName(@javax.annotation.Nullable String userName) {
     this.userName = userName;
     return this;
   }
 
-   /**
+  /**
    * Get userName
    * @return userName
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_USER_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getUserName() {
     return userName;
   }
@@ -73,24 +76,23 @@ public class User {
 
   @JsonProperty(JSON_PROPERTY_USER_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setUserName(String userName) {
+  public void setUserName(@javax.annotation.Nullable String userName) {
     this.userName = userName;
   }
 
 
-  public User key(String key) {
+  public User key(@javax.annotation.Nullable String key) {
     this.key = key;
     return this;
   }
 
-   /**
+  /**
    * Get key
    * @return key
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getKey() {
     return key;
   }
@@ -98,12 +100,12 @@ public class User {
 
   @JsonProperty(JSON_PROPERTY_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setKey(String key) {
+  public void setKey(@javax.annotation.Nullable String key) {
     this.key = key;
   }
 
 
-  public User mySpecials(List<SPECIALCLAIM> mySpecials) {
+  public User mySpecials(@javax.annotation.Nullable List<SPECIALCLAIM> mySpecials) {
     this.mySpecials = mySpecials;
     return this;
   }
@@ -116,14 +118,13 @@ public class User {
     return this;
   }
 
-   /**
+  /**
    * Get mySpecials
    * @return mySpecials
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_MY_SPECIALS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<SPECIALCLAIM> getMySpecials() {
     return mySpecials;
   }
@@ -131,7 +132,7 @@ public class User {
 
   @JsonProperty(JSON_PROPERTY_MY_SPECIALS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setMySpecials(List<SPECIALCLAIM> mySpecials) {
+  public void setMySpecials(@javax.annotation.Nullable List<SPECIALCLAIM> mySpecials) {
     this.mySpecials = mySpecials;
   }
 
@@ -214,12 +215,12 @@ public class User {
 
     // add `userName` to the URL query string
     if (getUserName() != null) {
-      joiner.add(String.format("%suserName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getUserName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%suserName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUserName()))));
     }
 
     // add `key` to the URL query string
     if (getKey() != null) {
-      joiner.add(String.format("%skey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%skey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getKey()))));
     }
 
     // add `mySpecials` to the URL query string
@@ -228,7 +229,7 @@ public class User {
         if (getMySpecials().get(i) != null) {
           joiner.add(String.format("%smySpecials%s%s=%s", prefix, suffix,
               "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-              URLEncoder.encode(String.valueOf(getMySpecials().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+              ApiClient.urlEncode(ApiClient.valueToString(getMySpecials().get(i)))));
         }
       }
     }

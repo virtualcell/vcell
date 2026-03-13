@@ -15,9 +15,8 @@ Retrieve finite volume input from SBML spatial model.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -50,6 +49,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **sbml_file** | **bytearray**|  | [optional] 
@@ -70,6 +70,7 @@ No authorization required
  - **Accept**: application/octet-stream, application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -84,9 +85,8 @@ Retrieve finite volume input from SBML spatial model.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -118,6 +118,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **vcml_file** | **bytearray**|  | [optional] 
@@ -137,6 +138,7 @@ No authorization required
  - **Accept**: application/octet-stream, application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |

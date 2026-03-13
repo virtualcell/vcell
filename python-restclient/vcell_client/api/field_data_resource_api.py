@@ -12,24 +12,15 @@
     Do not edit the class manually.
 """  # noqa: E501
 
-
-import io
 import warnings
-
 from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
-from typing import Dict, List, Optional, Tuple, Union, Any
-
-try:
-    from typing import Annotated
-except ImportError:
-    from typing_extensions import Annotated
+from typing import Any, Dict, List, Optional, Tuple, Union
+from typing_extensions import Annotated
 
 from pydantic import StrictBytes, StrictFloat, StrictInt, StrictStr
-
-from typing import Any, List, Optional, Union
-
-from vcell_client.models.external_data_identifier import ExternalDataIdentifier
+from typing import Dict, List, Optional, Tuple, Union
 from vcell_client.models.extent import Extent
+from vcell_client.models.external_data_identifier import ExternalDataIdentifier
 from vcell_client.models.field_data import FieldData
 from vcell_client.models.field_data_reference import FieldDataReference
 from vcell_client.models.field_data_saved_results import FieldDataSavedResults
@@ -38,7 +29,7 @@ from vcell_client.models.i_size import ISize
 from vcell_client.models.origin import Origin
 from vcell_client.models.source_model import SourceModel
 
-from vcell_client.api_client import ApiClient
+from vcell_client.api_client import ApiClient, RequestSerialized
 from vcell_client.api_response import ApiResponse
 from vcell_client.rest import RESTResponseType
 
@@ -59,7 +50,7 @@ class FieldDataResourceApi:
     @validate_call
     def advanced_create(
         self,
-        file: Optional[Union[StrictBytes, StrictStr]] = None,
+        file: Optional[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]]] = None,
         file_name: Optional[StrictStr] = None,
         extent: Optional[Extent] = None,
         i_size: Optional[ISize] = None,
@@ -141,8 +132,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -158,7 +148,7 @@ class FieldDataResourceApi:
     @validate_call
     def advanced_create_with_http_info(
         self,
-        file: Optional[Union[StrictBytes, StrictStr]] = None,
+        file: Optional[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]]] = None,
         file_name: Optional[StrictStr] = None,
         extent: Optional[Extent] = None,
         i_size: Optional[ISize] = None,
@@ -240,8 +230,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -257,7 +246,7 @@ class FieldDataResourceApi:
     @validate_call
     def advanced_create_without_preload_content(
         self,
-        file: Optional[Union[StrictBytes, StrictStr]] = None,
+        file: Optional[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]]] = None,
         file_name: Optional[StrictStr] = None,
         extent: Optional[Extent] = None,
         i_size: Optional[ISize] = None,
@@ -339,8 +328,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -363,12 +351,11 @@ class FieldDataResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
             'channelNames': 'multi',
             'times': 'multi',
         }
@@ -377,7 +364,9 @@ class FieldDataResourceApi:
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -404,11 +393,12 @@ class FieldDataResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
         # set the HTTP header `Content-Type`
         if _content_type:
@@ -450,7 +440,7 @@ class FieldDataResourceApi:
     @validate_call
     def analyze_file(
         self,
-        file: Optional[Union[StrictBytes, StrictStr]] = None,
+        file: Optional[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]]] = None,
         file_name: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
@@ -508,8 +498,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -525,7 +514,7 @@ class FieldDataResourceApi:
     @validate_call
     def analyze_file_with_http_info(
         self,
-        file: Optional[Union[StrictBytes, StrictStr]] = None,
+        file: Optional[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]]] = None,
         file_name: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
@@ -583,8 +572,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -600,7 +588,7 @@ class FieldDataResourceApi:
     @validate_call
     def analyze_file_without_preload_content(
         self,
-        file: Optional[Union[StrictBytes, StrictStr]] = None,
+        file: Optional[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]]] = None,
         file_name: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
@@ -658,8 +646,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -676,19 +663,20 @@ class FieldDataResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -703,11 +691,12 @@ class FieldDataResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
         # set the HTTP header `Content-Type`
         if _content_type:
@@ -804,8 +793,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -876,8 +864,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -948,8 +935,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -965,19 +951,20 @@ class FieldDataResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -990,11 +977,12 @@ class FieldDataResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
         # set the HTTP header `Content-Type`
         if _content_type:
@@ -1036,7 +1024,7 @@ class FieldDataResourceApi:
     @validate_call
     def create_from_file(
         self,
-        file: Optional[Union[StrictBytes, StrictStr]] = None,
+        file: Optional[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]]] = None,
         field_data_name: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
@@ -1094,8 +1082,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1111,7 +1098,7 @@ class FieldDataResourceApi:
     @validate_call
     def create_from_file_with_http_info(
         self,
-        file: Optional[Union[StrictBytes, StrictStr]] = None,
+        file: Optional[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]]] = None,
         field_data_name: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
@@ -1169,8 +1156,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1186,7 +1172,7 @@ class FieldDataResourceApi:
     @validate_call
     def create_from_file_without_preload_content(
         self,
-        file: Optional[Union[StrictBytes, StrictStr]] = None,
+        file: Optional[Union[StrictBytes, StrictStr, Tuple[StrictStr, StrictBytes]]] = None,
         field_data_name: Optional[StrictStr] = None,
         _request_timeout: Union[
             None,
@@ -1244,8 +1230,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1262,19 +1247,20 @@ class FieldDataResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -1289,11 +1275,12 @@ class FieldDataResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
         # set the HTTP header `Content-Type`
         if _content_type:
@@ -1393,7 +1380,11 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '201': None,
+            '400': None,
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1467,7 +1458,11 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '201': None,
+            '400': None,
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1541,7 +1536,11 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '201': None,
+            '400': None,
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1559,19 +1558,20 @@ class FieldDataResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -1588,11 +1588,12 @@ class FieldDataResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
         # set the HTTP header `Content-Type`
         if _content_type:
@@ -1684,7 +1685,10 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '204': None,
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1750,7 +1754,10 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '204': None,
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1816,7 +1823,10 @@ class FieldDataResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '204': None,
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1832,19 +1842,20 @@ class FieldDataResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -1857,11 +1868,12 @@ class FieldDataResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting
@@ -1939,8 +1951,7 @@ class FieldDataResourceApi:
             '200': "List[FieldDataReference]",
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2005,8 +2016,7 @@ class FieldDataResourceApi:
             '200': "List[FieldDataReference]",
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2071,8 +2081,7 @@ class FieldDataResourceApi:
             '200': "List[FieldDataReference]",
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2087,19 +2096,20 @@ class FieldDataResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -2110,11 +2120,12 @@ class FieldDataResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting
@@ -2197,8 +2208,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '404': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2268,8 +2278,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '404': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2339,8 +2348,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
             '404': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2356,19 +2364,20 @@ class FieldDataResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -2381,11 +2390,12 @@ class FieldDataResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting
@@ -2469,8 +2479,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2541,8 +2550,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2613,8 +2621,7 @@ class FieldDataResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2630,19 +2637,20 @@ class FieldDataResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -2655,11 +2663,12 @@ class FieldDataResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
         # set the HTTP header `Content-Type`
         if _content_type:

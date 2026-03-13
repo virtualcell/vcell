@@ -30,13 +30,13 @@ import com.fasterxml.jackson.annotation.JsonValue;
  */
 public enum MathType {
   
-  RULEBASED("RuleBased"),
+  RULE_BASED("RuleBased"),
   
   STOCHASTIC("Stochastic"),
   
   DETERMINISTIC("Deterministic"),
   
-  SPRINGSALAD("SpringSaLaD"),
+  SPRING_SA_LA_D("SpringSaLaD"),
   
   UNKNOWN("Unknown");
 

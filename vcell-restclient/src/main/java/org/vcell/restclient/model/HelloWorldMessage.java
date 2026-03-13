@@ -28,33 +28,34 @@ import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * HelloWorldMessage
  */
 @JsonPropertyOrder({
   HelloWorldMessage.JSON_PROPERTY_MESSAGE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class HelloWorldMessage {
   public static final String JSON_PROPERTY_MESSAGE = "message";
+  @javax.annotation.Nullable
   private String message;
 
   public HelloWorldMessage() { 
   }
 
-  public HelloWorldMessage message(String message) {
+  public HelloWorldMessage message(@javax.annotation.Nullable String message) {
     this.message = message;
     return this;
   }
 
-   /**
+  /**
    * Get message
    * @return message
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_MESSAGE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getMessage() {
     return message;
   }
@@ -62,7 +63,7 @@ public class HelloWorldMessage {
 
   @JsonProperty(JSON_PROPERTY_MESSAGE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setMessage(String message) {
+  public void setMessage(@javax.annotation.Nullable String message) {
     this.message = message;
   }
 
@@ -141,7 +142,7 @@ public class HelloWorldMessage {
 
     // add `message` to the URL query string
     if (getMessage() != null) {
-      joiner.add(String.format("%smessage%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getMessage()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%smessage%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMessage()))));
     }
 
     return joiner.toString();

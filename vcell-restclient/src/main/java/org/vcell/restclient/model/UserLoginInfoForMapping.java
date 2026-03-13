@@ -28,6 +28,7 @@ import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * UserLoginInfoForMapping
  */
@@ -35,30 +36,31 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   UserLoginInfoForMapping.JSON_PROPERTY_USER_I_D,
   UserLoginInfoForMapping.JSON_PROPERTY_PASSWORD
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class UserLoginInfoForMapping {
   public static final String JSON_PROPERTY_USER_I_D = "userID";
+  @javax.annotation.Nullable
   private String userID;
 
   public static final String JSON_PROPERTY_PASSWORD = "password";
+  @javax.annotation.Nullable
   private String password;
 
   public UserLoginInfoForMapping() { 
   }
 
-  public UserLoginInfoForMapping userID(String userID) {
+  public UserLoginInfoForMapping userID(@javax.annotation.Nullable String userID) {
     this.userID = userID;
     return this;
   }
 
-   /**
+  /**
    * Get userID
    * @return userID
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_USER_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getUserID() {
     return userID;
   }
@@ -66,24 +68,23 @@ public class UserLoginInfoForMapping {
 
   @JsonProperty(JSON_PROPERTY_USER_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setUserID(String userID) {
+  public void setUserID(@javax.annotation.Nullable String userID) {
     this.userID = userID;
   }
 
 
-  public UserLoginInfoForMapping password(String password) {
+  public UserLoginInfoForMapping password(@javax.annotation.Nullable String password) {
     this.password = password;
     return this;
   }
 
-   /**
+  /**
    * Get password
    * @return password
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_PASSWORD)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getPassword() {
     return password;
   }
@@ -91,7 +92,7 @@ public class UserLoginInfoForMapping {
 
   @JsonProperty(JSON_PROPERTY_PASSWORD)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPassword(String password) {
+  public void setPassword(@javax.annotation.Nullable String password) {
     this.password = password;
   }
 
@@ -172,12 +173,12 @@ public class UserLoginInfoForMapping {
 
     // add `userID` to the URL query string
     if (getUserID() != null) {
-      joiner.add(String.format("%suserID%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getUserID()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%suserID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getUserID()))));
     }
 
     // add `password` to the URL query string
     if (getPassword() != null) {
-      joiner.add(String.format("%spassword%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPassword()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%spassword%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPassword()))));
     }
 
     return joiner.toString();

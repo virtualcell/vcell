@@ -18,16 +18,12 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictInt, StrictStr
-from pydantic import Field
 from vcell_client.models.application_info import ApplicationInfo
 from vcell_client.models.math_type import MathType
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class BioModelChildSummary(BaseModel):
     """
@@ -47,10 +43,11 @@ class BioModelChildSummary(BaseModel):
     application_info: Optional[List[ApplicationInfo]] = Field(default=None, alias="applicationInfo")
     __properties: ClassVar[List[str]] = ["scNames", "scAnnots", "geoNames", "geoDims", "appTypes", "simNames", "simAnnots", "geometryDimensions", "geometryNames", "simulationContextAnnotations", "simulationContextNames", "applicationInfo"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -63,7 +60,7 @@ class BioModelChildSummary(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of BioModelChildSummary from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -77,23 +74,25 @@ class BioModelChildSummary(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of each item in application_info (list)
         _items = []
         if self.application_info:
-            for _item in self.application_info:
-                if _item:
-                    _items.append(_item.to_dict())
+            for _item_application_info in self.application_info:
+                if _item_application_info:
+                    _items.append(_item_application_info.to_dict())
             _dict['applicationInfo'] = _items
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of BioModelChildSummary from a dict"""
         if obj is None:
             return None
@@ -118,7 +117,7 @@ class BioModelChildSummary(BaseModel):
             "geometryNames": obj.get("geometryNames"),
             "simulationContextAnnotations": obj.get("simulationContextAnnotations"),
             "simulationContextNames": obj.get("simulationContextNames"),
-            "applicationInfo": [ApplicationInfo.from_dict(_item) for _item in obj.get("applicationInfo")] if obj.get("applicationInfo") is not None else None
+            "applicationInfo": [ApplicationInfo.from_dict(_item) for _item in obj["applicationInfo"]] if obj.get("applicationInfo") is not None else None
         })
         return _obj
 

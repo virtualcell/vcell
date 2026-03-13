@@ -7,8 +7,8 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**type** | **Object** |  |  |
-|**fieldSampledDataIndexes** | **Object** |  |  [optional] |
+|**type** | **String** |  |  |
+|**fieldSampledDataIndexes** | **List&lt;Integer&gt;** |  |  [optional] |
 |**selectionSource** | [**SampledCurve**](SampledCurve.md) |  |  [optional] |
 
 

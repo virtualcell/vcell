@@ -16,6 +16,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.Extent;
@@ -61,7 +62,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class FieldDataResourceApi {
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
@@ -72,7 +73,7 @@ public class FieldDataResourceApi {
   private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
   public FieldDataResourceApi() {
-    this(new ApiClient());
+    this(Configuration.getDefaultApiClient());
   }
 
   public FieldDataResourceApi(ApiClient apiClient) {
@@ -105,8 +106,8 @@ public class FieldDataResourceApi {
    * @param fileName  (optional)
    * @param extent  (optional)
    * @param iSize  (optional)
-   * @param channelNames  (optional
-   * @param times  (optional
+   * @param channelNames  (optional)
+   * @param times  (optional)
    * @param annotation  (optional)
    * @param origin  (optional)
    * @return FieldDataSavedResults
@@ -124,8 +125,8 @@ public class FieldDataResourceApi {
    * @param fileName  (optional)
    * @param extent  (optional)
    * @param iSize  (optional)
-   * @param channelNames  (optional
-   * @param times  (optional
+   * @param channelNames  (optional)
+   * @param times  (optional)
    * @param annotation  (optional)
    * @param origin  (optional)
    * @return ApiResponse&lt;FieldDataSavedResults&gt;
@@ -144,10 +145,21 @@ public class FieldDataResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("advancedCreate", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<FieldDataSavedResults>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<FieldDataSavedResults>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataSavedResults>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<FieldDataSavedResults>() {})
         );
       } finally {
       }
@@ -227,6 +239,7 @@ public class FieldDataResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Analyze uploaded image file (Tiff, Zip, and Non-GPL BioFormats) and return field data. Color mapped images not supported (the colors in those images will be interpreted as separate channels). Filenames must be lowercase alphanumeric, and can contain underscores.
    * 
@@ -261,10 +274,21 @@ public class FieldDataResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("analyzeFile", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<FieldData>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<FieldData>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldData>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<FieldData>() {})
         );
       } finally {
       }
@@ -330,6 +354,7 @@ public class FieldDataResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Copy all existing field data from a BioModel/MathModel that you have access to, but don&#39;t own.
    * 
@@ -362,10 +387,21 @@ public class FieldDataResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("copyModelsFieldData", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<Map<String, ExternalDataIdentifier>>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<Map<String, ExternalDataIdentifier>>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<Map<String, ExternalDataIdentifier>>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<Map<String, ExternalDataIdentifier>>() {})
         );
       } finally {
       }
@@ -407,6 +443,7 @@ public class FieldDataResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Submit a .zip or .tif file that converts into field data, with all defaults derived from the file submitted.
    * 
@@ -441,10 +478,21 @@ public class FieldDataResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("createFromFile", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<FieldDataSavedResults>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<FieldDataSavedResults>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataSavedResults>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<FieldDataSavedResults>() {})
         );
       } finally {
       }
@@ -510,6 +558,7 @@ public class FieldDataResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Create new field data from existing simulation results.
    * 
@@ -544,15 +593,15 @@ public class FieldDataResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("createFromSimulation", localVarResponse);
         }
-        return new ApiResponse<Void>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          null
+        return new ApiResponse<>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            null
         );
       } finally {
         // Drain the InputStream
         while (localVarResponse.body().read() != -1) {
-            // Ignore
+          // Ignore
         }
         localVarResponse.body().close();
       }
@@ -604,6 +653,7 @@ public class FieldDataResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Delete the selected field data.
    * 
@@ -634,15 +684,15 @@ public class FieldDataResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("delete", localVarResponse);
         }
-        return new ApiResponse<Void>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          null
+        return new ApiResponse<>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            null
         );
       } finally {
         // Drain the InputStream
         while (localVarResponse.body().read() != -1) {
-            // Ignore
+          // Ignore
         }
         localVarResponse.body().close();
       }
@@ -679,6 +729,7 @@ public class FieldDataResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get all of the ids used to identify, and retrieve field data.
    * 
@@ -709,10 +760,21 @@ public class FieldDataResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getAllIDs", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<List<FieldDataReference>>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<List<FieldDataReference>>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<List<FieldDataReference>>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<FieldDataReference>>() {})
         );
       } finally {
       }
@@ -744,6 +806,7 @@ public class FieldDataResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get the shape of the field data. That is it&#39;s size, origin, extent, times, and data identifiers.
    * 
@@ -776,10 +839,21 @@ public class FieldDataResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getShapeFromID", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<FieldDataShape>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<FieldDataShape>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataShape>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<FieldDataShape>() {})
         );
       } finally {
       }
@@ -816,6 +890,7 @@ public class FieldDataResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Take the generated field data, and save it to the server. User may adjust the analyzed file before uploading to edit defaults.
    * 
@@ -848,10 +923,21 @@ public class FieldDataResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("save", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<FieldDataSavedResults>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<FieldDataSavedResults>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<FieldDataSavedResults>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<FieldDataSavedResults>() {})
         );
       } finally {
       }
@@ -893,4 +979,5 @@ public class FieldDataResourceApi {
     }
     return localVarRequestBuilder;
   }
+
 }

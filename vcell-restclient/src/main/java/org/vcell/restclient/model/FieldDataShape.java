@@ -34,6 +34,7 @@ import org.vcell.restclient.model.Origin;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * FieldDataShape
  */
@@ -44,39 +45,43 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   FieldDataShape.JSON_PROPERTY_DATA_IDENTIFIER,
   FieldDataShape.JSON_PROPERTY_TIMES
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class FieldDataShape {
   public static final String JSON_PROPERTY_EXTENT = "extent";
+  @javax.annotation.Nullable
   private Extent extent;
 
   public static final String JSON_PROPERTY_ORIGIN = "origin";
+  @javax.annotation.Nullable
   private Origin origin;
 
   public static final String JSON_PROPERTY_ISIZE = "isize";
+  @javax.annotation.Nullable
   private ISize isize;
 
   public static final String JSON_PROPERTY_DATA_IDENTIFIER = "dataIdentifier";
-  private List<DataIdentifier> dataIdentifier;
+  @javax.annotation.Nullable
+  private List<DataIdentifier> dataIdentifier = new ArrayList<>();
 
   public static final String JSON_PROPERTY_TIMES = "times";
-  private List<Double> times;
+  @javax.annotation.Nullable
+  private List<Double> times = new ArrayList<>();
 
   public FieldDataShape() { 
   }
 
-  public FieldDataShape extent(Extent extent) {
+  public FieldDataShape extent(@javax.annotation.Nullable Extent extent) {
     this.extent = extent;
     return this;
   }
 
-   /**
+  /**
    * Get extent
    * @return extent
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_EXTENT)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Extent getExtent() {
     return extent;
   }
@@ -84,24 +89,23 @@ public class FieldDataShape {
 
   @JsonProperty(JSON_PROPERTY_EXTENT)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setExtent(Extent extent) {
+  public void setExtent(@javax.annotation.Nullable Extent extent) {
     this.extent = extent;
   }
 
 
-  public FieldDataShape origin(Origin origin) {
+  public FieldDataShape origin(@javax.annotation.Nullable Origin origin) {
     this.origin = origin;
     return this;
   }
 
-   /**
+  /**
    * Get origin
    * @return origin
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ORIGIN)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Origin getOrigin() {
     return origin;
   }
@@ -109,24 +113,23 @@ public class FieldDataShape {
 
   @JsonProperty(JSON_PROPERTY_ORIGIN)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setOrigin(Origin origin) {
+  public void setOrigin(@javax.annotation.Nullable Origin origin) {
     this.origin = origin;
   }
 
 
-  public FieldDataShape isize(ISize isize) {
+  public FieldDataShape isize(@javax.annotation.Nullable ISize isize) {
     this.isize = isize;
     return this;
   }
 
-   /**
+  /**
    * Get isize
    * @return isize
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ISIZE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public ISize getIsize() {
     return isize;
   }
@@ -134,12 +137,12 @@ public class FieldDataShape {
 
   @JsonProperty(JSON_PROPERTY_ISIZE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setIsize(ISize isize) {
+  public void setIsize(@javax.annotation.Nullable ISize isize) {
     this.isize = isize;
   }
 
 
-  public FieldDataShape dataIdentifier(List<DataIdentifier> dataIdentifier) {
+  public FieldDataShape dataIdentifier(@javax.annotation.Nullable List<DataIdentifier> dataIdentifier) {
     this.dataIdentifier = dataIdentifier;
     return this;
   }
@@ -152,14 +155,13 @@ public class FieldDataShape {
     return this;
   }
 
-   /**
+  /**
    * Get dataIdentifier
    * @return dataIdentifier
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DATA_IDENTIFIER)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<DataIdentifier> getDataIdentifier() {
     return dataIdentifier;
   }
@@ -167,12 +169,12 @@ public class FieldDataShape {
 
   @JsonProperty(JSON_PROPERTY_DATA_IDENTIFIER)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDataIdentifier(List<DataIdentifier> dataIdentifier) {
+  public void setDataIdentifier(@javax.annotation.Nullable List<DataIdentifier> dataIdentifier) {
     this.dataIdentifier = dataIdentifier;
   }
 
 
-  public FieldDataShape times(List<Double> times) {
+  public FieldDataShape times(@javax.annotation.Nullable List<Double> times) {
     this.times = times;
     return this;
   }
@@ -185,14 +187,13 @@ public class FieldDataShape {
     return this;
   }
 
-   /**
+  /**
    * Get times
    * @return times
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TIMES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<Double> getTimes() {
     return times;
   }
@@ -200,7 +201,7 @@ public class FieldDataShape {
 
   @JsonProperty(JSON_PROPERTY_TIMES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setTimes(List<Double> times) {
+  public void setTimes(@javax.annotation.Nullable List<Double> times) {
     this.times = times;
   }
 
@@ -315,7 +316,7 @@ public class FieldDataShape {
       for (int i = 0; i < getTimes().size(); i++) {
         joiner.add(String.format("%stimes%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getTimes().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+            ApiClient.urlEncode(ApiClient.valueToString(getTimes().get(i)))));
       }
     }
 

@@ -5,9 +5,9 @@
 ## Enum
 
 
-* `POINT` (value: `"TIME_POINT"`)
+* `TIME_POINT` (value: `"TIME_POINT"`)
 
-* `RANGE` (value: `"TIME_RANGE"`)
+* `TIME_RANGE` (value: `"TIME_RANGE"`)
 
 
 

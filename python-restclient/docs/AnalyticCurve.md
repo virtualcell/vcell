@@ -2,9 +2,10 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**type** | **object** |  | 
+**type** | **str** |  | [default to 'AnalyticCurve']
 **exp_x** | **str** |  | [optional] 
 **exp_y** | **str** |  | [optional] 
 **exp_z** | **str** |  | [optional] 
@@ -24,12 +25,12 @@ json = "{}"
 # create an instance of AnalyticCurve from a JSON string
 analytic_curve_instance = AnalyticCurve.from_json(json)
 # print the JSON string representation of the object
-print AnalyticCurve.to_json()
+print(AnalyticCurve.to_json())
 
 # convert the object into a dict
 analytic_curve_dict = analytic_curve_instance.to_dict()
 # create an instance of AnalyticCurve from a dict
-analytic_curve_form_dict = analytic_curve.from_dict(analytic_curve_dict)
+analytic_curve_from_dict = AnalyticCurve.from_dict(analytic_curve_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

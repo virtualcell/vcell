@@ -29,6 +29,7 @@ import org.vcell.restclient.model.MathType;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * ApplicationInfo
  */
@@ -38,36 +39,39 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   ApplicationInfo.JSON_PROPERTY_DIMENSIONS,
   ApplicationInfo.JSON_PROPERTY_GEOMETRY_NAME
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class ApplicationInfo {
   public static final String JSON_PROPERTY_NAME = "name";
+  @javax.annotation.Nullable
   private String name;
 
   public static final String JSON_PROPERTY_TYPE = "type";
+  @javax.annotation.Nullable
   private MathType type;
 
   public static final String JSON_PROPERTY_DIMENSIONS = "dimensions";
+  @javax.annotation.Nullable
   private Integer dimensions;
 
   public static final String JSON_PROPERTY_GEOMETRY_NAME = "geometryName";
+  @javax.annotation.Nullable
   private String geometryName;
 
   public ApplicationInfo() { 
   }
 
-  public ApplicationInfo name(String name) {
+  public ApplicationInfo name(@javax.annotation.Nullable String name) {
     this.name = name;
     return this;
   }
 
-   /**
+  /**
    * Get name
    * @return name
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getName() {
     return name;
   }
@@ -75,24 +79,23 @@ public class ApplicationInfo {
 
   @JsonProperty(JSON_PROPERTY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setName(String name) {
+  public void setName(@javax.annotation.Nullable String name) {
     this.name = name;
   }
 
 
-  public ApplicationInfo type(MathType type) {
+  public ApplicationInfo type(@javax.annotation.Nullable MathType type) {
     this.type = type;
     return this;
   }
 
-   /**
+  /**
    * Get type
    * @return type
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public MathType getType() {
     return type;
   }
@@ -100,24 +103,23 @@ public class ApplicationInfo {
 
   @JsonProperty(JSON_PROPERTY_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setType(MathType type) {
+  public void setType(@javax.annotation.Nullable MathType type) {
     this.type = type;
   }
 
 
-  public ApplicationInfo dimensions(Integer dimensions) {
+  public ApplicationInfo dimensions(@javax.annotation.Nullable Integer dimensions) {
     this.dimensions = dimensions;
     return this;
   }
 
-   /**
+  /**
    * Get dimensions
    * @return dimensions
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DIMENSIONS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getDimensions() {
     return dimensions;
   }
@@ -125,24 +127,23 @@ public class ApplicationInfo {
 
   @JsonProperty(JSON_PROPERTY_DIMENSIONS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDimensions(Integer dimensions) {
+  public void setDimensions(@javax.annotation.Nullable Integer dimensions) {
     this.dimensions = dimensions;
   }
 
 
-  public ApplicationInfo geometryName(String geometryName) {
+  public ApplicationInfo geometryName(@javax.annotation.Nullable String geometryName) {
     this.geometryName = geometryName;
     return this;
   }
 
-   /**
+  /**
    * Get geometryName
    * @return geometryName
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_GEOMETRY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getGeometryName() {
     return geometryName;
   }
@@ -150,7 +151,7 @@ public class ApplicationInfo {
 
   @JsonProperty(JSON_PROPERTY_GEOMETRY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setGeometryName(String geometryName) {
+  public void setGeometryName(@javax.annotation.Nullable String geometryName) {
     this.geometryName = geometryName;
   }
 
@@ -235,22 +236,22 @@ public class ApplicationInfo {
 
     // add `name` to the URL query string
     if (getName() != null) {
-      joiner.add(String.format("%sname%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
     }
 
     // add `type` to the URL query string
     if (getType() != null) {
-      joiner.add(String.format("%stype%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getType()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%stype%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getType()))));
     }
 
     // add `dimensions` to the URL query string
     if (getDimensions() != null) {
-      joiner.add(String.format("%sdimensions%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDimensions()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sdimensions%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDimensions()))));
     }
 
     // add `geometryName` to the URL query string
     if (getGeometryName() != null) {
-      joiner.add(String.format("%sgeometryName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getGeometryName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sgeometryName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getGeometryName()))));
     }
 
     return joiner.toString();

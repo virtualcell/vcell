@@ -18,19 +18,15 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel
-from pydantic import Field
 from vcell_client.models.extent import Extent
 from vcell_client.models.gif_image import GIFImage
 from vcell_client.models.i_size import ISize
 from vcell_client.models.v_cell_software_version import VCellSoftwareVersion
 from vcell_client.models.version import Version
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class VCImageSummary(BaseModel):
     """
@@ -43,10 +39,11 @@ class VCImageSummary(BaseModel):
     software_version: Optional[VCellSoftwareVersion] = Field(default=None, alias="softwareVersion")
     __properties: ClassVar[List[str]] = ["size", "extent", "version", "preview", "softwareVersion"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -59,7 +56,7 @@ class VCImageSummary(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of VCImageSummary from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -73,10 +70,12 @@ class VCImageSummary(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of size
@@ -97,7 +96,7 @@ class VCImageSummary(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of VCImageSummary from a dict"""
         if obj is None:
             return None
@@ -111,11 +110,11 @@ class VCImageSummary(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in VCImageSummary) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "size": ISize.from_dict(obj.get("size")) if obj.get("size") is not None else None,
-            "extent": Extent.from_dict(obj.get("extent")) if obj.get("extent") is not None else None,
-            "version": Version.from_dict(obj.get("version")) if obj.get("version") is not None else None,
-            "preview": GIFImage.from_dict(obj.get("preview")) if obj.get("preview") is not None else None,
-            "softwareVersion": VCellSoftwareVersion.from_dict(obj.get("softwareVersion")) if obj.get("softwareVersion") is not None else None
+            "size": ISize.from_dict(obj["size"]) if obj.get("size") is not None else None,
+            "extent": Extent.from_dict(obj["extent"]) if obj.get("extent") is not None else None,
+            "version": Version.from_dict(obj["version"]) if obj.get("version") is not None else None,
+            "preview": GIFImage.from_dict(obj["preview"]) if obj.get("preview") is not None else None,
+            "softwareVersion": VCellSoftwareVersion.from_dict(obj["softwareVersion"]) if obj.get("softwareVersion") is not None else None
         })
         return _obj
 

@@ -29,6 +29,7 @@ import org.vcell.restclient.model.Status;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * SimulationStatusPersistentRecord
  */
@@ -37,33 +38,35 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   SimulationStatusPersistentRecord.JSON_PROPERTY_DETAILS,
   SimulationStatusPersistentRecord.JSON_PROPERTY_HAS_DATA
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class SimulationStatusPersistentRecord {
   public static final String JSON_PROPERTY_STATUS = "status";
+  @javax.annotation.Nullable
   private Status status;
 
   public static final String JSON_PROPERTY_DETAILS = "details";
+  @javax.annotation.Nullable
   private String details;
 
   public static final String JSON_PROPERTY_HAS_DATA = "hasData";
+  @javax.annotation.Nullable
   private Boolean hasData;
 
   public SimulationStatusPersistentRecord() { 
   }
 
-  public SimulationStatusPersistentRecord status(Status status) {
+  public SimulationStatusPersistentRecord status(@javax.annotation.Nullable Status status) {
     this.status = status;
     return this;
   }
 
-   /**
+  /**
    * Get status
    * @return status
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_STATUS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Status getStatus() {
     return status;
   }
@@ -71,24 +74,23 @@ public class SimulationStatusPersistentRecord {
 
   @JsonProperty(JSON_PROPERTY_STATUS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setStatus(Status status) {
+  public void setStatus(@javax.annotation.Nullable Status status) {
     this.status = status;
   }
 
 
-  public SimulationStatusPersistentRecord details(String details) {
+  public SimulationStatusPersistentRecord details(@javax.annotation.Nullable String details) {
     this.details = details;
     return this;
   }
 
-   /**
+  /**
    * Get details
    * @return details
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DETAILS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getDetails() {
     return details;
   }
@@ -96,24 +98,23 @@ public class SimulationStatusPersistentRecord {
 
   @JsonProperty(JSON_PROPERTY_DETAILS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDetails(String details) {
+  public void setDetails(@javax.annotation.Nullable String details) {
     this.details = details;
   }
 
 
-  public SimulationStatusPersistentRecord hasData(Boolean hasData) {
+  public SimulationStatusPersistentRecord hasData(@javax.annotation.Nullable Boolean hasData) {
     this.hasData = hasData;
     return this;
   }
 
-   /**
+  /**
    * Get hasData
    * @return hasData
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_HAS_DATA)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Boolean getHasData() {
     return hasData;
   }
@@ -121,7 +122,7 @@ public class SimulationStatusPersistentRecord {
 
   @JsonProperty(JSON_PROPERTY_HAS_DATA)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setHasData(Boolean hasData) {
+  public void setHasData(@javax.annotation.Nullable Boolean hasData) {
     this.hasData = hasData;
   }
 
@@ -204,17 +205,17 @@ public class SimulationStatusPersistentRecord {
 
     // add `status` to the URL query string
     if (getStatus() != null) {
-      joiner.add(String.format("%sstatus%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getStatus()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sstatus%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getStatus()))));
     }
 
     // add `details` to the URL query string
     if (getDetails() != null) {
-      joiner.add(String.format("%sdetails%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDetails()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sdetails%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDetails()))));
     }
 
     // add `hasData` to the URL query string
     if (getHasData() != null) {
-      joiner.add(String.format("%shasData%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getHasData()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%shasData%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getHasData()))));
     }
 
     return joiner.toString();

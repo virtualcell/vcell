@@ -12,29 +12,20 @@
     Do not edit the class manually.
 """  # noqa: E501
 
-
-import io
 import warnings
-
 from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
-from typing import Dict, List, Optional, Tuple, Union, Any
+from typing import Any, Dict, List, Optional, Tuple, Union
+from typing_extensions import Annotated
 
-try:
-    from typing import Annotated
-except ImportError:
-    from typing_extensions import Annotated
-
-from pydantic import StrictStr
-
+from pydantic import StrictBool, StrictStr
 from typing import Optional
-
 from vcell_client.models.acces_token_representation_record import AccesTokenRepresentationRecord
 from vcell_client.models.identity import Identity
 from vcell_client.models.user_identity_json_safe import UserIdentityJSONSafe
 from vcell_client.models.user_login_info_for_mapping import UserLoginInfoForMapping
 from vcell_client.models.user_registration_info import UserRegistrationInfo
 
-from vcell_client.api_client import ApiClient
+from vcell_client.api_client import ApiClient, RequestSerialized
 from vcell_client.api_response import ApiResponse
 from vcell_client.rest import RESTResponseType
 
@@ -105,7 +96,10 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '200': None,
+            '401': None,
+            '403': None,
+            '500': None,
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -171,7 +165,10 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '200': None,
+            '401': None,
+            '403': None,
+            '500': None,
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -237,7 +234,10 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '200': None,
+            '401': None,
+            '403': None,
+            '500': None,
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -253,19 +253,20 @@ class UsersResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -354,8 +355,7 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "AccesTokenRepresentationRecord",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -418,8 +418,7 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "AccesTokenRepresentationRecord",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -482,8 +481,7 @@ class UsersResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "AccesTokenRepresentationRecord",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -498,19 +496,20 @@ class UsersResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -521,11 +520,12 @@ class UsersResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting
@@ -602,8 +602,7 @@ class UsersResourceApi:
             '200': "AccesTokenRepresentationRecord",
             '401': "VCellHTTPError",
             '403': None,
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -668,8 +667,7 @@ class UsersResourceApi:
             '200': "AccesTokenRepresentationRecord",
             '401': "VCellHTTPError",
             '403': None,
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -734,8 +732,7 @@ class UsersResourceApi:
             '200': "AccesTokenRepresentationRecord",
             '401': "VCellHTTPError",
             '403': None,
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -750,19 +747,20 @@ class UsersResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -773,11 +771,12 @@ class UsersResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting
@@ -856,8 +855,7 @@ class UsersResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '409': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -923,8 +921,7 @@ class UsersResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '409': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -990,8 +987,7 @@ class UsersResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '409': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1006,19 +1002,20 @@ class UsersResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -1029,11 +1026,12 @@ class UsersResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting
@@ -1108,8 +1106,7 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "Identity"
-            
+            '200': "Identity",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1171,8 +1168,7 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "Identity"
-            
+            '200': "Identity",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1234,8 +1230,7 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            '200': "Identity"
-            
+            '200': "Identity",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1250,19 +1245,20 @@ class UsersResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -1273,11 +1269,12 @@ class UsersResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting
@@ -1355,7 +1352,12 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '200': None,
+            '400': None,
+            '401': "VCellHTTPError",
+            '403': None,
+            '409': None,
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1421,7 +1423,12 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '200': None,
+            '400': None,
+            '401': "VCellHTTPError",
+            '403': None,
+            '409': None,
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1487,7 +1494,12 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '200': None,
+            '400': None,
+            '401': "VCellHTTPError",
+            '403': None,
+            '409': None,
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1503,19 +1515,20 @@ class UsersResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -1528,11 +1541,12 @@ class UsersResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
         # set the HTTP header `Content-Type`
         if _content_type:
@@ -1628,8 +1642,7 @@ class UsersResourceApi:
             '400': None,
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1699,8 +1712,7 @@ class UsersResourceApi:
             '400': None,
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1770,8 +1782,7 @@ class UsersResourceApi:
             '400': None,
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1787,19 +1798,20 @@ class UsersResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -1812,11 +1824,12 @@ class UsersResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
         # set the HTTP header `Content-Type`
         if _content_type:
@@ -1908,7 +1921,10 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '200': None,
+            '400': None,
+            '401': "VCellHTTPError",
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1974,7 +1990,10 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '200': None,
+            '400': None,
+            '401': "VCellHTTPError",
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2040,7 +2059,10 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '200': None,
+            '400': None,
+            '401': "VCellHTTPError",
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2056,19 +2078,20 @@ class UsersResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -2083,11 +2106,12 @@ class UsersResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting
@@ -2169,7 +2193,12 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '200': None,
+            '400': None,
+            '401': "VCellHTTPError",
+            '403': None,
+            '404': "VCellHTTPError",
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2239,7 +2268,12 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '200': None,
+            '400': None,
+            '401': "VCellHTTPError",
+            '403': None,
+            '404': "VCellHTTPError",
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2309,7 +2343,12 @@ class UsersResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '200': None,
+            '400': None,
+            '401': "VCellHTTPError",
+            '403': None,
+            '404': "VCellHTTPError",
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2326,19 +2365,20 @@ class UsersResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -2357,11 +2397,12 @@ class UsersResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting
@@ -2443,8 +2484,7 @@ class UsersResourceApi:
             '200': "bool",
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2513,8 +2553,7 @@ class UsersResourceApi:
             '200': "bool",
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2583,8 +2622,7 @@ class UsersResourceApi:
             '200': "bool",
             '401': "VCellHTTPError",
             '403': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -2600,19 +2638,20 @@ class UsersResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -2625,11 +2664,12 @@ class UsersResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting

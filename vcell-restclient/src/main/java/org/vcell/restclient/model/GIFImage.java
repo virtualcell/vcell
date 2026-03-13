@@ -30,6 +30,7 @@ import org.vcell.restclient.model.ISize;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * GIFImage
  */
@@ -37,30 +38,31 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   GIFImage.JSON_PROPERTY_GIF_ENCODED_DATA,
   GIFImage.JSON_PROPERTY_SIZE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class GIFImage {
   public static final String JSON_PROPERTY_GIF_ENCODED_DATA = "gifEncodedData";
+  @javax.annotation.Nullable
   private File gifEncodedData;
 
   public static final String JSON_PROPERTY_SIZE = "size";
+  @javax.annotation.Nullable
   private ISize size;
 
   public GIFImage() { 
   }
 
-  public GIFImage gifEncodedData(File gifEncodedData) {
+  public GIFImage gifEncodedData(@javax.annotation.Nullable File gifEncodedData) {
     this.gifEncodedData = gifEncodedData;
     return this;
   }
 
-   /**
+  /**
    * Get gifEncodedData
    * @return gifEncodedData
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_GIF_ENCODED_DATA)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public File getGifEncodedData() {
     return gifEncodedData;
   }
@@ -68,24 +70,23 @@ public class GIFImage {
 
   @JsonProperty(JSON_PROPERTY_GIF_ENCODED_DATA)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setGifEncodedData(File gifEncodedData) {
+  public void setGifEncodedData(@javax.annotation.Nullable File gifEncodedData) {
     this.gifEncodedData = gifEncodedData;
   }
 
 
-  public GIFImage size(ISize size) {
+  public GIFImage size(@javax.annotation.Nullable ISize size) {
     this.size = size;
     return this;
   }
 
-   /**
+  /**
    * Get size
    * @return size
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SIZE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public ISize getSize() {
     return size;
   }
@@ -93,7 +94,7 @@ public class GIFImage {
 
   @JsonProperty(JSON_PROPERTY_SIZE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSize(ISize size) {
+  public void setSize(@javax.annotation.Nullable ISize size) {
     this.size = size;
   }
 
@@ -174,7 +175,7 @@ public class GIFImage {
 
     // add `gifEncodedData` to the URL query string
     if (getGifEncodedData() != null) {
-      joiner.add(String.format("%sgifEncodedData%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getGifEncodedData()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sgifEncodedData%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getGifEncodedData()))));
     }
 
     // add `size` to the URL query string

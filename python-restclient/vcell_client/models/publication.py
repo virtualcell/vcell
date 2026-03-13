@@ -19,15 +19,12 @@ import re  # noqa: F401
 import json
 
 from datetime import date
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictInt, StrictStr
-from pydantic import Field
 from vcell_client.models.biomodel_ref import BiomodelRef
 from vcell_client.models.mathmodel_ref import MathmodelRef
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class Publication(BaseModel):
     """
@@ -48,10 +45,11 @@ class Publication(BaseModel):
     var_date: Optional[date] = Field(default=None, alias="date")
     __properties: ClassVar[List[str]] = ["pubKey", "title", "authors", "year", "citation", "pubmedid", "doi", "endnoteid", "url", "wittid", "biomodelRefs", "mathmodelRefs", "date"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -64,7 +62,7 @@ class Publication(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of Publication from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -78,30 +76,32 @@ class Publication(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of each item in biomodel_refs (list)
         _items = []
         if self.biomodel_refs:
-            for _item in self.biomodel_refs:
-                if _item:
-                    _items.append(_item.to_dict())
+            for _item_biomodel_refs in self.biomodel_refs:
+                if _item_biomodel_refs:
+                    _items.append(_item_biomodel_refs.to_dict())
             _dict['biomodelRefs'] = _items
         # override the default output from pydantic by calling `to_dict()` of each item in mathmodel_refs (list)
         _items = []
         if self.mathmodel_refs:
-            for _item in self.mathmodel_refs:
-                if _item:
-                    _items.append(_item.to_dict())
+            for _item_mathmodel_refs in self.mathmodel_refs:
+                if _item_mathmodel_refs:
+                    _items.append(_item_mathmodel_refs.to_dict())
             _dict['mathmodelRefs'] = _items
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of Publication from a dict"""
         if obj is None:
             return None
@@ -125,8 +125,8 @@ class Publication(BaseModel):
             "endnoteid": obj.get("endnoteid"),
             "url": obj.get("url"),
             "wittid": obj.get("wittid"),
-            "biomodelRefs": [BiomodelRef.from_dict(_item) for _item in obj.get("biomodelRefs")] if obj.get("biomodelRefs") is not None else None,
-            "mathmodelRefs": [MathmodelRef.from_dict(_item) for _item in obj.get("mathmodelRefs")] if obj.get("mathmodelRefs") is not None else None,
+            "biomodelRefs": [BiomodelRef.from_dict(_item) for _item in obj["biomodelRefs"]] if obj.get("biomodelRefs") is not None else None,
+            "mathmodelRefs": [MathmodelRef.from_dict(_item) for _item in obj["mathmodelRefs"]] if obj.get("mathmodelRefs") is not None else None,
             "date": obj.get("date")
         })
         return _obj

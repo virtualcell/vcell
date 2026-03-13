@@ -16,9 +16,8 @@ Get the status of simulation running
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.simulation_status_persistent_record import SimulationStatusPersistentRecord
 from vcell_client.rest import ApiException
@@ -56,6 +55,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **sim_id** | **str**|  | 
@@ -76,6 +76,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -92,9 +93,8 @@ Start a simulation.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.status_message import StatusMessage
 from vcell_client.rest import ApiException
@@ -130,6 +130,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **sim_id** | **str**|  | 
@@ -148,6 +149,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -164,9 +166,8 @@ Stop a simulation.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.status_message import StatusMessage
 from vcell_client.rest import ApiException
@@ -202,6 +203,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **sim_id** | **str**|  | 
@@ -220,6 +222,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |

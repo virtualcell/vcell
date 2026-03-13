@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **type** | **int** |  | [optional] 
@@ -24,12 +25,12 @@ json = "{}"
 # create an instance of VariableType from a JSON string
 variable_type_instance = VariableType.from_json(json)
 # print the JSON string representation of the object
-print VariableType.to_json()
+print(VariableType.to_json())
 
 # convert the object into a dict
 variable_type_dict = variable_type_instance.to_dict()
 # create an instance of VariableType from a dict
-variable_type_form_dict = variable_type.from_dict(variable_type_dict)
+variable_type_from_dict = VariableType.from_dict(variable_type_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

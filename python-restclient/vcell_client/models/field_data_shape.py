@@ -18,18 +18,14 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt
 from typing import Any, ClassVar, Dict, List, Optional, Union
-from pydantic import BaseModel, StrictFloat, StrictInt
-from pydantic import Field
 from vcell_client.models.data_identifier import DataIdentifier
 from vcell_client.models.extent import Extent
 from vcell_client.models.i_size import ISize
 from vcell_client.models.origin import Origin
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class FieldDataShape(BaseModel):
     """
@@ -42,10 +38,11 @@ class FieldDataShape(BaseModel):
     times: Optional[List[Union[StrictFloat, StrictInt]]] = None
     __properties: ClassVar[List[str]] = ["extent", "origin", "isize", "dataIdentifier", "times"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -58,7 +55,7 @@ class FieldDataShape(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of FieldDataShape from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -72,10 +69,12 @@ class FieldDataShape(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of extent
@@ -90,14 +89,14 @@ class FieldDataShape(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of each item in data_identifier (list)
         _items = []
         if self.data_identifier:
-            for _item in self.data_identifier:
-                if _item:
-                    _items.append(_item.to_dict())
+            for _item_data_identifier in self.data_identifier:
+                if _item_data_identifier:
+                    _items.append(_item_data_identifier.to_dict())
             _dict['dataIdentifier'] = _items
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of FieldDataShape from a dict"""
         if obj is None:
             return None
@@ -111,10 +110,10 @@ class FieldDataShape(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in FieldDataShape) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "extent": Extent.from_dict(obj.get("extent")) if obj.get("extent") is not None else None,
-            "origin": Origin.from_dict(obj.get("origin")) if obj.get("origin") is not None else None,
-            "isize": ISize.from_dict(obj.get("isize")) if obj.get("isize") is not None else None,
-            "dataIdentifier": [DataIdentifier.from_dict(_item) for _item in obj.get("dataIdentifier")] if obj.get("dataIdentifier") is not None else None,
+            "extent": Extent.from_dict(obj["extent"]) if obj.get("extent") is not None else None,
+            "origin": Origin.from_dict(obj["origin"]) if obj.get("origin") is not None else None,
+            "isize": ISize.from_dict(obj["isize"]) if obj.get("isize") is not None else None,
+            "dataIdentifier": [DataIdentifier.from_dict(_item) for _item in obj["dataIdentifier"]] if obj.get("dataIdentifier") is not None else None,
             "times": obj.get("times")
         })
         return _obj

@@ -19,16 +19,13 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional, Union
-from pydantic import BaseModel, StrictFloat, StrictInt, StrictStr
-from pydantic import Field
 from vcell_client.models.group_access import GroupAccess
 from vcell_client.models.user import User
 from vcell_client.models.version_flag import VersionFlag
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class Version(BaseModel):
     """
@@ -45,10 +42,11 @@ class Version(BaseModel):
     owner: Optional[User] = None
     __properties: ClassVar[List[str]] = ["versionKey", "annot", "branchID", "branchPointRefKey", "date", "flag", "groupAccess", "name", "owner"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -61,7 +59,7 @@ class Version(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of Version from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -75,10 +73,12 @@ class Version(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of flag
@@ -93,7 +93,7 @@ class Version(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of Version from a dict"""
         if obj is None:
             return None
@@ -112,10 +112,10 @@ class Version(BaseModel):
             "branchID": obj.get("branchID"),
             "branchPointRefKey": obj.get("branchPointRefKey"),
             "date": obj.get("date"),
-            "flag": VersionFlag.from_dict(obj.get("flag")) if obj.get("flag") is not None else None,
-            "groupAccess": GroupAccess.from_dict(obj.get("groupAccess")) if obj.get("groupAccess") is not None else None,
+            "flag": VersionFlag.from_dict(obj["flag"]) if obj.get("flag") is not None else None,
+            "groupAccess": GroupAccess.from_dict(obj["groupAccess"]) if obj.get("groupAccess") is not None else None,
             "name": obj.get("name"),
-            "owner": User.from_dict(obj.get("owner")) if obj.get("owner") is not None else None
+            "owner": User.from_dict(obj["owner"]) if obj.get("owner") is not None else None
         })
         return _obj
 

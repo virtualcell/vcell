@@ -20,9 +20,8 @@ Remove specific Math Model.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -51,6 +50,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **str**|  | 
@@ -69,6 +69,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **204** | No Content |  -  |
@@ -88,9 +89,8 @@ Return MathModel summaries.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.math_model_summary import MathModelSummary
 from vcell_client.rest import ApiException
@@ -122,6 +122,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **include_public_and_shared** | **bool**| Include MathModel summaries that are public and shared with the requester. Default is true. | [optional] 
@@ -140,6 +141,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -156,9 +158,8 @@ All of the text based information about a MathModel (summary, version, publicati
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.math_model_summary import MathModelSummary
 from vcell_client.rest import ApiException
@@ -190,6 +191,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **str**|  | 
@@ -208,6 +210,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -226,9 +229,8 @@ Returns MathModel in VCML format.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -259,6 +261,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **id** | **str**|  | 
@@ -277,6 +280,7 @@ No authorization required
  - **Accept**: application/xml, application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |
@@ -293,9 +297,8 @@ Save
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.rest import ApiException
 from pprint import pprint
@@ -332,6 +335,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 ### Parameters
 
+
 Name | Type | Description  | Notes
 ------------- | ------------- | ------------- | -------------
  **body** | **str**|  | 
@@ -352,6 +356,7 @@ Name | Type | Description  | Notes
  - **Accept**: application/xml, application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |

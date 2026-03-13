@@ -15,6 +15,7 @@ package org.vcell.restclient.api;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.GeometrySummary;
@@ -51,7 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class GeometryResourceApi {
   private final HttpClient memberVarHttpClient;
   private final ObjectMapper memberVarObjectMapper;
@@ -62,7 +63,7 @@ public class GeometryResourceApi {
   private final Consumer<HttpResponse<String>> memberVarAsyncResponseInterceptor;
 
   public GeometryResourceApi() {
-    this(new ApiClient());
+    this(Configuration.getDefaultApiClient());
   }
 
   public GeometryResourceApi(ApiClient apiClient) {
@@ -118,15 +119,15 @@ public class GeometryResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("deleteGeometry", localVarResponse);
         }
-        return new ApiResponse<Void>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          null
+        return new ApiResponse<>(
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            null
         );
       } finally {
         // Drain the InputStream
         while (localVarResponse.body().read() != -1) {
-            // Ignore
+          // Ignore
         }
         localVarResponse.body().close();
       }
@@ -163,6 +164,7 @@ public class GeometryResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get Geometry Summaries
    * Return Geometry summaries.
@@ -195,10 +197,21 @@ public class GeometryResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getGeometrySummaries", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<List<GeometrySummary>>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<List<GeometrySummary>>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<List<GeometrySummary>>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<List<GeometrySummary>>() {})
         );
       } finally {
       }
@@ -245,6 +258,7 @@ public class GeometryResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get Geometry Summary
    * All of the text based information about a Geometry (dimensions, extent, origin, etc...), but not the actual Geometry itself.
@@ -277,10 +291,21 @@ public class GeometryResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getGeometrySummary", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<GeometrySummary>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<GeometrySummary>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<GeometrySummary>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<GeometrySummary>() {})
         );
       } finally {
       }
@@ -317,6 +342,7 @@ public class GeometryResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Get Geometry
    * Returns &lt;Geometry&gt; as root element in VCML format.
@@ -349,10 +375,21 @@ public class GeometryResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("getGeometryVCML", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<String>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<String>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<String>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {})
         );
       } finally {
       }
@@ -389,6 +426,7 @@ public class GeometryResourceApi {
     }
     return localVarRequestBuilder;
   }
+
   /**
    * Save
    * Save&#39;s VCML with &lt;Geometry&gt; as the root element.
@@ -423,10 +461,21 @@ public class GeometryResourceApi {
         if (localVarResponse.statusCode()/ 100 != 2) {
           throw getApiException("saveGeometry", localVarResponse);
         }
+        if (localVarResponse.body() == null) {
+          return new ApiResponse<String>(
+              localVarResponse.statusCode(),
+              localVarResponse.headers().map(),
+              null
+          );
+        }
+
+        String responseBody = new String(localVarResponse.body().readAllBytes());
+        localVarResponse.body().close();
+
         return new ApiResponse<String>(
-          localVarResponse.statusCode(),
-          localVarResponse.headers().map(),
-          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<String>() {}) // closes the InputStream
+            localVarResponse.statusCode(),
+            localVarResponse.headers().map(),
+            responseBody.isBlank()? null: memberVarObjectMapper.readValue(responseBody, new TypeReference<String>() {})
         );
       } finally {
       }
@@ -478,4 +527,5 @@ public class GeometryResourceApi {
     }
     return localVarRequestBuilder;
   }
+
 }

@@ -31,6 +31,7 @@ import org.vcell.restclient.model.ExternalDataIdentifier;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * FieldDataReference
  */
@@ -39,33 +40,35 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   FieldDataReference.JSON_PROPERTY_ANNOTATION,
   FieldDataReference.JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class FieldDataReference {
   public static final String JSON_PROPERTY_FIELD_DATA_I_D = "fieldDataID";
+  @javax.annotation.Nullable
   private ExternalDataIdentifier fieldDataID;
 
   public static final String JSON_PROPERTY_ANNOTATION = "annotation";
+  @javax.annotation.Nullable
   private String annotation;
 
   public static final String JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D = "simulationsReferencingThisID";
-  private List<String> simulationsReferencingThisID;
+  @javax.annotation.Nullable
+  private List<String> simulationsReferencingThisID = new ArrayList<>();
 
   public FieldDataReference() { 
   }
 
-  public FieldDataReference fieldDataID(ExternalDataIdentifier fieldDataID) {
+  public FieldDataReference fieldDataID(@javax.annotation.Nullable ExternalDataIdentifier fieldDataID) {
     this.fieldDataID = fieldDataID;
     return this;
   }
 
-   /**
+  /**
    * Get fieldDataID
    * @return fieldDataID
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_DATA_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public ExternalDataIdentifier getFieldDataID() {
     return fieldDataID;
   }
@@ -73,24 +76,23 @@ public class FieldDataReference {
 
   @JsonProperty(JSON_PROPERTY_FIELD_DATA_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldDataID(ExternalDataIdentifier fieldDataID) {
+  public void setFieldDataID(@javax.annotation.Nullable ExternalDataIdentifier fieldDataID) {
     this.fieldDataID = fieldDataID;
   }
 
 
-  public FieldDataReference annotation(String annotation) {
+  public FieldDataReference annotation(@javax.annotation.Nullable String annotation) {
     this.annotation = annotation;
     return this;
   }
 
-   /**
+  /**
    * Get annotation
    * @return annotation
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ANNOTATION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getAnnotation() {
     return annotation;
   }
@@ -98,12 +100,12 @@ public class FieldDataReference {
 
   @JsonProperty(JSON_PROPERTY_ANNOTATION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setAnnotation(String annotation) {
+  public void setAnnotation(@javax.annotation.Nullable String annotation) {
     this.annotation = annotation;
   }
 
 
-  public FieldDataReference simulationsReferencingThisID(List<String> simulationsReferencingThisID) {
+  public FieldDataReference simulationsReferencingThisID(@javax.annotation.Nullable List<String> simulationsReferencingThisID) {
     this.simulationsReferencingThisID = simulationsReferencingThisID;
     return this;
   }
@@ -116,14 +118,13 @@ public class FieldDataReference {
     return this;
   }
 
-   /**
+  /**
    * Get simulationsReferencingThisID
    * @return simulationsReferencingThisID
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<String> getSimulationsReferencingThisID() {
     return simulationsReferencingThisID;
   }
@@ -131,7 +132,7 @@ public class FieldDataReference {
 
   @JsonProperty(JSON_PROPERTY_SIMULATIONS_REFERENCING_THIS_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimulationsReferencingThisID(List<String> simulationsReferencingThisID) {
+  public void setSimulationsReferencingThisID(@javax.annotation.Nullable List<String> simulationsReferencingThisID) {
     this.simulationsReferencingThisID = simulationsReferencingThisID;
   }
 
@@ -219,7 +220,7 @@ public class FieldDataReference {
 
     // add `annotation` to the URL query string
     if (getAnnotation() != null) {
-      joiner.add(String.format("%sannotation%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getAnnotation()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sannotation%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getAnnotation()))));
     }
 
     // add `simulationsReferencingThisID` to the URL query string
@@ -227,7 +228,7 @@ public class FieldDataReference {
       for (int i = 0; i < getSimulationsReferencingThisID().size(); i++) {
         joiner.add(String.format("%ssimulationsReferencingThisID%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getSimulationsReferencingThisID().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+            ApiClient.urlEncode(ApiClient.valueToString(getSimulationsReferencingThisID().get(i)))));
       }
     }
 

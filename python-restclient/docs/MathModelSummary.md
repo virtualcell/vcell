@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **version** | [**Version**](Version.md) |  | [optional] 
@@ -21,12 +22,12 @@ json = "{}"
 # create an instance of MathModelSummary from a JSON string
 math_model_summary_instance = MathModelSummary.from_json(json)
 # print the JSON string representation of the object
-print MathModelSummary.to_json()
+print(MathModelSummary.to_json())
 
 # convert the object into a dict
 math_model_summary_dict = math_model_summary_instance.to_dict()
 # create an instance of MathModelSummary from a dict
-math_model_summary_form_dict = math_model_summary.from_dict(math_model_summary_dict)
+math_model_summary_from_dict = MathModelSummary.from_dict(math_model_summary_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

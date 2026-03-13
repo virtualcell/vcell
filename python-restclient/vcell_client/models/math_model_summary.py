@@ -18,18 +18,14 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictStr
-from pydantic import Field
 from vcell_client.models.math_model_child_summary import MathModelChildSummary
 from vcell_client.models.publication_info import PublicationInfo
 from vcell_client.models.v_cell_software_version import VCellSoftwareVersion
 from vcell_client.models.version import Version
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class MathModelSummary(BaseModel):
     """
@@ -43,10 +39,11 @@ class MathModelSummary(BaseModel):
     annotated_functions: Optional[StrictStr] = Field(default=None, alias="annotatedFunctions")
     __properties: ClassVar[List[str]] = ["version", "keyValue", "modelInfo", "softwareVersion", "publicationInfos", "annotatedFunctions"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -59,7 +56,7 @@ class MathModelSummary(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of MathModelSummary from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -73,10 +70,12 @@ class MathModelSummary(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of version
@@ -91,14 +90,14 @@ class MathModelSummary(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of each item in publication_infos (list)
         _items = []
         if self.publication_infos:
-            for _item in self.publication_infos:
-                if _item:
-                    _items.append(_item.to_dict())
+            for _item_publication_infos in self.publication_infos:
+                if _item_publication_infos:
+                    _items.append(_item_publication_infos.to_dict())
             _dict['publicationInfos'] = _items
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of MathModelSummary from a dict"""
         if obj is None:
             return None
@@ -112,11 +111,11 @@ class MathModelSummary(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in MathModelSummary) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "version": Version.from_dict(obj.get("version")) if obj.get("version") is not None else None,
+            "version": Version.from_dict(obj["version"]) if obj.get("version") is not None else None,
             "keyValue": obj.get("keyValue"),
-            "modelInfo": MathModelChildSummary.from_dict(obj.get("modelInfo")) if obj.get("modelInfo") is not None else None,
-            "softwareVersion": VCellSoftwareVersion.from_dict(obj.get("softwareVersion")) if obj.get("softwareVersion") is not None else None,
-            "publicationInfos": [PublicationInfo.from_dict(_item) for _item in obj.get("publicationInfos")] if obj.get("publicationInfos") is not None else None,
+            "modelInfo": MathModelChildSummary.from_dict(obj["modelInfo"]) if obj.get("modelInfo") is not None else None,
+            "softwareVersion": VCellSoftwareVersion.from_dict(obj["softwareVersion"]) if obj.get("softwareVersion") is not None else None,
+            "publicationInfos": [PublicationInfo.from_dict(_item) for _item in obj["publicationInfos"]] if obj.get("publicationInfos") is not None else None,
             "annotatedFunctions": obj.get("annotatedFunctions")
         })
         return _obj

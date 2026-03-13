@@ -19,18 +19,15 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictInt, StrictStr
-from pydantic import Field
 from vcell_client.models.scheduler_status import SchedulerStatus
 from vcell_client.models.simulation_execution_status_record import SimulationExecutionStatusRecord
 from vcell_client.models.simulation_message import SimulationMessage
 from vcell_client.models.simulation_queue_entry_status_record import SimulationQueueEntryStatusRecord
 from vcell_client.models.vc_simulation_identifier import VCSimulationIdentifier
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class SimulationJobStatusRecord(BaseModel):
     """
@@ -48,10 +45,11 @@ class SimulationJobStatusRecord(BaseModel):
     field_simulation_queue_entry_status: Optional[SimulationQueueEntryStatusRecord] = Field(default=None, alias="fieldSimulationQueueEntryStatus")
     __properties: ClassVar[List[str]] = ["fieldTimeDataStamp", "fieldVCSimID", "fieldSubmitDate", "fieldSchedulerStatus", "fieldSimulationMessage", "fieldTaskID", "fieldServerID", "fieldJobIndex", "fieldSimulationExecutionStatus", "fieldSimulationQueueEntryStatus"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -64,7 +62,7 @@ class SimulationJobStatusRecord(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of SimulationJobStatusRecord from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -78,10 +76,12 @@ class SimulationJobStatusRecord(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of field_vc_sim_id
@@ -99,7 +99,7 @@ class SimulationJobStatusRecord(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of SimulationJobStatusRecord from a dict"""
         if obj is None:
             return None
@@ -114,15 +114,15 @@ class SimulationJobStatusRecord(BaseModel):
 
         _obj = cls.model_validate({
             "fieldTimeDataStamp": obj.get("fieldTimeDataStamp"),
-            "fieldVCSimID": VCSimulationIdentifier.from_dict(obj.get("fieldVCSimID")) if obj.get("fieldVCSimID") is not None else None,
+            "fieldVCSimID": VCSimulationIdentifier.from_dict(obj["fieldVCSimID"]) if obj.get("fieldVCSimID") is not None else None,
             "fieldSubmitDate": obj.get("fieldSubmitDate"),
             "fieldSchedulerStatus": obj.get("fieldSchedulerStatus"),
-            "fieldSimulationMessage": SimulationMessage.from_dict(obj.get("fieldSimulationMessage")) if obj.get("fieldSimulationMessage") is not None else None,
+            "fieldSimulationMessage": SimulationMessage.from_dict(obj["fieldSimulationMessage"]) if obj.get("fieldSimulationMessage") is not None else None,
             "fieldTaskID": obj.get("fieldTaskID"),
             "fieldServerID": obj.get("fieldServerID"),
             "fieldJobIndex": obj.get("fieldJobIndex"),
-            "fieldSimulationExecutionStatus": SimulationExecutionStatusRecord.from_dict(obj.get("fieldSimulationExecutionStatus")) if obj.get("fieldSimulationExecutionStatus") is not None else None,
-            "fieldSimulationQueueEntryStatus": SimulationQueueEntryStatusRecord.from_dict(obj.get("fieldSimulationQueueEntryStatus")) if obj.get("fieldSimulationQueueEntryStatus") is not None else None
+            "fieldSimulationExecutionStatus": SimulationExecutionStatusRecord.from_dict(obj["fieldSimulationExecutionStatus"]) if obj.get("fieldSimulationExecutionStatus") is not None else None,
+            "fieldSimulationQueueEntryStatus": SimulationQueueEntryStatusRecord.from_dict(obj["fieldSimulationQueueEntryStatus"]) if obj.get("fieldSimulationQueueEntryStatus") is not None else None
         })
         return _obj
 

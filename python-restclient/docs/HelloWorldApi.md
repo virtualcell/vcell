@@ -14,9 +14,8 @@ Get hello world message.
 
 ### Example
 
+
 ```python
-import time
-import os
 import vcell_client
 from vcell_client.models.hello_world_message import HelloWorldMessage
 from vcell_client.rest import ApiException
@@ -46,6 +45,7 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 
 ### Parameters
+
 This endpoint does not need any parameter.
 
 ### Return type
@@ -62,6 +62,7 @@ No authorization required
  - **Accept**: application/json
 
 ### HTTP response details
+
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 **200** | OK |  -  |

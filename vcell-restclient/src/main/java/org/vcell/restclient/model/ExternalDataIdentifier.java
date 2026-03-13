@@ -29,6 +29,7 @@ import org.vcell.restclient.model.User;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * ExternalDataIdentifier
  */
@@ -41,45 +42,51 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   ExternalDataIdentifier.JSON_PROPERTY_PARAMETER_SCAN_TYPE,
   ExternalDataIdentifier.JSON_PROPERTY_DATA_KEY
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class ExternalDataIdentifier {
   public static final String JSON_PROPERTY_KEY = "key";
+  @javax.annotation.Nullable
   private String key;
 
   public static final String JSON_PROPERTY_OWNER = "owner";
+  @javax.annotation.Nullable
   private User owner;
 
   public static final String JSON_PROPERTY_NAME = "name";
+  @javax.annotation.Nullable
   private String name;
 
   public static final String JSON_PROPERTY_JOB_INDEX = "jobIndex";
+  @javax.annotation.Nullable
   private Integer jobIndex;
 
   public static final String JSON_PROPERTY_SIMULATION_KEY = "simulationKey";
+  @javax.annotation.Nullable
   private String simulationKey;
 
   public static final String JSON_PROPERTY_PARAMETER_SCAN_TYPE = "parameterScanType";
+  @javax.annotation.Nullable
   private Boolean parameterScanType;
 
   public static final String JSON_PROPERTY_DATA_KEY = "dataKey";
+  @javax.annotation.Nullable
   private String dataKey;
 
   public ExternalDataIdentifier() { 
   }
 
-  public ExternalDataIdentifier key(String key) {
+  public ExternalDataIdentifier key(@javax.annotation.Nullable String key) {
     this.key = key;
     return this;
   }
 
-   /**
+  /**
    * Get key
    * @return key
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getKey() {
     return key;
   }
@@ -87,24 +94,23 @@ public class ExternalDataIdentifier {
 
   @JsonProperty(JSON_PROPERTY_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setKey(String key) {
+  public void setKey(@javax.annotation.Nullable String key) {
     this.key = key;
   }
 
 
-  public ExternalDataIdentifier owner(User owner) {
+  public ExternalDataIdentifier owner(@javax.annotation.Nullable User owner) {
     this.owner = owner;
     return this;
   }
 
-   /**
+  /**
    * Get owner
    * @return owner
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_OWNER)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public User getOwner() {
     return owner;
   }
@@ -112,24 +118,23 @@ public class ExternalDataIdentifier {
 
   @JsonProperty(JSON_PROPERTY_OWNER)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setOwner(User owner) {
+  public void setOwner(@javax.annotation.Nullable User owner) {
     this.owner = owner;
   }
 
 
-  public ExternalDataIdentifier name(String name) {
+  public ExternalDataIdentifier name(@javax.annotation.Nullable String name) {
     this.name = name;
     return this;
   }
 
-   /**
+  /**
    * Get name
    * @return name
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getName() {
     return name;
   }
@@ -137,24 +142,23 @@ public class ExternalDataIdentifier {
 
   @JsonProperty(JSON_PROPERTY_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setName(String name) {
+  public void setName(@javax.annotation.Nullable String name) {
     this.name = name;
   }
 
 
-  public ExternalDataIdentifier jobIndex(Integer jobIndex) {
+  public ExternalDataIdentifier jobIndex(@javax.annotation.Nullable Integer jobIndex) {
     this.jobIndex = jobIndex;
     return this;
   }
 
-   /**
+  /**
    * Get jobIndex
    * @return jobIndex
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_JOB_INDEX)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getJobIndex() {
     return jobIndex;
   }
@@ -162,24 +166,23 @@ public class ExternalDataIdentifier {
 
   @JsonProperty(JSON_PROPERTY_JOB_INDEX)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setJobIndex(Integer jobIndex) {
+  public void setJobIndex(@javax.annotation.Nullable Integer jobIndex) {
     this.jobIndex = jobIndex;
   }
 
 
-  public ExternalDataIdentifier simulationKey(String simulationKey) {
+  public ExternalDataIdentifier simulationKey(@javax.annotation.Nullable String simulationKey) {
     this.simulationKey = simulationKey;
     return this;
   }
 
-   /**
+  /**
    * Get simulationKey
    * @return simulationKey
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SIMULATION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getSimulationKey() {
     return simulationKey;
   }
@@ -187,24 +190,23 @@ public class ExternalDataIdentifier {
 
   @JsonProperty(JSON_PROPERTY_SIMULATION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimulationKey(String simulationKey) {
+  public void setSimulationKey(@javax.annotation.Nullable String simulationKey) {
     this.simulationKey = simulationKey;
   }
 
 
-  public ExternalDataIdentifier parameterScanType(Boolean parameterScanType) {
+  public ExternalDataIdentifier parameterScanType(@javax.annotation.Nullable Boolean parameterScanType) {
     this.parameterScanType = parameterScanType;
     return this;
   }
 
-   /**
+  /**
    * Get parameterScanType
    * @return parameterScanType
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_PARAMETER_SCAN_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Boolean getParameterScanType() {
     return parameterScanType;
   }
@@ -212,24 +214,23 @@ public class ExternalDataIdentifier {
 
   @JsonProperty(JSON_PROPERTY_PARAMETER_SCAN_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setParameterScanType(Boolean parameterScanType) {
+  public void setParameterScanType(@javax.annotation.Nullable Boolean parameterScanType) {
     this.parameterScanType = parameterScanType;
   }
 
 
-  public ExternalDataIdentifier dataKey(String dataKey) {
+  public ExternalDataIdentifier dataKey(@javax.annotation.Nullable String dataKey) {
     this.dataKey = dataKey;
     return this;
   }
 
-   /**
+  /**
    * Get dataKey
    * @return dataKey
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DATA_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getDataKey() {
     return dataKey;
   }
@@ -237,7 +238,7 @@ public class ExternalDataIdentifier {
 
   @JsonProperty(JSON_PROPERTY_DATA_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDataKey(String dataKey) {
+  public void setDataKey(@javax.annotation.Nullable String dataKey) {
     this.dataKey = dataKey;
   }
 
@@ -328,7 +329,7 @@ public class ExternalDataIdentifier {
 
     // add `key` to the URL query string
     if (getKey() != null) {
-      joiner.add(String.format("%skey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%skey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getKey()))));
     }
 
     // add `owner` to the URL query string
@@ -338,27 +339,27 @@ public class ExternalDataIdentifier {
 
     // add `name` to the URL query string
     if (getName() != null) {
-      joiner.add(String.format("%sname%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sname%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getName()))));
     }
 
     // add `jobIndex` to the URL query string
     if (getJobIndex() != null) {
-      joiner.add(String.format("%sjobIndex%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getJobIndex()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sjobIndex%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getJobIndex()))));
     }
 
     // add `simulationKey` to the URL query string
     if (getSimulationKey() != null) {
-      joiner.add(String.format("%ssimulationKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSimulationKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%ssimulationKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSimulationKey()))));
     }
 
     // add `parameterScanType` to the URL query string
     if (getParameterScanType() != null) {
-      joiner.add(String.format("%sparameterScanType%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getParameterScanType()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sparameterScanType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getParameterScanType()))));
     }
 
     // add `dataKey` to the URL query string
     if (getDataKey() != null) {
-      joiner.add(String.format("%sdataKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDataKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sdataKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDataKey()))));
     }
 
     return joiner.toString();

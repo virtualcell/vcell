@@ -28,6 +28,7 @@ import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * VersionFlag
  */
@@ -38,39 +39,43 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   VersionFlag.JSON_PROPERTY_CURRENT,
   VersionFlag.JSON_PROPERTY_PUBLISHED
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class VersionFlag {
   public static final String JSON_PROPERTY_VERSION_FLAG = "versionFlag";
+  @javax.annotation.Nullable
   private Integer versionFlag;
 
   public static final String JSON_PROPERTY_INT_VALUE = "intValue";
+  @javax.annotation.Nullable
   private Integer intValue;
 
   public static final String JSON_PROPERTY_ARCHIVED = "archived";
+  @javax.annotation.Nullable
   private Boolean archived;
 
   public static final String JSON_PROPERTY_CURRENT = "current";
+  @javax.annotation.Nullable
   private Boolean current;
 
   public static final String JSON_PROPERTY_PUBLISHED = "published";
+  @javax.annotation.Nullable
   private Boolean published;
 
   public VersionFlag() { 
   }
 
-  public VersionFlag versionFlag(Integer versionFlag) {
+  public VersionFlag versionFlag(@javax.annotation.Nullable Integer versionFlag) {
     this.versionFlag = versionFlag;
     return this;
   }
 
-   /**
+  /**
    * Get versionFlag
    * @return versionFlag
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getVersionFlag() {
     return versionFlag;
   }
@@ -78,24 +83,23 @@ public class VersionFlag {
 
   @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersionFlag(Integer versionFlag) {
+  public void setVersionFlag(@javax.annotation.Nullable Integer versionFlag) {
     this.versionFlag = versionFlag;
   }
 
 
-  public VersionFlag intValue(Integer intValue) {
+  public VersionFlag intValue(@javax.annotation.Nullable Integer intValue) {
     this.intValue = intValue;
     return this;
   }
 
-   /**
+  /**
    * Get intValue
    * @return intValue
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_INT_VALUE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getIntValue() {
     return intValue;
   }
@@ -103,24 +107,23 @@ public class VersionFlag {
 
   @JsonProperty(JSON_PROPERTY_INT_VALUE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setIntValue(Integer intValue) {
+  public void setIntValue(@javax.annotation.Nullable Integer intValue) {
     this.intValue = intValue;
   }
 
 
-  public VersionFlag archived(Boolean archived) {
+  public VersionFlag archived(@javax.annotation.Nullable Boolean archived) {
     this.archived = archived;
     return this;
   }
 
-   /**
+  /**
    * Get archived
    * @return archived
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_ARCHIVED)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Boolean getArchived() {
     return archived;
   }
@@ -128,24 +131,23 @@ public class VersionFlag {
 
   @JsonProperty(JSON_PROPERTY_ARCHIVED)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setArchived(Boolean archived) {
+  public void setArchived(@javax.annotation.Nullable Boolean archived) {
     this.archived = archived;
   }
 
 
-  public VersionFlag current(Boolean current) {
+  public VersionFlag current(@javax.annotation.Nullable Boolean current) {
     this.current = current;
     return this;
   }
 
-   /**
+  /**
    * Get current
    * @return current
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_CURRENT)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Boolean getCurrent() {
     return current;
   }
@@ -153,24 +155,23 @@ public class VersionFlag {
 
   @JsonProperty(JSON_PROPERTY_CURRENT)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setCurrent(Boolean current) {
+  public void setCurrent(@javax.annotation.Nullable Boolean current) {
     this.current = current;
   }
 
 
-  public VersionFlag published(Boolean published) {
+  public VersionFlag published(@javax.annotation.Nullable Boolean published) {
     this.published = published;
     return this;
   }
 
-   /**
+  /**
    * Get published
    * @return published
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_PUBLISHED)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Boolean getPublished() {
     return published;
   }
@@ -178,7 +179,7 @@ public class VersionFlag {
 
   @JsonProperty(JSON_PROPERTY_PUBLISHED)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPublished(Boolean published) {
+  public void setPublished(@javax.annotation.Nullable Boolean published) {
     this.published = published;
   }
 
@@ -265,27 +266,27 @@ public class VersionFlag {
 
     // add `versionFlag` to the URL query string
     if (getVersionFlag() != null) {
-      joiner.add(String.format("%sversionFlag%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getVersionFlag()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sversionFlag%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getVersionFlag()))));
     }
 
     // add `intValue` to the URL query string
     if (getIntValue() != null) {
-      joiner.add(String.format("%sintValue%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getIntValue()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sintValue%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getIntValue()))));
     }
 
     // add `archived` to the URL query string
     if (getArchived() != null) {
-      joiner.add(String.format("%sarchived%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getArchived()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sarchived%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getArchived()))));
     }
 
     // add `current` to the URL query string
     if (getCurrent() != null) {
-      joiner.add(String.format("%scurrent%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getCurrent()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%scurrent%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getCurrent()))));
     }
 
     // add `published` to the URL query string
     if (getPublished() != null) {
-      joiner.add(String.format("%spublished%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPublished()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%spublished%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getPublished()))));
     }
 
     return joiner.toString();

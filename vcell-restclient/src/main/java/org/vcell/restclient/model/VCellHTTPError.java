@@ -28,6 +28,7 @@ import java.util.Arrays;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * VCellHTTPError
  */
@@ -35,30 +36,31 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   VCellHTTPError.JSON_PROPERTY_EXCEPTION_TYPE,
   VCellHTTPError.JSON_PROPERTY_MESSAGE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class VCellHTTPError {
   public static final String JSON_PROPERTY_EXCEPTION_TYPE = "exceptionType";
+  @javax.annotation.Nullable
   private String exceptionType;
 
   public static final String JSON_PROPERTY_MESSAGE = "message";
+  @javax.annotation.Nullable
   private String message;
 
   public VCellHTTPError() { 
   }
 
-  public VCellHTTPError exceptionType(String exceptionType) {
+  public VCellHTTPError exceptionType(@javax.annotation.Nullable String exceptionType) {
     this.exceptionType = exceptionType;
     return this;
   }
 
-   /**
+  /**
    * Get exceptionType
    * @return exceptionType
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_EXCEPTION_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getExceptionType() {
     return exceptionType;
   }
@@ -66,24 +68,23 @@ public class VCellHTTPError {
 
   @JsonProperty(JSON_PROPERTY_EXCEPTION_TYPE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setExceptionType(String exceptionType) {
+  public void setExceptionType(@javax.annotation.Nullable String exceptionType) {
     this.exceptionType = exceptionType;
   }
 
 
-  public VCellHTTPError message(String message) {
+  public VCellHTTPError message(@javax.annotation.Nullable String message) {
     this.message = message;
     return this;
   }
 
-   /**
+  /**
    * Get message
    * @return message
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_MESSAGE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getMessage() {
     return message;
   }
@@ -91,7 +92,7 @@ public class VCellHTTPError {
 
   @JsonProperty(JSON_PROPERTY_MESSAGE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setMessage(String message) {
+  public void setMessage(@javax.annotation.Nullable String message) {
     this.message = message;
   }
 
@@ -172,12 +173,12 @@ public class VCellHTTPError {
 
     // add `exceptionType` to the URL query string
     if (getExceptionType() != null) {
-      joiner.add(String.format("%sexceptionType%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getExceptionType()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sexceptionType%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getExceptionType()))));
     }
 
     // add `message` to the URL query string
     if (getMessage() != null) {
-      joiner.add(String.format("%smessage%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getMessage()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%smessage%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMessage()))));
     }
 
     return joiner.toString();

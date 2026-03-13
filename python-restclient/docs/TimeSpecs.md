@@ -2,6 +2,7 @@
 
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **begin_time_index** | **int** |  | [optional] 
@@ -19,12 +20,12 @@ json = "{}"
 # create an instance of TimeSpecs from a JSON string
 time_specs_instance = TimeSpecs.from_json(json)
 # print the JSON string representation of the object
-print TimeSpecs.to_json()
+print(TimeSpecs.to_json())
 
 # convert the object into a dict
 time_specs_dict = time_specs_instance.to_dict()
 # create an instance of TimeSpecs from a dict
-time_specs_form_dict = time_specs.from_dict(time_specs_dict)
+time_specs_from_dict = TimeSpecs.from_dict(time_specs_dict)
 ```
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

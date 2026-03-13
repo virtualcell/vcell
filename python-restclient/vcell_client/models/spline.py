@@ -18,32 +18,29 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import ConfigDict, Field, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import StrictInt
-from pydantic import Field
 from vcell_client.models.control_point_curve import ControlPointCurve
 from vcell_client.models.coordinate import Coordinate
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class Spline(ControlPointCurve):
     """
     Spline
     """ # noqa: E501
-    type: Optional[Any]
+    type: StrictStr
     default_num_samples: Optional[StrictInt] = Field(default=None, alias="defaultNumSamples")
     max_control_points: Optional[StrictInt] = Field(default=None, alias="maxControlPoints")
     min_control_points: Optional[StrictInt] = Field(default=None, alias="minControlPoints")
     segment_count: Optional[StrictInt] = Field(default=None, alias="segmentCount")
-    __properties: ClassVar[List[str]] = ["bClosed", "description", "type", "beginningCoordinate", "defaultNumSamples", "endingCoordinate", "numSamplePoints", "segmentCount", "spatialLength", "closed", "valid"]
+    __properties: ClassVar[List[str]] = ["type", "controlPoints", "controlPointCount", "controlPointsVector", "maxControlPoints", "minControlPoints", "controlPointAddable", "valid", "bClosed", "description", "beginningCoordinate", "defaultNumSamples", "endingCoordinate", "numSamplePoints", "segmentCount", "spatialLength", "closed"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -56,7 +53,7 @@ class Spline(ControlPointCurve):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of Spline from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -70,27 +67,38 @@ class Spline(ControlPointCurve):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of each item in control_points (list)
+        _items = []
+        if self.control_points:
+            for _item_control_points in self.control_points:
+                if _item_control_points:
+                    _items.append(_item_control_points.to_dict())
+            _dict['controlPoints'] = _items
+        # override the default output from pydantic by calling `to_dict()` of each item in control_points_vector (list)
+        _items = []
+        if self.control_points_vector:
+            for _item_control_points_vector in self.control_points_vector:
+                if _item_control_points_vector:
+                    _items.append(_item_control_points_vector.to_dict())
+            _dict['controlPointsVector'] = _items
         # override the default output from pydantic by calling `to_dict()` of beginning_coordinate
         if self.beginning_coordinate:
             _dict['beginningCoordinate'] = self.beginning_coordinate.to_dict()
         # override the default output from pydantic by calling `to_dict()` of ending_coordinate
         if self.ending_coordinate:
             _dict['endingCoordinate'] = self.ending_coordinate.to_dict()
-        # set to None if type (nullable) is None
-        # and model_fields_set contains the field
-        if self.type is None and "type" in self.model_fields_set:
-            _dict['type'] = None
-
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of Spline from a dict"""
         if obj is None:
             return None
@@ -104,17 +112,23 @@ class Spline(ControlPointCurve):
                 raise ValueError("Error due to additional fields (not defined in Spline) in the input: " + _key)
 
         _obj = cls.model_validate({
+            "type": obj.get("type") if obj.get("type") is not None else 'Spline',
+            "controlPoints": [Coordinate.from_dict(_item) for _item in obj["controlPoints"]] if obj.get("controlPoints") is not None else None,
+            "controlPointCount": obj.get("controlPointCount"),
+            "controlPointsVector": [Coordinate.from_dict(_item) for _item in obj["controlPointsVector"]] if obj.get("controlPointsVector") is not None else None,
+            "maxControlPoints": obj.get("maxControlPoints"),
+            "minControlPoints": obj.get("minControlPoints"),
+            "controlPointAddable": obj.get("controlPointAddable"),
+            "valid": obj.get("valid"),
             "bClosed": obj.get("bClosed"),
             "description": obj.get("description"),
-            "type": obj.get("type"),
-            "beginningCoordinate": Coordinate.from_dict(obj.get("beginningCoordinate")) if obj.get("beginningCoordinate") is not None else None,
+            "beginningCoordinate": Coordinate.from_dict(obj["beginningCoordinate"]) if obj.get("beginningCoordinate") is not None else None,
             "defaultNumSamples": obj.get("defaultNumSamples"),
-            "endingCoordinate": Coordinate.from_dict(obj.get("endingCoordinate")) if obj.get("endingCoordinate") is not None else None,
+            "endingCoordinate": Coordinate.from_dict(obj["endingCoordinate"]) if obj.get("endingCoordinate") is not None else None,
             "numSamplePoints": obj.get("numSamplePoints"),
             "segmentCount": obj.get("segmentCount"),
             "spatialLength": obj.get("spatialLength"),
-            "closed": obj.get("closed"),
-            "valid": obj.get("valid")
+            "closed": obj.get("closed")
         })
         return _obj
 

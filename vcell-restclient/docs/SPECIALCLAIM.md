@@ -7,11 +7,11 @@
 
 * `ADMINS` (value: `"admins"`)
 
-* `POWERUSERS` (value: `"powerUsers"`)
+* `POWER_USERS` (value: `"powerUsers"`)
 
-* `PUBLICATIONEDITORS` (value: `"publicationEditors"`)
+* `PUBLICATION_EDITORS` (value: `"publicationEditors"`)
 
-* `VCELLSUPPORT` (value: `"vcellSupport"`)
+* `VCELL_SUPPORT` (value: `"vcellSupport"`)
 
 
 

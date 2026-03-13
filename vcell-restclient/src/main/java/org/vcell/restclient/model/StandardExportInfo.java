@@ -34,6 +34,7 @@ import org.vcell.restclient.model.VariableSpecs;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * StandardExportInfo
  */
@@ -47,36 +48,44 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   StandardExportInfo.JSON_PROPERTY_TIME_SPECS,
   StandardExportInfo.JSON_PROPERTY_VARIABLE_SPECS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class StandardExportInfo {
   public static final String JSON_PROPERTY_OUTPUT_CONTEXT = "outputContext";
-  private List<AnnotatedFunctionDTO> outputContext;
+  @javax.annotation.Nullable
+  private List<AnnotatedFunctionDTO> outputContext = new ArrayList<>();
 
   public static final String JSON_PROPERTY_CONTEXT_NAME = "contextName";
+  @javax.annotation.Nullable
   private String contextName;
 
   public static final String JSON_PROPERTY_SIMULATION_NAME = "simulationName";
+  @javax.annotation.Nullable
   private String simulationName;
 
   public static final String JSON_PROPERTY_SIMULATION_KEY = "simulationKey";
+  @javax.annotation.Nullable
   private String simulationKey;
 
   public static final String JSON_PROPERTY_SIMULATION_JOB = "simulationJob";
+  @javax.annotation.Nullable
   private Integer simulationJob;
 
   public static final String JSON_PROPERTY_GEOMETRY_SPECS = "geometrySpecs";
+  @javax.annotation.Nullable
   private GeometrySpecDTO geometrySpecs;
 
   public static final String JSON_PROPERTY_TIME_SPECS = "timeSpecs";
+  @javax.annotation.Nullable
   private TimeSpecs timeSpecs;
 
   public static final String JSON_PROPERTY_VARIABLE_SPECS = "variableSpecs";
+  @javax.annotation.Nullable
   private VariableSpecs variableSpecs;
 
   public StandardExportInfo() { 
   }
 
-  public StandardExportInfo outputContext(List<AnnotatedFunctionDTO> outputContext) {
+  public StandardExportInfo outputContext(@javax.annotation.Nullable List<AnnotatedFunctionDTO> outputContext) {
     this.outputContext = outputContext;
     return this;
   }
@@ -89,14 +98,13 @@ public class StandardExportInfo {
     return this;
   }
 
-   /**
+  /**
    * Get outputContext
    * @return outputContext
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_OUTPUT_CONTEXT)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public List<AnnotatedFunctionDTO> getOutputContext() {
     return outputContext;
   }
@@ -104,24 +112,23 @@ public class StandardExportInfo {
 
   @JsonProperty(JSON_PROPERTY_OUTPUT_CONTEXT)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setOutputContext(List<AnnotatedFunctionDTO> outputContext) {
+  public void setOutputContext(@javax.annotation.Nullable List<AnnotatedFunctionDTO> outputContext) {
     this.outputContext = outputContext;
   }
 
 
-  public StandardExportInfo contextName(String contextName) {
+  public StandardExportInfo contextName(@javax.annotation.Nullable String contextName) {
     this.contextName = contextName;
     return this;
   }
 
-   /**
+  /**
    * Get contextName
    * @return contextName
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_CONTEXT_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getContextName() {
     return contextName;
   }
@@ -129,24 +136,23 @@ public class StandardExportInfo {
 
   @JsonProperty(JSON_PROPERTY_CONTEXT_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setContextName(String contextName) {
+  public void setContextName(@javax.annotation.Nullable String contextName) {
     this.contextName = contextName;
   }
 
 
-  public StandardExportInfo simulationName(String simulationName) {
+  public StandardExportInfo simulationName(@javax.annotation.Nullable String simulationName) {
     this.simulationName = simulationName;
     return this;
   }
 
-   /**
+  /**
    * Get simulationName
    * @return simulationName
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SIMULATION_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getSimulationName() {
     return simulationName;
   }
@@ -154,24 +160,23 @@ public class StandardExportInfo {
 
   @JsonProperty(JSON_PROPERTY_SIMULATION_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimulationName(String simulationName) {
+  public void setSimulationName(@javax.annotation.Nullable String simulationName) {
     this.simulationName = simulationName;
   }
 
 
-  public StandardExportInfo simulationKey(String simulationKey) {
+  public StandardExportInfo simulationKey(@javax.annotation.Nullable String simulationKey) {
     this.simulationKey = simulationKey;
     return this;
   }
 
-   /**
+  /**
    * Get simulationKey
    * @return simulationKey
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SIMULATION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getSimulationKey() {
     return simulationKey;
   }
@@ -179,24 +184,23 @@ public class StandardExportInfo {
 
   @JsonProperty(JSON_PROPERTY_SIMULATION_KEY)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimulationKey(String simulationKey) {
+  public void setSimulationKey(@javax.annotation.Nullable String simulationKey) {
     this.simulationKey = simulationKey;
   }
 
 
-  public StandardExportInfo simulationJob(Integer simulationJob) {
+  public StandardExportInfo simulationJob(@javax.annotation.Nullable Integer simulationJob) {
     this.simulationJob = simulationJob;
     return this;
   }
 
-   /**
+  /**
    * Get simulationJob
    * @return simulationJob
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_SIMULATION_JOB)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getSimulationJob() {
     return simulationJob;
   }
@@ -204,24 +208,23 @@ public class StandardExportInfo {
 
   @JsonProperty(JSON_PROPERTY_SIMULATION_JOB)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSimulationJob(Integer simulationJob) {
+  public void setSimulationJob(@javax.annotation.Nullable Integer simulationJob) {
     this.simulationJob = simulationJob;
   }
 
 
-  public StandardExportInfo geometrySpecs(GeometrySpecDTO geometrySpecs) {
+  public StandardExportInfo geometrySpecs(@javax.annotation.Nullable GeometrySpecDTO geometrySpecs) {
     this.geometrySpecs = geometrySpecs;
     return this;
   }
 
-   /**
+  /**
    * Get geometrySpecs
    * @return geometrySpecs
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_GEOMETRY_SPECS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public GeometrySpecDTO getGeometrySpecs() {
     return geometrySpecs;
   }
@@ -229,24 +232,23 @@ public class StandardExportInfo {
 
   @JsonProperty(JSON_PROPERTY_GEOMETRY_SPECS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setGeometrySpecs(GeometrySpecDTO geometrySpecs) {
+  public void setGeometrySpecs(@javax.annotation.Nullable GeometrySpecDTO geometrySpecs) {
     this.geometrySpecs = geometrySpecs;
   }
 
 
-  public StandardExportInfo timeSpecs(TimeSpecs timeSpecs) {
+  public StandardExportInfo timeSpecs(@javax.annotation.Nullable TimeSpecs timeSpecs) {
     this.timeSpecs = timeSpecs;
     return this;
   }
 
-   /**
+  /**
    * Get timeSpecs
    * @return timeSpecs
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_TIME_SPECS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public TimeSpecs getTimeSpecs() {
     return timeSpecs;
   }
@@ -254,24 +256,23 @@ public class StandardExportInfo {
 
   @JsonProperty(JSON_PROPERTY_TIME_SPECS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setTimeSpecs(TimeSpecs timeSpecs) {
+  public void setTimeSpecs(@javax.annotation.Nullable TimeSpecs timeSpecs) {
     this.timeSpecs = timeSpecs;
   }
 
 
-  public StandardExportInfo variableSpecs(VariableSpecs variableSpecs) {
+  public StandardExportInfo variableSpecs(@javax.annotation.Nullable VariableSpecs variableSpecs) {
     this.variableSpecs = variableSpecs;
     return this;
   }
 
-   /**
+  /**
    * Get variableSpecs
    * @return variableSpecs
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_VARIABLE_SPECS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public VariableSpecs getVariableSpecs() {
     return variableSpecs;
   }
@@ -279,7 +280,7 @@ public class StandardExportInfo {
 
   @JsonProperty(JSON_PROPERTY_VARIABLE_SPECS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVariableSpecs(VariableSpecs variableSpecs) {
+  public void setVariableSpecs(@javax.annotation.Nullable VariableSpecs variableSpecs) {
     this.variableSpecs = variableSpecs;
   }
 
@@ -382,22 +383,22 @@ public class StandardExportInfo {
 
     // add `contextName` to the URL query string
     if (getContextName() != null) {
-      joiner.add(String.format("%scontextName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getContextName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%scontextName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getContextName()))));
     }
 
     // add `simulationName` to the URL query string
     if (getSimulationName() != null) {
-      joiner.add(String.format("%ssimulationName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSimulationName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%ssimulationName%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSimulationName()))));
     }
 
     // add `simulationKey` to the URL query string
     if (getSimulationKey() != null) {
-      joiner.add(String.format("%ssimulationKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSimulationKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%ssimulationKey%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSimulationKey()))));
     }
 
     // add `simulationJob` to the URL query string
     if (getSimulationJob() != null) {
-      joiner.add(String.format("%ssimulationJob%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSimulationJob()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%ssimulationJob%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getSimulationJob()))));
     }
 
     // add `geometrySpecs` to the URL query string

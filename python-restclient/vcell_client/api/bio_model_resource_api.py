@@ -12,28 +12,18 @@
     Do not edit the class manually.
 """  # noqa: E501
 
-
-import io
 import warnings
-
 from pydantic import validate_call, Field, StrictFloat, StrictStr, StrictInt
-from typing import Dict, List, Optional, Tuple, Union, Any
-
-try:
-    from typing import Annotated
-except ImportError:
-    from typing_extensions import Annotated
-
-from pydantic import Field
+from typing import Any, Dict, List, Optional, Tuple, Union
 from typing_extensions import Annotated
-from pydantic import StrictBool, StrictStr
 
+from pydantic import Field, StrictBool, StrictStr
 from typing import List, Optional
-
+from typing_extensions import Annotated
 from vcell_client.models.bio_model import BioModel
 from vcell_client.models.bio_model_summary import BioModelSummary
 
-from vcell_client.api_client import ApiClient
+from vcell_client.api_client import ApiClient, RequestSerialized
 from vcell_client.api_response import ApiResponse
 from vcell_client.rest import RESTResponseType
 
@@ -104,7 +94,10 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '204': None,
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -170,7 +163,10 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '204': None,
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -236,7 +232,10 @@ class BioModelResourceApi:
         )
 
         _response_types_map: Dict[str, Optional[str]] = {
-            
+            '204': None,
+            '401': "VCellHTTPError",
+            '403': "VCellHTTPError",
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -252,19 +251,20 @@ class BioModelResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -277,11 +277,12 @@ class BioModelResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting
@@ -362,8 +363,7 @@ class BioModelResourceApi:
             '200': "BioModel",
             '403': "VCellHTTPError",
             '404': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -432,8 +432,7 @@ class BioModelResourceApi:
             '200': "BioModel",
             '403': "VCellHTTPError",
             '404': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -502,8 +501,7 @@ class BioModelResourceApi:
             '200': "BioModel",
             '403': "VCellHTTPError",
             '404': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -519,19 +517,20 @@ class BioModelResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -544,11 +543,12 @@ class BioModelResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting
@@ -627,8 +627,7 @@ class BioModelResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[BioModelSummary]",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -695,8 +694,7 @@ class BioModelResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[BioModelSummary]",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -763,8 +761,7 @@ class BioModelResourceApi:
 
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "List[BioModelSummary]",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -780,19 +777,20 @@ class BioModelResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -807,11 +805,12 @@ class BioModelResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting
@@ -891,8 +890,7 @@ class BioModelResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "BioModelSummary",
             '403': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -960,8 +958,7 @@ class BioModelResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "BioModelSummary",
             '403': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1029,8 +1026,7 @@ class BioModelResourceApi:
         _response_types_map: Dict[str, Optional[str]] = {
             '200': "BioModelSummary",
             '403': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1046,19 +1042,20 @@ class BioModelResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -1071,11 +1068,12 @@ class BioModelResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting
@@ -1156,8 +1154,7 @@ class BioModelResourceApi:
             '200': "str",
             '403': "VCellHTTPError",
             '404': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1226,8 +1223,7 @@ class BioModelResourceApi:
             '200': "str",
             '403': "VCellHTTPError",
             '404': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1296,8 +1292,7 @@ class BioModelResourceApi:
             '200': "str",
             '403': "VCellHTTPError",
             '404': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1313,19 +1308,20 @@ class BioModelResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
         }
 
         _path_params: Dict[str, str] = {}
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -1338,12 +1334,13 @@ class BioModelResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'text/xml', 
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'text/xml', 
+                    'application/json'
+                ]
+            )
 
 
         # authentication setting
@@ -1433,8 +1430,7 @@ class BioModelResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1512,8 +1508,7 @@ class BioModelResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1591,8 +1586,7 @@ class BioModelResourceApi:
             '401': "VCellHTTPError",
             '403': None,
             '422': "VCellHTTPError",
-            '500': "VCellHTTPError"
-            
+            '500': "VCellHTTPError",
         }
         response_data = self.api_client.call_api(
             *_param,
@@ -1610,12 +1604,11 @@ class BioModelResourceApi:
         _content_type,
         _headers,
         _host_index,
-    ) -> Tuple:
+    ) -> RequestSerialized:
 
         _host = None
 
         _collection_formats: Dict[str, str] = {
-            
             'simsRequiringUpdates': 'multi',
         }
 
@@ -1623,7 +1616,9 @@ class BioModelResourceApi:
         _query_params: List[Tuple[str, str]] = []
         _header_params: Dict[str, Optional[str]] = _headers or {}
         _form_params: List[Tuple[str, str]] = []
-        _files: Dict[str, str] = {}
+        _files: Dict[
+            str, Union[str, bytes, List[str], List[bytes], List[Tuple[str, bytes]]]
+        ] = {}
         _body_params: Optional[bytes] = None
 
         # process the path parameters
@@ -1644,12 +1639,13 @@ class BioModelResourceApi:
 
 
         # set the HTTP header `Accept`
-        _header_params['Accept'] = self.api_client.select_header_accept(
-            [
-                'application/xml', 
-                'application/json'
-            ]
-        )
+        if 'Accept' not in _header_params:
+            _header_params['Accept'] = self.api_client.select_header_accept(
+                [
+                    'application/xml', 
+                    'application/json'
+                ]
+            )
 
         # set the HTTP header `Content-Type`
         if _content_type:

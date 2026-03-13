@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-generatorCliImage=openapitools/openapi-generator-cli:v7.1.0
+generatorCliImage=openapitools/openapi-generator-cli:v7.12.0
 
 scriptDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 parentDir="$(dirname "$scriptDir")"

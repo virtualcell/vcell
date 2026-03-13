@@ -19,14 +19,11 @@ import re  # noqa: F401
 import json
 
 from datetime import datetime
+from pydantic import BaseModel, ConfigDict, Field, StrictBool, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel, StrictBool, StrictStr
-from pydantic import Field
 from vcell_client.models.htc_job_id import HtcJobID
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class SimulationExecutionStatusRecord(BaseModel):
     """
@@ -40,10 +37,11 @@ class SimulationExecutionStatusRecord(BaseModel):
     field_htc_job_id: Optional[HtcJobID] = Field(default=None, alias="fieldHtcJobID")
     __properties: ClassVar[List[str]] = ["fieldStartDate", "fieldLatestUpdateDate", "fieldEndDate", "fieldComputeHost", "fieldHasData", "fieldHtcJobID"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -56,7 +54,7 @@ class SimulationExecutionStatusRecord(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of SimulationExecutionStatusRecord from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -70,10 +68,12 @@ class SimulationExecutionStatusRecord(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of field_htc_job_id
@@ -82,7 +82,7 @@ class SimulationExecutionStatusRecord(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of SimulationExecutionStatusRecord from a dict"""
         if obj is None:
             return None
@@ -101,7 +101,7 @@ class SimulationExecutionStatusRecord(BaseModel):
             "fieldEndDate": obj.get("fieldEndDate"),
             "fieldComputeHost": obj.get("fieldComputeHost"),
             "fieldHasData": obj.get("fieldHasData"),
-            "fieldHtcJobID": HtcJobID.from_dict(obj.get("fieldHtcJobID")) if obj.get("fieldHtcJobID") is not None else None
+            "fieldHtcJobID": HtcJobID.from_dict(obj["fieldHtcJobID"]) if obj.get("fieldHtcJobID") is not None else None
         })
         return _obj
 

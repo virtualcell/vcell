@@ -18,33 +18,30 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import ConfigDict, Field, StrictBool, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import StrictBool, StrictInt
-from pydantic import Field
 from vcell_client.models.coordinate import Coordinate
 from vcell_client.models.curve import Curve
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class CompositeCurve(Curve):
     """
     CompositeCurve
     """ # noqa: E501
-    type: Optional[Any]
-    field_curves: Optional[Any] = Field(default=None, alias="fieldCurves")
+    type: StrictStr
+    field_curves: Optional[List[Any]] = Field(default=None, alias="fieldCurves")
     curve_count: Optional[StrictInt] = Field(default=None, alias="curveCount")
     default_num_samples: Optional[StrictInt] = Field(default=None, alias="defaultNumSamples")
     segment_count: Optional[StrictInt] = Field(default=None, alias="segmentCount")
     valid: Optional[StrictBool] = None
     __properties: ClassVar[List[str]] = ["bClosed", "description", "type", "beginningCoordinate", "defaultNumSamples", "endingCoordinate", "numSamplePoints", "segmentCount", "spatialLength", "closed", "valid"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -57,7 +54,7 @@ class CompositeCurve(Curve):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of CompositeCurve from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -71,10 +68,12 @@ class CompositeCurve(Curve):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of beginning_coordinate
@@ -83,15 +82,10 @@ class CompositeCurve(Curve):
         # override the default output from pydantic by calling `to_dict()` of ending_coordinate
         if self.ending_coordinate:
             _dict['endingCoordinate'] = self.ending_coordinate.to_dict()
-        # set to None if type (nullable) is None
-        # and model_fields_set contains the field
-        if self.type is None and "type" in self.model_fields_set:
-            _dict['type'] = None
-
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of CompositeCurve from a dict"""
         if obj is None:
             return None
@@ -107,10 +101,10 @@ class CompositeCurve(Curve):
         _obj = cls.model_validate({
             "bClosed": obj.get("bClosed"),
             "description": obj.get("description"),
-            "type": obj.get("type"),
-            "beginningCoordinate": Coordinate.from_dict(obj.get("beginningCoordinate")) if obj.get("beginningCoordinate") is not None else None,
+            "type": obj.get("type") if obj.get("type") is not None else 'CompositeCurve',
+            "beginningCoordinate": Coordinate.from_dict(obj["beginningCoordinate"]) if obj.get("beginningCoordinate") is not None else None,
             "defaultNumSamples": obj.get("defaultNumSamples"),
-            "endingCoordinate": Coordinate.from_dict(obj.get("endingCoordinate")) if obj.get("endingCoordinate") is not None else None,
+            "endingCoordinate": Coordinate.from_dict(obj["endingCoordinate"]) if obj.get("endingCoordinate") is not None else None,
             "numSamplePoints": obj.get("numSamplePoints"),
             "segmentCount": obj.get("segmentCount"),
             "spatialLength": obj.get("spatialLength"),

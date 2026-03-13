@@ -34,6 +34,7 @@ import org.vcell.restclient.model.VCSimulationIdentifier;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * SimulationJobStatusRecord
  */
@@ -49,54 +50,63 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   SimulationJobStatusRecord.JSON_PROPERTY_FIELD_SIMULATION_EXECUTION_STATUS,
   SimulationJobStatusRecord.JSON_PROPERTY_FIELD_SIMULATION_QUEUE_ENTRY_STATUS
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class SimulationJobStatusRecord {
   public static final String JSON_PROPERTY_FIELD_TIME_DATA_STAMP = "fieldTimeDataStamp";
+  @javax.annotation.Nullable
   private OffsetDateTime fieldTimeDataStamp;
 
   public static final String JSON_PROPERTY_FIELD_V_C_SIM_I_D = "fieldVCSimID";
+  @javax.annotation.Nullable
   private VCSimulationIdentifier fieldVCSimID;
 
   public static final String JSON_PROPERTY_FIELD_SUBMIT_DATE = "fieldSubmitDate";
+  @javax.annotation.Nullable
   private OffsetDateTime fieldSubmitDate;
 
   public static final String JSON_PROPERTY_FIELD_SCHEDULER_STATUS = "fieldSchedulerStatus";
+  @javax.annotation.Nullable
   private SchedulerStatus fieldSchedulerStatus;
 
   public static final String JSON_PROPERTY_FIELD_SIMULATION_MESSAGE = "fieldSimulationMessage";
+  @javax.annotation.Nullable
   private SimulationMessage fieldSimulationMessage;
 
   public static final String JSON_PROPERTY_FIELD_TASK_I_D = "fieldTaskID";
+  @javax.annotation.Nullable
   private Integer fieldTaskID;
 
   public static final String JSON_PROPERTY_FIELD_SERVER_I_D = "fieldServerID";
+  @javax.annotation.Nullable
   private String fieldServerID;
 
   public static final String JSON_PROPERTY_FIELD_JOB_INDEX = "fieldJobIndex";
+  @javax.annotation.Nullable
   private Integer fieldJobIndex;
 
   public static final String JSON_PROPERTY_FIELD_SIMULATION_EXECUTION_STATUS = "fieldSimulationExecutionStatus";
+  @javax.annotation.Nullable
   private SimulationExecutionStatusRecord fieldSimulationExecutionStatus;
 
   public static final String JSON_PROPERTY_FIELD_SIMULATION_QUEUE_ENTRY_STATUS = "fieldSimulationQueueEntryStatus";
+  @javax.annotation.Nullable
   private SimulationQueueEntryStatusRecord fieldSimulationQueueEntryStatus;
 
   public SimulationJobStatusRecord() { 
   }
 
-  public SimulationJobStatusRecord fieldTimeDataStamp(OffsetDateTime fieldTimeDataStamp) {
+  public SimulationJobStatusRecord fieldTimeDataStamp(@javax.annotation.Nullable OffsetDateTime fieldTimeDataStamp) {
     this.fieldTimeDataStamp = fieldTimeDataStamp;
     return this;
   }
 
-   /**
+  /**
    * Get fieldTimeDataStamp
    * @return fieldTimeDataStamp
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_TIME_DATA_STAMP)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public OffsetDateTime getFieldTimeDataStamp() {
     return fieldTimeDataStamp;
   }
@@ -104,24 +114,23 @@ public class SimulationJobStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_TIME_DATA_STAMP)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldTimeDataStamp(OffsetDateTime fieldTimeDataStamp) {
+  public void setFieldTimeDataStamp(@javax.annotation.Nullable OffsetDateTime fieldTimeDataStamp) {
     this.fieldTimeDataStamp = fieldTimeDataStamp;
   }
 
 
-  public SimulationJobStatusRecord fieldVCSimID(VCSimulationIdentifier fieldVCSimID) {
+  public SimulationJobStatusRecord fieldVCSimID(@javax.annotation.Nullable VCSimulationIdentifier fieldVCSimID) {
     this.fieldVCSimID = fieldVCSimID;
     return this;
   }
 
-   /**
+  /**
    * Get fieldVCSimID
    * @return fieldVCSimID
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_V_C_SIM_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public VCSimulationIdentifier getFieldVCSimID() {
     return fieldVCSimID;
   }
@@ -129,24 +138,23 @@ public class SimulationJobStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_V_C_SIM_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldVCSimID(VCSimulationIdentifier fieldVCSimID) {
+  public void setFieldVCSimID(@javax.annotation.Nullable VCSimulationIdentifier fieldVCSimID) {
     this.fieldVCSimID = fieldVCSimID;
   }
 
 
-  public SimulationJobStatusRecord fieldSubmitDate(OffsetDateTime fieldSubmitDate) {
+  public SimulationJobStatusRecord fieldSubmitDate(@javax.annotation.Nullable OffsetDateTime fieldSubmitDate) {
     this.fieldSubmitDate = fieldSubmitDate;
     return this;
   }
 
-   /**
+  /**
    * Get fieldSubmitDate
    * @return fieldSubmitDate
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_SUBMIT_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public OffsetDateTime getFieldSubmitDate() {
     return fieldSubmitDate;
   }
@@ -154,24 +162,23 @@ public class SimulationJobStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_SUBMIT_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldSubmitDate(OffsetDateTime fieldSubmitDate) {
+  public void setFieldSubmitDate(@javax.annotation.Nullable OffsetDateTime fieldSubmitDate) {
     this.fieldSubmitDate = fieldSubmitDate;
   }
 
 
-  public SimulationJobStatusRecord fieldSchedulerStatus(SchedulerStatus fieldSchedulerStatus) {
+  public SimulationJobStatusRecord fieldSchedulerStatus(@javax.annotation.Nullable SchedulerStatus fieldSchedulerStatus) {
     this.fieldSchedulerStatus = fieldSchedulerStatus;
     return this;
   }
 
-   /**
+  /**
    * Get fieldSchedulerStatus
    * @return fieldSchedulerStatus
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_SCHEDULER_STATUS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public SchedulerStatus getFieldSchedulerStatus() {
     return fieldSchedulerStatus;
   }
@@ -179,24 +186,23 @@ public class SimulationJobStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_SCHEDULER_STATUS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldSchedulerStatus(SchedulerStatus fieldSchedulerStatus) {
+  public void setFieldSchedulerStatus(@javax.annotation.Nullable SchedulerStatus fieldSchedulerStatus) {
     this.fieldSchedulerStatus = fieldSchedulerStatus;
   }
 
 
-  public SimulationJobStatusRecord fieldSimulationMessage(SimulationMessage fieldSimulationMessage) {
+  public SimulationJobStatusRecord fieldSimulationMessage(@javax.annotation.Nullable SimulationMessage fieldSimulationMessage) {
     this.fieldSimulationMessage = fieldSimulationMessage;
     return this;
   }
 
-   /**
+  /**
    * Get fieldSimulationMessage
    * @return fieldSimulationMessage
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_SIMULATION_MESSAGE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public SimulationMessage getFieldSimulationMessage() {
     return fieldSimulationMessage;
   }
@@ -204,24 +210,23 @@ public class SimulationJobStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_SIMULATION_MESSAGE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldSimulationMessage(SimulationMessage fieldSimulationMessage) {
+  public void setFieldSimulationMessage(@javax.annotation.Nullable SimulationMessage fieldSimulationMessage) {
     this.fieldSimulationMessage = fieldSimulationMessage;
   }
 
 
-  public SimulationJobStatusRecord fieldTaskID(Integer fieldTaskID) {
+  public SimulationJobStatusRecord fieldTaskID(@javax.annotation.Nullable Integer fieldTaskID) {
     this.fieldTaskID = fieldTaskID;
     return this;
   }
 
-   /**
+  /**
    * Get fieldTaskID
    * @return fieldTaskID
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_TASK_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getFieldTaskID() {
     return fieldTaskID;
   }
@@ -229,24 +234,23 @@ public class SimulationJobStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_TASK_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldTaskID(Integer fieldTaskID) {
+  public void setFieldTaskID(@javax.annotation.Nullable Integer fieldTaskID) {
     this.fieldTaskID = fieldTaskID;
   }
 
 
-  public SimulationJobStatusRecord fieldServerID(String fieldServerID) {
+  public SimulationJobStatusRecord fieldServerID(@javax.annotation.Nullable String fieldServerID) {
     this.fieldServerID = fieldServerID;
     return this;
   }
 
-   /**
+  /**
    * Get fieldServerID
    * @return fieldServerID
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_SERVER_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getFieldServerID() {
     return fieldServerID;
   }
@@ -254,24 +258,23 @@ public class SimulationJobStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_SERVER_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldServerID(String fieldServerID) {
+  public void setFieldServerID(@javax.annotation.Nullable String fieldServerID) {
     this.fieldServerID = fieldServerID;
   }
 
 
-  public SimulationJobStatusRecord fieldJobIndex(Integer fieldJobIndex) {
+  public SimulationJobStatusRecord fieldJobIndex(@javax.annotation.Nullable Integer fieldJobIndex) {
     this.fieldJobIndex = fieldJobIndex;
     return this;
   }
 
-   /**
+  /**
    * Get fieldJobIndex
    * @return fieldJobIndex
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_JOB_INDEX)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public Integer getFieldJobIndex() {
     return fieldJobIndex;
   }
@@ -279,24 +282,23 @@ public class SimulationJobStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_JOB_INDEX)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldJobIndex(Integer fieldJobIndex) {
+  public void setFieldJobIndex(@javax.annotation.Nullable Integer fieldJobIndex) {
     this.fieldJobIndex = fieldJobIndex;
   }
 
 
-  public SimulationJobStatusRecord fieldSimulationExecutionStatus(SimulationExecutionStatusRecord fieldSimulationExecutionStatus) {
+  public SimulationJobStatusRecord fieldSimulationExecutionStatus(@javax.annotation.Nullable SimulationExecutionStatusRecord fieldSimulationExecutionStatus) {
     this.fieldSimulationExecutionStatus = fieldSimulationExecutionStatus;
     return this;
   }
 
-   /**
+  /**
    * Get fieldSimulationExecutionStatus
    * @return fieldSimulationExecutionStatus
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_SIMULATION_EXECUTION_STATUS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public SimulationExecutionStatusRecord getFieldSimulationExecutionStatus() {
     return fieldSimulationExecutionStatus;
   }
@@ -304,24 +306,23 @@ public class SimulationJobStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_SIMULATION_EXECUTION_STATUS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldSimulationExecutionStatus(SimulationExecutionStatusRecord fieldSimulationExecutionStatus) {
+  public void setFieldSimulationExecutionStatus(@javax.annotation.Nullable SimulationExecutionStatusRecord fieldSimulationExecutionStatus) {
     this.fieldSimulationExecutionStatus = fieldSimulationExecutionStatus;
   }
 
 
-  public SimulationJobStatusRecord fieldSimulationQueueEntryStatus(SimulationQueueEntryStatusRecord fieldSimulationQueueEntryStatus) {
+  public SimulationJobStatusRecord fieldSimulationQueueEntryStatus(@javax.annotation.Nullable SimulationQueueEntryStatusRecord fieldSimulationQueueEntryStatus) {
     this.fieldSimulationQueueEntryStatus = fieldSimulationQueueEntryStatus;
     return this;
   }
 
-   /**
+  /**
    * Get fieldSimulationQueueEntryStatus
    * @return fieldSimulationQueueEntryStatus
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_FIELD_SIMULATION_QUEUE_ENTRY_STATUS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public SimulationQueueEntryStatusRecord getFieldSimulationQueueEntryStatus() {
     return fieldSimulationQueueEntryStatus;
   }
@@ -329,7 +330,7 @@ public class SimulationJobStatusRecord {
 
   @JsonProperty(JSON_PROPERTY_FIELD_SIMULATION_QUEUE_ENTRY_STATUS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setFieldSimulationQueueEntryStatus(SimulationQueueEntryStatusRecord fieldSimulationQueueEntryStatus) {
+  public void setFieldSimulationQueueEntryStatus(@javax.annotation.Nullable SimulationQueueEntryStatusRecord fieldSimulationQueueEntryStatus) {
     this.fieldSimulationQueueEntryStatus = fieldSimulationQueueEntryStatus;
   }
 
@@ -426,7 +427,7 @@ public class SimulationJobStatusRecord {
 
     // add `fieldTimeDataStamp` to the URL query string
     if (getFieldTimeDataStamp() != null) {
-      joiner.add(String.format("%sfieldTimeDataStamp%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldTimeDataStamp()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldTimeDataStamp%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldTimeDataStamp()))));
     }
 
     // add `fieldVCSimID` to the URL query string
@@ -436,12 +437,12 @@ public class SimulationJobStatusRecord {
 
     // add `fieldSubmitDate` to the URL query string
     if (getFieldSubmitDate() != null) {
-      joiner.add(String.format("%sfieldSubmitDate%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldSubmitDate()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldSubmitDate%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldSubmitDate()))));
     }
 
     // add `fieldSchedulerStatus` to the URL query string
     if (getFieldSchedulerStatus() != null) {
-      joiner.add(String.format("%sfieldSchedulerStatus%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldSchedulerStatus()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldSchedulerStatus%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldSchedulerStatus()))));
     }
 
     // add `fieldSimulationMessage` to the URL query string
@@ -451,17 +452,17 @@ public class SimulationJobStatusRecord {
 
     // add `fieldTaskID` to the URL query string
     if (getFieldTaskID() != null) {
-      joiner.add(String.format("%sfieldTaskID%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldTaskID()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldTaskID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldTaskID()))));
     }
 
     // add `fieldServerID` to the URL query string
     if (getFieldServerID() != null) {
-      joiner.add(String.format("%sfieldServerID%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldServerID()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldServerID%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldServerID()))));
     }
 
     // add `fieldJobIndex` to the URL query string
     if (getFieldJobIndex() != null) {
-      joiner.add(String.format("%sfieldJobIndex%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getFieldJobIndex()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sfieldJobIndex%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getFieldJobIndex()))));
     }
 
     // add `fieldSimulationExecutionStatus` to the URL query string

@@ -30,6 +30,7 @@ import org.vcell.restclient.model.HtcJobID;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
+import org.vcell.restclient.ApiClient;
 /**
  * SimulationMessage
  */
@@ -39,36 +40,39 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   SimulationMessage.JSON_PROPERTY_HTC_JOB_ID,
   SimulationMessage.JSON_PROPERTY_DISPLAY_MESSAGE
 })
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen", comments = "Generator version: 7.12.0")
 public class SimulationMessage {
   public static final String JSON_PROPERTY_DETAILED_STATE = "detailedState";
+  @javax.annotation.Nullable
   private DetailedState detailedState;
 
   public static final String JSON_PROPERTY_MESSAGE = "message";
+  @javax.annotation.Nullable
   private String message;
 
   public static final String JSON_PROPERTY_HTC_JOB_ID = "htcJobId";
+  @javax.annotation.Nullable
   private HtcJobID htcJobId;
 
   public static final String JSON_PROPERTY_DISPLAY_MESSAGE = "displayMessage";
+  @javax.annotation.Nullable
   private String displayMessage;
 
   public SimulationMessage() { 
   }
 
-  public SimulationMessage detailedState(DetailedState detailedState) {
+  public SimulationMessage detailedState(@javax.annotation.Nullable DetailedState detailedState) {
     this.detailedState = detailedState;
     return this;
   }
 
-   /**
+  /**
    * Get detailedState
    * @return detailedState
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DETAILED_STATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public DetailedState getDetailedState() {
     return detailedState;
   }
@@ -76,24 +80,23 @@ public class SimulationMessage {
 
   @JsonProperty(JSON_PROPERTY_DETAILED_STATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDetailedState(DetailedState detailedState) {
+  public void setDetailedState(@javax.annotation.Nullable DetailedState detailedState) {
     this.detailedState = detailedState;
   }
 
 
-  public SimulationMessage message(String message) {
+  public SimulationMessage message(@javax.annotation.Nullable String message) {
     this.message = message;
     return this;
   }
 
-   /**
+  /**
    * Get message
    * @return message
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_MESSAGE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getMessage() {
     return message;
   }
@@ -101,24 +104,23 @@ public class SimulationMessage {
 
   @JsonProperty(JSON_PROPERTY_MESSAGE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setMessage(String message) {
+  public void setMessage(@javax.annotation.Nullable String message) {
     this.message = message;
   }
 
 
-  public SimulationMessage htcJobId(HtcJobID htcJobId) {
+  public SimulationMessage htcJobId(@javax.annotation.Nullable HtcJobID htcJobId) {
     this.htcJobId = htcJobId;
     return this;
   }
 
-   /**
+  /**
    * Get htcJobId
    * @return htcJobId
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_HTC_JOB_ID)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public HtcJobID getHtcJobId() {
     return htcJobId;
   }
@@ -126,24 +128,23 @@ public class SimulationMessage {
 
   @JsonProperty(JSON_PROPERTY_HTC_JOB_ID)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setHtcJobId(HtcJobID htcJobId) {
+  public void setHtcJobId(@javax.annotation.Nullable HtcJobID htcJobId) {
     this.htcJobId = htcJobId;
   }
 
 
-  public SimulationMessage displayMessage(String displayMessage) {
+  public SimulationMessage displayMessage(@javax.annotation.Nullable String displayMessage) {
     this.displayMessage = displayMessage;
     return this;
   }
 
-   /**
+  /**
    * Get displayMessage
    * @return displayMessage
-  **/
+   */
   @javax.annotation.Nullable
   @JsonProperty(JSON_PROPERTY_DISPLAY_MESSAGE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
   public String getDisplayMessage() {
     return displayMessage;
   }
@@ -151,7 +152,7 @@ public class SimulationMessage {
 
   @JsonProperty(JSON_PROPERTY_DISPLAY_MESSAGE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDisplayMessage(String displayMessage) {
+  public void setDisplayMessage(@javax.annotation.Nullable String displayMessage) {
     this.displayMessage = displayMessage;
   }
 
@@ -236,12 +237,12 @@ public class SimulationMessage {
 
     // add `detailedState` to the URL query string
     if (getDetailedState() != null) {
-      joiner.add(String.format("%sdetailedState%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDetailedState()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sdetailedState%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDetailedState()))));
     }
 
     // add `message` to the URL query string
     if (getMessage() != null) {
-      joiner.add(String.format("%smessage%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getMessage()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%smessage%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getMessage()))));
     }
 
     // add `htcJobId` to the URL query string
@@ -251,7 +252,7 @@ public class SimulationMessage {
 
     // add `displayMessage` to the URL query string
     if (getDisplayMessage() != null) {
-      joiner.add(String.format("%sdisplayMessage%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDisplayMessage()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      joiner.add(String.format("%sdisplayMessage%s=%s", prefix, suffix, ApiClient.urlEncode(ApiClient.valueToString(getDisplayMessage()))));
     }
 
     return joiner.toString();

@@ -7,8 +7,8 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**type** | **Object** |  |  |
-|**fieldCurves** | **Object** |  |  [optional] |
+|**type** | **String** |  |  |
+|**fieldCurves** | **List&lt;Object&gt;** |  |  [optional] |
 |**curveCount** | **Integer** |  |  [optional] |
 |**defaultNumSamples** | **Integer** |  |  [optional] |
 |**segmentCount** | **Integer** |  |  [optional] |

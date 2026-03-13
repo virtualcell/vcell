@@ -18,15 +18,11 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from pydantic import BaseModel, ConfigDict, Field, StrictFloat, StrictInt, StrictStr
 from typing import Any, ClassVar, Dict, List, Optional, Union
-from pydantic import BaseModel, StrictFloat, StrictInt, StrictStr
-from pydantic import Field
 from vcell_client.models.simulation_job_status_record import SimulationJobStatusRecord
-try:
-    from typing import Self
-except ImportError:
-    from typing_extensions import Self
+from typing import Optional, Set
+from typing_extensions import Self
 
 class StatusMessage(BaseModel):
     """
@@ -38,10 +34,11 @@ class StatusMessage(BaseModel):
     timepoint: Optional[Union[StrictFloat, StrictInt]] = None
     __properties: ClassVar[List[str]] = ["jobStatus", "userName", "progress", "timepoint"]
 
-    model_config = {
-        "populate_by_name": True,
-        "validate_assignment": True
-    }
+    model_config = ConfigDict(
+        populate_by_name=True,
+        validate_assignment=True,
+        protected_namespaces=(),
+    )
 
 
     def to_str(self) -> str:
@@ -54,7 +51,7 @@ class StatusMessage(BaseModel):
         return json.dumps(self.to_dict())
 
     @classmethod
-    def from_json(cls, json_str: str) -> Self:
+    def from_json(cls, json_str: str) -> Optional[Self]:
         """Create an instance of StatusMessage from a JSON string"""
         return cls.from_dict(json.loads(json_str))
 
@@ -68,10 +65,12 @@ class StatusMessage(BaseModel):
           were set at model initialization. Other fields with value `None`
           are ignored.
         """
+        excluded_fields: Set[str] = set([
+        ])
+
         _dict = self.model_dump(
             by_alias=True,
-            exclude={
-            },
+            exclude=excluded_fields,
             exclude_none=True,
         )
         # override the default output from pydantic by calling `to_dict()` of job_status
@@ -80,7 +79,7 @@ class StatusMessage(BaseModel):
         return _dict
 
     @classmethod
-    def from_dict(cls, obj: Dict) -> Self:
+    def from_dict(cls, obj: Optional[Dict[str, Any]]) -> Optional[Self]:
         """Create an instance of StatusMessage from a dict"""
         if obj is None:
             return None
@@ -94,7 +93,7 @@ class StatusMessage(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in StatusMessage) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "jobStatus": SimulationJobStatusRecord.from_dict(obj.get("jobStatus")) if obj.get("jobStatus") is not None else None,
+            "jobStatus": SimulationJobStatusRecord.from_dict(obj["jobStatus"]) if obj.get("jobStatus") is not None else None,
             "userName": obj.get("userName"),
             "progress": obj.get("progress"),
             "timepoint": obj.get("timepoint")
