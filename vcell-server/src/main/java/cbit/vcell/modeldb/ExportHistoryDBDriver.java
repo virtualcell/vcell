@@ -1,8 +1,6 @@
 package cbit.vcell.modeldb;
 
 import cbit.vcell.export.server.*;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.solver.VCSimulationIdentifier;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
@@ -11,14 +9,9 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.document.VersionableType;
 
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.StringJoiner;
 
 public class ExportHistoryDBDriver {
     public static final ExportHistoryTable exportHistoryTable = ExportHistoryTable.table;
@@ -39,19 +32,10 @@ public class ExportHistoryDBDriver {
 
     }
 
-    public record ExportHistory(
-            long      jobID,
-            long      modelRef,
-            ExportFormat exportFormat,
-            Timestamp exportDate,
-            String    uri,
-            ExportSpecs exportSpecs
-    ){}
-
-    public void addExportHistory(Connection conn, User user, ExportHistory exportHistory, KeyFactory keyFactory)
+    public void addExportHistory(Connection conn, User user, ExportHistoryRep exportHistory, KeyFactory keyFactory)
             throws SQLException, DependencyException, PermissionException, DataAccessException, ObjectNotFoundException {
 
-        ExportSpecs specs = exportHistory.exportSpecs;
+        ExportSpecs specs = exportHistory.exportSpecs();
         HumanReadableExportData meta = specs.getHumanReadableExportData();
         TimeSpecs ts = specs.getTimeSpecs();
         String[] vars = specs.getVariableSpecs().getVariableNames();
@@ -64,12 +48,12 @@ public class ExportHistoryDBDriver {
         try (PreparedStatement ps = conn.prepareStatement(ehSQL)) {
             ExportHistoryTable.table.bindForInsert(ps,
                     keyValue,
-                    exportHistory.jobID,
+                    exportHistory.jobID(),
                     Long.parseLong(user.getID().toString()),
-                    exportHistory.modelRef,
-                    exportHistory.exportFormat,
-                    exportHistory.exportDate,
-                    exportHistory.uri,
+                    exportHistory.modelRef(),
+                    exportHistory.exportFormat(),
+                    exportHistory.exportDate(),
+                    exportHistory.uri(),
                     specs.getVCDataIdentifier().getID(),
                     meta.simulationName,
                     meta.applicationName,
@@ -98,9 +82,9 @@ public class ExportHistoryDBDriver {
                 if (parts.length == 3) {
                     ModelParameterValuesTable.table.bindForInsert(ps2,
 
-                            exportHistory.jobID,
+                            exportHistory.jobID(),
                             Long.parseLong(user.getID().toString()),
-                            exportHistory.modelRef,
+                            exportHistory.modelRef(),
                             parts[0],
                             new BigDecimal(parts[1]),
                             new BigDecimal(parts[2])

@@ -2,11 +2,10 @@ package org.vcell.restq;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.export.server.*;
-import cbit.vcell.mapping.MappingException;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.ExportHistoryDBDriver;
+import cbit.vcell.modeldb.ExportHistoryRep;
 import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.xml.XMLSource;
@@ -20,7 +19,6 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
-import org.vcell.restq.handlers.ExportResource;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.DependencyException;
@@ -39,14 +37,11 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 
 import static org.bouncycastle.math.raw.Nat.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
-import static org.vcell.sybil.util.http.pathwaycommons.PCRParameter.Output.xml;
 import static org.vcell.util.VCAssert.assertFalse;
 import static org.vcell.util.VCAssert.assertTrue;
 
@@ -148,7 +143,7 @@ public class ExportHistoryTest {
             driver.addExportHistory(
                     conn,
                     user,
-                    new ExportHistoryDBDriver.ExportHistory(
+                    new ExportHistoryRep(
                             42L,
                             Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()),
                             ExportFormat.N5,
@@ -189,7 +184,7 @@ public class ExportHistoryTest {
 
 
             driver.addExportHistory(conn, user,
-                    new ExportHistoryDBDriver.ExportHistory(7L, Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()), ExportFormat.N5, now, "to-delete", exportSpecs),
+                    new ExportHistoryRep(7L, Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()), ExportFormat.N5, now, "to-delete", exportSpecs),
                     agroalConnectionFactory.getKeyFactory()
             );
 
@@ -232,11 +227,11 @@ public class ExportHistoryTest {
             ExportHistoryDBDriver driver = new ExportHistoryDBDriver(null, null);
 
             driver.addExportHistory(conn, user,
-                    new ExportHistoryDBDriver.ExportHistory(100L, Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()), ExportFormat.N5, now, "uri100", exportSpecs),
+                    new ExportHistoryRep(100L, Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()), ExportFormat.N5, now, "uri100", exportSpecs),
                     agroalConnectionFactory.getKeyFactory()
             );
             driver.addExportHistory(conn, user,
-                    new ExportHistoryDBDriver.ExportHistory(101L, Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()), ExportFormat.N5, now, "uri101", exportSpecs),
+                    new ExportHistoryRep(101L, Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()), ExportFormat.N5, now, "uri101", exportSpecs),
                     agroalConnectionFactory.getKeyFactory()
             );
 

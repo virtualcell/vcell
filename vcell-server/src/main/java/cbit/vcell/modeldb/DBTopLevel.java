@@ -15,7 +15,6 @@ import cbit.sql.InsertHashtable;
 import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.vcell.biomodel.BioModelMetaData;
-import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.field.FieldDataExternalDataIDEntry;
 import cbit.vcell.field.io.CopyFieldDataResult;
@@ -2258,7 +2257,7 @@ public SimulationRep getSimulationRep(KeyValue simKey, boolean bEnableRetry) thr
 	}
 }
 
-	public void insertExportHistory(User user, ExportHistoryDBDriver.ExportHistory exportHistoryValues, boolean bEnableRetry) throws SQLException, DataAccessException {
+	public void insertExportHistory(User user, ExportHistoryRep exportHistoryValues, boolean bEnableRetry) throws SQLException, DataAccessException {
 		Object lock = new Object();
 		Connection con = conFactory.getConnection(lock);
 		try {
