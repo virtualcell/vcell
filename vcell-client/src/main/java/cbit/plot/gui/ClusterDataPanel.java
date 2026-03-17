@@ -31,6 +31,11 @@ public class ClusterDataPanel extends JPanel {
     private ScrollTable scrollPaneTable;
     private NonEditableDefaultTableModel nonEditableDefaultTableModel = null;
 
+    private JPopupMenu popupMenu = null;
+    private JMenuItem miCopyAll = null;
+    private JMenuItem miCopyHDF5 = null;
+    private static enum CopyAction {copy,copyrow,copyall};
+
     private final IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
     class IvjEventHandler implements ActionListener, MouseListener, PropertyChangeListener, ChangeListener {
@@ -41,6 +46,9 @@ public class ClusterDataPanel extends JPanel {
                 int row = getScrollPaneTable().rowAtPoint(e.getPoint());
                 int col = getScrollPaneTable().columnAtPoint(e.getPoint());
                 System.out.println("ClusterDataPanel: clicked row=" + row + " col=" + col);
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    getPopupMenu().show(e.getComponent(), e.getX(), e.getY());
+                }
             }
         }
 
@@ -51,7 +59,7 @@ public class ClusterDataPanel extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            // reserved for future buttons or context menu actions
+            // reserved for future
         }
 
         @Override
@@ -178,6 +186,54 @@ public class ClusterDataPanel extends JPanel {
         return nonEditableDefaultTableModel;
     }
 
+    private JPopupMenu getPopupMenu() {
+        if (popupMenu == null) {
+            popupMenu = new JPopupMenu();
+
+            miCopyAll = new JMenuItem("Copy All");
+            miCopyAll.addActionListener(e -> copyCells(this, false));
+            popupMenu.add(miCopyAll);
+
+            miCopyHDF5 = new JMenuItem("Copy to HDF5");
+            miCopyHDF5.addActionListener(e -> copyCells(this,true));
+            popupMenu.add(miCopyHDF5);
+        }
+        return popupMenu;
+    }
+
+    // -----------------------------------------------------------------------------------------------
+    private static synchronized void copyCells(ClusterDataPanel cdp, boolean isHDF5) {
+        try {
+            int r = 0;
+            int c = 0;
+            int[] rows = new int[0];
+            int[] columns = new int[0];
+            r = cdp.getScrollPaneTable().getRowCount();
+            c = cdp.getScrollPaneTable().getColumnCount();
+            rows = new int[r];
+            columns = new int[c];
+            for (int i = 0; i < rows.length; i++){
+                rows[i] = i;
+            }
+            for (int i = 0; i < columns.length; i++){
+                columns[i] = i;
+            }
+            if(rows.length < 1 || columns.length < 1)
+            {
+                throw new Exception("No table cell is selected.");
+            }
+            System.out.println("Copying cluster data: rows=" + rows.length + " columns=" + columns.length + " isHDF5=" + isHDF5);
+
+
+
+
+
+        } catch (Exception ex) {
+            LG.error("Error copying cluster data", ex);
+            JOptionPane.showMessageDialog(cdp, "Error copying cluster data: " + ex.getMessage(), "Copy Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     public void setSpecialityRenderer(SpecialtyTableRenderer str) {
         // TODO: write some appropriate renderer when we decide what to show in the tooltip
         //  use RendererViewerDoubleWithTooltip for inspiration
@@ -207,7 +263,7 @@ public class ClusterDataPanel extends JPanel {
 
         // column names
         String[] columnNames = new String[1 + columns.size()];
-        columnNames[0] = "t";
+        columnNames[0] = "time";
         for (int i = 0; i < columns.size(); i++) {
             columnNames[i + 1] = columns.get(i).getName();
         }

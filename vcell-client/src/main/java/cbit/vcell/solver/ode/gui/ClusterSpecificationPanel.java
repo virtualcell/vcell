@@ -25,7 +25,78 @@ import java.util.Map;
 
 public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
 
-    public enum DisplayMode { COUNTS, MEAN, OVERALL };
+    public enum DisplayMode {
+        COUNTS(
+                "COUNTS",
+                "Cluster Counts",
+                "Show the number of clusters of each size"
+        ),
+        MEAN(
+                "MEAN",
+                "Cluster Mean",
+                "At each timepoint: ACS/ACO averaged over runs; SD = SD of ACS across runs"
+        ),
+        OVERALL(
+                "OVERALL",
+                "Cluster Overall",
+                "At each timepoint: all runs pooled; ACS, SD, ACO computed from the combined sample"
+        );
+        private final String actionCommand;
+        private final String uiLabel;
+        private final String tooltip;
+        DisplayMode(String actionCommand, String uiLabel, String tooltip) {
+            this.actionCommand = actionCommand;
+            this.uiLabel = uiLabel;
+            this.tooltip = tooltip;
+        }
+        public String actionCommand() { return actionCommand; }
+        public String uiLabel()       { return uiLabel; }
+        public String tooltip()       { return tooltip; }
+        public static DisplayMode fromActionCommand(String cmd) {
+            for (DisplayMode m : values()) {
+                if (m.actionCommand.equals(cmd)) {
+                    return m;
+                }
+            }
+            throw new IllegalArgumentException("Unknown DisplayMode: " + cmd);
+        }
+    }
+
+    public enum ClusterStatistic {
+        ACS(
+                "Average Cluster Size",
+                "Average number of molecules per cluster",
+                "molecules"
+        ),
+        ACO(
+                "Average Cluster Occupancy",
+                "Average number of molecules per molecule (molecule‑centric cluster size)",
+                "molecules"
+        ),
+        SD(
+                "Standard Deviation of Cluster Size",
+                "Variability of cluster sizes around the average cluster size (ACS)",
+                "molecules"
+        );
+        private final String fullName;
+        private final String description;
+        private final String unit;
+        ClusterStatistic(String fullName, String description, String unit) {
+            this.fullName = fullName;
+            this.description = description;
+            this.unit = unit;
+        }
+        public String fullName() {
+            return fullName;
+        }
+        public String description() {
+            return description;
+        }
+        public String unit() {
+            return unit;
+        }
+    }
+
     public static class ClusterSelection {  // used to communicate y-list selection to the ClusterVisualizationPanel
         public final DisplayMode mode;
         public final java.util.List<ColumnDescription> columns;
@@ -43,17 +114,8 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
             String cmd = e.getActionCommand();
             if (e.getSource() instanceof JRadioButton rb && SwingUtilities.isDescendingFrom(rb, ClusterSpecificationPanel.this)) {
                 System.out.println("ClusterSpecificationPanel.actionPerformed() called. Source is JRadioButton: " + rb.getText());
-                switch (cmd) {
-                    case "COUNTS":
-                        populateYAxisChoices(DisplayMode.COUNTS);
-                        break;
-                    case "MEAN":
-                        populateYAxisChoices(DisplayMode.MEAN);
-                        break;
-                    case "OVERALL":
-                        populateYAxisChoices(DisplayMode.OVERALL);
-                        break;
-                }
+                DisplayMode mode = DisplayMode.fromActionCommand(cmd);
+                populateYAxisChoices(mode);
             }
         }
         @Override
@@ -143,7 +205,7 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         gbc.insets = new Insets(4, 4, 0, 4);
         add(xAxisLabel, gbc);
 
-        JTextField xAxisTextBox = new JTextField("t");
+        JTextField xAxisTextBox = new JTextField("time [seconds]");
         xAxisTextBox.setEnabled(false);
         xAxisTextBox.setEditable(false);
         gbc = new GridBagConstraints();
@@ -184,17 +246,22 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
             content.setLayout(new GridBagLayout());
 
             ButtonGroup group = new ButtonGroup();
-            JRadioButton rbCounts = new JRadioButton("Cluster Counts");
-            JRadioButton rbMean = new JRadioButton("Cluster Mean");
-            JRadioButton rbOverall = new JRadioButton("Cluster Overall");
 
-            rbCounts.setActionCommand("COUNTS");
-            rbMean.setActionCommand("MEAN");
-            rbOverall.setActionCommand("OVERALL");
+            JRadioButton rbCounts  = new JRadioButton(DisplayMode.COUNTS.uiLabel());
+            JRadioButton rbMean    = new JRadioButton(DisplayMode.MEAN.uiLabel());
+            JRadioButton rbOverall = new JRadioButton(DisplayMode.OVERALL.uiLabel());
+
+            rbCounts.setActionCommand(DisplayMode.COUNTS.actionCommand());
+            rbMean.setActionCommand(DisplayMode.MEAN.actionCommand());
+            rbOverall.setActionCommand(DisplayMode.OVERALL.actionCommand());
 
             rbCounts.addActionListener(ivjEventHandler);
             rbMean.addActionListener(ivjEventHandler);
             rbOverall.addActionListener(ivjEventHandler);
+
+            rbCounts.setToolTipText(DisplayMode.COUNTS.tooltip());
+            rbMean.setToolTipText(DisplayMode.MEAN.tooltip());
+            rbOverall.setToolTipText(DisplayMode.OVERALL.tooltip());
 
             group.add(rbCounts);
             group.add(rbMean);
@@ -244,19 +311,15 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
             yAxisChoiceList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
             yAxisChoiceList.setCellRenderer(new DefaultListCellRenderer() {
                 @Override
-                public Component getListCellRendererComponent(
-                        JList<?> list, Object value, int index,
-                        boolean isSelected, boolean cellHasFocus) {
-                    JLabel label = (JLabel) super.getListCellRendererComponent(
-                            list, value, index, isSelected, cellHasFocus);
+                public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                    boolean isSelected, boolean cellHasFocus) {
+                    JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 
                     if (value instanceof ODESolverResultSetColumnDescription cd) {
-                        // Always show the plain name
                         String name = cd.getName();
                         label.setText(name);
 
-                        // Gray out trivial entries
-                        if (cd.isTrivial()) {
+                        if (cd.isTrivial()) {   // gray out trivial entries
                             label.setForeground(Color.GRAY);
                         } else {
                             label.setForeground(isSelected
@@ -264,8 +327,7 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
                                     : list.getForeground());
                         }
 
-                        // Determine tooltip based on DisplayMode
-                        DisplayMode mode = (DisplayMode)
+                        DisplayMode mode = (DisplayMode)        // determine tooltip based on DisplayMode
                                 ((JComponent) list).getClientProperty("ClusterDisplayMode");
                         if (mode == null) {
                             label.setToolTipText(null);
@@ -274,27 +336,24 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
                         switch (mode) {
                             case COUNTS:
                                 // cluster size <b>X</b> molecules
+                                label.setText(name);
                                 label.setToolTipText(
-                                        "<html>cluster size <b>" + name + "</b> molecules</html>"
+                                        "<html>Number of Clusters of size: <b>" + name + "</b> " + "<font color=\"#8B0000\">" + "[molecules] </font></html>"
                                 );
                                 break;
                             case MEAN:
                             case OVERALL:
-                                label.setToolTipText("<html>" + expandStatisticName(name) + "</html>");
+                                ClusterStatistic stat = ClusterStatistic.valueOf(name);
+                                label.setText(stat.fullName);
+                                String tooltip = "<html>" + stat.description + "<font color=\"#8B0000\">" + " [" + stat.unit + "] </font></html>";
+                                label.setToolTipText(tooltip);
                                 break;
                         }
                     }
                     return label;
                 }
-                private String expandStatisticName(String name) {
-                    return switch (name) {
-                        case "ACS" -> "Average Cluster Size";
-                        case "SD"  -> "Standard Deviation";
-                        case "ACO" -> "Average Cluster Occupancy";
-                        default    -> name;  // fallback
-                    };
-                }
-            });        }
+            });
+        }
         return yAxisChoiceList;
     }
 

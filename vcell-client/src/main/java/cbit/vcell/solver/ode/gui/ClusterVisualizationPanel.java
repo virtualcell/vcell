@@ -39,6 +39,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.geom.Path2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.*;
 import java.util.List;
 
@@ -63,6 +65,8 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
     private JScrollPane ivjPlotLegendsScrollPane = null;
     private JPanel ivjJPanelPlotLegends = null;
     private JLabel bottomLabel = null;
+    private JCheckBox showCrosshairCheckBox = null;
+    private JLabel crosshairCoordLabel = null;
     private JToolBarToggleButton ivjPlotButton = null;
     private JToolBarToggleButton ivjDataButton = null;
 
@@ -77,6 +81,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
                     ivjPlotButton.setSelected(cmd.equals("JPanelPlot"));    // update button selection state
                     ivjDataButton.setSelected(cmd.equals("JPanelData"));
                     ivjJPanelLegend.setVisible(cmd.equals("JPanelPlot"));   // show legend only in plot mode
+                    getShowCrosshairCheckBox().setVisible(cmd.equals("JPanelPlot"));    // show/hide crosshair checkbox
                     return;
                 }
             }
@@ -161,7 +166,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         if (ivjJLabelBottom == null) {
             ivjJLabelBottom = new JLabel();
             ivjJLabelBottom.setName("JLabelBottom");
-            ivjJLabelBottom.setText("t");
+            ivjJLabelBottom.setText("time");
             ivjJLabelBottom.setForeground(Color.black);
             ivjJLabelBottom.setHorizontalTextPosition(SwingConstants.CENTER);
             ivjJLabelBottom.setHorizontalAlignment(SwingConstants.CENTER);
@@ -173,13 +178,19 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
             try {
                 clusterPlotPanel = new ClusterPlotPanel();
                 clusterPlotPanel.setName("ClusterPlotPanel");
+                clusterPlotPanel.setCoordinateCallback(coords -> {
+                    if (coords == null) {
+                        clearCrosshairCoordinates();
+                    } else {
+                        updateCrosshairCoordinates(coords[0], coords[1]);
+                    }
+                });
                 clusterPlotPanel.addComponentListener(new ComponentAdapter() {
                     @Override
                     public void componentShown(ComponentEvent e) {
                         System.out.println("ClusterVisualizationPanel.componentShown() called, height = " + clusterPlotPanel.getHeight());
                     }
                 });
-
             } catch (java.lang.Throwable ivjExc) {
                 handleException(ivjExc);
             }
@@ -213,11 +224,21 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
 
             gbc = new GridBagConstraints();
             gbc.gridx = 2; gbc.gridy = 0;
+            gbc.insets = new Insets(4, 4, 4, 2);
+            bottomRightPanel.add(getShowCrosshairCheckBox(), gbc);
+
+            gbc = new GridBagConstraints();
+            gbc.gridx = 3; gbc.gridy = 0;
+            gbc.insets = new Insets(4, 2, 4, 2);
+            bottomRightPanel.add(getCrosshairCoordLabel(), gbc);
+
+            gbc = new GridBagConstraints();
+            gbc.gridx = 4; gbc.gridy = 0;
             gbc.insets = new Insets(4, 4, 4, 4);
             bottomRightPanel.add(getPlotButton(), gbc);
 
             gbc = new GridBagConstraints();
-            gbc.gridx = 3; gbc.gridy = 0;
+            gbc.gridx = 5; gbc.gridy = 0;
             gbc.insets = new Insets(4, 4, 4, 4);
             bottomRightPanel.add(getDataButton(), gbc);
         }
@@ -234,6 +255,28 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
             bottomLabel.setMinimumSize(new Dimension(44, 20));
         }
         return bottomLabel;
+    }
+    private JCheckBox getShowCrosshairCheckBox() {
+        if (showCrosshairCheckBox == null) {
+            showCrosshairCheckBox = new JCheckBox("Show Crosshair");
+            showCrosshairCheckBox.setSelected(true);   // default ON
+
+            showCrosshairCheckBox.addActionListener(e -> {
+                boolean enabled = showCrosshairCheckBox.isSelected();
+                clusterPlotPanel.setCrosshairEnabled(enabled);
+                clusterPlotPanel.repaint();
+            });
+        }
+        return showCrosshairCheckBox;
+    }
+    private JLabel getCrosshairCoordLabel() {
+        if (crosshairCoordLabel == null) {
+            crosshairCoordLabel = new JLabel(emptyCoordText);
+            // no fixed width — dynamic sizing will handle it but we DO want a stable height
+            int height = crosshairCoordLabel.getFontMetrics(crosshairCoordLabel.getFont()).getHeight();
+            crosshairCoordLabel.setPreferredSize(new Dimension(1, height));
+        }
+        return crosshairCoordLabel;
     }
     private JToolBarToggleButton getPlotButton() {
         if (ivjPlotButton == null) {
@@ -283,7 +326,8 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         if (ivjPlotLegendsScrollPane == null) {
             ivjPlotLegendsScrollPane = new JScrollPane();
             ivjPlotLegendsScrollPane.setName("PlotLegendsScrollPane");
-            ivjPlotLegendsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+            ivjPlotLegendsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+//            ivjPlotLegendsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
             ivjPlotLegendsScrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
             getPlotLegendsScrollPane().setViewportView(getJPanelPlotLegends());
         }
@@ -291,10 +335,17 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
     }
     private JPanel getJPanelPlotLegends() {
         if (ivjJPanelPlotLegends == null) {
-            ivjJPanelPlotLegends = new JPanel();
+            ivjJPanelPlotLegends = new JPanel() {
+                @Override
+                public Dimension getPreferredSize() {       // allocate from start enough space for vertical scrollbar
+                    Dimension d = super.getPreferredSize();
+                    int scrollbarWidth = UIManager.getInt("ScrollBar.width");
+                    return new Dimension(d.width + scrollbarWidth, d.height);
+                }
+            };
             ivjJPanelPlotLegends.setName("JPanelPlotLegends");
             ivjJPanelPlotLegends.setLayout(new BoxLayout(ivjJPanelPlotLegends, BoxLayout.Y_AXIS));
-            ivjJPanelPlotLegends.setBounds(0, 0, 72, 360);
+//            ivjJPanelPlotLegends.setBounds(0, 0, 72, 360);
         }
         return ivjJPanelPlotLegends;
     }
@@ -303,6 +354,8 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         super.setBackground(color);
         getBottomRightPanel().setBackground(color);
         getJBottomLabel().setBackground(color);
+        getShowCrosshairCheckBox().setBackground(color);
+        getCrosshairCoordLabel().setBackground(color);
         getJPanelLegend().setBackground(color);
         getJPanelPlotLegends().setBackground(color);
         getJPanel1().setBackground(color);
@@ -371,29 +424,71 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
             }
         }
     }
+    /*
+    ACS = Average Cluster Size
+    ACS answers: "If I pick a cluster at random, how many molecules does it contain on average?"
+    ACS is the mean size of clusters, computed as:  ACS = Math.sumOver(i, n_i * size_i) / Math.sumOver(i, n_i);
+    Unit: molecules per cluster (molecules)
+
+    SD = Standard Deviation of Cluster Size
+    SD answers: "How much variability is there in cluster sizes?"
+    SD = Math.sqrt( Math.sumOver(i, n_i * Math.pow(size_i - ACS, 2)) / Math.sumOver(i, n_i) )
+    Unit: molecules per cluster (molecules)
+
+    ACO = Average Cluster Occupancy
+    ACO answers: "If I pick a random molecule from the entire system, how many other molecules are in its cluster on average?"
+    ACO = Math.sumOver(i, n_i * size_i * size_i) / Math.sumOver(i, n_i * size_i)
+    Unit: molecules per molecule (molecules)
+
+    Example: if clusters are:
+        - {5, 5, 5, 5} -> ACS = 5, SD = 0
+        - {3, 4, 5, 6} -> ACS = 4.5, SD ≈ 1.12
+        - {1, 1, 1, 10} -> ACS = 3.25, SD is large
+    SD tells whether the system is:
+        - homogeneous (low SD)
+        - heterogeneous (high SD)
+    ACS alone cannot tell that - SD is the variability measure
+     */
     private JComponent createLegendEntry(String name, Color color, ClusterSpecificationPanel.DisplayMode mode) {
         JPanel p = new JPanel();
         p.setName("JPanelClusterColorLegends");
-        BoxLayout bl = new BoxLayout(p, BoxLayout.Y_AXIS);
-        p.setLayout(bl);
-        p.setBounds(0, 0, 72, 360);
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
         p.setOpaque(false);
 
-        String unitSymbol = "";
-        if(ClusterSpecificationPanel.DisplayMode.COUNTS == mode) {
-            unitSymbol = "molecules";
+        String unitSymbol;
+        String tooltip;
+        switch (mode) {
+            case COUNTS:
+                // name is the cluster size (e.g., "3")
+                unitSymbol = "molecules";
+                tooltip = "<html>cluster size <b>" + name + "</b> molecules</html>";
+                break;
+            case MEAN:
+            case OVERALL:
+                // name is ACS / SD / ACO
+                ClusterSpecificationPanel.ClusterStatistic stat = ClusterSpecificationPanel.ClusterStatistic.valueOf(name);
+                unitSymbol = stat.unit();
+                tooltip = "<html>" + stat.fullName() + "<br>" + stat.description() + "</html>";
+                break;
+            default:
+                unitSymbol = "";
+                tooltip = null;
         }
-        String shortLabel = "<html>" + name + "<font color=\"#8B0000\">" + " [" + unitSymbol + "] " + "</font></html>";
 
+        // Visible label
+        String shortLabel = "<html>" + name + "<font color=\"#8B0000\">" + " [" + unitSymbol + "] " + "</font></html>";
         JLabel line = new JLabel(new LineIcon(color));
         JLabel text = new JLabel(shortLabel);
-        line.setBorder(new EmptyBorder(6,0,1,0));
-        text.setBorder(new EmptyBorder(1,8,6,0));
+        line.setBorder(new EmptyBorder(6, 0, 1, 0));
+        text.setBorder(new EmptyBorder(1, 8, 6, 0));
+        line.setToolTipText(tooltip);
+        text.setToolTipText(tooltip);
+        p.setToolTipText(tooltip);
         p.add(line);
         p.add(text);
-
         return p;
     }
+
     public class LineIcon implements Icon {
         private final Color color;
         public LineIcon(Color color) {
@@ -433,7 +528,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
 //        double globalMin = Double.POSITIVE_INFINITY;
         double globalMin = 0;       // these are counts, so min is always 0
         double globalMax = Double.NEGATIVE_INFINITY;
-        clusterPlotPanel.clear();
+        getClusterPlotPanel().clear();
 
         for (ColumnDescription cd : columns) {
             int index = srs.findColumn(cd.getName());
@@ -443,11 +538,11 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
                 if (v > globalMax) globalMax = v;
             }
             Color c = persistentColorMap.get(cd.getName());
-            clusterPlotPanel.addCurve(cd.getName(), y, c);
+            getClusterPlotPanel().addCurve(cd.getName(), y, c);
         }
-        clusterPlotPanel.setGlobalMinMax(globalMin, globalMax);
-        clusterPlotPanel.setDt(times[1]);   // times[0] == 0;
-        clusterPlotPanel.repaint();
+        getClusterPlotPanel().setGlobalMinMax(globalMin, globalMax);
+        getClusterPlotPanel().setDt(times[1]);   // times[0] == 0;
+        getClusterPlotPanel().repaint();
     }
     private void redrawLegend(ClusterSpecificationPanel.ClusterSelection sel) {
         System.out.println("ClusterVisualizationPanel.redrawLegend() called");
@@ -464,11 +559,43 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         getClusterDataPanel().updateData(sel);
     }
     public void setSpecialityRenderer(SpecialtyTableRenderer str) {
-        // TODO: implement this
         getClusterDataPanel().setSpecialityRenderer(str);
     }
 
-
+    // crosshair coordinates and coordinates label management
+    public void updateCrosshairCoordinates(double xVal, double yVal) {
+        String text = formatCoord(xVal) + ", " + formatCoord(yVal);
+        getCrosshairCoordLabel().setText(text);
+        adjustCoordLabelWidth(text);
+    }
+    public void clearCrosshairCoordinates() {
+        getCrosshairCoordLabel().setText(emptyCoordText);
+        adjustCoordLabelWidth(emptyCoordText);
+    }
+    private int lastCoordCharCount = emptyCoordText.length();
+    private static final String emptyCoordText = "        ";   // enough spaces to reduce jitter when switching between no coord and coord
+    private static final DecimalFormat sci = new DecimalFormat("0.000E0", DecimalFormatSymbols.getInstance(Locale.US));
+    private static final DecimalFormat fix = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.US));
+    private static String formatCoord(double v) {
+        double av = Math.abs(v);
+        return (av >= 0.001)
+                ? fix.format(v)
+                : sci.format(v);
+    }
+    private void adjustCoordLabelWidth(String text) {
+        int charCount = text.length();
+        // Only resize if the number of characters changed
+        if (charCount == lastCoordCharCount) {
+            return;
+        }
+        lastCoordCharCount = charCount;
+        FontMetrics fm = getCrosshairCoordLabel().getFontMetrics(getCrosshairCoordLabel().getFont());
+        int charWidth = fm.charWidth('8');   // good representative width
+        int width = charWidth * charCount + 4;   // +4 px padding
+        Dimension d = getCrosshairCoordLabel().getPreferredSize();
+        getCrosshairCoordLabel().setPreferredSize(new Dimension(width, d.height));
+        getCrosshairCoordLabel().revalidate();   // required so GridBagLayout recalculates layout
+    }
     // =================================================== Evaluate JFreeChart capabilities with a simple demo ===
 
     public static void main(String[] args) {
