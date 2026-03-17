@@ -9,40 +9,29 @@
  */
 
 package cbit.vcell.export.server;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
+
+import cbit.rmi.event.ExportEvent;
+import cbit.rmi.event.ExportEventController;
+import cbit.vcell.export.nrrd.NrrdInfo;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.OutputContext;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import com.google.common.io.Files;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.vcell.util.ClientTaskStatusSupport;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.UserCancelException;
+import org.vcell.util.document.User;
+
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.zip.DataFormatException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-
-import cbit.rmi.event.ExportEventController;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.vcell.db.ConnectionFactory;
-import org.vcell.db.DatabaseSyntax;
-import org.vcell.db.KeyFactory;
-import org.vcell.util.ClientTaskStatusSupport;
-import org.vcell.util.DataAccessException;
-import org.vcell.util.UserCancelException;
-import org.vcell.util.document.User;
-
-import com.google.common.io.Files;
-
-import cbit.rmi.event.ExportEvent;
-import cbit.vcell.export.nrrd.NrrdInfo;
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.simdata.DataServerImpl;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
-import cbit.vcell.modeldb.ExportHistoryDBDriver;
-import org.vcell.restq.db.AgroalConnectionFactory;
 
 
 
@@ -59,10 +48,6 @@ public class ExportServiceImpl implements ExportService {
 	}
 
 
-
-	@Inject
-	AgroalConnectionFactory agroalConnectionFactory;
-
 public ExportServiceImpl() {
 }
 
@@ -71,57 +56,6 @@ public ExportEvent makeRemoteFile(OutputContext outputContext,User user, DataSer
 	return makeRemoteFile(outputContext,user, dataServerImpl, exportSpecs, eventController, JobRequest.createExportJobRequest(user).getExportJobID());
 }
 
-
-
-/**
- * Insert the method's description here.
- * Creation date: (4/1/2001 11:20:45 AM)
- * @deprecated
- */
-protected ExportEvent fireExportCompleted(long jobID, VCDataIdentifier vcdID, String format, String location,ExportSpecs exportSpecs) throws SQLException, DataAccessException {
-	User user = null;
-	Object object = jobRequestIDs.get(new Long(jobID));
-	if (object != null) {
-		user = (User)object;
-	}
-	TimeSpecs timeSpecs = (exportSpecs!=null)?exportSpecs.getTimeSpecs():(null);
-	VariableSpecs varSpecs = (exportSpecs!=null)?exportSpecs.getVariableSpecs():(null);
-	final KeyValue dataKey;
-	if (vcdID instanceof VCSimulationDataIdentifier) {
-		dataKey = ((VCSimulationDataIdentifier)vcdID).getSimulationKey();
-	}else if (vcdID instanceof ExternalDataIdentifier) {
-		dataKey = ((ExternalDataIdentifier)vcdID).getSimulationKey();
-	}else {
-		throw new RuntimeException("unexpected VCDataIdentifier");
-	}
-	ExportEvent event = new ExportEvent(
-			this, jobID, user, vcdID.getID(), dataKey, ExportEvent.EXPORT_COMPLETE,
-			format, location, null, timeSpecs, varSpecs);
-    event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
-
-	assert exportSpecs != null;
-	event.setHumanReadableExportData(exportSpecs.getHumanReadableExportData());
-	assert user != null;
-
-
-
-	try (Connection conn = agroalConnectionFactory.getConnection(null)) {
-		exportHistoryDBDriver.addExportHistory(conn, vcdID.getOwner(), new ExportHistoryDBDriver.ExportHistory(jobID, 1, exportSpecs.getFormat(), new Timestamp(System.currentTimeMillis()), location, exportSpecs), agroalConnectionFactory.getKeyFactory());
-
-	}
-
-
-//exportToDB(
-//			jobID,
-//			Long.parseLong(user.getID().toString()),
-//			Long.parseLong(vcdID.getOwner().getID().toString()),
-//			format,
-//			new Timestamp(System.currentTimeMillis()),
-//			location,
-//			exportSpecs
-//	);
-	fireExportEvent(event);
-	return event;
 public ExportEvent makeRemoteFile(OutputContext outputContext, User user, DataServerImpl dataServer, ExportSpecs exportSpecs, boolean zip, ClientTaskStatusSupport clientTaskStatusSupport)throws DataAccessException {
 		return makeRemoteFile(outputContext, user, dataServer, exportSpecs, eventController, zip, clientTaskStatusSupport, JobRequest.createExportJobRequest(user).getExportJobID());
 }
