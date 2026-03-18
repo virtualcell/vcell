@@ -103,7 +103,7 @@ public class ExportHistoryTest {
                 "simName",                      // simulation name
                 "appName",                      // application name
                 savedBioModel.getName(),        // biomodel name
-                new ArrayList<String>(),        // no parameter changes
+                new ArrayList<HumanReadableExportData.DifferentParameterValues>(),        // no parameter changes
                 vcdId.getID(),                  // dataId
                 "out.n5",                       // serverSavedFileName
                 false,                          // nonSpatial?

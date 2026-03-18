@@ -77,20 +77,17 @@ public class ExportHistoryDBDriver {
         // 2) insert each parameter change
         String pvSQL = ModelParameterValuesTable.table.getInsertSQL();
         try (PreparedStatement ps2 = conn.prepareStatement(pvSQL)) {
-            for (String entry : meta.differentParameterValues) {
-                String[] parts = entry.split(":");
-                if (parts.length == 3) {
-                    ModelParameterValuesTable.table.bindForInsert(ps2,
+            for (HumanReadableExportData.DifferentParameterValues entry : meta.differentParameterValues) {
+                ModelParameterValuesTable.table.bindForInsert(ps2,
 
-                            exportHistory.jobID(),
-                            Long.parseLong(user.getID().toString()),
-                            exportHistory.modelRef(),
-                            parts[0],
-                            new BigDecimal(parts[1]),
-                            new BigDecimal(parts[2])
-                    );
-                    ps2.addBatch();
-                }
+                        exportHistory.jobID(),
+                        Long.parseLong(user.getID().toString()),
+                        exportHistory.modelRef(),
+                        entry.parameterName(),
+                        new BigDecimal(entry.originalValue()),
+                        new BigDecimal(entry.changedValue())
+                );
+                ps2.addBatch();
             }
             ps2.executeBatch();
         }

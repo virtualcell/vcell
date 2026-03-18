@@ -1,6 +1,7 @@
 package cbit.vcell.client.data;
 
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
+import cbit.vcell.export.server.HumanReadableExportData;
 import cbit.vcell.model.ModelProcess;
 import org.vcell.util.gui.ScrollTable;
 
@@ -184,13 +185,13 @@ public class ExportedDataTableModel extends VCellSortTableModel<ExportedDataTabl
         public String appName = null;
         public String simName = null;
         public String variables = null;
-        public ArrayList<String> differentParameterValues;
+        public List<HumanReadableExportData.DifferentParameterValues> differentParameterValues;
         public boolean nonSpatial;
         public String applicationType = null;
 
         public TableData(String jobID, String simID, String dateExported, String format, String link, String name,
                          String bioModelName, String timeSlice, String appName, String simName, String variables,
-                         ArrayList<String> differentParameterValues, boolean nonSpatial, String applicationType){
+                         List<HumanReadableExportData.DifferentParameterValues> differentParameterValues, boolean nonSpatial, String applicationType){
             this.jobID = jobID;
             this.simID = simID;
             this.dateExported = dateExported;

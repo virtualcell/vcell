@@ -1,7 +1,10 @@
 package cbit.vcell.client.data;
 
+import cbit.vcell.export.server.HumanReadableExportData;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Stack;
 
 public class ExportDataRepresentation {
@@ -34,7 +37,7 @@ public class ExportDataRepresentation {
         public String variables;
         public String startAndEndTime;
 
-        public ArrayList<String> differentParameterValues;
+        public List<HumanReadableExportData.DifferentParameterValues> differentParameterValues;
         public String savedFileName;
         public String applicationType;
         public boolean nonSpatial;
@@ -44,7 +47,7 @@ public class ExportDataRepresentation {
 
         public SimulationExportDataRepresentation(String exportDate, String uri, String jobID, String dataID, String simulationName,
                                                   String applicationName, String biomodelName, String variables, String startAndEndTime,
-                                                  ArrayList<String> differentParameterValues,
+                                                  List<HumanReadableExportData.DifferentParameterValues> differentParameterValues,
                                                   String savedFileName, String applicationType, boolean nonSpatial, int zSlices, int tSlices,
                                                   int numVariables){
             this.exportDate = exportDate;

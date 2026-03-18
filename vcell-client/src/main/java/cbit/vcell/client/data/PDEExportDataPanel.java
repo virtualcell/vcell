@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.util.*;
+import java.util.List;
+
 /**
  * This type was created in VisualAge.
  */
@@ -650,7 +652,7 @@ private ExportSpecs getExportSpecs() {
 	MathOverrides mathOverrides = getSimulation().getMathOverrides();
 
 	String[] filteredConstants = mathOverrides.getFilteredConstantNames();
-	ArrayList<String> differentParameterValues = new ArrayList<>();
+	List<HumanReadableExportData.DifferentParameterValues> differentParameterValues = new ArrayList<>();
 	VCDataIdentifier vcDataIdentifier = getPdeDataContext().getVCDataIdentifier();
 	if (vcDataIdentifier instanceof VCSimulationDataIdentifier){
         for (String filteredConstant : filteredConstants) {
@@ -659,7 +661,9 @@ private ExportSpecs getExportSpecs() {
 			MathOverrides.ScanIndex scanIndex = simulation.getScanIndex(jobIndex);
 			String setValue = mathOverrides.getActualExpression(filteredConstant, scanIndex).infix();
 			if(!defaultValue.equals(setValue)){
-				differentParameterValues.add(filteredConstant + ":" +defaultValue + ":" + setValue);
+				differentParameterValues.add(new HumanReadableExportData.DifferentParameterValues(
+						filteredConstant, defaultValue, setValue
+				));
 			}
         }
 	}

@@ -1,14 +1,17 @@
 package org.vcell.api.types.events;
 
+import cbit.vcell.export.server.HumanReadableExportData;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ExportHumanReadableDataSpec {
     public final String bioModelName;
     public String applicationName;
     public String simulationName;
-    public ArrayList<String> differentParameterValues;
+    public List<HumanReadableExportData.DifferentParameterValues> differentParameterValues;
     public String serverSavedFileName;
     public String applicationType;
     public boolean nonSpatial;
@@ -18,7 +21,7 @@ public class ExportHumanReadableDataSpec {
     public int numChannels;
 
     public ExportHumanReadableDataSpec(String bioModelName, String applicationName, String simulationName,
-                                       ArrayList<String> differentParameterValues,
+                                       List<HumanReadableExportData.DifferentParameterValues> differentParameterValues,
                                        String serverSavedFileName, String applicationType, boolean nonSpatial, Map<Integer, String> subVolume,
                                        int zSlices, int tSlices, int numChannels){
         this.bioModelName = bioModelName;
