@@ -7,7 +7,7 @@ import java.sql.Timestamp;
 
 public record ExportHistoryRep(
         long jobID,
-        long modelRef,
+        long simulationRef,
         ExportFormat exportFormat,
         Timestamp exportDate,
         String uri,

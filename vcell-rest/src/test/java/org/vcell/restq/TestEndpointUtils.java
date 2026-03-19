@@ -111,6 +111,16 @@ public class TestEndpointUtils {
         return mathModel;
     }
 
+    public static Simulation getTestSimulation() throws IOException, XmlParseException, PropertyVetoException {
+        String vcmlString = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestVCML.vcml"));
+        cbit.vcell.biomodel.BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlString));
+        bioModel.setName("TestBioModel");
+        bioModel.clearVersion();
+        Simulation simulation = bioModel.getSimulation(0);
+        simulation.setName("TestSimulation");
+        return simulation;
+    }
+
     public static Publication defaultPublication(){
         Publication publication = new Publication();
         publication.setAuthors(Arrays.asList("author1", "author2"));

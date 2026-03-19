@@ -50,7 +50,7 @@ public class ExportHistoryDBDriver {
                     keyValue,
                     exportHistory.jobID(),
                     Long.parseLong(user.getID().toString()),
-                    exportHistory.modelRef(),
+                    exportHistory.simulationRef(),
                     exportHistory.exportFormat(),
                     exportHistory.exportDate(),
                     exportHistory.uri(),
@@ -120,7 +120,7 @@ public class ExportHistoryDBDriver {
     }
 
     public ResultSet getExportHistoryForUser(Connection conn, User user) throws SQLException {
-        String sql = "SELECT * FROM vc_model_export_history WHERE user_ref = ?";
+        String sql = "SELECT * FROM vc_simulation_export_history WHERE user_ref = ?";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setLong(1, Long.parseLong(user.getID().toString()));
         return ps.executeQuery();

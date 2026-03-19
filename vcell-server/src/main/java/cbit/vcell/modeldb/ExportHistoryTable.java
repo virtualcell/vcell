@@ -10,7 +10,7 @@ import java.sql.*;
 import java.util.StringJoiner;
 
 public class ExportHistoryTable extends Table {
-    private static final String TABLE_NAME = "vc_model_export_history";
+    private static final String TABLE_NAME = "vc_simulation_export_history";
 
    // public final Field id = new Field(id_ColumnName, Field.SQLDataType.integer,"PRIMARY KEY");
 
@@ -18,7 +18,7 @@ public class ExportHistoryTable extends Table {
 
     public final Field userRef = new Field("user_ref", Field.SQLDataType.integer, "NOT NULL REFERENCES" + UserTable.REF_TYPE);
 
-    public final Field modelRef = new Field("model_ref", Field.SQLDataType.integer, "NOT NULL " + ModelTable.REF_TYPE);
+    public final Field simulationRef = new Field("simulation_ref", Field.SQLDataType.integer, "NOT NULL REFERENCES" + SimulationTable.REF_TYPE);
 
     public final Field exportFormat = new Field("export_format", Field.SQLDataType.varchar_50, "NOT NULL");
     public final Field exportDate = new Field("export_date", Field.SQLDataType.date, "NOT NULL");
@@ -55,7 +55,7 @@ public class ExportHistoryTable extends Table {
         // note that primary key id cannot be placed in fields (will causes class initialization error),
         Field[] customFields = {
                 // note that primary key id cannot be placed in fields (will causes class initialization error),
-                jobId, userRef, modelRef, exportFormat, exportDate, uri, dataId,
+                jobId, userRef, simulationRef, exportFormat, exportDate, uri, dataId,
                 simulationName, applicationName, biomodelName, variables,
                 startTime, endTime, savedFileName, applicationType, nonSpatial,
                 zSlices, tSlices, numVariables

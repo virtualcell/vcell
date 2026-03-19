@@ -6,6 +6,7 @@ import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.modeldb.ExportHistoryDBDriver;
 import cbit.vcell.modeldb.ExportHistoryRep;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.xml.XMLSource;
@@ -60,6 +61,8 @@ public class ExportHistoryTest {
 
     private DatabaseServerImpl databaseServer;
     private BioModel savedBioModel;
+    private Simulation savedSimulation;
+    private Long simulationKey;
 
     private ExportSpecs exportSpecs;
 
@@ -75,7 +78,8 @@ public class ExportHistoryTest {
         BioModel bioModel = TestEndpointUtils.getTestBioModel();
         BigString bioModelXML = databaseServer.saveBioModel(TestEndpointUtils.administratorUser, new BigString(XmlHelper.bioModelToXML(bioModel)), new String[]{});
         savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
-
+        savedSimulation = savedBioModel.getSimulation(0);
+        simulationKey = Long.parseLong(savedSimulation.getVersion().getVersionKey().toString());
 
         VCSimulationIdentifier vcSimId = new VCSimulationIdentifier(
                 new KeyValue("000"), TestEndpointUtils.administratorUser
@@ -145,7 +149,7 @@ public class ExportHistoryTest {
                     user,
                     new ExportHistoryRep(
                             42L,
-                            Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()),
+                            simulationKey,
                             ExportFormat.N5,
                             now,
                             "https://vcell.cam.uchc.edu/n5Data/paulricky/5456fb59b530a19.n5?dataSetName=3681309072",
@@ -184,7 +188,7 @@ public class ExportHistoryTest {
 
 
             driver.addExportHistory(conn, user,
-                    new ExportHistoryRep(7L, Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()), ExportFormat.N5, now, "to-delete", exportSpecs),
+                    new ExportHistoryRep(7L, simulationKey, ExportFormat.N5, now, "to-delete", exportSpecs),
                     agroalConnectionFactory.getKeyFactory()
             );
 
@@ -227,11 +231,11 @@ public class ExportHistoryTest {
             ExportHistoryDBDriver driver = new ExportHistoryDBDriver(null, null);
 
             driver.addExportHistory(conn, user,
-                    new ExportHistoryRep(100L, Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()), ExportFormat.N5, now, "uri100", exportSpecs),
+                    new ExportHistoryRep(100L, simulationKey, ExportFormat.N5, now, "uri100", exportSpecs),
                     agroalConnectionFactory.getKeyFactory()
             );
             driver.addExportHistory(conn, user,
-                    new ExportHistoryRep(101L, Long.parseLong(savedBioModel.getModel().getVersion().getVersionKey().toString()), ExportFormat.N5, now, "uri101", exportSpecs),
+                    new ExportHistoryRep(101L, simulationKey, ExportFormat.N5, now, "uri101", exportSpecs),
                     agroalConnectionFactory.getKeyFactory()
             );
 

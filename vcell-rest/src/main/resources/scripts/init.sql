@@ -77,11 +77,11 @@ CREATE TABLE vc_metadata(id bigint PRIMARY KEY,bioModelRef bigint NOT NULL REFER
 CREATE TABLE vc_simdelfromdisk(deldate varchar(20) ,userid varchar(255) NOT NULL,userkey bigint ,simid bigint ,simpref bigint ,simdate varchar(20) ,simname varchar(255) NOT NULL,status varchar(10) ,numfiles bigint ,totalsize bigint );
 CREATE TABLE vc_useridentity(id bigint PRIMARY KEY,userRef bigint NOT NULL REFERENCES vc_userinfo(id),authSubject varchar(128) NOT NULL,authIssuer varchar(128) NOT NULL,insertDate timestamp NOT NULL);
 
-CREATE TABLE vc_model_export_history (
+CREATE TABLE vc_simulation_export_history (
     id                            bigint        PRIMARY KEY,
     job_id                        bigint        NOT NULL,
-    user_ref                      bigint        NOT NULL REFERENCES vc_userinfo(id) ON DELETE CASCADE,
-    model_ref                     bigint        NOT NULL REFERENCES vc_model(id) ON DELETE CASCADE,
+    user_ref                      bigint        NOT NULL REFERENCES vc_userinfo(id),
+    simulation_ref                bigint        NOT NULL REFERENCES vc_simulation(id),
     export_format                 varchar(50)   NOT NULL,
     export_date                   timestamp     NOT NULL,
     uri                           text          NOT NULL,
