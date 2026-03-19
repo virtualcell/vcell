@@ -1,6 +1,9 @@
 package cbit.vcell.modeldb;
 
 import cbit.vcell.export.server.*;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.postgresql.util.PGobject;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
@@ -14,22 +17,17 @@ import java.math.BigDecimal;
 import java.sql.*;
 
 public class ExportHistoryDBDriver {
-    public static final ExportHistoryTable exportHistoryTable = ExportHistoryTable.table;
-    public static final ModelParameterValuesTable modelParameterValuesTable = ModelParameterValuesTable.table;
-    public static final BioModelTable bioModelTable = BioModelTable.table;
-    public static final PublicationTable publicationTable = PublicationTable.table;
-    public static final UserTable userTable = UserTable.table;
-    public static final BioModelSimulationLinkTable bioModelSimLinkTable = BioModelSimulationLinkTable.table;
-    public static final BioModelSimContextLinkTable bioModelSimContextLinkTable = BioModelSimContextLinkTable.table;
-    public static final SimulationTable simTable = SimulationTable.table;
-    public static final SimContextTable simContextTable = SimContextTable.table;
-
 
     /**
      * LocalDBManager constructor comment.
      */
     public ExportHistoryDBDriver(DatabaseSyntax databaseSyntax, KeyFactory keyFactory) {
 
+    }
+
+    private boolean isOracleConnection(Connection connection) throws SQLException {
+        String productName = connection.getMetaData().getDatabaseProductName().toLowerCase();
+        return productName.contains("oracle");
     }
 
     public void addExportHistory(Connection conn, User user, ExportHistoryRep exportHistory, KeyFactory keyFactory)
@@ -45,6 +43,26 @@ public class ExportHistoryDBDriver {
         // 1) insert into vc_model_export_history
         String ehSQL = ExportHistoryTable.table.getInsertSQL();
         KeyValue keyValue = keyFactory.getNewKey(conn);
+
+        Object jsonDBObjectForParamValues;
+        try{
+            ObjectMapper mapper = new ObjectMapper();
+            String jsonVersionOfParamValues = mapper.writeValueAsString(exportHistory.exportSpecs().getHumanReadableExportData().differentParameterValues);
+            if (isOracleConnection(conn)){
+                Clob clob = conn.createClob();
+                clob.setString(1, jsonVersionOfParamValues);
+                jsonDBObjectForParamValues = clob;
+            } else {
+                PGobject pGobject = new PGobject();
+                pGobject.setType("jsonb");
+                pGobject.setValue(jsonVersionOfParamValues);
+                jsonDBObjectForParamValues = pGobject;
+            }
+        } catch (JsonProcessingException e){
+            throw new DataAccessException(e);
+        }
+
+
         try (PreparedStatement ps = conn.prepareStatement(ehSQL)) {
             ExportHistoryTable.table.bindForInsert(ps,
                     keyValue,
@@ -59,6 +77,7 @@ public class ExportHistoryDBDriver {
                     meta.applicationName,
                     meta.biomodelName,
                     conn.createArrayOf("VARCHAR", exportHistory.exportSpecs().getVariableSpecs().getVariableNames()),
+                    jsonDBObjectForParamValues,
                     BigDecimal.valueOf(ts.getBeginTimeIndex()),
                     BigDecimal.valueOf(ts.getEndTimeIndex()),
                     meta.serverSavedFileName,
@@ -74,43 +93,20 @@ public class ExportHistoryDBDriver {
             //ps.executeUpdate();
         }
 
-        // 2) insert each parameter change
-        String pvSQL = ModelParameterValuesTable.table.getInsertSQL();
-        try (PreparedStatement ps2 = conn.prepareStatement(pvSQL)) {
-            for (HumanReadableExportData.DifferentParameterValues entry : meta.differentParameterValues) {
-                ModelParameterValuesTable.table.bindForInsert(ps2,
-
-                        exportHistory.jobID(),
-                        Long.parseLong(user.getID().toString()),
-                        exportHistory.modelRef(),
-                        entry.parameterName(),
-                        new BigDecimal(entry.originalValue()),
-                        new BigDecimal(entry.changedValue())
-                );
-                ps2.addBatch();
-            }
-            ps2.executeBatch();
-        }
-
     }
 
     public void deleteExportHistory(Connection conn, ExportSpecs exportSpecs) throws SQLException {
 
-        String selectSQL = "SELECT id FROM vc_model_export_history WHERE data_id = ?";
+        // Concern, data id could mean multiple items get deleted
+        String selectSQL = "SELECT id FROM vc_simulation_export_history WHERE data_id = ?";
         try (PreparedStatement psSel = conn.prepareStatement(selectSQL)) {
             psSel.setString(1, exportSpecs.getVCDataIdentifier().getID());
             try (ResultSet rs = psSel.executeQuery()) {
                 while (rs.next()) {
                     long historyId = rs.getLong(1);
 
-                    try (PreparedStatement psDelParams = conn.prepareStatement(
-                            "DELETE FROM vc_model_parameter_values WHERE id = ?")) {
-                        psDelParams.setLong(1, historyId);
-                        psDelParams.executeUpdate();
-                    }
-
                     try (PreparedStatement psDelHist = conn.prepareStatement(
-                            "DELETE FROM vc_model_export_history WHERE id = ?")) {
+                            "DELETE FROM vc_simulation_export_history WHERE id = ?")) {
                         psDelHist.setLong(1, historyId);
                         psDelHist.executeUpdate();
                     }

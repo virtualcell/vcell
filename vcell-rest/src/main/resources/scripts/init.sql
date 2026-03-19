@@ -90,6 +90,7 @@ CREATE TABLE vc_simulation_export_history (
     application_name              varchar(255)  NOT NULL,
     biomodel_name                 varchar(255)  NOT NULL,
     variables                     text[]        NOT NULL,
+    parameter_values              jsonb         ,
     start_time                    numeric       NOT NULL,
     end_time                      numeric       NOT NULL,
     saved_file_name               varchar(255)  NOT NULL,
@@ -98,15 +99,6 @@ CREATE TABLE vc_simulation_export_history (
     z_slices                      integer       NOT NULL DEFAULT 0,
     t_slices                      integer       NOT NULL DEFAULT 0,
     num_variables                 integer       NOT NULL DEFAULT 0
-);
-
-CREATE TABLE vc_model_parameter_values(
-    id                            bigint        PRIMARY KEY REFERENCES vc_model_export_history(id),
-    user_ref                      bigint        REFERENCES vc_userinfo(id) ON DELETE CASCADE,
-    model_ref                     bigint        REFERENCES vc_model(id) ON DELETE CASCADE,
-    parameter_name                text          NOT NULL,
-    parameter_original            numeric       NOT NULL,
-    parameter_changed             numeric       NOT NULL
 );
 
 
@@ -120,8 +112,7 @@ CREATE INDEX geom_extentref ON vc_geometry(extentRef);
 CREATE INDEX geom_imageref ON vc_geometry(imageRef);
 CREATE INDEX mathdesc_geomref ON vc_math(geometryRef);
 CREATE INDEX simcstat_simcref ON vc_simcontextstat(simContextRef);
-CREATE INDEX idx_export_history_model_ref ON vc_model_export_history(model_ref);
-CREATE INDEX idx_param_values_id ON vc_model_parameter_values(id);
+CREATE INDEX idx_export_history_simulation_ref ON vc_simulation_export_history(simulation_ref);
 
 
 INSERT INTO vc_userinfo VALUES ( 0,'void','1700596370242','void@example.com','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'B9BDD75BC5382CA83D5AB82172A98D869555899C' );

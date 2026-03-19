@@ -30,6 +30,7 @@ public class ExportHistoryTable extends Table {
     public final Field biomodelName = new Field("biomodel_name", Field.SQLDataType.varchar_255, "NOT NULL");
 
     public final Field variables = new Field("variables", Field.SQLDataType.varchar_255, "[] NOT NULL");
+    public final Field changedParameters = new Field("parameter_values", Field.SQLDataType.json, "");
     public final Field startTime = new Field("start_time", Field.SQLDataType.integer_as_numeric, "NOT NULL");
     public final Field endTime = new Field("end_time", Field.SQLDataType.integer_as_numeric, "NOT NULL");
     public final Field savedFileName = new Field("saved_file_name", Field.SQLDataType.varchar_255, "NOT NULL");
@@ -56,7 +57,7 @@ public class ExportHistoryTable extends Table {
         Field[] customFields = {
                 // note that primary key id cannot be placed in fields (will causes class initialization error),
                 jobId, userRef, simulationRef, exportFormat, exportDate, uri, dataId,
-                simulationName, applicationName, biomodelName, variables,
+                simulationName, applicationName, biomodelName, variables, changedParameters,
                 startTime, endTime, savedFileName, applicationType, nonSpatial,
                 zSlices, tSlices, numVariables
         };
@@ -92,6 +93,7 @@ public class ExportHistoryTable extends Table {
             String        appName,
             String        bioName,
             Array      variables,
+            Object        parameterValues,
             BigDecimal    startTimeValue,
             BigDecimal    endTimeValue,
             String        savedFileNameValue,
@@ -114,6 +116,7 @@ public class ExportHistoryTable extends Table {
         ps.setString     (i++, appName);
         ps.setString     (i++, bioName);
         ps.setArray       (i++, variables);
+        ps.setObject      (i++, parameterValues);
         ps.setBigDecimal (i++, startTimeValue);
         ps.setBigDecimal (i++, endTimeValue);
         ps.setString     (i++, savedFileNameValue);

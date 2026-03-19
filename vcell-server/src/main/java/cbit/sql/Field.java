@@ -66,6 +66,8 @@ public class Field {
 		blob_bytea("blob","bytea",BasicDataType.BLOB),
 		
 		clob_text("clob","text",BasicDataType.CLOB),
+
+		json("clob is json","jsonb", BasicDataType.CLOB),
 		
 		date("date","timestamp",BasicDataType.DATE);
 		
