@@ -64,17 +64,17 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
 
     public enum ClusterStatistic {
         ACS(
-                "Average Cluster Size",
+                "Avg. Cluster Size",
                 "Average number of molecules per cluster",
                 "molecules"
         ),
         ACO(
-                "Average Cluster Occupancy",
-                "Average number of molecules per molecule (molecule‑centric cluster size)",
+                "Avg. Cluster Occupancy",
+                "Average size of the cluster that a molecule belongs to (molecule‑centric cluster size)",
                 "molecules"
         ),
         SD(
-                "Standard Deviation of Cluster Size",
+                "SD of Cluster Size",
                 "Variability of cluster sizes around the average cluster size (ACS)",
                 "molecules"
         );
@@ -94,6 +94,18 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         }
         public String unit() {
             return unit;
+        }
+        // like valueOf() but returns null instead of throwing exception if not found
+        public static ClusterStatistic fromString(String s) {
+            if (s == null) {
+                return null;
+            }
+            for (ClusterStatistic stat : ClusterStatistic.values()) {
+                if (stat.name().equals(s)) {
+                    return stat;
+                }
+            }
+            return null;
         }
     }
 

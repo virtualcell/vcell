@@ -168,7 +168,32 @@ public class ClusterPlotPanel extends JPanel {
             return String.format("%.2E", v);      // 2.0E-5
         }
     }
-
+    public static String formatTick(double value, double step) {
+        double absStep = Math.abs(step);
+        String s;
+        if (absStep >= 1.0) {
+            s = String.format("%.0f", value);
+        } else if (absStep >= 0.1) {
+            s = String.format("%.1f", value);
+        } else if (absStep >= 0.01) {
+            s = String.format("%.2f", value);
+        } else if (absStep >= 0.001) {
+            s = String.format("%.3f", value);
+        } else if (absStep >= 0.0001) {
+            s = String.format("%.4f", value);
+        } else {
+            return String.format("%.2E", value);
+        }
+        // strip trailing zeros
+        while (s.contains(".") && s.endsWith("0")) {
+            s = s.substring(0, s.length() - 1);
+        }
+        // strip trailing decimal point
+        if (s.endsWith(".")) {
+            s = s.substring(0, s.length() - 1);
+        }
+        return s;
+    }
     private int xPixel(double t, int x0, int plotWidth, double xMaxRounded) {
         return x0 + (int) Math.round((t / xMaxRounded) * plotWidth);
     }
@@ -240,15 +265,9 @@ public class ClusterPlotPanel extends JPanel {
             int yPixMajor = yPixel(valueMajor, y0, plotHeight, yMaxRounded, yMinRounded);
             g2.drawLine(x0, yPixMajor, x1, yPixMajor);
 
-            String label = formatNumber(valueMajor);
-            int sw = fm.stringWidth(label);
-            g2.drawString(label, x0 - 10 - sw, yPixMajor + fm.getAscent() / 2);
-
             if (i < yTicks) {
                 double valueMid = valueMajor + yStep / 2.0;
-                int yPixMid = y0 - (int)Math.round(
-                        (valueMid - yMinRounded) / yRange * plotHeight
-                );
+                int yPixMid = y0 - (int)Math.round((valueMid - yMinRounded) / yRange * plotHeight);
                 g2.drawLine(x0, yPixMid, x1, yPixMid);
             }
         }
@@ -284,7 +303,7 @@ public class ClusterPlotPanel extends JPanel {
 
             g2.drawLine(x0 - 5, yPixMajor, x0, yPixMajor);
 
-            String label = formatNumber(valueMajor);
+            String label = formatTick(valueMajor, yStep);
             int sw = fm.stringWidth(label);
             g2.drawString(label, x0 - 10 - sw, yPixMajor + fm.getAscent() / 2);
 
@@ -296,13 +315,14 @@ public class ClusterPlotPanel extends JPanel {
         }
 
         // X ticks
+        double xStep = xMajor[1] - xMajor[0];
         for (int i = 0; i < xMajor.length; i++) {
             double xvMajor = xMajor[i];
             int xPixMajor = x0 + (int) Math.round((xvMajor / xMaxRounded) * plotWidth);
 
             g2.drawLine(xPixMajor, y0, xPixMajor, y0 + 5);
 
-            String label = formatNumber(xvMajor);
+            String label = formatTick(xvMajor, xStep);
             int sw = fm.stringWidth(label);
             g2.drawString(label, xPixMajor - sw / 2, y0 + fm.getAscent() + 5);
 

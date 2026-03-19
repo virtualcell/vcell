@@ -1,6 +1,11 @@
 package cbit.plot.gui;
 
+import cbit.vcell.desktop.VCellTransferable;
+import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.simdata.UiTableExporterToHDF5;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ClusterSpecificationPanel;
 import cbit.vcell.util.ColumnDescription;
@@ -23,6 +28,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 
 public class ClusterDataPanel extends JPanel {
 
@@ -100,29 +106,32 @@ public class ClusterDataPanel extends JPanel {
                 lbl.setToolTipText(null);
                 return lbl;   // leave ScrollTable’s default header styling intact
             }
-
+            String text = "";
             String unit = "";
             String tooltip = "";
+            ClusterSpecificationPanel.ClusterStatistic stat = ClusterSpecificationPanel.ClusterStatistic.fromString(name);
             if (column == 0) {
                 unit = "seconds";
-                tooltip = "Simulation time in seconds";
+                text = "<html>" + name + "<font color=\"#8B0000\"> [" + unit + "]</font></html>";
+                tooltip = "Simulation time";
             } else {
-                switch (mode) {
+                switch(mode) {
                     case COUNTS:
                         unit = "molecules";
-                        tooltip = "Number of clusters of size " + name + " molecules";
+                        text = "<html>" + name + "<font color=\"#8B0000\"> [" + unit + "]</font></html>";
+                        tooltip = "<html>" + "Number of clusters made of <b>" + name + "</b> " + unit + "</html>";
                         break;
                     case MEAN:
-                        unit = "value";
-                        tooltip = "Cluster mean statistic for " + name;
-                        break;
                     case OVERALL:
-                        unit = "value";
-                        tooltip = "Cluster overall statistic for " + name;
+                        if(stat != null) {
+                            unit = stat.unit();
+                            text = "<html>" + stat.fullName() + "<font color=\"#8B0000\"> [" + unit + "]</font></html>";
+                            tooltip = "<html>" + stat.description() + "</html>";
+                        }
                         break;
                 }
             }
-            lbl.setText("<html>" + name + "<font color=\"#8B0000\"> [" + unit + "]</font></html>");
+            lbl.setText(text);
             lbl.setToolTipText(tooltip);
             return lbl;
         }
@@ -195,6 +204,7 @@ public class ClusterDataPanel extends JPanel {
             popupMenu.add(miCopyAll);
 
             miCopyHDF5 = new JMenuItem("Copy to HDF5");
+            miCopyHDF5.setEnabled(false);       // export to HDF5 code is not working
             miCopyHDF5.addActionListener(e -> copyCells(this,true));
             popupMenu.add(miCopyHDF5);
         }
@@ -223,11 +233,61 @@ public class ClusterDataPanel extends JPanel {
                 throw new Exception("No table cell is selected.");
             }
             System.out.println("Copying cluster data: rows=" + rows.length + " columns=" + columns.length + " isHDF5=" + isHDF5);
+            boolean bHistogram = false;  // means first column is time (always is for us)
+            String firstColName = cdp.getScrollPaneTable().getColumnName(0);
+            String blankCellValue = "-1";
+            StringBuffer buffer = new StringBuffer();
+            boolean bHasTimeColumn = false;
+
+            if(isHDF5) {
+                int columnCount = cdp.getScrollPaneTable().getColumnCount();
+                int rowCount = cdp.getScrollPaneTable().getRowCount();
+                String[] columnNames = new String[columnCount];
+                for (int i=0; i<columnCount; i++){
+                    columnNames[i] = cdp.getScrollPaneTable().getColumnName(i);
+                }
+                Object[][] rowColValues = new Object[rowCount][columnCount];
+                for (int i=0; i<rowCount; i++){
+                    for (int j=0; j<columnCount; j++){
+                        rowColValues[i][j] = cdp.getScrollPaneTable().getValueAt(i, j);
+                    }
+                }
+
+                File hdf5TempFile = UiTableExporterToHDF5.exportTableToHDF5(bHistogram, blankCellValue, columns, rows, "t", "hdf5DescriptionText", columnNames, null, null, rowColValues);
 
 
+            } else {
+                String selectedFirstColName = cdp.getScrollPaneTable().getColumnName(columns[0]);
+                bHasTimeColumn = true;
+            }
 
-
-
+            SymbolTableEntry[] tableSymbolTableEntries = new SymbolTableEntry[c - (bHasTimeColumn?1:0)];
+            Expression[] resolvedValues = new Expression[tableSymbolTableEntries.length];
+            // if copying more than one cell, make a string that will paste like a table in spreadsheets
+            // also include column headers in this case
+            for (int i = 0; i < c; i++) {
+                String suffix = (i == c - 1 ? "" : "\t");
+                String columnName = cdp.getScrollPaneTable().getColumnName(columns[i]);
+                buffer.append(columnName + suffix);
+            }
+            for (int i = 0; i < r; i++){
+                buffer.append("\n");
+                for (int j = 0; j < c; j++){
+                    Object cell = cdp.getScrollPaneTable().getValueAt(rows[i], columns[j]);
+                    cell = cell != null ? cell : "";
+                    if(((r+c)==2)){// single table cell copy, just the value
+                        buffer = new StringBuffer(cell.toString());
+                    }else{
+                        buffer.append(cell.toString() + (j==c-1?"":"\t"));
+                    }
+                    if(!cell.equals("") && (!bHasTimeColumn || j>0) ){
+                        resolvedValues[j-(bHasTimeColumn?1:0)] = new Expression(((Double)cell).doubleValue());
+                    }
+                }
+            }
+            VCellTransferable.ResolvedValuesSelection rvs =
+                    new VCellTransferable.ResolvedValuesSelection(tableSymbolTableEntries,null,resolvedValues,buffer.toString());
+            VCellTransferable.sendToClipboard(rvs);
         } catch (Exception ex) {
             LG.error("Error copying cluster data", ex);
             JOptionPane.showMessageDialog(cdp, "Error copying cluster data: " + ex.getMessage(), "Copy Error", JOptionPane.ERROR_MESSAGE);
