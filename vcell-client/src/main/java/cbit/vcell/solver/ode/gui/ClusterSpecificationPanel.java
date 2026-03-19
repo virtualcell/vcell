@@ -128,6 +128,8 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         public void valueChanged(ListSelectionEvent e) {
             if (e.getSource() == ClusterSpecificationPanel.this.getYAxisChoice() && !e.getValueIsAdjusting()) {
 
+                enforceAcsSdAcoRule();
+
                 // extract selected ColumnDescriptions
                 java.util.List<ColumnDescription> selected = getYAxisChoice().getSelectedValuesList();
                 DisplayMode mode = getCurrentDisplayMode();
@@ -183,6 +185,51 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         int count = yAxisCounts.getOrDefault(mode, 0);
         String text = "<html><b>" + YAxisLabelText + "</b><span style='color:#8B0000;'>(" + count + " entries)</span></html>";
         yAxisLabel.setText(text);
+    }
+
+    private void enforceAcsSdAcoRule() {
+        DisplayMode mode = getCurrentDisplayMode();
+        if (mode != DisplayMode.MEAN && mode != DisplayMode.OVERALL) {
+            return; // rule applies only in these modes
+        }
+        java.util.List<ColumnDescription> selected = getYAxisChoice().getSelectedValuesList();
+
+        boolean acs = contains(selected, "ACS");
+        boolean sd  = contains(selected, "SD");
+        boolean aco = contains(selected, "ACO");
+        if (!acs && sd && aco) {
+            // conflict: SD + ACO without ACS
+            int anchor = getYAxisChoice().getAnchorSelectionIndex();
+            ColumnDescription clicked = (ColumnDescription) getYAxisChoice().getModel().getElementAt(anchor);
+            String name = clicked.getName();
+            if (name.equals("SD")) {
+                deselect("ACO");
+            } else if (name.equals("ACO")) {
+                deselect("SD");
+            } else if (name.equals("ACS")) {
+                // Ctrl-click on ACS caused conflict -> SD must go
+                deselect("SD");
+            }
+        }
+    }
+
+    private boolean contains(java.util.List<ColumnDescription> list, String name) {
+        for (ColumnDescription cd : list) {
+            if (cd.getName().equals(name)) return true;
+        }
+        return false;
+    }
+
+    private void deselect(String name) {
+        DefaultListModel<ColumnDescription> model = getDefaultListModelY();
+        int size = model.getSize();
+        for (int i = 0; i < size; i++) {
+            ColumnDescription cd = model.get(i);
+            if (cd.getName().equals(name)) {
+                getYAxisChoice().removeSelectionInterval(i, i);
+                return;
+            }
+        }
     }
 
     public ClusterSpecificationPanel(ODEDataViewer odeDataViewer) {

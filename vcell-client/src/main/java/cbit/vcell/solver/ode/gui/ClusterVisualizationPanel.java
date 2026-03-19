@@ -412,17 +412,37 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         // Use a curated palette from ColorUtil
         globalPalette.clear();
         globalPalette.addAll(Arrays.asList(ColorUtil.TABLEAU20));
+
+        // Reserve ACS and ACO immediately
+        ensureColorsAssigned("ACS");
+        ensureColorsAssigned("ACO");
+
+        // SD derives from ACS (does NOT consume a palette slot)
+        Color acsColor = persistentColorMap.get("ACS");
+        Color sdColor = deriveEnvelopeColor(acsColor);
+        persistentColorMap.put("SD", sdColor);
     }
     private void ensureColorsAssigned(List<ColumnDescription> columns) {
         // assign colors only when needed, and keep them consistent across updates
         for (ColumnDescription cd : columns) {
             String name = cd.getName();
-            if (!persistentColorMap.containsKey(name)) {
-                Color c = globalPalette.get(nextColorIndex % globalPalette.size());
-                persistentColorMap.put(name, c);
-                nextColorIndex++;
-            }
+            ensureColorsAssigned(name);
         }
+    }
+    private void ensureColorsAssigned(String name) {
+        if (!persistentColorMap.containsKey(name)) {
+            Color c = globalPalette.get(nextColorIndex % globalPalette.size());
+            persistentColorMap.put(name, c);
+            nextColorIndex++;
+        }
+    }
+    private Color deriveEnvelopeColor(Color base) {
+        return new Color(
+                base.getRed(),
+                base.getGreen(),
+                base.getBlue(),
+                80   // smaller number means lighter color (more transparent)
+        );
     }
     /*
     ACS = Average Cluster Size
@@ -517,49 +537,167 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         } else {
             System.out.println("ClusterVisualizationPanel.redrawPlot() selection is null");
         }
-        System.out.println("ClusterVisualizationPanel.redrawPlot(), height = " + getClusterPlotPanel().getHeight());
-//        currentSelection = sel;
+
+        if (sel == null || sel.resultSet == null) {
+            getClusterPlotPanel().clear();
+            getClusterPlotPanel().repaint();
+            return;
+        }
+
         List<ColumnDescription> columns = sel.columns;
         ODESolverResultSet srs = sel.resultSet;
 
         int indexTime = srs.findColumn("t");
         double[] times = srs.extractColumn(indexTime);
 
-//        double globalMin = Double.POSITIVE_INFINITY;
-        double globalMin = 0;       // these are counts, so min is always 0
+        // ---------------------------------------------------------------------
+        // FIRST PASS: load all selected columns normally (except SD curve)
+        // ---------------------------------------------------------------------
+        Map<String, double[]> yMap = new LinkedHashMap<>();
+
+        double globalMin = 0.0;                       // old behavior baseline
         double globalMax = Double.NEGATIVE_INFINITY;
-        getClusterPlotPanel().clear();
 
         for (ColumnDescription cd : columns) {
-            int index = srs.findColumn(cd.getName());
-            double[] y = srs.extractColumn(index);
-            for (double v : y) {
-//                if (v < globalMin) globalMin = v;
-                if (v > globalMax) globalMax = v;
+            String name = cd.getName();
+
+            // SD is special: no curve, but still load its data
+            int idx = srs.findColumn(name);
+            if (idx < 0) {
+                continue;
             }
-            Color c = persistentColorMap.get(cd.getName());
-            getClusterPlotPanel().addCurve(cd.getName(), y, c);
+
+            double[] y = srs.extractColumn(idx);
+            yMap.put(name, y);
+
+            // SD does not contribute its own curve, but its raw values still matter for globalMax
+            if (!name.equals("SD")) {
+                for (double v : y) {
+                    if (v > globalMax) {
+                        globalMax = v;
+                    }
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        // SECOND PASS: ACS/SD special logic
+        // ---------------------------------------------------------------------
+        boolean acsSelected = yMap.containsKey("ACS");
+        boolean sdSelected  = yMap.containsKey("SD");
+
+        double[] acs = null;
+        double[] sd  = null;
+
+        int idxACS = srs.findColumn("ACS");
+        int idxSD  = srs.findColumn("SD");
+
+        // We need ACS if either ACS or SD is selected
+        if (idxACS >= 0) {
+            acs = (acsSelected ? yMap.get("ACS") : srs.extractColumn(idxACS));
+        }
+
+        // We need SD if either ACS or SD is selected
+        if (idxSD >= 0) {
+            sd = (sdSelected ? yMap.get("SD") : srs.extractColumn(idxSD));
+        }
+
+        // If either ACS or SD is selected, scale using ACS±SD
+        if ((acsSelected || sdSelected) && acs != null && sd != null) {
+            for (int i = 0; i < acs.length; i++) {
+                double upper = acs[i] + sd[i];
+                double lower = acs[i] - sd[i];
+
+                if (upper > globalMax) {
+                    globalMax = upper;
+                }
+                if (lower < globalMin) {
+                    globalMin = lower;   // may be < 0 in theory
+                }
+            }
+        }
+
+        // ---------------------------------------------------------------------
+        // DRAWING
+        // ---------------------------------------------------------------------
+        getClusterPlotPanel().clear();
+
+        // Draw all selected curves EXCEPT SD (SD is envelope only)
+        for (ColumnDescription cd : columns) {
+            String name = cd.getName();
+            if (name.equals("SD")) {
+                continue;   // SD never draws a line
+            }
+            double[] y = yMap.get(name);
+            if (y == null) {
+                continue;
+            }
+            Color c = persistentColorMap.get(name);
+            getClusterPlotPanel().addCurve(name, y, c);
+        }
+
+        // Draw SD envelope if SD is selected
+        if (sdSelected && acs != null && sd != null) {
+            double[] upper = new double[acs.length];
+            double[] lower = new double[acs.length];
+            for (int i = 0; i < acs.length; i++) {
+                upper[i] = acs[i] + sd[i];
+                lower[i] = acs[i] - sd[i];
+            }
+            // Use the already‑assigned SD color (derived from ACS in initializeGlobalPalette)
+            Color sdColor = persistentColorMap.get("SD");
+            getClusterPlotPanel().addEnvelope("SD", upper, lower, sdColor);
+        }
+
+        // ---------------------------------------------------------------------
+        // FINALIZE
+        // ---------------------------------------------------------------------
+        if (globalMin > 0) {
+            globalMin = 0;
         }
         getClusterPlotPanel().setGlobalMinMax(globalMin, globalMax);
-        getClusterPlotPanel().setDt(times[1]);   // times[0] == 0;
+        if (times.length > 1) {
+            getClusterPlotPanel().setDt(times[1]);   // times[0] == 0
+        }
         getClusterPlotPanel().repaint();
     }
+
     private void redrawLegend(ClusterSpecificationPanel.ClusterSelection sel) {
         System.out.println("ClusterVisualizationPanel.redrawLegend() called");
         getJPanelPlotLegends().removeAll();
+
         for (ColumnDescription cd : sel.columns) {
-            Color c = persistentColorMap.get(cd.getName());
-            getJPanelPlotLegends().add(createLegendEntry(cd.getName(), c, sel.mode));
+            String name = cd.getName();
+
+            Color c;
+            if (name.equals("SD")) {
+                // SD uses a translucent version of ACS color
+                Color cACS = persistentColorMap.get("ACS");
+                c = new Color(cACS.getRed(), cACS.getGreen(), cACS.getBlue(), 80);   // alpha 0–255 -> ~30% opacity
+            } else {
+                // ACS, ACO, COUNTS all use their assigned colors
+                c = persistentColorMap.get(name);
+            }
+
+            getJPanelPlotLegends().add(createLegendEntry(name, c, sel.mode));
         }
         getJPanelPlotLegends().revalidate();
         getJPanelPlotLegends().repaint();
     }
+
     private void redrawDataTable(ClusterSpecificationPanel.ClusterSelection sel) throws ExpressionException {
         System.out.println("ClusterVisualizationPanel.updateDataTable() called");
         getClusterDataPanel().updateData(sel);
     }
     public void setSpecialityRenderer(SpecialtyTableRenderer str) {
         getClusterDataPanel().setSpecialityRenderer(str);
+    }
+
+    private boolean contains(List<ColumnDescription> list, String name) {
+        for (ColumnDescription cd : list) {
+            if (cd.getName().equals(name)) return true;
+        }
+        return false;
     }
 
     // crosshair coordinates and coordinates label management

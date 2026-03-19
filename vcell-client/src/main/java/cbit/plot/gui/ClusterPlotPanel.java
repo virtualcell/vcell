@@ -2,13 +2,7 @@ package cbit.plot.gui;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
-import java.awt.geom.Ellipse2D;
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Line2D;
-import java.awt.geom.NoninvertibleTransformException;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -45,7 +39,23 @@ public class ClusterPlotPanel extends JPanel {
             this.color = color;
         }
     }
+    private static class Envelope {
+        final String name;
+        final double[] upper;
+        final double[] lower;
+        final Color fillColor;
+
+        Envelope(String name, double[] upper, double[] lower, Color fillColor) {
+            this.name = name;
+            this.upper = upper;
+            this.lower = lower;
+            this.fillColor = fillColor;
+        }
+    }
+
     private final List<CurveData> curves = new ArrayList<>();
+    private final List<Envelope> envelopes = new ArrayList<>();
+
     private double globalMin = 0;
     private double globalMax = 1;
     private double dt = 1;
@@ -57,6 +67,7 @@ public class ClusterPlotPanel extends JPanel {
     private Consumer<double[]> coordCallback;   // parent supplies this
     private double lastXMaxRounded;
     private double lastYMaxRounded;
+    private double lastYMinRounded;
 
 
     public ClusterPlotPanel() {
@@ -66,7 +77,7 @@ public class ClusterPlotPanel extends JPanel {
             public void mouseMoved(MouseEvent e) {
                 int mx = e.getX();
                 int my = e.getY();
-                // Check if inside last-known plot area
+                // Check if inside plot area
                 if (mx >= lastX0 && mx <= lastX1 && my >= lastY1 && my <= lastY0) {
                     mouseX = mx;
                     mouseY = my;
@@ -75,15 +86,18 @@ public class ClusterPlotPanel extends JPanel {
                     mouseY = null;
                 }
                 if (crosshairEnabled && mouseX != null && mouseY != null) {
-                    double xVal = (mouseX - lastX0) * lastXMaxRounded / (lastX1 - lastX0);
-                    double yVal = (lastY0 - mouseY) * lastYMaxRounded / (lastY0 - lastY1);
-
+                    // ---- X coordinate ----
+                    double fracX = (mouseX - lastX0) / (double)(lastX1 - lastX0);
+                    double xVal = fracX * lastXMaxRounded;
+                    // ---- Y coordinate (now using yMinRounded and yMaxRounded) ----
+                    double fracY = (lastY0 - mouseY) / (double)(lastY0 - lastY1);
+                    double yVal = lastYMinRounded + fracY * (lastYMaxRounded - lastYMinRounded);
                     if (coordCallback != null) {
                         coordCallback.accept(new double[]{xVal, yVal});
                     }
                 } else {
                     if (coordCallback != null) {
-                        coordCallback.accept(null);   // clear
+                        coordCallback.accept(null);
                     }
                 }
                 repaint();
@@ -110,7 +124,9 @@ public class ClusterPlotPanel extends JPanel {
 
     public void clear() {
         curves.clear();
+        envelopes.clear();
     }
+
     public void addCurve(String name, double[] yRaw, Color color) {
         curves.add(new CurveData(name, yRaw, color));
     }
@@ -118,6 +134,10 @@ public class ClusterPlotPanel extends JPanel {
         this.globalMin = min;
         this.globalMax = max;
     }
+    public void addEnvelope(String name, double[] upper, double[] lower, Color fillColor) {
+        envelopes.add(new Envelope(name, upper, lower, fillColor));
+    }
+
     public void setDt(double dt) {
         this.dt = dt;
     }
@@ -149,6 +169,15 @@ public class ClusterPlotPanel extends JPanel {
         }
     }
 
+    private int xPixel(double t, int x0, int plotWidth, double xMaxRounded) {
+        return x0 + (int) Math.round((t / xMaxRounded) * plotWidth);
+    }
+    private int yPixel(double value, int y0, int plotHeight, double yMaxRounded, double yMinRounded) {
+        double norm = (value - yMinRounded) / (yMaxRounded - yMinRounded);
+        int yPix = y0 - (int)Math.round(norm * plotHeight);
+        return yPix;
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -178,20 +207,21 @@ public class ClusterPlotPanel extends JPanel {
             return;
         }
 
-        int maxCurveLength = curves.stream()
-                .mapToInt(c -> c.yRaw.length)
-                .max()
-                .orElse(0);
-
-        if (maxCurveLength < 2) {
+        // Determine if we have anything to draw (curves or envelopes)
+        int maxCurveLength = curves.stream().mapToInt(c -> c.yRaw.length).max().orElse(0);
+        int maxEnvelopeLength = envelopes.stream().mapToInt(e -> e.upper.length).max().orElse(0);
+        int maxLength = Math.max(maxCurveLength, maxEnvelopeLength);
+        if (maxLength < 2) {    // If neither curves nor envelopes have at least 2 points, nothing to draw
             return;
         }
 
         double yMaxRounded = roundUpNice(globalMax);
-        double xMax = dt * (maxCurveLength - 1);
+        double yMinRounded = (globalMin < 0) ? -roundUpNice(-globalMin) : 0;
+        double xMax = dt * (maxLength - 1);
         double xMaxRounded = roundUpNice(xMax);
         lastXMaxRounded = xMaxRounded;
         lastYMaxRounded = yMaxRounded;
+        lastYMinRounded = yMinRounded;
         FontMetrics fm = g2.getFontMetrics();
 
         // ============================================================
@@ -202,17 +232,23 @@ public class ClusterPlotPanel extends JPanel {
 
         // Y gridlines
         int yTicks = 5;
-        double yStep = yMaxRounded / yTicks;
+        double yRange = yMaxRounded - yMinRounded;
+        double yStep = yRange / yTicks;
 
         for (int i = 0; i <= yTicks; i++) {
-            double valueMajor = i * yStep;
-            int yPixMajor = y0 - (int) Math.round((valueMajor / yMaxRounded) * plotHeight);
-
+            double valueMajor = yMinRounded + i * yStep;
+            int yPixMajor = yPixel(valueMajor, y0, plotHeight, yMaxRounded, yMinRounded);
             g2.drawLine(x0, yPixMajor, x1, yPixMajor);
 
+            String label = formatNumber(valueMajor);
+            int sw = fm.stringWidth(label);
+            g2.drawString(label, x0 - 10 - sw, yPixMajor + fm.getAscent() / 2);
+
             if (i < yTicks) {
-                double valueMid = (i + 0.5) * yStep;
-                int yPixMid = y0 - (int) Math.round((valueMid / yMaxRounded) * plotHeight);
+                double valueMid = valueMajor + yStep / 2.0;
+                int yPixMid = y0 - (int)Math.round(
+                        (valueMid - yMinRounded) / yRange * plotHeight
+                );
                 g2.drawLine(x0, yPixMid, x1, yPixMid);
             }
         }
@@ -223,7 +259,6 @@ public class ClusterPlotPanel extends JPanel {
         for (int i = 0; i < xMajor.length; i++) {
             double xvMajor = xMajor[i];
             int xPixMajor = x0 + (int) Math.round((xvMajor / xMaxRounded) * plotWidth);
-
             g2.drawLine(xPixMajor, y1, xPixMajor, y0);
 
             if (i < xMajor.length - 1) {
@@ -279,6 +314,30 @@ public class ClusterPlotPanel extends JPanel {
         }
 
         // ============================================================
+        // SD ENVELOPES (drawn after gridlines, before curves)
+        // ============================================================
+        for (Envelope env : envelopes) {
+            g2.setColor(env.fillColor);
+
+            Path2D path = new Path2D.Double();
+            int n = env.upper.length;
+            // Upper boundary
+            double t0 = 0;
+            path.moveTo(xPixel(t0, x0, plotWidth, xMaxRounded), yPixel(env.upper[0], y0, plotHeight, yMaxRounded, yMinRounded));
+            for (int i = 1; i < n; i++) {
+                double t = i * dt;
+                path.lineTo(xPixel(t, x0, plotWidth, xMaxRounded), yPixel(env.upper[i], y0, plotHeight, yMaxRounded, yMinRounded));
+            }
+            // Lower boundary (reverse direction)
+            for (int i = n - 1; i >= 0; i--) {
+                double t = i * dt;
+                path.lineTo(xPixel(t, x0, plotWidth, xMaxRounded), yPixel(env.lower[i], y0, plotHeight, yMaxRounded, yMinRounded));
+            }
+            path.closePath();
+            g2.fill(path);
+        }
+
+        // ============================================================
         // CROSSHAIR (drawn after gridlines, before curves)
         // ============================================================
         if (crosshairEnabled && mouseX != null && mouseY != null) {
@@ -303,10 +362,7 @@ public class ClusterPlotPanel extends JPanel {
             for (int i = 0; i < n; i++) {
                 double t = i * dt;
                 x[i] = x0 + (int) Math.round((t / xMaxRounded) * plotWidth);
-
-                double norm = curve.yRaw[i] / yMaxRounded;
-                y[i] = y0 - (int) Math.round(norm * plotHeight);
-            }
+                y[i] = yPixel(curve.yRaw[i], y0, plotHeight, yMaxRounded, yMinRounded);            }
 
             g2.setColor(curve.color);
             g2.drawPolyline(x, y, n);

@@ -125,10 +125,10 @@ public class ColorUtil {
 	}
 
 	public static final Color[] TABLEAU20 = {
+			new Color(214,39,40),     // red
 			new Color(31,119,180),    // deep blue
 			new Color(255,127,14),    // orange
 			new Color(44,160,44),     // green
-			new Color(214,39,40),     // red
 			new Color(148,103,189),   // purple
 			new Color(23,190,207),    // teal
 			new Color(140,86,75),     // brown
