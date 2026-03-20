@@ -88,23 +88,13 @@ public class ExportHistoryDBDriver {
 
     }
 
-    public void deleteExportHistory(Connection conn, ExportSpecs exportSpecs) throws SQLException {
+    public void deleteExportHistory(Connection conn, String uri) throws SQLException {
 
         // Concern, data id could mean multiple items get deleted
-        String selectSQL = "SELECT id FROM vc_simulation_export_history WHERE data_id = ?";
-        try (PreparedStatement psSel = conn.prepareStatement(selectSQL)) {
-            psSel.setString(1, exportSpecs.getVCDataIdentifier().getID());
-            try (ResultSet rs = psSel.executeQuery()) {
-                while (rs.next()) {
-                    long historyId = rs.getLong(1);
-
-                    try (PreparedStatement psDelHist = conn.prepareStatement(
-                            "DELETE FROM vc_simulation_export_history WHERE id = ?")) {
-                        psDelHist.setLong(1, historyId);
-                        psDelHist.executeUpdate();
-                    }
-                }
-            }
+        String deleteSQL = "DELETE FROM vc_simulation_export_history WHERE uri = ?";
+        try (PreparedStatement psDel = conn.prepareStatement(deleteSQL)) {
+            psDel.setString(1, uri);
+            psDel.executeUpdate();
         }
     }
 

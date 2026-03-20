@@ -101,7 +101,11 @@ public class ExportHistoryTest {
 
 
     @AfterEach
-    public void removeOIDCMappings() throws SQLException, DataAccessException {
+    public void cleanUp() throws SQLException, DataAccessException {
+        String sql = "DELETE FROM VC_SIMULATION_EXPORT_HISTORY";
+        Connection connection = agroalConnectionFactory.getConnection(null);
+        connection.prepareStatement(sql).execute();
+        connection.commit();
         TestEndpointUtils.clearAllBioModelEntries(agroalConnectionFactory);
     }
 
@@ -163,18 +167,7 @@ public class ExportHistoryTest {
                 Assertions.assertEquals("to-delete", rs.getString("uri"));
             }
 
-
-//            driver.deleteExportHistory(conn, exportSpecs);
-
-//            try (ResultSet rs = driver.getExportHistoryForUser(conn, user)) {
-//                Assertions.assertNotEquals("to-delete", rs.getString("uri"));
-//                Assertions.assertFalse(rs.next());
-//            }
-
-
-            driver.deleteExportHistory(conn, exportSpecs);
-
-
+            driver.deleteExportHistory(conn, exportHistoryRep.uri());
             try (ResultSet rs = driver.getExportHistoryForUser(conn, user)) {
                 assertFalse(rs.next(),"No rows should remain after deletion");
             }
