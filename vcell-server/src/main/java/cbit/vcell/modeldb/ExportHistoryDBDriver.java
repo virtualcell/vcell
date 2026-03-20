@@ -33,13 +33,6 @@ public class ExportHistoryDBDriver {
     public void addExportHistory(Connection conn, User user, ExportHistoryRep exportHistory, KeyFactory keyFactory)
             throws SQLException, DependencyException, PermissionException, DataAccessException, ObjectNotFoundException {
 
-        ExportSpecs specs = exportHistory.exportSpecs();
-        HumanReadableExportData meta = specs.getHumanReadableExportData();
-        TimeSpecs ts = specs.getTimeSpecs();
-        String[] vars = specs.getVariableSpecs().getVariableNames();
-        // comma-separate the variable names
-        String variablesCsv = String.join(",", vars);
-
         // 1) insert into vc_model_export_history
         String ehSQL = ExportHistoryTable.table.getInsertSQL();
         KeyValue keyValue = keyFactory.getNewKey(conn);
@@ -47,7 +40,7 @@ public class ExportHistoryDBDriver {
         Object jsonDBObjectForParamValues;
         try{
             ObjectMapper mapper = new ObjectMapper();
-            String jsonVersionOfParamValues = mapper.writeValueAsString(exportHistory.exportSpecs().getHumanReadableExportData().differentParameterValues);
+            String jsonVersionOfParamValues = mapper.writeValueAsString(exportHistory.parameterValues());
             if (isOracleConnection(conn)){
                 Clob clob = conn.createClob();
                 clob.setString(1, jsonVersionOfParamValues);
@@ -67,25 +60,25 @@ public class ExportHistoryDBDriver {
             ExportHistoryTable.table.bindForInsert(ps,
                     keyValue,
                     exportHistory.jobID(),
-                    Long.parseLong(user.getID().toString()),
-                    exportHistory.simulationRef(),
+                    Integer.parseInt(user.getID().toString()),
+                    Integer.parseInt(exportHistory.simulationRef().toString()),
                     exportHistory.exportFormat(),
                     exportHistory.exportDate(),
                     exportHistory.uri(),
-                    specs.getVCDataIdentifier().getID(),
-                    meta.simulationName,
-                    meta.applicationName,
-                    meta.biomodelName,
-                    conn.createArrayOf("VARCHAR", exportHistory.exportSpecs().getVariableSpecs().getVariableNames()),
+                    exportHistory.dataIdValue(),
+                    exportHistory.simName(),
+                    exportHistory.appName(),
+                    exportHistory.bioName(),
+                    conn.createArrayOf("VARCHAR", exportHistory.variables()),
                     jsonDBObjectForParamValues,
-                    BigDecimal.valueOf(ts.getBeginTimeIndex()),
-                    BigDecimal.valueOf(ts.getEndTimeIndex()),
-                    meta.serverSavedFileName,
-                    meta.applicationType,
-                    meta.nonSpatial,
-                    meta.zSlices,
-                    meta.tSlices,
-                    meta.numChannels
+                    exportHistory.startTimeValue(),
+                    exportHistory.endTimeValue(),
+                    exportHistory.savedFileNameValue(),
+                    exportHistory.applicationTypeValue(),
+                    exportHistory.nonSpatialValue(),
+                    exportHistory.zSlicesValue(),
+                    exportHistory.tSlicesValue(),
+                    exportHistory.numVariablesValue()
             );
             System.out.println("Data insertion tag:");
             System.out.println(ps.executeUpdate());

@@ -22,23 +22,17 @@ import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.DependencyException;
-import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 import org.vcell.util.document.VCDataIdentifier;
 import cbit.vcell.export.server.ExportFormat;
-import cbit.vcell.export.server.ExportSpecs;
 
 import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 
 import static org.bouncycastle.math.raw.Nat.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
@@ -62,10 +56,7 @@ public class ExportHistoryTest {
     private DatabaseServerImpl databaseServer;
     private BioModel savedBioModel;
     private Simulation savedSimulation;
-    private Long simulationKey;
-
-    private ExportSpecs exportSpecs;
-
+    private KeyValue simulationKey;
 
     @BeforeAll
     public static void setupConfig(){
@@ -79,55 +70,35 @@ public class ExportHistoryTest {
         BigString bioModelXML = databaseServer.saveBioModel(TestEndpointUtils.administratorUser, new BigString(XmlHelper.bioModelToXML(bioModel)), new String[]{});
         savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
         savedSimulation = savedBioModel.getSimulation(0);
-        simulationKey = Long.parseLong(savedSimulation.getVersion().getVersionKey().toString());
+        simulationKey = savedSimulation.getVersion().getVersionKey();
+    }
 
-        VCSimulationIdentifier vcSimId = new VCSimulationIdentifier(
-                new KeyValue("000"), TestEndpointUtils.administratorUser
-        );
-        VCDataIdentifier vcdId = new VCSimulationDataIdentifier(vcSimId, 0);
-
-
+    private ExportHistoryRep getExportHistoryRep(int jobID, String uri, Timestamp timestamp){
+        VCSimulationIdentifier vcSimId = new VCSimulationIdentifier(simulationKey, TestEndpointUtils.administratorUser);
+        VCDataIdentifier vcdId = new VCSimulationDataIdentifier(vcSimId, jobID);
         GeometrySpecs geometrySpecs = new GeometrySpecs(null, 1, 1, ExportEnums.GeometryMode.GEOMETRY_FULL);
 
-
-        double[] times = new double[]{0.0, 1.0};
-        TimeSpecs timeSpecs = new TimeSpecs(0, 1, times, ExportEnums.TimeMode.TIME_RANGE);
-
-
+        TimeSpecs timeSpecs = new TimeSpecs(0, 1, new double[]{0.0, 1.0}, ExportEnums.TimeMode.TIME_RANGE);
         VariableSpecs variableSpecs = new VariableSpecs(new String[]{"X"}, ExportEnums.VariableMode.VARIABLE_ONE);
 
-
-        FormatSpecificSpecs formatSpecific = new FormatSpecificSpecs("N5") {
-            @Override public boolean equals(Object o) { return this==o; }
-            @Override public String toString() { return "DUMMY"; }
-        };
+        N5Specs n5Specs = new N5Specs(ExportEnums.ExportableDataType.PDE_VARIABLE_DATA, ExportFormat.N5,
+                N5Specs.CompressionLevel.RAW, "test dataset name");
 
 
-        HumanReadableExportData meta = new HumanReadableExportData(
-                "simName",                      // simulation name
-                "appName",                      // application name
-                savedBioModel.getName(),        // biomodel name
-                new ArrayList<HumanReadableExportData.DifferentParameterValues>(),        // no parameter changes
-                vcdId.getID(),                  // dataId
-                "out.n5",                       // serverSavedFileName
-                false,                          // nonSpatial?
-                new HashMap<>()                 // no per‐slice parameters
+        List<HumanReadableExportData.DifferentParameterValues> parameterValues = new ArrayList<>(){{
+            add(new HumanReadableExportData.DifferentParameterValues("parameter_name", "original_0", "changed_1"));
+        }};
+
+        return new ExportHistoryRep(
+                jobID, vcSimId.getSimulationKey(), n5Specs.getFormatType(),
+                timestamp, uri, vcdId.getID(), savedSimulation.getName(),
+                "Application Name", savedBioModel.getName(), variableSpecs.getVariableNames(),
+                parameterValues, timeSpecs.getAllTimes()[0], timeSpecs.getAllTimes()[1],
+                "file_on_server", n5Specs.getDataType().name(), false,
+                0, 1, 1
         );
-
-
-        exportSpecs = new ExportSpecs(
-                vcdId,
-                ExportFormat.N5,
-                variableSpecs,
-                timeSpecs,
-                geometrySpecs,
-                formatSpecific,
-                "simName",
-                savedBioModel.getName()
-        );
-        exportSpecs.setExportMetaData(meta);
-
     }
+
 
     @AfterEach
     public void removeOIDCMappings() throws SQLException, DataAccessException {
@@ -147,31 +118,24 @@ public class ExportHistoryTest {
             driver.addExportHistory(
                     conn,
                     user,
-                    new ExportHistoryRep(
-                            42L,
-                            simulationKey,
-                            ExportFormat.N5,
-                            now,
+                    getExportHistoryRep(
+                            42,
                             "https://vcell.cam.uchc.edu/n5Data/paulricky/5456fb59b530a19.n5?dataSetName=3681309072",
-                            exportSpecs
+                            now
                     ),
                     agroalConnectionFactory.getKeyFactory()
             );
 
             try (ResultSet rs = driver.getExportHistoryForUser(conn, user)) {
                 Assertions.assertTrue(rs.next(), "expected one record");
-                Assertions.assertEquals(42L, rs.getLong("job_id"));
+                Assertions.assertEquals(42L, rs.getInt("job_id"));
                 Assertions.assertEquals("https://vcell.cam.uchc.edu/n5Data/paulricky/5456fb59b530a19.n5?dataSetName=3681309072", rs.getString("uri"));
                 Assertions.assertEquals("N5", rs.getString("export_format"));
                 Assertions.assertFalse(rs.next(), "only one record should exist");
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-        } catch (SQLException | ObjectNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (DependencyException e) {
-            throw new RuntimeException(e);
-        } catch (DataAccessException e) {
+        } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);
         }
 
@@ -185,10 +149,11 @@ public class ExportHistoryTest {
 
         try (Connection conn = agroalConnectionFactory.getConnection(null)) {
             ExportHistoryDBDriver driver = new ExportHistoryDBDriver(null, null);
+            ExportHistoryRep exportHistoryRep = getExportHistoryRep(7, "to-delete", now);
 
 
             driver.addExportHistory(conn, user,
-                    new ExportHistoryRep(7L, simulationKey, ExportFormat.N5, now, "to-delete", exportSpecs),
+                    exportHistoryRep,
                     agroalConnectionFactory.getKeyFactory()
             );
 
@@ -213,10 +178,6 @@ public class ExportHistoryTest {
             try (ResultSet rs = driver.getExportHistoryForUser(conn, user)) {
                 assertFalse(rs.next(),"No rows should remain after deletion");
             }
-        } catch (ObjectNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (DependencyException e) {
-            throw new RuntimeException(e);
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
@@ -229,13 +190,15 @@ public class ExportHistoryTest {
 
         try (Connection conn = agroalConnectionFactory.getConnection(null)) {
             ExportHistoryDBDriver driver = new ExportHistoryDBDriver(null, null);
+            ExportHistoryRep exportHistoryRep = getExportHistoryRep(100, "uri100", now);
+            ExportHistoryRep exportHistoryRep1 = getExportHistoryRep(101, "uri101", now);
 
             driver.addExportHistory(conn, user,
-                    new ExportHistoryRep(100L, simulationKey, ExportFormat.N5, now, "uri100", exportSpecs),
+                    exportHistoryRep,
                     agroalConnectionFactory.getKeyFactory()
             );
             driver.addExportHistory(conn, user,
-                    new ExportHistoryRep(101L, simulationKey, ExportFormat.N5, now, "uri101", exportSpecs),
+                    exportHistoryRep1,
                     agroalConnectionFactory.getKeyFactory()
             );
 

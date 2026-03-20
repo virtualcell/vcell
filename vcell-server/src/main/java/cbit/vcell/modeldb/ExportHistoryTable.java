@@ -31,8 +31,8 @@ public class ExportHistoryTable extends Table {
 
     public final Field variables = new Field("variables", Field.SQLDataType.varchar_255, "[] NOT NULL");
     public final Field changedParameters = new Field("parameter_values", Field.SQLDataType.json, "");
-    public final Field startTime = new Field("start_time", Field.SQLDataType.integer_as_numeric, "NOT NULL");
-    public final Field endTime = new Field("end_time", Field.SQLDataType.integer_as_numeric, "NOT NULL");
+    public final Field startTime = new Field("start_time", Field.SQLDataType.number_as_real, "NOT NULL");
+    public final Field endTime = new Field("end_time", Field.SQLDataType.number_as_real, "NOT NULL");
     public final Field savedFileName = new Field("saved_file_name", Field.SQLDataType.varchar_255, "NOT NULL");
     public final Field applicationType = new Field("application_type", Field.SQLDataType.varchar_50, "NOT NULL");
     public final Field nonSpatial = new Field("non_spatial", Field.SQLDataType.varchar_50, "NOT NULL");
@@ -82,9 +82,9 @@ public class ExportHistoryTable extends Table {
     public void bindForInsert(
             PreparedStatement ps,
             KeyValue keyValue,
-            long        jobIdValue,
-            long          userRefValue,
-            long          modelRefValue,
+            int        jobIdValue,
+            int          userRefValue,
+            int          simulationRef,
             ExportFormat  fmt,
             Timestamp     exportDateValue,
             String        uriValue,
@@ -94,8 +94,8 @@ public class ExportHistoryTable extends Table {
             String        bioName,
             Array      variables,
             Object        parameterValues,
-            BigDecimal    startTimeValue,
-            BigDecimal    endTimeValue,
+            double      startTimeValue,
+            double      endTimeValue,
             String        savedFileNameValue,
             String        applicationTypeValue,
             boolean       nonSpatialValue,
@@ -107,7 +107,7 @@ public class ExportHistoryTable extends Table {
         ps.setInt     (i++,  Integer.parseInt(keyValue.toString()));
         ps.setLong    (i++, jobIdValue);
         ps.setLong       (i++, userRefValue);
-        ps.setLong       (i++, modelRefValue);
+        ps.setLong       (i++, simulationRef);
         ps.setString     (i++, fmt.name());
         ps.setTimestamp  (i++, exportDateValue);
         ps.setString     (i++, uriValue);
@@ -117,8 +117,8 @@ public class ExportHistoryTable extends Table {
         ps.setString     (i++, bioName);
         ps.setArray       (i++, variables);
         ps.setObject      (i++, parameterValues);
-        ps.setBigDecimal (i++, startTimeValue);
-        ps.setBigDecimal (i++, endTimeValue);
+        ps.setDouble      (i++, startTimeValue);
+        ps.setDouble     (i++, endTimeValue);
         ps.setString     (i++, savedFileNameValue);
         ps.setString     (i++, applicationTypeValue);
         ps.setBoolean    (i++, nonSpatialValue);
