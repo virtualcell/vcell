@@ -1,4 +1,4 @@
-package org.vcell.restq;
+package org.vcell.restq.exports;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.export.server.*;
@@ -19,6 +19,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.*;
 import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
+import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.util.BigString;
@@ -38,12 +39,11 @@ import java.util.List;
 import static org.bouncycastle.math.raw.Nat.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
-import static org.vcell.util.VCAssert.assertFalse;
 import static org.vcell.util.VCAssert.assertTrue;
 
 // TODO: Use GenericVCMLTests class for the principle tests for VCDocuments
 @QuarkusTest
-public class ExportHistoryTest {
+public class ExportHistoryDBTest {
 
     @ConfigProperty(name = "quarkus.http.test-port")
     Integer testPort;
