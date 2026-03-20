@@ -154,10 +154,15 @@ public class ExportHistoryTest {
         try (Connection conn = agroalConnectionFactory.getConnection(null)) {
             ExportHistoryDBDriver driver = new ExportHistoryDBDriver(null, null);
             ExportHistoryRep exportHistoryRep = getExportHistoryRep(7, "to-delete", now);
+            ExportHistoryRep notDeletedRep = getExportHistoryRep(8, "to-keep", now);
 
 
             driver.addExportHistory(conn, user,
                     exportHistoryRep,
+                    agroalConnectionFactory.getKeyFactory()
+            );
+            driver.addExportHistory(conn, user,
+                    notDeletedRep,
                     agroalConnectionFactory.getKeyFactory()
             );
 
@@ -165,10 +170,14 @@ public class ExportHistoryTest {
             try (ResultSet rs = driver.getExportHistoryForUser(conn, user)) {
                 Assertions.assertTrue(rs.next());
                 Assertions.assertEquals("to-delete", rs.getString("uri"));
+                Assertions.assertTrue(rs.next());
+                Assertions.assertEquals("to-keep", rs.getString("uri"));
             }
 
             driver.deleteExportHistory(conn, exportHistoryRep.uri());
             try (ResultSet rs = driver.getExportHistoryForUser(conn, user)) {
+                Assertions.assertTrue(rs.next());
+                Assertions.assertEquals("to-keep", rs.getString("uri"));
                 assertFalse(rs.next(),"No rows should remain after deletion");
             }
         } catch (DataAccessException e) {
