@@ -3,10 +3,13 @@ package cbit.vcell.modeldb;
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.vcell.export.server.ExportFormat;
+import cbit.vcell.export.server.HumanReadableExportData.DifferentParameterValues;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.vcell.util.document.KeyValue;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.util.List;
 import java.util.StringJoiner;
 
 public class ExportHistoryTable extends Table {
@@ -127,51 +130,46 @@ public class ExportHistoryTable extends Table {
         ps.setInt        (i++, numVariablesValue);
 
     }
-//    public record ExportHistoryRecord(String jobID, long userRef, long modelRef, ExportFormat format, Timestamp date,
-//                                      String uri, String dataID, String simName, String appName, String bioName,
-//                                      BigDecimal startTime, BigDecimal endTime, String savedFile, String appType,
-//                                      boolean nonSpatial, int zSlices, int tSlices, int numVars) {
-//    }
-//
-//    public ExportHistoryRecord getExportHistoryRecord(ResultSet rset, ExportHistoryRecord exportHistoryRecord) throws SQLException, SQLException {
-//
-//        long userRef          = rset.getLong((int) exportHistoryRecord.userRef);
-//        long modelRef         = rset.getLong((int) exportHistoryRecord.modelRef);
-//
-//        // enums & timestamps
-//        ExportFormat fmt      = ExportFormat.valueOf(rset.getString(exportFormat.toString()));
-//        Timestamp date        = rset.getTimestamp(exportDate.toString());
-//
-//        // strings
-//        String jobId            = rset.getString(exportHistoryRecord.jobID);
-//        String uriVal         = rset.getString(uri.toString());
-//        String dataIdVal      = rset.getString(dataId.toString());
-//        String simNameVal     = rset.getString(simulationName.toString());
-//        String appNameVal     = rset.getString(applicationName.toString());
-//        String bioNameVal     = rset.getString(biomodelName.toString());
-//
-//        // text array of variables
-//        Array sqlArr          = rset.getArray(variables.toString());
-//
-//        // numeric ranges
-//        BigDecimal startBt    = rset.getBigDecimal(startTime.toString());
-//        BigDecimal endBt      = rset.getBigDecimal(endTime.toString());
-//
-//        // more strings & flags
-//        String savedFileVal   = rset.getString(savedFileName.toString());
-//        String appTypeVal     = rset.getString(applicationType.toString());
-//        boolean nonSp         = rset.getBoolean(nonSpatial.toString());
-//        int zS                = rset.getInt(zSlices.toString());
-//        int tS                = rset.getInt(tSlices.toString());
-//        int numV              = rset.getInt(numVariables.toString());
-//
-//
-//
-//        return new ExportHistoryRecord(
-//                jobId, userRef, modelRef, fmt, date,
-//                uriVal, dataIdVal, simNameVal, appNameVal, bioNameVal,
-//                startBt, endBt, savedFileVal, appTypeVal,
-//                nonSp, zS, tS, numV
-//        );
-//    }
+
+    public ExportHistoryRep getExportHistoryRecord(ResultSet rset) throws SQLException, SQLException, JsonProcessingException {
+
+        int simulationRef         = rset.getInt(this.simulationRef.getUnqualifiedColName());
+
+        // enums & timestamps
+        ExportFormat fmt      = ExportFormat.valueOf(rset.getString(this.exportFormat.getUnqualifiedColName()));
+        Timestamp date        = rset.getTimestamp(this.exportDate.getUnqualifiedColName());
+
+        // strings
+        int jobId            = rset.getInt(this.jobId.getUnqualifiedColName());
+        String uriVal         = rset.getString(this.uri.getUnqualifiedColName());
+        String dataIdVal      = rset.getString(this.dataId.getUnqualifiedColName());
+        String simNameVal     = rset.getString(this.simulationName.getUnqualifiedColName());
+        String appNameVal     = rset.getString(this.applicationName.getUnqualifiedColName());
+        String bioNameVal     = rset.getString(this.biomodelName.getUnqualifiedColName());
+
+        // text array of variables
+        String[] variables          = (String[]) rset.getArray(this.variables.getUnqualifiedColName()).getArray();
+        List<DifferentParameterValues> parameterValues = DifferentParameterValues.fromJSON(rset.getString(this.changedParameters.getUnqualifiedColName()));
+
+        // numeric ranges
+        double startBt    = rset.getDouble(this.startTime.getUnqualifiedColName());
+        double endBt      = rset.getDouble(this.endTime.getUnqualifiedColName());
+
+        // more strings & flags
+        String savedFileVal   = rset.getString(this.savedFileName.getUnqualifiedColName());
+        String appTypeVal     = rset.getString(this.applicationType.getUnqualifiedColName());
+        boolean nonSp         = rset.getBoolean(this.nonSpatial.getUnqualifiedColName());
+        int zS                = rset.getInt(this.zSlices.getUnqualifiedColName());
+        int tS                = rset.getInt(this.tSlices.getUnqualifiedColName());
+        int numV              = rset.getInt(this.numVariables.getUnqualifiedColName());
+
+
+
+        return new ExportHistoryRep(
+                jobId, new KeyValue("" + simulationRef), fmt, date,
+                uriVal, dataIdVal, simNameVal, appNameVal, bioNameVal, variables,
+                parameterValues, startBt, endBt, savedFileVal, appTypeVal,
+                nonSp, zS, tS, numV
+        );
+    }
 }

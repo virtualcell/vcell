@@ -2,6 +2,9 @@ package cbit.vcell.export.server;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -14,7 +17,12 @@ public class HumanReadableExportData implements Serializable {
             String parameterName,
             String originalValue,
             String changedValue
-    ){}
+    ){
+        public static List<DifferentParameterValues> fromJSON(String json) throws JsonProcessingException {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(json, new TypeReference<List<DifferentParameterValues>>() {});
+        }
+    }
 
     public final String simulationName;
     public final String biomodelName;

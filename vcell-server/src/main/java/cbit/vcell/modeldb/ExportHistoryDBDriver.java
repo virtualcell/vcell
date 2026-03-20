@@ -15,6 +15,8 @@ import org.vcell.util.document.User;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ExportHistoryDBDriver {
 
@@ -89,7 +91,6 @@ public class ExportHistoryDBDriver {
     }
 
     public void deleteExportHistory(Connection conn, String uri) throws SQLException {
-
         // Concern, data id could mean multiple items get deleted
         String deleteSQL = "DELETE FROM vc_simulation_export_history WHERE uri = ?";
         try (PreparedStatement psDel = conn.prepareStatement(deleteSQL)) {
@@ -98,11 +99,16 @@ public class ExportHistoryDBDriver {
         }
     }
 
-    public ResultSet getExportHistoryForUser(Connection conn, User user) throws SQLException {
+    public List<ExportHistoryRep> getExportHistoryForUser(Connection conn, User user) throws SQLException, JsonProcessingException {
         String sql = "SELECT * FROM vc_simulation_export_history WHERE user_ref = ?";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setLong(1, Long.parseLong(user.getID().toString()));
-        return ps.executeQuery();
+        ResultSet resultSet = ps.executeQuery();
+        List<ExportHistoryRep> exportHistoryReps = new ArrayList<>();
+        while (resultSet.next()) {
+            exportHistoryReps.add(ExportHistoryTable.table.getExportHistoryRecord(resultSet));
+        }
+        return exportHistoryReps;
     }
 
 }

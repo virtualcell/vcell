@@ -12,6 +12,7 @@ import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.xml.XMLSource;
 import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -87,6 +88,7 @@ public class ExportHistoryTest {
 
         List<HumanReadableExportData.DifferentParameterValues> parameterValues = new ArrayList<>(){{
             add(new HumanReadableExportData.DifferentParameterValues("parameter_name", "original_0", "changed_1"));
+            add(new HumanReadableExportData.DifferentParameterValues("parameter_name2", "original_0", "changed_1"));
         }};
 
         return new ExportHistoryRep(
@@ -117,33 +119,24 @@ public class ExportHistoryTest {
 
         try (Connection conn = agroalConnectionFactory.getConnection(null)) {
             ExportHistoryDBDriver driver = new ExportHistoryDBDriver(null, null);
-
-
-            driver.addExportHistory(
-                    conn,
-                    user,
-                    getExportHistoryRep(
-                            42,
-                            "https://vcell.cam.uchc.edu/n5Data/paulricky/5456fb59b530a19.n5?dataSetName=3681309072",
-                            now
-                    ),
-                    agroalConnectionFactory.getKeyFactory()
+            ExportHistoryRep rep = getExportHistoryRep(
+                    42,
+                    "https://vcell.cam.uchc.edu/n5Data/paulricky/5456fb59b530a19.n5?dataSetName=3681309072",
+                    now
             );
 
-            try (ResultSet rs = driver.getExportHistoryForUser(conn, user)) {
-                Assertions.assertTrue(rs.next(), "expected one record");
-                Assertions.assertEquals(42L, rs.getInt("job_id"));
-                Assertions.assertEquals("https://vcell.cam.uchc.edu/n5Data/paulricky/5456fb59b530a19.n5?dataSetName=3681309072", rs.getString("uri"));
-                Assertions.assertEquals("N5", rs.getString("export_format"));
-                Assertions.assertFalse(rs.next(), "only one record should exist");
-            } catch (SQLException e) {
+            driver.addExportHistory(conn, user, rep, agroalConnectionFactory.getKeyFactory());
+            try {
+                List<ExportHistoryRep> exportHistoryRecord = driver.getExportHistoryForUser(conn, user);
+                Assertions.assertEquals(1, exportHistoryRecord.size(), "expected one record");
+                Assertions.assertTrue(rep.equals(exportHistoryRecord.get(0)));
+                Assertions.assertEquals(rep.parameterValues(), exportHistoryRecord.get(0).parameterValues());
+            } catch (SQLException | JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
         } catch (SQLException | DataAccessException e) {
             throw new RuntimeException(e);
         }
-
-
     }
 
     @Test
@@ -167,26 +160,22 @@ public class ExportHistoryTest {
             );
 
 
-            try (ResultSet rs = driver.getExportHistoryForUser(conn, user)) {
-                Assertions.assertTrue(rs.next());
-                Assertions.assertEquals("to-delete", rs.getString("uri"));
-                Assertions.assertTrue(rs.next());
-                Assertions.assertEquals("to-keep", rs.getString("uri"));
-            }
+            List<ExportHistoryRep> retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
+            Assertions.assertEquals(2, retrievedExportHistory.size(), "expected two records");
+            Assertions.assertTrue(exportHistoryRep.equals(retrievedExportHistory.get(0)));
+            Assertions.assertTrue(notDeletedRep.equals(retrievedExportHistory.get(1)));
 
             driver.deleteExportHistory(conn, exportHistoryRep.uri());
-            try (ResultSet rs = driver.getExportHistoryForUser(conn, user)) {
-                Assertions.assertTrue(rs.next());
-                Assertions.assertEquals("to-keep", rs.getString("uri"));
-                assertFalse(rs.next(),"No rows should remain after deletion");
-            }
-        } catch (DataAccessException e) {
+            retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
+            Assertions.assertEquals(1, retrievedExportHistory.size(), "expected one record after deletion");
+            Assertions.assertTrue(notDeletedRep.equals(retrievedExportHistory.get(0)));
+        } catch (DataAccessException | JsonProcessingException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Test
-    public void testGetExportHistory() throws SQLException, DataAccessException {
+    public void testGetExportHistory() throws SQLException, DataAccessException, JsonProcessingException {
         User user = TestEndpointUtils.administratorUser;
         Timestamp now = new Timestamp(System.currentTimeMillis());
 
@@ -204,16 +193,10 @@ public class ExportHistoryTest {
                     agroalConnectionFactory.getKeyFactory()
             );
 
-            int count = 0;
-            try (ResultSet rs = driver.getExportHistoryForUser(conn, user)) {
-                while (rs.next()) {
-                    count++;
-                    Assertions.assertTrue(rs.getString("uri").startsWith("uri"));
-                }
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
-            Assertions.assertEquals(2, count);
+            List<ExportHistoryRep> retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
+            Assertions.assertEquals(2, retrievedExportHistory.size(), "expected two records");
+            Assertions.assertTrue(exportHistoryRep.equals(retrievedExportHistory.get(0)));
+            Assertions.assertTrue(exportHistoryRep1.equals(retrievedExportHistory.get(1)));
         }
     }
 }

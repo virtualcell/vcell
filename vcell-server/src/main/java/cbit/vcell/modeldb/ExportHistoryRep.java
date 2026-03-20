@@ -30,4 +30,25 @@ public record ExportHistoryRep(
         int tSlicesValue,
         int numVariablesValue
 ) {
+    public boolean equals(ExportHistoryRep other){
+        return this.jobID == other.jobID &&
+                this.simulationRef.equals(other.simulationRef) &&
+                this.exportFormat.equals(other.exportFormat) &&
+                this.exportDate.equals(other.exportDate) &&
+                this.uri.equals(other.uri) &&
+                this.dataIdValue.equals(other.dataIdValue) &&
+                this.simName.equals(other.simName) &&
+                this.appName.equals(other.appName) &&
+                this.bioName.equals(other.bioName) &&
+                List.of(this.variables).equals(List.of(other.variables)) &&
+                this.parameterValues.equals(other.parameterValues) &&
+                Double.compare(this.startTimeValue, other.startTimeValue) == 0 &&
+                Double.compare(this.endTimeValue, other.endTimeValue) == 0 &&
+                this.savedFileNameValue.equals(other.savedFileNameValue) &&
+                this.applicationTypeValue.equals(other.applicationTypeValue) &&
+                this.nonSpatialValue == other.nonSpatialValue &&
+                this.zSlicesValue == other.zSlicesValue &&
+                this.tSlicesValue == other.tSlicesValue &&
+                this.numVariablesValue == other.numVariablesValue;
+    }
 }
