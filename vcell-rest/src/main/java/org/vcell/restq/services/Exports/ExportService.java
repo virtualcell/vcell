@@ -5,6 +5,8 @@ import cbit.rmi.event.ExportEventController;
 import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.JobRequest;
+import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.modeldb.ExportHistoryRep;
 import cbit.vcell.modeldb.SimulationRep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
@@ -16,6 +18,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
 import jakarta.inject.Inject;
 import org.vcell.restq.activemq.ExportRequestListenerMQ;
+import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.errors.exceptions.RuntimeWebException;
 import org.vcell.restq.handlers.ExportResource;
 import org.vcell.restq.services.SimulationRestService;
@@ -40,8 +43,15 @@ public class ExportService {
     @Inject
     SimulationRestService simulationRestService;
 
-    public ExportResource.ExportHistory getExportHistory(User user) throws DataAccessException {
-        return new ExportResource.ExportHistory("Hello");
+    DatabaseServerImpl databaseServer;
+    @Inject
+    public ExportService(AgroalConnectionFactory connectionFactory) throws DataAccessException {
+        databaseServer = new DatabaseServerImpl(connectionFactory, connectionFactory.getKeyFactory());
+    }
+
+    public List<ExportResource.ExportHistory> getExportHistory(User user) throws DataAccessException {
+        List<ExportHistoryRep> exportHistoryReps = databaseServer.getUsersExportHistory(user);
+        return exportHistoryReps.stream().map(ExportResource.ExportHistory::fromExportHistoryRep).toList();
     }
 
     public Multi<ExportEvent> getExportStatuses(User user, long jobID) throws ObjectNotFoundException {

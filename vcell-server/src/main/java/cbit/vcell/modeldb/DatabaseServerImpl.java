@@ -1362,4 +1362,14 @@ public BigString saveVCImageAs(User user, BigString vcImageXML, java.lang.String
 			throw new DataAccessException(e);
 		}
 	}
+
+	public List<ExportHistoryRep> getUsersExportHistory(User user) throws DataAccessException {
+		try {
+			return dbTop.getUsersExportHistory(user, true);
+		} catch (SQLException e) {
+			throw new DataAccessException(e);
+		}
+	}
+
+
 }

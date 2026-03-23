@@ -5,6 +5,7 @@ import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.*;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.modeldb.ExportHistoryRep;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.solver.AnnotatedFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,9 +26,11 @@ import org.vcell.restq.services.SimulationRestService;
 import org.vcell.restq.services.UserRestService;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,8 +54,8 @@ public class ExportResource {
     @Path("/history")
     @GET
     @RolesAllowed("user")
-    @Operation(operationId = "getExportHistory", hidden = true)
-    public ExportHistory getExportHistory() throws DataAccessWebException, NotAuthenticatedWebException {
+    @Operation(operationId = "getExportHistory")
+    public List<ExportHistory> getExportHistory() throws DataAccessWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try {
             return exportService.getExportHistory(user);
@@ -65,13 +68,9 @@ public class ExportResource {
     @DELETE
     @RolesAllowed("user")
     @Operation(operationId = "deleteExportHistory", hidden = true)
-    public ExportHistory deleteExportHistoryEntry() throws DataAccessWebException, NotAuthenticatedWebException {
+    public void deleteExportHistoryEntry() throws DataAccessWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
-        try {
-            return exportService.getExportHistory(user);
-        } catch (DataAccessException e) {
-            throw new DataAccessWebException(e.getMessage(), e);
-        }
+        return;
     }
 
     @Path("/status")
@@ -146,8 +145,33 @@ public class ExportResource {
     ) { }
 
     public record ExportHistory(
-            String exportHistory
-    ){ }
+            int jobID,
+            KeyValue simulationRef,
+            ExportFormat exportFormat,
+            String exportDate,
+            String uri,
+            String dataIdValue,
+            String simName,
+            String appName,
+            String bioName,
+            String[] variables,
+            List<HumanReadableExportData.DifferentParameterValues> parameterValues,
+            double startTimeValue,
+            double endTimeValue,
+            String savedFileNameValue,
+            String applicationTypeValue,
+            boolean nonSpatialValue,
+            int zSlicesValue,
+            int tSlicesValue,
+            int numVariablesValue
+    ){
+        public static ExportHistory fromExportHistoryRep(ExportHistoryRep rep){
+            return new ExportHistory(rep.jobID(), rep.simulationRef(), rep.exportFormat(), rep.exportDate().toString(), rep.uri(), rep.dataIdValue(),
+                    rep.simName(), rep.appName(), rep.bioName(), rep.variables(), rep.parameterValues(), rep.startTimeValue(),
+                    rep.endTimeValue(), rep.savedFileNameValue(), rep.applicationTypeValue(), rep.nonSpatialValue(),
+                    rep.zSlicesValue(), rep.tSlicesValue(), rep.numVariablesValue());
+        }
+    }
 
     public record GeometrySpecDTO(
             SpatialSelection[] selections, int axis, int sliceNumber, ExportEnums.GeometryMode geometryMode

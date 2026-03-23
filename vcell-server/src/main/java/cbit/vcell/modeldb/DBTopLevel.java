@@ -38,6 +38,7 @@ import org.vcell.util.document.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.Vector;
 /**
@@ -2274,6 +2275,30 @@ public SimulationRep getSimulationRep(KeyValue simKey, boolean bEnableRetry) thr
 				insertExportHistory(user, exportHistoryValues, false);
 			}else{
 				handle_DataAccessException_SQLException(e);
+			}
+		}finally{
+			conFactory.release(con,lock);
+		}
+	}
+
+	public List<ExportHistoryRep> getUsersExportHistory(User user, boolean bEnableRetry) throws SQLException, DataAccessException {
+		Object lock = new Object();
+		Connection con = conFactory.getConnection(lock);
+		try {
+			return exportHistoryDBDriver.getExportHistoryForUser(con, user);
+		} catch (Throwable e) {
+			lg.error(e.getMessage(),e);
+			try {
+				con.rollback();
+			}catch (Throwable rbe){
+				lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
+			}
+			if (bEnableRetry && isBadConnection(con)) {
+				conFactory.failed(con,lock);
+				return getUsersExportHistory(user, false);
+			}else{
+				handle_DataAccessException_SQLException(e);
+				return null; // never gets here;
 			}
 		}finally{
 			conFactory.release(con,lock);
