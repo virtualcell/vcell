@@ -11,6 +11,9 @@ import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.simdata.Cachetable;
+import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.xml.XMLSource;
@@ -27,6 +30,7 @@ import org.vcell.restclient.api.UsersResourceApi;
 import org.vcell.restclient.model.Publication;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
 import org.vcell.restq.db.AgroalConnectionFactory;
+import org.vcell.restq.exports.ExportRequestTest;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
@@ -34,6 +38,7 @@ import org.vcell.util.document.User;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -167,6 +172,14 @@ public class TestEndpointUtils {
     public static String getResourceString(String relativeResourcePath) throws IOException {
         InputStream inputStream = Objects.requireNonNull(TestEndpointUtils.class.getResourceAsStream(relativeResourcePath));
         return IOUtils.toString(inputStream);
+    }
+
+    public static DataServerImpl createDataServerImpl() throws FileNotFoundException {
+        File testSimData = new File(ExportRequestTest.class.getResource("/simdata").getPath());
+        TestEndpointUtils.setSystemProperties(testSimData.getAbsolutePath(), System.getProperty("java.io.tmpdir"));
+        Cachetable cachetable = new Cachetable(10 * Cachetable.minute, 10000);
+        DataSetControllerImpl dataSetController = new DataSetControllerImpl(cachetable, testSimData, testSimData);
+        return new DataServerImpl(dataSetController, null);
     }
 
     /**
