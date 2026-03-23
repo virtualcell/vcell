@@ -8,6 +8,8 @@ All URIs are relative to *https://vcell.cam.uchc.edu*
 | [**exportN5WithHttpInfo**](ExportResourceApi.md#exportN5WithHttpInfo) | **POST** /api/v1/export/N5 |  |
 | [**exportStatus**](ExportResourceApi.md#exportStatus) | **GET** /api/v1/export/status |  |
 | [**exportStatusWithHttpInfo**](ExportResourceApi.md#exportStatusWithHttpInfo) | **GET** /api/v1/export/status |  |
+| [**getExportHistory**](ExportResourceApi.md#getExportHistory) | **GET** /api/v1/export/history |  |
+| [**getExportHistoryWithHttpInfo**](ExportResourceApi.md#getExportHistoryWithHttpInfo) | **GET** /api/v1/export/history |  |
 
 
 
@@ -283,6 +285,138 @@ public class Example {
 ### Return type
 
 ApiResponse<[**List&lt;ExportEvent&gt;**](ExportEvent.md)>
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **401** | Not Authenticated |  -  |
+| **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
+
+
+## getExportHistory
+
+> List<ExportHistory> getExportHistory()
+
+
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.ExportResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+        
+
+        ExportResourceApi apiInstance = new ExportResourceApi(defaultClient);
+        try {
+            List<ExportHistory> result = apiInstance.getExportHistory();
+            System.out.println(result);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling ExportResourceApi#getExportHistory");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Reason: " + e.getResponseBody());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+[**List&lt;ExportHistory&gt;**](ExportHistory.md)
+
+
+### Authorization
+
+[openId](../README.md#openId)
+
+### HTTP request headers
+
+- **Content-Type**: Not defined
+- **Accept**: application/json
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+| **200** | OK |  -  |
+| **401** | Not Authenticated |  -  |
+| **403** | Not Allowed |  -  |
+| **500** | Data Access Exception |  -  |
+
+## getExportHistoryWithHttpInfo
+
+> ApiResponse<List<ExportHistory>> getExportHistory getExportHistoryWithHttpInfo()
+
+
+
+### Example
+
+```java
+// Import classes:
+import org.vcell.restclient.ApiClient;
+import org.vcell.restclient.ApiException;
+import org.vcell.restclient.ApiResponse;
+import org.vcell.restclient.Configuration;
+import org.vcell.restclient.auth.*;
+import org.vcell.restclient.models.*;
+import org.vcell.restclient.api.ExportResourceApi;
+
+public class Example {
+    public static void main(String[] args) {
+        ApiClient defaultClient = Configuration.getDefaultApiClient();
+        defaultClient.setBasePath("https://vcell.cam.uchc.edu");
+        
+
+        ExportResourceApi apiInstance = new ExportResourceApi(defaultClient);
+        try {
+            ApiResponse<List<ExportHistory>> response = apiInstance.getExportHistoryWithHttpInfo();
+            System.out.println("Status code: " + response.getStatusCode());
+            System.out.println("Response headers: " + response.getHeaders());
+            System.out.println("Response body: " + response.getData());
+        } catch (ApiException e) {
+            System.err.println("Exception when calling ExportResourceApi#getExportHistory");
+            System.err.println("Status code: " + e.getCode());
+            System.err.println("Response headers: " + e.getResponseHeaders());
+            System.err.println("Reason: " + e.getResponseBody());
+            e.printStackTrace();
+        }
+    }
+}
+```
+
+### Parameters
+
+This endpoint does not need any parameter.
+
+### Return type
+
+ApiResponse<[**List&lt;ExportHistory&gt;**](ExportHistory.md)>
 
 
 ### Authorization

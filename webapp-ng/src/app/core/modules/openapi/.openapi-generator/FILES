@@ -46,8 +46,11 @@ model/curve-selection-info.ts
 model/curve.ts
 model/data-identifier.ts
 model/detailed-state.ts
+model/different-parameter-values.ts
 model/domain.ts
 model/export-event.ts
+model/export-format.ts
+model/export-history.ts
 model/export-progress-type.ts
 model/exportable-data-type.ts
 model/extent.ts

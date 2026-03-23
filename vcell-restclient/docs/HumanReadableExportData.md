@@ -10,7 +10,7 @@
 |**simulationName** | **String** |  |  [optional] |
 |**biomodelName** | **String** |  |  [optional] |
 |**applicationName** | **String** |  |  [optional] |
-|**differentParameterValues** | **List&lt;String&gt;** |  |  [optional] |
+|**differentParameterValues** | [**List&lt;DifferentParameterValues&gt;**](DifferentParameterValues.md) |  |  [optional] |
 |**applicationType** | **String** |  |  [optional] |
 |**serverSavedFileName** | **String** |  |  [optional] |
 |**nonSpatial** | **Boolean** |  |  [optional] |

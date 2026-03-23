@@ -18,6 +18,7 @@ import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.ExportEvent;
+import org.vcell.restclient.model.ExportHistory;
 import org.vcell.restclient.model.N5ExportRequest;
 import org.vcell.restclient.model.VCellHTTPError;
 
@@ -226,6 +227,71 @@ public class ExportResourceApi {
     } else {
       localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
     }
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * 
+   * 
+   * @return List&lt;ExportHistory&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public List<ExportHistory> getExportHistory() throws ApiException {
+    ApiResponse<List<ExportHistory>> localVarResponse = getExportHistoryWithHttpInfo();
+    return localVarResponse.getData();
+  }
+
+  /**
+   * 
+   * 
+   * @return ApiResponse&lt;List&lt;ExportHistory&gt;&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<List<ExportHistory>> getExportHistoryWithHttpInfo() throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getExportHistoryRequestBuilder();
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("getExportHistory", localVarResponse);
+        }
+        return new ApiResponse<List<ExportHistory>>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<List<ExportHistory>>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder getExportHistoryRequestBuilder() throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/export/history";
+
+    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
 
     localVarRequestBuilder.header("Accept", "application/json");
 

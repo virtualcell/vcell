@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.vcell.restclient.model.DifferentParameterValues;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -60,7 +61,7 @@ public class HumanReadableExportData {
   private String applicationName;
 
   public static final String JSON_PROPERTY_DIFFERENT_PARAMETER_VALUES = "differentParameterValues";
-  private List<String> differentParameterValues;
+  private List<DifferentParameterValues> differentParameterValues;
 
   public static final String JSON_PROPERTY_APPLICATION_TYPE = "applicationType";
   private String applicationType;
@@ -161,12 +162,12 @@ public class HumanReadableExportData {
   }
 
 
-  public HumanReadableExportData differentParameterValues(List<String> differentParameterValues) {
+  public HumanReadableExportData differentParameterValues(List<DifferentParameterValues> differentParameterValues) {
     this.differentParameterValues = differentParameterValues;
     return this;
   }
 
-  public HumanReadableExportData addDifferentParameterValuesItem(String differentParameterValuesItem) {
+  public HumanReadableExportData addDifferentParameterValuesItem(DifferentParameterValues differentParameterValuesItem) {
     if (this.differentParameterValues == null) {
       this.differentParameterValues = new ArrayList<>();
     }
@@ -182,14 +183,14 @@ public class HumanReadableExportData {
   @JsonProperty(JSON_PROPERTY_DIFFERENT_PARAMETER_VALUES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<String> getDifferentParameterValues() {
+  public List<DifferentParameterValues> getDifferentParameterValues() {
     return differentParameterValues;
   }
 
 
   @JsonProperty(JSON_PROPERTY_DIFFERENT_PARAMETER_VALUES)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDifferentParameterValues(List<String> differentParameterValues) {
+  public void setDifferentParameterValues(List<DifferentParameterValues> differentParameterValues) {
     this.differentParameterValues = differentParameterValues;
   }
 
@@ -487,9 +488,10 @@ public class HumanReadableExportData {
     // add `differentParameterValues` to the URL query string
     if (getDifferentParameterValues() != null) {
       for (int i = 0; i < getDifferentParameterValues().size(); i++) {
-        joiner.add(String.format("%sdifferentParameterValues%s%s=%s", prefix, suffix,
-            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
-            URLEncoder.encode(String.valueOf(getDifferentParameterValues().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+        if (getDifferentParameterValues().get(i) != null) {
+          joiner.add(getDifferentParameterValues().get(i).toUrlQueryString(String.format("%sdifferentParameterValues%s%s", prefix, suffix,
+          "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
+        }
       }
     }
 

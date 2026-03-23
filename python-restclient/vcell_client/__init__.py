@@ -59,8 +59,11 @@ from vcell_client.models.curve import Curve
 from vcell_client.models.curve_selection_info import CurveSelectionInfo
 from vcell_client.models.data_identifier import DataIdentifier
 from vcell_client.models.detailed_state import DetailedState
+from vcell_client.models.different_parameter_values import DifferentParameterValues
 from vcell_client.models.domain import Domain
 from vcell_client.models.export_event import ExportEvent
+from vcell_client.models.export_format import ExportFormat
+from vcell_client.models.export_history import ExportHistory
 from vcell_client.models.export_progress_type import ExportProgressType
 from vcell_client.models.exportable_data_type import ExportableDataType
 from vcell_client.models.extent import Extent

@@ -499,6 +499,38 @@ paths:
       - Export Resource
       x-content-type: application/json
       x-accepts: application/json
+  /api/v1/export/history:
+    get:
+      operationId: getExportHistory
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ExportHistory'
+                type: array
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          description: Not Allowed
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      tags:
+      - Export Resource
+      x-accepts: application/json
   /api/v1/export/status:
     get:
       description: Get the status of your export jobs past the timestamp (Unix epoch
@@ -2879,6 +2911,19 @@ components:
       - WORKEREVENT_FAILURE
       - JOB_FAILED
       type: string
+    DifferentParameterValues:
+      example:
+        originalValue: originalValue
+        parameterName: parameterName
+        changedValue: changedValue
+      properties:
+        parameterName:
+          type: string
+        originalValue:
+          type: string
+        changedValue:
+          type: string
+      type: object
     Domain:
       example:
         name: name
@@ -2896,8 +2941,12 @@ components:
           numChannels: 5
           applicationType: applicationType
           differentParameterValues:
-          - differentParameterValues
-          - differentParameterValues
+          - originalValue: originalValue
+            parameterName: parameterName
+            changedValue: changedValue
+          - originalValue: originalValue
+            parameterName: parameterName
+            changedValue: changedValue
           serverSavedFileName: serverSavedFileName
           subVolume:
             key: subVolume
@@ -2937,6 +2986,100 @@ components:
           type: string
         humanReadableData:
           $ref: '#/components/schemas/HumanReadableExportData'
+      type: object
+    ExportFormat:
+      enum:
+      - CSV
+      - HDF5
+      - QUICKTIME
+      - GIF
+      - ANIMATED_GIF
+      - FORMAT_JPEG
+      - NRRD
+      - UCD
+      - VTK_UNSTRUCT
+      - VTK_IMAGE
+      - PLY
+      - N5
+      type: string
+    ExportHistory:
+      example:
+        variables:
+        - variables
+        - variables
+        bioName: bioName
+        applicationTypeValue: applicationTypeValue
+        simulationRef: simulationRef
+        numVariablesValue: 2
+        appName: appName
+        startTimeValue: 6.027456183070403
+        endTimeValue: 1.4658129805029452
+        uri: uri
+        jobID: 0
+        exportDate: exportDate
+        savedFileNameValue: savedFileNameValue
+        nonSpatialValue: true
+        zSlicesValue: 5
+        simName: simName
+        exportFormat: null
+        tSlicesValue: 5
+        dataIdValue: dataIdValue
+        parameterValues:
+        - originalValue: originalValue
+          parameterName: parameterName
+          changedValue: changedValue
+        - originalValue: originalValue
+          parameterName: parameterName
+          changedValue: changedValue
+      properties:
+        jobID:
+          format: int32
+          type: integer
+        simulationRef:
+          type: string
+        exportFormat:
+          $ref: '#/components/schemas/ExportFormat'
+        exportDate:
+          type: string
+        uri:
+          type: string
+        dataIdValue:
+          type: string
+        simName:
+          type: string
+        appName:
+          type: string
+        bioName:
+          type: string
+        variables:
+          items:
+            type: string
+          type: array
+        parameterValues:
+          items:
+            $ref: '#/components/schemas/DifferentParameterValues'
+          type: array
+        startTimeValue:
+          format: double
+          type: number
+        endTimeValue:
+          format: double
+          type: number
+        savedFileNameValue:
+          type: string
+        applicationTypeValue:
+          type: string
+        nonSpatialValue:
+          type: boolean
+        zSlicesValue:
+          format: int32
+          type: integer
+        tSlicesValue:
+          format: int32
+          type: integer
+        numVariablesValue:
+          format: int32
+          type: integer
       type: object
     ExportProgressType:
       enum:
@@ -3501,8 +3644,12 @@ components:
         numChannels: 5
         applicationType: applicationType
         differentParameterValues:
-        - differentParameterValues
-        - differentParameterValues
+        - originalValue: originalValue
+          parameterName: parameterName
+          changedValue: changedValue
+        - originalValue: originalValue
+          parameterName: parameterName
+          changedValue: changedValue
         serverSavedFileName: serverSavedFileName
         subVolume:
           key: subVolume
@@ -3521,7 +3668,7 @@ components:
           type: string
         differentParameterValues:
           items:
-            type: string
+            $ref: '#/components/schemas/DifferentParameterValues'
           type: array
         applicationType:
           type: string

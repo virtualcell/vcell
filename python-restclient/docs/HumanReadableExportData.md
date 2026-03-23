@@ -7,7 +7,7 @@ Name | Type | Description | Notes
 **simulation_name** | **str** |  | [optional] 
 **biomodel_name** | **str** |  | [optional] 
 **application_name** | **str** |  | [optional] 
-**different_parameter_values** | **List[str]** |  | [optional] 
+**different_parameter_values** | [**List[DifferentParameterValues]**](DifferentParameterValues.md) |  | [optional] 
 **application_type** | **str** |  | [optional] 
 **server_saved_file_name** | **str** |  | [optional] 
 **non_spatial** | **bool** |  | [optional] 
