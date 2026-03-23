@@ -1,11 +1,10 @@
 package org.vcell.restq.handlers;
 
-import cbit.vcell.modeldb.ExportHistoryDBDriver;
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.*;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
-import cbit.vcell.modeldb.ExportHistoryRep;
+import cbit.vcell.exports.ExportHistoryDBRep;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.solver.AnnotatedFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -30,12 +29,9 @@ import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Path("/api/v1/export")
 public class ExportResource {
@@ -165,7 +161,7 @@ public class ExportResource {
             int tSlicesValue,
             int numVariablesValue
     ){
-        public static ExportHistory fromExportHistoryRep(ExportHistoryRep rep){
+        public static ExportHistory fromExportHistoryRep(ExportHistoryDBRep rep){
             return new ExportHistory(rep.jobID(), rep.simulationRef(), rep.exportFormat(), rep.exportDate().toString(), rep.uri(), rep.dataIdValue(),
                     rep.simName(), rep.appName(), rep.bioName(), rep.variables(), rep.parameterValues(), rep.startTimeValue(),
                     rep.endTimeValue(), rep.savedFileNameValue(), rep.applicationTypeValue(), rep.nonSpatialValue(),

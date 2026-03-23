@@ -5,6 +5,8 @@ import cbit.rmi.event.ExportEventController;
 import cbit.rmi.event.ExportListener;
 import cbit.vcell.export.server.ExportEnums;
 import cbit.vcell.export.server.ExportSpecs;
+import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.exports.ExportHistoryRep;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,6 +1,5 @@
-package cbit.vcell.modeldb;
+package cbit.vcell.exports;
 
-import cbit.vcell.export.server.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.postgresql.util.PGobject;
@@ -13,7 +12,6 @@ import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +30,7 @@ public class ExportHistoryDBDriver {
         return productName.contains("oracle");
     }
 
-    public void addExportHistory(Connection conn, User user, ExportHistoryRep exportHistory, KeyFactory keyFactory)
+    public void addExportHistory(Connection conn, User user, ExportHistoryDBRep exportHistory, KeyFactory keyFactory)
             throws SQLException, DependencyException, PermissionException, DataAccessException, ObjectNotFoundException {
 
         // 1) insert into vc_model_export_history
@@ -99,16 +97,16 @@ public class ExportHistoryDBDriver {
         }
     }
 
-    public List<ExportHistoryRep> getExportHistoryForUser(Connection conn, User user) throws SQLException, JsonProcessingException {
+    public List<ExportHistoryDBRep> getExportHistoryForUser(Connection conn, User user) throws SQLException, JsonProcessingException {
         String sql = "SELECT * FROM vc_simulation_export_history WHERE user_ref = ?";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setLong(1, Long.parseLong(user.getID().toString()));
         ResultSet resultSet = ps.executeQuery();
-        List<ExportHistoryRep> exportHistoryReps = new ArrayList<>();
+        List<ExportHistoryDBRep> exportHistoryDBReps = new ArrayList<>();
         while (resultSet.next()) {
-            exportHistoryReps.add(ExportHistoryTable.table.getExportHistoryRecord(resultSet));
+            exportHistoryDBReps.add(ExportHistoryTable.table.getExportHistoryRecord(resultSet));
         }
-        return exportHistoryReps;
+        return exportHistoryDBReps;
     }
 
 }

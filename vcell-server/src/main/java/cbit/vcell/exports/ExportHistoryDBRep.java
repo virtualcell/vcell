@@ -1,15 +1,16 @@
-package cbit.vcell.modeldb;
+package cbit.vcell.exports;
 
 import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.export.server.HumanReadableExportData;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
 import org.vcell.util.document.KeyValue;
 
-import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
-public record ExportHistoryRep(
+public record ExportHistoryDBRep(
         int jobID,
         KeyValue simulationRef,
         ExportFormat exportFormat,
@@ -30,7 +31,7 @@ public record ExportHistoryRep(
         int tSlicesValue,
         int numVariablesValue
 ) {
-    public boolean equals(ExportHistoryRep other){
+    public boolean equals(ExportHistoryDBRep other){
         return this.jobID == other.jobID &&
                 this.simulationRef.equals(other.simulationRef) &&
                 this.exportFormat.equals(other.exportFormat) &&
@@ -50,5 +51,31 @@ public record ExportHistoryRep(
                 this.zSlicesValue == other.zSlicesValue &&
                 this.tSlicesValue == other.tSlicesValue &&
                 this.numVariablesValue == other.numVariablesValue;
+    }
+
+    public static ExportHistoryDBRep fromExportSpec(ExportSpecs exportSpecs, String uri, int jobID, VCSimulationDataIdentifier vcSimulationIdentifier){
+        double[] times = exportSpecs.getTimeSpecs().getAllTimes();
+        Timestamp timestamp = new Timestamp(Instant.now().toEpochMilli());
+        return new ExportHistoryDBRep(
+                jobID,
+                vcSimulationIdentifier.getSimulationKey(),
+                exportSpecs.getFormat(),
+                timestamp,
+                uri,
+                vcSimulationIdentifier.getDataKey().toString(),
+                exportSpecs.getSimulationName(),
+                exportSpecs.getHumanReadableExportData().applicationName,
+                exportSpecs.getHumanReadableExportData().biomodelName,
+                exportSpecs.getVariableSpecs().getVariableNames(),
+                exportSpecs.getHumanReadableExportData().differentParameterValues,
+                times[exportSpecs.getTimeSpecs().getBeginTimeIndex()],
+                times[exportSpecs.getTimeSpecs().getEndTimeIndex()],
+                exportSpecs.getHumanReadableExportData().serverSavedFileName,
+                exportSpecs.getHumanReadableExportData().applicationType,
+                exportSpecs.getHumanReadableExportData().nonSpatial,
+                exportSpecs.getHumanReadableExportData().zSlices,
+                exportSpecs.getHumanReadableExportData().tSlices,
+                exportSpecs.getHumanReadableExportData().numChannels
+        );
     }
 }

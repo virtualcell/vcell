@@ -1,13 +1,14 @@
-package cbit.vcell.modeldb;
+package cbit.vcell.exports;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.HumanReadableExportData.DifferentParameterValues;
+import cbit.vcell.modeldb.SimulationTable;
+import cbit.vcell.modeldb.UserTable;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.vcell.util.document.KeyValue;
 
-import java.math.BigDecimal;
 import java.sql.*;
 import java.util.List;
 import java.util.StringJoiner;
@@ -131,7 +132,7 @@ public class ExportHistoryTable extends Table {
 
     }
 
-    public ExportHistoryRep getExportHistoryRecord(ResultSet rset) throws SQLException, SQLException, JsonProcessingException {
+    public ExportHistoryDBRep getExportHistoryRecord(ResultSet rset) throws SQLException, SQLException, JsonProcessingException {
 
         int simulationRef         = rset.getInt(this.simulationRef.getUnqualifiedColName());
 
@@ -165,7 +166,7 @@ public class ExportHistoryTable extends Table {
 
 
 
-        return new ExportHistoryRep(
+        return new ExportHistoryDBRep(
                 jobId, new KeyValue("" + simulationRef), fmt, date,
                 uriVal, dataIdVal, simNameVal, appNameVal, bioNameVal, variables,
                 parameterValues, startBt, endBt, savedFileVal, appTypeVal,

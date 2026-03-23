@@ -3,8 +3,8 @@ package org.vcell.restq.exports;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.export.server.*;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.ExportHistoryDBDriver;
-import cbit.vcell.modeldb.ExportHistoryRep;
+import cbit.vcell.exports.ExportHistoryDBDriver;
+import cbit.vcell.exports.ExportHistoryDBRep;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -74,7 +74,7 @@ public class ExportHistoryDBTest {
         simulationKey = savedSimulation.getVersion().getVersionKey();
     }
 
-    private ExportHistoryRep getExportHistoryRep(int jobID, String uri, Timestamp timestamp){
+    private ExportHistoryDBRep getExportHistoryRep(int jobID, String uri, Timestamp timestamp){
         VCSimulationIdentifier vcSimId = new VCSimulationIdentifier(simulationKey, TestEndpointUtils.administratorUser);
         VCDataIdentifier vcdId = new VCSimulationDataIdentifier(vcSimId, jobID);
         GeometrySpecs geometrySpecs = new GeometrySpecs(null, 1, 1, ExportEnums.GeometryMode.GEOMETRY_FULL);
@@ -91,7 +91,7 @@ public class ExportHistoryDBTest {
             add(new HumanReadableExportData.DifferentParameterValues("parameter_name2", "original_0", "changed_1"));
         }};
 
-        return new ExportHistoryRep(
+        return new ExportHistoryDBRep(
                 jobID, vcSimId.getSimulationKey(), n5Specs.getFormatType(),
                 timestamp, uri, vcdId.getID(), savedSimulation.getName(),
                 "Application Name", savedBioModel.getName(), variableSpecs.getVariableNames(),
@@ -119,7 +119,7 @@ public class ExportHistoryDBTest {
 
         try (Connection conn = agroalConnectionFactory.getConnection(null)) {
             ExportHistoryDBDriver driver = new ExportHistoryDBDriver(null, null);
-            ExportHistoryRep rep = getExportHistoryRep(
+            ExportHistoryDBRep rep = getExportHistoryRep(
                     42,
                     "https://vcell.cam.uchc.edu/n5Data/paulricky/5456fb59b530a19.n5?dataSetName=3681309072",
                     now
@@ -127,7 +127,7 @@ public class ExportHistoryDBTest {
 
             driver.addExportHistory(conn, user, rep, agroalConnectionFactory.getKeyFactory());
             try {
-                List<ExportHistoryRep> exportHistoryRecord = driver.getExportHistoryForUser(conn, user);
+                List<ExportHistoryDBRep> exportHistoryRecord = driver.getExportHistoryForUser(conn, user);
                 Assertions.assertEquals(1, exportHistoryRecord.size(), "expected one record");
                 Assertions.assertTrue(rep.equals(exportHistoryRecord.get(0)));
                 Assertions.assertEquals(rep.parameterValues(), exportHistoryRecord.get(0).parameterValues());
@@ -146,12 +146,12 @@ public class ExportHistoryDBTest {
 
         try (Connection conn = agroalConnectionFactory.getConnection(null)) {
             ExportHistoryDBDriver driver = new ExportHistoryDBDriver(null, null);
-            ExportHistoryRep exportHistoryRep = getExportHistoryRep(7, "to-delete", now);
-            ExportHistoryRep notDeletedRep = getExportHistoryRep(8, "to-keep", now);
+            ExportHistoryDBRep exportHistoryDBRep = getExportHistoryRep(7, "to-delete", now);
+            ExportHistoryDBRep notDeletedRep = getExportHistoryRep(8, "to-keep", now);
 
 
             driver.addExportHistory(conn, user,
-                    exportHistoryRep,
+                    exportHistoryDBRep,
                     agroalConnectionFactory.getKeyFactory()
             );
             driver.addExportHistory(conn, user,
@@ -160,12 +160,12 @@ public class ExportHistoryDBTest {
             );
 
 
-            List<ExportHistoryRep> retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
+            List<ExportHistoryDBRep> retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
             Assertions.assertEquals(2, retrievedExportHistory.size(), "expected two records");
-            Assertions.assertTrue(exportHistoryRep.equals(retrievedExportHistory.get(0)));
+            Assertions.assertTrue(exportHistoryDBRep.equals(retrievedExportHistory.get(0)));
             Assertions.assertTrue(notDeletedRep.equals(retrievedExportHistory.get(1)));
 
-            driver.deleteExportHistory(conn, exportHistoryRep.uri());
+            driver.deleteExportHistory(conn, exportHistoryDBRep.uri());
             retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
             Assertions.assertEquals(1, retrievedExportHistory.size(), "expected one record after deletion");
             Assertions.assertTrue(notDeletedRep.equals(retrievedExportHistory.get(0)));
@@ -181,22 +181,22 @@ public class ExportHistoryDBTest {
 
         try (Connection conn = agroalConnectionFactory.getConnection(null)) {
             ExportHistoryDBDriver driver = new ExportHistoryDBDriver(null, null);
-            ExportHistoryRep exportHistoryRep = getExportHistoryRep(100, "uri100", now);
-            ExportHistoryRep exportHistoryRep1 = getExportHistoryRep(101, "uri101", now);
+            ExportHistoryDBRep exportHistoryDBRep = getExportHistoryRep(100, "uri100", now);
+            ExportHistoryDBRep exportHistoryDBRep1 = getExportHistoryRep(101, "uri101", now);
 
             driver.addExportHistory(conn, user,
-                    exportHistoryRep,
+                    exportHistoryDBRep,
                     agroalConnectionFactory.getKeyFactory()
             );
             driver.addExportHistory(conn, user,
-                    exportHistoryRep1,
+                    exportHistoryDBRep1,
                     agroalConnectionFactory.getKeyFactory()
             );
 
-            List<ExportHistoryRep> retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
+            List<ExportHistoryDBRep> retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
             Assertions.assertEquals(2, retrievedExportHistory.size(), "expected two records");
-            Assertions.assertTrue(exportHistoryRep.equals(retrievedExportHistory.get(0)));
-            Assertions.assertTrue(exportHistoryRep1.equals(retrievedExportHistory.get(1)));
+            Assertions.assertTrue(exportHistoryDBRep.equals(retrievedExportHistory.get(0)));
+            Assertions.assertTrue(exportHistoryDBRep1.equals(retrievedExportHistory.get(1)));
         }
     }
 }

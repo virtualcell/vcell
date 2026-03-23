@@ -6,13 +6,12 @@ import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.JobRequest;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.modeldb.ExportHistoryRep;
+import cbit.vcell.exports.ExportHistoryDBRep;
 import cbit.vcell.modeldb.SimulationRep;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.smallrye.mutiny.Multi;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Instance;
@@ -27,11 +26,9 @@ import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
-import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
-import java.util.Set;
 
 @ApplicationScoped
 public class ExportService {
@@ -50,8 +47,8 @@ public class ExportService {
     }
 
     public List<ExportResource.ExportHistory> getExportHistory(User user) throws DataAccessException {
-        List<ExportHistoryRep> exportHistoryReps = databaseServer.getUsersExportHistory(user);
-        return exportHistoryReps.stream().map(ExportResource.ExportHistory::fromExportHistoryRep).toList();
+        List<ExportHistoryDBRep> exportHistoryDBReps = databaseServer.getUsersExportHistory(user);
+        return exportHistoryDBReps.stream().map(ExportResource.ExportHistory::fromExportHistoryRep).toList();
     }
 
     public Multi<ExportEvent> getExportStatuses(User user, long jobID) throws ObjectNotFoundException {
