@@ -154,20 +154,6 @@ public class ClusterPlotPanel extends JPanel {
         return rounded * exp;
     }
 
-    public static String formatNumber(double v) {
-        if (v == 0) return "0";
-
-        double abs = Math.abs(v);
-        if (abs >= 1) {
-            return String.format("%.0f", v);      // 0, 10, 20, 30, 40
-        } else if (abs >= 0.01) {
-            return String.format("%.3f", v);      // 0.123
-        } else if (abs >= 0.0001) {
-            return String.format("%.5f", v);      // 0.00012
-        } else {
-            return String.format("%.2E", v);      // 2.0E-5
-        }
-    }
     public static String formatTick(double value, double step) {
         double absStep = Math.abs(step);
         String s;
