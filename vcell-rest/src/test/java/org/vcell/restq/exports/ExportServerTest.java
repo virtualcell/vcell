@@ -9,6 +9,7 @@ import cbit.vcell.simdata.*;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.xml.XmlParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.quarkus.test.junit.QuarkusTest;
@@ -30,6 +31,7 @@ import org.vcell.restq.services.Exports.ServerExportEventController;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -64,7 +66,7 @@ public class ExportServerTest {
     }
 
     @BeforeEach
-    public void setUp() throws IOException, DataAccessException, SQLException {
+    public void setUp() throws IOException, DataAccessException, SQLException, PropertyVetoException, XmlParseException {
         File testSimData = new File(ExportServerTest.class.getResource("/simdata").getPath());
         TestEndpointUtils.setSystemProperties(testSimData.getAbsolutePath(), System.getProperty("java.io.tmpdir"));
         Cachetable cachetable = new Cachetable(10 * Cachetable.minute, 10000);

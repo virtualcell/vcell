@@ -196,6 +196,7 @@ public class TestEndpointUtils {
 
         connection.prepareStatement("DELETE FROM VC_MATHMODELSIM").execute();
         connection.prepareStatement("DELETE FROM VC_SIMCONTEXT").execute();
+        connection.prepareStatement("DELETE FROM VC_SIMULATION_EXPORT_HISTORY").execute();
         connection.prepareStatement("DELETE FROM VC_SIMULATION").execute();
 
         connection.prepareStatement("DELETE FROM VC_MATHMODELXML").execute();
@@ -215,15 +216,23 @@ public class TestEndpointUtils {
         connection.close();
     }
 
-    public static void insertAdminsSimulation(DatabaseServerImpl databaseServer, AgroalConnectionFactory connectionFactory) throws IOException, DataAccessException, SQLException {
-        InputStream xmlFile = TestEndpointUtils.class.getResourceAsStream("/simdata/Administrator/SimID_597714292_0__0.simtask.xml");
+    public static void insertAdminsSimulation(DatabaseServerImpl databaseServer, AgroalConnectionFactory connectionFactory) throws IOException, DataAccessException, SQLException, PropertyVetoException, XmlParseException {
+        InputStream xmlFile = TestEndpointUtils.class.getResourceAsStream("/simdata/Administrator/Tutorial_FRAP.vcml");
         assert xmlFile != null;
-        String readXML = new String(xmlFile.readAllBytes());
-        xmlFile.close();
-        databaseServer.saveSimulation(administratorUser, new BigString(readXML), false);
+        BigString bioModelString = new BigString(new String(xmlFile.readAllBytes()));
+        bioModelString = databaseServer.saveBioModel(administratorUser, bioModelString, new String[]{});
+        BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelString.toString()));
+        String simulationKey = bioModel.getSimulation(0).getKey().toString();
+
+        // Have the key be set, that way the simulation files match the key.
         Object object = new Object();
         Connection connection = connectionFactory.getConnection(object);
-        connection.prepareStatement("UPDATE vc_simulation SET id = 597714292 WHERE name = 'FRAP'").executeUpdate();
+        connection.prepareStatement(
+            "ALTER TABLE vc_biomodelsim DISABLE TRIGGER ALL; ALTER TABLE vc_simulation DISABLE TRIGGER ALL;" +
+                "UPDATE vc_biomodelsim SET simref = 597714292 WHERE simref = " + simulationKey + ";" +
+                "UPDATE vc_simulation SET id = 597714292 WHERE id = " + simulationKey + ";" +
+                "ALTER TABLE vc_biomodelsim ENABLE TRIGGER ALL; ALTER TABLE vc_simulation ENABLE TRIGGER ALL"
+        ).executeUpdate();
         connection.commit();
         connection.close();
     }

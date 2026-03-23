@@ -9,6 +9,7 @@ import cbit.vcell.simdata.*;
 import cbit.vcell.solver.AnnotatedFunction;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
+import cbit.vcell.xml.XmlParseException;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.keycloak.client.KeycloakTestClient;
 import jakarta.inject.Inject;
@@ -27,6 +28,7 @@ import org.vcell.restq.handlers.AdminResource;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -60,7 +62,7 @@ public class ExportRequestTest {
     }
 
     @BeforeEach
-    public void setUp() throws IOException, DataAccessException, ApiException, SQLException {
+    public void setUp() throws IOException, DataAccessException, ApiException, SQLException, PropertyVetoException, XmlParseException {
         aliceAPIClient = TestEndpointUtils.createAuthenticatedAPIClient(keycloakClient, testPort, TestEndpointUtils.TestOIDCUsers.alice);
         TestEndpointUtils.mapApiClientToAdmin(aliceAPIClient);
         DatabaseServerImpl databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
