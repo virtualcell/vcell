@@ -188,7 +188,7 @@ private void connect() throws DataAccessException {
 	if(langevinSolverResultSet != null) {
 		langevinSolverResultSet.postProcess();
 	}
-	if( langevinSolverResultSet.isAverageDataAvailable()) {
+	if( langevinSolverResultSet != null && langevinSolverResultSet.isAverageDataAvailable()) {
 		odeSolverResultSet = langevinSolverResultSet.getAvg();
 	}
 }
