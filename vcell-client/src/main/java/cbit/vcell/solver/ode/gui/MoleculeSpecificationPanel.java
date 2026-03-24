@@ -149,6 +149,16 @@ public class MoleculeSpecificationPanel extends DocumentEditorSubPanel {
     }
     private void initConnections() {
         // listeners
+        getDisplayOptionsPanel().addPropertyChangeListener(ivjEventHandler);
+        getYAxisChoice().addListSelectionListener(ivjEventHandler);
+        this.addPropertyChangeListener(ivjEventHandler);
+        getYAxisChoice().setModel(getDefaultListModelY());
+    }
+    private DefaultListModel<ColumnDescription> getDefaultListModelY() {
+        if (defaultListModelY == null) {
+            defaultListModelY = new DefaultListModel<>();
+        }
+        return defaultListModelY;
     }
 
     private JLabel getYAxisLabel() {
@@ -166,7 +176,7 @@ public class MoleculeSpecificationPanel extends DocumentEditorSubPanel {
             JPanel content = displayOptionsCollapsiblePanel.getContentPanel();
             content.setLayout(new GridBagLayout());
 
-            // TODO: add JCheckBoxes for display options here
+
         }
         return displayOptionsCollapsiblePanel;
     }

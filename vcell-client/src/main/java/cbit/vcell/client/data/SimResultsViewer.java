@@ -80,10 +80,12 @@ private DataViewer createODEDataViewer() throws DataAccessException {
 	odeDataViewer.setSimulation(getSimulation());
 	ODESolverResultSet odesrs = ((ODEDataManager)dataManager).getODESolverResultSet();
 	LangevinSolverResultSet langevinSolverResultSet = ((ODEDataManager)dataManager).getLangevinSolverResultSet();
-	if(getSimulation().getSimulationOwner().getMathDescription().isLangevin() && langevinSolverResultSet.isAverageDataAvailable() && langevinSolverResultSet.isClusterDataAvailable()) {
-		odeDataViewer.setLangevinSolverResultSet(langevinSolverResultSet);
-		odeDataViewer.hasLangevinBatchResults = true;
-		odeDataViewer.replaceViewDataTab();
+	if(getSimulation() != null && langevinSolverResultSet != null) {
+		if (getSimulation().getSimulationOwner().getMathDescription().isLangevin() && langevinSolverResultSet.isAverageDataAvailable() && langevinSolverResultSet.isClusterDataAvailable()) {
+			odeDataViewer.setLangevinSolverResultSet(langevinSolverResultSet);
+			odeDataViewer.hasLangevinBatchResults = true;
+			odeDataViewer.replaceViewDataTab();
+		}
 	}
 	odeDataViewer.setOdeSolverResultSet(odesrs);
 	odeDataViewer.setNFSimMolecularConfigurations(((ODEDataManager)dataManager).getNFSimMolecularConfigurations());
