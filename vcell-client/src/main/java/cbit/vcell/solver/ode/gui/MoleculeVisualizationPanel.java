@@ -31,14 +31,14 @@ public class MoleculeVisualizationPanel extends DocumentEditorSubPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof Component c && SwingUtilities.isDescendingFrom(c, MoleculeVisualizationPanel.this)) {
-                System.out.println("MoleculeVisualizationPanel.IvjEventHandler.actionPerformed() called with " + e.getActionCommand());
+                System.out.println(this.getClass().getName() + ".actionPerformed() called with " + e.getActionCommand());
                 // switch selection between plot panel and data panel (located in a JCardLayout)
             }
         }
         @Override
         public void propertyChange(PropertyChangeEvent evt) {   // listens to changes in the MoleculeSpecificationPanel
             if (evt.getSource() == owner.getMoleculeSpecificationPanel() && "MoleculeSelection".equals(evt.getPropertyName())) {
-                System.out.println("MoleculeVisualizationPanel.IvjEventHandler.propertyChange() called with " + evt.getPropertyName());
+                System.out.println(this.getClass().getName() + ".propertyChange() called with " + evt.getPropertyName());
                 // redraw everything based on the new selections
                 MoleculeSpecificationPanel.MoleculeSelection sel = (MoleculeSpecificationPanel.MoleculeSelection) evt.getNewValue();
                 try {
@@ -53,7 +53,7 @@ public class MoleculeVisualizationPanel extends DocumentEditorSubPanel {
         @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getSource() instanceof Component c && SwingUtilities.isDescendingFrom(c, MoleculeVisualizationPanel.this)) {
-                System.out.println("MoleculeVisualizationPanel.IvjEventHandler.valueChanged() called");
+                System.out.println(this.getClass().getName() + ".valueChanged() called");
             }
         }
     }
@@ -96,11 +96,11 @@ public class MoleculeVisualizationPanel extends DocumentEditorSubPanel {
     }
     @Override
     protected void onSelectedObjectsChange(Object[] selectedObjects) {
-        System.out.println("MoleculeVisualizationPanel.onSelectedObjectsChange() called with " + selectedObjects.length + " objects");
+        System.out.println(this.getClass().getSimpleName() + ".onSelectedObjectsChange() called with " + selectedObjects.length + " objects");
 
     }
     public void refreshData() {
-        System.out.println("MoleculeVisualizationPanel.refreshData() called");
+        System.out.println(this.getClass().getSimpleName() + ".refreshData() called");
         simulationModelInfo = owner.getSimulationModelInfo();
         langevinSolverResultSet = owner.getLangevinSolverResultSet();
 

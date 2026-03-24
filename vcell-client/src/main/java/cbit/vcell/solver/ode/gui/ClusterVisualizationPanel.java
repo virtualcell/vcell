@@ -104,13 +104,13 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         @Override
         public void stateChanged(ChangeEvent e) {
             if (e.getSource() instanceof Component c && SwingUtilities.isDescendingFrom(c, ClusterVisualizationPanel.this)) {
-                System.out.println("ClusterVisualizationPanel.IvjEventHandler.stateChanged() called");
+                System.out.println(this.getClass().getName() + ".stateChanged() called");
             }
         }
         @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getSource() instanceof Component c && SwingUtilities.isDescendingFrom(c, ClusterVisualizationPanel.this)) {
-                System.out.println("ClusterVisualizationPanel.IvjEventHandler.valueChanged() called");
+                System.out.println(this.getClass().getName() + ".valueChanged() called");
             }
         }
     };
@@ -188,7 +188,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
                 clusterPlotPanel.addComponentListener(new ComponentAdapter() {
                     @Override
                     public void componentShown(ComponentEvent e) {
-                        System.out.println("ClusterVisualizationPanel.componentShown() called, height = " + clusterPlotPanel.getHeight());
+                        System.out.println(this.getClass().getSimpleName() + ".componentShown() called, height = " + clusterPlotPanel.getHeight());
                     }
                 });
             } catch (java.lang.Throwable ivjExc) {
@@ -388,7 +388,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
 
     @Override
     protected void onSelectedObjectsChange(Object[] selectedObjects) {
-        System.out.println("ClusterVisualizationPanel.onSelectedObjectsChange() called with " + selectedObjects.length + " objects");
+        System.out.println(this.getClass().getSimpleName() + ".onSelectedObjectsChange() called with " + selectedObjects.length + " objects");
     }
 
     public void refreshData() {
@@ -402,7 +402,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         }
 //        simulationModelInfo = owner.getSimulationModelInfo();
 //        langevinSolverResultSet = owner.getLangevinSolverResultSet();
-        System.out.println("ClusterVisualizationPanel.refreshData() called");
+        System.out.println(this.getClass().getSimpleName() + ".refreshData() called");
     }
 
     // ---------------------------------------------------------------------
@@ -530,11 +530,11 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
     }
 
     private void redrawPlot(ClusterSpecificationPanel.ClusterSelection sel) throws ExpressionException {
-        System.out.println("ClusterVisualizationPanel.redrawPlot() called, current selection: " + sel);
+        System.out.println(this.getClass().getSimpleName() + ".redrawPlot() called, current selection: " + sel);
         if (sel != null) {
-            System.out.println("ClusterVisualizationPanel.redrawPlot() mode: " + sel.mode + ", columns: " + sel.columns.size() + ", resultSet: " + (sel.resultSet != null ? "present" : "null"));
+            System.out.println(this.getClass().getSimpleName() + ".redrawPlot() mode: " + sel.mode + ", columns: " + sel.columns.size() + ", resultSet: " + (sel.resultSet != null ? "present" : "null"));
         } else {
-            System.out.println("ClusterVisualizationPanel.redrawPlot() selection is null");
+            System.out.println(this.getClass().getSimpleName() + ".redrawPlot() selection is null");
         }
 
         if (sel == null || sel.resultSet == null) {
@@ -662,7 +662,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
     }
 
     private void redrawLegend(ClusterSpecificationPanel.ClusterSelection sel) {
-        System.out.println("ClusterVisualizationPanel.redrawLegend() called");
+        System.out.println(this.getClass().getSimpleName() + ".redrawLegend() called");
         getJPanelPlotLegends().removeAll();
 
         for (ColumnDescription cd : sel.columns) {
@@ -685,7 +685,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
     }
 
     private void redrawDataTable(ClusterSpecificationPanel.ClusterSelection sel) throws ExpressionException {
-        System.out.println("ClusterVisualizationPanel.updateDataTable() called");
+        System.out.println(this.getClass().getSimpleName() + ".updateDataTable() called");
         getClusterDataPanel().updateData(sel);
     }
     public void setSpecialityRenderer(SpecialtyTableRenderer str) {
