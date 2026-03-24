@@ -2,18 +2,26 @@ package cbit.vcell.simdata;
 
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.DataSymbolMetadata;
+import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.util.ColumnDescription;
+import org.vcell.model.ssld.SsldUtils;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class LangevinSolverResultSet implements Serializable {
 
     private final LangevinBatchResultSet raw;
-
     public LangevinSolverResultSet(LangevinBatchResultSet raw) {
         this.raw = raw;
     }
+    public final Map<String, SsldUtils.LangevinResult> metadataMap = new LinkedHashMap<>();
+
 
 //    // safe getter that returns a deep copy, but I don't think we need it
 //    public LangevinBatchResultSet getLangevinBatchResultSetSafe() {
@@ -85,6 +93,7 @@ public class LangevinSolverResultSet implements Serializable {
         }
         if(isAverageDataAvailable()) {
             ODESimData co = getAvg();
+            populateMetadata(co);
             checkTrivial(co);
             co = getMin();
             checkTrivial(co);
@@ -92,6 +101,20 @@ public class LangevinSolverResultSet implements Serializable {
             checkTrivial(co);
             co = getStd();
             checkTrivial(co);
+        }
+    }
+    private void populateMetadata(ODESimData co) {
+        // from solver-generated observable (ColumnDescription.name) extract molecule, site and state names
+        ColumnDescription[] cds = co.getColumnDescriptions();
+        for(ColumnDescription cd : cds) {
+            String columnName = cd.getName();
+            SimulationModelInfo.ModelCategoryType filterCategory = null;	// parse name to find the filter category
+            SsldUtils.LangevinResult lr = SsldUtils.LangevinResult.fromString(columnName);
+            if(lr.qualifier.equals(SsldUtils.Qualifier.NONE)) {
+                System.out.println("Ignoring LangevinResult token: " + columnName + ", qualifier missing");
+                continue;
+            }
+            metadataMap.put(columnName, lr);
         }
     }
     private static void checkTrivial(ODESimData co) {

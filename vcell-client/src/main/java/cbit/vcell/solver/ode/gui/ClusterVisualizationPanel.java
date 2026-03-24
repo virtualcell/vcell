@@ -208,7 +208,6 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         return clusterDataPanel;
     }
 
-    // ---------------------------------------------------------------------
     private JPanel getBottomRightPanel() {
         if (bottomRightPanel == null) {
             bottomRightPanel = new JPanel();

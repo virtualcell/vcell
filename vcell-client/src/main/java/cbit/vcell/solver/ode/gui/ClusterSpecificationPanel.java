@@ -125,7 +125,7 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         public void actionPerformed(ActionEvent e) {
             String cmd = e.getActionCommand();
             if (e.getSource() instanceof JRadioButton rb && SwingUtilities.isDescendingFrom(rb, ClusterSpecificationPanel.this)) {
-                System.out.println("ClusterSpecificationPanel.actionPerformed() called. Source is JRadioButton: " + rb.getText());
+                System.out.println(this.getClass().getName() + ".actionPerformed() called. Source is JRadioButton: " + rb.getText());
                 DisplayMode mode = DisplayMode.fromActionCommand(cmd);
                 populateYAxisChoices(mode);
             }
@@ -133,12 +133,13 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getSource() == ClusterSpecificationPanel.this) {
-                System.out.println("ClusterSpecificationPanel.IvjEventHandler.propertyChange() called");
+                System.out.println(this.getClass().getName() + ".IvjEventHandler.propertyChange() called");
             }
         }
         @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getSource() == ClusterSpecificationPanel.this.getYAxisChoice() && !e.getValueIsAdjusting()) {
+                System.out.println(this.getClass().getName() + ".valueChanged() called. Source is YAxisChoice JList. Selected values: " + getYAxisChoice().getSelectedValuesList());
 
                 enforceAcsSdAcoRule();
 
@@ -251,7 +252,7 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
     }
 
     private void initialize() {
-        System.out.println("ClusterSpecificationPanel.initialize() called");
+        System.out.println(this.getClass().getSimpleName() + ".initialize() called");
         setPreferredSize(new Dimension(213, 600));
         setLayout(new GridBagLayout());
         setSize(248, 604);
@@ -437,7 +438,7 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
 
     @Override
     protected void onSelectedObjectsChange(Object[] selectedObjects) {
-        System.out.println("ClusterSpecificationPanel.onSelectedObjectsChange() called with " + selectedObjects.length + " objects");
+        System.out.println(this.getClass().getSimpleName() + ".onSelectedObjectsChange() called with " + selectedObjects.length + " objects");
     }
 
     public void refreshData() {
@@ -449,7 +450,7 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
             yAxisCounts.put(DisplayMode.MEAN, countColumns(langevinSolverResultSet.getClusterMean()));
             yAxisCounts.put(DisplayMode.OVERALL, countColumns(langevinSolverResultSet.getClusterOverall()));
         }
-        System.out.println("ClusterSpecificationPanel.refreshData() called");
+        System.out.println(this.getClass().getSimpleName() + ".refreshData() called");
 
         // find the selected radio button inside the collapsible panel and fire event as if it were just selected by mouse click
         // which will populate the y-axis choices based on the new data
