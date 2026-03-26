@@ -248,7 +248,9 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
     public ClusterSpecificationPanel(ODEDataViewer odeDataViewer) {
         super();
         this.owner = odeDataViewer;
-        initialize();
+        initialize();       // TODO: this will go once we derive from AbstractClusterSpecificationPanel and move all
+                            // the UI construction there, leaving only event handling and data management here
+        initConnections();
     }
 
     private void initialize() {
@@ -295,8 +297,6 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         gbc.weighty = 1.0;
         gbc.insets = new Insets(0, 4, 4, 4);
         add(getJScrollPaneYAxis(), gbc);
-
-        initConnections();
     }
 
     private CollapsiblePanel getDisplayOptionsPanel() {
@@ -314,10 +314,6 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
             rbCounts.setActionCommand(DisplayMode.COUNTS.actionCommand());
             rbMean.setActionCommand(DisplayMode.MEAN.actionCommand());
             rbOverall.setActionCommand(DisplayMode.OVERALL.actionCommand());
-
-            rbCounts.addActionListener(ivjEventHandler);
-            rbMean.addActionListener(ivjEventHandler);
-            rbOverall.addActionListener(ivjEventHandler);
 
             rbCounts.setToolTipText(DisplayMode.COUNTS.tooltip());
             rbMean.setToolTipText(DisplayMode.MEAN.tooltip());
@@ -418,10 +414,15 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
     }
 
     private void initConnections() {
-        getDisplayOptionsPanel().addPropertyChangeListener(ivjEventHandler);
+        JPanel content = getDisplayOptionsPanel().getContentPanel();
+        for (Component c : content.getComponents()) {
+            if (c instanceof JRadioButton rb) {
+                rb.addActionListener(ivjEventHandler);
+            }
+        }
         getYAxisChoice().addListSelectionListener(ivjEventHandler);
-        this.addPropertyChangeListener(ivjEventHandler);
         getYAxisChoice().setModel(getDefaultListModelY());
+        this.addPropertyChangeListener(ivjEventHandler);
     }
 
     private DefaultListModel<ColumnDescription> getDefaultListModelY() {

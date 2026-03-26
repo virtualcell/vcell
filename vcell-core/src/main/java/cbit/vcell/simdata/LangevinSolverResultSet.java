@@ -51,6 +51,15 @@ public class LangevinSolverResultSet implements Serializable {
         return raw == null ? null : raw.getOdeSimDataClusterOverall();
     }
 
+    public ColumnDescription getColumnDescriptionByName(String columnName) {
+        if(raw == null || raw.getOdeSimDataAvg() == null) {
+            return null;
+        }
+        int index = raw.getOdeSimDataAvg().findColumn(columnName);
+        ColumnDescription cd = raw.getOdeSimDataAvg().getColumnDescriptions(index);
+        return cd;
+    }
+
     // helper functions
     public boolean isAverageDataAvailable() {
         return getAvg() != null &&

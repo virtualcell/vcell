@@ -534,12 +534,13 @@ public void setVcDataIdentifier(VCDataIdentifier vcDataIdentifier) {
 	fieldVcDataIdentifier = vcDataIdentifier;
 	setOdeDataContext();
 	firePropertyChange("vcDataIdentifier", oldValue, vcDataIdentifier);
-	outputSpeciesResultsPanel.refreshData();
 	if(hasLangevinBatchResults) {
 		getClusterSpecificationPanel().refreshData();
 		getClusterVisualizationPanel().refreshData();
 		getMoleculeSpecificationPanel().refreshData();
 		getMoleculeVisualizationPanel().refreshData();
+	} else {
+		outputSpeciesResultsPanel.refreshData();
 	}
 }
 
