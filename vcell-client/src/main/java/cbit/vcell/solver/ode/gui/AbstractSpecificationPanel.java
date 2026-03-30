@@ -111,9 +111,7 @@ public abstract class AbstractSpecificationPanel extends DocumentEditorSubPanel 
     // ------------------------------
     protected CollapsiblePanel getDisplayOptionsPanel() {
         if (displayOptionsCollapsiblePanel == null) {
-            displayOptionsCollapsiblePanel =
-                    new CollapsiblePanel("Display Options", true);
-
+            displayOptionsCollapsiblePanel = new CollapsiblePanel("Display Options", true);
             JPanel content = displayOptionsCollapsiblePanel.getContentPanel();
             content.setLayout(new GridBagLayout());
         }

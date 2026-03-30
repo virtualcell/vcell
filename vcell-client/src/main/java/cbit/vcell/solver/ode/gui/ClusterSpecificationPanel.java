@@ -23,7 +23,7 @@ import java.beans.PropertyChangeListener;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
+public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
 
     public enum DisplayMode {
         COUNTS(
@@ -120,6 +120,45 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         }
     }
 
+    private static class ClusterYAxisRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                boolean isSelected, boolean cellHasFocus) {
+            JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+
+            if (value instanceof ODESolverResultSetColumnDescription cd) {
+                label.setText(cd.getName());
+                if (cd.isTrivial()) {
+                    label.setForeground(Color.GRAY);
+                } else {
+                    label.setForeground(isSelected
+                            ? list.getSelectionForeground()
+                            : list.getForeground());
+                }
+                DisplayMode mode = (DisplayMode)
+                        ((JComponent) list).getClientProperty("ClusterDisplayMode");
+                label.setToolTipText(buildTooltip(cd, mode));
+            }
+            return label;
+        }
+        private String buildTooltip(ODESolverResultSetColumnDescription cd, DisplayMode mode) {
+            if (mode == null) {
+                return null;
+            }
+            String name = cd.getName();
+            return switch (mode) {
+                case COUNTS ->
+                        "<html>Number of clusters of size <b>" + name +
+                                "</b> <font color=\"#8B0000\">[molecules]</font></html>";
+                case MEAN, OVERALL -> {
+                    ClusterStatistic stat = ClusterStatistic.valueOf(name);
+                    yield "<html>" + stat.description +
+                            "<font color=\"#8B0000\"> [" + stat.unit + "]</font></html>";
+                }
+            };
+        }
+    }
+
     class IvjEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -140,17 +179,13 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         public void valueChanged(ListSelectionEvent e) {
             if (e.getSource() == ClusterSpecificationPanel.this.getYAxisChoice() && !e.getValueIsAdjusting()) {
                 System.out.println(this.getClass().getName() + ".valueChanged() called. Source is YAxisChoice JList. Selected values: " + getYAxisChoice().getSelectedValuesList());
-
                 enforceAcsSdAcoRule();
-
                 // extract selected ColumnDescriptions
                 java.util.List<ColumnDescription> selected = getYAxisChoice().getSelectedValuesList();
                 DisplayMode mode = getCurrentDisplayMode();
                 ODESolverResultSet srs = getResultSetForMode(mode);
-
                 // set property to inform the list about current mode (needed for renderer)
                 yAxisChoiceList.putClientProperty("ClusterDisplayMode", mode);
-
                 // fire the event upward
                 firePropertyChange("ClusterSelection", null, new ClusterSelection(mode, selected, srs));
             }
@@ -158,36 +193,47 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
     };
 
     private final ODEDataViewer owner;
-    LangevinSolverResultSet langevinSolverResultSet = null;
-    SimulationModelInfo simulationModelInfo = null;
+    private LangevinSolverResultSet langevinSolverResultSet = null;
+    private SimulationModelInfo simulationModelInfo = null;
+
     private final Map<DisplayMode, Integer> yAxisCounts = new LinkedHashMap<>();
     ClusterSpecificationPanel.IvjEventHandler ivjEventHandler = new ClusterSpecificationPanel.IvjEventHandler();
 
-    private CollapsiblePanel displayOptionsCollapsiblePanel = null;
-    private JScrollPane jScrollPaneYAxis = null;
-    private static final String YAxisLabelText = "Y Axis: ";
-    private JLabel yAxisLabel = null;
-    private JList yAxisChoiceList = null;
-    private DefaultListModel<ColumnDescription> defaultListModelY = null;
+    public ClusterSpecificationPanel(ODEDataViewer odeDataViewer) {
+        super();
+        this.owner = odeDataViewer;
+        getYAxisChoice().setCellRenderer(new ClusterYAxisRenderer());
+        initConnections();
+    }
+
+    private void initConnections() {
+        JPanel content = getDisplayOptionsPanel().getContentPanel();
+        for (Component c : content.getComponents()) {
+            if (c instanceof JRadioButton rb) {
+                rb.addActionListener(ivjEventHandler);
+            }
+        }
+        getYAxisChoice().addListSelectionListener(ivjEventHandler);
+        getYAxisChoice().setModel(getDefaultListModelY());
+        this.addPropertyChangeListener(ivjEventHandler);
+    }
+
+    // --------------------------------------------------------------
 
     private void populateYAxisChoices(DisplayMode mode) {
         DefaultListModel<ColumnDescription> model = getDefaultListModelY();
         model.clear();
         getYAxisChoice().setEnabled(false);
-
         updateYAxisLabel(mode);
-
         ColumnDescription[] cds = getColumnDescriptionsForMode(mode);
         if (cds == null || cds.length <= 1) {
             return;
         }
-
         for (ColumnDescription cd : cds) {
             if (!"t".equals(cd.getName())) {
                 model.addElement(cd);
             }
         }
-
         if (!model.isEmpty()) {
             getYAxisChoice().setEnabled(true);
             getYAxisChoice().setSelectedIndex(0);   // triggers valueChanged()
@@ -206,7 +252,6 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
             return; // rule applies only in these modes
         }
         java.util.List<ColumnDescription> selected = getYAxisChoice().getSelectedValuesList();
-
         boolean acs = contains(selected, "ACS");
         boolean sd  = contains(selected, "SD");
         boolean aco = contains(selected, "ACO");
@@ -245,70 +290,16 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
         }
     }
 
-    public ClusterSpecificationPanel(ODEDataViewer odeDataViewer) {
-        super();
-        this.owner = odeDataViewer;
-        initialize();       // TODO: this will go once we derive from AbstractClusterSpecificationPanel and move all
-                            // the UI construction there, leaving only event handling and data management here
-        initConnections();
-    }
+    @Override
+    protected CollapsiblePanel getDisplayOptionsPanel() {
+        CollapsiblePanel cp = super.getDisplayOptionsPanel();
+        JPanel content = cp.getContentPanel();
 
-    private void initialize() {
-        System.out.println(this.getClass().getSimpleName() + ".initialize() called");
-        setPreferredSize(new Dimension(213, 600));
-        setLayout(new GridBagLayout());
-        setSize(248, 604);
-        setMinimumSize(new Dimension(125, 300));
-
-        JLabel xAxisLabel = new JLabel("<html><b>X Axis: </b></html>");     // non-breaking space is  &nbsp;
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridx = 0; gbc.gridy = 0;
-        gbc.insets = new Insets(4, 4, 0, 4);
-        add(xAxisLabel, gbc);
-
-        JTextField xAxisTextBox = new JTextField("time [seconds]");
-        xAxisTextBox.setEnabled(false);
-        xAxisTextBox.setEditable(false);
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0; gbc.gridy = 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        gbc.insets = new Insets(0, 4, 4, 4);
-        add(xAxisTextBox, gbc);
-
-        gbc = new GridBagConstraints();
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(4, 4, 0, 4);
-        gbc.gridx = 0; gbc.gridy = 2;
-        add(getYAxisLabel(), gbc);
-
-        gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.insets = new Insets(4, 4, 5, 4);
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        add(getDisplayOptionsPanel(), gbc);
-
-        gbc = new GridBagConstraints();
-        gbc.gridx = 0; gbc.gridy = 4;
-        gbc.fill = GridBagConstraints.BOTH;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        gbc.insets = new Insets(0, 4, 4, 4);
-        add(getJScrollPaneYAxis(), gbc);
-    }
-
-    private CollapsiblePanel getDisplayOptionsPanel() {
-        if(displayOptionsCollapsiblePanel == null) {
-            displayOptionsCollapsiblePanel = new CollapsiblePanel("Display Options", true);
-            JPanel content = displayOptionsCollapsiblePanel.getContentPanel();
-            content.setLayout(new GridBagLayout());
-
+        if (content.getComponentCount() == 0) {     // Only populate once
             ButtonGroup group = new ButtonGroup();
 
-            JRadioButton rbCounts  = new JRadioButton(DisplayMode.COUNTS.uiLabel());
-            JRadioButton rbMean    = new JRadioButton(DisplayMode.MEAN.uiLabel());
+            JRadioButton rbCounts = new JRadioButton(DisplayMode.COUNTS.uiLabel());
+            JRadioButton rbMean = new JRadioButton(DisplayMode.MEAN.uiLabel());
             JRadioButton rbOverall = new JRadioButton(DisplayMode.OVERALL.uiLabel());
 
             rbCounts.setActionCommand(DisplayMode.COUNTS.actionCommand());
@@ -336,106 +327,63 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
             gbc.gridy = 2;
             content.add(rbOverall, gbc);
         }
-        return displayOptionsCollapsiblePanel;
+        return cp;
     }
 
-    private JScrollPane getJScrollPaneYAxis() {
-        if(jScrollPaneYAxis == null) {
-            jScrollPaneYAxis = new JScrollPane();
-            jScrollPaneYAxis.setName("JScrollPaneYAxis");
-            jScrollPaneYAxis.setViewportView(getYAxisChoice());
-            // prevent collapse when list is empty
-            jScrollPaneYAxis.setMinimumSize(new Dimension(100, 120));
-            jScrollPaneYAxis.setPreferredSize(new Dimension(100, 120));
-        }
-        return jScrollPaneYAxis;
-    }
-    private JLabel getYAxisLabel() {
-        if (yAxisLabel == null) {
-            yAxisLabel = new JLabel();
-            yAxisLabel.setName("YAxisLabel");
-            String text = "<html><b>" + YAxisLabelText + "</b></html>";
-            yAxisLabel.setText(text);
-        }
-        return yAxisLabel;
-    }
-    private JList getYAxisChoice() {
-        if ((yAxisChoiceList == null)) {
-            yAxisChoiceList = new JList();
-            yAxisChoiceList.setName("YAxisChoice");
-            yAxisChoiceList.setBounds(0, 0, 160, 120);
-            yAxisChoiceList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-            yAxisChoiceList.setCellRenderer(new DefaultListCellRenderer() {
-                @Override
-                public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-                                    boolean isSelected, boolean cellHasFocus) {
-                    JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-
-                    if (value instanceof ODESolverResultSetColumnDescription cd) {
-                        String name = cd.getName();
-                        label.setText(name);
-
-                        if (cd.isTrivial()) {   // gray out trivial entries
-                            label.setForeground(Color.GRAY);
-                        } else {
-                            label.setForeground(isSelected
-                                    ? list.getSelectionForeground()
-                                    : list.getForeground());
-                        }
-
-                        DisplayMode mode = (DisplayMode)        // determine tooltip based on DisplayMode
-                                ((JComponent) list).getClientProperty("ClusterDisplayMode");
-                        if (mode == null) {
-                            label.setToolTipText(null);
-                            return label;
-                        }
-                        switch (mode) {
-                            case COUNTS:
-                                // cluster size <b>X</b> molecules
-                                label.setText(name);
-                                label.setToolTipText(
-                                        "<html>Number of Clusters of size: <b>" + name + "</b> " + "<font color=\"#8B0000\">" + "[molecules] </font></html>"
-                                );
-                                break;
-                            case MEAN:
-                            case OVERALL:
-                                ClusterStatistic stat = ClusterStatistic.valueOf(name);
-                                label.setText(stat.fullName);
-                                String tooltip = "<html>" + stat.description + "<font color=\"#8B0000\">" + " [" + stat.unit + "] </font></html>";
-                                label.setToolTipText(tooltip);
-                                break;
-                        }
-                    }
-                    return label;
-                }
-            });
-        }
-        return yAxisChoiceList;
-    }
-
-    private void initConnections() {
-        JPanel content = getDisplayOptionsPanel().getContentPanel();
-        for (Component c : content.getComponents()) {
-            if (c instanceof JRadioButton rb) {
-                rb.addActionListener(ivjEventHandler);
-            }
-        }
-        getYAxisChoice().addListSelectionListener(ivjEventHandler);
-        getYAxisChoice().setModel(getDefaultListModelY());
-        this.addPropertyChangeListener(ivjEventHandler);
-    }
-
-    private DefaultListModel<ColumnDescription> getDefaultListModelY() {
-        if (defaultListModelY == null) {
-            defaultListModelY = new DefaultListModel<>();
-        }
-        return defaultListModelY;
-    }
-
-    private void handleException(java.lang.Throwable exception) {
-        System.out.println("--------- UNCAUGHT EXCEPTION ---------");
-        exception.printStackTrace(System.out);
-    }
+//    @Override
+//    protected JList getYAxisChoice() {
+//        if ((yAxisChoiceList == null)) {
+//            yAxisChoiceList = new JList();
+//            yAxisChoiceList.setName("YAxisChoice");
+//            yAxisChoiceList.setBounds(0, 0, 160, 120);
+//            yAxisChoiceList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+//            yAxisChoiceList.setCellRenderer(new DefaultListCellRenderer() {
+//                @Override
+//                public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+//                                    boolean isSelected, boolean cellHasFocus) {
+//                    JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+//
+//                    if (value instanceof ODESolverResultSetColumnDescription cd) {
+//                        String name = cd.getName();
+//                        label.setText(name);
+//
+//                        if (cd.isTrivial()) {   // gray out trivial entries
+//                            label.setForeground(Color.GRAY);
+//                        } else {
+//                            label.setForeground(isSelected
+//                                    ? list.getSelectionForeground()
+//                                    : list.getForeground());
+//                        }
+//
+//                        DisplayMode mode = (DisplayMode)        // determine tooltip based on DisplayMode
+//                                ((JComponent) list).getClientProperty("ClusterDisplayMode");
+//                        if (mode == null) {
+//                            label.setToolTipText(null);
+//                            return label;
+//                        }
+//                        switch (mode) {
+//                            case COUNTS:
+//                                // cluster size <b>X</b> molecules
+//                                label.setText(name);
+//                                label.setToolTipText(
+//                                        "<html>Number of Clusters of size: <b>" + name + "</b> " + "<font color=\"#8B0000\">" + "[molecules] </font></html>"
+//                                );
+//                                break;
+//                            case MEAN:
+//                            case OVERALL:
+//                                ClusterStatistic stat = ClusterStatistic.valueOf(name);
+//                                label.setText(stat.fullName);
+//                                String tooltip = "<html>" + stat.description + "<font color=\"#8B0000\">" + " [" + stat.unit + "] </font></html>";
+//                                label.setToolTipText(tooltip);
+//                                break;
+//                        }
+//                    }
+//                    return label;
+//                }
+//            });
+//        }
+//        return yAxisChoiceList;
+//    }
 
     @Override
     protected void onSelectedObjectsChange(Object[] selectedObjects) {
@@ -479,6 +427,7 @@ public class ClusterSpecificationPanel extends DocumentEditorSubPanel {
             case OVERALL-> langevinSolverResultSet.getClusterOverall();
         };
     }
+
     private ColumnDescription[] getColumnDescriptionsForMode(DisplayMode mode) {
         ODESolverResultSet srs = getResultSetForMode(mode);
         return (srs == null ? null : srs.getColumnDescriptions());

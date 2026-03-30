@@ -70,13 +70,11 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
         private final String actionCommand;
         private final String uiLabel;
         private final String tooltip;
-
         StatisticSelection(String actionCommand, String uiLabel, String tooltip) {
             this.actionCommand = actionCommand;
             this.uiLabel = uiLabel;
             this.tooltip = tooltip;
         }
-
         public String actionCommand() { return actionCommand; }
         public String uiLabel()       { return uiLabel; }
         public String tooltip()       { return tooltip; }
@@ -102,12 +100,10 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
         public final java.util.List<ColumnDescription> selectedColumns;
         public final java.util.List<StatisticSelection> selectedStatistics;
         public final java.util.List<DisplayMode> selectedDisplayModes;
-
         public MoleculeSelection(
                 java.util.List<ColumnDescription> selectedColumns,
                 java.util.List<StatisticSelection> selectedStatistics,
                 java.util.List<DisplayMode> selectedDisplayModes) {
-
             this.selectedColumns = selectedColumns;
             this.selectedStatistics = selectedStatistics;
             this.selectedDisplayModes = selectedDisplayModes;
@@ -115,7 +111,6 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
     }
 
     private static class MoleculeYAxisRenderer extends DefaultListCellRenderer {
-
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value, int index,
                 boolean isSelected, boolean cellHasFocus) {
@@ -147,7 +142,6 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
     }
 
     class IvjEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener {
-
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof JCheckBox cb && SwingUtilities.isDescendingFrom(cb, MoleculeSpecificationPanel.this)) {
@@ -193,10 +187,9 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
     }
     MoleculeSpecificationPanel.IvjEventHandler ivjEventHandler = new MoleculeSpecificationPanel.IvjEventHandler();
 
-    // these below may go to a base class
     private final ODEDataViewer owner;
-    LangevinSolverResultSet langevinSolverResultSet = null;
-    SimulationModelInfo simulationModelInfo = null;
+    private LangevinSolverResultSet langevinSolverResultSet = null;
+    private SimulationModelInfo simulationModelInfo = null;
 
     public MoleculeSpecificationPanel(ODEDataViewer owner) {
         super();
@@ -217,12 +210,13 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
         this.addPropertyChangeListener(ivjEventHandler);
     }
 
+    // -----------------------------------------------------------
 
     @Override
     protected CollapsiblePanel getDisplayOptionsPanel() {
-
         CollapsiblePanel cp = super.getDisplayOptionsPanel();
         JPanel content = cp.getContentPanel();
+
         if (content.getComponentCount() == 0) {     // Only populate once
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.gridx = 0;
