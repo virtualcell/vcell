@@ -37,48 +37,25 @@ public class ExportHistoryDBDriver {
         String ehSQL = ExportHistoryTable.table.getInsertSQL();
         KeyValue keyValue = keyFactory.getNewKey(conn);
 
-        Object jsonDBObjectForParamValues;
-        try{
-            ObjectMapper mapper = new ObjectMapper();
-            String jsonVersionOfParamValues = mapper.writeValueAsString(exportHistory.parameterValues());
-            if (isOracleConnection(conn)){
-                Clob clob = conn.createClob();
-                clob.setString(1, jsonVersionOfParamValues);
-                jsonDBObjectForParamValues = clob;
-            } else {
-                PGobject pGobject = new PGobject();
-                pGobject.setType("jsonb");
-                pGobject.setValue(jsonVersionOfParamValues);
-                jsonDBObjectForParamValues = pGobject;
-            }
-        } catch (JsonProcessingException e){
-            throw new DataAccessException(e);
-        }
-
-
         try (PreparedStatement ps = conn.prepareStatement(ehSQL)) {
             ExportHistoryTable.table.bindForInsert(ps,
                     keyValue,
                     exportHistory.jobID(),
                     Integer.parseInt(user.getID().toString()),
+                    exportHistory.bioModelRef() == null ? null : Integer.parseInt(exportHistory.bioModelRef().toString()),
+                    exportHistory.mathModelRef() == null ? null : Integer.parseInt(exportHistory.mathModelRef().toString()),
                     Integer.parseInt(exportHistory.simulationRef().toString()),
+                    Integer.parseInt(exportHistory.mathRef().toString()),
                     exportHistory.exportFormat(),
                     exportHistory.exportDate(),
                     exportHistory.uri(),
-                    exportHistory.dataIdValue(),
-                    exportHistory.simName(),
-                    exportHistory.appName(),
-                    exportHistory.bioName(),
                     conn.createArrayOf("VARCHAR", exportHistory.variables()),
-                    jsonDBObjectForParamValues,
                     exportHistory.startTimeValue(),
                     exportHistory.endTimeValue(),
+                    exportHistory.zSliceStart(),
+                    exportHistory.zSliceEnd(),
                     exportHistory.savedFileNameValue(),
-                    exportHistory.applicationTypeValue(),
-                    exportHistory.nonSpatialValue(),
-                    exportHistory.zSlicesValue(),
-                    exportHistory.tSlicesValue(),
-                    exportHistory.numVariablesValue()
+                    exportHistory.eventStatus().toString()
             );
             System.out.println("Data insertion tag:");
             System.out.println(ps.executeUpdate());
@@ -97,12 +74,22 @@ public class ExportHistoryDBDriver {
         }
     }
 
-    public List<ExportHistoryDBRep> getExportHistoryForUser(Connection conn, User user) throws SQLException, JsonProcessingException {
-        String sql = "SELECT * FROM vc_simulation_export_history WHERE user_ref = ?";
+    // sub selection of sim ref key for that export event, then tie it back to biomodel/sim for getting metadata (name, application, etc)
+    public List<ExportHistory> getExportHistoryForUser(Connection conn, User user) throws SQLException, JsonProcessingException, DataAccessException {
+        String sql = """
+        SELECT eh.*, sim.name as sim_name, bio.name as bio_name, bio.childSummaryLRG, bio.childSummarySML, math.name as math_model_name,
+        sim.mathoverrides, sim.mathOverridesLRG, sim.mathOverridesSML, simContext.name as application_name, simContext.appComponentsLRG, simContext.appComponentsSML
+        FROM vc_simulation_export_history eh 
+        INNER JOIN vc_simulation sim ON sim.id = eh.simulation_ref
+        LEFT JOIN vc_biomodel bio ON bio.id = eh.biomodel_ref
+        LEFT JOIN vc_mathmodel math ON math.id = eh.mathmodel_ref
+        LEFT JOIN vc_simcontext simContext ON simContext.mathRef = eh.math_ref
+        WHERE user_ref = ?
+""";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setLong(1, Long.parseLong(user.getID().toString()));
         ResultSet resultSet = ps.executeQuery();
-        List<ExportHistoryDBRep> exportHistoryDBReps = new ArrayList<>();
+        List<ExportHistory> exportHistoryDBReps = new ArrayList<>();
         while (resultSet.next()) {
             exportHistoryDBReps.add(ExportHistoryTable.table.getExportHistoryRecord(resultSet));
         }

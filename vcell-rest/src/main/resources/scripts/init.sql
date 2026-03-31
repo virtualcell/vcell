@@ -82,23 +82,19 @@ CREATE TABLE vc_simulation_export_history (
     job_id                        bigint        NOT NULL,
     user_ref                      bigint        NOT NULL REFERENCES vc_userinfo(id),
     simulation_ref                bigint        NOT NULL REFERENCES vc_simulation(id),
+    biomodel_ref                  bigint        REFERENCES vc_biomodel(id),
+    mathmodel_ref                 bigint        REFERENCES vc_mathmodel(id),
+    math_ref                      bigint        NOT NULL REFERENCES vc_math(id),
     export_format                 varchar(50)   NOT NULL,
     export_date                   timestamp     NOT NULL,
     uri                           text          NOT NULL,
-    data_id                       varchar(255)  NOT NULL,
-    simulation_name               varchar(255)  NOT NULL,
-    application_name              varchar(255)  NOT NULL,
-    biomodel_name                 varchar(255)  NOT NULL,
     variables                     text[]        NOT NULL,
-    parameter_values              jsonb         ,
     start_time                    numeric       NOT NULL,
     end_time                      numeric       NOT NULL,
-    saved_file_name               varchar(255)  NOT NULL,
-    application_type              varchar(50)   NOT NULL,
-    non_spatial                   boolean       NOT NULL,
-    z_slices                      integer       NOT NULL DEFAULT 0,
-    t_slices                      integer       NOT NULL DEFAULT 0,
-    num_variables                 integer       NOT NULL DEFAULT 0
+    z_slice_start                 numeric       NOT NULL,
+    z_slice_end                   numeric       NOT NULL,
+    saved_file_name               varchar(50)   NOT NULL,
+    event_status                  varchar(50)   NOT NULL
 );
 
 

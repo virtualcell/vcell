@@ -2,9 +2,13 @@ package org.vcell.restq.exports;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.export.server.*;
+import cbit.vcell.exports.ExportHistory;
+import cbit.vcell.math.Constant;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.exports.ExportHistoryDBDriver;
 import cbit.vcell.exports.ExportHistoryDBRep;
+import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
@@ -45,36 +49,32 @@ import static org.vcell.util.VCAssert.assertTrue;
 @QuarkusTest
 public class ExportHistoryDBTest {
 
-    @ConfigProperty(name = "quarkus.http.test-port")
-    Integer testPort;
-
     @Inject
     AgroalConnectionFactory agroalConnectionFactory;
 
-    private ApiClient apiClient;
-    private User testUser;
-
-    private DatabaseServerImpl databaseServer;
     private BioModel savedBioModel;
     private Simulation savedSimulation;
     private KeyValue simulationKey;
 
     @BeforeAll
-    public static void setupConfig(){
+    public static void setupConfig() {
         PropertyLoader.setConfigProvider(new CDIVCellConfigProvider());
     }
 
     @BeforeEach
-    public void createClients() throws ApiException, DataAccessException, PropertyVetoException, XmlParseException, IOException {
-        databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
+    public void initializeDB() throws DataAccessException, PropertyVetoException, XmlParseException, IOException, ExpressionException {
+        DatabaseServerImpl databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
         BioModel bioModel = TestEndpointUtils.getTestBioModel();
+        bioModel.getSimulation(0).getMathOverrides().putConstant(new Constant("Dex_diffusionRate", new Expression(20)));
+        bioModel.getSimulation(0).getMathOverrides().putConstant(new Constant("Voltage_PM", new Expression(2)));
         BigString bioModelXML = databaseServer.saveBioModel(TestEndpointUtils.administratorUser, new BigString(XmlHelper.bioModelToXML(bioModel)), new String[]{});
         savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
+
         savedSimulation = savedBioModel.getSimulation(0);
         simulationKey = savedSimulation.getVersion().getVersionKey();
     }
 
-    private ExportHistoryDBRep getExportHistoryRep(int jobID, String uri, Timestamp timestamp){
+    private ExportHistoryDBRep getExportHistoryRep(int jobID, String uri, Timestamp timestamp) {
         VCSimulationIdentifier vcSimId = new VCSimulationIdentifier(simulationKey, TestEndpointUtils.administratorUser);
         VCDataIdentifier vcdId = new VCSimulationDataIdentifier(vcSimId, jobID);
         GeometrySpecs geometrySpecs = new GeometrySpecs(null, 1, 1, ExportEnums.GeometryMode.GEOMETRY_FULL);
@@ -86,18 +86,17 @@ public class ExportHistoryDBTest {
                 N5Specs.CompressionLevel.RAW, "test dataset name");
 
 
-        List<HumanReadableExportData.DifferentParameterValues> parameterValues = new ArrayList<>(){{
+        List<HumanReadableExportData.DifferentParameterValues> parameterValues = new ArrayList<>() {{
             add(new HumanReadableExportData.DifferentParameterValues("parameter_name", "original_0", "changed_1"));
             add(new HumanReadableExportData.DifferentParameterValues("parameter_name2", "original_0", "changed_1"));
         }};
 
         return new ExportHistoryDBRep(
-                jobID, vcSimId.getSimulationKey(), n5Specs.getFormatType(),
-                timestamp, uri, vcdId.getID(), savedSimulation.getName(),
-                "Application Name", savedBioModel.getName(), variableSpecs.getVariableNames(),
-                parameterValues, timeSpecs.getAllTimes()[0], timeSpecs.getAllTimes()[1],
-                "file_on_server", n5Specs.getDataType().name(), false,
-                0, 1, 1
+                jobID, savedBioModel.getVersion().getVersionKey(),
+                null, savedSimulation.getKey(), savedSimulation.getMathDescription().getKey(), ExportFormat.N5,
+                timestamp, uri, variableSpecs.getVariableNames(),
+                1.2, 3.4, 1, 1,
+                "nameOnServer", ExportEnums.ExportProgressType.EXPORT_COMPLETE
         );
     }
 
@@ -127,10 +126,11 @@ public class ExportHistoryDBTest {
 
             driver.addExportHistory(conn, user, rep, agroalConnectionFactory.getKeyFactory());
             try {
-                List<ExportHistoryDBRep> exportHistoryRecord = driver.getExportHistoryForUser(conn, user);
+                List<ExportHistory> exportHistoryRecord = driver.getExportHistoryForUser(conn, user);
                 Assertions.assertEquals(1, exportHistoryRecord.size(), "expected one record");
-                Assertions.assertTrue(rep.equals(exportHistoryRecord.get(0)));
-                Assertions.assertEquals(rep.parameterValues(), exportHistoryRecord.get(0).parameterValues());
+                Assertions.assertTrue(historyDBEqualHistory(rep, exportHistoryRecord.get(0)));
+                Assertions.assertEquals(savedBioModel.getName(), exportHistoryRecord.get(0).modelName());
+                Assertions.assertEquals(savedSimulation.getName(), exportHistoryRecord.get(0).simName());
             } catch (SQLException | JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
@@ -160,15 +160,15 @@ public class ExportHistoryDBTest {
             );
 
 
-            List<ExportHistoryDBRep> retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
+            List<ExportHistory> retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
             Assertions.assertEquals(2, retrievedExportHistory.size(), "expected two records");
-            Assertions.assertTrue(exportHistoryDBRep.equals(retrievedExportHistory.get(0)));
-            Assertions.assertTrue(notDeletedRep.equals(retrievedExportHistory.get(1)));
+            Assertions.assertTrue(historyDBEqualHistory(exportHistoryDBRep, retrievedExportHistory.get(0)));
+            Assertions.assertTrue(historyDBEqualHistory(notDeletedRep, retrievedExportHistory.get(1)));
 
             driver.deleteExportHistory(conn, exportHistoryDBRep.uri());
             retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
             Assertions.assertEquals(1, retrievedExportHistory.size(), "expected one record after deletion");
-            Assertions.assertTrue(notDeletedRep.equals(retrievedExportHistory.get(0)));
+            Assertions.assertTrue(historyDBEqualHistory(notDeletedRep, retrievedExportHistory.get(0)));
         } catch (DataAccessException | JsonProcessingException e) {
             throw new RuntimeException(e);
         }
@@ -193,10 +193,24 @@ public class ExportHistoryDBTest {
                     agroalConnectionFactory.getKeyFactory()
             );
 
-            List<ExportHistoryDBRep> retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
+            List<ExportHistory> retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
             Assertions.assertEquals(2, retrievedExportHistory.size(), "expected two records");
-            Assertions.assertTrue(exportHistoryDBRep.equals(retrievedExportHistory.get(0)));
-            Assertions.assertTrue(exportHistoryDBRep1.equals(retrievedExportHistory.get(1)));
+            Assertions.assertTrue(historyDBEqualHistory(exportHistoryDBRep, retrievedExportHistory.get(0)));
+            Assertions.assertTrue(historyDBEqualHistory(exportHistoryDBRep1, retrievedExportHistory.get(1)));
         }
+    }
+
+    private boolean historyDBEqualHistory(ExportHistoryDBRep dbRep, ExportHistory history) {
+        return dbRep.simulationRef().equals(history.simulationRef()) &&
+                dbRep.exportFormat().equals(history.exportFormat()) &&
+                dbRep.exportDate().equals(history.exportDate()) &&
+                dbRep.uri().equals(history.uri()) &&
+                List.of(dbRep.variables()).equals(List.of(history.variables())) &&
+                Double.compare(dbRep.startTimeValue(), history.startTimeValue()) == 0 &&
+                Double.compare(dbRep.endTimeValue(), history.endTimeValue()) == 0 &&
+                dbRep.savedFileNameValue().equals(history.savedFileNameValue()) &&
+                dbRep.eventStatus().toString().equals(history.eventStatus().toString()) &&
+                dbRep.zSliceStart() == history.zSliceStart() &&
+                dbRep.zSliceEnd() == history.zSliceEnd();
     }
 }

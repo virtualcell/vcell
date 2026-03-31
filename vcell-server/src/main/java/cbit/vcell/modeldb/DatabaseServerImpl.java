@@ -15,6 +15,8 @@ import cbit.image.VCImageInfo;
 import cbit.sql.QueryHashtable;
 import cbit.util.xml.XmlUtil;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.exports.ExportHistory;
+import cbit.vcell.exports.ExportHistoryDBRep;
 import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.field.FieldDataExternalDataIDEntry;
 import cbit.vcell.field.io.CopyFieldDataResult;
@@ -1355,7 +1357,7 @@ public BigString saveVCImageAs(User user, BigString vcImageXML, java.lang.String
 	}
 }
 
-	public void addExportHistory(User user, ExportHistoryRep exportHistory) throws DataAccessException {
+	public void addExportHistory(User user, ExportHistoryDBRep exportHistory) throws DataAccessException {
 		try {
 			dbTop.insertExportHistory(user, exportHistory, true);
 		} catch (SQLException e) {
@@ -1363,7 +1365,7 @@ public BigString saveVCImageAs(User user, BigString vcImageXML, java.lang.String
 		}
 	}
 
-	public List<ExportHistoryRep> getUsersExportHistory(User user) throws DataAccessException {
+	public List<ExportHistory> getUsersExportHistory(User user) throws DataAccessException {
 		try {
 			return dbTop.getUsersExportHistory(user, true);
 		} catch (SQLException e) {
