@@ -39,8 +39,6 @@ public class ExportSpecs implements Serializable {
 	private String simulatioName;
 	private String contextName;
 
-	private HumanReadableExportData humanReadableExportData;
-
 	public interface SimulationSelector{
 		public void selectSimulations();
 		public void selectParamScanInfo();
@@ -50,26 +48,11 @@ public class ExportSpecs implements Serializable {
 		public int getNumAvailableParamScans();
 	}
 
-	public ExportSpecs(org.vcell.util.document.VCDataIdentifier vcdID, ExportFormat format,
-			VariableSpecs variableSpecs, TimeSpecs timeSpecs, 
-			GeometrySpecs geometrySpecs, FormatSpecificSpecs formatSpecificSpecs,
-			String simulationName,String contextName) {
-		this.vcDataIdentifier = vcdID;
-		this.format = format;
-		this.variableSpecs = variableSpecs;
-		this.timeSpecs = timeSpecs;
-		this.geometrySpecs = geometrySpecs;
-		this.formatSpecificSpecs = formatSpecificSpecs;
-		this.simulatioName = simulationName;
-		this.contextName = contextName;
-	}
-
 	@JsonCreator
 	public ExportSpecs(@JsonProperty("vcdataIdentifier") VCDataIdentifier vcdataIdentifier, @JsonProperty("format") ExportFormat format,
 					   @JsonProperty("variableSpecs") VariableSpecs variableSpecs, @JsonProperty("timeSpecs") TimeSpecs timeSpecs,
 					   @JsonProperty("geometrySpecs") GeometrySpecs geometrySpecs, @JsonProperty("formatSpecificSpecs") FormatSpecificSpecs formatSpecificSpecs,
-					   @JsonProperty("simulationName") String simulationName, @JsonProperty("contextName") String contextName,
-					   @JsonProperty("humanReadableExportData") HumanReadableExportData humanReadableExportData) {
+					   @JsonProperty("simulationName") String simulationName, @JsonProperty("contextName") String contextName) {
 		this.vcDataIdentifier = vcdataIdentifier;
 		this.format = format;
 		this.variableSpecs = variableSpecs;
@@ -78,7 +61,6 @@ public class ExportSpecs implements Serializable {
 		this.formatSpecificSpecs = formatSpecificSpecs;
 		this.simulatioName = simulationName;
 		this.contextName = contextName;
-		this.humanReadableExportData = humanReadableExportData;
 	}
 
 	public String getContextName(){
@@ -205,11 +187,4 @@ public class ExportSpecs implements Serializable {
 		System.arraycopy(specialColors, 0, displayAdapterService.getSpecialColors(), 0,specialColors.length);
 	}
 
-	public void setExportMetaData(HumanReadableExportData humanReadableExportData){
-		this.humanReadableExportData = humanReadableExportData;
-	}
-
-	public HumanReadableExportData getHumanReadableExportData(){
-		return humanReadableExportData;
-	}
 }

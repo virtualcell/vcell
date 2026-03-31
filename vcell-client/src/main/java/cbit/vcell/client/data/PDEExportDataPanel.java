@@ -694,7 +694,7 @@ private ExportSpecs getExportSpecs() {
 		throw new IllegalArgumentException("Expected " + SimulationContext.class.getName() + " or " + MathModel.class.getName());
 	}
 
-	ExportSpecs exportSpecs = new ExportSpecs(
+    return new ExportSpecs(
 			vcDataIdentifier,
 			getExportSettings1().getSelectedFormat(),
 			variableSpecs,
@@ -704,8 +704,6 @@ private ExportSpecs getExportSpecs() {
 			dataInfoProvider.getSimulationModelInfo().getSimulationName(),
 			dataInfoProvider.getSimulationModelInfo().getContextName()
 	);
-	exportSpecs.setExportMetaData(humanReadableExportData);
-	return exportSpecs;
 }
 
 private ExportSpecs.SimulationSelector createSimulationSelector(){

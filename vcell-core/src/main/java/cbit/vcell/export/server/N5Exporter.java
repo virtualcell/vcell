@@ -138,7 +138,7 @@ public class N5Exporter {
 
 		N5Specs.writeImageJMetaData(jobID, dimensions, blockSize, n5Specs.getCompression(), n5FSWriter,
 				n5Specs.dataSetName, numVariables, sizeZ, allTimes.length,
-				exportSpecs.getHumanReadableExportData().subVolume,
+				n5Specs.getSubVolumeMapping(),
 				lengthPerPixelY, lengthPerPixelX, lengthPerPixelZ, lengthUnit.getSymbol(), channelInfo);
 
 		int timeLoops = 1;
@@ -181,9 +181,6 @@ public class N5Exporter {
 			timeLoops += 1;
 		}
 		n5FSWriter.close();
-		exportSpecs.getHumanReadableExportData().numChannels = (int) dimensions[2];
-		exportSpecs.getHumanReadableExportData().zSlices = (int) dimensions[3];
-		exportSpecs.getHumanReadableExportData().tSlices = (int) dimensions[4];
 		ExportOutput exportOutput = new ExportOutput(true, "." + N5Specs.n5Suffix, vcDataID.getID(), getN5FileNameHash(), fileDataContainerManager);
 		return exportOutput;
 	}

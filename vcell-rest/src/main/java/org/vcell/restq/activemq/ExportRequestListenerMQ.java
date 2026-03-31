@@ -140,12 +140,8 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
                     exportJob.geometrySpecs().sliceNumber(), exportJob.geometrySpecs().geometryMode());
         }
 
-        Map<Integer, String> subVolume = exportJob.formatSpecificSpecs() instanceof N5Specs n5ExportRequest ?
-                n5ExportRequest.getSubVolumeMapping() : null;
-        HumanReadableExportData humanReadableExportData = new HumanReadableExportData(null,
-                null, null, null, null, null, false, subVolume);
         return new ExportSpecs(new VCSimulationDataIdentifier(exportJob.simulationIdentifier(), exportJob.simulationJob()), exportJob.format(), exportJob.variableSpecs(), exportJob.timeSpecs(),
-                geometrySpecs, exportJob.formatSpecificSpecs(), exportJob.simulationName(), exportJob.contextName(), humanReadableExportData);
+                geometrySpecs, exportJob.formatSpecificSpecs(), exportJob.simulationName(), exportJob.contextName());
     }
 
     public void setThreadWaitTimeUnit(TimeUnit timeUnit) {

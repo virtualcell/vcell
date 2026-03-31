@@ -173,19 +173,18 @@ public class N5ExporterTest {
 
     }
 
-    public void makeN5FileWithSpecificSimulationResults(N5Specs.CompressionLevel compressionLevel, int startTimeIndex, int endTimeIndex, String modelID) throws Exception {
+    public void makeN5FileWithSpecificSimulationResults(int startTimeIndex, int endTimeIndex, String modelID) throws Exception {
         OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
 
 
         VariableSpecs variableSpecs = new VariableSpecs(variables.stream().map(di -> di.getName()).toList(), ExportEnums.VariableMode.VARIABLE_MULTI);
         GeometrySpecs geometrySpecs = new GeometrySpecs(new SpatialSelection[0], 0, 0, ExportEnums.GeometryMode.GEOMETRY_SELECTIONS);
-        N5Specs n5Specs = new N5Specs(ExportEnums.ExportableDataType.PDE_VARIABLE_DATA, ExportFormat.N5, compressionLevel, modelID);
+        Map<Integer, String> dummyMaskInfo = new HashMap<>(){{put(0, "Dummy"); put(1, "Test");}};
+        N5Specs n5Specs = new N5Specs(ExportEnums.ExportableDataType.PDE_VARIABLE_DATA, ExportFormat.N5, modelID, dummyMaskInfo);
 
         double[] allTimes = dataServer.getDataSetTimes(testUser,n5Exporter.getVcDataID());
         TimeSpecs timeSpecs = new TimeSpecs(startTimeIndex, endTimeIndex, allTimes, ExportEnums.TimeMode.TIME_RANGE);
         ExportSpecs exportSpecs = new ExportSpecs(n5Exporter.getVcDataID(), ExportFormat.N5, variableSpecs, timeSpecs, geometrySpecs, n5Specs, "", "");
-        HashMap<Integer, String> dummyMaskInfo = new HashMap<>(){{put(0, "Dummy"); put(1, "Test");}};
-        exportSpecs.setExportMetaData(new HumanReadableExportData("", "", "", new ArrayList<>(), "", "", false, dummyMaskInfo));
         FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
 
         ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, Integer.parseInt(modelID), exportSpecs, fileDataContainerManager);
@@ -223,7 +222,7 @@ public class N5ExporterTest {
 
         for(TestModels model: TestModels.values()){
             this.setExportTestState(model);
-            this.makeN5FileWithSpecificSimulationResults(N5Specs.CompressionLevel.RAW, 0, times.length - 1, model.simID);
+            this.makeN5FileWithSpecificSimulationResults(0, times.length - 1, model.simID);
 
             int sizeX = modelMesh.getSizeX(),
                     sizeY = modelMesh.getSizeY(),
@@ -290,7 +289,7 @@ public class N5ExporterTest {
         this.setExportTestState(model);
         OutputContext outputContext = new OutputContext(new AnnotatedFunction[0]);
         int endTimeIndex = times.length - 1;
-        makeN5FileWithSpecificSimulationResults(compressionLevel, 0, endTimeIndex, model.simID);
+        makeN5FileWithSpecificSimulationResults(0, endTimeIndex, model.simID);
 
         int sizeZ = postProcessVariable ? modelMesh.getSizeZ() : MeshToImage.newNumElements(modelMesh.getSizeZ());
         int sizeX = postProcessVariable ? modelMesh.getSizeX() : MeshToImage.newNumElements(modelMesh.getSizeX());
