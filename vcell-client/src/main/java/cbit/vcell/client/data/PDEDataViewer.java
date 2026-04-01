@@ -1970,6 +1970,7 @@ private PDEExportDataPanel getPDEExportPanel1() {
 		try {
 			ivjPDEExportPanel1 = new PDEExportDataPanel();
 			ivjPDEExportPanel1.setName("PDEExportPanel1");
+			ivjPDEExportPanel1.setSimulation(getSimulation());
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
