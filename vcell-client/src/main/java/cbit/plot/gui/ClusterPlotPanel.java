@@ -117,6 +117,7 @@ public class ClusterPlotPanel extends JPanel {
 
     public void setCrosshairEnabled(boolean enabled) {
         this.crosshairEnabled = enabled;
+        repaint();
     }
     public void setCoordinateCallback(Consumer<double[]> cb) {
         this.coordCallback = cb;

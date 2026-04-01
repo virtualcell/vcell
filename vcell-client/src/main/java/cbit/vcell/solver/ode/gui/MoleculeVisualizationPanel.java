@@ -63,12 +63,12 @@ public class MoleculeVisualizationPanel extends DocumentEditorSubPanel {
         this.owner = owner;
         initialize();
     }
-    private void initialize() {
-        // layout
-        setBackground(Color.white);
 
+    private void initialize() {
+        setBackground(Color.white);
         initConnections();
     }
+
     private void initConnections() {
         // listeners
 

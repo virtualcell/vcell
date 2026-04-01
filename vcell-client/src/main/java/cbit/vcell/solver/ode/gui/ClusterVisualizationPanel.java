@@ -29,8 +29,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -45,7 +43,7 @@ import java.util.*;
 import java.util.List;
 
 
-public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
+public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
 
     ODEDataViewer owner;
     IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -54,36 +52,32 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
     private final java.util.List<Color> globalPalette = new ArrayList<>();
     private int nextColorIndex = 0;
 
-    private JPanel ivjJPanel1 = null;
-    private JPanel ivjJPanelPlot = null;
     private ClusterPlotPanel clusterPlotPanel = null;   // here are the plots being drawn
-    private JLabel ivjJLabelBottom = null;
-    private JPanel ivjJPanelData = null;
     private ClusterDataPanel clusterDataPanel = null;   // here resides the data table
-    private JPanel bottomRightPanel = null;
-    private JPanel ivjJPanelLegend = null;
-    private JScrollPane ivjPlotLegendsScrollPane = null;
-    private JPanel ivjJPanelPlotLegends = null;
-    private JLabel bottomLabel = null;
-    private JCheckBox showCrosshairCheckBox = null;
-    private JLabel crosshairCoordLabel = null;
-    private JToolBarToggleButton ivjPlotButton = null;
-    private JToolBarToggleButton ivjDataButton = null;
 
     class IvjEventHandler implements ActionListener, PropertyChangeListener, ChangeListener, ListSelectionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof Component c && SwingUtilities.isDescendingFrom(c, ClusterVisualizationPanel.this)) {
                 String cmd = e.getActionCommand();
-                if (cmd.equals("JPanelPlot") || cmd.equals("JPanelData")) {
-                    CardLayout cl = (CardLayout) ivjJPanel1.getLayout();
-                    cl.show(ivjJPanel1, cmd);                               // show the plot or the data panel
-                    ivjPlotButton.setSelected(cmd.equals("JPanelPlot"));    // update button selection state
-                    ivjDataButton.setSelected(cmd.equals("JPanelData"));
-                    ivjJPanelLegend.setVisible(cmd.equals("JPanelPlot"));   // show legend only in plot mode
-                    getShowCrosshairCheckBox().setVisible(cmd.equals("JPanelPlot"));    // show/hide crosshair checkbox
+                // --- Card switching (plot <-> data) ---
+                if (cmd.equals("PlotPanelContainer") || cmd.equals("DataPanelContainer")) {
+                    CardLayout cl = (CardLayout) getCardPanel().getLayout();
+                    cl.show(getCardPanel(), cmd);                                         // show the plot or the data panel
+                    getPlotButton().setSelected(cmd.equals("PlotPanelContainer"));   // update button selection state
+                    getDataButton().setSelected(cmd.equals("DataPanelContainer"));
+                    getLegendPanel().setVisible(cmd.equals("PlotPanelContainer"));   // show legend only in plot mode
+                    getCrosshairCheckBox().setVisible(cmd.equals("PlotPanelContainer"));    // show/hide crosshair checkbox only in plot mode
+                    setCrosshairEnabled(cmd.equals("PlotPanelContainer") && getCrosshairCheckBox().isSelected());   // enable/disable crosshair logic
                     return;
                 }
+                // --- Crosshair checkbox toggled ---
+                if (e.getSource() == getCrosshairCheckBox()) {
+                    boolean enabled = getCrosshairCheckBox().isSelected();
+                    setCrosshairEnabled(enabled);
+                    return;
+                }
+
             }
         }
         @Override
@@ -119,60 +113,24 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         super();
         this.owner = odeDataViewer;
         initialize();
-    }
-
-    private void initialize() {
-        setPreferredSize(new Dimension(420, 400));
-        setLayout(new BorderLayout());
-        setSize(513, 457);
-        add(getJPanel1(), "Center");
-        add(getBottomRightPanel(), "South");
-        add(getJPanelLegend(), "East");
-        setBackground(Color.white);
         initConnections();
+        setVisualizationBackground(Color.WHITE);
     }
 
-    private JPanel getJPanel1() {
-        if (ivjJPanel1 == null) {
-            ivjJPanel1 = new JPanel();
-            ivjJPanel1.setName("JPanel1");
-            ivjJPanel1.setLayout(new CardLayout());
-            ivjJPanel1.add(getJPanelPlot(), getJPanelPlot().getName());
-            ivjJPanel1.add(getJPanelData(), getJPanelData().getName());
-        }
-        return ivjJPanel1;
+    // --------------------the abstract class hooks
+    @Override
+    protected JPanel createPlotPanel() {
+        return getClusterPlotPanel();
     }
-    private JPanel getJPanelPlot() {
-        if (ivjJPanelPlot == null) {
-            ivjJPanelPlot = new JPanel();
-            ivjJPanelPlot.setName("JPanelPlot");
-            ivjJPanelPlot.setLayout(new BorderLayout());
-            ivjJPanelPlot.add(getClusterPlotPanel(), "Center");
-            ivjJPanelPlot.add(getJLabelBottom(), "South");
-        }
-        return ivjJPanelPlot;
+    @Override
+    protected JPanel createDataPanel() {
+        return getClusterDataPanel();
     }
-    private JPanel getJPanelData() {
-        if (ivjJPanelData == null) {
-            ivjJPanelData = new JPanel();
-            ivjJPanelData.setName("JPanelData");
-            ivjJPanelData.setLayout(new BorderLayout());
-            ivjJPanelData.add(getClusterDataPanel(), BorderLayout.CENTER);
-        }
-        return ivjJPanelData;
+    @Override
+    protected void setCrosshairEnabled(boolean enabled) {
+        getClusterPlotPanel().setCrosshairEnabled(enabled);
     }
 
-    private JLabel getJLabelBottom() {
-        if (ivjJLabelBottom == null) {
-            ivjJLabelBottom = new JLabel();
-            ivjJLabelBottom.setName("JLabelBottom");
-            ivjJLabelBottom.setText("time");
-            ivjJLabelBottom.setForeground(Color.black);
-            ivjJLabelBottom.setHorizontalTextPosition(SwingConstants.CENTER);
-            ivjJLabelBottom.setHorizontalAlignment(SwingConstants.CENTER);
-        }
-        return ivjJLabelBottom;
-    }
     private ClusterPlotPanel getClusterPlotPanel() {      // actual plotting is shown here
         if (clusterPlotPanel == null) {
             try {
@@ -208,164 +166,15 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         return clusterDataPanel;
     }
 
-    private JPanel getBottomRightPanel() {
-        if (bottomRightPanel == null) {
-            bottomRightPanel = new JPanel();
-            bottomRightPanel.setName("JPanelBottom");
-            bottomRightPanel.setLayout(new GridBagLayout());
 
-            GridBagConstraints gbc = new GridBagConstraints();
-            gbc.gridx = 1; gbc.gridy = 0;
-            gbc.fill = GridBagConstraints.HORIZONTAL;
-            gbc.weightx = 1.0;
-            gbc.insets = new Insets(4, 4, 4, 4);
-            bottomRightPanel.add(getJBottomLabel(), gbc);
-
-            gbc = new GridBagConstraints();
-            gbc.gridx = 2; gbc.gridy = 0;
-            gbc.insets = new Insets(4, 4, 4, 2);
-            bottomRightPanel.add(getShowCrosshairCheckBox(), gbc);
-
-            gbc = new GridBagConstraints();
-            gbc.gridx = 3; gbc.gridy = 0;
-            gbc.insets = new Insets(4, 2, 4, 2);
-            bottomRightPanel.add(getCrosshairCoordLabel(), gbc);
-
-            gbc = new GridBagConstraints();
-            gbc.gridx = 4; gbc.gridy = 0;
-            gbc.insets = new Insets(4, 4, 4, 4);
-            bottomRightPanel.add(getPlotButton(), gbc);
-
-            gbc = new GridBagConstraints();
-            gbc.gridx = 5; gbc.gridy = 0;
-            gbc.insets = new Insets(4, 4, 4, 4);
-            bottomRightPanel.add(getDataButton(), gbc);
-        }
-        return bottomRightPanel;
-    }
-    private JLabel getJBottomLabel() {
-        if (bottomLabel == null) {
-            bottomLabel = new JLabel();
-            bottomLabel.setName("JBottomLabel");
-            bottomLabel.setText(" ");
-            bottomLabel.setForeground(Color.blue);
-            bottomLabel.setPreferredSize(new Dimension(44, 20));
-            bottomLabel.setFont(new Font("dialog", 0, 12));
-            bottomLabel.setMinimumSize(new Dimension(44, 20));
-        }
-        return bottomLabel;
-    }
-    private JCheckBox getShowCrosshairCheckBox() {
-        if (showCrosshairCheckBox == null) {
-            showCrosshairCheckBox = new JCheckBox("Show Crosshair");
-            showCrosshairCheckBox.setSelected(true);   // default ON
-
-            showCrosshairCheckBox.addActionListener(e -> {
-                boolean enabled = showCrosshairCheckBox.isSelected();
-                clusterPlotPanel.setCrosshairEnabled(enabled);
-                clusterPlotPanel.repaint();
-            });
-        }
-        return showCrosshairCheckBox;
-    }
-    private JLabel getCrosshairCoordLabel() {
-        if (crosshairCoordLabel == null) {
-            crosshairCoordLabel = new JLabel(emptyCoordText);
-            // no fixed width — dynamic sizing will handle it but we DO want a stable height
-            int height = crosshairCoordLabel.getFontMetrics(crosshairCoordLabel.getFont()).getHeight();
-            crosshairCoordLabel.setPreferredSize(new Dimension(1, height));
-        }
-        return crosshairCoordLabel;
-    }
-    private JToolBarToggleButton getPlotButton() {
-        if (ivjPlotButton == null) {
-            ivjPlotButton = new JToolBarToggleButton();
-            ivjPlotButton.setName("PlotButton");
-            ivjPlotButton.setToolTipText("Show plot(s)");
-            ivjPlotButton.setText("");
-            ivjPlotButton.setMaximumSize(new Dimension(28, 28));
-            ivjPlotButton.setActionCommand("JPanelPlot");
-            ivjPlotButton.setSelected(true);
-            ivjPlotButton.setPreferredSize(new Dimension(28, 28));
-            ivjPlotButton.setIcon(VCellIcons.dataExporterIcon);
-            ivjPlotButton.setMinimumSize(new Dimension(28, 28));
-        }
-        return ivjPlotButton;
-    }
-    private JToolBarToggleButton getDataButton() {
-        if (ivjDataButton == null) {
-            ivjDataButton = new JToolBarToggleButton();
-            ivjDataButton.setName("DataButton");
-            ivjDataButton.setToolTipText("Show data");
-            ivjDataButton.setText("");
-            ivjDataButton.setMaximumSize(new Dimension(28, 28));
-            ivjDataButton.setActionCommand("JPanelData");
-            ivjDataButton.setIcon(VCellIcons.dataSetsIcon);
-            ivjDataButton.setPreferredSize(new Dimension(28, 28));
-            ivjDataButton.setMinimumSize(new Dimension(28, 28));
-        }
-        return ivjDataButton;
-    }
-
-    private JPanel getJPanelLegend() {
-        if (ivjJPanelLegend == null) {
-            ivjJPanelLegend = new JPanel();
-            ivjJPanelLegend.setName("JPanelLegend");
-            ivjJPanelLegend.setLayout(new BorderLayout());
-            getJPanelLegend().add(new JLabel("        "), "South");
-            JLabel labelLegendTitle = new JLabel("Plot Legend:");
-            labelLegendTitle.setBorder(new EmptyBorder(10, 4, 10, 4));
-            getJPanelLegend().add(labelLegendTitle, "North");
-            getJPanelLegend().add(getPlotLegendsScrollPane(), "Center");
-        }
-        return ivjJPanelLegend;
-    }
-
-    private JScrollPane getPlotLegendsScrollPane() {
-        if (ivjPlotLegendsScrollPane == null) {
-            ivjPlotLegendsScrollPane = new JScrollPane();
-            ivjPlotLegendsScrollPane.setName("PlotLegendsScrollPane");
-            ivjPlotLegendsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-//            ivjPlotLegendsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-            ivjPlotLegendsScrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
-            getPlotLegendsScrollPane().setViewportView(getJPanelPlotLegends());
-        }
-        return ivjPlotLegendsScrollPane;
-    }
-    private JPanel getJPanelPlotLegends() {
-        if (ivjJPanelPlotLegends == null) {
-            ivjJPanelPlotLegends = new JPanel() {
-                @Override
-                public Dimension getPreferredSize() {       // allocate from start enough space for vertical scrollbar
-                    Dimension d = super.getPreferredSize();
-                    int scrollbarWidth = UIManager.getInt("ScrollBar.width");
-                    return new Dimension(d.width + scrollbarWidth, d.height);
-                }
-            };
-            ivjJPanelPlotLegends.setName("JPanelPlotLegends");
-            ivjJPanelPlotLegends.setLayout(new BoxLayout(ivjJPanelPlotLegends, BoxLayout.Y_AXIS));
-//            ivjJPanelPlotLegends.setBounds(0, 0, 72, 360);
-        }
-        return ivjJPanelPlotLegends;
-    }
-
-    public void setBackground(Color color) {
-        super.setBackground(color);
-        getBottomRightPanel().setBackground(color);
-        getJBottomLabel().setBackground(color);
-        getShowCrosshairCheckBox().setBackground(color);
-        getCrosshairCoordLabel().setBackground(color);
-        getJPanelLegend().setBackground(color);
-        getJPanelPlotLegends().setBackground(color);
-        getJPanel1().setBackground(color);
+    public void setVisualizationBackground(Color color) {
+        super.setVisualizationBackground(color);
         getClusterPlotPanel().setBackground(color);
         getClusterDataPanel().setBackground(color);
-        getJPanelData().setBackground(color);
-        getJPanelPlot().setBackground(color);
-
     }
 
-    private void initConnections() {
+    @Override
+    protected void initConnections() {
         initializeGlobalPalette();      // get a stable, high contrast palette
         // group the two buttons so only one stays selected
         ButtonGroup bg = new ButtonGroup();
@@ -375,6 +184,9 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         // add the shared handler
         getPlotButton().addActionListener(ivjEventHandler);
         getDataButton().addActionListener(ivjEventHandler);
+
+        // crosshair checkbox is plot-specific, so subclass handles it
+        getCrosshairCheckBox().addActionListener(ivjEventHandler);
 
         // listen to the left panel
         owner.getClusterSpecificationPanel().addPropertyChangeListener(ivjEventHandler);
@@ -396,9 +208,9 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
             int jobs = owner.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions().getTotalNumberOfJobs();
             String name = owner.getSimulation().getName();
             String str = "<html><b>" + name + "</b> [" + jobs + " job" + (jobs != 1 ? "s" : "") + "]";
-            getJBottomLabel().setText(str);
+            getBottomLabel().setText(str);
         } else {
-            getJBottomLabel().setText(" ");
+            getBottomLabel().setText(" ");
         }
 //        simulationModelInfo = owner.getSimulationModelInfo();
 //        langevinSolverResultSet = owner.getLangevinSolverResultSet();
@@ -508,26 +320,6 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         return p;
     }
 
-    public class LineIcon implements Icon {
-        private final Color color;
-        public LineIcon(Color color) {
-            this.color = color;
-        }
-        @Override
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            Graphics2D g2 = (Graphics2D)g;
-            g2.setStroke(new BasicStroke(3.0f));
-            g2.setPaint(color);
-            int midY = y + getIconHeight() / 2;
-            g2.drawLine(x, midY, x + getIconWidth(), midY);
-        }
-        @Override
-        public int getIconWidth() { return 50; }
-        @Override
-        public int getIconHeight() {
-            return 4;  // more vertical room for a wider stroke
-        }
-    }
 
     private void redrawPlot(ClusterSpecificationPanel.ClusterSelection sel) throws ExpressionException {
         System.out.println(this.getClass().getSimpleName() + ".redrawPlot() called, current selection: " + sel);
@@ -663,7 +455,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
 
     private void redrawLegend(ClusterSpecificationPanel.ClusterSelection sel) {
         System.out.println(this.getClass().getSimpleName() + ".redrawLegend() called");
-        getJPanelPlotLegends().removeAll();
+        getLegendContentPanel().removeAll();
 
         for (ColumnDescription cd : sel.columns) {
             String name = cd.getName();
@@ -678,10 +470,10 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
                 c = persistentColorMap.get(name);
             }
 
-            getJPanelPlotLegends().add(createLegendEntry(name, c, sel.mode));
+            getLegendContentPanel().add(createLegendEntry(name, c, sel.mode));
         }
-        getJPanelPlotLegends().revalidate();
-        getJPanelPlotLegends().repaint();
+        getLegendContentPanel().revalidate();
+        getLegendContentPanel().repaint();
     }
 
     private void redrawDataTable(ClusterSpecificationPanel.ClusterSelection sel) throws ExpressionException {
@@ -699,41 +491,7 @@ public class ClusterVisualizationPanel extends DocumentEditorSubPanel {
         return false;
     }
 
-    // crosshair coordinates and coordinates label management
-    public void updateCrosshairCoordinates(double xVal, double yVal) {
-        String text = formatCoord(xVal) + ", " + formatCoord(yVal);
-        getCrosshairCoordLabel().setText(text);
-        adjustCoordLabelWidth(text);
-    }
-    public void clearCrosshairCoordinates() {
-        getCrosshairCoordLabel().setText(emptyCoordText);
-        adjustCoordLabelWidth(emptyCoordText);
-    }
-    private int lastCoordCharCount = emptyCoordText.length();
-    private static final String emptyCoordText = "        ";   // enough spaces to reduce jitter when switching between no coord and coord
-    private static final DecimalFormat sci = new DecimalFormat("0.000E0", DecimalFormatSymbols.getInstance(Locale.US));
-    private static final DecimalFormat fix = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.US));
-    private static String formatCoord(double v) {
-        double av = Math.abs(v);
-        return (av >= 0.001)
-                ? fix.format(v)
-                : sci.format(v);
-    }
-    private void adjustCoordLabelWidth(String text) {
-        int charCount = text.length();
-        // Only resize if the number of characters changed
-        if (charCount == lastCoordCharCount) {
-            return;
-        }
-        lastCoordCharCount = charCount;
-        FontMetrics fm = getCrosshairCoordLabel().getFontMetrics(getCrosshairCoordLabel().getFont());
-        int charWidth = fm.charWidth('8');   // good representative width
-        int width = charWidth * charCount + 4;   // +4 px padding
-        Dimension d = getCrosshairCoordLabel().getPreferredSize();
-        getCrosshairCoordLabel().setPreferredSize(new Dimension(width, d.height));
-        getCrosshairCoordLabel().revalidate();   // required so GridBagLayout recalculates layout
-    }
-    // =================================================== Evaluate JFreeChart capabilities with a simple demo ===
+// -----------------------------------------------------------------------------------------------------------
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
