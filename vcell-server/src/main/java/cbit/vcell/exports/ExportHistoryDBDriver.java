@@ -52,8 +52,8 @@ public class ExportHistoryDBDriver {
                     conn.createArrayOf("VARCHAR", exportHistory.variables()),
                     exportHistory.startTimeValue(),
                     exportHistory.endTimeValue(),
-                    exportHistory.zSliceStart(),
-                    exportHistory.zSliceEnd(),
+                    exportHistory.entireZStack(),
+                    exportHistory.selectedZSlice(),
                     exportHistory.savedFileNameValue(),
                     exportHistory.eventStatus().toString()
             );

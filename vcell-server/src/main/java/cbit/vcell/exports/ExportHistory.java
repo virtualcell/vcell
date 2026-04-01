@@ -4,13 +4,13 @@ import cbit.vcell.export.server.ExportEnums;
 import cbit.vcell.export.server.ExportFormat;
 import org.vcell.util.document.KeyValue;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 
 public record ExportHistory(
         long exportJobID,
         KeyValue simulationRef,
         ExportFormat exportFormat,
-        Timestamp exportDate,
+        Instant exportDate,
         String uri,
         String simName,
 //        String appName,
@@ -21,8 +21,8 @@ public record ExportHistory(
         double endTimeValue,
         String savedFileNameValue,
 //        String applicationTypeValue,
-        int zSliceStart,
-        int zSliceEnd,
+        int selectedZSlice,
+        boolean entireZStack,
         ExportEnums.ExportProgressType eventStatus
 ) {
 }

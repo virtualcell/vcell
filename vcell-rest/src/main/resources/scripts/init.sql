@@ -91,8 +91,8 @@ CREATE TABLE vc_simulation_export_history (
     variables                     text[]        NOT NULL,
     start_time                    numeric       NOT NULL,
     end_time                      numeric       NOT NULL,
-    z_slice_start                 numeric       NOT NULL,
-    z_slice_end                   numeric       NOT NULL,
+    entire_z_stack                numeric       NOT NULL,
+    z_slice                       numeric,
     saved_file_name               varchar(50)   NOT NULL,
     event_status                  varchar(50)   NOT NULL
 );

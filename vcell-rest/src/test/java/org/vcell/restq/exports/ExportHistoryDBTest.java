@@ -19,10 +19,7 @@ import cbit.vcell.xml.XmlParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.*;
-import org.vcell.restclient.ApiClient;
-import org.vcell.restclient.ApiException;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
@@ -82,9 +79,6 @@ public class ExportHistoryDBTest {
         TimeSpecs timeSpecs = new TimeSpecs(0, 1, new double[]{0.0, 1.0}, ExportEnums.TimeMode.TIME_RANGE);
         VariableSpecs variableSpecs = new VariableSpecs(new String[]{"X"}, ExportEnums.VariableMode.VARIABLE_ONE);
 
-        N5Specs n5Specs = new N5Specs(ExportEnums.ExportableDataType.PDE_VARIABLE_DATA, ExportFormat.N5,
-                N5Specs.CompressionLevel.RAW, "test dataset name");
-
 
         List<HumanReadableExportData.DifferentParameterValues> parameterValues = new ArrayList<>() {{
             add(new HumanReadableExportData.DifferentParameterValues("parameter_name", "original_0", "changed_1"));
@@ -95,7 +89,7 @@ public class ExportHistoryDBTest {
                 jobID, savedBioModel.getVersion().getVersionKey(),
                 null, savedSimulation.getKey(), savedSimulation.getMathDescription().getKey(), ExportFormat.N5,
                 timestamp, uri, variableSpecs.getVariableNames(),
-                1.2, 3.4, 1, 1,
+                1.2, 3.4, false, 1,
                 "nameOnServer", ExportEnums.ExportProgressType.EXPORT_COMPLETE
         );
     }
@@ -203,14 +197,14 @@ public class ExportHistoryDBTest {
     private boolean historyDBEqualHistory(ExportHistoryDBRep dbRep, ExportHistory history) {
         return dbRep.simulationRef().equals(history.simulationRef()) &&
                 dbRep.exportFormat().equals(history.exportFormat()) &&
-                dbRep.exportDate().equals(history.exportDate()) &&
+                history.exportDate().equals(dbRep.exportDate().toInstant()) &&
                 dbRep.uri().equals(history.uri()) &&
                 List.of(dbRep.variables()).equals(List.of(history.variables())) &&
                 Double.compare(dbRep.startTimeValue(), history.startTimeValue()) == 0 &&
                 Double.compare(dbRep.endTimeValue(), history.endTimeValue()) == 0 &&
                 dbRep.savedFileNameValue().equals(history.savedFileNameValue()) &&
                 dbRep.eventStatus().toString().equals(history.eventStatus().toString()) &&
-                dbRep.zSliceStart() == history.zSliceStart() &&
-                dbRep.zSliceEnd() == history.zSliceEnd();
+                dbRep.selectedZSlice() == history.selectedZSlice() &&
+                dbRep.entireZStack() == history.entireZStack();
     }
 }

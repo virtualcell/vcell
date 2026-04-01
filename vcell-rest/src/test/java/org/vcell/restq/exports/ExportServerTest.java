@@ -222,10 +222,7 @@ public class ExportServerTest {
         return new ExportSpecs(simulationDataIdentifier, ExportFormat.N5, request.standardExportInformation().variableSpecs(),
                 request.standardExportInformation().timeSpecs(), new GeometrySpecs(geometrySpecs.selections(), geometrySpecs.axis(), geometrySpecs.sliceNumber(), geometrySpecs.geometryMode()),
                 n5Specs, request.standardExportInformation().simulationName(),
-                request.standardExportInformation().contextName(), new HumanReadableExportData(
-                        request.standardExportInformation().simulationName(), "fds",
-                        "tretre", new ArrayList<>(), "fsdfds",
-                        "fdsfsd", false, request.subVolume()));
+                request.standardExportInformation().contextName());
     }
 
     private DataIdentifier getOneDIWithSpecificType(VariableType variableType, DataIdentifier[] dataIdentifiers){
@@ -238,7 +235,6 @@ public class ExportServerTest {
     }
 
     private Multi<ExportEvent> createExportListener(ExportSpecs exportSpecs, long jobID) throws Exception {
-        exportSpecs.setExportMetaData(new HumanReadableExportData("", "", "", new ArrayList<>(), "", "", false, dummyMaskInfo));
         ExportResource.GeometrySpecDTO geometrySpecDTO = new ExportResource.GeometrySpecDTO(exportSpecs.getGeometrySpecs().getSelections(),
                 exportSpecs.getGeometrySpecs().getAxis(), exportSpecs.getGeometrySpecs().getSliceNumber(), exportSpecs.getGeometrySpecs().getMode());
 

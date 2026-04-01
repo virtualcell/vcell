@@ -23,8 +23,8 @@ public record ExportHistoryDBRep(
         String[] variables,
         double startTimeValue,
         double endTimeValue,
-        int zSliceStart,
-        int zSliceEnd,
+        boolean entireZStack,
+        int selectedZSlice,
         String savedFileNameValue,
         ExportEnums.ExportProgressType eventStatus
 ) {
@@ -41,7 +41,9 @@ public record ExportHistoryDBRep(
                 Double.compare(this.endTimeValue, other.endTimeValue) == 0 &&
                 this.savedFileNameValue.equals(other.savedFileNameValue) &&
                 this.eventStatus.equals(other.eventStatus) &&
-                this.zSliceStart == other.zSliceStart &&
-                this.zSliceEnd == other.zSliceEnd;
+                this.entireZStack == other.entireZStack &&
+                this.selectedZSlice == other.selectedZSlice;
+    }
+
     }
 }

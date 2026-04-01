@@ -7,14 +7,10 @@ import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.modeldb.BioModelTable;
 import cbit.vcell.modeldb.SimulationTable;
 import cbit.vcell.modeldb.UserTable;
-import cbit.vcell.solver.MathOverrides;
-import org.vcell.util.CommentStringTokenizer;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.BioModelChildSummary;
 import org.vcell.util.document.KeyValue;
 
 import java.sql.*;
-import java.util.List;
 import java.util.StringJoiner;
 
 public class ExportHistoryTable extends Table {
@@ -38,8 +34,8 @@ public class ExportHistoryTable extends Table {
     public final Field variables = new Field("variables", Field.SQLDataType.varchar_255, "[] NOT NULL");
     public final Field startTime = new Field("start_time", Field.SQLDataType.number_as_real, "NOT NULL");
     public final Field endTime = new Field("end_time", Field.SQLDataType.number_as_real, "NOT NULL");
-    public final Field zSliceStart = new Field("z_slice_start", Field.SQLDataType.integer, "NOT NULL");
-    public final Field zSliceEnd = new Field("z_slice_end", Field.SQLDataType.integer, "NOT NULL");
+    public final Field entireZStack = new Field("entire_z_stack", Field.SQLDataType.integer, "NOT NULL CHECK (entire_z_stack IN (0,1))");
+    public final Field selectedZSliceInStack = new Field("z_slice", Field.SQLDataType.integer, "");
     public final Field savedFileName = new Field("saved_file_name", Field.SQLDataType.varchar_50, "NOT NULL");
     public final Field eventStatus = new Field("event_status", Field.SQLDataType.varchar_50, "NOT NULL");
 
@@ -62,7 +58,7 @@ public class ExportHistoryTable extends Table {
                 // note that primary key id cannot be placed in fields (will causes class initialization error),
                 jobId, userRef, bioModelRef, mathModelRef, simulationRef, mathRef,
                 exportFormat, exportDate, uri, variables,
-                startTime, endTime, zSliceStart, zSliceEnd, savedFileName, eventStatus
+                startTime, endTime, entireZStack, selectedZSliceInStack, savedFileName, eventStatus
         };
         addFields(customFields);
     }
@@ -97,8 +93,8 @@ public class ExportHistoryTable extends Table {
             Array      variables,
             double      startTimeValue,
             double      endTimeValue,
-            int        zSliceStartValue,
-            int        zSliceEndValue,
+            boolean     entireZStack,
+            int        selectedZSlice,
             String        savedFileNameValue,
             String        eventStatusValue
     ) throws SQLException {
@@ -120,8 +116,8 @@ public class ExportHistoryTable extends Table {
         ps.setArray       (i++, variables);
         ps.setDouble      (i++, startTimeValue);
         ps.setDouble     (i++, endTimeValue);
-        ps.setInt        (i++, zSliceStartValue);
-        ps.setInt        (i++, zSliceEndValue);
+        ps.setInt        (i++, entireZStack ? 1 : 0);
+        ps.setInt        (i++, selectedZSlice);
         ps.setString     (i++, savedFileNameValue);
         ps.setString     (i++, eventStatusValue);
     }
@@ -146,8 +142,8 @@ public class ExportHistoryTable extends Table {
         // numeric ranges
         double startBt    = rset.getDouble(this.startTime.getUnqualifiedColName());
         double endBt      = rset.getDouble(this.endTime.getUnqualifiedColName());
-        int zS            = rset.getInt(this.zSliceStart.getUnqualifiedColName());
-        int zE            = rset.getInt(this.zSliceEnd.getUnqualifiedColName());
+        int zS            = rset.getInt(this.selectedZSliceInStack.getUnqualifiedColName());
+        int ez            = rset.getInt(this.entireZStack.getUnqualifiedColName());
 
         // more strings & flags
         String savedFileVal   = rset.getString(this.savedFileName.getUnqualifiedColName());
@@ -165,10 +161,10 @@ public class ExportHistoryTable extends Table {
 
 
         return new ExportHistory(
-                jobId, new KeyValue("" + simulationRef), fmt, date,
+                jobId, new KeyValue("" + simulationRef), fmt, date.toInstant(),
                 uriVal, simNameVal, modelName, variables,
                 startBt, endBt, savedFileVal,
-                zS, zE, ExportEnums.ExportProgressType.valueOf(eventStatusVal)
+                zS, ez == 1, ExportEnums.ExportProgressType.valueOf(eventStatusVal)
         );
     }
 }
