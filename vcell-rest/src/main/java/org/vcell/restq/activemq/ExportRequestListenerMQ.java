@@ -25,6 +25,7 @@ import org.eclipse.microprofile.reactive.messaging.Message;
 import org.vcell.restq.handlers.ExportResource;
 import org.vcell.restq.services.Exports.ServerExportEventController;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.io.File;
@@ -141,7 +142,8 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
         }
 
         return new ExportSpecs(new VCSimulationDataIdentifier(exportJob.simulationIdentifier(), exportJob.simulationJob()), exportJob.format(), exportJob.variableSpecs(), exportJob.timeSpecs(),
-                geometrySpecs, exportJob.formatSpecificSpecs(), exportJob.simulationName(), exportJob.contextName());
+                geometrySpecs, exportJob.formatSpecificSpecs(), exportJob.simulationName(), exportJob.contextName(),
+                exportJob.bioModelKey(), exportJob.mathModelKey(), exportJob.mathDescriptionKey());
     }
 
     public void setThreadWaitTimeUnit(TimeUnit timeUnit) {
@@ -157,6 +159,7 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
             ExportFormat format,
             VariableSpecs variableSpecs, TimeSpecs timeSpecs,
             ExportResource.GeometrySpecDTO geometrySpecs, FormatSpecificSpecs formatSpecificSpecs,
-            String simulationName, String contextName
+            String simulationName, String contextName,
+            KeyValue bioModelKey, KeyValue mathModelKey, KeyValue mathDescriptionKey
     ){ }
 }

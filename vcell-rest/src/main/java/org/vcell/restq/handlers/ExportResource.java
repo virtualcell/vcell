@@ -128,7 +128,8 @@ public class ExportResource {
             ArrayList<AnnotatedFunctionDTO> outputContext, String contextName,
             String simulationName, String simulationKey, int simulationJob,
             GeometrySpecDTO geometrySpecs,
-            TimeSpecs timeSpecs, VariableSpecs variableSpecs
+            TimeSpecs timeSpecs, VariableSpecs variableSpecs,
+            KeyValue bioModelKey, KeyValue mathModelKey, KeyValue mathDescriptionKey
     ){ }
 
     public record AnnotatedFunctionDTO(

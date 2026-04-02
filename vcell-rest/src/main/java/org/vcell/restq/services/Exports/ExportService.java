@@ -78,7 +78,8 @@ public class ExportService {
             ).toArray(AnnotatedFunction[]::new);
         }
         return new ExportRequestListenerMQ.ExportJob(exportID, user, annotatedFunctions, simulationIdentifier, request.simulationJob(), format,
-                request.variableSpecs(), request.timeSpecs(), request.geometrySpecs(), formatSpecificSpecs, request.simulationName(), request.contextName());
+                request.variableSpecs(), request.timeSpecs(), request.geometrySpecs(), formatSpecificSpecs, request.simulationName(), request.contextName(),
+                request.bioModelKey(), request.mathModelKey(), request.mathDescriptionKey());
     }
 
 }

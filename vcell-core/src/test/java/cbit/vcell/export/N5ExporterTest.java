@@ -184,7 +184,9 @@ public class N5ExporterTest {
 
         double[] allTimes = dataServer.getDataSetTimes(testUser,n5Exporter.getVcDataID());
         TimeSpecs timeSpecs = new TimeSpecs(startTimeIndex, endTimeIndex, allTimes, ExportEnums.TimeMode.TIME_RANGE);
-        ExportSpecs exportSpecs = new ExportSpecs(n5Exporter.getVcDataID(), ExportFormat.N5, variableSpecs, timeSpecs, geometrySpecs, n5Specs, "", "");
+        ExportSpecs exportSpecs = new ExportSpecs(n5Exporter.getVcDataID(), ExportFormat.N5, variableSpecs, timeSpecs,
+                geometrySpecs, n5Specs, "", "",
+                null, null, null);
         FileDataContainerManager fileDataContainerManager = new FileDataContainerManager();
 
         ExportOutput exportOutput = n5Exporter.makeN5Data(outputContext, Integer.parseInt(modelID), exportSpecs, fileDataContainerManager);

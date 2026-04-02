@@ -20,6 +20,7 @@ import cbit.vcell.solver.Simulation;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Range;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.image.DisplayAdapterService;
@@ -38,6 +39,9 @@ public class ExportSpecs implements Serializable {
 	private FormatSpecificSpecs formatSpecificSpecs;
 	private String simulatioName;
 	private String contextName;
+	private KeyValue bioModelKey;
+	private KeyValue mathModelKey;
+	private KeyValue mathDescriptionKey;
 
 	public interface SimulationSelector{
 		public void selectSimulations();
@@ -52,7 +56,9 @@ public class ExportSpecs implements Serializable {
 	public ExportSpecs(@JsonProperty("vcdataIdentifier") VCDataIdentifier vcdataIdentifier, @JsonProperty("format") ExportFormat format,
 					   @JsonProperty("variableSpecs") VariableSpecs variableSpecs, @JsonProperty("timeSpecs") TimeSpecs timeSpecs,
 					   @JsonProperty("geometrySpecs") GeometrySpecs geometrySpecs, @JsonProperty("formatSpecificSpecs") FormatSpecificSpecs formatSpecificSpecs,
-					   @JsonProperty("simulationName") String simulationName, @JsonProperty("contextName") String contextName) {
+					   @JsonProperty("simulationName") String simulationName, @JsonProperty("contextName") String contextName,
+					   @JsonProperty("bioModelKey")KeyValue bioModelKey, @JsonProperty("mathModelKey") KeyValue mathModelKey,
+					   @JsonProperty("mathDescriptionKey") KeyValue mathDescriptionKey) {
 		this.vcDataIdentifier = vcdataIdentifier;
 		this.format = format;
 		this.variableSpecs = variableSpecs;
@@ -61,6 +67,9 @@ public class ExportSpecs implements Serializable {
 		this.formatSpecificSpecs = formatSpecificSpecs;
 		this.simulatioName = simulationName;
 		this.contextName = contextName;
+		this.bioModelKey = bioModelKey;
+		this.mathModelKey = mathModelKey;
+		this.mathDescriptionKey = mathDescriptionKey;
 	}
 
 	public String getContextName(){
@@ -148,6 +157,16 @@ public class ExportSpecs implements Serializable {
 	 */
 	public org.vcell.util.document.VCDataIdentifier getVCDataIdentifier() {
 		return vcDataIdentifier;
+	}
+
+	public KeyValue getBioModelKey() {
+		return bioModelKey;
+	}
+	public KeyValue getMathModelKey() {
+		return mathModelKey;
+	}
+	public KeyValue getMathDescriptionKey() {
+		return mathDescriptionKey;
 	}
 
 

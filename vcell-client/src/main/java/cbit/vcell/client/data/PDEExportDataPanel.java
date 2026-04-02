@@ -32,10 +32,7 @@ import cbit.vcell.simdata.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.solvers.CartesianMesh;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.LocalVCDataIdentifier;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.*;
 import org.vcell.util.gui.*;
 
 import javax.swing.*;
@@ -694,7 +691,15 @@ private ExportSpecs getExportSpecs() {
 		throw new IllegalArgumentException("Expected " + SimulationContext.class.getName() + " or " + MathModel.class.getName());
 	}
 
-    return new ExportSpecs(
+	VCDocument thisDocument = (getDataViewerManager() instanceof DocumentWindowManager?((DocumentWindowManager)getDataViewerManager()).getVCDocument():null);
+	KeyValue bioModelKey = null;
+	KeyValue mathModelKey = null;
+	if (thisDocument != null){
+		bioModelKey = thisDocument.getDocumentType() == VCDocument.VCDocumentType.BIOMODEL_DOC ? thisDocument.getVersion().getVersionKey() : null;
+		mathModelKey = thisDocument.getDocumentType() == VCDocument.VCDocumentType.MATHMODEL_DOC ? thisDocument.getVersion().getVersionKey() : null;
+	}
+
+	return new ExportSpecs(
 			vcDataIdentifier,
 			getExportSettings1().getSelectedFormat(),
 			variableSpecs,
@@ -702,7 +707,10 @@ private ExportSpecs getExportSpecs() {
 			geometrySpecs,
 			getExportSettings1().getFormatSpecificSpecs(),
 			dataInfoProvider.getSimulationModelInfo().getSimulationName(),
-			dataInfoProvider.getSimulationModelInfo().getContextName()
+			dataInfoProvider.getSimulationModelInfo().getContextName(),
+			bioModelKey,
+			mathModelKey,
+			getSimulation().getMathDescription().getKey()
 	);
 }
 

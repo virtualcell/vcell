@@ -455,7 +455,8 @@ public class RunUtils {
                 ExportFormat.CSV, ASCIISpecs.CsvRoiLayout.var_time_val, true, false);
 
         return new ExportSpecs(vcId, ExportFormat.HDF5, variableSpecs, timeSpecs, geometrySpecs,
-                formatSpecificSpecs, vcellSim.getName(), simContext.getBioModel().getName() + ":" + simContext.getName());
+                formatSpecificSpecs, vcellSim.getName(), simContext.getBioModel().getName() + ":" + simContext.getName(), simContext.getBioModel().getVersion().getVersionKey(),
+                null, simContext.getMathDescription().getKey());
     }
 
 }
