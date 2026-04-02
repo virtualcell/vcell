@@ -1,9 +1,11 @@
 package org.vcell.restq.exports;
 
 import cbit.rmi.event.ExportEvent;
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.export.server.*;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.modeldb.DatabaseServerImpl;
+import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.*;
 import cbit.vcell.solver.AnnotatedFunction;
@@ -56,6 +58,7 @@ public class ExportServerTest {
     @Inject
     ObjectMapper mapper;
 
+    private BioModel bioModel;
     private DataServerImpl dataServer;
     private final String simulationID = "597714292";
     private final HashMap<Integer, String> dummyMaskInfo = new HashMap<>(){{put(0, "Dummy"); put(1, "Test");}};
@@ -66,14 +69,14 @@ public class ExportServerTest {
     }
 
     @BeforeEach
-    public void setUp() throws IOException, DataAccessException, SQLException, PropertyVetoException, XmlParseException {
+    public void setUp() throws IOException, DataAccessException, SQLException, PropertyVetoException, XmlParseException, ExpressionException {
         File testSimData = new File(ExportServerTest.class.getResource("/simdata").getPath());
         TestEndpointUtils.setSystemProperties(testSimData.getAbsolutePath(), System.getProperty("java.io.tmpdir"));
         Cachetable cachetable = new Cachetable(10 * Cachetable.minute, 10000);
         DataSetControllerImpl dataSetController = new DataSetControllerImpl(cachetable, testSimData, testSimData);
         dataServer = new DataServerImpl(dataSetController, null);
-        DatabaseServerImpl databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
-        TestEndpointUtils.insertAdminsSimulation(databaseServer, agroalConnectionFactory);
+
+        bioModel = TestEndpointUtils.insertFrapModel(agroalConnectionFactory);
     }
 
     @AfterEach
@@ -141,13 +144,16 @@ public class ExportServerTest {
         ExportSpecs exportSpecs = getValidExportSpec(0, 1);
         long badJobID = 2;
         ExportSpecs badExportSpecs = new ExportSpecs(exportSpecs.getVCDataIdentifier(), ExportFormat.N5, null, null,
-                new GeometrySpecs(new SpatialSelection[]{}, -1, 5000, ExportEnums.GeometryMode.GEOMETRY_SLICE), null, "TestSim", null);
+                new GeometrySpecs(new SpatialSelection[]{}, -1, 5000, ExportEnums.GeometryMode.GEOMETRY_SLICE),
+                null, "TestSim", null, null, null, null);
         Multi<ExportEvent> status = createExportListener(badExportSpecs, badJobID);
 
         // Start job, while having it be blocking on the main thread to check status
         CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
             VCSimulationDataIdentifier vcSimulationDataIdentifier = (VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier();
-            ExportRequestListenerMQ.ExportJob exportJob = new ExportRequestListenerMQ.ExportJob(badJobID, TestEndpointUtils.administratorUser, new AnnotatedFunction[]{}, vcSimulationDataIdentifier.getVcSimID(), vcSimulationDataIdentifier.getJobIndex(), null, null, null, null, null,"TestSim", null);
+            ExportRequestListenerMQ.ExportJob exportJob = new ExportRequestListenerMQ.ExportJob(badJobID, TestEndpointUtils.administratorUser, new AnnotatedFunction[]{}, vcSimulationDataIdentifier.getVcSimID(), vcSimulationDataIdentifier.getJobIndex(),
+                    null, null, null, null, null,"TestSim", null,
+                    bioModel.getVersion().getVersionKey(), null, bioModel.getSimulationContext(0).getMathDescription().getKey());
             CompletableFuture<Void> job = null;
             try {
                 job = requestListenerMQ.get().startJob(Message.of(mapper.writeValueAsString(exportJob)));
@@ -208,7 +214,8 @@ public class ExportServerTest {
         HashMap<Integer, String> dummyMaskInfo = new HashMap<>(){{put(0, "Dummy"); put(1, "Test");}};
 
         ExportResource.StandardExportInfo request = new ExportResource.StandardExportInfo(new ArrayList<>(){},"", "TestSim", simulationID, 0,
-                geometrySpecs, timeSpecs, variableSpecs);
+                geometrySpecs, timeSpecs, variableSpecs,
+                bioModel.getVersion().getVersionKey(), null, bioModel.getSimulationContext(0).getMathDescription().getKey());
         return new ExportResource.N5ExportRequest(request, dummyMaskInfo, ExportEnums.ExportableDataType.PDE_VARIABLE_DATA, "TestDataset");
     }
 
@@ -222,7 +229,8 @@ public class ExportServerTest {
         return new ExportSpecs(simulationDataIdentifier, ExportFormat.N5, request.standardExportInformation().variableSpecs(),
                 request.standardExportInformation().timeSpecs(), new GeometrySpecs(geometrySpecs.selections(), geometrySpecs.axis(), geometrySpecs.sliceNumber(), geometrySpecs.geometryMode()),
                 n5Specs, request.standardExportInformation().simulationName(),
-                request.standardExportInformation().contextName());
+                request.standardExportInformation().contextName(),
+                bioModel.getVersion().getVersionKey(), null, bioModel.getSimulationContext(0).getMathDescription().getKey());
     }
 
     private DataIdentifier getOneDIWithSpecificType(VariableType variableType, DataIdentifier[] dataIdentifiers){
@@ -241,7 +249,8 @@ public class ExportServerTest {
         VCSimulationDataIdentifier vcSimulationDataIdentifier = (VCSimulationDataIdentifier) exportSpecs.getVCDataIdentifier();
         ExportRequestListenerMQ.ExportJob exportJob = new ExportRequestListenerMQ.ExportJob(jobID, TestEndpointUtils.administratorUser,
                 new AnnotatedFunction[]{}, vcSimulationDataIdentifier.getVcSimID(), vcSimulationDataIdentifier.getJobIndex(), exportSpecs.getFormat(), exportSpecs.getVariableSpecs(), exportSpecs.getTimeSpecs(),
-                geometrySpecDTO, exportSpecs.getFormatSpecificSpecs(), exportSpecs.getSimulationName(), exportSpecs.getContextName());
+                geometrySpecDTO, exportSpecs.getFormatSpecificSpecs(), exportSpecs.getSimulationName(), exportSpecs.getContextName(),
+                bioModel.getVersion().getVersionKey(), null, bioModel.getSimulationContext(0).getMathDescription().getKey());
         statusCreator.get().addServerExportListener(exportJob);
 
         return statusCreator.get().getSSEUsersExportStatus(TestEndpointUtils.administratorUser, exportJob.id());

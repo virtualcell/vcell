@@ -7,7 +7,6 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.PropertyLoader;
@@ -33,8 +32,7 @@ import org.vcell.restq.db.AgroalConnectionFactory;
 import org.vcell.restq.exports.ExportRequestTest;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
+import org.vcell.util.document.*;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
@@ -216,7 +214,8 @@ public class TestEndpointUtils {
         connection.close();
     }
 
-    public static void insertAdminsSimulation(DatabaseServerImpl databaseServer, AgroalConnectionFactory connectionFactory) throws IOException, DataAccessException, SQLException, PropertyVetoException, XmlParseException {
+    public static BioModel insertFrapModel(AgroalConnectionFactory connectionFactory) throws IOException, DataAccessException, SQLException, PropertyVetoException, XmlParseException {
+        DatabaseServerImpl databaseServer = new DatabaseServerImpl(connectionFactory, connectionFactory.getKeyFactory());
         InputStream xmlFile = TestEndpointUtils.class.getResourceAsStream("/simdata/Administrator/Tutorial_FRAP.vcml");
         assert xmlFile != null;
         BigString bioModelString = new BigString(new String(xmlFile.readAllBytes()));
@@ -235,6 +234,26 @@ public class TestEndpointUtils {
         ).executeUpdate();
         connection.commit();
         connection.close();
+        Simulation originalSim = bioModel.getSimulation(0);
+        Simulation updatedSim = new Simulation(
+                new SimulationVersion(
+                        new KeyValue("597714292"),
+                        originalSim.getVersion().getName(),
+                        originalSim.getVersion().getOwner(),
+                        new GroupAccessAll(),
+                        originalSim.getVersion().getBranchPointRefKey(),
+                        originalSim.getVersion().getBranchID(),
+                        originalSim.getVersion().getDate(),
+                        originalSim.getVersion().getFlag(),
+                        originalSim.getVersion().getAnnot(),
+                        null
+                ),
+                originalSim.getMathDescription(),
+                originalSim.getSimulationOwner()
+        );
+        bioModel.removeSimulation(originalSim);
+        bioModel.addSimulation(updatedSim);
+        return bioModel;
     }
 
 

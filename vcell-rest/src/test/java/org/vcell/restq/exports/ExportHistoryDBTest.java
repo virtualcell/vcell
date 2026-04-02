@@ -59,14 +59,8 @@ public class ExportHistoryDBTest {
     }
 
     @BeforeEach
-    public void initializeDB() throws DataAccessException, PropertyVetoException, XmlParseException, IOException, ExpressionException {
-        DatabaseServerImpl databaseServer = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
-        BioModel bioModel = TestEndpointUtils.getTestBioModel();
-        bioModel.getSimulation(0).getMathOverrides().putConstant(new Constant("Dex_diffusionRate", new Expression(20)));
-        bioModel.getSimulation(0).getMathOverrides().putConstant(new Constant("Voltage_PM", new Expression(2)));
-        BigString bioModelXML = databaseServer.saveBioModel(TestEndpointUtils.administratorUser, new BigString(XmlHelper.bioModelToXML(bioModel)), new String[]{});
-        savedBioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelXML.toString()));
-
+    public void initializeDB() throws DataAccessException, PropertyVetoException, XmlParseException, IOException, ExpressionException, SQLException {
+        savedBioModel = TestEndpointUtils.insertFrapModel(agroalConnectionFactory);
         savedSimulation = savedBioModel.getSimulation(0);
         simulationKey = savedSimulation.getVersion().getVersionKey();
     }

@@ -29,10 +29,10 @@ import java.util.concurrent.TimeUnit;
 public class ExportHelper {
     private static final Logger lg = LogManager.getLogger(ExportRequestTest.class);
 
-    public static void exportAndWait(ExportResourceApi exportResourceApi, N5ExportRequest n5ExportRequest) throws ApiException {
+    public static ExportEvent exportAndWait(ExportResourceApi exportResourceApi, N5ExportRequest n5ExportRequest) throws ApiException {
         final long time = Instant.now().getEpochSecond(); // Before export even starts, so that all events are grabbed from the queue
         long jobId = exportResourceApi.exportN5(n5ExportRequest);
-        CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+        CompletableFuture<ExportEvent> future = CompletableFuture.supplyAsync(() -> {
             try{
                 List<ExportEvent> allEvents = new ArrayList<>();
                 while (allEvents.isEmpty()){
@@ -50,11 +50,13 @@ public class ExportHelper {
                     Thread.sleep(500);
                 }
                 Assertions.assertEquals(ExportProgressType.COMPLETE, eventUnderInspection.getEventType());
+                return eventUnderInspection;
             } catch (Exception e){
                 Assertions.fail();
             }
+            throw new RuntimeException("This should never be reached");
         }).orTimeout(20, TimeUnit.SECONDS);
-        future.join();
+        return future.join();
     }
 
     private static ExportEvent getLastEventForJob(List<ExportEvent> events, long jobId){
