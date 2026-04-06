@@ -9,6 +9,9 @@ import java.time.Instant;
 public record ExportHistory(
         long exportJobID,
         KeyValue simulationRef,
+        KeyValue bioModelRef,
+        KeyValue mathModelRef,
+        KeyValue mathRef,
         ExportFormat exportFormat,
         Instant exportDate,
         String uri,

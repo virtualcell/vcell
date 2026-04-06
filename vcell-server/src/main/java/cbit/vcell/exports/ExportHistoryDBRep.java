@@ -45,5 +45,25 @@ public record ExportHistoryDBRep(
                 this.selectedZSlice == other.selectedZSlice;
     }
 
+    public static ExportHistoryDBRep fromExportSpec(ExportSpecs exportSpecs, String url, long jobID, VCSimulationDataIdentifier simDataId, ExportEnums.ExportProgressType eventStatus) {
+        double[] times = exportSpecs.getTimeSpecs().getAllTimes();
+        boolean entireZStack = exportSpecs.getGeometrySpecs().getMode() == ExportEnums.GeometryMode.GEOMETRY_FULL;
+        return new ExportHistoryDBRep(
+                (int) jobID,
+                exportSpecs.getBioModelKey(),
+                exportSpecs.getMathModelKey(),
+                simDataId.getSimulationKey(),
+                exportSpecs.getMathDescriptionKey(),
+                exportSpecs.getFormat(),
+                Timestamp.from(Instant.now()),
+                url,
+                exportSpecs.getVariableSpecs().getVariableNames(),
+                times[exportSpecs.getTimeSpecs().getBeginTimeIndex()],
+                times[exportSpecs.getTimeSpecs().getEndTimeIndex()],
+                entireZStack,
+                entireZStack ? exportSpecs.getGeometrySpecs().getSliceNumber() : -1,
+                null,
+                eventStatus
+        );
     }
 }

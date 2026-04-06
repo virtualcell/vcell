@@ -36,7 +36,7 @@ public class ExportHistoryTable extends Table {
     public final Field endTime = new Field("end_time", Field.SQLDataType.number_as_real, "NOT NULL");
     public final Field entireZStack = new Field("entire_z_stack", Field.SQLDataType.integer, "NOT NULL CHECK (entire_z_stack IN (0,1))");
     public final Field selectedZSliceInStack = new Field("z_slice", Field.SQLDataType.integer, "");
-    public final Field savedFileName = new Field("saved_file_name", Field.SQLDataType.varchar_50, "NOT NULL");
+    public final Field savedFileName = new Field("saved_file_name", Field.SQLDataType.varchar_50, "");
     public final Field eventStatus = new Field("event_status", Field.SQLDataType.varchar_50, "NOT NULL");
 
 
@@ -125,6 +125,9 @@ public class ExportHistoryTable extends Table {
     public ExportHistory getExportHistoryRecord(ResultSet rset) throws SQLException, SQLException, DataAccessException {
 
         long simulationRef         = rset.getLong(this.simulationRef.getUnqualifiedColName());
+        long mathRef               = rset.getLong(this.mathRef.getUnqualifiedColName());
+        Long bioModelRef           = (Long) rset.getObject(this.bioModelRef.getUnqualifiedColName());
+        Long mathModelRef          = (Long) rset.getObject(this.mathModelRef.getUnqualifiedColName());
         // enums & timestamps
         ExportFormat fmt      = ExportFormat.valueOf(rset.getString(this.exportFormat.getUnqualifiedColName()));
         Timestamp date        = rset.getTimestamp(this.exportDate.getUnqualifiedColName());
@@ -161,7 +164,8 @@ public class ExportHistoryTable extends Table {
 
 
         return new ExportHistory(
-                jobId, new KeyValue("" + simulationRef), fmt, date.toInstant(),
+                jobId, new KeyValue("" + simulationRef), bioModelRef == null ? null : new KeyValue("" + bioModelRef),
+                mathModelRef == null ? null : new KeyValue("" + mathModelRef), new KeyValue("" + mathRef),  fmt, date.toInstant(),
                 uriVal, simNameVal, modelName, variables,
                 startBt, endBt, savedFileVal,
                 zS, ez == 1, ExportEnums.ExportProgressType.valueOf(eventStatusVal)
