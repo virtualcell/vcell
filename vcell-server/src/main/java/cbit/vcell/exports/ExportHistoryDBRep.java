@@ -3,7 +3,6 @@ package cbit.vcell.exports;
 import cbit.vcell.export.server.ExportEnums;
 import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.ExportSpecs;
-import cbit.vcell.export.server.HumanReadableExportData;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import org.vcell.util.document.KeyValue;
 
@@ -23,9 +22,6 @@ public record ExportHistoryDBRep(
         String[] variables,
         double startTimeValue,
         double endTimeValue,
-        boolean entireZStack,
-        int selectedZSlice,
-        String savedFileNameValue,
         ExportEnums.ExportProgressType eventStatus
 ) {
     public boolean equals(ExportHistoryDBRep other){
@@ -39,15 +35,11 @@ public record ExportHistoryDBRep(
                 List.of(this.variables).equals(List.of(other.variables)) &&
                 Double.compare(this.startTimeValue, other.startTimeValue) == 0 &&
                 Double.compare(this.endTimeValue, other.endTimeValue) == 0 &&
-                this.savedFileNameValue.equals(other.savedFileNameValue) &&
-                this.eventStatus.equals(other.eventStatus) &&
-                this.entireZStack == other.entireZStack &&
-                this.selectedZSlice == other.selectedZSlice;
+                this.eventStatus.equals(other.eventStatus);
     }
 
     public static ExportHistoryDBRep fromExportSpec(ExportSpecs exportSpecs, String url, long jobID, VCSimulationDataIdentifier simDataId, ExportEnums.ExportProgressType eventStatus) {
         double[] times = exportSpecs.getTimeSpecs().getAllTimes();
-        boolean entireZStack = exportSpecs.getGeometrySpecs().getMode() == ExportEnums.GeometryMode.GEOMETRY_FULL;
         return new ExportHistoryDBRep(
                 jobID,
                 exportSpecs.getBioModelKey(),
@@ -60,9 +52,6 @@ public record ExportHistoryDBRep(
                 exportSpecs.getVariableSpecs().getVariableNames(),
                 times[exportSpecs.getTimeSpecs().getBeginTimeIndex()],
                 times[exportSpecs.getTimeSpecs().getEndTimeIndex()],
-                entireZStack,
-                entireZStack ? exportSpecs.getGeometrySpecs().getSliceNumber() : -1,
-                null,
                 eventStatus
         );
     }

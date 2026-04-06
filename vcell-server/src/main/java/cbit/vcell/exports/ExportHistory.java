@@ -22,10 +22,7 @@ public record ExportHistory(
 //        List<MathOverrides.Element> overrides,
         double startTimeValue,
         double endTimeValue,
-        String savedFileNameValue,
 //        String applicationTypeValue,
-        int selectedZSlice,
-        boolean entireZStack,
         ExportEnums.ExportProgressType eventStatus
 ) {
 }

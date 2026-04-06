@@ -3,18 +3,13 @@ package org.vcell.restq.exports;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.export.server.*;
 import cbit.vcell.exports.ExportHistory;
-import cbit.vcell.math.Constant;
-import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.exports.ExportHistoryDBDriver;
 import cbit.vcell.exports.ExportHistoryDBRep;
-import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
-import cbit.vcell.xml.XMLSource;
-import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.xml.XmlParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.quarkus.test.junit.QuarkusTest;
@@ -23,7 +18,6 @@ import org.junit.jupiter.api.*;
 import org.vcell.restq.TestEndpointUtils;
 import org.vcell.restq.config.CDIVCellConfigProvider;
 import org.vcell.restq.db.AgroalConnectionFactory;
-import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
@@ -83,8 +77,7 @@ public class ExportHistoryDBTest {
                 jobID, savedBioModel.getVersion().getVersionKey(),
                 null, savedSimulation.getKey(), savedSimulation.getMathDescription().getKey(), ExportFormat.N5,
                 timestamp, uri, variableSpecs.getVariableNames(),
-                1.2, 3.4, false, 1,
-                "nameOnServer", ExportEnums.ExportProgressType.EXPORT_COMPLETE
+                1.2, 3.4, ExportEnums.ExportProgressType.EXPORT_COMPLETE
         );
     }
 
@@ -196,9 +189,6 @@ public class ExportHistoryDBTest {
                 List.of(dbRep.variables()).equals(List.of(history.variables())) &&
                 Double.compare(dbRep.startTimeValue(), history.startTimeValue()) == 0 &&
                 Double.compare(dbRep.endTimeValue(), history.endTimeValue()) == 0 &&
-                dbRep.savedFileNameValue().equals(history.savedFileNameValue()) &&
-                dbRep.eventStatus().toString().equals(history.eventStatus().toString()) &&
-                dbRep.selectedZSlice() == history.selectedZSlice() &&
-                dbRep.entireZStack() == history.entireZStack();
+                dbRep.eventStatus().toString().equals(history.eventStatus().toString());
     }
 }

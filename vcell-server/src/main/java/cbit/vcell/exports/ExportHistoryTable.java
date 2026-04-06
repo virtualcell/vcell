@@ -34,9 +34,6 @@ public class ExportHistoryTable extends Table {
     public final Field variables = new Field("variables", Field.SQLDataType.varchar_255, "[] NOT NULL");
     public final Field startTime = new Field("start_time", Field.SQLDataType.number_as_real, "NOT NULL");
     public final Field endTime = new Field("end_time", Field.SQLDataType.number_as_real, "NOT NULL");
-    public final Field entireZStack = new Field("entire_z_stack", Field.SQLDataType.integer, "NOT NULL CHECK (entire_z_stack IN (0,1))");
-    public final Field selectedZSliceInStack = new Field("z_slice", Field.SQLDataType.integer, "");
-    public final Field savedFileName = new Field("saved_file_name", Field.SQLDataType.varchar_50, "");
     public final Field eventStatus = new Field("event_status", Field.SQLDataType.varchar_50, "NOT NULL");
 
 
@@ -58,7 +55,7 @@ public class ExportHistoryTable extends Table {
                 // note that primary key id cannot be placed in fields (will causes class initialization error),
                 jobId, userRef, bioModelRef, mathModelRef, simulationRef, mathRef,
                 exportFormat, exportDate, uri, variables,
-                startTime, endTime, entireZStack, selectedZSliceInStack, savedFileName, eventStatus
+                startTime, endTime, eventStatus
         };
         addFields(customFields);
     }
@@ -93,9 +90,6 @@ public class ExportHistoryTable extends Table {
             Array      variables,
             double      startTimeValue,
             double      endTimeValue,
-            boolean     entireZStack,
-            int        selectedZSlice,
-            String        savedFileNameValue,
             String        eventStatusValue
     ) throws SQLException {
         int i = 1;
@@ -116,9 +110,6 @@ public class ExportHistoryTable extends Table {
         ps.setArray       (i++, variables);
         ps.setDouble      (i++, startTimeValue);
         ps.setDouble     (i++, endTimeValue);
-        ps.setInt        (i++, entireZStack ? 1 : 0);
-        ps.setInt        (i++, selectedZSlice);
-        ps.setString     (i++, savedFileNameValue);
         ps.setString     (i++, eventStatusValue);
     }
 
@@ -145,11 +136,8 @@ public class ExportHistoryTable extends Table {
         // numeric ranges
         double startBt    = rset.getDouble(this.startTime.getUnqualifiedColName());
         double endBt      = rset.getDouble(this.endTime.getUnqualifiedColName());
-        int zS            = rset.getInt(this.selectedZSliceInStack.getUnqualifiedColName());
-        int ez            = rset.getInt(this.entireZStack.getUnqualifiedColName());
 
         // more strings & flags
-        String savedFileVal   = rset.getString(this.savedFileName.getUnqualifiedColName());
         String eventStatusVal   = rset.getString(this.eventStatus.getUnqualifiedColName());
 
 
@@ -167,8 +155,7 @@ public class ExportHistoryTable extends Table {
                 jobId, new KeyValue("" + simulationRef), bioModelRef == null ? null : new KeyValue("" + bioModelRef),
                 mathModelRef == null ? null : new KeyValue("" + mathModelRef), new KeyValue("" + mathRef),  fmt, date.toInstant(),
                 uriVal, simNameVal, modelName, variables,
-                startBt, endBt, savedFileVal,
-                zS, ez == 1, ExportEnums.ExportProgressType.valueOf(eventStatusVal)
+                startBt, endBt, ExportEnums.ExportProgressType.valueOf(eventStatusVal)
         );
     }
 }

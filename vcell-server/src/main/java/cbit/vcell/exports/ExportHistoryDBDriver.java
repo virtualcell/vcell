@@ -1,8 +1,6 @@
 package cbit.vcell.exports;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.postgresql.util.PGobject;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
 import org.vcell.util.DataAccessException;
@@ -52,9 +50,6 @@ public class ExportHistoryDBDriver {
                     conn.createArrayOf("VARCHAR", exportHistory.variables()),
                     exportHistory.startTimeValue(),
                     exportHistory.endTimeValue(),
-                    exportHistory.entireZStack(),
-                    exportHistory.selectedZSlice(),
-                    exportHistory.savedFileNameValue(),
                     exportHistory.eventStatus().toString()
             );
             ps.executeUpdate();
