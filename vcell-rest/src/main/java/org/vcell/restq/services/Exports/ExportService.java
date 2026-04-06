@@ -5,6 +5,7 @@ import cbit.rmi.event.ExportEventController;
 import cbit.vcell.export.server.ExportFormat;
 import cbit.vcell.export.server.FormatSpecificSpecs;
 import cbit.vcell.export.server.JobRequest;
+import cbit.vcell.exports.ExportHistory;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.exports.ExportHistoryDBRep;
 import cbit.vcell.modeldb.SimulationRep;
@@ -46,9 +47,8 @@ public class ExportService {
         databaseServer = new DatabaseServerImpl(connectionFactory, connectionFactory.getKeyFactory());
     }
 
-    public List<ExportResource.ExportHistory> getExportHistory(User user) throws DataAccessException {
-        List<ExportHistoryDBRep> exportHistoryDBReps = databaseServer.getUsersExportHistory(user);
-        return exportHistoryDBReps.stream().map(ExportResource.ExportHistory::fromExportHistoryRep).toList();
+    public List<ExportHistory> getExportHistory(User user) throws DataAccessException {
+        return databaseServer.getUsersExportHistory(user);
     }
 
     public Multi<ExportEvent> getExportStatuses(User user, long jobID) throws ObjectNotFoundException {

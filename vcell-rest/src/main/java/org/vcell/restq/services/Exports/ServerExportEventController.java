@@ -6,7 +6,7 @@ import cbit.rmi.event.ExportListener;
 import cbit.vcell.export.server.ExportEnums;
 import cbit.vcell.export.server.ExportSpecs;
 import cbit.vcell.modeldb.DatabaseServerImpl;
-import cbit.vcell.exports.ExportHistoryRep;
+import cbit.vcell.exports.ExportHistoryDBRep;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,6 +20,8 @@ import org.apache.logging.log4j.Logger;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.vcell.restq.activemq.ExportRequestListenerMQ;
+import org.vcell.restq.db.AgroalConnectionFactory;
+import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
 import org.vcell.util.document.ExternalDataIdentifier;
 import org.vcell.util.document.KeyValue;
@@ -64,6 +66,7 @@ public class ServerExportEventController implements cbit.rmi.event.ExportEventCo
     private final ConcurrentHashMap<String, MultiEmitterProcessor<ExportEvent>> listeners = new ConcurrentHashMap<>();
 
     private final static Logger logger = LogManager.getLogger(ServerExportEventController.class);
+    private final DatabaseServerImpl databaseServerImpl;
 
     @Inject
     @Channel("publisher-client-status")
@@ -71,6 +74,12 @@ public class ServerExportEventController implements cbit.rmi.event.ExportEventCo
 
     @Inject
     ObjectMapper objectMapper;
+
+    @Inject
+    public ServerExportEventController(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException {
+        databaseServerImpl = new DatabaseServerImpl(agroalConnectionFactory, agroalConnectionFactory.getKeyFactory());
+
+    }
 
 
     public synchronized Multi<ExportEvent> getSSEUsersExportStatus(User user, long exportJobID) throws ObjectNotFoundException {
@@ -142,7 +151,19 @@ public class ServerExportEventController implements cbit.rmi.event.ExportEventCo
         ExportEvent event = new ExportEvent(
                 this, jobID, user, vcdID.getID(), dataKey, ExportEnums.ExportProgressType.EXPORT_COMPLETE,
                 format, location, null);
-        event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
+
+        if (exportSpecs != null && exportSpecs.getVCDataIdentifier() instanceof VCSimulationDataIdentifier vcSimulationDataIdentifier){
+            try{
+                databaseServerImpl.addExportHistory(user, ExportHistoryDBRep.fromExportSpec(exportSpecs, location, (int) jobID, vcSimulationDataIdentifier, ExportEnums.ExportProgressType.EXPORT_COMPLETE));
+            } catch (DataAccessException e) {
+                logger.error("Couldn't add export history to database for user " + user.getName() + ", job id " + jobID
+                        + ", and export spec " + exportSpecs, e);
+            }
+        } else {
+            logger.warn("ExportSpecs was null or did not contain a VCSimulationDataIdentifier, " +
+                    "so export history was not added to the database for user {}, job id {}, and export spec {}", user.getName(), jobID, exportSpecs);
+        }
+
         fireExportEvent(event);
 
         return event;

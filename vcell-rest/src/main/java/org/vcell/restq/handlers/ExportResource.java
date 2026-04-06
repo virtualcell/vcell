@@ -2,6 +2,7 @@ package org.vcell.restq.handlers;
 
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.*;
+import cbit.vcell.exports.ExportHistory;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.exports.ExportHistoryDBRep;
@@ -140,35 +141,6 @@ public class ExportResource {
             VariableType functionType,
             AnnotatedFunction.FunctionCategory category
     ) { }
-
-    public record ExportHistory(
-            int jobID,
-            KeyValue simulationRef,
-            ExportFormat exportFormat,
-            String exportDate,
-            String uri,
-            String dataIdValue,
-            String simName,
-            String appName,
-            String bioName,
-            String[] variables,
-            List<HumanReadableExportData.DifferentParameterValues> parameterValues,
-            double startTimeValue,
-            double endTimeValue,
-            String savedFileNameValue,
-            String applicationTypeValue,
-            boolean nonSpatialValue,
-            int zSlicesValue,
-            int tSlicesValue,
-            int numVariablesValue
-    ){
-        public static ExportHistory fromExportHistoryRep(ExportHistoryDBRep rep){
-            return new ExportHistory(rep.jobID(), rep.simulationRef(), rep.exportFormat(), rep.exportDate().toString(), rep.uri(), rep.dataIdValue(),
-                    rep.simName(), rep.appName(), rep.bioName(), rep.variables(), rep.parameterValues(), rep.startTimeValue(),
-                    rep.endTimeValue(), rep.savedFileNameValue(), rep.applicationTypeValue(), rep.nonSpatialValue(),
-                    rep.zSlicesValue(), rep.tSlicesValue(), rep.numVariablesValue());
-        }
-    }
 
     public record GeometrySpecDTO(
             SpatialSelection[] selections, int axis, int sliceNumber, ExportEnums.GeometryMode geometryMode
