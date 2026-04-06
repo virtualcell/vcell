@@ -154,7 +154,7 @@ public class ServerExportEventController implements cbit.rmi.event.ExportEventCo
 
         if (exportSpecs != null && exportSpecs.getVCDataIdentifier() instanceof VCSimulationDataIdentifier vcSimulationDataIdentifier){
             try{
-                databaseServerImpl.addExportHistory(user, ExportHistoryDBRep.fromExportSpec(exportSpecs, location, (int) jobID, vcSimulationDataIdentifier, ExportEnums.ExportProgressType.EXPORT_COMPLETE));
+                databaseServerImpl.addExportHistory(user, ExportHistoryDBRep.fromExportSpec(exportSpecs, location, jobID, vcSimulationDataIdentifier, ExportEnums.ExportProgressType.EXPORT_COMPLETE));
             } catch (DataAccessException e) {
                 logger.error("Couldn't add export history to database for user " + user.getName() + ", job id " + jobID
                         + ", and export spec " + exportSpecs, e);

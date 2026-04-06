@@ -72,6 +72,9 @@ public class ExportHistoryClientTest {
         List<ExportHistory> exportHistories = exportResourceApi.getExportHistory();
         Assertions.assertFalse(exportHistories.isEmpty());
         Assertions.assertEquals(exportHistories.size(), 1);
+        Assertions.assertEquals(exportHistories.get(0).getExportJobID(), completedExport.getJobID());
+        Assertions.assertEquals(exportHistories.get(0).getSimName(), frapModel.getSimulation(0).getName());
+        Assertions.assertEquals(exportHistories.get(0).getModelName(), frapModel.getName());
         Assertions.assertTrue(requestEqualHistory(exportRequest, exportHistories.get(0)));
     }
 
@@ -83,6 +86,7 @@ public class ExportHistoryClientTest {
         boolean endTimeEqual = allTimes.get(request.getStandardExportInformation().getTimeSpecs().getEndTimeIndex()).equals(history.getEndTimeValue());
         boolean exportComplete = history.getEventStatus().equals(ExportProgressType.COMPLETE);
         boolean correctFormat = history.getExportFormat().equals(ExportFormat.N5);
-        return modelEqual && simEqual && startTimeEqual && endTimeEqual && exportComplete && correctFormat;
+        boolean variablesEqual = List.of(request.getStandardExportInformation().getVariableSpecs().getVariableNames()).equals(List.of(history.getVariables()));
+        return modelEqual && simEqual && startTimeEqual && endTimeEqual && exportComplete && correctFormat && variablesEqual;
     }
 }

@@ -57,10 +57,7 @@ public class ExportHistoryDBDriver {
                     exportHistory.savedFileNameValue(),
                     exportHistory.eventStatus().toString()
             );
-            System.out.println("Data insertion tag:");
-            System.out.println(ps.executeUpdate());
-            System.out.println(".");
-            //ps.executeUpdate();
+            ps.executeUpdate();
         }
 
     }

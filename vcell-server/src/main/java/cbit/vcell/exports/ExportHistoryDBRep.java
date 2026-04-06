@@ -12,7 +12,7 @@ import java.time.Instant;
 import java.util.List;
 
 public record ExportHistoryDBRep(
-        int jobID,
+        long jobID,
         KeyValue bioModelRef,
         KeyValue mathModelRef,
         KeyValue simulationRef,
@@ -49,7 +49,7 @@ public record ExportHistoryDBRep(
         double[] times = exportSpecs.getTimeSpecs().getAllTimes();
         boolean entireZStack = exportSpecs.getGeometrySpecs().getMode() == ExportEnums.GeometryMode.GEOMETRY_FULL;
         return new ExportHistoryDBRep(
-                (int) jobID,
+                jobID,
                 exportSpecs.getBioModelKey(),
                 exportSpecs.getMathModelKey(),
                 simDataId.getSimulationKey(),

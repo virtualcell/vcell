@@ -81,7 +81,7 @@ public class ExportHistoryTable extends Table {
     public void bindForInsert(
             PreparedStatement ps,
             KeyValue keyValue,
-            int        jobIdValue,
+            long        jobIdValue,
             int          userRefValue,
             Integer         bioModelRef,
             Integer         mathModelRef,
@@ -133,7 +133,7 @@ public class ExportHistoryTable extends Table {
         Timestamp date        = rset.getTimestamp(this.exportDate.getUnqualifiedColName());
 
         // strings
-        int jobId            = rset.getInt(this.jobId.getUnqualifiedColName());
+        long jobId            = rset.getLong(this.jobId.getUnqualifiedColName());
         String uriVal         = rset.getString(this.uri.getUnqualifiedColName());
         String simNameVal     = rset.getString("sim_name");
         String mathModelNameVal     = rset.getString("math_model_name");
