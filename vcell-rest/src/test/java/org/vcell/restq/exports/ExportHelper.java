@@ -1,6 +1,9 @@
 package org.vcell.restq.exports;
 
+import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.export.server.ExportEnums;
+import cbit.vcell.exports.ExportHistory;
+import cbit.vcell.exports.ExportHistoryDBRep;
 import cbit.vcell.math.VariableType;
 import cbit.vcell.simdata.*;
 import cbit.vcell.simdata.DataIdentifier;
@@ -70,16 +73,16 @@ public class ExportHelper {
     }
 
     public static N5ExportRequest getValidExportRequestDTO(int startTimeIndex, int endTimeIndex,
-                                                           DataServerImpl dataServer, String simulationID) throws Exception {
-        VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(new KeyValue(simulationID), TestEndpointUtils.administratorUser);
+                                                           DataServerImpl dataServer, Simulation simulationID, BioModel bioModel) throws Exception {
+        VCSimulationIdentifier vcSimulationIdentifier = new VCSimulationIdentifier(simulationID.getKey(), TestEndpointUtils.administratorUser);
         VCSimulationDataIdentifier simulationDataIdentifier = new VCSimulationDataIdentifier(vcSimulationIdentifier, 0);
         DataIdentifier[] dataIdentifier = dataServer.getDataIdentifiers(new OutputContext(new AnnotatedFunction[0]), TestEndpointUtils.administratorUser, simulationDataIdentifier);
         DataIdentifier volumetricDataID = getOneDIWithSpecificType(VariableType.VOLUME, dataIdentifier);
         double[] allTimes = dataServer.getDataSetTimes(TestEndpointUtils.administratorUser, simulationDataIdentifier);
         StandardExportInfo exportRequest = new StandardExportInfo()
-                .simulationKey(simulationID)
+                .simulationKey(simulationID.getVersion().getVersionKey().toString())
                 .simulationJob(0)
-                .geometrySpecs(new GeometrySpecDTO().geometryMode(GeometryMode.SELECTIONS).selections(new ArrayList<>()))
+                .geometrySpecs(new GeometrySpecDTO().geometryMode(GeometryMode.FULL))
                 .timeSpecs(
                         new org.vcell.restclient.model.TimeSpecs().beginTimeIndex(startTimeIndex).endTimeIndex(endTimeIndex).allTimes(Arrays.stream(allTimes).boxed().toList()).mode(TimeMode.RANGE)
                 )
@@ -88,6 +91,9 @@ public class ExportHelper {
                 )
                 .contextName("")
                 .simulationName(vcSimulationIdentifier.getID())
+                .bioModelKey(bioModel.getVersion().getVersionKey().toString())
+                .mathModelKey(null)
+                .mathDescriptionKey(bioModel.getSimulationContext(0).getMathDescription().getVersion().getVersionKey().toString())
                 .outputContext(new ArrayList<>());
 
         return new N5ExportRequest().standardExportInformation(exportRequest)

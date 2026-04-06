@@ -186,6 +186,7 @@ public class TestEndpointUtils {
     public static void clearAllBioModelEntries(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
         Object object = new Object();
         Connection connection = agroalConnectionFactory.getConnection(object);
+        connection.prepareStatement("DELETE FROM VC_SIMULATION_EXPORT_HISTORY").execute();
         connection.prepareStatement("DELETE FROM VC_BIOMODEL").execute();
         connection.prepareStatement("DELETE FROM VC_BIOMODELXML").execute();
         connection.prepareStatement("DELETE FROM VC_BIOMODELSIM").execute();
