@@ -24,11 +24,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.vcell.restclient.model.DifferentParameterValues;
 import org.vcell.restclient.model.ExportFormat;
+import org.vcell.restclient.model.ExportProgressType;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -36,60 +37,58 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * ExportHistory
  */
 @JsonPropertyOrder({
-  ExportHistory.JSON_PROPERTY_JOB_I_D,
+  ExportHistory.JSON_PROPERTY_EXPORT_JOB_I_D,
   ExportHistory.JSON_PROPERTY_SIMULATION_REF,
+  ExportHistory.JSON_PROPERTY_BIO_MODEL_REF,
+  ExportHistory.JSON_PROPERTY_MATH_MODEL_REF,
+  ExportHistory.JSON_PROPERTY_MATH_REF,
   ExportHistory.JSON_PROPERTY_EXPORT_FORMAT,
   ExportHistory.JSON_PROPERTY_EXPORT_DATE,
   ExportHistory.JSON_PROPERTY_URI,
-  ExportHistory.JSON_PROPERTY_DATA_ID_VALUE,
   ExportHistory.JSON_PROPERTY_SIM_NAME,
-  ExportHistory.JSON_PROPERTY_APP_NAME,
-  ExportHistory.JSON_PROPERTY_BIO_NAME,
+  ExportHistory.JSON_PROPERTY_MODEL_NAME,
   ExportHistory.JSON_PROPERTY_VARIABLES,
-  ExportHistory.JSON_PROPERTY_PARAMETER_VALUES,
   ExportHistory.JSON_PROPERTY_START_TIME_VALUE,
   ExportHistory.JSON_PROPERTY_END_TIME_VALUE,
   ExportHistory.JSON_PROPERTY_SAVED_FILE_NAME_VALUE,
-  ExportHistory.JSON_PROPERTY_APPLICATION_TYPE_VALUE,
-  ExportHistory.JSON_PROPERTY_NON_SPATIAL_VALUE,
-  ExportHistory.JSON_PROPERTY_Z_SLICES_VALUE,
-  ExportHistory.JSON_PROPERTY_T_SLICES_VALUE,
-  ExportHistory.JSON_PROPERTY_NUM_VARIABLES_VALUE
+  ExportHistory.JSON_PROPERTY_SELECTED_Z_SLICE,
+  ExportHistory.JSON_PROPERTY_ENTIRE_Z_STACK,
+  ExportHistory.JSON_PROPERTY_EVENT_STATUS
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class ExportHistory {
-  public static final String JSON_PROPERTY_JOB_I_D = "jobID";
-  private Integer jobID;
+  public static final String JSON_PROPERTY_EXPORT_JOB_I_D = "exportJobID";
+  private Long exportJobID;
 
   public static final String JSON_PROPERTY_SIMULATION_REF = "simulationRef";
   private String simulationRef;
+
+  public static final String JSON_PROPERTY_BIO_MODEL_REF = "bioModelRef";
+  private String bioModelRef;
+
+  public static final String JSON_PROPERTY_MATH_MODEL_REF = "mathModelRef";
+  private String mathModelRef;
+
+  public static final String JSON_PROPERTY_MATH_REF = "mathRef";
+  private String mathRef;
 
   public static final String JSON_PROPERTY_EXPORT_FORMAT = "exportFormat";
   private ExportFormat exportFormat;
 
   public static final String JSON_PROPERTY_EXPORT_DATE = "exportDate";
-  private String exportDate;
+  private OffsetDateTime exportDate;
 
   public static final String JSON_PROPERTY_URI = "uri";
   private String uri;
 
-  public static final String JSON_PROPERTY_DATA_ID_VALUE = "dataIdValue";
-  private String dataIdValue;
-
   public static final String JSON_PROPERTY_SIM_NAME = "simName";
   private String simName;
 
-  public static final String JSON_PROPERTY_APP_NAME = "appName";
-  private String appName;
-
-  public static final String JSON_PROPERTY_BIO_NAME = "bioName";
-  private String bioName;
+  public static final String JSON_PROPERTY_MODEL_NAME = "modelName";
+  private String modelName;
 
   public static final String JSON_PROPERTY_VARIABLES = "variables";
   private List<String> variables;
-
-  public static final String JSON_PROPERTY_PARAMETER_VALUES = "parameterValues";
-  private List<DifferentParameterValues> parameterValues;
 
   public static final String JSON_PROPERTY_START_TIME_VALUE = "startTimeValue";
   private Double startTimeValue;
@@ -100,46 +99,40 @@ public class ExportHistory {
   public static final String JSON_PROPERTY_SAVED_FILE_NAME_VALUE = "savedFileNameValue";
   private String savedFileNameValue;
 
-  public static final String JSON_PROPERTY_APPLICATION_TYPE_VALUE = "applicationTypeValue";
-  private String applicationTypeValue;
+  public static final String JSON_PROPERTY_SELECTED_Z_SLICE = "selectedZSlice";
+  private Integer selectedZSlice;
 
-  public static final String JSON_PROPERTY_NON_SPATIAL_VALUE = "nonSpatialValue";
-  private Boolean nonSpatialValue;
+  public static final String JSON_PROPERTY_ENTIRE_Z_STACK = "entireZStack";
+  private Boolean entireZStack;
 
-  public static final String JSON_PROPERTY_Z_SLICES_VALUE = "zSlicesValue";
-  private Integer zSlicesValue;
-
-  public static final String JSON_PROPERTY_T_SLICES_VALUE = "tSlicesValue";
-  private Integer tSlicesValue;
-
-  public static final String JSON_PROPERTY_NUM_VARIABLES_VALUE = "numVariablesValue";
-  private Integer numVariablesValue;
+  public static final String JSON_PROPERTY_EVENT_STATUS = "eventStatus";
+  private ExportProgressType eventStatus;
 
   public ExportHistory() { 
   }
 
-  public ExportHistory jobID(Integer jobID) {
-    this.jobID = jobID;
+  public ExportHistory exportJobID(Long exportJobID) {
+    this.exportJobID = exportJobID;
     return this;
   }
 
    /**
-   * Get jobID
-   * @return jobID
+   * Get exportJobID
+   * @return exportJobID
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_JOB_I_D)
+  @JsonProperty(JSON_PROPERTY_EXPORT_JOB_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public Integer getJobID() {
-    return jobID;
+  public Long getExportJobID() {
+    return exportJobID;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_JOB_I_D)
+  @JsonProperty(JSON_PROPERTY_EXPORT_JOB_I_D)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setJobID(Integer jobID) {
-    this.jobID = jobID;
+  public void setExportJobID(Long exportJobID) {
+    this.exportJobID = exportJobID;
   }
 
 
@@ -168,6 +161,81 @@ public class ExportHistory {
   }
 
 
+  public ExportHistory bioModelRef(String bioModelRef) {
+    this.bioModelRef = bioModelRef;
+    return this;
+  }
+
+   /**
+   * Get bioModelRef
+   * @return bioModelRef
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_BIO_MODEL_REF)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public String getBioModelRef() {
+    return bioModelRef;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_BIO_MODEL_REF)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setBioModelRef(String bioModelRef) {
+    this.bioModelRef = bioModelRef;
+  }
+
+
+  public ExportHistory mathModelRef(String mathModelRef) {
+    this.mathModelRef = mathModelRef;
+    return this;
+  }
+
+   /**
+   * Get mathModelRef
+   * @return mathModelRef
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_MATH_MODEL_REF)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public String getMathModelRef() {
+    return mathModelRef;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_MATH_MODEL_REF)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setMathModelRef(String mathModelRef) {
+    this.mathModelRef = mathModelRef;
+  }
+
+
+  public ExportHistory mathRef(String mathRef) {
+    this.mathRef = mathRef;
+    return this;
+  }
+
+   /**
+   * Get mathRef
+   * @return mathRef
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_MATH_REF)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public String getMathRef() {
+    return mathRef;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_MATH_REF)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setMathRef(String mathRef) {
+    this.mathRef = mathRef;
+  }
+
+
   public ExportHistory exportFormat(ExportFormat exportFormat) {
     this.exportFormat = exportFormat;
     return this;
@@ -193,7 +261,7 @@ public class ExportHistory {
   }
 
 
-  public ExportHistory exportDate(String exportDate) {
+  public ExportHistory exportDate(OffsetDateTime exportDate) {
     this.exportDate = exportDate;
     return this;
   }
@@ -206,14 +274,14 @@ public class ExportHistory {
   @JsonProperty(JSON_PROPERTY_EXPORT_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public String getExportDate() {
+  public OffsetDateTime getExportDate() {
     return exportDate;
   }
 
 
   @JsonProperty(JSON_PROPERTY_EXPORT_DATE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setExportDate(String exportDate) {
+  public void setExportDate(OffsetDateTime exportDate) {
     this.exportDate = exportDate;
   }
 
@@ -243,31 +311,6 @@ public class ExportHistory {
   }
 
 
-  public ExportHistory dataIdValue(String dataIdValue) {
-    this.dataIdValue = dataIdValue;
-    return this;
-  }
-
-   /**
-   * Get dataIdValue
-   * @return dataIdValue
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_DATA_ID_VALUE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public String getDataIdValue() {
-    return dataIdValue;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_DATA_ID_VALUE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setDataIdValue(String dataIdValue) {
-    this.dataIdValue = dataIdValue;
-  }
-
-
   public ExportHistory simName(String simName) {
     this.simName = simName;
     return this;
@@ -293,53 +336,28 @@ public class ExportHistory {
   }
 
 
-  public ExportHistory appName(String appName) {
-    this.appName = appName;
+  public ExportHistory modelName(String modelName) {
+    this.modelName = modelName;
     return this;
   }
 
    /**
-   * Get appName
-   * @return appName
+   * Get modelName
+   * @return modelName
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_APP_NAME)
+  @JsonProperty(JSON_PROPERTY_MODEL_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public String getAppName() {
-    return appName;
+  public String getModelName() {
+    return modelName;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_APP_NAME)
+  @JsonProperty(JSON_PROPERTY_MODEL_NAME)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setAppName(String appName) {
-    this.appName = appName;
-  }
-
-
-  public ExportHistory bioName(String bioName) {
-    this.bioName = bioName;
-    return this;
-  }
-
-   /**
-   * Get bioName
-   * @return bioName
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_BIO_NAME)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public String getBioName() {
-    return bioName;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_BIO_NAME)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setBioName(String bioName) {
-    this.bioName = bioName;
+  public void setModelName(String modelName) {
+    this.modelName = modelName;
   }
 
 
@@ -373,39 +391,6 @@ public class ExportHistory {
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setVariables(List<String> variables) {
     this.variables = variables;
-  }
-
-
-  public ExportHistory parameterValues(List<DifferentParameterValues> parameterValues) {
-    this.parameterValues = parameterValues;
-    return this;
-  }
-
-  public ExportHistory addParameterValuesItem(DifferentParameterValues parameterValuesItem) {
-    if (this.parameterValues == null) {
-      this.parameterValues = new ArrayList<>();
-    }
-    this.parameterValues.add(parameterValuesItem);
-    return this;
-  }
-
-   /**
-   * Get parameterValues
-   * @return parameterValues
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_PARAMETER_VALUES)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public List<DifferentParameterValues> getParameterValues() {
-    return parameterValues;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_PARAMETER_VALUES)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setParameterValues(List<DifferentParameterValues> parameterValues) {
-    this.parameterValues = parameterValues;
   }
 
 
@@ -484,128 +469,78 @@ public class ExportHistory {
   }
 
 
-  public ExportHistory applicationTypeValue(String applicationTypeValue) {
-    this.applicationTypeValue = applicationTypeValue;
+  public ExportHistory selectedZSlice(Integer selectedZSlice) {
+    this.selectedZSlice = selectedZSlice;
     return this;
   }
 
    /**
-   * Get applicationTypeValue
-   * @return applicationTypeValue
+   * Get selectedZSlice
+   * @return selectedZSlice
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_APPLICATION_TYPE_VALUE)
+  @JsonProperty(JSON_PROPERTY_SELECTED_Z_SLICE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public String getApplicationTypeValue() {
-    return applicationTypeValue;
+  public Integer getSelectedZSlice() {
+    return selectedZSlice;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_APPLICATION_TYPE_VALUE)
+  @JsonProperty(JSON_PROPERTY_SELECTED_Z_SLICE)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setApplicationTypeValue(String applicationTypeValue) {
-    this.applicationTypeValue = applicationTypeValue;
+  public void setSelectedZSlice(Integer selectedZSlice) {
+    this.selectedZSlice = selectedZSlice;
   }
 
 
-  public ExportHistory nonSpatialValue(Boolean nonSpatialValue) {
-    this.nonSpatialValue = nonSpatialValue;
+  public ExportHistory entireZStack(Boolean entireZStack) {
+    this.entireZStack = entireZStack;
     return this;
   }
 
    /**
-   * Get nonSpatialValue
-   * @return nonSpatialValue
+   * Get entireZStack
+   * @return entireZStack
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_NON_SPATIAL_VALUE)
+  @JsonProperty(JSON_PROPERTY_ENTIRE_Z_STACK)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public Boolean getNonSpatialValue() {
-    return nonSpatialValue;
+  public Boolean getEntireZStack() {
+    return entireZStack;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_NON_SPATIAL_VALUE)
+  @JsonProperty(JSON_PROPERTY_ENTIRE_Z_STACK)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setNonSpatialValue(Boolean nonSpatialValue) {
-    this.nonSpatialValue = nonSpatialValue;
+  public void setEntireZStack(Boolean entireZStack) {
+    this.entireZStack = entireZStack;
   }
 
 
-  public ExportHistory zSlicesValue(Integer zSlicesValue) {
-    this.zSlicesValue = zSlicesValue;
+  public ExportHistory eventStatus(ExportProgressType eventStatus) {
+    this.eventStatus = eventStatus;
     return this;
   }
 
    /**
-   * Get zSlicesValue
-   * @return zSlicesValue
+   * Get eventStatus
+   * @return eventStatus
   **/
   @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_Z_SLICES_VALUE)
+  @JsonProperty(JSON_PROPERTY_EVENT_STATUS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public Integer getzSlicesValue() {
-    return zSlicesValue;
+  public ExportProgressType getEventStatus() {
+    return eventStatus;
   }
 
 
-  @JsonProperty(JSON_PROPERTY_Z_SLICES_VALUE)
+  @JsonProperty(JSON_PROPERTY_EVENT_STATUS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setzSlicesValue(Integer zSlicesValue) {
-    this.zSlicesValue = zSlicesValue;
-  }
-
-
-  public ExportHistory tSlicesValue(Integer tSlicesValue) {
-    this.tSlicesValue = tSlicesValue;
-    return this;
-  }
-
-   /**
-   * Get tSlicesValue
-   * @return tSlicesValue
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_T_SLICES_VALUE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public Integer gettSlicesValue() {
-    return tSlicesValue;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_T_SLICES_VALUE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void settSlicesValue(Integer tSlicesValue) {
-    this.tSlicesValue = tSlicesValue;
-  }
-
-
-  public ExportHistory numVariablesValue(Integer numVariablesValue) {
-    this.numVariablesValue = numVariablesValue;
-    return this;
-  }
-
-   /**
-   * Get numVariablesValue
-   * @return numVariablesValue
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_NUM_VARIABLES_VALUE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public Integer getNumVariablesValue() {
-    return numVariablesValue;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_NUM_VARIABLES_VALUE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setNumVariablesValue(Integer numVariablesValue) {
-    this.numVariablesValue = numVariablesValue;
+  public void setEventStatus(ExportProgressType eventStatus) {
+    this.eventStatus = eventStatus;
   }
 
 
@@ -621,55 +556,51 @@ public class ExportHistory {
       return false;
     }
     ExportHistory exportHistory = (ExportHistory) o;
-    return Objects.equals(this.jobID, exportHistory.jobID) &&
+    return Objects.equals(this.exportJobID, exportHistory.exportJobID) &&
         Objects.equals(this.simulationRef, exportHistory.simulationRef) &&
+        Objects.equals(this.bioModelRef, exportHistory.bioModelRef) &&
+        Objects.equals(this.mathModelRef, exportHistory.mathModelRef) &&
+        Objects.equals(this.mathRef, exportHistory.mathRef) &&
         Objects.equals(this.exportFormat, exportHistory.exportFormat) &&
         Objects.equals(this.exportDate, exportHistory.exportDate) &&
         Objects.equals(this.uri, exportHistory.uri) &&
-        Objects.equals(this.dataIdValue, exportHistory.dataIdValue) &&
         Objects.equals(this.simName, exportHistory.simName) &&
-        Objects.equals(this.appName, exportHistory.appName) &&
-        Objects.equals(this.bioName, exportHistory.bioName) &&
+        Objects.equals(this.modelName, exportHistory.modelName) &&
         Objects.equals(this.variables, exportHistory.variables) &&
-        Objects.equals(this.parameterValues, exportHistory.parameterValues) &&
         Objects.equals(this.startTimeValue, exportHistory.startTimeValue) &&
         Objects.equals(this.endTimeValue, exportHistory.endTimeValue) &&
         Objects.equals(this.savedFileNameValue, exportHistory.savedFileNameValue) &&
-        Objects.equals(this.applicationTypeValue, exportHistory.applicationTypeValue) &&
-        Objects.equals(this.nonSpatialValue, exportHistory.nonSpatialValue) &&
-        Objects.equals(this.zSlicesValue, exportHistory.zSlicesValue) &&
-        Objects.equals(this.tSlicesValue, exportHistory.tSlicesValue) &&
-        Objects.equals(this.numVariablesValue, exportHistory.numVariablesValue);
+        Objects.equals(this.selectedZSlice, exportHistory.selectedZSlice) &&
+        Objects.equals(this.entireZStack, exportHistory.entireZStack) &&
+        Objects.equals(this.eventStatus, exportHistory.eventStatus);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(jobID, simulationRef, exportFormat, exportDate, uri, dataIdValue, simName, appName, bioName, variables, parameterValues, startTimeValue, endTimeValue, savedFileNameValue, applicationTypeValue, nonSpatialValue, zSlicesValue, tSlicesValue, numVariablesValue);
+    return Objects.hash(exportJobID, simulationRef, bioModelRef, mathModelRef, mathRef, exportFormat, exportDate, uri, simName, modelName, variables, startTimeValue, endTimeValue, savedFileNameValue, selectedZSlice, entireZStack, eventStatus);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class ExportHistory {\n");
-    sb.append("    jobID: ").append(toIndentedString(jobID)).append("\n");
+    sb.append("    exportJobID: ").append(toIndentedString(exportJobID)).append("\n");
     sb.append("    simulationRef: ").append(toIndentedString(simulationRef)).append("\n");
+    sb.append("    bioModelRef: ").append(toIndentedString(bioModelRef)).append("\n");
+    sb.append("    mathModelRef: ").append(toIndentedString(mathModelRef)).append("\n");
+    sb.append("    mathRef: ").append(toIndentedString(mathRef)).append("\n");
     sb.append("    exportFormat: ").append(toIndentedString(exportFormat)).append("\n");
     sb.append("    exportDate: ").append(toIndentedString(exportDate)).append("\n");
     sb.append("    uri: ").append(toIndentedString(uri)).append("\n");
-    sb.append("    dataIdValue: ").append(toIndentedString(dataIdValue)).append("\n");
     sb.append("    simName: ").append(toIndentedString(simName)).append("\n");
-    sb.append("    appName: ").append(toIndentedString(appName)).append("\n");
-    sb.append("    bioName: ").append(toIndentedString(bioName)).append("\n");
+    sb.append("    modelName: ").append(toIndentedString(modelName)).append("\n");
     sb.append("    variables: ").append(toIndentedString(variables)).append("\n");
-    sb.append("    parameterValues: ").append(toIndentedString(parameterValues)).append("\n");
     sb.append("    startTimeValue: ").append(toIndentedString(startTimeValue)).append("\n");
     sb.append("    endTimeValue: ").append(toIndentedString(endTimeValue)).append("\n");
     sb.append("    savedFileNameValue: ").append(toIndentedString(savedFileNameValue)).append("\n");
-    sb.append("    applicationTypeValue: ").append(toIndentedString(applicationTypeValue)).append("\n");
-    sb.append("    nonSpatialValue: ").append(toIndentedString(nonSpatialValue)).append("\n");
-    sb.append("    zSlicesValue: ").append(toIndentedString(zSlicesValue)).append("\n");
-    sb.append("    tSlicesValue: ").append(toIndentedString(tSlicesValue)).append("\n");
-    sb.append("    numVariablesValue: ").append(toIndentedString(numVariablesValue)).append("\n");
+    sb.append("    selectedZSlice: ").append(toIndentedString(selectedZSlice)).append("\n");
+    sb.append("    entireZStack: ").append(toIndentedString(entireZStack)).append("\n");
+    sb.append("    eventStatus: ").append(toIndentedString(eventStatus)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -717,14 +648,29 @@ public class ExportHistory {
 
     StringJoiner joiner = new StringJoiner("&");
 
-    // add `jobID` to the URL query string
-    if (getJobID() != null) {
-      joiner.add(String.format("%sjobID%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getJobID()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    // add `exportJobID` to the URL query string
+    if (getExportJobID() != null) {
+      joiner.add(String.format("%sexportJobID%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getExportJobID()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `simulationRef` to the URL query string
     if (getSimulationRef() != null) {
       joiner.add(String.format("%ssimulationRef%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSimulationRef()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
+
+    // add `bioModelRef` to the URL query string
+    if (getBioModelRef() != null) {
+      joiner.add(String.format("%sbioModelRef%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getBioModelRef()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
+
+    // add `mathModelRef` to the URL query string
+    if (getMathModelRef() != null) {
+      joiner.add(String.format("%smathModelRef%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getMathModelRef()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
+
+    // add `mathRef` to the URL query string
+    if (getMathRef() != null) {
+      joiner.add(String.format("%smathRef%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getMathRef()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `exportFormat` to the URL query string
@@ -742,24 +688,14 @@ public class ExportHistory {
       joiner.add(String.format("%suri%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getUri()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
-    // add `dataIdValue` to the URL query string
-    if (getDataIdValue() != null) {
-      joiner.add(String.format("%sdataIdValue%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getDataIdValue()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
     // add `simName` to the URL query string
     if (getSimName() != null) {
       joiner.add(String.format("%ssimName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSimName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
-    // add `appName` to the URL query string
-    if (getAppName() != null) {
-      joiner.add(String.format("%sappName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getAppName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `bioName` to the URL query string
-    if (getBioName() != null) {
-      joiner.add(String.format("%sbioName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getBioName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    // add `modelName` to the URL query string
+    if (getModelName() != null) {
+      joiner.add(String.format("%smodelName%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getModelName()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `variables` to the URL query string
@@ -768,16 +704,6 @@ public class ExportHistory {
         joiner.add(String.format("%svariables%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
             URLEncoder.encode(String.valueOf(getVariables().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-      }
-    }
-
-    // add `parameterValues` to the URL query string
-    if (getParameterValues() != null) {
-      for (int i = 0; i < getParameterValues().size(); i++) {
-        if (getParameterValues().get(i) != null) {
-          joiner.add(getParameterValues().get(i).toUrlQueryString(String.format("%sparameterValues%s%s", prefix, suffix,
-          "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix))));
-        }
       }
     }
 
@@ -796,29 +722,19 @@ public class ExportHistory {
       joiner.add(String.format("%ssavedFileNameValue%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSavedFileNameValue()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
-    // add `applicationTypeValue` to the URL query string
-    if (getApplicationTypeValue() != null) {
-      joiner.add(String.format("%sapplicationTypeValue%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getApplicationTypeValue()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    // add `selectedZSlice` to the URL query string
+    if (getSelectedZSlice() != null) {
+      joiner.add(String.format("%sselectedZSlice%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSelectedZSlice()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
-    // add `nonSpatialValue` to the URL query string
-    if (getNonSpatialValue() != null) {
-      joiner.add(String.format("%snonSpatialValue%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getNonSpatialValue()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    // add `entireZStack` to the URL query string
+    if (getEntireZStack() != null) {
+      joiner.add(String.format("%sentireZStack%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getEntireZStack()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
-    // add `zSlicesValue` to the URL query string
-    if (getzSlicesValue() != null) {
-      joiner.add(String.format("%szSlicesValue%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getzSlicesValue()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `tSlicesValue` to the URL query string
-    if (gettSlicesValue() != null) {
-      joiner.add(String.format("%stSlicesValue%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(gettSlicesValue()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `numVariablesValue` to the URL query string
-    if (getNumVariablesValue() != null) {
-      joiner.add(String.format("%snumVariablesValue%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getNumVariablesValue()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    // add `eventStatus` to the URL query string
+    if (getEventStatus() != null) {
+      joiner.add(String.format("%seventStatus%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getEventStatus()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();

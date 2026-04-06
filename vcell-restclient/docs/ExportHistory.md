@@ -7,25 +7,23 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**jobID** | **Integer** |  |  [optional] |
+|**exportJobID** | **Long** |  |  [optional] |
 |**simulationRef** | **String** |  |  [optional] |
+|**bioModelRef** | **String** |  |  [optional] |
+|**mathModelRef** | **String** |  |  [optional] |
+|**mathRef** | **String** |  |  [optional] |
 |**exportFormat** | **ExportFormat** |  |  [optional] |
-|**exportDate** | **String** |  |  [optional] |
+|**exportDate** | **OffsetDateTime** |  |  [optional] |
 |**uri** | **String** |  |  [optional] |
-|**dataIdValue** | **String** |  |  [optional] |
 |**simName** | **String** |  |  [optional] |
-|**appName** | **String** |  |  [optional] |
-|**bioName** | **String** |  |  [optional] |
+|**modelName** | **String** |  |  [optional] |
 |**variables** | **List&lt;String&gt;** |  |  [optional] |
-|**parameterValues** | [**List&lt;DifferentParameterValues&gt;**](DifferentParameterValues.md) |  |  [optional] |
 |**startTimeValue** | **Double** |  |  [optional] |
 |**endTimeValue** | **Double** |  |  [optional] |
 |**savedFileNameValue** | **String** |  |  [optional] |
-|**applicationTypeValue** | **String** |  |  [optional] |
-|**nonSpatialValue** | **Boolean** |  |  [optional] |
-|**zSlicesValue** | **Integer** |  |  [optional] |
-|**tSlicesValue** | **Integer** |  |  [optional] |
-|**numVariablesValue** | **Integer** |  |  [optional] |
+|**selectedZSlice** | **Integer** |  |  [optional] |
+|**entireZStack** | **Boolean** |  |  [optional] |
+|**eventStatus** | **ExportProgressType** |  |  [optional] |
 
 
 

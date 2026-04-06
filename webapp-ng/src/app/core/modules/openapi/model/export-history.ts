@@ -9,30 +9,28 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { DifferentParameterValues } from './different-parameter-values';
+import { ExportProgressType } from './export-progress-type';
 import { ExportFormat } from './export-format';
 
 
 export interface ExportHistory { 
-    jobID?: number;
+    exportJobID?: number;
     simulationRef?: string;
+    bioModelRef?: string;
+    mathModelRef?: string;
+    mathRef?: string;
     exportFormat?: ExportFormat;
     exportDate?: string;
     uri?: string;
-    dataIdValue?: string;
     simName?: string;
-    appName?: string;
-    bioName?: string;
+    modelName?: string;
     variables?: Array<string>;
-    parameterValues?: Array<DifferentParameterValues>;
     startTimeValue?: number;
     endTimeValue?: number;
     savedFileNameValue?: string;
-    applicationTypeValue?: string;
-    nonSpatialValue?: boolean;
-    zSlicesValue?: number;
-    tSlicesValue?: number;
-    numVariablesValue?: number;
+    selectedZSlice?: number;
+    entireZStack?: boolean;
+    eventStatus?: ExportProgressType;
 }
 export namespace ExportHistory {
 }

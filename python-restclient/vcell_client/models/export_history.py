@@ -18,12 +18,12 @@ import pprint
 import re  # noqa: F401
 import json
 
-
+from datetime import datetime
 from typing import Any, ClassVar, Dict, List, Optional, Union
 from pydantic import BaseModel, StrictBool, StrictFloat, StrictInt, StrictStr
 from pydantic import Field
-from vcell_client.models.different_parameter_values import DifferentParameterValues
 from vcell_client.models.export_format import ExportFormat
+from vcell_client.models.export_progress_type import ExportProgressType
 try:
     from typing import Self
 except ImportError:
@@ -33,26 +33,24 @@ class ExportHistory(BaseModel):
     """
     ExportHistory
     """ # noqa: E501
-    job_id: Optional[StrictInt] = Field(default=None, alias="jobID")
+    export_job_id: Optional[StrictInt] = Field(default=None, alias="exportJobID")
     simulation_ref: Optional[StrictStr] = Field(default=None, alias="simulationRef")
+    bio_model_ref: Optional[StrictStr] = Field(default=None, alias="bioModelRef")
+    math_model_ref: Optional[StrictStr] = Field(default=None, alias="mathModelRef")
+    math_ref: Optional[StrictStr] = Field(default=None, alias="mathRef")
     export_format: Optional[ExportFormat] = Field(default=None, alias="exportFormat")
-    export_date: Optional[StrictStr] = Field(default=None, alias="exportDate")
+    export_date: Optional[datetime] = Field(default=None, alias="exportDate")
     uri: Optional[StrictStr] = None
-    data_id_value: Optional[StrictStr] = Field(default=None, alias="dataIdValue")
     sim_name: Optional[StrictStr] = Field(default=None, alias="simName")
-    app_name: Optional[StrictStr] = Field(default=None, alias="appName")
-    bio_name: Optional[StrictStr] = Field(default=None, alias="bioName")
+    model_name: Optional[StrictStr] = Field(default=None, alias="modelName")
     variables: Optional[List[StrictStr]] = None
-    parameter_values: Optional[List[DifferentParameterValues]] = Field(default=None, alias="parameterValues")
     start_time_value: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="startTimeValue")
     end_time_value: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="endTimeValue")
     saved_file_name_value: Optional[StrictStr] = Field(default=None, alias="savedFileNameValue")
-    application_type_value: Optional[StrictStr] = Field(default=None, alias="applicationTypeValue")
-    non_spatial_value: Optional[StrictBool] = Field(default=None, alias="nonSpatialValue")
-    z_slices_value: Optional[StrictInt] = Field(default=None, alias="zSlicesValue")
-    t_slices_value: Optional[StrictInt] = Field(default=None, alias="tSlicesValue")
-    num_variables_value: Optional[StrictInt] = Field(default=None, alias="numVariablesValue")
-    __properties: ClassVar[List[str]] = ["jobID", "simulationRef", "exportFormat", "exportDate", "uri", "dataIdValue", "simName", "appName", "bioName", "variables", "parameterValues", "startTimeValue", "endTimeValue", "savedFileNameValue", "applicationTypeValue", "nonSpatialValue", "zSlicesValue", "tSlicesValue", "numVariablesValue"]
+    selected_z_slice: Optional[StrictInt] = Field(default=None, alias="selectedZSlice")
+    entire_z_stack: Optional[StrictBool] = Field(default=None, alias="entireZStack")
+    event_status: Optional[ExportProgressType] = Field(default=None, alias="eventStatus")
+    __properties: ClassVar[List[str]] = ["exportJobID", "simulationRef", "bioModelRef", "mathModelRef", "mathRef", "exportFormat", "exportDate", "uri", "simName", "modelName", "variables", "startTimeValue", "endTimeValue", "savedFileNameValue", "selectedZSlice", "entireZStack", "eventStatus"]
 
     model_config = {
         "populate_by_name": True,
@@ -90,13 +88,6 @@ class ExportHistory(BaseModel):
             },
             exclude_none=True,
         )
-        # override the default output from pydantic by calling `to_dict()` of each item in parameter_values (list)
-        _items = []
-        if self.parameter_values:
-            for _item in self.parameter_values:
-                if _item:
-                    _items.append(_item.to_dict())
-            _dict['parameterValues'] = _items
         return _dict
 
     @classmethod
@@ -114,25 +105,23 @@ class ExportHistory(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in ExportHistory) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "jobID": obj.get("jobID"),
+            "exportJobID": obj.get("exportJobID"),
             "simulationRef": obj.get("simulationRef"),
+            "bioModelRef": obj.get("bioModelRef"),
+            "mathModelRef": obj.get("mathModelRef"),
+            "mathRef": obj.get("mathRef"),
             "exportFormat": obj.get("exportFormat"),
             "exportDate": obj.get("exportDate"),
             "uri": obj.get("uri"),
-            "dataIdValue": obj.get("dataIdValue"),
             "simName": obj.get("simName"),
-            "appName": obj.get("appName"),
-            "bioName": obj.get("bioName"),
+            "modelName": obj.get("modelName"),
             "variables": obj.get("variables"),
-            "parameterValues": [DifferentParameterValues.from_dict(_item) for _item in obj.get("parameterValues")] if obj.get("parameterValues") is not None else None,
             "startTimeValue": obj.get("startTimeValue"),
             "endTimeValue": obj.get("endTimeValue"),
             "savedFileNameValue": obj.get("savedFileNameValue"),
-            "applicationTypeValue": obj.get("applicationTypeValue"),
-            "nonSpatialValue": obj.get("nonSpatialValue"),
-            "zSlicesValue": obj.get("zSlicesValue"),
-            "tSlicesValue": obj.get("tSlicesValue"),
-            "numVariablesValue": obj.get("numVariablesValue")
+            "selectedZSlice": obj.get("selectedZSlice"),
+            "entireZStack": obj.get("entireZStack"),
+            "eventStatus": obj.get("eventStatus")
         })
         return _obj
 

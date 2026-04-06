@@ -3004,60 +3004,52 @@ components:
       type: string
     ExportHistory:
       example:
+        mathModelRef: mathModelRef
         variables:
         - variables
         - variables
-        bioName: bioName
-        applicationTypeValue: applicationTypeValue
         simulationRef: simulationRef
-        numVariablesValue: 2
-        appName: appName
+        mathRef: mathRef
         startTimeValue: 6.027456183070403
         endTimeValue: 1.4658129805029452
         uri: uri
-        jobID: 0
-        exportDate: exportDate
+        modelName: modelName
+        exportDate: 2022-03-10T16:15:50Z
         savedFileNameValue: savedFileNameValue
-        nonSpatialValue: true
-        zSlicesValue: 5
+        entireZStack: true
+        selectedZSlice: 5
+        eventStatus: null
         simName: simName
+        exportJobID: 0
+        bioModelRef: bioModelRef
         exportFormat: null
-        tSlicesValue: 5
-        dataIdValue: dataIdValue
-        parameterValues:
-        - originalValue: originalValue
-          parameterName: parameterName
-          changedValue: changedValue
-        - originalValue: originalValue
-          parameterName: parameterName
-          changedValue: changedValue
       properties:
-        jobID:
-          format: int32
+        exportJobID:
+          format: int64
           type: integer
         simulationRef:
+          type: string
+        bioModelRef:
+          type: string
+        mathModelRef:
+          type: string
+        mathRef:
           type: string
         exportFormat:
           $ref: '#/components/schemas/ExportFormat'
         exportDate:
+          example: 2022-03-10T16:15:50Z
+          format: date-time
           type: string
         uri:
           type: string
-        dataIdValue:
-          type: string
         simName:
           type: string
-        appName:
-          type: string
-        bioName:
+        modelName:
           type: string
         variables:
           items:
             type: string
-          type: array
-        parameterValues:
-          items:
-            $ref: '#/components/schemas/DifferentParameterValues'
           type: array
         startTimeValue:
           format: double
@@ -3067,19 +3059,13 @@ components:
           type: number
         savedFileNameValue:
           type: string
-        applicationTypeValue:
-          type: string
-        nonSpatialValue:
+        selectedZSlice:
+          format: int32
+          type: integer
+        entireZStack:
           type: boolean
-        zSlicesValue:
-          format: int32
-          type: integer
-        tSlicesValue:
-          format: int32
-          type: integer
-        numVariablesValue:
-          format: int32
-          type: integer
+        eventStatus:
+          $ref: '#/components/schemas/ExportProgressType'
       type: object
     ExportProgressType:
       enum:
@@ -3918,6 +3904,8 @@ components:
             variableNames:
             - variableNames
             - variableNames
+          bioModelKey: bioModelKey
+          mathDescriptionKey: mathDescriptionKey
           simulationName: simulationName
           geometrySpecs:
             selections:
@@ -4028,6 +4016,7 @@ components:
             sliceNumber: 4
             geometryMode: null
             axis: 1
+          mathModelKey: mathModelKey
           outputContext:
           - functionName: functionName
             domain:
@@ -4600,6 +4589,8 @@ components:
           variableNames:
           - variableNames
           - variableNames
+        bioModelKey: bioModelKey
+        mathDescriptionKey: mathDescriptionKey
         simulationName: simulationName
         geometrySpecs:
           selections:
@@ -4710,6 +4701,7 @@ components:
           sliceNumber: 4
           geometryMode: null
           axis: 1
+        mathModelKey: mathModelKey
         outputContext:
         - functionName: functionName
           domain:
@@ -4771,6 +4763,12 @@ components:
           $ref: '#/components/schemas/TimeSpecs'
         variableSpecs:
           $ref: '#/components/schemas/VariableSpecs'
+        bioModelKey:
+          type: string
+        mathModelKey:
+          type: string
+        mathDescriptionKey:
+          type: string
       type: object
     Status:
       enum:

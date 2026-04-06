@@ -2577,33 +2577,31 @@ components:
     ExportHistory:
       type: object
       properties:
-        jobID:
-          format: int32
+        exportJobID:
+          format: int64
           type: integer
         simulationRef:
+          $ref: '#/components/schemas/KeyValue'
+        bioModelRef:
+          $ref: '#/components/schemas/KeyValue'
+        mathModelRef:
+          $ref: '#/components/schemas/KeyValue'
+        mathRef:
           $ref: '#/components/schemas/KeyValue'
         exportFormat:
           $ref: '#/components/schemas/ExportFormat'
         exportDate:
-          type: string
+          $ref: '#/components/schemas/Instant'
         uri:
-          type: string
-        dataIdValue:
           type: string
         simName:
           type: string
-        appName:
-          type: string
-        bioName:
+        modelName:
           type: string
         variables:
           type: array
           items:
             type: string
-        parameterValues:
-          type: array
-          items:
-            $ref: '#/components/schemas/DifferentParameterValues'
         startTimeValue:
           format: double
           type: number
@@ -2612,19 +2610,13 @@ components:
           type: number
         savedFileNameValue:
           type: string
-        applicationTypeValue:
-          type: string
-        nonSpatialValue:
+        selectedZSlice:
+          format: int32
+          type: integer
+        entireZStack:
           type: boolean
-        zSlicesValue:
-          format: int32
-          type: integer
-        tSlicesValue:
-          format: int32
-          type: integer
-        numVariablesValue:
-          format: int32
-          type: integer
+        eventStatus:
+          $ref: '#/components/schemas/ExportProgressType'
     ExportProgressType:
       enum:
       - EXPORT_START
@@ -3368,6 +3360,12 @@ components:
           $ref: '#/components/schemas/TimeSpecs'
         variableSpecs:
           $ref: '#/components/schemas/VariableSpecs'
+        bioModelKey:
+          $ref: '#/components/schemas/KeyValue'
+        mathModelKey:
+          $ref: '#/components/schemas/KeyValue'
+        mathDescriptionKey:
+          $ref: '#/components/schemas/KeyValue'
     Status:
       enum:
       - UNKNOWN

@@ -45,7 +45,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   StandardExportInfo.JSON_PROPERTY_SIMULATION_JOB,
   StandardExportInfo.JSON_PROPERTY_GEOMETRY_SPECS,
   StandardExportInfo.JSON_PROPERTY_TIME_SPECS,
-  StandardExportInfo.JSON_PROPERTY_VARIABLE_SPECS
+  StandardExportInfo.JSON_PROPERTY_VARIABLE_SPECS,
+  StandardExportInfo.JSON_PROPERTY_BIO_MODEL_KEY,
+  StandardExportInfo.JSON_PROPERTY_MATH_MODEL_KEY,
+  StandardExportInfo.JSON_PROPERTY_MATH_DESCRIPTION_KEY
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class StandardExportInfo {
@@ -72,6 +75,15 @@ public class StandardExportInfo {
 
   public static final String JSON_PROPERTY_VARIABLE_SPECS = "variableSpecs";
   private VariableSpecs variableSpecs;
+
+  public static final String JSON_PROPERTY_BIO_MODEL_KEY = "bioModelKey";
+  private String bioModelKey;
+
+  public static final String JSON_PROPERTY_MATH_MODEL_KEY = "mathModelKey";
+  private String mathModelKey;
+
+  public static final String JSON_PROPERTY_MATH_DESCRIPTION_KEY = "mathDescriptionKey";
+  private String mathDescriptionKey;
 
   public StandardExportInfo() { 
   }
@@ -284,6 +296,81 @@ public class StandardExportInfo {
   }
 
 
+  public StandardExportInfo bioModelKey(String bioModelKey) {
+    this.bioModelKey = bioModelKey;
+    return this;
+  }
+
+   /**
+   * Get bioModelKey
+   * @return bioModelKey
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_BIO_MODEL_KEY)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public String getBioModelKey() {
+    return bioModelKey;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_BIO_MODEL_KEY)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setBioModelKey(String bioModelKey) {
+    this.bioModelKey = bioModelKey;
+  }
+
+
+  public StandardExportInfo mathModelKey(String mathModelKey) {
+    this.mathModelKey = mathModelKey;
+    return this;
+  }
+
+   /**
+   * Get mathModelKey
+   * @return mathModelKey
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_MATH_MODEL_KEY)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public String getMathModelKey() {
+    return mathModelKey;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_MATH_MODEL_KEY)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setMathModelKey(String mathModelKey) {
+    this.mathModelKey = mathModelKey;
+  }
+
+
+  public StandardExportInfo mathDescriptionKey(String mathDescriptionKey) {
+    this.mathDescriptionKey = mathDescriptionKey;
+    return this;
+  }
+
+   /**
+   * Get mathDescriptionKey
+   * @return mathDescriptionKey
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_MATH_DESCRIPTION_KEY)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public String getMathDescriptionKey() {
+    return mathDescriptionKey;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_MATH_DESCRIPTION_KEY)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setMathDescriptionKey(String mathDescriptionKey) {
+    this.mathDescriptionKey = mathDescriptionKey;
+  }
+
+
   /**
    * Return true if this StandardExportInfo object is equal to o.
    */
@@ -303,12 +390,15 @@ public class StandardExportInfo {
         Objects.equals(this.simulationJob, standardExportInfo.simulationJob) &&
         Objects.equals(this.geometrySpecs, standardExportInfo.geometrySpecs) &&
         Objects.equals(this.timeSpecs, standardExportInfo.timeSpecs) &&
-        Objects.equals(this.variableSpecs, standardExportInfo.variableSpecs);
+        Objects.equals(this.variableSpecs, standardExportInfo.variableSpecs) &&
+        Objects.equals(this.bioModelKey, standardExportInfo.bioModelKey) &&
+        Objects.equals(this.mathModelKey, standardExportInfo.mathModelKey) &&
+        Objects.equals(this.mathDescriptionKey, standardExportInfo.mathDescriptionKey);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(outputContext, contextName, simulationName, simulationKey, simulationJob, geometrySpecs, timeSpecs, variableSpecs);
+    return Objects.hash(outputContext, contextName, simulationName, simulationKey, simulationJob, geometrySpecs, timeSpecs, variableSpecs, bioModelKey, mathModelKey, mathDescriptionKey);
   }
 
   @Override
@@ -323,6 +413,9 @@ public class StandardExportInfo {
     sb.append("    geometrySpecs: ").append(toIndentedString(geometrySpecs)).append("\n");
     sb.append("    timeSpecs: ").append(toIndentedString(timeSpecs)).append("\n");
     sb.append("    variableSpecs: ").append(toIndentedString(variableSpecs)).append("\n");
+    sb.append("    bioModelKey: ").append(toIndentedString(bioModelKey)).append("\n");
+    sb.append("    mathModelKey: ").append(toIndentedString(mathModelKey)).append("\n");
+    sb.append("    mathDescriptionKey: ").append(toIndentedString(mathDescriptionKey)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -413,6 +506,21 @@ public class StandardExportInfo {
     // add `variableSpecs` to the URL query string
     if (getVariableSpecs() != null) {
       joiner.add(getVariableSpecs().toUrlQueryString(prefix + "variableSpecs" + suffix));
+    }
+
+    // add `bioModelKey` to the URL query string
+    if (getBioModelKey() != null) {
+      joiner.add(String.format("%sbioModelKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getBioModelKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
+
+    // add `mathModelKey` to the URL query string
+    if (getMathModelKey() != null) {
+      joiner.add(String.format("%smathModelKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getMathModelKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
+
+    // add `mathDescriptionKey` to the URL query string
+    if (getMathDescriptionKey() != null) {
+      joiner.add(String.format("%smathDescriptionKey%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getMathDescriptionKey()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();

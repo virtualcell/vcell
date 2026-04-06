@@ -43,7 +43,10 @@ class StandardExportInfo(BaseModel):
     geometry_specs: Optional[GeometrySpecDTO] = Field(default=None, alias="geometrySpecs")
     time_specs: Optional[TimeSpecs] = Field(default=None, alias="timeSpecs")
     variable_specs: Optional[VariableSpecs] = Field(default=None, alias="variableSpecs")
-    __properties: ClassVar[List[str]] = ["outputContext", "contextName", "simulationName", "simulationKey", "simulationJob", "geometrySpecs", "timeSpecs", "variableSpecs"]
+    bio_model_key: Optional[StrictStr] = Field(default=None, alias="bioModelKey")
+    math_model_key: Optional[StrictStr] = Field(default=None, alias="mathModelKey")
+    math_description_key: Optional[StrictStr] = Field(default=None, alias="mathDescriptionKey")
+    __properties: ClassVar[List[str]] = ["outputContext", "contextName", "simulationName", "simulationKey", "simulationJob", "geometrySpecs", "timeSpecs", "variableSpecs", "bioModelKey", "mathModelKey", "mathDescriptionKey"]
 
     model_config = {
         "populate_by_name": True,
@@ -121,7 +124,10 @@ class StandardExportInfo(BaseModel):
             "simulationJob": obj.get("simulationJob"),
             "geometrySpecs": GeometrySpecDTO.from_dict(obj.get("geometrySpecs")) if obj.get("geometrySpecs") is not None else None,
             "timeSpecs": TimeSpecs.from_dict(obj.get("timeSpecs")) if obj.get("timeSpecs") is not None else None,
-            "variableSpecs": VariableSpecs.from_dict(obj.get("variableSpecs")) if obj.get("variableSpecs") is not None else None
+            "variableSpecs": VariableSpecs.from_dict(obj.get("variableSpecs")) if obj.get("variableSpecs") is not None else None,
+            "bioModelKey": obj.get("bioModelKey"),
+            "mathModelKey": obj.get("mathModelKey"),
+            "mathDescriptionKey": obj.get("mathDescriptionKey")
         })
         return _obj
 

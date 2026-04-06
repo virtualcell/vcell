@@ -212,6 +212,3 @@ src/main/java/org/vcell/restclient/model/VariableSpecs.java
 src/main/java/org/vcell/restclient/model/VariableType.java
 src/main/java/org/vcell/restclient/model/Version.java
 src/main/java/org/vcell/restclient/model/VersionFlag.java
-src/test/java/org/vcell/restclient/model/DifferentParameterValuesTest.java
-src/test/java/org/vcell/restclient/model/ExportFormatTest.java
-src/test/java/org/vcell/restclient/model/ExportHistoryTest.java

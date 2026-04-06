@@ -12,6 +12,9 @@ Name | Type | Description | Notes
 **geometry_specs** | [**GeometrySpecDTO**](GeometrySpecDTO.md) |  | [optional] 
 **time_specs** | [**TimeSpecs**](TimeSpecs.md) |  | [optional] 
 **variable_specs** | [**VariableSpecs**](VariableSpecs.md) |  | [optional] 
+**bio_model_key** | **str** |  | [optional] 
+**math_model_key** | **str** |  | [optional] 
+**math_description_key** | **str** |  | [optional] 
 
 ## Example
 

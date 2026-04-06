@@ -4,25 +4,23 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**job_id** | **int** |  | [optional] 
+**export_job_id** | **int** |  | [optional] 
 **simulation_ref** | **str** |  | [optional] 
+**bio_model_ref** | **str** |  | [optional] 
+**math_model_ref** | **str** |  | [optional] 
+**math_ref** | **str** |  | [optional] 
 **export_format** | [**ExportFormat**](ExportFormat.md) |  | [optional] 
-**export_date** | **str** |  | [optional] 
+**export_date** | **datetime** |  | [optional] 
 **uri** | **str** |  | [optional] 
-**data_id_value** | **str** |  | [optional] 
 **sim_name** | **str** |  | [optional] 
-**app_name** | **str** |  | [optional] 
-**bio_name** | **str** |  | [optional] 
+**model_name** | **str** |  | [optional] 
 **variables** | **List[str]** |  | [optional] 
-**parameter_values** | [**List[DifferentParameterValues]**](DifferentParameterValues.md) |  | [optional] 
 **start_time_value** | **float** |  | [optional] 
 **end_time_value** | **float** |  | [optional] 
 **saved_file_name_value** | **str** |  | [optional] 
-**application_type_value** | **str** |  | [optional] 
-**non_spatial_value** | **bool** |  | [optional] 
-**z_slices_value** | **int** |  | [optional] 
-**t_slices_value** | **int** |  | [optional] 
-**num_variables_value** | **int** |  | [optional] 
+**selected_z_slice** | **int** |  | [optional] 
+**entire_z_stack** | **bool** |  | [optional] 
+**event_status** | [**ExportProgressType**](ExportProgressType.md) |  | [optional] 
 
 ## Example
 

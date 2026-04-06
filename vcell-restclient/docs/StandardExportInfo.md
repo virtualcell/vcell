@@ -15,6 +15,9 @@
 |**geometrySpecs** | [**GeometrySpecDTO**](GeometrySpecDTO.md) |  |  [optional] |
 |**timeSpecs** | [**TimeSpecs**](TimeSpecs.md) |  |  [optional] |
 |**variableSpecs** | [**VariableSpecs**](VariableSpecs.md) |  |  [optional] |
+|**bioModelKey** | **String** |  |  [optional] |
+|**mathModelKey** | **String** |  |  [optional] |
+|**mathDescriptionKey** | **String** |  |  [optional] |
 
 
 
