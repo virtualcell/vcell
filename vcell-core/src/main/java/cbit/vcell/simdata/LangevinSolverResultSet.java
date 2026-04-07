@@ -154,4 +154,10 @@ public class LangevinSolverResultSet implements Serializable {
         }
     }
 
+    public static double[] getSeries(ODESimData data, String columnName) throws ExpressionException {
+        int idx = data.findColumn(columnName);
+        if (idx < 0) return null;
+        return data.extractColumn(idx);
+    }
+
 }

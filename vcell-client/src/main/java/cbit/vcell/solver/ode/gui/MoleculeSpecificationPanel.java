@@ -158,7 +158,7 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
                             getSelectedDisplayModes()
                     );
                     System.out.println("MoleculeSelection changed: " + sel.selectedColumns.size() + " columns, " + sel.selectedStatistics.size() + " statistics, " + sel.selectedDisplayModes.size() + " display modes");
-                    firePropertyChange("MoleculeStatisticSelectionChanged", null, sel);
+                    firePropertyChange("MoleculeSelectionChanged", null, sel);
                 }
             }
         }

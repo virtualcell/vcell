@@ -320,18 +320,17 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
         return p;
     }
 
-
     private void redrawPlot(ClusterSpecificationPanel.ClusterSelection sel) throws ExpressionException {
-        System.out.println(this.getClass().getSimpleName() + ".redrawPlot() called, current selection: " + sel);
-        if (sel != null) {
-            System.out.println(this.getClass().getSimpleName() + ".redrawPlot() mode: " + sel.mode + ", columns: " + sel.columns.size() + ", resultSet: " + (sel.resultSet != null ? "present" : "null"));
-        } else {
-            System.out.println(this.getClass().getSimpleName() + ".redrawPlot() selection is null");
-        }
+        System.out.println(getClass().getSimpleName() + ".redrawPlot() called, current selection: " + sel);
 
+        ClusterPlotPanel plot = getClusterPlotPanel();
+
+        // ---------------------------------------------------------------------
+        // NULL CASE
+        // ---------------------------------------------------------------------
         if (sel == null || sel.resultSet == null) {
-            getClusterPlotPanel().clear();
-            getClusterPlotPanel().repaint();
+            plot.clear();
+            plot.repaint();
             return;
         }
 
@@ -352,21 +351,16 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
         for (ColumnDescription cd : columns) {
             String name = cd.getName();
 
-            // SD is special: no curve, but still load its data
             int idx = srs.findColumn(name);
-            if (idx < 0) {
-                continue;
-            }
+            if (idx < 0) continue;
 
             double[] y = srs.extractColumn(idx);
             yMap.put(name, y);
 
-            // SD does not contribute its own curve, but its raw values still matter for globalMax
+            // SD does not draw a line, but its raw values still matter for globalMax
             if (!name.equals("SD")) {
                 for (double v : y) {
-                    if (v > globalMax) {
-                        globalMax = v;
-                    }
+                    if (v > globalMax) globalMax = v;
                 }
             }
         }
@@ -399,59 +393,61 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                 double upper = acs[i] + sd[i];
                 double lower = acs[i] - sd[i];
 
-                if (upper > globalMax) {
-                    globalMax = upper;
-                }
-                if (lower < globalMin) {
-                    globalMin = lower;   // may be < 0 in theory
-                }
+                if (upper > globalMax) globalMax = upper;
+                if (lower < globalMin) globalMin = lower;
             }
         }
 
         // ---------------------------------------------------------------------
         // DRAWING
         // ---------------------------------------------------------------------
-        getClusterPlotPanel().clear();
+        plot.clear();
 
         // Draw all selected curves EXCEPT SD (SD is envelope only)
         for (ColumnDescription cd : columns) {
             String name = cd.getName();
-            if (name.equals("SD")) {
-                continue;   // SD never draws a line
-            }
+            if (name.equals("SD")) continue;
+
             double[] y = yMap.get(name);
-            if (y == null) {
-                continue;
-            }
+            if (y == null) continue;
+
             Color c = persistentColorMap.get(name);
-            getClusterPlotPanel().addCurve(name, y, c);
+
+            // Cluster curves are AVG curves in the new API
+            plot.addAvgRenderer(times, y, c, name, /*statTag*/ "AVG");
         }
 
         // Draw SD envelope if SD is selected
         if (sdSelected && acs != null && sd != null) {
-            double[] upper = new double[acs.length];
-            double[] lower = new double[acs.length];
-            for (int i = 0; i < acs.length; i++) {
+            int n = acs.length;
+            double[] upper = new double[n];
+            double[] lower = new double[n];
+
+            for (int i = 0; i < n; i++) {
                 upper[i] = acs[i] + sd[i];
                 lower[i] = acs[i] - sd[i];
             }
-            // Use the already‑assigned SD color (derived from ACS in initializeGlobalPalette)
+
             Color sdColor = persistentColorMap.get("SD");
-            getClusterPlotPanel().addEnvelope("SD", upper, lower, sdColor);
+
+            // SD is a band renderer in the new API
+            plot.addSDRenderer(times, lower, upper, sdColor, "SD", /*statTag*/ "SD");
         }
 
         // ---------------------------------------------------------------------
         // FINALIZE
         // ---------------------------------------------------------------------
-        if (globalMin > 0) {
-            globalMin = 0;
-        }
-        getClusterPlotPanel().setGlobalMinMax(globalMin, globalMax);
+        if (globalMin > 0) globalMin = 0;
+
+        plot.setGlobalMinMax(globalMin, globalMax);
+
         if (times.length > 1) {
-            getClusterPlotPanel().setDt(times[1]);   // times[0] == 0
+            plot.setDt(times[1]);   // times[0] == 0
         }
-        getClusterPlotPanel().repaint();
+
+        plot.repaint();
     }
+
 
     private void redrawLegend(ClusterSpecificationPanel.ClusterSelection sel) {
         System.out.println(this.getClass().getSimpleName() + ".redrawLegend() called");

@@ -1,5 +1,12 @@
 package cbit.plot.gui;
 
+import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.simdata.LangevinSolverResultSet;
+import cbit.vcell.solver.ode.ODESolverResultSet;
+import cbit.vcell.solver.ode.gui.ClusterSpecificationPanel;
+import cbit.vcell.solver.ode.gui.MoleculeSpecificationPanel;
+import cbit.vcell.util.ColumnDescription;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.gui.NonEditableDefaultTableModel;
@@ -10,6 +17,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,152 +26,214 @@ import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-public class MoleculeDataPanel extends JPanel {
+public class MoleculeDataPanel extends AbstractDataPanel {
 
-    private static final Logger LG = LogManager.getLogger(MoleculeDataPanel.class);
+    public enum SubStatistic {
+        AVG("AVG"),
+        MIN("MIN"),
+        MAX("MAX"),
+        SD("SD");
+        public final String uiLabel;
+        SubStatistic(String uiLabel) {
+            this.uiLabel = uiLabel;
+        }
+    }
 
-    private ScrollTable scrollPaneTable;
-    private NonEditableDefaultTableModel nonEditableDefaultTableModel = null;
+    public static class MoleculeColumnInfo {
+        public final String entityName;
+        public final MoleculeSpecificationPanel.StatisticSelection statistic;
+        public final SubStatistic subStatistic;
+        public MoleculeColumnInfo(String entityName,
+                                  MoleculeSpecificationPanel.StatisticSelection statistic,
+                                  SubStatistic subStatistic) {
+            this.entityName = entityName;
+            this.statistic = statistic;
+            this.subStatistic = subStatistic;
+        }
+    }
 
-    private JPopupMenu popupMenu = null;
-    private JMenuItem miCopyAll = null;
-    private JMenuItem miCopyHDF5 = null;
-    private static enum CopyAction {copy,copyrow,copyall};
 
-    private final MoleculeDataPanel.IvjEventHandler ivjEventHandler = new MoleculeDataPanel.IvjEventHandler();
+    private class MoleculeTwoRowHeaderRenderer extends DefaultTableCellRenderer {
 
-
-
-    class IvjEventHandler implements ActionListener, MouseListener, PropertyChangeListener, ChangeListener {
+        private final TableCellRenderer base;
+        public MoleculeTwoRowHeaderRenderer(TableCellRenderer base) {
+            this.base = base;
+        }
         @Override
-        public void mouseClicked(MouseEvent e) {
-            if (e.getSource() == getScrollPaneTable()) {
-                int row = getScrollPaneTable().rowAtPoint(e.getPoint());
-                int col = getScrollPaneTable().columnAtPoint(e.getPoint());
-                System.out.println("MoleculeDataPanel: clicked row=" + row + " col=" + col);
-                if (SwingUtilities.isRightMouseButton(e)) {
-                    getPopupMenu().show(e.getComponent(), e.getX(), e.getY());
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+                                                       boolean hasFocus, int row, int column) {
+            Component c = base.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if (!(c instanceof JLabel)) {
+                return c;
+            }
+            JLabel lbl = (JLabel) c;
+            Object id = table.getColumnModel().getColumn(column).getIdentifier();
+            if (!(id instanceof MoleculeColumnInfo)) {      // time column w. unit in dark red
+                lbl.setText("<html><center>" +"time" +"<br/><font size='2'>" +
+                            "<font color='#8B0000'> [seconds]</font></font>" + "</center></html>");
+                return lbl;
+            }
+            MoleculeColumnInfo info = (MoleculeColumnInfo) id;
+            String statLabel = "<b>" + info.subStatistic.uiLabel + "</b>";  // Statistic label (bold)
+            String unit = "<font color=\"#8B0000\"> [molecules]</font>";    // Unit in dark red
+            lbl.setText("<html><center>" + info.entityName + "<br/>" +
+                        "<font size='2'>" + statLabel + unit + "</font></center></html>"
+            );
+            return lbl;
+        }
+    }
+
+    // ------------------------------------------------------
+
+    public MoleculeDataPanel() {
+        super();
+    }
+    @Override
+    protected void initConnections() throws Exception {
+        super.initConnections();
+        TableCellRenderer baseHeaderRenderer = getScrollPaneTable().getTableHeader().getDefaultRenderer();
+        getScrollPaneTable().getTableHeader().setDefaultRenderer(new MoleculeTwoRowHeaderRenderer(baseHeaderRenderer));
+    }
+
+    // ------------------------------------------------------
+
+    public void updateData(MoleculeSpecificationPanel.MoleculeSelection sel, LangevinSolverResultSet lsrs)
+            throws ExpressionException {
+
+        if (sel == null) {
+            getScrollPaneTable().putClientProperty("MoleculeSelection", null);    // may be useful for tooltip generation
+        } else {
+            getScrollPaneTable().putClientProperty("MoleculeSelection", sel);
+        }
+
+        if (sel == null || lsrs == null || lsrs.isAverageDataAvailable() == false ||    // guard clause
+                sel.selectedColumns == null || sel.selectedColumns.isEmpty() ||
+                sel.selectedStatistics == null || sel.selectedStatistics.isEmpty()) {
+
+            getNonEditableDefaultTableModel().setDataVector(new Object[][]{}, new Object[]{"No data"});
+            getScrollPaneTable().createDefaultColumnsFromModel();
+            revalidate();
+            repaint();
+            return;
+        }
+
+        ODESolverResultSet avgRS = lsrs.getAvg();
+        ODESolverResultSet minRS = lsrs.getMin();
+        ODESolverResultSet maxRS = lsrs.getMax();
+        ODESolverResultSet stdRS = lsrs.getStd();
+        java.util.List<ColumnDescription> selectedColumns = sel.selectedColumns;
+        java.util.List<MoleculeSpecificationPanel.StatisticSelection> selectedStatistics = sel.selectedStatistics;
+
+        int timeIndex = avgRS.findColumn(ReservedVariable.TIME.getName());
+        double[] times = avgRS.extractColumn(timeIndex);
+        int rowCount = times.length;
+
+
+
+        // ---------------------------------------------------------------------
+        // Build column names
+        // ---------------------------------------------------------------------
+        java.util.List<String> colNames = new java.util.ArrayList<>();
+        java.util.List<MoleculeColumnInfo> metadata = new java.util.ArrayList<>();
+
+        colNames.add("time");
+        metadata.add(null); // time has no entity/statistic
+
+        for (ColumnDescription cd : selectedColumns) {
+            String base = cd.getName();
+            for (MoleculeSpecificationPanel.StatisticSelection statSel : sel.selectedStatistics) {
+                switch (statSel) {
+                    case AVG:
+                        colNames.add(base + " AVG");
+                        metadata.add(new MoleculeColumnInfo(base, statSel, SubStatistic.AVG));
+                        break;
+
+                    case MIN_MAX:
+                        colNames.add(base + " MIN");
+                        metadata.add(new MoleculeColumnInfo(base, statSel, SubStatistic.MIN));
+                        colNames.add(base + " MAX");
+                        metadata.add(new MoleculeColumnInfo(base, statSel, SubStatistic.MAX));
+                        break;
+
+                    case SD:
+                        colNames.add(base + " SD");
+                        metadata.add(new MoleculeColumnInfo(base, statSel, SubStatistic.SD));
+                        break;
                 }
             }
         }
 
-        @Override public void mousePressed(MouseEvent e) {}
-        @Override public void mouseReleased(MouseEvent e) {}
-        @Override public void mouseEntered(MouseEvent e) {}
-        @Override public void mouseExited(MouseEvent e) {}
+        // ---------------------------------------------------------------------
+        // Build data matrix
+        // ---------------------------------------------------------------------
+        Object[][] data = new Object[rowCount][colNames.size()];
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            // reserved for future
-        }
+        for (int r = 0; r < rowCount; r++) {
+            int c = 0;
+            data[r][c++] = times[r];
 
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            // reserved for future dynamic formatting
-        }
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            // reserved for future slider/spinner interactions
-        }
-    }
-
-    private class MoleculeHeaderRenderer extends DefaultTableCellRenderer {
-
-        private final TableCellRenderer base;
-
-        public MoleculeHeaderRenderer(TableCellRenderer base) {
-            this.base = base;
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-                                                       boolean hasFocus, int row, int column) {
-            // First let ScrollTable’s renderer do its work
-            Component c = base.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            if (!(c instanceof JLabel)) {
-                return c;   // safety
+            for (ColumnDescription cd : selectedColumns) {
+                String baseName = cd.getName();
+                // These are guaranteed to exist because of guard clause
+                double[] avgCol = avgRS.extractColumn(avgRS.findColumn(baseName));
+                double[] minCol = minRS.extractColumn(minRS.findColumn(baseName));
+                double[] maxCol = maxRS.extractColumn(maxRS.findColumn(baseName));
+                double[] stdCol = stdRS.extractColumn(stdRS.findColumn(baseName));
+                for (MoleculeSpecificationPanel.StatisticSelection statSel : selectedStatistics) {
+                    switch (statSel) {
+                        case AVG:
+                            data[r][c++] = avgCol[r];
+                            break;
+                        case MIN_MAX:
+                            data[r][c++] = minCol[r];
+                            data[r][c++] = maxCol[r];
+                            break;
+                        case SD:
+                            data[r][c++] = stdCol[r];   // raw SD value
+                            break;
+                    }
+                }
             }
-            return c;
         }
-    }
+        // Push to model
+        getNonEditableDefaultTableModel().setDataVector(
+                data,
+                colNames.toArray(new String[0])
+        );
 
-    public MoleculeDataPanel() {
-        super();
-        initialize();
-    }
-    private void initialize() {
-        try {
-            setName("MoleculeDataPanel");
-            setLayout(new java.awt.BorderLayout());
-            setSize(541, 348);
-            add(getScrollPaneTable().getEnclosingScrollPane(), BorderLayout.CENTER);
-            JLabel lblNewLabel = new JLabel("<html>To <b>Copy</b> table data or <b>Export</b> as HDF5, select rows/cells and use the right mouse button menu.</html>");
-            add(lblNewLabel, BorderLayout.SOUTH);
-            initConnections();
-//            controlKeys();
-        } catch (Throwable exc) {
-            handleException(exc);
-        }
-    }
-
-    private void initConnections() throws java.lang.Exception {
-        this.addPropertyChangeListener(ivjEventHandler);
-        getScrollPaneTable().addMouseListener(ivjEventHandler);
-        getScrollPaneTable().setModel(getNonEditableDefaultTableModel());
+        // Rebuild columns so we can attach metadata + renderer
         getScrollPaneTable().createDefaultColumnsFromModel();
-        TableCellRenderer baseHeaderRenderer = getScrollPaneTable().getTableHeader().getDefaultRenderer();
-        getScrollPaneTable().getTableHeader().setDefaultRenderer(new MoleculeDataPanel.MoleculeHeaderRenderer(baseHeaderRenderer));
-
+        for (int i = 0; i < metadata.size(); i++) {
+            getScrollPaneTable().getColumnModel().getColumn(i)
+                    .setIdentifier(metadata.get(i));
+        }
+        autoSizeTableColumns(getScrollPaneTable());
+        revalidate();
+        repaint();
     }
-    private void handleException(java.lang.Throwable exception) {
-        System.out.println("--------- UNCAUGHT EXCEPTION ---------");
-        exception.printStackTrace(System.out);
-    }
 
-    // -----------------------------------------------------------
-    private ScrollTable getScrollPaneTable() {
-        if (scrollPaneTable == null) {
-            try {
-                scrollPaneTable = new ScrollTable();
-                scrollPaneTable.setName("ScrollPaneTable");
-                scrollPaneTable.setCellSelectionEnabled(true);
-                scrollPaneTable.setBounds(0, 0, 200, 200);
-            } catch (java.lang.Throwable ivjExc) {
-                handleException(ivjExc);
+    private void autoSizeTableColumns(JTable table) {
+        final int margin = 12;
+
+        for (int col = 0; col < table.getColumnCount(); col++) {
+            TableColumn column = table.getColumnModel().getColumn(col);
+
+            int maxWidth = 0;
+
+            // header
+            TableCellRenderer headerRenderer = table.getTableHeader().getDefaultRenderer();
+            Component headerComp = headerRenderer.getTableCellRendererComponent(
+                    table, column.getHeaderValue(), false, false, 0, col);
+            maxWidth = Math.max(maxWidth, headerComp.getPreferredSize().width);
+
+            // cells
+            for (int row = 0; row < table.getRowCount(); row++) {
+                TableCellRenderer cellRenderer = table.getCellRenderer(row, col);
+                Component comp = table.prepareRenderer(cellRenderer, row, col);
+                maxWidth = Math.max(maxWidth, comp.getPreferredSize().width);
             }
+
+            column.setPreferredWidth(maxWidth + margin);
         }
-        return scrollPaneTable;
     }
-
-    private JPopupMenu getPopupMenu() {
-        if (popupMenu == null) {
-            popupMenu = new JPopupMenu();
-
-            miCopyAll = new JMenuItem("Copy All");
-            miCopyAll.addActionListener(e -> copyCells(this, false));
-            popupMenu.add(miCopyAll);
-
-            miCopyHDF5 = new JMenuItem("Copy to HDF5");
-            miCopyHDF5.setEnabled(false);       // export to HDF5 code is not working
-            miCopyHDF5.addActionListener(e -> copyCells(this,true));
-            popupMenu.add(miCopyHDF5);
-        }
-        return popupMenu;
-    }
-
-    private static synchronized void copyCells(MoleculeDataPanel cdp, boolean isHDF5) {
-
-    }
-    private NonEditableDefaultTableModel getNonEditableDefaultTableModel() {
-        if (nonEditableDefaultTableModel == null) {
-            try {
-                nonEditableDefaultTableModel = new NonEditableDefaultTableModel();
-            } catch (java.lang.Throwable ivjExc) {
-                handleException(ivjExc);
-            }
-        }
-        return nonEditableDefaultTableModel;
-    }
-
 }
