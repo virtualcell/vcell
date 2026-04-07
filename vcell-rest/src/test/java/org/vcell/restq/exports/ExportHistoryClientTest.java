@@ -68,7 +68,7 @@ public class ExportHistoryClientTest {
         N5ExportRequest exportRequest = ExportHelper.getValidExportRequestDTO(0, 1, dataServer,
                 frapModel.getSimulation(0), frapModel);
         ExportEvent completedExport = ExportHelper.exportAndWait(exportResourceApi, exportRequest);
-        List<ExportHistory> exportHistories = exportResourceApi.getExportHistory();
+        List<ExportHistory> exportHistories = exportResourceApi.getExportHistory(0);
         Assertions.assertFalse(exportHistories.isEmpty());
         Assertions.assertEquals(exportHistories.size(), 1);
         Assertions.assertEquals(exportHistories.get(0).getExportJobID(), completedExport.getJobID());
@@ -86,7 +86,7 @@ public class ExportHistoryClientTest {
                 frapModel.getSimulation(0), frapModel);
         ExportEvent completedExport1 = ExportHelper.exportAndWait(exportResourceApi, exportRequest);
         ExportEvent completedExport2 = ExportHelper.exportAndWait(exportResourceApi, exportRequest2);
-        List<ExportHistory> exportHistories = exportResourceApi.getExportHistory();
+        List<ExportHistory> exportHistories = exportResourceApi.getExportHistory(0);
 
         Assertions.assertFalse(exportHistories.isEmpty());
         Assertions.assertEquals(exportHistories.size(), 2);
@@ -94,6 +94,22 @@ public class ExportHistoryClientTest {
         Assertions.assertTrue(requestEqualHistory(exportRequest2, exportHistories.get(0)));
 
         Assertions.assertTrue(exportHistories.get(0).getExportDate().isAfter(exportHistories.get(1).getExportDate()));
+    }
+
+    @Test
+    public void testExportPaging() throws Exception {
+        ExportResourceApi exportResourceApi = new ExportResourceApi(aliceAPIClient);
+        N5ExportRequest exportRequest = ExportHelper.getValidExportRequestDTO(0, 1, dataServer,
+                frapModel.getSimulation(0), frapModel);
+        N5ExportRequest exportRequest2 = ExportHelper.getValidExportRequestDTO(2, 4, dataServer,
+                frapModel.getSimulation(0), frapModel);
+        ExportEvent completedExport1 = ExportHelper.exportAndWait(exportResourceApi, exportRequest);
+        ExportEvent completedExport2 = ExportHelper.exportAndWait(exportResourceApi, exportRequest2);
+        List<ExportHistory> exportHistories = exportResourceApi.getExportHistory(0);
+
+        Assertions.assertEquals(exportHistories.size(), 2);
+        exportHistories = exportResourceApi.getExportHistory(1);
+        Assertions.assertTrue(exportHistories.isEmpty());
     }
 
     private boolean requestEqualHistory(N5ExportRequest request, ExportHistory history){

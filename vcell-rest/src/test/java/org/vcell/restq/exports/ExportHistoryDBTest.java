@@ -107,7 +107,7 @@ public class ExportHistoryDBTest {
 
             driver.addExportHistory(conn, user, rep, agroalConnectionFactory.getKeyFactory());
             try {
-                List<ExportHistory> exportHistoryRecord = driver.getExportHistoryForUser(conn, user);
+                List<ExportHistory> exportHistoryRecord = driver.getExportHistoryForUser(conn, user, 0);
                 Assertions.assertEquals(1, exportHistoryRecord.size(), "expected one record");
                 Assertions.assertTrue(historyDBEqualHistory(rep, exportHistoryRecord.get(0)));
                 Assertions.assertEquals(savedBioModel.getName(), exportHistoryRecord.get(0).modelName());
@@ -141,13 +141,13 @@ public class ExportHistoryDBTest {
             );
 
 
-            List<ExportHistory> retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
+            List<ExportHistory> retrievedExportHistory = driver.getExportHistoryForUser(conn, user, 0);
             Assertions.assertEquals(2, retrievedExportHistory.size(), "expected two records");
             Assertions.assertTrue(historyDBEqualHistory(exportHistoryDBRep, retrievedExportHistory.get(0)));
             Assertions.assertTrue(historyDBEqualHistory(notDeletedRep, retrievedExportHistory.get(1)));
 
             driver.deleteExportHistory(conn, exportHistoryDBRep.uri());
-            retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
+            retrievedExportHistory = driver.getExportHistoryForUser(conn, user, 0);
             Assertions.assertEquals(1, retrievedExportHistory.size(), "expected one record after deletion");
             Assertions.assertTrue(historyDBEqualHistory(notDeletedRep, retrievedExportHistory.get(0)));
         } catch (DataAccessException | JsonProcessingException e) {
@@ -174,7 +174,7 @@ public class ExportHistoryDBTest {
                     agroalConnectionFactory.getKeyFactory()
             );
 
-            List<ExportHistory> retrievedExportHistory = driver.getExportHistoryForUser(conn, user);
+            List<ExportHistory> retrievedExportHistory = driver.getExportHistoryForUser(conn, user, 0);
             Assertions.assertEquals(2, retrievedExportHistory.size(), "expected two records");
             Assertions.assertTrue(historyDBEqualHistory(exportHistoryDBRep, retrievedExportHistory.get(0)));
             Assertions.assertTrue(historyDBEqualHistory(exportHistoryDBRep1, retrievedExportHistory.get(1)));
