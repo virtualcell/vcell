@@ -242,22 +242,24 @@ public class ExportResourceApi {
   /**
    * 
    * 
+   * @param pageNumber  (optional)
    * @return List&lt;ExportHistory&gt;
    * @throws ApiException if fails to make API call
    */
-  public List<ExportHistory> getExportHistory() throws ApiException {
-    ApiResponse<List<ExportHistory>> localVarResponse = getExportHistoryWithHttpInfo();
+  public List<ExportHistory> getExportHistory(Integer pageNumber) throws ApiException {
+    ApiResponse<List<ExportHistory>> localVarResponse = getExportHistoryWithHttpInfo(pageNumber);
     return localVarResponse.getData();
   }
 
   /**
    * 
    * 
+   * @param pageNumber  (optional)
    * @return ApiResponse&lt;List&lt;ExportHistory&gt;&gt;
    * @throws ApiException if fails to make API call
    */
-  public ApiResponse<List<ExportHistory>> getExportHistoryWithHttpInfo() throws ApiException {
-    HttpRequest.Builder localVarRequestBuilder = getExportHistoryRequestBuilder();
+  public ApiResponse<List<ExportHistory>> getExportHistoryWithHttpInfo(Integer pageNumber) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getExportHistoryRequestBuilder(pageNumber);
     try {
       HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
           localVarRequestBuilder.build(),
@@ -285,13 +287,28 @@ public class ExportResourceApi {
     }
   }
 
-  private HttpRequest.Builder getExportHistoryRequestBuilder() throws ApiException {
+  private HttpRequest.Builder getExportHistoryRequestBuilder(Integer pageNumber) throws ApiException {
 
     HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
 
     String localVarPath = "/api/v1/export/history";
 
-    localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    List<Pair> localVarQueryParams = new ArrayList<>();
+    StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
+    String localVarQueryParameterBaseName;
+    localVarQueryParameterBaseName = "pageNumber";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("pageNumber", pageNumber));
+
+    if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
+      StringJoiner queryJoiner = new StringJoiner("&");
+      localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
+      if (localVarQueryStringJoiner.length() != 0) {
+        queryJoiner.add(localVarQueryStringJoiner.toString());
+      }
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath + '?' + queryJoiner.toString()));
+    } else {
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    }
 
     localVarRequestBuilder.header("Accept", "application/json");
 

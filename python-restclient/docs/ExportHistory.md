@@ -17,9 +17,6 @@ Name | Type | Description | Notes
 **variables** | **List[str]** |  | [optional] 
 **start_time_value** | **float** |  | [optional] 
 **end_time_value** | **float** |  | [optional] 
-**saved_file_name_value** | **str** |  | [optional] 
-**selected_z_slice** | **int** |  | [optional] 
-**entire_z_stack** | **bool** |  | [optional] 
 **event_status** | [**ExportProgressType**](ExportProgressType.md) |  | [optional] 
 
 ## Example

@@ -307,7 +307,7 @@ ApiResponse<[**List&lt;ExportEvent&gt;**](ExportEvent.md)>
 
 ## getExportHistory
 
-> List<ExportHistory> getExportHistory()
+> List<ExportHistory> getExportHistory(pageNumber)
 
 
 
@@ -329,8 +329,9 @@ public class Example {
         
 
         ExportResourceApi apiInstance = new ExportResourceApi(defaultClient);
+        Integer pageNumber = 56; // Integer | 
         try {
-            List<ExportHistory> result = apiInstance.getExportHistory();
+            List<ExportHistory> result = apiInstance.getExportHistory(pageNumber);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling ExportResourceApi#getExportHistory");
@@ -345,7 +346,10 @@ public class Example {
 
 ### Parameters
 
-This endpoint does not need any parameter.
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **pageNumber** | **Integer**|  | [optional] |
 
 ### Return type
 
@@ -371,7 +375,7 @@ This endpoint does not need any parameter.
 
 ## getExportHistoryWithHttpInfo
 
-> ApiResponse<List<ExportHistory>> getExportHistory getExportHistoryWithHttpInfo()
+> ApiResponse<List<ExportHistory>> getExportHistory getExportHistoryWithHttpInfo(pageNumber)
 
 
 
@@ -394,8 +398,9 @@ public class Example {
         
 
         ExportResourceApi apiInstance = new ExportResourceApi(defaultClient);
+        Integer pageNumber = 56; // Integer | 
         try {
-            ApiResponse<List<ExportHistory>> response = apiInstance.getExportHistoryWithHttpInfo();
+            ApiResponse<List<ExportHistory>> response = apiInstance.getExportHistoryWithHttpInfo(pageNumber);
             System.out.println("Status code: " + response.getStatusCode());
             System.out.println("Response headers: " + response.getHeaders());
             System.out.println("Response body: " + response.getData());
@@ -412,7 +417,10 @@ public class Example {
 
 ### Parameters
 
-This endpoint does not need any parameter.
+
+| Name | Type | Description  | Notes |
+|------------- | ------------- | ------------- | -------------|
+| **pageNumber** | **Integer**|  | [optional] |
 
 ### Return type
 

@@ -616,6 +616,7 @@ class ExportResourceApi:
     @validate_call
     def get_export_history(
         self,
+        page_number: Optional[StrictInt] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -632,6 +633,8 @@ class ExportResourceApi:
         """get_export_history
 
 
+        :param page_number:
+        :type page_number: int
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -655,6 +658,7 @@ class ExportResourceApi:
         """ # noqa: E501
 
         _param = self._get_export_history_serialize(
+            page_number=page_number,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -682,6 +686,7 @@ class ExportResourceApi:
     @validate_call
     def get_export_history_with_http_info(
         self,
+        page_number: Optional[StrictInt] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -698,6 +703,8 @@ class ExportResourceApi:
         """get_export_history
 
 
+        :param page_number:
+        :type page_number: int
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -721,6 +728,7 @@ class ExportResourceApi:
         """ # noqa: E501
 
         _param = self._get_export_history_serialize(
+            page_number=page_number,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -748,6 +756,7 @@ class ExportResourceApi:
     @validate_call
     def get_export_history_without_preload_content(
         self,
+        page_number: Optional[StrictInt] = None,
         _request_timeout: Union[
             None,
             Annotated[StrictFloat, Field(gt=0)],
@@ -764,6 +773,8 @@ class ExportResourceApi:
         """get_export_history
 
 
+        :param page_number:
+        :type page_number: int
         :param _request_timeout: timeout setting for this request. If one
                                  number provided, it will be total request
                                  timeout. It can also be a pair (tuple) of
@@ -787,6 +798,7 @@ class ExportResourceApi:
         """ # noqa: E501
 
         _param = self._get_export_history_serialize(
+            page_number=page_number,
             _request_auth=_request_auth,
             _content_type=_content_type,
             _headers=_headers,
@@ -809,6 +821,7 @@ class ExportResourceApi:
 
     def _get_export_history_serialize(
         self,
+        page_number,
         _request_auth,
         _content_type,
         _headers,
@@ -830,6 +843,10 @@ class ExportResourceApi:
 
         # process the path parameters
         # process the query parameters
+        if page_number is not None:
+            
+            _query_params.append(('pageNumber', page_number))
+            
         # process the header parameters
         # process the form parameters
         # process the body parameter

@@ -466,6 +466,14 @@ paths:
       tags:
       - Export Resource
       operationId: getExportHistory
+      parameters:
+      - name: pageNumber
+        in: query
+        required: false
+        schema:
+          format: int32
+          default: "0"
+          type: integer
       responses:
         "200":
           description: OK
@@ -2608,13 +2616,6 @@ components:
         endTimeValue:
           format: double
           type: number
-        savedFileNameValue:
-          type: string
-        selectedZSlice:
-          format: int32
-          type: integer
-        entireZStack:
-          type: boolean
         eventStatus:
           $ref: '#/components/schemas/ExportProgressType'
     ExportProgressType:

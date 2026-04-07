@@ -27,9 +27,6 @@ export interface ExportHistory {
     variables?: Array<string>;
     startTimeValue?: number;
     endTimeValue?: number;
-    savedFileNameValue?: string;
-    selectedZSlice?: number;
-    entireZStack?: boolean;
     eventStatus?: ExportProgressType;
 }
 export namespace ExportHistory {

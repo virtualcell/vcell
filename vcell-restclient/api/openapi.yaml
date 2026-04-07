@@ -502,6 +502,15 @@ paths:
   /api/v1/export/history:
     get:
       operationId: getExportHistory
+      parameters:
+      - explode: true
+        in: query
+        name: pageNumber
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: form
       responses:
         "200":
           content:
@@ -3015,9 +3024,6 @@ components:
         uri: uri
         modelName: modelName
         exportDate: 2022-03-10T16:15:50Z
-        savedFileNameValue: savedFileNameValue
-        entireZStack: true
-        selectedZSlice: 5
         eventStatus: null
         simName: simName
         exportJobID: 0
@@ -3057,13 +3063,6 @@ components:
         endTimeValue:
           format: double
           type: number
-        savedFileNameValue:
-          type: string
-        selectedZSlice:
-          format: int32
-          type: integer
-        entireZStack:
-          type: boolean
         eventStatus:
           $ref: '#/components/schemas/ExportProgressType'
       type: object

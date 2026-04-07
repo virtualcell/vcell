@@ -44,7 +44,8 @@ export interface ExportResourceServiceInterface {
     /**
      * 
      * 
+     * @param pageNumber 
      */
-    getExportHistory(extraHttpRequestParams?: any): Observable<Array<ExportHistory>>;
+    getExportHistory(pageNumber?: number, extraHttpRequestParams?: any): Observable<Array<ExportHistory>>;
 
 }

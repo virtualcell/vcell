@@ -158,7 +158,7 @@ Name | Type | Description  | Notes
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **get_export_history**
-> List[ExportHistory] get_export_history()
+> List[ExportHistory] get_export_history(page_number=page_number)
 
 
 
@@ -187,9 +187,10 @@ configuration = vcell_client.Configuration(
 with vcell_client.ApiClient(configuration) as api_client:
     # Create an instance of the API class
     api_instance = vcell_client.ExportResourceApi(api_client)
+    page_number = 56 # int |  (optional)
 
     try:
-        api_response = api_instance.get_export_history()
+        api_response = api_instance.get_export_history(page_number=page_number)
         print("The response of ExportResourceApi->get_export_history:\n")
         pprint(api_response)
     except Exception as e:
@@ -199,7 +200,10 @@ with vcell_client.ApiClient(configuration) as api_client:
 
 
 ### Parameters
-This endpoint does not need any parameter.
+
+Name | Type | Description  | Notes
+------------- | ------------- | ------------- | -------------
+ **page_number** | **int**|  | [optional] 
 
 ### Return type
 

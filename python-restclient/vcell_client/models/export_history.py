@@ -20,7 +20,7 @@ import json
 
 from datetime import datetime
 from typing import Any, ClassVar, Dict, List, Optional, Union
-from pydantic import BaseModel, StrictBool, StrictFloat, StrictInt, StrictStr
+from pydantic import BaseModel, StrictFloat, StrictInt, StrictStr
 from pydantic import Field
 from vcell_client.models.export_format import ExportFormat
 from vcell_client.models.export_progress_type import ExportProgressType
@@ -46,11 +46,8 @@ class ExportHistory(BaseModel):
     variables: Optional[List[StrictStr]] = None
     start_time_value: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="startTimeValue")
     end_time_value: Optional[Union[StrictFloat, StrictInt]] = Field(default=None, alias="endTimeValue")
-    saved_file_name_value: Optional[StrictStr] = Field(default=None, alias="savedFileNameValue")
-    selected_z_slice: Optional[StrictInt] = Field(default=None, alias="selectedZSlice")
-    entire_z_stack: Optional[StrictBool] = Field(default=None, alias="entireZStack")
     event_status: Optional[ExportProgressType] = Field(default=None, alias="eventStatus")
-    __properties: ClassVar[List[str]] = ["exportJobID", "simulationRef", "bioModelRef", "mathModelRef", "mathRef", "exportFormat", "exportDate", "uri", "simName", "modelName", "variables", "startTimeValue", "endTimeValue", "savedFileNameValue", "selectedZSlice", "entireZStack", "eventStatus"]
+    __properties: ClassVar[List[str]] = ["exportJobID", "simulationRef", "bioModelRef", "mathModelRef", "mathRef", "exportFormat", "exportDate", "uri", "simName", "modelName", "variables", "startTimeValue", "endTimeValue", "eventStatus"]
 
     model_config = {
         "populate_by_name": True,
@@ -118,9 +115,6 @@ class ExportHistory(BaseModel):
             "variables": obj.get("variables"),
             "startTimeValue": obj.get("startTimeValue"),
             "endTimeValue": obj.get("endTimeValue"),
-            "savedFileNameValue": obj.get("savedFileNameValue"),
-            "selectedZSlice": obj.get("selectedZSlice"),
-            "entireZStack": obj.get("entireZStack"),
             "eventStatus": obj.get("eventStatus")
         })
         return _obj

@@ -50,9 +50,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   ExportHistory.JSON_PROPERTY_VARIABLES,
   ExportHistory.JSON_PROPERTY_START_TIME_VALUE,
   ExportHistory.JSON_PROPERTY_END_TIME_VALUE,
-  ExportHistory.JSON_PROPERTY_SAVED_FILE_NAME_VALUE,
-  ExportHistory.JSON_PROPERTY_SELECTED_Z_SLICE,
-  ExportHistory.JSON_PROPERTY_ENTIRE_Z_STACK,
   ExportHistory.JSON_PROPERTY_EVENT_STATUS
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
@@ -95,15 +92,6 @@ public class ExportHistory {
 
   public static final String JSON_PROPERTY_END_TIME_VALUE = "endTimeValue";
   private Double endTimeValue;
-
-  public static final String JSON_PROPERTY_SAVED_FILE_NAME_VALUE = "savedFileNameValue";
-  private String savedFileNameValue;
-
-  public static final String JSON_PROPERTY_SELECTED_Z_SLICE = "selectedZSlice";
-  private Integer selectedZSlice;
-
-  public static final String JSON_PROPERTY_ENTIRE_Z_STACK = "entireZStack";
-  private Boolean entireZStack;
 
   public static final String JSON_PROPERTY_EVENT_STATUS = "eventStatus";
   private ExportProgressType eventStatus;
@@ -444,81 +432,6 @@ public class ExportHistory {
   }
 
 
-  public ExportHistory savedFileNameValue(String savedFileNameValue) {
-    this.savedFileNameValue = savedFileNameValue;
-    return this;
-  }
-
-   /**
-   * Get savedFileNameValue
-   * @return savedFileNameValue
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SAVED_FILE_NAME_VALUE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public String getSavedFileNameValue() {
-    return savedFileNameValue;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_SAVED_FILE_NAME_VALUE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSavedFileNameValue(String savedFileNameValue) {
-    this.savedFileNameValue = savedFileNameValue;
-  }
-
-
-  public ExportHistory selectedZSlice(Integer selectedZSlice) {
-    this.selectedZSlice = selectedZSlice;
-    return this;
-  }
-
-   /**
-   * Get selectedZSlice
-   * @return selectedZSlice
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_SELECTED_Z_SLICE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public Integer getSelectedZSlice() {
-    return selectedZSlice;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_SELECTED_Z_SLICE)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSelectedZSlice(Integer selectedZSlice) {
-    this.selectedZSlice = selectedZSlice;
-  }
-
-
-  public ExportHistory entireZStack(Boolean entireZStack) {
-    this.entireZStack = entireZStack;
-    return this;
-  }
-
-   /**
-   * Get entireZStack
-   * @return entireZStack
-  **/
-  @javax.annotation.Nullable
-  @JsonProperty(JSON_PROPERTY_ENTIRE_Z_STACK)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-
-  public Boolean getEntireZStack() {
-    return entireZStack;
-  }
-
-
-  @JsonProperty(JSON_PROPERTY_ENTIRE_Z_STACK)
-  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setEntireZStack(Boolean entireZStack) {
-    this.entireZStack = entireZStack;
-  }
-
-
   public ExportHistory eventStatus(ExportProgressType eventStatus) {
     this.eventStatus = eventStatus;
     return this;
@@ -569,15 +482,12 @@ public class ExportHistory {
         Objects.equals(this.variables, exportHistory.variables) &&
         Objects.equals(this.startTimeValue, exportHistory.startTimeValue) &&
         Objects.equals(this.endTimeValue, exportHistory.endTimeValue) &&
-        Objects.equals(this.savedFileNameValue, exportHistory.savedFileNameValue) &&
-        Objects.equals(this.selectedZSlice, exportHistory.selectedZSlice) &&
-        Objects.equals(this.entireZStack, exportHistory.entireZStack) &&
         Objects.equals(this.eventStatus, exportHistory.eventStatus);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(exportJobID, simulationRef, bioModelRef, mathModelRef, mathRef, exportFormat, exportDate, uri, simName, modelName, variables, startTimeValue, endTimeValue, savedFileNameValue, selectedZSlice, entireZStack, eventStatus);
+    return Objects.hash(exportJobID, simulationRef, bioModelRef, mathModelRef, mathRef, exportFormat, exportDate, uri, simName, modelName, variables, startTimeValue, endTimeValue, eventStatus);
   }
 
   @Override
@@ -597,9 +507,6 @@ public class ExportHistory {
     sb.append("    variables: ").append(toIndentedString(variables)).append("\n");
     sb.append("    startTimeValue: ").append(toIndentedString(startTimeValue)).append("\n");
     sb.append("    endTimeValue: ").append(toIndentedString(endTimeValue)).append("\n");
-    sb.append("    savedFileNameValue: ").append(toIndentedString(savedFileNameValue)).append("\n");
-    sb.append("    selectedZSlice: ").append(toIndentedString(selectedZSlice)).append("\n");
-    sb.append("    entireZStack: ").append(toIndentedString(entireZStack)).append("\n");
     sb.append("    eventStatus: ").append(toIndentedString(eventStatus)).append("\n");
     sb.append("}");
     return sb.toString();
@@ -715,21 +622,6 @@ public class ExportHistory {
     // add `endTimeValue` to the URL query string
     if (getEndTimeValue() != null) {
       joiner.add(String.format("%sendTimeValue%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getEndTimeValue()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `savedFileNameValue` to the URL query string
-    if (getSavedFileNameValue() != null) {
-      joiner.add(String.format("%ssavedFileNameValue%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSavedFileNameValue()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `selectedZSlice` to the URL query string
-    if (getSelectedZSlice() != null) {
-      joiner.add(String.format("%sselectedZSlice%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSelectedZSlice()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
-    }
-
-    // add `entireZStack` to the URL query string
-    if (getEntireZStack() != null) {
-      joiner.add(String.format("%sentireZStack%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getEntireZStack()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `eventStatus` to the URL query string

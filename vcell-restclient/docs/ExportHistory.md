@@ -20,9 +20,6 @@
 |**variables** | **List&lt;String&gt;** |  |  [optional] |
 |**startTimeValue** | **Double** |  |  [optional] |
 |**endTimeValue** | **Double** |  |  [optional] |
-|**savedFileNameValue** | **String** |  |  [optional] |
-|**selectedZSlice** | **Integer** |  |  [optional] |
-|**entireZStack** | **Boolean** |  |  [optional] |
 |**eventStatus** | **ExportProgressType** |  |  [optional] |
 
 
