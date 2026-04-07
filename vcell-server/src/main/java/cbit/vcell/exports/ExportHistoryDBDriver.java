@@ -67,7 +67,7 @@ public class ExportHistoryDBDriver {
     }
 
     // sub selection of sim ref key for that export event, then tie it back to biomodel/sim for getting metadata (name, application, etc)
-    public List<ExportHistory> getExportHistoryForUser(Connection conn, User user) throws SQLException, JsonProcessingException, DataAccessException {
+    public List<ExportHistory> getExportHistoryForUser(Connection conn, User user, int pageNumber) throws SQLException, JsonProcessingException, DataAccessException {
         String sql = """
         SELECT eh.*, sim.name as sim_name, bio.name as bio_name, bio.childSummaryLRG, bio.childSummarySML, math.name as math_model_name,
         sim.mathoverrides, sim.mathOverridesLRG, sim.mathOverridesSML, simContext.name as application_name, simContext.appComponentsLRG, simContext.appComponentsSML
@@ -77,9 +77,12 @@ public class ExportHistoryDBDriver {
         LEFT JOIN vc_mathmodel math ON math.id = eh.mathmodel_ref
         LEFT JOIN vc_simcontext simContext ON simContext.mathRef = eh.math_ref
         WHERE user_ref = ? ORDER BY export_date DESC
+        OFFSET ? ROWS FETCH NEXT 100 ROWS ONLY
 """;
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setLong(1, Long.parseLong(user.getID().toString()));
+        pageNumber = (0 < pageNumber) && (pageNumber < 10000) ? pageNumber : 0;
+        ps.setInt(2, pageNumber * 100);
         ResultSet resultSet = ps.executeQuery();
         List<ExportHistory> exportHistoryDBReps = new ArrayList<>();
         while (resultSet.next()) {

@@ -33,6 +33,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Path("/api/v1/export")
 public class ExportResource {
@@ -52,10 +53,10 @@ public class ExportResource {
     @GET
     @RolesAllowed("user")
     @Operation(operationId = "getExportHistory")
-    public List<ExportHistory> getExportHistory() throws DataAccessWebException, NotAuthenticatedWebException {
+    public List<ExportHistory> getExportHistory(@QueryParam("pageNumber") @DefaultValue("0") Optional<Integer> pageNumber) throws DataAccessWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try {
-            return exportService.getExportHistory(user);
+            return exportService.getExportHistory(user, pageNumber.orElseGet(() -> 0));
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
         }

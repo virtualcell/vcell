@@ -2284,11 +2284,11 @@ public SimulationRep getSimulationRep(KeyValue simKey, boolean bEnableRetry) thr
 		}
 	}
 
-	public List<ExportHistory> getUsersExportHistory(User user, boolean bEnableRetry) throws SQLException, DataAccessException {
+	public List<ExportHistory> getUsersExportHistory(User user, int pagingNumber, boolean bEnableRetry) throws SQLException, DataAccessException {
 		Object lock = new Object();
 		Connection con = conFactory.getConnection(lock);
 		try {
-			return exportHistoryDBDriver.getExportHistoryForUser(con, user);
+			return exportHistoryDBDriver.getExportHistoryForUser(con, user, pagingNumber);
 		} catch (Throwable e) {
 			lg.error(e.getMessage(),e);
 			try {
@@ -2298,7 +2298,7 @@ public SimulationRep getSimulationRep(KeyValue simKey, boolean bEnableRetry) thr
 			}
 			if (bEnableRetry && isBadConnection(con)) {
 				conFactory.failed(con,lock);
-				return getUsersExportHistory(user, false);
+				return getUsersExportHistory(user, pagingNumber,false);
 			}else{
 				handle_DataAccessException_SQLException(e);
 				return null; // never gets here;

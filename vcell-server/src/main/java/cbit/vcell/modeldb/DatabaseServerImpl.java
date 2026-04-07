@@ -1365,9 +1365,9 @@ public BigString saveVCImageAs(User user, BigString vcImageXML, java.lang.String
 		}
 	}
 
-	public List<ExportHistory> getUsersExportHistory(User user) throws DataAccessException {
+	public List<ExportHistory> getUsersExportHistory(User user, int pageNumber) throws DataAccessException {
 		try {
-			return dbTop.getUsersExportHistory(user, true);
+			return dbTop.getUsersExportHistory(user, pageNumber,true);
 		} catch (SQLException e) {
 			throw new DataAccessException(e);
 		}

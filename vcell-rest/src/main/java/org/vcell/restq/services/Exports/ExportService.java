@@ -47,8 +47,8 @@ public class ExportService {
         databaseServer = new DatabaseServerImpl(connectionFactory, connectionFactory.getKeyFactory());
     }
 
-    public List<ExportHistory> getExportHistory(User user) throws DataAccessException {
-        return databaseServer.getUsersExportHistory(user);
+    public List<ExportHistory> getExportHistory(User user, int pageNumber) throws DataAccessException {
+        return databaseServer.getUsersExportHistory(user, pageNumber);
     }
 
     public Multi<ExportEvent> getExportStatuses(User user, long jobID) throws ObjectNotFoundException {
