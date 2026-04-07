@@ -12,6 +12,7 @@ package cbit.vcell.modeldb;
 
 import cbit.sql.Field;
 import cbit.sql.Table;
+import cbit.vcell.exports.ExportHistoryTable;
 import cbit.vcell.resource.PropertyLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -205,6 +206,8 @@ private static void destroyAndRecreateTables(ConnectionFactory conFactory, KeyFa
 					createIndex(con,"geom_imageref",cbit.vcell.modeldb.GeometryTable.table,cbit.vcell.modeldb.GeometryTable.table.imageRef, dbSyntax);
 					createIndex(con,"mathdesc_geomref",cbit.vcell.modeldb.MathDescTable.table,cbit.vcell.modeldb.MathDescTable.table.geometryRef, dbSyntax);
 					createIndex(con,"simcstat_simcref",cbit.vcell.modeldb.SimContextStatTable.table,cbit.vcell.modeldb.SimContextStatTable.table.simContextRef, dbSyntax);
+					createIndex(con, "export_history_time", ExportHistoryTable.table, ExportHistoryTable.table.exportDate, dbSyntax);
+					createIndex(con, "export_history_userref", ExportHistoryTable.table, ExportHistoryTable.table.userRef, dbSyntax);
 				}
 				con.commit();
 			} catch (SQLException exc) {
@@ -376,6 +379,7 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.VCMetaDataTable.table, // new
 		cbit.vcell.modeldb.SimDelFromDiskTable.table, // new
 		UserIdentityTable.table,
+		ExportHistoryTable.table // new
 		};
 	return tables;
 }
@@ -402,6 +406,8 @@ public static void writeScript(DatabaseSyntax dbSyntax, boolean bootstrapData, W
 	scriptWriter.write(getCreateIndexSQL("geom_imageref", GeometryTable.table, GeometryTable.table.imageRef) + ";\n");
 	scriptWriter.write(getCreateIndexSQL("mathdesc_geomref", MathDescTable.table, MathDescTable.table.geometryRef) + ";\n");
 	scriptWriter.write(getCreateIndexSQL("simcstat_simcref", SimContextStatTable.table, SimContextStatTable.table.simContextRef) + ";\n");
+	scriptWriter.write(getCreateIndexSQL("export_history_userref", ExportHistoryTable.table, ExportHistoryTable.table.userRef) + ";\n");
+	scriptWriter.write(getCreateIndexSQL("export_history_time", ExportHistoryTable.table, ExportHistoryTable.table.exportDate) + ";\n");
 	scriptWriter.write("\n");
 	if (bootstrapData) {
 		KeyFactory bootstrapKeyFactory = new KeyFactory() {

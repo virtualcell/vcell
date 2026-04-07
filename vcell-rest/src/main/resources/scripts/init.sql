@@ -76,25 +76,7 @@ CREATE TABLE vc_userlogininfo(id bigint PRIMARY KEY,userRef bigint NOT NULL REFE
 CREATE TABLE vc_metadata(id bigint PRIMARY KEY,bioModelRef bigint NOT NULL REFERENCES vc_biomodel(id) ON DELETE CASCADE,vcMetaDataLarge text ,vcMetaDataSmall varchar(4000) );
 CREATE TABLE vc_simdelfromdisk(deldate varchar(20) ,userid varchar(255) NOT NULL,userkey bigint ,simid bigint ,simpref bigint ,simdate varchar(20) ,simname varchar(255) NOT NULL,status varchar(10) ,numfiles bigint ,totalsize bigint );
 CREATE TABLE vc_useridentity(id bigint PRIMARY KEY,userRef bigint NOT NULL REFERENCES vc_userinfo(id),authSubject varchar(128) NOT NULL,authIssuer varchar(128) NOT NULL,insertDate timestamp NOT NULL);
-
-CREATE TABLE vc_simulation_export_history (
-    id                            bigint        PRIMARY KEY,
-    job_id                        bigint        NOT NULL,
-    user_ref                      bigint        NOT NULL REFERENCES vc_userinfo(id),
-    simulation_ref                bigint        NOT NULL REFERENCES vc_simulation(id),
-    biomodel_ref                  bigint        REFERENCES vc_biomodel(id),
-    mathmodel_ref                 bigint        REFERENCES vc_mathmodel(id),
-    math_ref                      bigint        NOT NULL REFERENCES vc_math(id),
-    export_format                 varchar(50)   NOT NULL,
-    export_date                   timestamp     NOT NULL,
-    uri                           text          NOT NULL,
-    variables                     text[]        NOT NULL,
-    start_time                    numeric       NOT NULL,
-    end_time                      numeric       NOT NULL,
-    saved_file_name               varchar(50),
-    event_status                  varchar(50)   NOT NULL
-);
-
+CREATE TABLE vc_simulation_export_history(id bigint PRIMARY KEY,job_id bigint NOT NULL,user_ref bigint NOT NULL REFERENCES vc_userinfo(id),biomodel_ref bigint REFERENCES vc_biomodel(id),mathmodel_ref bigint REFERENCES vc_mathmodel(id),simulation_ref bigint NOT NULL REFERENCES vc_simulation(id),math_ref bigint NOT NULL REFERENCES vc_math(id),export_format varchar(50) NOT NULL,export_date timestamp NOT NULL,uri varchar(1024) NOT NULL,variables varchar(4000) [] NOT NULL,start_time numeric NOT NULL,end_time numeric NOT NULL,event_status varchar(50) NOT NULL);
 
 CREATE VIEW public.dual AS SELECT CAST('X' as varchar) AS dummy;
 

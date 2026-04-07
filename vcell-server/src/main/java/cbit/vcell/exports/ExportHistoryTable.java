@@ -4,9 +4,7 @@ import cbit.sql.Field;
 import cbit.sql.Table;
 import cbit.vcell.export.server.ExportEnums;
 import cbit.vcell.export.server.ExportFormat;
-import cbit.vcell.modeldb.BioModelTable;
-import cbit.vcell.modeldb.SimulationTable;
-import cbit.vcell.modeldb.UserTable;
+import cbit.vcell.modeldb.*;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;
 
@@ -18,20 +16,20 @@ public class ExportHistoryTable extends Table {
 
    // public final Field id = new Field(id_ColumnName, Field.SQLDataType.integer,"PRIMARY KEY");
 
-    public final Field jobId = new Field("job_id", Field.SQLDataType.varchar_50, "NOT NULL");
+    public final Field jobId = new Field("job_id", Field.SQLDataType.integer, "NOT NULL");
 
-    public final Field userRef = new Field("user_ref", Field.SQLDataType.integer, "NOT NULL REFERENCES" + UserTable.REF_TYPE);
-    public final Field bioModelRef = new Field("biomodel_ref", Field.SQLDataType.integer, "REFERENCES" + BioModelTable.REF_TYPE);
-    public final Field mathModelRef = new Field("mathmodel_ref", Field.SQLDataType.integer, "REFERENCES" + SimulationTable.REF_TYPE);
-    public final Field simulationRef = new Field("simulation_ref", Field.SQLDataType.integer, "NOT NULL REFERENCES" + SimulationTable.REF_TYPE);
-    public final Field mathRef = new Field("math_ref", Field.SQLDataType.integer, "NOT NULL REFERENCES" + SimulationTable.REF_TYPE);
+    public final Field userRef = new Field("user_ref", Field.SQLDataType.integer, "NOT NULL " + UserTable.REF_TYPE);
+    public final Field bioModelRef = new Field("biomodel_ref", Field.SQLDataType.integer, BioModelTable.REF_TYPE);
+    public final Field mathModelRef = new Field("mathmodel_ref", Field.SQLDataType.integer, MathModelTable.REF_TYPE);
+    public final Field simulationRef = new Field("simulation_ref", Field.SQLDataType.integer, "NOT NULL " + SimulationTable.REF_TYPE);
+    public final Field mathRef = new Field("math_ref", Field.SQLDataType.integer, "NOT NULL " + MathDescTable.REF_TYPE);
 
 
     public final Field exportFormat = new Field("export_format", Field.SQLDataType.varchar_50, "NOT NULL");
     public final Field exportDate = new Field("export_date", Field.SQLDataType.date, "NOT NULL");
-    public final Field uri = new Field("uri", Field.SQLDataType.varchar2_4000, "NOT NULL");
+    public final Field uri = new Field("uri", Field.SQLDataType.varchar_1024, "NOT NULL");
 
-    public final Field variables = new Field("variables", Field.SQLDataType.varchar_255, "[] NOT NULL");
+    public final Field variables = new Field("variables", Field.SQLDataType.varchar2_4000, "[] NOT NULL");
     public final Field startTime = new Field("start_time", Field.SQLDataType.number_as_real, "NOT NULL");
     public final Field endTime = new Field("end_time", Field.SQLDataType.number_as_real, "NOT NULL");
     public final Field eventStatus = new Field("event_status", Field.SQLDataType.varchar_50, "NOT NULL");
