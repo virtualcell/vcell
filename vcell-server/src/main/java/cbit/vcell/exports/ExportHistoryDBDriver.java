@@ -76,7 +76,7 @@ public class ExportHistoryDBDriver {
         LEFT JOIN vc_biomodel bio ON bio.id = eh.biomodel_ref
         LEFT JOIN vc_mathmodel math ON math.id = eh.mathmodel_ref
         LEFT JOIN vc_simcontext simContext ON simContext.mathRef = eh.math_ref
-        WHERE user_ref = ?
+        WHERE user_ref = ? ORDER BY export_date DESC
 """;
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setLong(1, Long.parseLong(user.getID().toString()));

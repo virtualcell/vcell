@@ -1,7 +1,6 @@
 package org.vcell.restq.exports;
 
 import cbit.vcell.biomodel.BioModel;
-import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.resource.PropertyLoader;
 import cbit.vcell.simdata.DataServerImpl;
 import cbit.vcell.xml.XmlParseException;
@@ -76,6 +75,25 @@ public class ExportHistoryClientTest {
         Assertions.assertEquals(exportHistories.get(0).getSimName(), frapModel.getSimulation(0).getName());
         Assertions.assertEquals(exportHistories.get(0).getModelName(), frapModel.getName());
         Assertions.assertTrue(requestEqualHistory(exportRequest, exportHistories.get(0)));
+    }
+
+    @Test
+    public void testExportHistorySequence() throws Exception {
+        ExportResourceApi exportResourceApi = new ExportResourceApi(aliceAPIClient);
+        N5ExportRequest exportRequest = ExportHelper.getValidExportRequestDTO(0, 1, dataServer,
+                frapModel.getSimulation(0), frapModel);
+        N5ExportRequest exportRequest2 = ExportHelper.getValidExportRequestDTO(2, 4, dataServer,
+                frapModel.getSimulation(0), frapModel);
+        ExportEvent completedExport1 = ExportHelper.exportAndWait(exportResourceApi, exportRequest);
+        ExportEvent completedExport2 = ExportHelper.exportAndWait(exportResourceApi, exportRequest2);
+        List<ExportHistory> exportHistories = exportResourceApi.getExportHistory();
+
+        Assertions.assertFalse(exportHistories.isEmpty());
+        Assertions.assertEquals(exportHistories.size(), 2);
+        Assertions.assertTrue(requestEqualHistory(exportRequest, exportHistories.get(1)));
+        Assertions.assertTrue(requestEqualHistory(exportRequest2, exportHistories.get(0)));
+
+        Assertions.assertTrue(exportHistories.get(0).getExportDate().isAfter(exportHistories.get(1).getExportDate()));
     }
 
     private boolean requestEqualHistory(N5ExportRequest request, ExportHistory history){
