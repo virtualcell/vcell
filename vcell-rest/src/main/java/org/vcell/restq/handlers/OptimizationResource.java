@@ -1,0 +1,106 @@
+package org.vcell.restq.handlers;
+
+import io.quarkus.security.identity.SecurityIdentity;
+import jakarta.annotation.security.RolesAllowed;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.vcell.optimization.jtd.OptProblem;
+import org.vcell.restq.errors.exceptions.DataAccessWebException;
+import org.vcell.restq.errors.exceptions.NotAuthenticatedWebException;
+import org.vcell.restq.errors.exceptions.NotFoundWebException;
+import org.vcell.restq.errors.exceptions.RuntimeWebException;
+import org.vcell.restq.models.OptJobStatus;
+import org.vcell.restq.models.OptimizationJobStatus;
+import org.vcell.restq.services.OptimizationRestService;
+import org.vcell.restq.services.UserRestService;
+import org.vcell.util.DataAccessException;
+import org.vcell.util.document.User;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+
+@Path("/api/v1/optimization")
+@Produces(MediaType.APPLICATION_JSON)
+public class OptimizationResource {
+
+    private final OptimizationRestService optimizationRestService;
+
+    @Inject
+    SecurityIdentity securityIdentity;
+
+    @Inject
+    UserRestService userRestService;
+
+    // TODO: make configurable via application.properties
+    private static final String PAREST_DATA_DIR = "/simdata/parest_data";
+
+    @Inject
+    public OptimizationResource(OptimizationRestService optimizationRestService) {
+        this.optimizationRestService = optimizationRestService;
+    }
+
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed("user")
+    @Operation(operationId = "submitOptimization", summary = "Submit a new parameter estimation optimization job")
+    public OptimizationJobStatus submit(OptProblem optProblem)
+            throws NotAuthenticatedWebException, DataAccessWebException {
+        try {
+            User vcellUser = userRestService.getUserFromIdentity(securityIdentity);
+            OptimizationJobStatus status = optimizationRestService.submitOptimization(
+                    optProblem, new File(PAREST_DATA_DIR), vcellUser);
+            // TODO: send ActiveMQ message to vcell-submit for SLURM dispatch (commit 3)
+            return status;
+        } catch (SQLException e) {
+            throw new RuntimeWebException("Failed to submit optimization job: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new RuntimeWebException("Failed to write optimization problem to filesystem: " + e.getMessage(), e);
+        }
+    }
+
+    @GET
+    @Path("{optId}")
+    @RolesAllowed("user")
+    @Operation(operationId = "getOptimizationStatus", summary = "Get status, progress, or results of an optimization job")
+    public OptimizationJobStatus getStatus(@PathParam("optId") String optId)
+            throws NotAuthenticatedWebException, NotFoundWebException, DataAccessWebException {
+        try {
+            User vcellUser = userRestService.getUserFromIdentity(securityIdentity);
+            return optimizationRestService.getOptimizationStatus(optId, vcellUser);
+        } catch (DataAccessException e) {
+            throw new DataAccessWebException(e.getMessage(), e);
+        } catch (SQLException e) {
+            throw new RuntimeWebException("Failed to query optimization status: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new RuntimeWebException("Failed to read optimization data: " + e.getMessage(), e);
+        }
+    }
+
+    @POST
+    @Path("{optId}/stop")
+    @RolesAllowed("user")
+    @Operation(operationId = "stopOptimization", summary = "Stop a running optimization job")
+    public OptimizationJobStatus stop(@PathParam("optId") String optId)
+            throws NotAuthenticatedWebException, NotFoundWebException, DataAccessWebException {
+        try {
+            User vcellUser = userRestService.getUserFromIdentity(securityIdentity);
+            // Verify ownership by fetching status (throws if not authorized)
+            OptimizationJobStatus currentStatus = optimizationRestService.getOptimizationStatus(optId, vcellUser);
+            if (currentStatus.status() != OptJobStatus.RUNNING && currentStatus.status() != OptJobStatus.QUEUED) {
+                throw new DataAccessWebException("Cannot stop optimization job in state: " + currentStatus.status());
+            }
+            // TODO: send ActiveMQ stop message to vcell-submit with htcJobId (commit 3)
+            optimizationRestService.updateOptJobStatus(optId, OptJobStatus.STOPPED, "Stopped by user");
+            return optimizationRestService.getOptimizationStatus(optId, vcellUser);
+        } catch (DataAccessException e) {
+            throw new DataAccessWebException(e.getMessage(), e);
+        } catch (SQLException e) {
+            throw new RuntimeWebException("Failed to stop optimization job: " + e.getMessage(), e);
+        } catch (IOException e) {
+            throw new RuntimeWebException("Failed to read optimization data: " + e.getMessage(), e);
+        }
+    }
+}
