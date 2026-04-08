@@ -302,6 +302,129 @@ public class OptimizationResourceTest {
                 .statusCode(401);
     }
 
+    // ==================================================================================
+    // Tests using the auto-generated OptimizationResourceApi (vcell-restclient).
+    // These exercise the same client code path the desktop client will use.
+    // ==================================================================================
+
+    @Test
+    @Order(10)
+    public void testGeneratedClient_submitAndGetStatus() throws Exception {
+        TestEndpointUtils.mapApiClientToAdmin(aliceAPIClient);
+        var optApi = new org.vcell.restclient.api.OptimizationResourceApi(aliceAPIClient);
+
+        // Build OptProblem using the generated model types (org.vcell.restclient.model.*)
+        var optProblem = createGeneratedClientOptProblem();
+
+        // Submit
+        org.vcell.restclient.model.OptimizationJobStatus submitResult = optApi.submitOptimization(optProblem);
+        assertNotNull(submitResult.getId(), "Submit should return a job ID");
+        assertEquals(org.vcell.restclient.model.OptJobStatus.SUBMITTED, submitResult.getStatus());
+        assertNull(submitResult.getProgressReport());
+        assertNull(submitResult.getResults());
+
+        // Get status by ID
+        Long jobId = Long.parseLong(submitResult.getId());
+        org.vcell.restclient.model.OptimizationJobStatus getResult = optApi.getOptimizationStatus(jobId);
+        assertEquals(submitResult.getId(), getResult.getId());
+        assertEquals(org.vcell.restclient.model.OptJobStatus.SUBMITTED, getResult.getStatus());
+    }
+
+    @Test
+    @Order(11)
+    public void testGeneratedClient_listJobs() throws Exception {
+        TestEndpointUtils.mapApiClientToAdmin(aliceAPIClient);
+        var optApi = new org.vcell.restclient.api.OptimizationResourceApi(aliceAPIClient);
+
+        // Submit two jobs
+        var optProblem = createGeneratedClientOptProblem();
+        optApi.submitOptimization(optProblem);
+        optApi.submitOptimization(optProblem);
+
+        // List
+        java.util.List<org.vcell.restclient.model.OptimizationJobStatus> jobs = optApi.listOptimizationJobs();
+        assertTrue(jobs.size() >= 2, "Expected at least 2 jobs, got " + jobs.size());
+        for (var job : jobs) {
+            assertNotNull(job.getId());
+            assertNotNull(job.getStatus());
+            assertNull(job.getProgressReport(), "List should not include progressReport");
+            assertNull(job.getResults(), "List should not include results");
+        }
+    }
+
+    @Test
+    @Order(12)
+    public void testGeneratedClient_stopJob() throws Exception {
+        TestEndpointUtils.mapApiClientToAdmin(aliceAPIClient);
+        var optApi = new org.vcell.restclient.api.OptimizationResourceApi(aliceAPIClient);
+        User adminUser = TestEndpointUtils.administratorUser;
+
+        // Submit via generated client
+        var optProblem = createGeneratedClientOptProblem();
+        org.vcell.restclient.model.OptimizationJobStatus submitResult = optApi.submitOptimization(optProblem);
+        Long jobId = Long.parseLong(submitResult.getId());
+
+        // Transition to RUNNING via the service (simulates vcell-submit status update)
+        KeyValue jobKey = new KeyValue(submitResult.getId());
+        optimizationRestService.updateHtcJobId(jobKey, "SLURM:77777");
+        optimizationRestService.updateOptJobStatus(jobKey, OptJobStatus.RUNNING, null);
+
+        // Stop via generated client
+        org.vcell.restclient.model.OptimizationJobStatus stopResult = optApi.stopOptimization(jobId);
+        assertEquals(org.vcell.restclient.model.OptJobStatus.STOPPED, stopResult.getStatus());
+        assertEquals("Stopped by user", stopResult.getStatusMessage());
+    }
+
+    /**
+     * Create an OptProblem using the generated client model types (org.vcell.restclient.model.*).
+     * This is the same pattern the desktop client will use.
+     */
+    private org.vcell.restclient.model.OptProblem createGeneratedClientOptProblem() {
+        var optProblem = new org.vcell.restclient.model.OptProblem();
+        optProblem.setMathModelSbmlContents("<sbml>test</sbml>");
+        optProblem.setNumberOfOptimizationRuns(1);
+
+        var p1 = new org.vcell.restclient.model.ParameterDescription();
+        p1.setName("k1");
+        p1.setMinValue(0.0);
+        p1.setMaxValue(10.0);
+        p1.setInitialValue(1.0);
+        p1.setScale(1.0);
+
+        var p2 = new org.vcell.restclient.model.ParameterDescription();
+        p2.setName("k2");
+        p2.setMinValue(0.0);
+        p2.setMaxValue(10.0);
+        p2.setInitialValue(2.0);
+        p2.setScale(1.0);
+
+        optProblem.setParameterDescriptionList(List.of(p1, p2));
+        optProblem.setDataSet(List.of(
+                List.of(0.0, 1.0, 2.0),
+                List.of(1.0, 1.5, 2.5)
+        ));
+
+        var rv1 = new org.vcell.restclient.model.ReferenceVariable();
+        rv1.setVarName("t");
+        rv1.setReferenceVariableType(org.vcell.restclient.model.ReferenceVariableReferenceVariableType.INDEPENDENT);
+        var rv2 = new org.vcell.restclient.model.ReferenceVariable();
+        rv2.setVarName("x");
+        rv2.setReferenceVariableType(org.vcell.restclient.model.ReferenceVariableReferenceVariableType.DEPENDENT);
+
+        optProblem.setReferenceVariable(List.of(rv1, rv2));
+
+        var method = new org.vcell.restclient.model.CopasiOptimizationMethod();
+        method.setOptimizationMethodType(org.vcell.restclient.model.CopasiOptimizationMethodOptimizationMethodType.EVOLUTIONARYPROGRAM);
+        method.setOptimizationParameter(List.of());
+        optProblem.setCopasiOptimizationMethod(method);
+
+        return optProblem;
+    }
+
+    // ==================================================================================
+    // Helpers
+    // ==================================================================================
+
     private OptProblem createTestOptProblem() {
         OptProblem optProblem = new OptProblem();
         optProblem.setMathModelSbmlContents("<sbml>test</sbml>");
