@@ -43,6 +43,18 @@ public class OptimizationResource {
         this.optimizationRestService = optimizationRestService;
     }
 
+    @GET
+    @RolesAllowed("user")
+    @Operation(operationId = "listOptimizationJobs", summary = "List optimization jobs for the authenticated user")
+    public OptimizationJobStatus[] list() throws NotAuthenticatedWebException, DataAccessWebException {
+        try {
+            User vcellUser = userRestService.getUserFromIdentity(securityIdentity);
+            return optimizationRestService.listOptimizationJobs(vcellUser);
+        } catch (SQLException e) {
+            throw new RuntimeWebException("Failed to list optimization jobs: " + e.getMessage(), e);
+        }
+    }
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")

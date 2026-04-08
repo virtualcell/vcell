@@ -180,6 +180,35 @@ public class OptimizationRestService {
         return record.htcJobId;
     }
 
+    /**
+     * List optimization jobs for a user, most recent first. Returns lightweight status (no progress/results).
+     */
+    public OptimizationJobStatus[] listOptimizationJobs(User user) throws SQLException {
+        Connection con = null;
+        try {
+            con = connectionFactory.getConnection(this);
+            PreparedStatement stmt = con.prepareStatement(
+                    "SELECT id, status, htcJobId, statusMessage, insertDate, updateDate " +
+                            "FROM vc_optjob WHERE ownerRef = ? ORDER BY insertDate DESC");
+            stmt.setLong(1, Long.parseLong(user.getID().toString()));
+            ResultSet rs = stmt.executeQuery();
+            java.util.List<OptimizationJobStatus> jobs = new java.util.ArrayList<>();
+            while (rs.next()) {
+                jobs.add(new OptimizationJobStatus(
+                        new KeyValue(rs.getBigDecimal("id")),
+                        OptJobStatus.valueOf(rs.getString("status")),
+                        rs.getString("statusMessage"),
+                        rs.getString("htcJobId"),
+                        null,
+                        null
+                ));
+            }
+            return jobs.toArray(new OptimizationJobStatus[0]);
+        } finally {
+            if (con != null) connectionFactory.release(con, this);
+        }
+    }
+
     // --- Private helpers ---
 
     private void insertOptJob(Connection con, KeyValue jobKey, User user, OptJobStatus status,
