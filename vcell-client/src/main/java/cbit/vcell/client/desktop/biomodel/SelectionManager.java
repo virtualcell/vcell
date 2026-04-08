@@ -28,8 +28,6 @@ public class SelectionManager {
 		
 		data,	
 		applications,	
-		scripting,
-
 		reactions,
 		structures,
 		species,

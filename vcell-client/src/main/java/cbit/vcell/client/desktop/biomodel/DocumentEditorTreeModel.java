@@ -68,8 +68,6 @@ public abstract class DocumentEditorTreeModel extends DefaultTreeModel
 		DATA_NODE(					cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_DATA),	
 		APPLICATIONS_NODE(			cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_APPLICATIONS),	
 		BIOMODEL_PARAMETERS_NODE(	cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_BIOMODEL_PARAMETERS),	
-		SCRIPTING_NODE(				cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_SCRIPTING),
-
 		REACTIONS_NODE(				cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_REACTIONS),
 		REACTION_DIAGRAM_NODE(		cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_DIAGRAM),
 		STRUCTURES_NODE(			cbit.vcell.client.constants.GuiConstants.DOCUMENT_EDITOR_FOLDERNAME_STRUCTURES),
