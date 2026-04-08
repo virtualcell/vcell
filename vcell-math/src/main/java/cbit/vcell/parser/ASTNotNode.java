@@ -136,11 +136,15 @@ public Node flatten(boolean substituteConstants) throws ExpressionException {
 public String infixString(int language) {
 	StringBuffer buffer = new StringBuffer();
 	boolean parentIsLogical = parent != null && parent.isLogical();
+	boolean childIsLogical = jjtGetChild(0).isLogical();
 	if (language == LANGUAGE_VISIT){
 		buffer.append("not(");
 	}else if(language == LANGUAGE_PYTHON){
 		if (parentIsLogical) buffer.append("not(");
 		else buffer.append("float(not(");
+	}else if(language == LANGUAGE_NUM_EXPR){
+		if (childIsLogical) buffer.append("~(");
+		else buffer.append("(0.0==(");
 	}else if (language == LANGUAGE_ECLiPSe){
 		buffer.append("neg(");
 	}else{
@@ -148,7 +152,7 @@ public String infixString(int language) {
 	}
 	buffer.append(jjtGetChild(0).infixString(language));
 	buffer.append(")");
-	if (language == LANGUAGE_PYTHON && !parentIsLogical) buffer.append(")");
+	if ((language == LANGUAGE_PYTHON && !parentIsLogical) || (language == LANGUAGE_NUM_EXPR && !childIsLogical)) buffer.append(")");
 
 	return buffer.toString();
 }

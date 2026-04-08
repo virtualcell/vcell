@@ -32,6 +32,7 @@ public abstract class SimpleNode implements Node, java.io.Serializable {
   final static int LANGUAGE_UNITS = 6;
   final static int LANGUAGE_BNGL = 7;
   final static int LANGUAGE_PYTHON = 8;
+  final static int LANGUAGE_NUM_EXPR = 9;
 
   public SimpleNode(int i) {
     id = i;

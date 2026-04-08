@@ -1,6 +1,14 @@
-4980 / 5000 models pass!
+4977 / 5000 models pass!
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 65
+	Progress: 77
+	VCell Original Infix: acoth(min(cot( - id_0), floor((0.8708964264563003 * 0.29826500971825554 * 0.6457243719944876))))
+	VCell Flat Infix: acoth(min(cot( - id_0), 0.0))
+	Expected: -0.0
+	Python Infix: (math.atanh(1.0/(min((1.0/math.tan( - id_0)), 0.0))))
+	Python Exception: ZeroDivisionError: float division
+
+java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
+	Progress: 101
 	VCell Original Infix: floor((pow(asinh(0.10118387985713251),cos(id_0)) * !(cot(id_0)) * min(csch(0.9837650351250335), coth(id_6))))
 	VCell Flat Infix: floor(((0.1010120140811213 ^ cos(id_0)) * !(cot(id_0)) * min(0.8693360808777927, coth(id_6))))
 	Expected: 0.0
@@ -8,7 +16,7 @@ java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
 	Python Exception: ZeroDivisionError: float division
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 170
+	Progress: 246
 	VCell Original Infix:  - (min(cot(id_0), csch(0.36737356253208997)) * atan2((0.7233117778683602 >= 0.9759958353333693), (0.1299551891086368 * id_7 * 0.7165699878023953)) / abs(id_1))
 	VCell Flat Infix:  - (min(cot(id_0), 2.66174657516448) * atan2(0.0, (0.09312198827443384 * id_7)) / abs(id_1))
 	Expected: -0.0
@@ -16,7 +24,7 @@ java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
 	Python Exception: ZeroDivisionError: float division
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 482
+	Progress: 681
 	VCell Original Infix: sech( - (coth(0.028177547796530367) ^ cot(id_1)))
 	VCell Flat Infix: sech( - (35.498640665319236 ^ cot(id_1)))
 	Expected: 0.0
@@ -24,7 +32,7 @@ java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
 	Python Exception: OverflowError: math range error
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 824
+	Progress: 1164
 	VCell Original Infix: coth(((sinh(0.6449666197606081) ^ (id_4 * id_8 * id_9)) + cot((id_3 < 0.2261011754280382)) + sech(abs(0.8120086721536708))))
 	VCell Flat Infix: coth((0.7417315776928526 + (0.690621676135154 ^ (id_4 * id_8 * id_9)) + cot((id_3 < 0.2261011754280382))))
 	Expected: 1.0
@@ -32,7 +40,7 @@ java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
 	Python Exception: ZeroDivisionError: float division
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 902
+	Progress: 1266
 	VCell Original Infix: (((cosh(id_3) * log(0.5598410965557573) * asin(0.015550241603964676)) * sin(floor(id_0)) * cosh(max(id_1, 0.585221823072032))) >= cot(floor((id_9 * id_2 * 0.30343841532874716))))
 	VCell Flat Infix: ( - (0.00902109438055013 * sin(floor(id_0)) * cosh(max(id_1, 0.585221823072032)) * cosh(id_3)) >= cot(floor((0.30343841532874716 * id_9 * id_2))))
 	Expected: 0.0
@@ -40,7 +48,15 @@ java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
 	Python Exception: ZeroDivisionError: float division
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 1329
+	Progress: 1666
+	VCell Original Infix: (cot(!( - id_6)) || ((tan(id_8) * atan2(id_5, id_7) * atan2(id_5, id_2)) * (pow(0.9897201897706811,id_1) * acosh(id_0) * (id_1 * 0.01088401412622797 * 0.8882413207692971)) * acot((0.3322552640871813 + id_9 + id_2))))
+	VCell Flat Infix: (cot(!( - id_6)) || (0.009667631082752419 * tan(id_8) * atan2(id_5, id_7) * atan2(id_5, id_2) * (0.9897201897706811 ^ id_1) * acosh(id_0) * id_1 * acot((0.3322552640871813 + id_9 + id_2))))
+	Expected: 1.0
+	Python Infix: (float(bool((1.0/math.tan(float(not( - id_6)))) or (0.009667631082752419 * math.tan(id_8) * math.atan2(id_5, id_7) * math.atan2(id_5, id_2) * ((0.9897201897706811)**(id_1)) * math.acosh(id_0) * id_1 * (math.pi/2.0 - math.atan((0.3322552640871813 + id_9 + id_2)))))))
+	Python Exception: ZeroDivisionError: float division
+
+java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
+	Progress: 1848
 	VCell Original Infix: coth(floor(cot(abs(id_0))))
 	VCell Flat Infix: coth(floor(cot(abs(id_0))))
 	Expected: 1.0
@@ -48,15 +64,15 @@ java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
 	Python Exception: ZeroDivisionError: float division
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 1681
+	Progress: 2329
 	VCell Original Infix:  - factorial(( - id_2 / id_1 * ceil(id_5)))
 	VCell Flat Infix:  - factorial( - (ceil(id_5) * id_2 / id_1))
 	Expected: -1.0
-	Python Infix:  - math.factorial(int( - (math.ceil(id_5) * id_2 / id_1)))
+	Python Infix:  - math.factorial(round( - (math.ceil(id_5) * id_2 / id_1)))
 	Python Exception: ValueError: math domain error
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 1790
+	Progress: 2482
 	VCell Original Infix: csch(exp(csc((id_2 * id_2 * id_9))))
 	VCell Flat Infix: csch(exp(csc((id_2 * id_2 * id_9))))
 	Expected: 0.0
@@ -64,7 +80,7 @@ java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
 	Python Exception: OverflowError: math range error
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 1933
+	Progress: 2704
 	VCell Original Infix: atan((tan(ceil(0.0)) || (cot(id_0) + asinh(0.5597772404451554) + sec(id_4))))
 	VCell Flat Infix: atan((0.0 || (0.5340297056736936 + cot(id_0) + sec(id_4))))
 	Expected: 0.7853981633974483
@@ -72,15 +88,23 @@ java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
 	Python Exception: ZeroDivisionError: float division
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 2465
+	Progress: 3439
 	VCell Original Infix: cot(factorial( - (0.20783348997951046 && id_5)))
 	VCell Flat Infix: cot(factorial( - (0.20783348997951046 && id_5)))
 	Expected: 0.6420926159343306
-	Python Infix: (1.0/math.tan(math.factorial(int( - (float(bool(0.20783348997951046 and id_5)))))))
+	Python Infix: (1.0/math.tan(math.factorial(round( - (float(bool(0.20783348997951046 and id_5)))))))
 	Python Exception: ValueError: math domain error
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 2587
+	Progress: 3487
+	VCell Original Infix: (sqrt((atan2(0.7218065889622693, id_1) + asech(0.5381259927491784) + atanh(0.78855529690269))) >= asinh((atan2(id_0, id_9) <= cot(id_0))))
+	VCell Flat Infix: (sqrt((2.298583646936585 + atan2(0.7218065889622693, id_1))) >= asinh((atan2(id_0, id_9) <= cot(id_0))))
+	Expected: 1.0
+	Python Infix: (math.sqrt((2.298583646936585 + math.atan2(0.7218065889622693, id_1))) >= math.asinh((math.atan2(id_0, id_9) <= (1.0/math.tan(id_0)))))
+	Python Exception: ZeroDivisionError: float division
+
+java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
+	Progress: 3613
 	VCell Original Infix:  - cos((cos(id_1) ^ cot(id_0)))
 	VCell Flat Infix:  - cos((cos(id_1) ^ cot(id_0)))
 	Expected: -1.0
@@ -88,7 +112,15 @@ java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
 	Python Exception: ZeroDivisionError: float division
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 2626
+	Progress: 3627
+	VCell Original Infix: pow(sinh(exp(acot(id_5))),tan(min(cot(id_0), (id_3 ^ id_8))))
+	VCell Flat Infix: (sinh(exp(acot(id_5))) ^ tan(min(cot(id_0), (id_3 ^ id_8))))
+	Expected: 2.547860365917774
+	Python Infix: ((math.sinh(math.exp((math.pi/2.0 - math.atan(id_5)))))**(math.tan(min((1.0/math.tan(id_0)), ((id_3)**(id_8))))))
+	Python Exception: ZeroDivisionError: float division
+
+java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
+	Progress: 3663
 	VCell Original Infix: atan(abs(cot(floor(id_5))))
 	VCell Flat Infix: atan(abs(cot(floor(id_5))))
 	Expected: 1.5707963267948966
@@ -96,7 +128,7 @@ java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
 	Python Exception: ZeroDivisionError: float division
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 2743
+	Progress: 3822
 	VCell Original Infix: coth(floor(cot((id_0 * 0.10280284481700341 * 0.3190467590050531))))
 	VCell Flat Infix: coth(floor(cot((0.032798914455364356 * id_0))))
 	Expected: 1.0
@@ -104,7 +136,7 @@ java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
 	Python Exception: ZeroDivisionError: float division
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 2797
+	Progress: 3903
 	VCell Original Infix:  - (( - id_1 * acos(0.9408318720601397) * cot(id_0)) && asinh(min(id_6, 0.130136440506475)))
 	VCell Flat Infix:  - ( - (0.3457195131907874 * cot(id_0) * id_1) && asinh(min(id_6, 0.130136440506475)))
 	Expected: -1.0
@@ -112,15 +144,15 @@ java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
 	Python Exception: ZeroDivisionError: float division
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 2856
+	Progress: 3983
 	VCell Original Infix: coth(factorial(floor(log(id_4))))
 	VCell Flat Infix: coth(factorial(floor(log(id_4))))
 	Expected: 1.3130352854993315
-	Python Infix: (1.0/math.tanh(math.factorial(int(math.floor(math.log(id_4))))))
+	Python Infix: (1.0/math.tanh(math.factorial(round(math.floor(math.log(id_4))))))
 	Python Exception: ValueError: math domain error
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 3363
+	Progress: 4695
 	VCell Original Infix: (cot(!(sech(id_3))) ^ min( - atan2(0.7870190039110462, id_2), ((id_7 * id_0 * 0.10143937822636417) * min(id_4, id_2) * sech(0.5569515469432404))))
 	VCell Flat Infix: (cot(!(sech(id_3))) ^ min( - atan2(0.7870190039110462, id_2), (0.08751198540266505 * id_7 * id_0 * min(id_4, id_2))))
 	Expected: 0.0
@@ -128,7 +160,7 @@ java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
 	Python Exception: ZeroDivisionError: float division
 
 java.lang.RuntimeException: Mismatch between expressions and results:
-	Progress: 3431
+	Progress: 4786
 	VCell Original Infix: cot(exp(coth((0.01722292952879423 ^ 0.7576553654648215))))
 	VCell Flat Infix: cot(exp(coth((0.01722292952879423 ^ 0.7576553654648215))))
 	Expected: 1.7380578667392967
@@ -138,25 +170,17 @@ java.lang.RuntimeException: Mismatch between expressions and results:
 	Threshold: 1.7380962131423855E-6
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 3989
-	VCell Original Infix: cosh(min(cot((id_7 * id_0 * 0.9871116728260001)),  - !(id_6)))
-	VCell Flat Infix: cosh(min(cot((0.9871116728260001 * id_7 * id_0)),  - !(id_6)))
-	Expected: 1.0
-	Python Infix: math.cosh(min((1.0/math.tan((0.9871116728260001 * id_7 * id_0))),  - float(not(id_6))))
+	Progress: 4872
+	VCell Original Infix: (sec((asinh(0.0) && min(id_5, 0.648784608185188))) * (cot(floor(id_7)) <= (exp(id_7) *  - 0.012384014519015274 * sqrt(0.7079441990714145))) * ceil(acot((0.8546428622959772 + id_0 + id_6))))
+	VCell Flat Infix: ((cot(floor(id_7)) <=  - (0.010419837983700223 * exp(id_7))) * ceil(acot((0.8546428622959772 + id_0 + id_6))))
+	Expected: 0.0
+	Python Infix: ((math.ceil((math.pi/2.0 - math.atan((0.8546428622959772 + id_0 + id_6))))) if (((1.0/math.tan(math.floor(id_7))) <=  - (0.010419837983700223 * math.exp(id_7)))) else 0.0)
 	Python Exception: ZeroDivisionError: float division
 
 java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 4501
-	VCell Original Infix:  - acos(((0.01949787088472099 * id_1 * id_9) ^ cot(id_0)))
-	VCell Flat Infix:  - acos(((0.01949787088472099 * id_1 * id_9) ^ cot(id_0)))
-	Expected: -1.5707963267948966
-	Python Infix:  - math.acos((((0.01949787088472099 * id_1 * id_9))**((1.0/math.tan(id_0)))))
+	Progress: 4875
+	VCell Original Infix: acsch(max(cot((id_0 * id_3 * 0.59541956426409)), (atan2(0.681661337447432, id_6) ^ atan2(0.2719307064055214, id_8))))
+	VCell Flat Infix: acsch(max(cot((0.59541956426409 * id_0 * id_3)), (atan2(0.681661337447432, id_6) ^ atan2(0.2719307064055214, id_8))))
+	Expected: 0.0
+	Python Infix: (math.asinh(1.0/(max((1.0/math.tan((0.59541956426409 * id_0 * id_3))), ((math.atan2(0.681661337447432, id_6))**(math.atan2(0.2719307064055214, id_8)))))))
 	Python Exception: ZeroDivisionError: float division
-
-java.lang.RuntimeException: Unable to parse valid VCell Expression in Python:
-	Progress: 4977
-	VCell Original Infix: factorial(min(tanh((id_9 ^ id_1)), floor( - 0.5153523376029631)))
-	VCell Flat Infix: factorial(min(tanh((id_9 ^ id_1)), -1.0))
-	Expected: 1.0
-	Python Infix: math.factorial(int(min(math.tanh(((id_9)**(id_1))), -1.0)))
-	Python Exception: ValueError: math domain error

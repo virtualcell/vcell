@@ -146,7 +146,11 @@ public Node flatten(boolean substituteConstants) throws ExpressionException {
               if (value == Double.POSITIVE_INFINITY) return "float('inf')";
               if (value == Double.NEGATIVE_INFINITY) return "float('-inf')";
               return value.toString();
-          } else {
+          } else if (lang == LANGUAGE_NUM_EXPR) {
+			  if (value == Double.POSITIVE_INFINITY) return "inf";
+			  if (value == Double.NEGATIVE_INFINITY) return "-inf";
+			  return value.toString();
+		  } else {
 		      return value.toString();
 		  }
 	  }

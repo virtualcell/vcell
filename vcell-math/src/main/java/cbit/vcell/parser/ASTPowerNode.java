@@ -260,7 +260,7 @@ public String infixString(int lang){
 		buffer.append(" ^ ");
 		buffer.append(jjtGetChild(1).infixString(lang));
 		buffer.append(")");
-	} else if (lang == LANGUAGE_PYTHON) {
+	} else if (lang == LANGUAGE_PYTHON || lang == LANGUAGE_NUM_EXPR) {
 		buffer.append("((");
 		buffer.append(jjtGetChild(0).infixString(lang));
 		buffer.append(")**(");

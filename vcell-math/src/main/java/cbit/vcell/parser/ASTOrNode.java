@@ -180,6 +180,14 @@ public Node flatten(boolean substituteConstants) throws ExpressionException {
 			  buffer.append(jjtGetChild(i).infixString(lang));
 		  }
 		  buffer.append("))");
+	  }else if (lang == LANGUAGE_NUM_EXPR) {
+		  int numChildren = jjtGetNumChildren();
+		  for (int i=0;i<numChildren;i++){
+			  if (i>0) buffer.append(" | ");
+			  buffer.append("(0.0!=");
+			  buffer.append(jjtGetChild(i).infixString(lang));
+			  buffer.append(")");
+		  }
 	  }else{
 		  for (int i=0;i<jjtGetNumChildren();i++){
 			if (i>0) {

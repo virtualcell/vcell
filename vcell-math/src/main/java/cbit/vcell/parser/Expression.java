@@ -707,6 +707,10 @@ public int hashCode() {
    public String infix_Python() {
        return rootNode == null ?  null : rootNode.infixString(SimpleNode.LANGUAGE_PYTHON);
    }
+
+   public String infix_NumExpr() {
+	   return rootNode == null ?  null : rootNode.infixString(SimpleNode.LANGUAGE_NUM_EXPR);
+   }
 /**
  * This method was created by a SmartGuide.
  * @return cbit.vcell.model.Expression
