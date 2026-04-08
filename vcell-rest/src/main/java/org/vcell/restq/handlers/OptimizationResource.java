@@ -40,8 +40,8 @@ public class OptimizationResource {
     @Inject
     OptimizationMQ optimizationMQ;
 
-    // TODO: make configurable via application.properties
-    private static final String PAREST_DATA_DIR = "/simdata/parest_data";
+    @org.eclipse.microprofile.config.inject.ConfigProperty(name = "vcell.optimization.parest-data-dir", defaultValue = "/simdata/parest_data")
+    String parestDataDir;
 
     @Inject
     public OptimizationResource(OptimizationRestService optimizationRestService) {
@@ -69,14 +69,14 @@ public class OptimizationResource {
         try {
             User vcellUser = userRestService.getUserFromIdentity(securityIdentity);
             OptimizationJobStatus status = optimizationRestService.submitOptimization(
-                    optProblem, new File(PAREST_DATA_DIR), vcellUser);
+                    optProblem, new File(parestDataDir), vcellUser);
 
             optimizationMQ.sendSubmitRequest(new OptRequestMessage(
                     status.id().toString(),
                     "submit",
-                    new File(PAREST_DATA_DIR, "CopasiParest_" + status.id() + "_optProblem.json").getAbsolutePath(),
-                    new File(PAREST_DATA_DIR, "CopasiParest_" + status.id() + "_optRun.json").getAbsolutePath(),
-                    new File(PAREST_DATA_DIR, "CopasiParest_" + status.id() + "_optReport.txt").getAbsolutePath(),
+                    new File(parestDataDir, "CopasiParest_" + status.id() + "_optProblem.json").getAbsolutePath(),
+                    new File(parestDataDir, "CopasiParest_" + status.id() + "_optRun.json").getAbsolutePath(),
+                    new File(parestDataDir, "CopasiParest_" + status.id() + "_optReport.txt").getAbsolutePath(),
                     null
             ));
 
