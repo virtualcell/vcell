@@ -6,13 +6,14 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import org.eclipse.microprofile.openapi.annotations.Operation;
+import org.vcell.optimization.OptRequestMessage;
 import org.vcell.optimization.jtd.OptProblem;
 import org.vcell.restq.activemq.OptimizationMQ;
 import org.vcell.restq.errors.exceptions.DataAccessWebException;
 import org.vcell.restq.errors.exceptions.NotAuthenticatedWebException;
 import org.vcell.restq.errors.exceptions.NotFoundWebException;
 import org.vcell.restq.errors.exceptions.RuntimeWebException;
-import org.vcell.restq.models.OptJobStatus;
+import org.vcell.optimization.OptJobStatus;
 import org.vcell.restq.models.OptimizationJobStatus;
 import org.vcell.restq.services.OptimizationRestService;
 import org.vcell.restq.services.UserRestService;
@@ -70,7 +71,7 @@ public class OptimizationResource {
             OptimizationJobStatus status = optimizationRestService.submitOptimization(
                     optProblem, new File(PAREST_DATA_DIR), vcellUser);
 
-            optimizationMQ.sendSubmitRequest(new OptimizationMQ.OptRequestMessage(
+            optimizationMQ.sendSubmitRequest(new OptRequestMessage(
                     status.id().toString(),
                     "submit",
                     new File(PAREST_DATA_DIR, "CopasiParest_" + status.id() + "_optProblem.json").getAbsolutePath(),
@@ -120,7 +121,7 @@ public class OptimizationResource {
             }
 
             String htcJobId = optimizationRestService.getHtcJobId(jobKey);
-            optimizationMQ.sendStopRequest(new OptimizationMQ.OptRequestMessage(
+            optimizationMQ.sendStopRequest(new OptRequestMessage(
                     jobKey.toString(),
                     "stop",
                     null, null, null,

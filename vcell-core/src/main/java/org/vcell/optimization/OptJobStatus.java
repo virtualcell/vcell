@@ -1,4 +1,4 @@
-package org.vcell.restq.models;
+package org.vcell.optimization;
 
 public enum OptJobStatus {
     SUBMITTED,

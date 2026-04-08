@@ -8,7 +8,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.optimization.CopasiUtils;
+import org.vcell.optimization.OptJobStatus;
 import org.vcell.optimization.OptMessage;
+import org.vcell.optimization.OptRequestMessage;
+import org.vcell.optimization.OptStatusMessage;
 import org.vcell.optimization.jtd.OptProblem;
 import org.vcell.optimization.jtd.OptProgressReport;
 import org.vcell.optimization.jtd.Vcellopt;
@@ -296,12 +299,12 @@ public class OptimizationBatchServer {
 
             // Send QUEUED status back with htcJobId
             sendStatusMessage(session, producer, objectMapper,
-                    request.jobId, "QUEUED", null, htcJobID.toDatabase());
+                    request.jobId, OptJobStatus.QUEUED, null, htcJobID.toDatabase());
         } catch (Exception e) {
             lg.error("Failed to submit optimization job {}: {}", request.jobId, e.getMessage(), e);
             try {
                 sendStatusMessage(session, producer, objectMapper,
-                        request.jobId, "FAILED", e.getMessage(), null);
+                        request.jobId, OptJobStatus.FAILED, e.getMessage(), null);
             } catch (JMSException jmsEx) {
                 lg.error("Failed to send FAILED status for job {}: {}", request.jobId, jmsEx.getMessage(), jmsEx);
             }
@@ -332,7 +335,7 @@ public class OptimizationBatchServer {
     }
 
     private void sendStatusMessage(Session session, MessageProducer producer, ObjectMapper objectMapper,
-                                   String jobId, String status, String statusMessage, String htcJobId)
+                                   String jobId, OptJobStatus status, String statusMessage, String htcJobId)
             throws JMSException {
         try {
             OptStatusMessage statusMsg = new OptStatusMessage(jobId, status, statusMessage, htcJobId);
@@ -343,39 +346,6 @@ public class OptimizationBatchServer {
         } catch (Exception e) {
             lg.error("Failed to send status message for job {}: {}", jobId, e.getMessage(), e);
             throw new JMSException("Failed to serialize status message: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Message from vcell-rest requesting job submission or stop.
-     * Must match the JSON format produced by OptimizationMQ.OptRequestMessage in vcell-rest.
-     */
-    public static class OptRequestMessage {
-        public String jobId;
-        public String command;
-        public String optProblemFilePath;
-        public String optOutputFilePath;
-        public String optReportFilePath;
-        public String htcJobId;
-    }
-
-    /**
-     * Status message sent back to vcell-rest.
-     * Must match the JSON format expected by OptimizationMQ.OptStatusMessage in vcell-rest.
-     */
-    public static class OptStatusMessage {
-        public String jobId;
-        public String status;
-        public String statusMessage;
-        public String htcJobId;
-
-        public OptStatusMessage() {}
-
-        public OptStatusMessage(String jobId, String status, String statusMessage, String htcJobId) {
-            this.jobId = jobId;
-            this.status = status;
-            this.statusMessage = statusMessage;
-            this.htcJobId = htcJobId;
         }
     }
 

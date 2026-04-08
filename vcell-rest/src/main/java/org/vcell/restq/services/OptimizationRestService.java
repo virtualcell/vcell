@@ -10,7 +10,7 @@ import org.vcell.optimization.jtd.OptProblem;
 import org.vcell.optimization.jtd.OptProgressReport;
 import org.vcell.optimization.jtd.Vcellopt;
 import org.vcell.restq.db.AgroalConnectionFactory;
-import org.vcell.restq.models.OptJobStatus;
+import org.vcell.optimization.OptJobStatus;
 import org.vcell.restq.models.OptimizationJobStatus;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.document.KeyValue;

@@ -10,11 +10,10 @@ import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
-import org.vcell.restq.models.OptJobStatus;
+import org.vcell.optimization.OptRequestMessage;
+import org.vcell.optimization.OptStatusMessage;
 import org.vcell.restq.services.OptimizationRestService;
 import org.vcell.util.document.KeyValue;
-
-import java.sql.SQLException;
 
 /**
  * ActiveMQ messaging for optimization job dispatch and status updates.
@@ -41,10 +40,10 @@ public class OptimizationMQ {
      */
     public void sendSubmitRequest(OptRequestMessage request) {
         try {
-            lg.info("Sending optimization submit request for job {}", request.jobId());
+            lg.info("Sending optimization submit request for job {}", request.jobId);
             optRequestEmitter.send(mapper.writeValueAsString(request));
         } catch (Exception e) {
-            lg.error("Failed to send optimization submit request for job {}: {}", request.jobId(), e.getMessage(), e);
+            lg.error("Failed to send optimization submit request for job {}: {}", request.jobId, e.getMessage(), e);
         }
     }
 
@@ -53,10 +52,10 @@ public class OptimizationMQ {
      */
     public void sendStopRequest(OptRequestMessage request) {
         try {
-            lg.info("Sending optimization stop request for job {}", request.jobId());
+            lg.info("Sending optimization stop request for job {}", request.jobId);
             optRequestEmitter.send(mapper.writeValueAsString(request));
         } catch (Exception e) {
-            lg.error("Failed to send optimization stop request for job {}: {}", request.jobId(), e.getMessage(), e);
+            lg.error("Failed to send optimization stop request for job {}: {}", request.jobId, e.getMessage(), e);
         }
     }
 
@@ -67,15 +66,15 @@ public class OptimizationMQ {
     public Uni<Void> consumeOptStatus(Message<String> message) {
         try {
             OptStatusMessage statusMsg = mapper.readValue(message.getPayload(), OptStatusMessage.class);
-            lg.info("Received optimization status update: job={}, status={}", statusMsg.jobId(), statusMsg.status());
+            lg.info("Received optimization status update: job={}, status={}", statusMsg.jobId, statusMsg.status);
 
-            KeyValue jobKey = new KeyValue(statusMsg.jobId());
+            KeyValue jobKey = new KeyValue(statusMsg.jobId);
 
-            if (statusMsg.htcJobId() != null) {
-                optimizationRestService.updateHtcJobId(jobKey, statusMsg.htcJobId());
+            if (statusMsg.htcJobId != null) {
+                optimizationRestService.updateHtcJobId(jobKey, statusMsg.htcJobId);
             }
-            if (statusMsg.status() != null) {
-                optimizationRestService.updateOptJobStatus(jobKey, statusMsg.status(), statusMsg.statusMessage());
+            if (statusMsg.status != null) {
+                optimizationRestService.updateOptJobStatus(jobKey, statusMsg.status, statusMsg.statusMessage);
             }
 
             return Uni.createFrom().completionStage(message.ack());
@@ -84,26 +83,4 @@ public class OptimizationMQ {
             return Uni.createFrom().completionStage(message.nack(e));
         }
     }
-
-    /**
-     * Message sent from vcell-rest to vcell-submit to request job submission or stop.
-     */
-    public record OptRequestMessage(
-            String jobId,
-            String command,             // "submit" or "stop"
-            String optProblemFilePath,   // for submit
-            String optOutputFilePath,    // for submit
-            String optReportFilePath,    // for submit
-            String htcJobId             // for stop (SLURM job to cancel)
-    ) {}
-
-    /**
-     * Message sent from vcell-submit back to vcell-rest with status updates.
-     */
-    public record OptStatusMessage(
-            String jobId,
-            OptJobStatus status,
-            String statusMessage,
-            String htcJobId             // set when SLURM job is submitted
-    ) {}
 }
