@@ -341,6 +341,8 @@ public class VCellApiClient implements AutoCloseable {
 
 	public ExportResourceApi getExportApi(){return new ExportResourceApi(apiClient);}
 
+	public OptimizationResourceApi getOptimizationApi(){return new OptimizationResourceApi(apiClient);}
+
 	public String getVCellUserNameFromAuth0Mapping() throws ApiException {
 		try {
 			UsersResourceApi usersResourceApi = new UsersResourceApi(apiClient);

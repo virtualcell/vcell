@@ -1,14 +1,10 @@
 package copasi;
 
 import cbit.vcell.client.ClientRequestManager;
-import cbit.vcell.client.RequestManager;
-import cbit.vcell.client.VCellClient;
-import cbit.vcell.client.server.ClientServerInfo;
 import cbit.vcell.modelopt.ParameterEstimationTask;
 import cbit.vcell.opt.OptimizationException;
 import cbit.vcell.opt.OptimizationResultSet;
 import cbit.vcell.opt.OptimizationStatus;
-import cbit.vcell.resource.PropertyLoader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,6 +12,9 @@ import org.vcell.api.client.VCellApiClient;
 import org.vcell.optimization.CopasiOptSolverCallbacks;
 import org.vcell.optimization.CopasiUtils;
 import org.vcell.optimization.jtd.*;
+import org.vcell.restclient.api.OptimizationResourceApi;
+import org.vcell.restclient.model.OptJobStatus;
+import org.vcell.restclient.model.OptimizationJobStatus;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
 
@@ -30,184 +29,148 @@ public class CopasiOptimizationSolverRemote {
             ClientTaskStatusSupport clientTaskStatusSupport,
             ClientRequestManager requestManager) {
 
-        // return solveLocalPython(parameterEstimationTask);
-
         try {
-            // e.g. vcell.serverhost=vcellapi.cam.uchc.edu:443
-            VCellApiClient apiClient = requestManager.getClientServerManager().getVCellApiClient();
+            VCellApiClient vcellApiClient = requestManager.getClientServerManager().getVCellApiClient();
+            OptimizationResourceApi optApi = vcellApiClient.getOptimizationApi();
 
-            OptProblem optProblem = CopasiUtils.paramTaskToOptProblem(parameterEstimationTask);
+            // Convert parameter estimation task to OptProblem (vcell-core types)
+            OptProblem optProblemCore = CopasiUtils.paramTaskToOptProblem(parameterEstimationTask);
 
+            // Convert to generated client model type for the API call
             ObjectMapper objectMapper = new ObjectMapper();
-            String optProblemJson = objectMapper.writeValueAsString(optProblem);
+            String optProblemJson = objectMapper.writeValueAsString(optProblemCore);
+            org.vcell.restclient.model.OptProblem optProblem = objectMapper.readValue(
+                    optProblemJson, org.vcell.restclient.model.OptProblem.class);
 
             if (clientTaskStatusSupport != null) {
                 clientTaskStatusSupport.setMessage("Submitting opt problem...");
             }
-            //Submit but allow user to get out from restlet blocking call
-            final String[] optIdHolder = new String[]{null};
-            final Exception[] exceptHolder = new Exception[]{null};
-            Thread submitThread = new Thread(() -> {
-                try {
-                    optIdHolder[0] = apiClient.submitOptimization(optProblemJson);
-                    lg.info("submitted optimization jobID="+optIdHolder[0]);
-                    if (optSolverCallbacks.getStopRequested()) {
-                        apiClient.getOptRunJson(optIdHolder[0], optSolverCallbacks.getStopRequested());
-                        lg.info("user cancelled optimization jobID="+optIdHolder[0]);
-                    }
-                } catch (Exception e) {
-                    lg.error(e.getMessage(), e);
-                    exceptHolder[0] = e;
-                }
-            });
-            submitThread.setDaemon(true);
-            submitThread.start();
 
-            //
-            // wait here until either failure to submit or submitted and retrieved Job ID
-            //
-            while (optIdHolder[0] == null && exceptHolder[0] == null && !optSolverCallbacks.getStopRequested()) {
-                try {
-                    Thread.sleep(200);
-                }catch (InterruptedException e){}
-            }
+            // Submit optimization job
+            OptimizationJobStatus submitResult = optApi.submitOptimization(optProblem);
+            Long jobId = Long.parseLong(submitResult.getId());
+            lg.info("submitted optimization jobID={}", jobId);
 
-            //
-            // failed to submit, throw the exception now
-            //
-            if (exceptHolder[0] != null) {
-                throw exceptHolder[0];
-            }
-
-
-            //
-            // loop to query status and collect results
-            //
+            // Poll for status and results
             final long TIMEOUT_MS = 1000 * 200; // 200 second timeout
             long startTime = System.currentTimeMillis();
             if (clientTaskStatusSupport != null) {
                 clientTaskStatusSupport.setMessage("Waiting for progress...");
             }
+
             Vcellopt optRun = null;
             OptProgressReport latestProgressReport = null;
+
             while ((System.currentTimeMillis() - startTime) < TIMEOUT_MS) {
-                //
-                // check for user stop request
-                //
-                boolean bStopRequested = optSolverCallbacks.getStopRequested();
-                if (bStopRequested) {
-                    lg.info("user cancelled optimization jobID="+optIdHolder[0]);
+                // Check for user stop request
+                if (optSolverCallbacks.getStopRequested()) {
+                    lg.info("user cancelled optimization jobID={}", jobId);
                     try {
-                        apiClient.getOptRunJson(optIdHolder[0], bStopRequested);
-                        lg.info("requested job to be stopped jobID="+optIdHolder[0]);
-                    }catch (Exception e){
+                        optApi.stopOptimization(jobId);
+                        lg.info("requested job to be stopped jobID={}", jobId);
+                    } catch (Exception e) {
                         lg.error(e.getMessage(), e);
-                    }finally{
-                        if (latestProgressReport!=null){
+                    } finally {
+                        if (latestProgressReport != null) {
                             if (clientTaskStatusSupport != null) {
                                 clientTaskStatusSupport.setProgress(100);
                             }
-                            OptimizationResultSet copasiOptimizationResultSet = CopasiUtils.getOptimizationResultSet(parameterEstimationTask, latestProgressReport);
-                            return copasiOptimizationResultSet;
+                            return CopasiUtils.getOptimizationResultSet(parameterEstimationTask, latestProgressReport);
                         }
                     }
                     throw UserCancelException.CANCEL_GENERIC;
                 }
 
-                String optRunServerMessage = apiClient.getOptRunJson(optIdHolder[0], false);
+                // Poll status
+                OptimizationJobStatus status = optApi.getOptimizationStatus(jobId);
                 if (optSolverCallbacks.getStopRequested()) {
                     throw UserCancelException.CANCEL_GENERIC;
                 }
-                if (optRunServerMessage.startsWith(VcelloptStatus.QUEUED.name() + ":")) {
-                    if (clientTaskStatusSupport != null) {
-                        clientTaskStatusSupport.setMessage("Queued...");
-                    }
 
-                } else if (optRunServerMessage.startsWith(VcelloptStatus.FAILED.name()+":") || optRunServerMessage.toLowerCase().startsWith("exception:")){
-                    if (clientTaskStatusSupport != null) {
-                        clientTaskStatusSupport.setMessage(optRunServerMessage);
-                    }
-
-                } else if (optRunServerMessage.startsWith(VcelloptStatus.RUNNING.name() + ":")) {
-                    if (clientTaskStatusSupport != null) {
-                        clientTaskStatusSupport.setMessage("Running (waiting for progress) ...");
-                    }
-
-                } else {
-                    // consider that optRunServerMessage is either a progress report (OptProgressReport) or a final solution (Vcellopt)
-                    Object optObject = null;
-                    try {
-                        optObject = objectMapper.readValue(optRunServerMessage, Vcellopt.class);
-                    }catch (Exception e){
-                        optObject = objectMapper.readValue(optRunServerMessage, OptProgressReport.class);
-                    }
-
-                    if (optObject instanceof Vcellopt) {
-                        //
-                        // have final solution with progress report and analytics
-                        //
-                        optRun = (Vcellopt) optObject;
-                        final OptProgressReport optProgressReport = optRun.getOptResultSet().getOptProgressReport();
-                        VcelloptStatus status = optRun.getStatus();
-                        if (optProgressReport != null){
-                            SwingUtilities.invokeLater(() -> optSolverCallbacks.setProgressReport(optProgressReport));
+                switch (status.getStatus()) {
+                    case SUBMITTED:
+                    case QUEUED:
+                        if (clientTaskStatusSupport != null) {
+                            clientTaskStatusSupport.setMessage("Queued...");
                         }
-                        if (status == VcelloptStatus.COMPLETE) {
-                            lg.info("job " + optIdHolder[0] + ": status " + status + " " + optRun.getOptResultSet().toString());
+                        break;
+
+                    case RUNNING:
+                        if (status.getProgressReport() != null) {
+                            // Convert generated model progress report to vcell-core type
+                            String progressJson = objectMapper.writeValueAsString(status.getProgressReport());
+                            latestProgressReport = objectMapper.readValue(progressJson, OptProgressReport.class);
+                            final OptProgressReport progressReport = latestProgressReport;
+                            SwingUtilities.invokeLater(() -> {
+                                try {
+                                    optSolverCallbacks.setProgressReport(progressReport);
+                                } catch (Exception e) {
+                                    lg.error("error updating progress", e);
+                                }
+                                if (clientTaskStatusSupport != null) {
+                                    clientTaskStatusSupport.setMessage("Running ...");
+                                }
+                            });
+                        } else {
+                            if (clientTaskStatusSupport != null) {
+                                clientTaskStatusSupport.setMessage("Running (waiting for progress) ...");
+                            }
+                        }
+                        break;
+
+                    case COMPLETE:
+                        if (status.getResults() != null) {
+                            String resultsJson = objectMapper.writeValueAsString(status.getResults());
+                            optRun = objectMapper.readValue(resultsJson, Vcellopt.class);
+                            // Update UI with final progress if available
+                            if (optRun.getOptResultSet() != null && optRun.getOptResultSet().getOptProgressReport() != null) {
+                                final OptProgressReport finalProgress = optRun.getOptResultSet().getOptProgressReport();
+                                SwingUtilities.invokeLater(() -> optSolverCallbacks.setProgressReport(finalProgress));
+                            }
+                            lg.info("job {}: COMPLETE {}", jobId, optRun.getOptResultSet());
                             if (clientTaskStatusSupport != null) {
                                 clientTaskStatusSupport.setProgress(100);
                             }
-                            break;
                         }
-                        if (status == VcelloptStatus.FAILED) {
-                            String msg = "optimization failed, message=" + optRun.getStatusMessage();
-                            lg.error(msg);
-                            throw new RuntimeException(msg);
-                        }
-                        lg.info("job " + optIdHolder[0] + ": status " + status);
-                    }else if (optObject instanceof OptProgressReport){
-                        //
-                        // have intermediate progress report
-                        //
-                        latestProgressReport = (OptProgressReport) optObject;
-                        final OptProgressReport progressReport = latestProgressReport;
-                        SwingUtilities.invokeLater(() -> {
-                            try {
-                                optSolverCallbacks.setProgressReport(progressReport);
-                            } catch (Exception e) {
-                                lg.error(optRunServerMessage, e);
-                            }
+                        break;
+
+                    case FAILED:
+                        String failMsg = "optimization failed, message=" + status.getStatusMessage();
+                        lg.error(failMsg);
+                        throw new RuntimeException(failMsg);
+
+                    case STOPPED:
+                        if (latestProgressReport != null) {
                             if (clientTaskStatusSupport != null) {
-                                int numFunctionEvaluations = 0;
-                                if (progressReport.getProgressItems()!=null && progressReport.getProgressItems().size()>0){
-                                    OptProgressItem lastItem = progressReport.getProgressItems().get(progressReport.getProgressItems().size()-1);
-                                    numFunctionEvaluations = lastItem.getNumFunctionEvaluations();
-                                }
-                                clientTaskStatusSupport.setMessage("Running ...");
+                                clientTaskStatusSupport.setProgress(100);
                             }
-                        });
-                    }
+                            return CopasiUtils.getOptimizationResultSet(parameterEstimationTask, latestProgressReport);
+                        }
+                        throw UserCancelException.CANCEL_GENERIC;
                 }
+
+                if (optRun != null) {
+                    break; // COMPLETE
+                }
+
                 try {
                     Thread.sleep(2000);
-                }catch (InterruptedException e){}
+                } catch (InterruptedException e) { /* ignore */ }
             }
-            if((System.currentTimeMillis()-startTime) >= TIMEOUT_MS) {
+
+            if ((System.currentTimeMillis() - startTime) >= TIMEOUT_MS) {
                 lg.warn("optimization timed out.");
                 throw new RuntimeException("optimization timed out.");
             }
+
             OptResultSet optResultSet = optRun.getOptResultSet();
-            if(optResultSet == null) {
-                String msg = "optResultSet is null, status is " + optRun.getStatusMessage();
-                lg.error(msg);
-                throw new RuntimeException(msg);
+            if (optResultSet == null) {
+                throw new RuntimeException("optResultSet is null, status is " + optRun.getStatusMessage());
             }
-            if(optResultSet != null && optResultSet.getOptParameterValues() == null) {
-                String msg = "getOptParameterValues is null, status is " + optRun.getStatusMessage();
-                lg.error(msg);
-                throw new RuntimeException(msg);
+            if (optResultSet.getOptParameterValues() == null) {
+                throw new RuntimeException("getOptParameterValues is null, status is " + optRun.getStatusMessage());
             }
-            if(clientTaskStatusSupport != null) {
+            if (clientTaskStatusSupport != null) {
                 clientTaskStatusSupport.setMessage("Done, getting results...");
             }
 
@@ -216,12 +179,9 @@ public class CopasiOptimizationSolverRemote {
                     optRun.getOptResultSet(),
                     new OptimizationStatus(OptimizationStatus.NORMAL_TERMINATION, optRun.getStatusMessage()));
             lg.info("done with optimization");
-            if (lg.isTraceEnabled()) {
-                lg.trace("-----------SOLUTION FROM VCellAPI---------------\n" + optResultSet.toString());
-            }
-
             return copasiOptimizationResultSet;
-        }catch(UserCancelException e) {
+
+        } catch (UserCancelException e) {
             throw e;
         } catch (Exception e) {
             lg.error(e.getMessage(), e);
