@@ -74,7 +74,7 @@ Client displays progress or results
 
 **ActiveMQ for job dispatch (fire-and-forget).** vcell-rest sends a message to vcell-submit to trigger SLURM submission, and vcell-submit sends a status message back. This replaces the persistent TCP socket with a reliable message broker that already exists in the deployment (`activemqint`). The messages are small (job ID + file paths), and the pattern follows the existing `ExportRequestListenerMQ` in vcell-rest.
 
-**UUID job IDs.** Replace the random 0–999,999 integer with UUIDs. No collision risk, no sequential enumeration.
+**Database-sequence job IDs.** Replace the random 0–999,999 integer with `bigint` keys from the shared `newSeq` database sequence, consistent with every other VCell table (`vc_biomodel`, `vc_simulation`, etc.). Uses the existing `KeyValue` type and `KeyFactory.getNewKey()` infrastructure.
 
 **Progress reporting via filesystem polling.** The Python solver already writes a TSV report file incrementally as COPASI iterates. vcell-rest reads this file directly from NFS using `CopasiUtils.readProgressReportFromCSV()` (in `vcell-core`, already a dependency). This eliminates the batch server as a middleman for progress data. Each row contains: function evaluation count, best objective value, and best parameter vector.
 
@@ -84,7 +84,7 @@ Client displays progress or results
 
 ```sql
 CREATE TABLE vc_optjob (
-    id              varchar(64)   PRIMARY KEY,
+    id              bigint        PRIMARY KEY,
     ownerRef        bigint        REFERENCES vc_userinfo(id),
     status          varchar(32)   NOT NULL,
     optProblemFile  varchar(512)  NOT NULL,
@@ -99,7 +99,7 @@ CREATE TABLE vc_optjob (
 
 | Column | Purpose |
 |--------|---------|
-| `id` | UUID job identifier |
+| `id` | Database sequence key (bigint, from `newSeq`) |
 | `ownerRef` | User who submitted (for access control) |
 | `status` | SUBMITTED, QUEUED, RUNNING, COMPLETE, FAILED, STOPPED |
 | `optProblemFile` | NFS path to input OptProblem JSON |
@@ -139,8 +139,8 @@ POST   /api/v1/optimization/{id}/stop  Stop a running job
 
 ```java
 public record OptimizationJobStatus(
-    String id,
-    String status,
+    KeyValue id,
+    OptJobStatus status,
     String statusMessage,
     OptProgressReport progressReport,
     Vcellopt results

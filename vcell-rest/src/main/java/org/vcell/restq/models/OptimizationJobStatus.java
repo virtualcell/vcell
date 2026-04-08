@@ -2,9 +2,10 @@ package org.vcell.restq.models;
 
 import org.vcell.optimization.jtd.OptProgressReport;
 import org.vcell.optimization.jtd.Vcellopt;
+import org.vcell.util.document.KeyValue;
 
 public record OptimizationJobStatus(
-    String id,
+    KeyValue id,
     OptJobStatus status,
     String statusMessage,
     String htcJobId,

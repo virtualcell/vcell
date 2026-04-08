@@ -16,6 +16,7 @@ import org.vcell.restq.models.OptimizationJobStatus;
 import org.vcell.restq.services.OptimizationRestService;
 import org.vcell.restq.services.UserRestService;
 import org.vcell.util.DataAccessException;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.io.File;
@@ -65,11 +66,11 @@ public class OptimizationResource {
     @Path("{optId}")
     @RolesAllowed("user")
     @Operation(operationId = "getOptimizationStatus", summary = "Get status, progress, or results of an optimization job")
-    public OptimizationJobStatus getStatus(@PathParam("optId") String optId)
+    public OptimizationJobStatus getStatus(@PathParam("optId") Long optId)
             throws NotAuthenticatedWebException, NotFoundWebException, DataAccessWebException {
         try {
             User vcellUser = userRestService.getUserFromIdentity(securityIdentity);
-            return optimizationRestService.getOptimizationStatus(optId, vcellUser);
+            return optimizationRestService.getOptimizationStatus(new KeyValue(optId.toString()), vcellUser);
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
@@ -83,18 +84,19 @@ public class OptimizationResource {
     @Path("{optId}/stop")
     @RolesAllowed("user")
     @Operation(operationId = "stopOptimization", summary = "Stop a running optimization job")
-    public OptimizationJobStatus stop(@PathParam("optId") String optId)
+    public OptimizationJobStatus stop(@PathParam("optId") Long optId)
             throws NotAuthenticatedWebException, NotFoundWebException, DataAccessWebException {
         try {
             User vcellUser = userRestService.getUserFromIdentity(securityIdentity);
+            KeyValue jobKey = new KeyValue(optId.toString());
             // Verify ownership by fetching status (throws if not authorized)
-            OptimizationJobStatus currentStatus = optimizationRestService.getOptimizationStatus(optId, vcellUser);
+            OptimizationJobStatus currentStatus = optimizationRestService.getOptimizationStatus(jobKey, vcellUser);
             if (currentStatus.status() != OptJobStatus.RUNNING && currentStatus.status() != OptJobStatus.QUEUED) {
                 throw new DataAccessWebException("Cannot stop optimization job in state: " + currentStatus.status());
             }
             // TODO: send ActiveMQ stop message to vcell-submit with htcJobId (commit 3)
-            optimizationRestService.updateOptJobStatus(optId, OptJobStatus.STOPPED, "Stopped by user");
-            return optimizationRestService.getOptimizationStatus(optId, vcellUser);
+            optimizationRestService.updateOptJobStatus(jobKey, OptJobStatus.STOPPED, "Stopped by user");
+            return optimizationRestService.getOptimizationStatus(jobKey, vcellUser);
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
