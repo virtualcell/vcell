@@ -14,6 +14,9 @@ import org.vcell.optimization.jtd.OptProgressReport;
 import org.vcell.optimization.jtd.Vcellopt;
 import org.vcell.util.exe.ExecutableException;
 
+import javax.jms.*;
+import org.apache.activemq.ActiveMQConnectionFactory;
+
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -212,6 +215,168 @@ public class OptimizationBatchServer {
         });
         optThread.setDaemon(true);
         optThread.start();
+    }
+
+    /**
+     * Initialize a JMS queue listener on "opt-request" for cross-protocol messaging with vcell-rest (AMQP 1.0).
+     * Receives submit/stop commands as JSON text messages, dispatches to SLURM, and sends status updates
+     * back on "opt-status".
+     */
+    public void initOptimizationQueue(String jmsHost, int jmsPort) {
+        Thread optQueueThread = new Thread(() -> {
+            ObjectMapper objectMapper = new ObjectMapper();
+            try {
+                ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory(
+                        "tcp://" + jmsHost + ":" + jmsPort);
+                connectionFactory.setTrustAllPackages(true);
+                Connection connection = connectionFactory.createConnection();
+                connection.start();
+
+                Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+                Destination requestQueue = session.createQueue("opt-request");
+                Destination statusQueue = session.createQueue("opt-status");
+                MessageConsumer consumer = session.createConsumer(requestQueue);
+                MessageProducer producer = session.createProducer(statusQueue);
+
+                lg.info("Optimization JMS queue listener started on opt-request");
+
+                while (true) {
+                    Message message = consumer.receive(2000); // 2 second poll
+                    if (message == null) continue;
+
+                    if (message instanceof TextMessage textMessage) {
+                        try {
+                            String json = textMessage.getText();
+                            OptRequestMessage request = objectMapper.readValue(json, OptRequestMessage.class);
+                            lg.info("Received optimization request: command={}, jobId={}", request.command, request.jobId);
+
+                            if ("submit".equals(request.command)) {
+                                handleSubmitRequest(request, session, producer, objectMapper);
+                            } else if ("stop".equals(request.command)) {
+                                handleStopRequest(request);
+                            } else {
+                                lg.warn("Unknown optimization command: {}", request.command);
+                            }
+                        } catch (Exception e) {
+                            lg.error("Error processing optimization request: {}", e.getMessage(), e);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                lg.error("Optimization JMS queue listener failed: {}", e.getMessage(), e);
+            }
+        }, "optQueueListener");
+        optQueueThread.setDaemon(true);
+        optQueueThread.start();
+    }
+
+    private void handleSubmitRequest(OptRequestMessage request, Session session,
+                                     MessageProducer producer, ObjectMapper objectMapper) {
+        try {
+            // The OptProblem file is already written by vcell-rest — read it
+            File optProblemFile = new File(request.optProblemFilePath);
+            OptProblem optProblem = objectMapper.readValue(optProblemFile, OptProblem.class);
+
+            HtcProxy htcProxyClone = getHtcProxy().cloneThreadsafe();
+            File htcLogDirExternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal));
+            File htcLogDirInternal = new File(PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirInternal));
+            String slurmOptJobName = "CopasiParest_" + request.jobId;
+            String optSubFileName = slurmOptJobName + ".sub";
+            File sub_file_external = new File(htcLogDirExternal, optSubFileName);
+            File sub_file_internal = new File(htcLogDirInternal, optSubFileName);
+
+            File optOutputFile = new File(request.optOutputFilePath);
+            File optReportFile = new File(request.optReportFilePath);
+
+            HtcJobID htcJobID = htcProxyClone.submitOptimizationJob(
+                    slurmOptJobName, sub_file_internal, sub_file_external,
+                    optProblemFile, optOutputFile, optReportFile);
+
+            lg.info("Submitted SLURM job {} for optimization jobId={}", htcJobID, request.jobId);
+
+            // Send QUEUED status back with htcJobId
+            sendStatusMessage(session, producer, objectMapper,
+                    request.jobId, "QUEUED", null, htcJobID.toDatabase());
+        } catch (Exception e) {
+            lg.error("Failed to submit optimization job {}: {}", request.jobId, e.getMessage(), e);
+            try {
+                sendStatusMessage(session, producer, objectMapper,
+                        request.jobId, "FAILED", e.getMessage(), null);
+            } catch (JMSException jmsEx) {
+                lg.error("Failed to send FAILED status for job {}: {}", request.jobId, jmsEx.getMessage(), jmsEx);
+            }
+        }
+    }
+
+    private void handleStopRequest(OptRequestMessage request) {
+        if (request.htcJobId == null) {
+            lg.warn("Cannot stop optimization job {} — no htcJobId", request.jobId);
+            return;
+        }
+        try {
+            HtcProxy htcProxyClone = getHtcProxy().cloneThreadsafe();
+            // htcJobId is in toDatabase() format: "SLURM:12345" or "SLURM:12345.server"
+            String htcJobIdStr = request.htcJobId;
+            HtcJobID htcJobID;
+            if (htcJobIdStr.startsWith("SLURM:")) {
+                htcJobID = new HtcJobID(htcJobIdStr.substring("SLURM:".length()), HtcJobID.BatchSystemType.SLURM);
+            } else {
+                htcJobID = new HtcJobID(htcJobIdStr, HtcJobID.BatchSystemType.SLURM);
+            }
+            String jobName = "CopasiParest_" + request.jobId;
+            htcProxyClone.killJobSafe(new HtcProxy.HtcJobInfo(htcJobID, jobName));
+            lg.info("Stopped SLURM job {} for optimization jobId={}", request.htcJobId, request.jobId);
+        } catch (Exception e) {
+            lg.error("Failed to stop optimization job {}: {}", request.jobId, e.getMessage(), e);
+        }
+    }
+
+    private void sendStatusMessage(Session session, MessageProducer producer, ObjectMapper objectMapper,
+                                   String jobId, String status, String statusMessage, String htcJobId)
+            throws JMSException {
+        try {
+            OptStatusMessage statusMsg = new OptStatusMessage(jobId, status, statusMessage, htcJobId);
+            String json = objectMapper.writeValueAsString(statusMsg);
+            TextMessage textMessage = session.createTextMessage(json);
+            producer.send(textMessage);
+            lg.info("Sent optimization status: jobId={}, status={}", jobId, status);
+        } catch (Exception e) {
+            lg.error("Failed to send status message for job {}: {}", jobId, e.getMessage(), e);
+            throw new JMSException("Failed to serialize status message: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Message from vcell-rest requesting job submission or stop.
+     * Must match the JSON format produced by OptimizationMQ.OptRequestMessage in vcell-rest.
+     */
+    public static class OptRequestMessage {
+        public String jobId;
+        public String command;
+        public String optProblemFilePath;
+        public String optOutputFilePath;
+        public String optReportFilePath;
+        public String htcJobId;
+    }
+
+    /**
+     * Status message sent back to vcell-rest.
+     * Must match the JSON format expected by OptimizationMQ.OptStatusMessage in vcell-rest.
+     */
+    public static class OptStatusMessage {
+        public String jobId;
+        public String status;
+        public String statusMessage;
+        public String htcJobId;
+
+        public OptStatusMessage() {}
+
+        public OptStatusMessage(String jobId, String status, String statusMessage, String htcJobId) {
+            this.jobId = jobId;
+            this.status = status;
+            this.statusMessage = statusMessage;
+            this.htcJobId = htcJobId;
+        }
     }
 
     private Vcellopt getOptResults(String optID) throws IOException {
