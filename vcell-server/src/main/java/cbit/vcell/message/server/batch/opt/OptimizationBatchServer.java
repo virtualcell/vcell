@@ -273,11 +273,31 @@ public class OptimizationBatchServer {
         optQueueThread.start();
     }
 
+    /**
+     * Validate that a file path is under the expected parest_data directory to prevent path traversal.
+     */
+    private static File validateParestPath(String filePath) throws IOException {
+        File file = new File(filePath).getCanonicalFile();
+        String parestDir = new File(PropertyLoader.getRequiredProperty(
+                PropertyLoader.primarySimDataDirInternalProperty), "parest_data").getCanonicalPath();
+        if (!file.getPath().startsWith(parestDir)) {
+            throw new IOException("Invalid optimization file path (outside parest_data): " + filePath);
+        }
+        return file;
+    }
+
     private void handleSubmitRequest(OptRequestMessage request, Session session,
                                      MessageProducer producer, ObjectMapper objectMapper) {
         try {
+            // Validate jobId is numeric (database key) to prevent injection in file names
+            Long.parseLong(request.jobId);
+
+            // Validate paths are under parest_data directory
+            File optProblemFile = validateParestPath(request.optProblemFilePath);
+            File optOutputFile = validateParestPath(request.optOutputFilePath);
+            File optReportFile = validateParestPath(request.optReportFilePath);
+
             // The OptProblem file is already written by vcell-rest — read it
-            File optProblemFile = new File(request.optProblemFilePath);
             OptProblem optProblem = objectMapper.readValue(optProblemFile, OptProblem.class);
 
             HtcProxy htcProxyClone = getHtcProxy().cloneThreadsafe();
@@ -287,9 +307,6 @@ public class OptimizationBatchServer {
             String optSubFileName = slurmOptJobName + ".sub";
             File sub_file_external = new File(htcLogDirExternal, optSubFileName);
             File sub_file_internal = new File(htcLogDirInternal, optSubFileName);
-
-            File optOutputFile = new File(request.optOutputFilePath);
-            File optReportFile = new File(request.optReportFilePath);
 
             HtcJobID htcJobID = htcProxyClone.submitOptimizationJob(
                     slurmOptJobName, sub_file_internal, sub_file_external,
