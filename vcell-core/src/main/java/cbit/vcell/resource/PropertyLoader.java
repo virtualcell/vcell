@@ -224,6 +224,8 @@ public class PropertyLoader {
 	public static final String jmsSimHostExternal			= record("vcell.jms.sim.host.external",ValueType.GEN);
 	public static final String jmsSimPortExternal			= record("vcell.jms.sim.port.external",ValueType.GEN);
 	public static final String jmsSimRestPortExternal		= record("vcell.jms.sim.restport.external",ValueType.GEN);
+	public static final String jmsArtemisHostInternal		= record("vcell.jms.artemis.host.internal",ValueType.GEN);
+	public static final String jmsArtemisPortInternal		= record("vcell.jms.artemis.port.internal",ValueType.GEN);
 	public static final String jmsUser						= record("vcell.jms.user",ValueType.GEN);
 	public static final String jmsPasswordValue				= record("vcell.jms.password",ValueType.GEN);
 	public static final String jmsPasswordFile				= record("vcell.jms.pswdfile",ValueType.GEN);

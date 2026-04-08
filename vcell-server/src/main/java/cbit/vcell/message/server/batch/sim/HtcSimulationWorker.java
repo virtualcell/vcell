@@ -112,10 +112,10 @@ public void init() {
 	initQueueConsumer();
 	optimizationBatchServer.initOptimizationSocket();
 
-	// Start JMS queue listener for optimization requests from vcell-rest (AMQP cross-protocol)
-	String jmshost_int = PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntHostInternal);
-	int jmsport_int = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsIntPortInternal));
-	optimizationBatchServer.initOptimizationQueue(jmshost_int, jmsport_int);
+	// Start JMS queue listener for optimization requests from vcell-rest (via Artemis broker)
+	String artemisHost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsArtemisHostInternal);
+	int artemisPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsArtemisPortInternal));
+	optimizationBatchServer.initOptimizationQueue(artemisHost, artemisPort);
 }
 
 private static class PostProcessingChores {
