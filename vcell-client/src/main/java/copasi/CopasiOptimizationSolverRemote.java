@@ -18,21 +18,49 @@ import org.vcell.restclient.model.OptimizationJobStatus;
 import org.vcell.util.ClientTaskStatusSupport;
 import org.vcell.util.UserCancelException;
 
-import javax.swing.*;
+import java.util.function.Consumer;
 
 public class CopasiOptimizationSolverRemote {
     private final static Logger lg = LogManager.getLogger(CopasiOptimizationSolverRemote.class);
 
+    /**
+     * Entry point for the desktop client GUI. Gets the OptimizationResourceApi from the request manager
+     * and delegates to solveRemoteApi(OptimizationResourceApi, ...) with Swing-based progress updates.
+     */
     public static OptimizationResultSet solveRemoteApi(
             ParameterEstimationTask parameterEstimationTask,
             CopasiOptSolverCallbacks optSolverCallbacks,
             ClientTaskStatusSupport clientTaskStatusSupport,
             ClientRequestManager requestManager) {
 
-        try {
-            VCellApiClient vcellApiClient = requestManager.getClientServerManager().getVCellApiClient();
-            OptimizationResourceApi optApi = vcellApiClient.getOptimizationApi();
+        VCellApiClient vcellApiClient = requestManager.getClientServerManager().getVCellApiClient();
+        OptimizationResourceApi optApi = vcellApiClient.getOptimizationApi();
 
+        // Use SwingUtilities.invokeLater for progress updates in the GUI
+        Consumer<Runnable> progressDispatcher = javax.swing.SwingUtilities::invokeLater;
+
+        return solveRemoteApi(parameterEstimationTask, optSolverCallbacks, clientTaskStatusSupport,
+                optApi, progressDispatcher);
+    }
+
+    /**
+     * Core optimization solver logic. Testable without Swing — accepts an OptimizationResourceApi
+     * directly and a pluggable progress dispatcher.
+     *
+     * @param parameterEstimationTask the parameter estimation task to solve
+     * @param optSolverCallbacks callbacks for progress reports and stop requests
+     * @param clientTaskStatusSupport status message and progress bar updates (nullable)
+     * @param optApi the generated REST client API for optimization endpoints
+     * @param progressDispatcher how to dispatch progress updates (SwingUtilities::invokeLater in GUI, Runnable::run in tests)
+     */
+    public static OptimizationResultSet solveRemoteApi(
+            ParameterEstimationTask parameterEstimationTask,
+            CopasiOptSolverCallbacks optSolverCallbacks,
+            ClientTaskStatusSupport clientTaskStatusSupport,
+            OptimizationResourceApi optApi,
+            Consumer<Runnable> progressDispatcher) {
+
+        try {
             // Convert parameter estimation task to OptProblem (vcell-core types)
             OptProblem optProblemCore = CopasiUtils.paramTaskToOptProblem(parameterEstimationTask);
 
@@ -97,11 +125,10 @@ public class CopasiOptimizationSolverRemote {
 
                     case RUNNING:
                         if (status.getProgressReport() != null) {
-                            // Convert generated model progress report to vcell-core type
                             String progressJson = objectMapper.writeValueAsString(status.getProgressReport());
                             latestProgressReport = objectMapper.readValue(progressJson, OptProgressReport.class);
                             final OptProgressReport progressReport = latestProgressReport;
-                            SwingUtilities.invokeLater(() -> {
+                            progressDispatcher.accept(() -> {
                                 try {
                                     optSolverCallbacks.setProgressReport(progressReport);
                                 } catch (Exception e) {
@@ -122,10 +149,9 @@ public class CopasiOptimizationSolverRemote {
                         if (status.getResults() != null) {
                             String resultsJson = objectMapper.writeValueAsString(status.getResults());
                             optRun = objectMapper.readValue(resultsJson, Vcellopt.class);
-                            // Update UI with final progress if available
                             if (optRun.getOptResultSet() != null && optRun.getOptResultSet().getOptProgressReport() != null) {
                                 final OptProgressReport finalProgress = optRun.getOptResultSet().getOptProgressReport();
-                                SwingUtilities.invokeLater(() -> optSolverCallbacks.setProgressReport(finalProgress));
+                                progressDispatcher.accept(() -> optSolverCallbacks.setProgressReport(finalProgress));
                             }
                             lg.info("job {}: COMPLETE {}", jobId, optRun.getOptResultSet());
                             if (clientTaskStatusSupport != null) {
