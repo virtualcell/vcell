@@ -32,7 +32,6 @@ public class GuiConstants {
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_DATA = "Experimental Data";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_APPLICATIONS = "Applications";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_BIOMODEL_PARAMETERS = "Parameters, Functions, Units, etc.";
-	public final static String DOCUMENT_EDITOR_FOLDERNAME_SCRIPTING = "Scripting";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_REACTIONS = "Reactions";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_DIAGRAM = "Reaction Diagram";
 	public final static String DOCUMENT_EDITOR_FOLDERNAME_STRUCTURES = "Structures";

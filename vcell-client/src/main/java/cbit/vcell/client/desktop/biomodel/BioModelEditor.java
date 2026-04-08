@@ -95,8 +95,6 @@ public class BioModelEditor extends DocumentEditor {
 	private BioModel bioModel = null;
 	
 	private BioModelEditorModelPanel bioModelEditorModelPanel = null;
-	private ScriptingPanel scriptingPanel = null;
-
 	private BioModelEditorTreeCellRenderer bioModelEditorTreeCellRenderer = null;
 	private BioModelEditorTreeModel bioModelEditorTreeModel = null;
 	private BioModelPropertiesPanel bioModelPropertiesPanel = null;	
@@ -909,17 +907,6 @@ protected void setRightBottomPanelOnSelection(Object[] selections) {
 }
 
 
-private ScriptingPanel getScriptingPanel() {
-	if (scriptingPanel == null) {
-		try {
-			scriptingPanel = new ScriptingPanel();
-		} catch (java.lang.Throwable ivjExc) {
-			handleException(ivjExc);
-		}
-	}
-	return scriptingPanel;
-}
-
 @Override
 protected void treeSelectionChanged() {
 	try {
@@ -975,8 +962,6 @@ private void setRightTopPanel(Object selectedObject, SimulationContext simulatio
 			newTopPanel = bioModelEditorApplicationsPanel;
 //		} else if (folderClass == DocumentEditorTreeFolderClass.DATA_NODE) {
 //			newTopPanel = dataSymbolsPanel;
-		} else if (folderClass == DocumentEditorTreeFolderClass.SCRIPTING_NODE) {
-			newTopPanel = getScriptingPanel();
 		} else if (folderClass == DocumentEditorTreeFolderClass.SPECIFICATIONS_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.PROTOCOLS_NODE
 				|| folderClass == DocumentEditorTreeFolderClass.SIMULATIONS_NODE
@@ -1038,7 +1023,6 @@ public void setBioModel(BioModel bioModel) {
 	getSpeciesContextSpecPanel().setBioModel(bioModel);
 	getMolecularStructuresPropertiesPanel().setBioModel(bioModel);
 	getReactionRuleSpecPropertiesPanel().setBioModel(bioModel);
-	getScriptingPanel().setBioModel(bioModel);	
 	getBioModelEditorPathwayPanel().setBioModel(bioModel);
 	getBioModelEditorPathwayDiagramPanel().setBioModel(bioModel);
 	bioModelEditorTreeModel.setBioModel(bioModel);

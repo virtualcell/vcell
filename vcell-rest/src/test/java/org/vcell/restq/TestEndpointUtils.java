@@ -24,6 +24,7 @@ import org.vcell.restclient.ApiClient;
 import org.vcell.restclient.ApiException;
 import org.vcell.restclient.CustomObjectMapper;
 import org.vcell.restclient.api.UsersResourceApi;
+import org.vcell.restclient.model.BiomodelRef;
 import org.vcell.restclient.model.Publication;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
 import org.vcell.restq.db.AgroalConnectionFactory;
@@ -126,6 +127,17 @@ public class TestEndpointUtils {
         publication.setMathmodelRefs(new ArrayList<>());
         publication.setDate(LocalDate.now());
         return publication;
+    }
+
+    public static BiomodelRef biomodelRefFromBioModel(org.vcell.restclient.model.BioModel biomodel) {
+        BiomodelRef ref = new BiomodelRef();
+        ref.setBmKey(biomodel.getBmKey() != null ? Long.parseLong(biomodel.getBmKey()) : -1);
+        ref.setName(biomodel.getName());
+        ref.setOwnerName(biomodel.getOwnerName());
+        ref.setOwnerKey(biomodel.getOwnerKey() != null ? Long.parseLong(biomodel.getOwnerKey()) : -1);
+        ref.setVersionFlag(biomodel.getVersionFlag());
+        ref.setPrivacy(biomodel.getPrivacy());
+        return ref;
     }
 
     public static BioModel defaultBiomodel() throws Exception {

@@ -97,9 +97,10 @@ public class TestRestServerBlinov extends Restlet{
 								simulations[j].getName(), simulations[j].getVersion().getOwner(), simulations[j].getMathDescription().getKey(),
 								simulations[j].getSolverTaskDescription(), new MathOverrides.Element[] {});
 					}
-					//KeyValue bmKey, String name, int privacy, User[] groupUsers, Date date, String annot, BigDecimal branchID, KeyValue modelRef, User owner, KeyValue[] simKeyList, KeyValue[] simContextKeyList)
+					//KeyValue bmKey, String name, int privacy, int versionFlag, User[] groupUsers, Date date, String annot, BigDecimal branchID, KeyValue modelRef, User owner, KeyValue[] simKeyList, KeyValue[] simContextKeyList)
 					BioModelRep bmrep =
 						new BioModelRep(bm.getVersion().getVersionKey(), bm.getName(), bm.getVersion().getGroupAccess().getGroupid().intValue(),
+								bm.getVersion().getFlag().getIntValue(),
 								new User[] {}, bm.getVersion().getDate(), bm.getVersion().getAnnot(), bm.getVersion().getBranchID(),
 								bm.getModel().getVersion().getVersionKey(), bm.getVersion().getOwner(), srepKeys, scrKeys);
 					for(int j=0;j<simulationContexts.length;j++) {

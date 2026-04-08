@@ -88,7 +88,7 @@ public String getPreparedStatement_PublicationReps(String conditions, OrderBy or
 	PublicationModelLinkTable pubModelTable = PublicationModelLinkTable.table;
 
 	String concat_function_name = (dbSyntax==DatabaseSyntax.ORACLE) ? "listagg" : "string_agg";
-	String concat_second_arg = (dbSyntax==DatabaseSyntax.ORACLE) ? ", ','" : ", ','";
+	String concat_second_arg = (dbSyntax==DatabaseSyntax.ORACLE) ? ", '@@'" : ", '@@'";
 	String string_cast = (dbSyntax==DatabaseSyntax.ORACLE) ? "" : "::varchar(255)";
 
 	String subquery = 			
@@ -109,7 +109,8 @@ public String getPreparedStatement_PublicationReps(String conditions, OrderBy or
 		   						"||"+"SQ1_"+biomodelTable.name.getQualifiedColName()+"||';'"+
 		   						"||"+"SQ1_"+userTable.id.getQualifiedColName()+string_cast+"||';'"+
 		   						"||"+"SQ1_"+userTable.userid.getQualifiedColName()+"||';'"+
-		   						"||"+"SQ1_"+biomodelTable.versionFlag.getQualifiedColName()+string_cast + concat_second_arg+")||']' "+
+		   						"||"+"SQ1_"+biomodelTable.versionFlag.getQualifiedColName()+string_cast+"||';'"+
+		   						"||"+"SQ1_"+biomodelTable.privacy.getQualifiedColName()+string_cast + concat_second_arg+")||']' "+
 		   "   from "+pubModelTable.getTableName()+" SQ1_"+pubModelTable.getTableName()+", "+
 		              biomodelTable.getTableName()+" SQ1_"+biomodelTable.getTableName()+", "+
 		              userTable.getTableName()+" SQ1_"+userTable.getTableName()+" "+
@@ -177,43 +178,54 @@ public PublicationRep getPublicationRep(ResultSet rset, DatabaseSyntax dbSyntax)
 	java.util.Date pubdate = VersionTable.getDate(rset,dbSyntax,table.pubdate.toString());
 	
 	String bmRefsString = rset.getString("bmRefs");
+	BioModelReferenceRep[] bmRefArray = parseBioModelRefs(bmRefsString);
+
+	String mmRefsString = rset.getString("mmRefs");
+	MathModelReferenceRep[] mmRefArray = parseMathModelRefs(mmRefsString);
+	
+	
+	return new PublicationRep(pubKey,title,authorsList.split(";"),year,citation,pubmedid,doi,endnoteid,url,bmRefArray,mmRefArray,wittid,pubdate);
+}
+
+static final String RECORD_SEPARATOR = "@@";
+
+static BioModelReferenceRep[] parseBioModelRefs(String bmRefsString) {
 	ArrayList<BioModelReferenceRep> bmRefList = new ArrayList<BioModelReferenceRep>();
-	if(bmRefsString != null && bmRefsString.length()>0) {
-		String[] bmRefStrings = bmRefsString.replace("[", "").replace("]", "").split(",");
+	if (bmRefsString != null && bmRefsString.length() > 0) {
+		String[] bmRefStrings = bmRefsString.replace("[", "").replace("]", "").split(RECORD_SEPARATOR);
 		for (String bmRefString : bmRefStrings) {
-			String bmRefComponents[] = bmRefString.split(";");
-			if (bmRefComponents.length==5){
+			String[] bmRefComponents = bmRefString.split(";");
+			if (bmRefComponents.length >= 5) {
 				KeyValue bmKey = new KeyValue(bmRefComponents[0]);
 				String bmName = bmRefComponents[1];
 				KeyValue ownerKey = new KeyValue(bmRefComponents[2]);
 				String ownerUserid = bmRefComponents[3];
 				Long versionFlag = Long.valueOf(bmRefComponents[4]);
-				bmRefList.add(new BioModelReferenceRep(bmKey, bmName, new User(ownerUserid,ownerKey),versionFlag));
+				Integer privacy = bmRefComponents.length >= 6 ? Integer.valueOf(bmRefComponents[5]) : null;
+				bmRefList.add(new BioModelReferenceRep(bmKey, bmName, new User(ownerUserid, ownerKey), versionFlag, privacy));
 			}
 		}
 	}
-	BioModelReferenceRep[] bmRefArray = bmRefList.toArray(new BioModelReferenceRep[0]);
-	
-	String mmRefsString = rset.getString("mmRefs");
+	return bmRefList.toArray(new BioModelReferenceRep[0]);
+}
+
+static MathModelReferenceRep[] parseMathModelRefs(String mmRefsString) {
 	ArrayList<MathModelReferenceRep> mmRefList = new ArrayList<MathModelReferenceRep>();
-	if(mmRefsString != null && mmRefsString.length() > 0) {
-		String[] mmRefStrings = mmRefsString.replace("[", "").replace("]", "").split(",");
+	if (mmRefsString != null && mmRefsString.length() > 0) {
+		String[] mmRefStrings = mmRefsString.replace("[", "").replace("]", "").split(RECORD_SEPARATOR);
 		for (String mmRefString : mmRefStrings) {
-			String mmRefComponents[] = mmRefString.split(";");
-			if (mmRefComponents.length==5){
+			String[] mmRefComponents = mmRefString.split(";");
+			if (mmRefComponents.length == 5) {
 				KeyValue mmKey = new KeyValue(mmRefComponents[0]);
 				String mmName = mmRefComponents[1];
 				KeyValue ownerKey = new KeyValue(mmRefComponents[2]);
 				String ownerUserid = mmRefComponents[3];
 				Long versionFlag = Long.valueOf(mmRefComponents[4]);
-				mmRefList.add(new MathModelReferenceRep(mmKey, mmName, new User(ownerUserid,ownerKey),versionFlag));
+				mmRefList.add(new MathModelReferenceRep(mmKey, mmName, new User(ownerUserid, ownerKey), versionFlag));
 			}
 		}
 	}
-	MathModelReferenceRep[] mmRefArray = mmRefList.toArray(new MathModelReferenceRep[0]);
-	
-	
-	return new PublicationRep(pubKey,title,authorsList.split(";"),year,citation,pubmedid,doi,endnoteid,url,bmRefArray,mmRefArray,wittid,pubdate);
+	return mmRefList.toArray(new MathModelReferenceRep[0]);
 }
 
 }

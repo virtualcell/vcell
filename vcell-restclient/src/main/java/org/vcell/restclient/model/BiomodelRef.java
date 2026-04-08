@@ -36,7 +36,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   BiomodelRef.JSON_PROPERTY_NAME,
   BiomodelRef.JSON_PROPERTY_OWNER_NAME,
   BiomodelRef.JSON_PROPERTY_OWNER_KEY,
-  BiomodelRef.JSON_PROPERTY_VERSION_FLAG
+  BiomodelRef.JSON_PROPERTY_VERSION_FLAG,
+  BiomodelRef.JSON_PROPERTY_PRIVACY
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class BiomodelRef {
@@ -54,6 +55,9 @@ public class BiomodelRef {
 
   public static final String JSON_PROPERTY_VERSION_FLAG = "versionFlag";
   private Integer versionFlag;
+
+  public static final String JSON_PROPERTY_PRIVACY = "privacy";
+  private Integer privacy;
 
   public BiomodelRef() { 
   }
@@ -183,6 +187,31 @@ public class BiomodelRef {
   }
 
 
+  public BiomodelRef privacy(Integer privacy) {
+    this.privacy = privacy;
+    return this;
+  }
+
+   /**
+   * Get privacy
+   * @return privacy
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_PRIVACY)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public Integer getPrivacy() {
+    return privacy;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_PRIVACY)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setPrivacy(Integer privacy) {
+    this.privacy = privacy;
+  }
+
+
   /**
    * Return true if this BiomodelRef object is equal to o.
    */
@@ -199,12 +228,13 @@ public class BiomodelRef {
         Objects.equals(this.name, biomodelRef.name) &&
         Objects.equals(this.ownerName, biomodelRef.ownerName) &&
         Objects.equals(this.ownerKey, biomodelRef.ownerKey) &&
-        Objects.equals(this.versionFlag, biomodelRef.versionFlag);
+        Objects.equals(this.versionFlag, biomodelRef.versionFlag) &&
+        Objects.equals(this.privacy, biomodelRef.privacy);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(bmKey, name, ownerName, ownerKey, versionFlag);
+    return Objects.hash(bmKey, name, ownerName, ownerKey, versionFlag, privacy);
   }
 
   @Override
@@ -216,6 +246,7 @@ public class BiomodelRef {
     sb.append("    ownerName: ").append(toIndentedString(ownerName)).append("\n");
     sb.append("    ownerKey: ").append(toIndentedString(ownerKey)).append("\n");
     sb.append("    versionFlag: ").append(toIndentedString(versionFlag)).append("\n");
+    sb.append("    privacy: ").append(toIndentedString(privacy)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -286,6 +317,11 @@ public class BiomodelRef {
     // add `versionFlag` to the URL query string
     if (getVersionFlag() != null) {
       joiner.add(String.format("%sversionFlag%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getVersionFlag()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
+
+    // add `privacy` to the URL query string
+    if (getPrivacy() != null) {
+      joiner.add(String.format("%sprivacy%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPrivacy()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();

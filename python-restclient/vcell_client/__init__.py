@@ -92,6 +92,7 @@ from vcell_client.models.n5_export_request import N5ExportRequest
 from vcell_client.models.origin import Origin
 from vcell_client.models.publication import Publication
 from vcell_client.models.publication_info import PublicationInfo
+from vcell_client.models.publish_models_request import PublishModelsRequest
 from vcell_client.models.specialclaim import SPECIALCLAIM
 from vcell_client.models.sampled_curve import SampledCurve
 from vcell_client.models.scheduler_status import SchedulerStatus

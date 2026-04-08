@@ -80,6 +80,7 @@ model/n5-export-request.ts
 model/origin.ts
 model/publication-info.ts
 model/publication.ts
+model/publish-models-request.ts
 model/sampled-curve.ts
 model/scheduler-status.ts
 model/simulation-execution-status-record.ts

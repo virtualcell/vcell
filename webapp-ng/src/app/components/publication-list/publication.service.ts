@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {Publication, PublicationResourceService} from '../../core/modules/openapi';
+import {Publication, PublicationResourceService, PublishModelsRequest} from '../../core/modules/openapi';
 import {Observable, Subject} from 'rxjs';
 import {map, switchMap, tap} from 'rxjs/operators';
 
@@ -41,6 +41,10 @@ export class PublicationService {
     return this.pub_api.updatePublication(publication).pipe(
       tap(() => this.refreshNeeded.next())
     )
+  }
+
+  publishModels(pubId: number, biomodelKeys?: number[], mathmodelKeys?: number[]): Observable<any> {
+    return this.pub_api.publishBioModels(pubId, { biomodelKeys, mathmodelKeys });
   }
 
   public refresh() {

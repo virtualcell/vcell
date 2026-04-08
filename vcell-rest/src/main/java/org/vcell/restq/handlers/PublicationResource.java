@@ -12,12 +12,14 @@ import org.vcell.restq.services.PublicationService;
 import org.vcell.restq.services.UserRestService;
 import org.vcell.restq.errors.exceptions.*;
 import org.vcell.restq.models.Publication;
+import org.vcell.restq.models.PublishModelsRequest;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.PermissionException;
 import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 
 @Path("/api/v1/publications")
 @Produces(MediaType.APPLICATION_JSON)
@@ -102,6 +104,46 @@ public class PublicationResource {
             throw new DataAccessWebException(e.getMessage(), e);
         } catch (SQLException e) {
             throw new RuntimeWebException("failed to add publication to VCell Database : " + e.getMessage(), e);
+        }
+    }
+
+
+    @PUT
+    @Path("{id}/publish")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @RolesAllowed("user")
+    @Operation(operationId = "publishBioModels", summary = "Publish selected BioModels and MathModels associated with a publication")
+    public void publish(@PathParam("id") Long publicationID, PublishModelsRequest request) throws PermissionWebException, NotAuthenticatedWebException, NotFoundWebException, DataAccessWebException {
+        try {
+            User vcellUser = userRestService.getUserFromIdentity(securityIdentity);
+            Publication publication = publicationService.getPublication(new KeyValue(publicationID.toString()), vcellUser);
+
+            KeyValue[] biomodelKeys;
+            KeyValue[] mathmodelKeys;
+
+            if (request != null && request.biomodelKeys() != null) {
+                biomodelKeys = Arrays.stream(request.biomodelKeys()).map(k -> new KeyValue(k.toString())).toArray(KeyValue[]::new);
+            } else if (publication.biomodelRefs() != null) {
+                biomodelKeys = Arrays.stream(publication.biomodelRefs()).map(r -> new KeyValue(r.bmKey().toString())).toArray(KeyValue[]::new);
+            } else {
+                biomodelKeys = new KeyValue[0];
+            }
+
+            if (request != null && request.mathmodelKeys() != null) {
+                mathmodelKeys = Arrays.stream(request.mathmodelKeys()).map(k -> new KeyValue(k.toString())).toArray(KeyValue[]::new);
+            } else if (publication.mathmodelRefs() != null) {
+                mathmodelKeys = Arrays.stream(publication.mathmodelRefs()).map(r -> new KeyValue(r.mmKey().toString())).toArray(KeyValue[]::new);
+            } else {
+                mathmodelKeys = new KeyValue[0];
+            }
+
+            publicationService.publishDirectly(biomodelKeys, mathmodelKeys, vcellUser);
+        } catch (PermissionException e){
+            throw new PermissionWebException(e.getMessage(), e);
+        } catch (DataAccessException e){
+            throw new DataAccessWebException(e.getMessage(), e);
+        } catch (SQLException e) {
+            throw new RuntimeWebException("failed to publish models: " + e.getMessage(), e);
         }
     }
 

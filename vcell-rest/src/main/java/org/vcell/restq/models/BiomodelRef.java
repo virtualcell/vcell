@@ -9,7 +9,8 @@ public record BiomodelRef(
         String name,
         String ownerName,
         Long ownerKey,
-        Integer versionFlag) {
+        Integer versionFlag,
+        Integer privacy) {
 
     public static BiomodelRef fromBioModelReferenceRep(BioModelReferenceRep bioModelReferenceRep) {
         return new BiomodelRef(
@@ -17,7 +18,8 @@ public record BiomodelRef(
                 bioModelReferenceRep.getName(),
                 bioModelReferenceRep.getOwner().getName(),
                 Long.parseLong(bioModelReferenceRep.getOwner().getID().toString()),
-                bioModelReferenceRep.getVersionFlag().intValue()
+                bioModelReferenceRep.getVersionFlag().intValue(),
+                bioModelReferenceRep.getPrivacy()
         );
     }
 
@@ -26,7 +28,8 @@ public record BiomodelRef(
                 bmKey!=null ? new KeyValue(Long.toString(bmKey)) : null,
                 name,
                 new User(ownerName, new KeyValue(Long.toString(ownerKey))),
-                versionFlag!=null ? versionFlag.longValue() : null
+                versionFlag!=null ? versionFlag.longValue() : null,
+                privacy
         );
     }
 }

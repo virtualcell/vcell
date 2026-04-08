@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **owner_name** | **str** |  | [optional] 
 **owner_key** | **int** |  | [optional] 
 **version_flag** | **int** |  | [optional] 
+**privacy** | **int** |  | [optional] 
 
 ## Example
 

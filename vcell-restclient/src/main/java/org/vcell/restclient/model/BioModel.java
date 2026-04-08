@@ -37,6 +37,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   BioModel.JSON_PROPERTY_BM_KEY,
   BioModel.JSON_PROPERTY_NAME,
   BioModel.JSON_PROPERTY_PRIVACY,
+  BioModel.JSON_PROPERTY_VERSION_FLAG,
   BioModel.JSON_PROPERTY_GROUP_USERS,
   BioModel.JSON_PROPERTY_SAVED_DATE,
   BioModel.JSON_PROPERTY_ANNOT,
@@ -57,6 +58,9 @@ public class BioModel {
 
   public static final String JSON_PROPERTY_PRIVACY = "privacy";
   private Integer privacy;
+
+  public static final String JSON_PROPERTY_VERSION_FLAG = "versionFlag";
+  private Integer versionFlag;
 
   public static final String JSON_PROPERTY_GROUP_USERS = "groupUsers";
   private List<String> groupUsers;
@@ -160,6 +164,31 @@ public class BioModel {
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
   public void setPrivacy(Integer privacy) {
     this.privacy = privacy;
+  }
+
+
+  public BioModel versionFlag(Integer versionFlag) {
+    this.versionFlag = versionFlag;
+    return this;
+  }
+
+   /**
+   * Get versionFlag
+   * @return versionFlag
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public Integer getVersionFlag() {
+    return versionFlag;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_VERSION_FLAG)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setVersionFlag(Integer versionFlag) {
+    this.versionFlag = versionFlag;
   }
 
 
@@ -427,6 +456,7 @@ public class BioModel {
     return Objects.equals(this.bmKey, bioModel.bmKey) &&
         Objects.equals(this.name, bioModel.name) &&
         Objects.equals(this.privacy, bioModel.privacy) &&
+        Objects.equals(this.versionFlag, bioModel.versionFlag) &&
         Objects.equals(this.groupUsers, bioModel.groupUsers) &&
         Objects.equals(this.savedDate, bioModel.savedDate) &&
         Objects.equals(this.annot, bioModel.annot) &&
@@ -440,7 +470,7 @@ public class BioModel {
 
   @Override
   public int hashCode() {
-    return Objects.hash(bmKey, name, privacy, groupUsers, savedDate, annot, branchID, physModelKey, ownerName, ownerKey, simulationKeyList, applications);
+    return Objects.hash(bmKey, name, privacy, versionFlag, groupUsers, savedDate, annot, branchID, physModelKey, ownerName, ownerKey, simulationKeyList, applications);
   }
 
   @Override
@@ -450,6 +480,7 @@ public class BioModel {
     sb.append("    bmKey: ").append(toIndentedString(bmKey)).append("\n");
     sb.append("    name: ").append(toIndentedString(name)).append("\n");
     sb.append("    privacy: ").append(toIndentedString(privacy)).append("\n");
+    sb.append("    versionFlag: ").append(toIndentedString(versionFlag)).append("\n");
     sb.append("    groupUsers: ").append(toIndentedString(groupUsers)).append("\n");
     sb.append("    savedDate: ").append(toIndentedString(savedDate)).append("\n");
     sb.append("    annot: ").append(toIndentedString(annot)).append("\n");
@@ -519,6 +550,11 @@ public class BioModel {
     // add `privacy` to the URL query string
     if (getPrivacy() != null) {
       joiner.add(String.format("%sprivacy%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getPrivacy()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+    }
+
+    // add `versionFlag` to the URL query string
+    if (getVersionFlag() != null) {
+      joiner.add(String.format("%sversionFlag%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getVersionFlag()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `groupUsers` to the URL query string

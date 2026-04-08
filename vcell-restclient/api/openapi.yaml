@@ -1793,6 +1793,58 @@ paths:
       tags:
       - Publication Resource
       x-accepts: application/json
+  /api/v1/publications/{id}/publish:
+    put:
+      operationId: publishBioModels
+      parameters:
+      - explode: false
+        in: path
+        name: id
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishModelsRequest'
+      responses:
+        "204":
+          description: No Content
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      summary: Publish selected BioModels and MathModels associated with a publication
+      tags:
+      - Publication Resource
+      x-content-type: application/json
+      x-accepts: application/json
   /api/v1/solver/getFVSolverInput:
     post:
       operationId: getFVSolverInputFromSBML
@@ -2291,18 +2343,19 @@ components:
         branchID: branchID
         physModelKey: physModelKey
         bmKey: bmKey
-        ownerName: ownerName
-        name: name
+        versionFlag: 6
         privacy: 0
         groupUsers:
         - groupUsers
         - groupUsers
         annot: annot
+        ownerKey: ownerKey
+        ownerName: ownerName
+        name: name
         simulationKeyList:
         - null
         - null
-        ownerKey: ownerKey
-        savedDate: 6
+        savedDate: 1
         applications:
         - null
         - null
@@ -2312,6 +2365,9 @@ components:
         name:
           type: string
         privacy:
+          format: int32
+          type: integer
+        versionFlag:
           format: int32
           type: integer
         groupUsers:
@@ -2582,6 +2638,7 @@ components:
         ownerName: ownerName
         name: name
         versionFlag: 7
+        privacy: 9
         ownerKey: 2
       properties:
         bmKey:
@@ -2595,6 +2652,9 @@ components:
           format: int64
           type: integer
         versionFlag:
+          format: int32
+          type: integer
+        privacy:
           format: int32
           type: integer
       type: object
@@ -3734,9 +3794,9 @@ components:
       example:
         ownerName: ownerName
         name: name
-        versionFlag: 2
-        mmKey: 9
-        ownerKey: 3
+        versionFlag: 4
+        mmKey: 3
+        ownerKey: 2
       properties:
         mmKey:
           format: int64
@@ -3968,25 +4028,27 @@ components:
           ownerName: ownerName
           name: name
           versionFlag: 7
+          privacy: 9
           ownerKey: 2
         - bmKey: 5
           ownerName: ownerName
           name: name
           versionFlag: 7
+          privacy: 9
           ownerKey: 2
         pubmedid: pubmedid
         url: url
         mathmodelRefs:
         - ownerName: ownerName
           name: name
-          versionFlag: 2
-          mmKey: 9
-          ownerKey: 3
+          versionFlag: 4
+          mmKey: 3
+          ownerKey: 2
         - ownerName: ownerName
           name: name
-          versionFlag: 2
-          mmKey: 9
-          ownerKey: 3
+          versionFlag: 4
+          mmKey: 3
+          ownerKey: 2
         pubKey: 0
         authors:
         - authors
@@ -4084,6 +4146,26 @@ components:
         theHashCode:
           format: int32
           type: integer
+      type: object
+    PublishModelsRequest:
+      example:
+        mathmodelKeys:
+        - 6
+        - 6
+        biomodelKeys:
+        - 0
+        - 0
+      properties:
+        biomodelKeys:
+          items:
+            format: int64
+            type: integer
+          type: array
+        mathmodelKeys:
+          items:
+            format: int64
+            type: integer
+          type: array
       type: object
     SPECIAL_CLAIM:
       enum:

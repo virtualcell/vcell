@@ -10,6 +10,7 @@ public record BioModel(
         String bmKey,
         String name,
         int privacy,
+        int versionFlag,
         String[] groupUsers,
         Long savedDate,
         String annot,
@@ -27,6 +28,7 @@ public record BioModel(
                 groupList.add(user.getName());
             }
             return new BioModel(bioModelRep.getBmKey().toString(), bioModelRep.getName(), bioModelRep.getPrivacy(),
+                    bioModelRep.getVersionFlag(),
                     groupList.toArray(new String[groupList.size()]), bioModelRep.getDate().getTime(), bioModelRep.getAnnot(), bioModelRep.getBranchID().toString(),
                     bioModelRep.getModelRef().toString(), bioModelRep.getOwner().getName(), bioModelRep.getOwner().getID().toString(), bioModelRep.getSimKeyList(), null);
         }

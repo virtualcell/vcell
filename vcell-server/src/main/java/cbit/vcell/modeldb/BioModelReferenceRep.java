@@ -8,13 +8,15 @@ public class BioModelReferenceRep {
 	private final String name;
 	private final User owner;
 	private final Long versionFlag;
-	
-	public BioModelReferenceRep(KeyValue bmKey, String name, User owner,Long versionFlag) {
+	private final Integer privacy;
+
+	public BioModelReferenceRep(KeyValue bmKey, String name, User owner, Long versionFlag, Integer privacy) {
 		super();
 		this.bmKey = bmKey;
 		this.name = name;
 		this.owner = owner;
 		this.versionFlag = versionFlag;
+		this.privacy = privacy;
 	}
 
 	public KeyValue getBmKey() {
@@ -31,5 +33,9 @@ public class BioModelReferenceRep {
 
 	public Long getVersionFlag() {
 		return versionFlag;
+	}
+
+	public Integer getPrivacy() {
+		return privacy;
 	}
 }
