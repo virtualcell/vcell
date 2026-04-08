@@ -123,7 +123,7 @@
 		</dependency>
         <dependency>
             <groupId>org.python</groupId>
-            <artifactId>jython</artifactId>
+            <artifactId>jython-standalone</artifactId>
             <version>2.7.4</version>
             <scope>compile</scope>
         </dependency>
