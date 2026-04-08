@@ -163,6 +163,14 @@ Class | Method | HTTP request | Description
 *MathModelResourceApi* | [**getVCMLWithHttpInfo**](docs/MathModelResourceApi.md#getVCMLWithHttpInfo) | **GET** /api/v1/mathModel/{id} | 
 *MathModelResourceApi* | [**saveMathModel**](docs/MathModelResourceApi.md#saveMathModel) | **POST** /api/v1/mathModel | 
 *MathModelResourceApi* | [**saveMathModelWithHttpInfo**](docs/MathModelResourceApi.md#saveMathModelWithHttpInfo) | **POST** /api/v1/mathModel | 
+*OptimizationResourceApi* | [**getOptimizationStatus**](docs/OptimizationResourceApi.md#getOptimizationStatus) | **GET** /api/v1/optimization/{optId} | Get status, progress, or results of an optimization job
+*OptimizationResourceApi* | [**getOptimizationStatusWithHttpInfo**](docs/OptimizationResourceApi.md#getOptimizationStatusWithHttpInfo) | **GET** /api/v1/optimization/{optId} | Get status, progress, or results of an optimization job
+*OptimizationResourceApi* | [**listOptimizationJobs**](docs/OptimizationResourceApi.md#listOptimizationJobs) | **GET** /api/v1/optimization | List optimization jobs for the authenticated user
+*OptimizationResourceApi* | [**listOptimizationJobsWithHttpInfo**](docs/OptimizationResourceApi.md#listOptimizationJobsWithHttpInfo) | **GET** /api/v1/optimization | List optimization jobs for the authenticated user
+*OptimizationResourceApi* | [**stopOptimization**](docs/OptimizationResourceApi.md#stopOptimization) | **POST** /api/v1/optimization/{optId}/stop | Stop a running optimization job
+*OptimizationResourceApi* | [**stopOptimizationWithHttpInfo**](docs/OptimizationResourceApi.md#stopOptimizationWithHttpInfo) | **POST** /api/v1/optimization/{optId}/stop | Stop a running optimization job
+*OptimizationResourceApi* | [**submitOptimization**](docs/OptimizationResourceApi.md#submitOptimization) | **POST** /api/v1/optimization | Submit a new parameter estimation optimization job
+*OptimizationResourceApi* | [**submitOptimizationWithHttpInfo**](docs/OptimizationResourceApi.md#submitOptimizationWithHttpInfo) | **POST** /api/v1/optimization | Submit a new parameter estimation optimization job
 *PublicationResourceApi* | [**createPublication**](docs/PublicationResourceApi.md#createPublication) | **POST** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**createPublicationWithHttpInfo**](docs/PublicationResourceApi.md#createPublicationWithHttpInfo) | **POST** /api/v1/publications | Create publication
 *PublicationResourceApi* | [**deletePublication**](docs/PublicationResourceApi.md#deletePublication) | **DELETE** /api/v1/publications/{id} | Delete publication
@@ -231,6 +239,11 @@ Class | Method | HTTP request | Description
  - [CompositeCurve](docs/CompositeCurve.md)
  - [ControlPointCurve](docs/ControlPointCurve.md)
  - [Coordinate](docs/Coordinate.md)
+ - [CopasiOptimizationMethod](docs/CopasiOptimizationMethod.md)
+ - [CopasiOptimizationMethodOptimizationMethodType](docs/CopasiOptimizationMethodOptimizationMethodType.md)
+ - [CopasiOptimizationParameter](docs/CopasiOptimizationParameter.md)
+ - [CopasiOptimizationParameterDataType](docs/CopasiOptimizationParameterDataType.md)
+ - [CopasiOptimizationParameterParamType](docs/CopasiOptimizationParameterParamType.md)
  - [Curve](docs/Curve.md)
  - [CurveSelectionInfo](docs/CurveSelectionInfo.md)
  - [DataIdentifier](docs/DataIdentifier.md)
@@ -265,10 +278,19 @@ Class | Method | HTTP request | Description
  - [MathmodelRef](docs/MathmodelRef.md)
  - [ModelType](docs/ModelType.md)
  - [N5ExportRequest](docs/N5ExportRequest.md)
+ - [OptJobStatus](docs/OptJobStatus.md)
+ - [OptProblem](docs/OptProblem.md)
+ - [OptProgressItem](docs/OptProgressItem.md)
+ - [OptProgressReport](docs/OptProgressReport.md)
+ - [OptResultSet](docs/OptResultSet.md)
+ - [OptimizationJobStatus](docs/OptimizationJobStatus.md)
  - [Origin](docs/Origin.md)
+ - [ParameterDescription](docs/ParameterDescription.md)
  - [Publication](docs/Publication.md)
  - [PublicationInfo](docs/PublicationInfo.md)
  - [PublishModelsRequest](docs/PublishModelsRequest.md)
+ - [ReferenceVariable](docs/ReferenceVariable.md)
+ - [ReferenceVariableReferenceVariableType](docs/ReferenceVariableReferenceVariableType.md)
  - [SPECIALCLAIM](docs/SPECIALCLAIM.md)
  - [SampledCurve](docs/SampledCurve.md)
  - [SchedulerStatus](docs/SchedulerStatus.md)
@@ -303,6 +325,8 @@ Class | Method | HTTP request | Description
  - [VariableMode](docs/VariableMode.md)
  - [VariableSpecs](docs/VariableSpecs.md)
  - [VariableType](docs/VariableType.md)
+ - [Vcellopt](docs/Vcellopt.md)
+ - [VcelloptStatus](docs/VcelloptStatus.md)
  - [Version](docs/Version.md)
  - [VersionFlag](docs/VersionFlag.md)
 

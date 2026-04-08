@@ -1616,6 +1616,167 @@ paths:
       tags:
       - Math Model Resource
       x-accepts: application/json
+  /api/v1/optimization:
+    get:
+      operationId: listOptimizationJobs
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/OptimizationJobStatus'
+                type: array
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          description: Not Allowed
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      summary: List optimization jobs for the authenticated user
+      tags:
+      - Optimization Resource
+      x-accepts: application/json
+    post:
+      operationId: submitOptimization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OptProblem'
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptimizationJobStatus'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          description: Not Allowed
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      summary: Submit a new parameter estimation optimization job
+      tags:
+      - Optimization Resource
+      x-content-type: application/json
+      x-accepts: application/json
+  /api/v1/optimization/{optId}:
+    get:
+      operationId: getOptimizationStatus
+      parameters:
+      - explode: false
+        in: path
+        name: optId
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptimizationJobStatus'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      summary: "Get status, progress, or results of an optimization job"
+      tags:
+      - Optimization Resource
+      x-accepts: application/json
+  /api/v1/optimization/{optId}/stop:
+    post:
+      operationId: stopOptimization
+      parameters:
+      - explode: false
+        in: path
+        name: optId
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptimizationJobStatus'
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          description: Not Allowed
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not found
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      summary: Stop a running optimization job
+      tags:
+      - Optimization Resource
+      x-accepts: application/json
   /api/v1/publications:
     get:
       operationId: getPublications
@@ -2734,6 +2895,76 @@ components:
           format: double
           type: number
       type: object
+    CopasiOptimizationMethod:
+      example:
+        optimizationMethodType: null
+        optimizationParameter:
+        - paramType: null
+          dataType: null
+          value: 5.962133916683182
+        - paramType: null
+          dataType: null
+          value: 5.962133916683182
+      properties:
+        optimizationMethodType:
+          $ref: '#/components/schemas/CopasiOptimizationMethodOptimizationMethodType'
+        optimizationParameter:
+          items:
+            $ref: '#/components/schemas/CopasiOptimizationParameter'
+          type: array
+      type: object
+    CopasiOptimizationMethodOptimizationMethodType:
+      enum:
+      - SRES
+      - evolutionaryProgram
+      - geneticAlgorithm
+      - geneticAlgorithmSR
+      - hookeJeeves
+      - levenbergMarquardt
+      - nelderMead
+      - particleSwarm
+      - praxis
+      - randomSearch
+      - simulatedAnnealing
+      - steepestDescent
+      - truncatedNewton
+      type: string
+    CopasiOptimizationParameter:
+      example:
+        paramType: null
+        dataType: null
+        value: 5.962133916683182
+      properties:
+        dataType:
+          $ref: '#/components/schemas/CopasiOptimizationParameterDataType'
+        paramType:
+          $ref: '#/components/schemas/CopasiOptimizationParameterParamType'
+        value:
+          format: double
+          type: number
+      type: object
+    CopasiOptimizationParameterDataType:
+      enum:
+      - double
+      - int
+      type: string
+    CopasiOptimizationParameterParamType:
+      enum:
+      - coolingFactor
+      - iterationLimit
+      - numberOfGenerations
+      - numberOfIterations
+      - pf
+      - populationSize
+      - randomNumberGenerator
+      - rho
+      - scale
+      - seed
+      - startTemperature
+      - stdDeviation
+      - swarmSize
+      - tolerance
+      type: string
     Curve:
       discriminator:
         mapping:
@@ -3994,6 +4225,211 @@ components:
         datasetName:
           type: string
       type: object
+    OptJobStatus:
+      enum:
+      - SUBMITTED
+      - QUEUED
+      - RUNNING
+      - COMPLETE
+      - FAILED
+      - STOPPED
+      type: string
+    OptProblem:
+      example:
+        referenceVariable:
+        - varName: varName
+          referenceVariableType: null
+        - varName: varName
+          referenceVariableType: null
+        numberOfOptimizationRuns: 2
+        parameterDescriptionList:
+        - minValue: 3.616076749251911
+          maxValue: 9.301444243932576
+          name: name
+          scale: 2.027123023002322
+          initialValue: 7.061401241503109
+        - minValue: 3.616076749251911
+          maxValue: 9.301444243932576
+          name: name
+          scale: 2.027123023002322
+          initialValue: 7.061401241503109
+        copasiOptimizationMethod:
+          optimizationMethodType: null
+          optimizationParameter:
+          - paramType: null
+            dataType: null
+            value: 5.962133916683182
+          - paramType: null
+            dataType: null
+            value: 5.962133916683182
+        mathModelSbmlContents: mathModelSbmlContents
+        dataSet:
+        - - 5.637376656633329
+          - 5.637376656633329
+        - - 5.637376656633329
+          - 5.637376656633329
+      properties:
+        copasiOptimizationMethod:
+          $ref: '#/components/schemas/CopasiOptimizationMethod'
+        dataSet:
+          items:
+            items:
+              format: double
+              type: number
+            type: array
+          type: array
+        mathModelSbmlContents:
+          type: string
+        numberOfOptimizationRuns:
+          format: int32
+          type: integer
+        parameterDescriptionList:
+          items:
+            $ref: '#/components/schemas/ParameterDescription'
+          type: array
+        referenceVariable:
+          items:
+            $ref: '#/components/schemas/ReferenceVariable'
+          type: array
+      type: object
+    OptProgressItem:
+      example:
+        objFuncValue: 1.4658129805029452
+        numFunctionEvaluations: 6
+      properties:
+        numFunctionEvaluations:
+          format: int32
+          type: integer
+        objFuncValue:
+          format: double
+          type: number
+      type: object
+    OptProgressReport:
+      example:
+        bestParamValues:
+          key: 0.8008281904610115
+        progressItems:
+        - objFuncValue: 1.4658129805029452
+          numFunctionEvaluations: 6
+        - objFuncValue: 1.4658129805029452
+          numFunctionEvaluations: 6
+      properties:
+        bestParamValues:
+          additionalProperties:
+            format: double
+            type: number
+          type: object
+        progressItems:
+          items:
+            $ref: '#/components/schemas/OptProgressItem'
+          type: array
+      type: object
+    OptResultSet:
+      example:
+        optProgressReport:
+          bestParamValues:
+            key: 0.8008281904610115
+          progressItems:
+          - objFuncValue: 1.4658129805029452
+            numFunctionEvaluations: 6
+          - objFuncValue: 1.4658129805029452
+            numFunctionEvaluations: 6
+        objectiveFunction: 7.386281948385884
+        optParameterValues:
+          key: 1.2315135367772556
+        numFunctionEvaluations: 4
+      properties:
+        numFunctionEvaluations:
+          format: int32
+          type: integer
+        objectiveFunction:
+          format: double
+          type: number
+        optParameterValues:
+          additionalProperties:
+            format: double
+            type: number
+          type: object
+        optProgressReport:
+          $ref: '#/components/schemas/OptProgressReport'
+      type: object
+    OptimizationJobStatus:
+      example:
+        htcJobId: htcJobId
+        progressReport:
+          bestParamValues:
+            key: 0.8008281904610115
+          progressItems:
+          - objFuncValue: 1.4658129805029452
+            numFunctionEvaluations: 6
+          - objFuncValue: 1.4658129805029452
+            numFunctionEvaluations: 6
+        id: id
+        results:
+          optProblem:
+            referenceVariable:
+            - varName: varName
+              referenceVariableType: null
+            - varName: varName
+              referenceVariableType: null
+            numberOfOptimizationRuns: 2
+            parameterDescriptionList:
+            - minValue: 3.616076749251911
+              maxValue: 9.301444243932576
+              name: name
+              scale: 2.027123023002322
+              initialValue: 7.061401241503109
+            - minValue: 3.616076749251911
+              maxValue: 9.301444243932576
+              name: name
+              scale: 2.027123023002322
+              initialValue: 7.061401241503109
+            copasiOptimizationMethod:
+              optimizationMethodType: null
+              optimizationParameter:
+              - paramType: null
+                dataType: null
+                value: 5.962133916683182
+              - paramType: null
+                dataType: null
+                value: 5.962133916683182
+            mathModelSbmlContents: mathModelSbmlContents
+            dataSet:
+            - - 5.637376656633329
+              - 5.637376656633329
+            - - 5.637376656633329
+              - 5.637376656633329
+          optResultSet:
+            optProgressReport:
+              bestParamValues:
+                key: 0.8008281904610115
+              progressItems:
+              - objFuncValue: 1.4658129805029452
+                numFunctionEvaluations: 6
+              - objFuncValue: 1.4658129805029452
+                numFunctionEvaluations: 6
+            objectiveFunction: 7.386281948385884
+            optParameterValues:
+              key: 1.2315135367772556
+            numFunctionEvaluations: 4
+          statusMessage: statusMessage
+          status: null
+        statusMessage: statusMessage
+        status: null
+      properties:
+        id:
+          type: string
+        status:
+          $ref: '#/components/schemas/OptJobStatus'
+        statusMessage:
+          type: string
+        htcJobId:
+          type: string
+        progressReport:
+          $ref: '#/components/schemas/OptProgressReport'
+        results:
+          $ref: '#/components/schemas/Vcellopt'
+      type: object
     Origin:
       example:
         x: 5.962133916683182
@@ -4015,6 +4451,29 @@ components:
           type: number
           xml:
             attribute: true
+      type: object
+    ParameterDescription:
+      example:
+        minValue: 3.616076749251911
+        maxValue: 9.301444243932576
+        name: name
+        scale: 2.027123023002322
+        initialValue: 7.061401241503109
+      properties:
+        initialValue:
+          format: double
+          type: number
+        maxValue:
+          format: double
+          type: number
+        minValue:
+          format: double
+          type: number
+        name:
+          type: string
+        scale:
+          format: double
+          type: number
       type: object
     Publication:
       example:
@@ -4167,6 +4626,21 @@ components:
             type: integer
           type: array
       type: object
+    ReferenceVariable:
+      example:
+        varName: varName
+        referenceVariableType: null
+      properties:
+        referenceVariableType:
+          $ref: '#/components/schemas/ReferenceVariableReferenceVariableType'
+        varName:
+          type: string
+      type: object
+    ReferenceVariableReferenceVariableType:
+      enum:
+      - dependent
+      - independent
+      type: string
     SPECIAL_CLAIM:
       enum:
       - admins
@@ -5067,6 +5541,73 @@ components:
         typeName:
           type: string
       type: object
+    Vcellopt:
+      example:
+        optProblem:
+          referenceVariable:
+          - varName: varName
+            referenceVariableType: null
+          - varName: varName
+            referenceVariableType: null
+          numberOfOptimizationRuns: 2
+          parameterDescriptionList:
+          - minValue: 3.616076749251911
+            maxValue: 9.301444243932576
+            name: name
+            scale: 2.027123023002322
+            initialValue: 7.061401241503109
+          - minValue: 3.616076749251911
+            maxValue: 9.301444243932576
+            name: name
+            scale: 2.027123023002322
+            initialValue: 7.061401241503109
+          copasiOptimizationMethod:
+            optimizationMethodType: null
+            optimizationParameter:
+            - paramType: null
+              dataType: null
+              value: 5.962133916683182
+            - paramType: null
+              dataType: null
+              value: 5.962133916683182
+          mathModelSbmlContents: mathModelSbmlContents
+          dataSet:
+          - - 5.637376656633329
+            - 5.637376656633329
+          - - 5.637376656633329
+            - 5.637376656633329
+        optResultSet:
+          optProgressReport:
+            bestParamValues:
+              key: 0.8008281904610115
+            progressItems:
+            - objFuncValue: 1.4658129805029452
+              numFunctionEvaluations: 6
+            - objFuncValue: 1.4658129805029452
+              numFunctionEvaluations: 6
+          objectiveFunction: 7.386281948385884
+          optParameterValues:
+            key: 1.2315135367772556
+          numFunctionEvaluations: 4
+        statusMessage: statusMessage
+        status: null
+      properties:
+        optProblem:
+          $ref: '#/components/schemas/OptProblem'
+        optResultSet:
+          $ref: '#/components/schemas/OptResultSet'
+        status:
+          $ref: '#/components/schemas/VcelloptStatus'
+        statusMessage:
+          type: string
+      type: object
+    VcelloptStatus:
+      enum:
+      - complete
+      - failed
+      - queued
+      - running
+      type: string
     Version:
       example:
         date: 2000-01-23T04:56:07.000+00:00
