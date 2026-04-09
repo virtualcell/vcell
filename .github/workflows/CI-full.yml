@@ -82,14 +82,8 @@ jobs:
         name: maven-build-output
         retention-days: 1
         path: |
-          vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar
-          vcell-server/target/maven-jars/
-          vcell-api/target/vcell-api-0.0.1-SNAPSHOT.jar
-          vcell-api/target/maven-jars/
-          vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar
-          vcell-client/target/maven-jars/
-          vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT.jar
-          vcell-admin/target/maven-jars/
+          **/target/
+          localsolvers/
 
 
   docker-build:
@@ -107,15 +101,15 @@ jobs:
           - name: rest
             dockerfile: vcell-rest/src/main/docker/Dockerfile.jvm
             context: vcell-rest
-            needs_maven: false
+            needs_maven: true
             needs_secrets: false
-            pre_build: "mvn clean install -DskipTests -Dvcell.exporter=false -f vcell-rest/pom.xml"
+            pre_build: "mvn --batch-mode clean install dependency:copy-dependencies -DskipTests -Dvcell.exporter=false"
           - name: exporter
             dockerfile: vcell-rest/src/main/docker/Dockerfile.jvm
             context: vcell-rest
-            needs_maven: false
+            needs_maven: true
             needs_secrets: false
-            pre_build: "mvn clean install -DskipTests -Dvcell.exporter=true -f vcell-rest/pom.xml"
+            pre_build: "mvn --batch-mode clean install dependency:copy-dependencies -DskipTests -Dvcell.exporter=true"
           - name: webapp-dev
             dockerfile: webapp-ng/Dockerfile-webapp
             context: webapp-ng
