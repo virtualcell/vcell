@@ -40,6 +40,8 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.microprofile.context.ManagedExecutor;
+
 @QuarkusTest
 public class ExportServerTest {
     @Inject
@@ -53,6 +55,8 @@ public class ExportServerTest {
     ExportService exportService;
     @Inject
     ObjectMapper mapper;
+    @Inject
+    ManagedExecutor managedExecutor;
 
     private DataServerImpl dataServer;
     private final String simulationID = "597714292";
@@ -98,7 +102,7 @@ public class ExportServerTest {
                 // If an exception is thrown during the export process, the blocking iterable will hang because no finish statement has been sent
                 throw new RuntimeException(e);
             }
-        });
+        }, managedExecutor);
         int i = 0;
         for (ExportEvent exportEvent : blockingIterable) {
             switch (i){
