@@ -376,6 +376,7 @@ public static Table[] getVCellTables() {
 		cbit.vcell.modeldb.VCMetaDataTable.table, // new
 		cbit.vcell.modeldb.SimDelFromDiskTable.table, // new
 		UserIdentityTable.table,
+		OptJobTable.table,
 		};
 	return tables;
 }
