@@ -195,20 +195,21 @@ public class OptimizationRestService {
                     " FROM " + optJobTable.getTableName() +
                     " WHERE " + optJobTable.ownerRef + "=" + user.getID() +
                     " ORDER BY " + optJobTable.insertDate + " DESC";
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
-            java.util.List<OptimizationJobStatus> jobs = new java.util.ArrayList<>();
-            while (rs.next()) {
-                jobs.add(new OptimizationJobStatus(
-                        new KeyValue(rs.getBigDecimal(optJobTable.id.toString())),
-                        OptJobStatus.valueOf(rs.getString(optJobTable.status.toString())),
-                        rs.getString(optJobTable.statusMessage.toString()),
-                        rs.getString(optJobTable.htcJobId.toString()),
-                        null,
-                        null
-                ));
+            try (Statement stmt = con.createStatement();
+                 ResultSet rs = stmt.executeQuery(sql)) {
+                java.util.List<OptimizationJobStatus> jobs = new java.util.ArrayList<>();
+                while (rs.next()) {
+                    jobs.add(new OptimizationJobStatus(
+                            new KeyValue(rs.getBigDecimal(optJobTable.id.toString())),
+                            OptJobStatus.valueOf(rs.getString(optJobTable.status.toString())),
+                            rs.getString(optJobTable.statusMessage.toString()),
+                            rs.getString(optJobTable.htcJobId.toString()),
+                            null,
+                            null
+                    ));
+                }
+                return jobs.toArray(new OptimizationJobStatus[0]);
             }
-            return jobs.toArray(new OptimizationJobStatus[0]);
         } finally {
             if (con != null) connectionFactory.release(con, this);
         }
@@ -222,12 +223,13 @@ public class OptimizationRestService {
             con = connectionFactory.getConnection(this);
             String sql = "SELECT * FROM " + optJobTable.getTableName() +
                     " WHERE " + optJobTable.id + "=" + jobKey;
-            Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery(sql);
-            if (rs.next()) {
-                return optJobTable.getOptJobRecord(rs);
+            try (Statement stmt = con.createStatement();
+                 ResultSet rs = stmt.executeQuery(sql)) {
+                if (rs.next()) {
+                    return optJobTable.getOptJobRecord(rs);
+                }
+                return null;
             }
-            return null;
         } finally {
             if (con != null) connectionFactory.release(con, this);
         }
