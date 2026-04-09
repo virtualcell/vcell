@@ -6,19 +6,36 @@ on:
       tag:
         description: "Repository tag (e.g., 7.7.0.37)"
         required: true
-#      client_only:
-#        description: "Build only client images (true/false)"
-#        required: false
-#        default: "false"
   release:
     types: [published]
-  
+
 env:
   python-version: "3.10"
-  
+
 jobs:
-  build:
+  setup:
     runs-on: ubuntu-22.04
+    outputs:
+      vcell_tag: ${{ steps.set-vars.outputs.vcell_tag }}
+      vcell_repo_namespace: ${{ steps.set-vars.outputs.vcell_repo_namespace }}
+      friendly_tag: ${{ steps.set-vars.outputs.friendly_tag }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: set global environment variables
+      id: set-vars
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "friendly_tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+        else
+          echo "friendly_tag=${GITHUB_REF:10}" >> $GITHUB_OUTPUT
+        fi
+        echo "vcell_tag=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        echo "vcell_repo_namespace=ghcr.io/virtualcell" >> $GITHUB_OUTPUT
+
+  maven-build:
+    runs-on: ubuntu-22.04
+    needs: setup
     steps:
     - name: Free up VM's disk space
       run: |
@@ -30,37 +47,12 @@ jobs:
 
     - uses: actions/checkout@v4
 
-    - name: set global environment variables
-      run: |
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          echo "FRIENDLY_TAG=${{ github.event.inputs.tag }}" >> $GITHUB_ENV   
-        else
-          echo "FRIENDLY_TAG=${GITHUB_REF:10}" >> $GITHUB_ENV
-        fi
-        echo "VCELL_TAG=`git rev-parse --short HEAD`" >> $GITHUB_ENV
-        echo "VCELL_REPO_NAMESPACE=ghcr.io/virtualcell" >> $GITHUB_ENV
-        echo "VCELL_DEPLOY_REMOTE_DIR=/share/apps/vcell3/deployed_github" >> $GITHUB_ENV
-        echo "VCELL_MANAGER_NODE=vcellapi.cam.uchc.edu" >> $GITHUB_ENV
-    - name: setup ssh-agent
-      uses: webfactory/ssh-agent@v0.8.0
-      with:
-        ssh-private-key: ${{ secrets.VC_KEY }}
-    - name: get installer secrets
-      run: |
-        ssh-keyscan ${VCELL_MANAGER_NODE} >> ~/.ssh/known_hosts
-        sudo mkdir /usr/local/deploy
-        sudo chmod 777 /usr/local/deploy
-        cd /usr/local/deploy
-        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir_2025_03_18.tar .
-        cd ..
-        sudo tar -xvf deploy/deploy_dir_2025_03_18.tar
-        sudo chmod 777 -R deploy
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: ${{ env.python-version }}
         cache: "pip"
-      
+
     - name: Install Dependencies
       run: pip install -r requirements.txt
 
@@ -81,42 +73,215 @@ jobs:
         java-version: '17'
         cache: 'maven'
 
-    - name: build and publish all images
-      shell: bash
-      run: |
-        cd docker/build
-        echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        export BUILD_IMAGES="all"
-        ./build.sh ${BUILD_IMAGES} ${{ env.VCELL_REPO_NAMESPACE }} ${{ env.VCELL_TAG }}
+    - name: Maven build
+      run: mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
 
-    - name: tag as latest and push to registry
-      shell: bash
+    - name: Upload Maven artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: maven-build-output
+        retention-days: 1
+        path: |
+          vcell-server/target/vcell-server-0.0.1-SNAPSHOT.jar
+          vcell-server/target/maven-jars/
+          vcell-api/target/vcell-api-0.0.1-SNAPSHOT.jar
+          vcell-api/target/maven-jars/
+          vcell-client/target/vcell-client-0.0.1-SNAPSHOT.jar
+          vcell-client/target/maven-jars/
+          vcell-admin/target/vcell-admin-0.0.1-SNAPSHOT.jar
+          vcell-admin/target/maven-jars/
+
+
+  docker-build:
+    runs-on: ubuntu-22.04
+    needs: [setup, maven-build]
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - name: api
+            dockerfile: docker/build/Dockerfile-api-dev
+            context: .
+            needs_maven: true
+            needs_secrets: false
+          - name: rest
+            dockerfile: vcell-rest/src/main/docker/Dockerfile.jvm
+            context: vcell-rest
+            needs_maven: false
+            needs_secrets: false
+            pre_build: "mvn clean install -DskipTests -Dvcell.exporter=false -f vcell-rest/pom.xml"
+          - name: exporter
+            dockerfile: vcell-rest/src/main/docker/Dockerfile.jvm
+            context: vcell-rest
+            needs_maven: false
+            needs_secrets: false
+            pre_build: "mvn clean install -DskipTests -Dvcell.exporter=true -f vcell-rest/pom.xml"
+          - name: webapp-dev
+            dockerfile: webapp-ng/Dockerfile-webapp
+            context: webapp-ng
+            needs_maven: false
+            needs_secrets: false
+            build_args: "BUILD_COMMAND=build_dev"
+          - name: webapp-stage
+            dockerfile: webapp-ng/Dockerfile-webapp
+            context: webapp-ng
+            needs_maven: false
+            needs_secrets: false
+            build_args: "BUILD_COMMAND=build_stage"
+          - name: webapp-prod
+            dockerfile: webapp-ng/Dockerfile-webapp
+            context: webapp-ng
+            needs_maven: false
+            needs_secrets: false
+            build_args: "BUILD_COMMAND=build_prod"
+          - name: webapp-island
+            dockerfile: webapp-ng/Dockerfile-webapp
+            context: webapp-ng
+            needs_maven: false
+            needs_secrets: false
+            build_args: "BUILD_COMMAND=build_island"
+          - name: webapp-remote
+            dockerfile: webapp-ng/Dockerfile-webapp
+            context: webapp-ng
+            needs_maven: false
+            needs_secrets: false
+            build_args: "BUILD_COMMAND=build_remote"
+          - name: db
+            dockerfile: docker/build/Dockerfile-db-dev
+            context: .
+            needs_maven: true
+            needs_secrets: false
+          - name: sched
+            dockerfile: docker/build/Dockerfile-sched-dev
+            context: .
+            needs_maven: true
+            needs_secrets: false
+          - name: submit
+            dockerfile: docker/build/Dockerfile-submit-dev
+            context: .
+            needs_maven: true
+            needs_secrets: false
+          - name: data
+            dockerfile: docker/build/Dockerfile-data-dev
+            context: .
+            needs_maven: true
+            needs_secrets: false
+          - name: mongo
+            dockerfile: docker/build/mongo/Dockerfile
+            context: docker/build/mongo
+            needs_maven: false
+            needs_secrets: false
+          - name: batch
+            dockerfile: docker/build/Dockerfile-batch-dev
+            context: .
+            needs_maven: true
+            needs_secrets: false
+          - name: opt
+            dockerfile: pythonCopasiOpt/Dockerfile
+            context: pythonCopasiOpt
+            needs_maven: false
+            needs_secrets: false
+          - name: clientgen
+            dockerfile: docker/build/Dockerfile-clientgen-dev
+            context: .
+            needs_maven: true
+            needs_secrets: false
+            needs_installer_secrets: true
+          - name: admin
+            dockerfile: docker/build/Dockerfile-admin-dev
+            context: .
+            needs_maven: true
+            needs_secrets: false
+    steps:
+    - name: Free up VM's disk space
       run: |
-        export CONTAINER_SET="vcell-exporter vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-webapp-island vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin"
-        for CONTAINER in ${CONTAINER_SET};\
-           do docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:latest;\
-           docker tag ${VCELL_REPO_NAMESPACE}/$CONTAINER:${VCELL_TAG} ${VCELL_REPO_NAMESPACE}/$CONTAINER:${FRIENDLY_TAG};\
-           docker push --all-tags ${VCELL_REPO_NAMESPACE}/$CONTAINER;\
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /usr/local/.ghcup
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/share/swift
+        sudo apt-get clean
+
+    - uses: actions/checkout@v4
+
+    - name: setup java 17 with maven cache
+      if: ${{ matrix.image.pre_build }}
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+        cache: 'maven'
+
+    - name: Download Maven artifacts
+      if: ${{ matrix.image.needs_maven }}
+      uses: actions/download-artifact@v4
+      with:
+        name: maven-build-output
+        path: .
+
+    - name: setup ssh-agent for installer secrets
+      if: ${{ matrix.image.needs_installer_secrets }}
+      uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ secrets.VC_KEY }}
+
+    - name: get installer secrets
+      if: ${{ matrix.image.needs_installer_secrets }}
+      env:
+        VCELL_MANAGER_NODE: vcellapi.cam.uchc.edu
+        VCELL_DEPLOY_REMOTE_DIR: /share/apps/vcell3/deployed_github
+      run: |
+        ssh-keyscan ${VCELL_MANAGER_NODE} >> ~/.ssh/known_hosts
+        sudo mkdir /usr/local/deploy
+        sudo chmod 777 /usr/local/deploy
+        cd /usr/local/deploy
+        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir_2025_03_18.tar .
+        cd ..
+        sudo tar -xvf deploy/deploy_dir_2025_03_18.tar
+        sudo chmod 777 -R deploy
+
+    - name: Pre-build step
+      if: ${{ matrix.image.pre_build }}
+      run: ${{ matrix.image.pre_build }}
+
+    - name: Log in to GHCR
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+    - name: Build and push Docker image
+      run: |
+        IMAGE_NAME="vcell-${{ matrix.image.name }}"
+        FULL_TAG="${{ needs.setup.outputs.vcell_repo_namespace }}/${IMAGE_NAME}:${{ needs.setup.outputs.vcell_tag }}"
+        BUILD_ARGS=""
+        if [ -n "${{ matrix.image.build_args || '' }}" ]; then
+          BUILD_ARGS="--build-arg ${{ matrix.image.build_args }}"
+        fi
+        echo "Building ${FULL_TAG}"
+        docker buildx build --platform=linux/amd64 \
+          ${BUILD_ARGS} \
+          -f ${{ matrix.image.dockerfile }} \
+          --tag ${FULL_TAG} \
+          ${{ matrix.image.context }}
+        docker push ${FULL_TAG}
+
+  tag-and-push:
+    runs-on: ubuntu-22.04
+    needs: [setup, docker-build]
+    steps:
+    - name: Log in to GHCR
+      run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+    - name: Tag and push all images
+      run: |
+        REPO="${{ needs.setup.outputs.vcell_repo_namespace }}"
+        TAG="${{ needs.setup.outputs.vcell_tag }}"
+        FRIENDLY="${{ needs.setup.outputs.friendly_tag }}"
+        CONTAINERS="vcell-exporter vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-webapp-island vcell-webapp-remote vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin"
+        for CONTAINER in ${CONTAINERS}; do
+          docker pull ${REPO}/${CONTAINER}:${TAG}
+          docker tag ${REPO}/${CONTAINER}:${TAG} ${REPO}/${CONTAINER}:latest
+          docker tag ${REPO}/${CONTAINER}:${TAG} ${REPO}/${CONTAINER}:${FRIENDLY}
+          docker push --all-tags ${REPO}/${CONTAINER}
         done
 
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
       if: ${{ failure() }}
-
-
-#  if [ "${{ github.event.inputs.client_only }}" = "true" ]; then
-#  echo "Building only client images"
-#  export BUILD_IMAGES="clientgen"
-#  else
-#  echo "Building all images"
-#
-#  fi
-
-#  if [ "${{ github.event.inputs.client_only }}" = "true" ]; then
-#  echo "Building only client images"
-#  export CONTAINER_SET="vcell-clientgen"
-#  else
-#  echo "Building all images"
-#  export CONTAINER_SET="vcell-exporter vcell-api vcell-rest vcell-webapp-prod vcell-webapp-dev vcell-webapp-stage vcell-webapp-island vcell-batch vcell-opt vcell-clientgen vcell-data vcell-db vcell-mongo vcell-sched vcell-submit vcell-admin"
-#  fi
