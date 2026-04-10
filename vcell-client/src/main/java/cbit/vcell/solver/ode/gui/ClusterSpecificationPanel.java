@@ -177,7 +177,10 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
         }
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            if (e.getSource() == ClusterSpecificationPanel.this.getYAxisChoice() && !e.getValueIsAdjusting()) {
+            if (e.getSource() == ClusterSpecificationPanel.this.getYAxisChoice()) {
+                if(suppressEvents || e.getValueIsAdjusting()) {
+                    return; // ignore events triggered during initialization
+                }
                 System.out.println(this.getClass().getName() + ".valueChanged() called. Source is YAxisChoice JList. Selected values: " + getYAxisChoice().getSelectedValuesList());
                 enforceAcsSdAcoRule();
                 // extract selected ColumnDescriptions
@@ -198,6 +201,8 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
 
     private final Map<DisplayMode, Integer> yAxisCounts = new LinkedHashMap<>();
     ClusterSpecificationPanel.IvjEventHandler ivjEventHandler = new ClusterSpecificationPanel.IvjEventHandler();
+
+    private boolean suppressEvents = false;   // to prevent event firing during programmatic changes to the UI
 
     public ClusterSpecificationPanel(ODEDataViewer odeDataViewer) {
         super();
@@ -222,22 +227,28 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
 
     private void populateYAxisChoices(DisplayMode mode) {
         DefaultListModel<ColumnDescription> model = getDefaultListModelY();
-        model.clear();
-        getYAxisChoice().setEnabled(false);
-        updateYAxisLabel(mode);
-        ColumnDescription[] cds = getColumnDescriptionsForMode(mode);
-        if (cds == null || cds.length <= 1) {
-            return;
-        }
-        for (ColumnDescription cd : cds) {
-            if (!"t".equals(cd.getName())) {
-                model.addElement(cd);
+        suppressEvents = true;    // prevent firing events while we update the list model
+        try {
+            model.clear();
+            getYAxisChoice().setEnabled(false);
+            updateYAxisLabel(mode);
+            ColumnDescription[] cds = getColumnDescriptionsForMode(mode);
+            if (cds == null || cds.length <= 1) {
+                return;
             }
+            for (ColumnDescription cd : cds) {
+                if (!"t".equals(cd.getName())) {
+                    model.addElement(cd);
+                }
+            }
+        } finally {
+            suppressEvents = false;
         }
         if (!model.isEmpty()) {
             getYAxisChoice().setEnabled(true);
             getYAxisChoice().setSelectedIndex(0);   // triggers valueChanged()
         }
+
     }
 
     private void updateYAxisLabel(DisplayMode mode) {

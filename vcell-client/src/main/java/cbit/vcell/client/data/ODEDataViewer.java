@@ -535,10 +535,12 @@ public void setVcDataIdentifier(VCDataIdentifier vcDataIdentifier) {
 	setOdeDataContext();
 	firePropertyChange("vcDataIdentifier", oldValue, vcDataIdentifier);
 	if(hasLangevinBatchResults) {
-		getClusterSpecificationPanel().refreshData();
 		getClusterVisualizationPanel().refreshData();
-		getMoleculeSpecificationPanel().refreshData();
 		getMoleculeVisualizationPanel().refreshData();
+		// order is important, the visualization panels must refresh first so that necessary data will be present when
+		// the specification panels start sending events to the visualization panels
+		getClusterSpecificationPanel().refreshData();
+		getMoleculeSpecificationPanel().refreshData();
 	} else {
 		outputSpeciesResultsPanel.refreshData();
 	}

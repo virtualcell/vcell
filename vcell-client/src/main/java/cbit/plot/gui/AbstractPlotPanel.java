@@ -34,6 +34,13 @@ public abstract class AbstractPlotPanel extends JPanel {
                   int plotWidth, int plotHeight,
                   double xMaxRounded, double yMaxRounded, double yMinRounded,
                   double dt);
+        /**
+         * Returns the closest pixel-space point to (mouseX, mouseY),
+         * or null if this renderer does not support snapping.
+         */
+        default Point getClosestPoint(int mouseX, int mouseY) {
+            return null;    // default: no snapping
+        }
     }
 
     // AVG renderer: polyline
@@ -41,13 +48,17 @@ public abstract class AbstractPlotPanel extends JPanel {
         final double[] time;
         final double[] values;
         final Color color;
+        final AbstractPlotPanel parent;
 
-        AvgRenderer(double[] time, double[] values, Color color) {
+        private int[] xs;
+        private int[] ys;
+
+        AvgRenderer(double[] time, double[] values, Color color, AbstractPlotPanel parent) {
             this.time = time;
             this.values = values;
             this.color = color;
+            this.parent = parent;
         }
-
         @Override
         public void draw(Graphics2D g2,
                          int x0, int x1, int y0, int y1,
@@ -58,8 +69,8 @@ public abstract class AbstractPlotPanel extends JPanel {
             int n = values.length;
             if (n < 2) return;
 
-            int[] xs = new int[n];
-            int[] ys = new int[n];
+            xs = new int[n];
+            ys = new int[n];
 
             for (int i = 0; i < n; i++) {
                 double t = (time != null ? time[i] : i * dt);
@@ -72,6 +83,42 @@ public abstract class AbstractPlotPanel extends JPanel {
             g2.setColor(color);
             g2.setStroke(new BasicStroke(CURVE_STROKE, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             g2.drawPolyline(xs, ys, n);
+
+            // Draw the polyline
+            g2.setColor(color);
+            g2.setStroke(new BasicStroke(CURVE_STROKE, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+            g2.drawPolyline(xs, ys, n);
+
+            // Draw nodes if enabled
+            if (parent.getShowNodes()) {          // parent is the AbstractPlotPanel
+                g2.setColor(color);
+                int diameter = 4;                 // small, unobtrusive
+                int radius = diameter / 2;
+
+                for (int i = 0; i < n; i++) {
+                    int cx = xs[i] - radius;
+                    int cy = ys[i] - radius;
+                    g2.fillOval(cx, cy, diameter, diameter);
+                }
+            }
+        }
+        @Override
+        public Point getClosestPoint(int mouseX, int mouseY) {
+            if (xs == null || ys == null) return null;
+            int bestIndex = -1;
+            double bestDist2 = Double.POSITIVE_INFINITY;
+            for (int i = 0; i < xs.length; i++) {
+                double dx = xs[i] - mouseX;
+                double dy = ys[i] - mouseY;
+                double d2 = dx*dx + dy*dy;
+
+                if (d2 < bestDist2) {
+                    bestDist2 = d2;
+                    bestIndex = i;
+                }
+            }
+            if (bestIndex < 0) return null;
+            return new Point(xs[bestIndex], ys[bestIndex]);
         }
     }
 
@@ -81,12 +128,14 @@ public abstract class AbstractPlotPanel extends JPanel {
         final double[] upper;
         final double[] lower;
         final Color fillColor;
+        final AbstractPlotPanel parent;
 
-        BandRenderer(double[] time, double[] upper, double[] lower, Color fillColor) {
+        BandRenderer(double[] time, double[] upper, double[] lower, Color fillColor, AbstractPlotPanel parent) {
             this.time = time;
             this.upper = upper;
             this.lower = lower;
             this.fillColor = fillColor;
+            this.parent = parent;
         }
 
         @Override
@@ -132,31 +181,36 @@ public abstract class AbstractPlotPanel extends JPanel {
         }
     }
 
+    // Renderer options list
+    private boolean fieldShowNodes = true;      // whether to draw small circles at the data points (nodes)
+    private boolean fieldSnapToNodes = true;    // whether the crosshair snaps to the nearest node (if false, it shows exact mouse coordinates)
+    private boolean fieldShowCrosshair = true;  // whether to show the crosshair at all (if false, mouse coordinates are still tracked and sent to the callback, but no crosshair is drawn)
+
     // Renderers list
     protected final List<SeriesRenderer> renderers = new ArrayList<>();
 
     // Scaling state
-    protected double globalMin = 0;
+    protected double globalMin = 0;         // on the-y axis; x-axis is always 0 to dt*(N-1)
     protected double globalMax = 1;
     protected double dt = 1;
 
     // Crosshair state
-    protected Integer mouseX = null;
+    protected Integer mouseX = null;    // mouse coordinates in pixels, relative to the panel; null if mouse is outside the plot area
     protected Integer mouseY = null;
     protected boolean crosshairEnabled = true;
     protected Consumer<double[]> coordCallback;
 
     // Cached plot area
-    protected int lastX0, lastX1, lastY0, lastY1;
-    protected double lastXMaxRounded;
-    protected double lastYMaxRounded;
-    protected double lastYMinRounded;
+    protected int lastX0, lastX1, lastY0, lastY1; // pixel coordinates of the plot area (insets from the panel edges)
+    protected double lastXMaxRounded;   // in seconds
+    protected double lastYMaxRounded;   // in molecules
+    protected double lastYMinRounded;   // in molecules (could be negative if avg-sd<0
 
     public AbstractPlotPanel() {
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                int mx = e.getX();
+                int mx = e.getX();      // in pixels, relative to the panel
                 int my = e.getY();
 
                 if (mx >= lastX0 && mx <= lastX1 && my >= lastY1 && my <= lastY0) {
@@ -168,11 +222,21 @@ public abstract class AbstractPlotPanel extends JPanel {
                 }
 
                 if (crosshairEnabled && mouseX != null && mouseY != null) {
-                    double fracX = (mouseX - lastX0) / (double)(lastX1 - lastX0);
-                    double xVal = fracX * lastXMaxRounded;
-
-                    double fracY = (lastY0 - mouseY) / (double)(lastY0 - lastY1);
-                    double yVal = lastYMinRounded + fracY * (lastYMaxRounded - lastYMinRounded);
+                    mx = mouseX;
+                    my = mouseY;
+                    if (fieldSnapToNodes) {
+                        Point snapped = findClosestNode(mx, my);
+                        if (snapped != null) {
+                            mx = snapped.x;     // mx and my are now snapped to the nearest node's pixel coordinates
+                            my = snapped.y;
+                            mouseX = mx;        // update mouseX and mouseY to the snapped coordinates for crosshair drawing
+                            mouseY = my;
+                        }
+                    }
+                    double fracX = (mx - lastX0) / (double)(lastX1 - lastX0);
+                    double xVal = fracX * lastXMaxRounded;      // mouse coord on x-axis in seconds
+                    double fracY = (lastY0 - my) / (double)(lastY0 - lastY1);
+                    double yVal = lastYMinRounded + fracY * (lastYMaxRounded - lastYMinRounded); // mouse coord on y-axis in molecules
 
                     if (coordCallback != null) {
                         coordCallback.accept(new double[]{xVal, yVal});
@@ -182,7 +246,6 @@ public abstract class AbstractPlotPanel extends JPanel {
                         coordCallback.accept(null);
                     }
                 }
-
                 repaint();
             }
         });
@@ -208,7 +271,7 @@ public abstract class AbstractPlotPanel extends JPanel {
         this.coordCallback = cb;
     }
 
-    public void clear() {
+    public void clearAllRenderers() {
         renderers.clear();
     }
 
@@ -224,15 +287,15 @@ public abstract class AbstractPlotPanel extends JPanel {
     // High-level, stat-aware renderers
 
     public void addAvgRenderer(double[] time, double[] avg, Color color, String name, Object statTag) {
-        renderers.add(new AvgRenderer(time, avg, color));
+        renderers.add(new AvgRenderer(time, avg, color, this));
     }
 
     public void addMinMaxRenderer(double[] time, double[] min, double[] max, Color color, String name, Object statTag) {
-        renderers.add(new BandRenderer(time, max, min, color));
+        renderers.add(new BandRenderer(time, max, min, color, this));
     }
 
     public void addSDRenderer(double[] time, double[] low, double[] high, Color color, String name, Object statTag) {
-        renderers.add(new BandRenderer(time, high, low, color));
+        renderers.add(new BandRenderer(time, high, low, color, this));
     }
 
     // Utilities
@@ -241,12 +304,11 @@ public abstract class AbstractPlotPanel extends JPanel {
         if (value <= 0) return 1;
         double exp = Math.pow(10, Math.floor(Math.log10(value)));
         double n = value / exp;
-        double rounded;
-        if (n <= 1) rounded = 1;
-        else if (n <= 2) rounded = 2;
-        else if (n <= 5) rounded = 5;
-        else rounded = 10;
-        return rounded * exp;
+        double[] steps = {1,2,3,4,5,6,7,8,9,10};    // 1–10 sequence
+        for (double s : steps) {
+            if (n <= s) return s * exp;
+        }
+        return 10 * exp;
     }
 
     public static String formatTick(double value, double step) {
@@ -268,6 +330,36 @@ public abstract class AbstractPlotPanel extends JPanel {
         return s;
     }
 
+    public boolean getShowNodes() {
+        return fieldShowNodes;
+    }
+    public boolean getSnapToNodes() {
+        return fieldSnapToNodes;
+    }
+    private Point findClosestNode(int mouseX, int mouseY) {     // use for SnapToNodes feature
+        Point best = null;
+        double bestDist2 = Double.POSITIVE_INFINITY;
+        for (SeriesRenderer r : renderers) {
+            Point p = r.getClosestPoint(mouseX, mouseY);
+            if (p != null) {
+                double dx = p.x - mouseX;
+                double dy = p.y - mouseY;
+                double d2 = dx*dx + dy*dy;
+                if (d2 < bestDist2) {
+                    bestDist2 = d2;
+                    best = p;
+                }
+            }
+        }
+        // Snap only if within a threshold (e.g., 10px)
+        if (best != null && bestDist2 <= 400) { // 10px radius
+            return best;
+        }
+        return null;
+    }
+
+    // -------------------------------------------------------------------
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -275,9 +367,8 @@ public abstract class AbstractPlotPanel extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        int w = getWidth();
-        int h = getHeight();
-
+        int w = getWidth();     // width of the component (in pixels)
+        int h = getHeight();    // height of the component
         g2.setColor(Color.white);
         g2.fillRect(0, 0, w, h);
 
@@ -285,8 +376,7 @@ public abstract class AbstractPlotPanel extends JPanel {
         int x1 = w - RIGHT_INSET;
         int y0 = h - BOTTOM_INSET;
         int y1 = TOP_INSET;
-
-        lastX0 = x0;
+        lastX0 = x0;    // in pixels
         lastX1 = x1;
         lastY0 = y0;
         lastY1 = y1;
@@ -295,8 +385,8 @@ public abstract class AbstractPlotPanel extends JPanel {
         int plotHeight = y0 - y1;
         if (plotWidth <= 0 || plotHeight <= 0) return;
 
-        // Determine max length from all renderers that use arrays
-        int maxLength = 0;
+        // --- determine max length from all renderers that use arrays -----
+        int maxLength = 0;      // number of timepoints
         for (SeriesRenderer r : renderers) {
             if (r instanceof AvgRenderer ar) {
                 maxLength = Math.max(maxLength, ar.values.length);
@@ -306,40 +396,46 @@ public abstract class AbstractPlotPanel extends JPanel {
         }
         if (maxLength < 2) return;
 
-        double yMaxRounded = roundUpNice(globalMax);
-        double yMinRounded = (globalMin < 0) ? -roundUpNice(-globalMin) : 0;
-        double xMax = dt * (maxLength - 1);
+        // --- compute axis scaling -----------------------------------------
+        double yMaxRounded = roundUpNice(globalMax);    // in molecules
+        double yMinRounded = (globalMin < 0) ? -roundUpNice(-globalMin) : 0;    // may be negative if avg-sd<0
+        double xMax = dt * (maxLength - 1);             // in seconds
         double xMaxRounded = roundUpNice(xMax);
+        lastXMaxRounded = xMaxRounded;  // seconds
+        lastYMaxRounded = yMaxRounded;  // molecules
+        lastYMinRounded = yMinRounded;  // molecules
 
-        lastXMaxRounded = xMaxRounded;
-        lastYMaxRounded = yMaxRounded;
-        lastYMinRounded = yMinRounded;
+        // --- compute pixel location of value zero on the y-axis, to draw the horizontal axis there
+        double normZero = (0 - yMinRounded) / (yMaxRounded - yMinRounded);
+        int yZeroPix = y0 - (int)Math.round(normZero * plotHeight);
 
         FontMetrics fm = g2.getFontMetrics();
 
-        // Gridlines
+        // --- grid lines ----------------------------------------------
         g2.setColor(new Color(220, 220, 220));
         g2.setStroke(new BasicStroke(1f));
 
-        int yTicks = 5;
-        double yRange = yMaxRounded - yMinRounded;
-        double yStep = yRange / yTicks;
-
-        for (int i = 0; i <= yTicks; i++) {
-            double valueMajor = yMinRounded + i * yStep;
-            double norm = (valueMajor - yMinRounded) / (yMaxRounded - yMinRounded);
-            int yPixMajor = y0 - (int)Math.round(norm * plotHeight);
-            g2.drawLine(x0, yPixMajor, x1, yPixMajor);
-
-            if (i < yTicks) {
-                double valueMid = valueMajor + yStep / 2.0;
+        int yTicks = 5;     // number of major horizontal ticks (above 0)
+        double yStep = yMaxRounded / yTicks;
+        // k runs over all integer multiples of yStep that fall inside the range
+        int kMin = (int)Math.floor(yMinRounded / yStep);
+        int kMax = (int)Math.ceil(yMaxRounded / yStep);
+        for (int k = kMin; k <= kMax; k++) {
+            double valueMajor = k * yStep;                  // ----- major gridline -----
+            if (valueMajor >= yMinRounded - 1e-9 && valueMajor <= yMaxRounded + 1e-9) {
+                double normMajor = (valueMajor - yMinRounded) / (yMaxRounded - yMinRounded);
+                int yPixMajor = y0 - (int)Math.round(normMajor * plotHeight);
+                g2.drawLine(x0, yPixMajor, x1, yPixMajor);
+            }
+            double valueMid = valueMajor + yStep / 2.0;     // ----- mid gridline -----
+            if (valueMid >= yMinRounded && valueMid <= yMaxRounded) {
                 double normMid = (valueMid - yMinRounded) / (yMaxRounded - yMinRounded);
                 int yPixMid = y0 - (int)Math.round(normMid * plotHeight);
                 g2.drawLine(x0, yPixMid, x1, yPixMid);
             }
         }
 
-        double[] xMajor = {0, xMaxRounded / 2, xMaxRounded};
+        double[] xMajor = {0, xMaxRounded / 2, xMaxRounded};    // vertical grid lines
         for (int i = 0; i < xMajor.length; i++) {
             double xvMajor = xMajor[i];
             int xPixMajor = x0 + (int)Math.round((xvMajor / xMaxRounded) * plotWidth);
@@ -352,47 +448,57 @@ public abstract class AbstractPlotPanel extends JPanel {
             }
         }
 
-        // Axes + ticks
+        // --- draw axes ------------------------------------------------
         g2.setColor(Color.black);
         g2.setStroke(new BasicStroke(AXIS_STROKE));
 
-        g2.drawLine(x0, y0, x1, y0);
-        g2.drawLine(x0, y0, x0, y1);
+        g2.drawLine(x0, yZeroPix, x1, yZeroPix); // horizontal axis, going through the "0 molecules" point
+        g2.drawLine(x0, y0, x0, y1);             // vertical axis
 
-        for (int i = 0; i <= yTicks; i++) {
-            double valueMajor = i * yStep;
-            double norm = valueMajor / yMaxRounded;
-            int yPixMajor = y0 - (int)Math.round(norm * plotHeight);
+        // --- ticks ---------------------------------------------------
+        g2.setColor(Color.black);
+        g2.setStroke(new BasicStroke(AXIS_STROKE));
 
-            g2.drawLine(x0 - 5, yPixMajor, x0, yPixMajor);
-
-            String label = formatTick(valueMajor, yStep);
+        // yStep was computed as: yStep = yMaxRounded / yTicks;
+        // and gridlines were drawn at k * yStep for k in [floor(min/step), ceil(max/step)]
+        kMin = (int)Math.floor(yMinRounded / yStep);        // y-axis ticks (on the vertical axis)
+        kMax = (int)Math.ceil(yMaxRounded / yStep);
+        for (int k = kMin; k <= kMax; k++) {
+            double value = k * yStep;
+            if (value < yMinRounded - 1e-9 || value > yMaxRounded + 1e-9) {
+                continue;   // skip values outside the rounded range (floating‑point guard)
+            }
+            // convert to pixel using the SAME normalization as gridlines and renderer
+            double norm = (value - yMinRounded) / (yMaxRounded - yMinRounded);
+            int yPix = y0 - (int)Math.round(norm * plotHeight);
+            g2.drawLine(x0 - 5, yPix, x0, yPix);     // major tick (little horizontal line on the vertical axis)
+            String label = formatTick(value, yStep);    // label
             int sw = fm.stringWidth(label);
-            g2.drawString(label, x0 - 10 - sw, yPixMajor + fm.getAscent() / 2);
+            g2.drawString(label, x0 - 10 - sw, yPix + fm.getAscent() / 2);
 
-            if (i < yTicks) {
-                double valueMid = (i + 0.5) * yStep;
-                double normMid = valueMid / yMaxRounded;
-                int yPixMid = y0 - (int)Math.round(normMid * plotHeight);
-                g2.drawLine(x0 - 3, yPixMid, x0, yPixMid);
+            if (k < kMax) {     // mid tick (between this and next)
+                double midValue = value + yStep / 2.0;
+                if (midValue >= yMinRounded && midValue <= yMaxRounded) {
+                    double normMid = (midValue - yMinRounded) / (yMaxRounded - yMinRounded);
+                    int yPixMid = y0 - (int)Math.round(normMid * plotHeight);
+                    g2.drawLine(x0 - 3, yPixMid, x0, yPixMid);
+                }
             }
         }
-
-        double xStep = xMajor[1] - xMajor[0];
+        double xStep = xMajor[1] - xMajor[0];       // x-axis ticks (on the horizontal axis)
         for (int i = 0; i < xMajor.length; i++) {
             double xvMajor = xMajor[i];
             int xPixMajor = x0 + (int)Math.round((xvMajor / xMaxRounded) * plotWidth);
+            g2.drawLine(xPixMajor, yZeroPix, xPixMajor, yZeroPix + 5);  // draw major tick on the x-axis (yZeroPix), not at y0
 
-            g2.drawLine(xPixMajor, y0, xPixMajor, y0 + 5);
-
-            String label = formatTick(xvMajor, xStep);
+            String label = formatTick(xvMajor, xStep);  // label stays at the bottom
             int sw = fm.stringWidth(label);
             g2.drawString(label, xPixMajor - sw / 2, y0 + fm.getAscent() + 5);
 
             if (i < xMajor.length - 1) {
                 double xvMid = (xMajor[i] + xMajor[i + 1]) / 2.0;
                 int xPixMid = x0 + (int)Math.round((xvMid / xMaxRounded) * plotWidth);
-                g2.drawLine(xPixMid, y0, xPixMid, y0 + 3);
+                g2.drawLine(xPixMid, yZeroPix, xPixMid, yZeroPix + 3);  // mid tick also on the x‑axis
             }
         }
 

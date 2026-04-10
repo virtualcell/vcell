@@ -77,7 +77,6 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                     setCrosshairEnabled(enabled);
                     return;
                 }
-
             }
         }
         @Override
@@ -212,11 +211,12 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
         } else {
             getBottomLabel().setText(" ");
         }
+        // These are not being used here, which is inconsistent with MoleculeVisualizationPanel
+        // Instead, we receive them indirectly via the ClusterSelection object from the ClusterSpecificationPanel
 //        simulationModelInfo = owner.getSimulationModelInfo();
 //        langevinSolverResultSet = owner.getLangevinSolverResultSet();
         System.out.println(this.getClass().getSimpleName() + ".refreshData() called");
     }
-
     // ---------------------------------------------------------------------
 
     private void initializeGlobalPalette() {
@@ -324,12 +324,9 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
         System.out.println(getClass().getSimpleName() + ".redrawPlot() called, current selection: " + sel);
 
         ClusterPlotPanel plot = getClusterPlotPanel();
+        plot.clearAllRenderers();
 
-        // ---------------------------------------------------------------------
-        // NULL CASE
-        // ---------------------------------------------------------------------
         if (sel == null || sel.resultSet == null) {
-            plot.clear();
             plot.repaint();
             return;
         }
@@ -398,38 +395,27 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
             }
         }
 
-        // ---------------------------------------------------------------------
-        // DRAWING
-        // ---------------------------------------------------------------------
-        plot.clear();
-
-        // Draw all selected curves EXCEPT SD (SD is envelope only)
+        // --- AVG -----------------------------------------------------
         for (ColumnDescription cd : columns) {
             String name = cd.getName();
             if (name.equals("SD")) continue;
-
             double[] y = yMap.get(name);
             if (y == null) continue;
-
             Color c = persistentColorMap.get(name);
-
             // Cluster curves are AVG curves in the new API
             plot.addAvgRenderer(times, y, c, name, /*statTag*/ "AVG");
         }
 
-        // Draw SD envelope if SD is selected
+        // --- SD -------------------------------------------------
         if (sdSelected && acs != null && sd != null) {
             int n = acs.length;
             double[] upper = new double[n];
             double[] lower = new double[n];
-
             for (int i = 0; i < n; i++) {
                 upper[i] = acs[i] + sd[i];
                 lower[i] = acs[i] - sd[i];
             }
-
             Color sdColor = persistentColorMap.get("SD");
-
             // SD is a band renderer in the new API
             plot.addSDRenderer(times, lower, upper, sdColor, "SD", /*statTag*/ "SD");
         }
@@ -438,13 +424,10 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
         // FINALIZE
         // ---------------------------------------------------------------------
         if (globalMin > 0) globalMin = 0;
-
         plot.setGlobalMinMax(globalMin, globalMax);
-
         if (times.length > 1) {
             plot.setDt(times[1]);   // times[0] == 0
         }
-
         plot.repaint();
     }
 

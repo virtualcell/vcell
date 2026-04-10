@@ -170,11 +170,11 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
         }
         @Override
         public void valueChanged(ListSelectionEvent e) {
-            if (e.getSource() == MoleculeSpecificationPanel.this.getYAxisChoice() && !e.getValueIsAdjusting()) {
-                System.out.println(this.getClass().getName() + ".IvjEventHandler.valueChanged() called");
-                if (e.getValueIsAdjusting()) {
+            if (e.getSource() == MoleculeSpecificationPanel.this.getYAxisChoice()) {
+                if (supressEvents || e.getValueIsAdjusting()) {
                     return;
                 }
+                System.out.println(this.getClass().getName() + ".IvjEventHandler.valueChanged() called");
                 MoleculeSelection sel = new MoleculeSelection(
                         getYAxisChoice().getSelectedValuesList(),
                         getSelectedStatistics(),
@@ -190,6 +190,8 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
     private final ODEDataViewer owner;
     private LangevinSolverResultSet langevinSolverResultSet = null;
     private SimulationModelInfo simulationModelInfo = null;
+
+    private boolean supressEvents = true;   // flag to suppress events during initialization
 
     public MoleculeSpecificationPanel(ODEDataViewer owner) {
         super();
@@ -270,18 +272,29 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
         DefaultListModel<ColumnDescription> model = getDefaultListModelY();
         // Remember what was selected before we touch the model
         java.util.List<ColumnDescription> previouslySelected = list.getSelectedValuesList();
-        model.clear();
-        list.setEnabled(false);
-        for (DisplayMode mode : modes) {
-            java.util.List<ColumnDescription> cds = getColumnDescriptionsForMode(mode);
-            if (cds == null || cds.size() <= 1) {
-                continue;
-            }
-            for (ColumnDescription cd : cds) {
-                if (!"t".equals(cd.getName())) {
-                    model.addElement(cd);
+
+        // addElement() calls will fire ListDataEvents which will trigger list selection events, which will eventually
+        // result in multiple calls to firePropertyChange("MoleculeSelectionChanged", ...) and multiple redraws of
+        // the right panels (plot and data table). To avoid firing these events while we're still populating the model,
+        // we'll set a flag to suppress events temporarily. The event handler will check this flag and skip firing
+        // property changes if it's set.
+        supressEvents = true;
+        try {
+            model.clear();
+            list.setEnabled(false);
+            for (DisplayMode mode : modes) {
+                java.util.List<ColumnDescription> cds = getColumnDescriptionsForMode(mode);
+                if (cds == null || cds.size() <= 1) {
+                    continue;
+                }
+                for (ColumnDescription cd : cds) {
+                    if (!"t".equals(cd.getName())) {
+                        model.addElement(cd);
+                    }
                 }
             }
+        } finally {
+            supressEvents = false;   // re-enable events after we're done populating the model, even if an exception occurs
         }
         updateYAxisLabel(model);
         if (!model.isEmpty()) {

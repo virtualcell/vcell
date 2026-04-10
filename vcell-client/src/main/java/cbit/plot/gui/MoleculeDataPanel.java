@@ -1,8 +1,15 @@
 package cbit.plot.gui;
 
+import cbit.vcell.client.data.ODEDataViewer;
+import cbit.vcell.desktop.VCellTransferable;
 import cbit.vcell.math.ReservedVariable;
+import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.parser.SymbolTableEntry;
 import cbit.vcell.simdata.LangevinSolverResultSet;
+import cbit.vcell.simdata.UiTableExporterToHDF5;
+import cbit.vcell.solver.OutputTimeSpec;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ClusterSpecificationPanel;
 import cbit.vcell.solver.ode.gui.MoleculeSpecificationPanel;
@@ -85,8 +92,11 @@ public class MoleculeDataPanel extends AbstractDataPanel {
 
     // ------------------------------------------------------
 
-    public MoleculeDataPanel() {
+    ODEDataViewer owner;
+
+    public MoleculeDataPanel(ODEDataViewer owner) {
         super();
+        this.owner = owner;
     }
     @Override
     protected void initConnections() throws Exception {
@@ -127,6 +137,12 @@ public class MoleculeDataPanel extends AbstractDataPanel {
         int timeIndex = avgRS.findColumn(ReservedVariable.TIME.getName());
         double[] times = avgRS.extractColumn(timeIndex);
         int rowCount = times.length;
+        OutputTimeSpec outputTimeSpec = owner.getSimulation().getSolverTaskDescription().getOutputTimeSpec();
+        double dt = ((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep();    // uniform output time step
+        double endingTime = owner.getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
+        for (int i = 0; i < times.length; i++) {
+            times[i] = i * dt;
+        }
 
 
 
@@ -236,4 +252,117 @@ public class MoleculeDataPanel extends AbstractDataPanel {
             column.setPreferredWidth(maxWidth + margin);
         }
     }
+
+    // ------------------------------------------------------
+
+    // -------------------------------------------------------------------------
+    // Override copy handler
+    // -------------------------------------------------------------------------
+    @Override
+    protected void onCopyCells(boolean isHDF5) {
+        copyCells(isHDF5);
+    }
+
+    // -------------------------------------------------------------------------
+    // Instance version of old static copyCells()
+    // -------------------------------------------------------------------------
+    private void copyCells(boolean isHDF5) {
+        try {
+            int r = getScrollPaneTable().getRowCount();
+            int c = getScrollPaneTable().getColumnCount();
+
+            if (r < 1 || c < 1) {
+                throw new Exception("No table cell is selected.");
+            }
+
+            int[] rows = new int[r];
+            int[] columns = new int[c];
+            for (int i = 0; i < r; i++) rows[i] = i;
+            for (int i = 0; i < c; i++) columns[i] = i;
+
+            LG.debug("Copying cluster data: rows=" + r + " columns=" + c + " isHDF5=" + isHDF5);
+
+            boolean bHistogram = false;
+            String blankCellValue = "-1";
+            boolean bHasTimeColumn = true;
+
+            StringBuffer buffer = new StringBuffer();
+
+            if (isHDF5) {
+                int columnCount = c;
+                int rowCount = r;
+
+                String[] columnNames = new String[columnCount];
+                for (int i = 0; i < columnCount; i++) {
+                    columnNames[i] = getScrollPaneTable().getColumnName(i);
+                }
+
+                Object[][] rowColValues = new Object[rowCount][columnCount];
+                for (int i = 0; i < rowCount; i++) {
+                    for (int j = 0; j < columnCount; j++) {
+                        rowColValues[i][j] = getScrollPaneTable().getValueAt(i, j);
+                    }
+                }
+
+                UiTableExporterToHDF5.exportTableToHDF5(
+                        bHistogram,
+                        blankCellValue,
+                        columns,
+                        rows,
+                        "t",
+                        "hdf5DescriptionText",
+                        columnNames,
+                        null,
+                        null,
+                        rowColValues
+                );
+            }
+
+            // Column headers
+            for (int i = 0; i < c; i++) {
+                buffer.append(getScrollPaneTable().getColumnName(i));
+                if (i < c - 1) buffer.append("\t");
+            }
+
+            Expression[] resolvedValues =
+                    new Expression[c - (bHasTimeColumn ? 1 : 0)];
+
+            // Rows
+            for (int i = 0; i < r; i++) {
+                buffer.append("\n");
+                for (int j = 0; j < c; j++) {
+                    Object cell = getScrollPaneTable().getValueAt(i, j);
+                    cell = (cell != null ? cell : "");
+
+                    buffer.append(cell.toString());
+                    if (j < c - 1) buffer.append("\t");
+
+                    if (!cell.equals("") && (!bHasTimeColumn || j > 0)) {
+                        resolvedValues[j - (bHasTimeColumn ? 1 : 0)] =
+                                new Expression(((Double) cell).doubleValue());
+                    }
+                }
+            }
+
+            VCellTransferable.ResolvedValuesSelection rvs =
+                    new VCellTransferable.ResolvedValuesSelection(
+                            new SymbolTableEntry[c - 1],
+                            null,
+                            resolvedValues,
+                            buffer.toString()
+                    );
+
+            VCellTransferable.sendToClipboard(rvs);
+
+        } catch (Exception ex) {
+            LG.error("Error copying cluster data", ex);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Error copying cluster data: " + ex.getMessage(),
+                    "Copy Error",
+                    JOptionPane.ERROR_MESSAGE
+            );
+        }
+    }
+
 }

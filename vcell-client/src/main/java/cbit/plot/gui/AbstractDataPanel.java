@@ -45,7 +45,6 @@ public abstract class AbstractDataPanel extends JPanel {
                 if (SwingUtilities.isRightMouseButton(e)) {
                     getPopupMenu().show(e.getComponent(), e.getX(), e.getY());
                 }
-
                 onMouseClick(row, col, e);
             }
         }
@@ -119,7 +118,7 @@ public abstract class AbstractDataPanel extends JPanel {
     }
 
     protected String getFooterLabelText() {
-        return "<html>To <b>Copy</b> table data or <b>Export</b> as HDF5, select rows/cells and use the right mouse button menu.</html>";
+        return "<html>To <b>Copy</b> table data to the clipboard use the right mouse button menu.</html>";
     }
 
     protected void initConnections() throws Exception {

@@ -7,13 +7,17 @@ import cbit.plot.gui.MoleculePlotPanel;
 import cbit.vcell.client.data.ODEDataViewer;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.simdata.LangevinSolverResultSet;
+import cbit.vcell.solver.OutputTimeSpec;
 import cbit.vcell.solver.SimulationModelInfo;
+import cbit.vcell.solver.TimeStep;
+import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.util.ColumnDescription;
 import org.vcell.util.ColorUtil;
 import org.vcell.util.gui.SpecialtyTableRenderer;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
@@ -27,6 +31,9 @@ import java.util.*;
 import java.util.List;
 
 public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
+
+    private static final int MINMAX_ALPHA = 90;   // stronger envelope
+    private static final int SD_ALPHA     = 60;   // lighter envelope
 
     private final ODEDataViewer owner;
     LangevinSolverResultSet langevinSolverResultSet = null;
@@ -99,7 +106,6 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
         setVisualizationBackground(Color.WHITE);
     }
 
-
     @Override
     protected JPanel createPlotPanel() {
         return getMoleculePlotPanel();
@@ -148,7 +154,7 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
     public MoleculeDataPanel getMoleculeDataPanel() {               // actual table shown here
         if (moleculeDataPanel == null) {
             try {
-                moleculeDataPanel = new MoleculeDataPanel();
+                moleculeDataPanel = new MoleculeDataPanel(owner);
             } catch (java.lang.Throwable ivjExc) {
                 handleException(ivjExc);
             }
@@ -174,85 +180,207 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
 
         // listen to the left panel
         owner.getMoleculeSpecificationPanel().addPropertyChangeListener(ivjEventHandler);
-
     }
-
-
-
 
     // ----------------------------------------------------------------------
 
-
     private void redrawPlot(MoleculeSpecificationPanel.MoleculeSelection sel) throws ExpressionException {
-//        ClusterPlotPanel plot = getMoleculePlotPanel();
-//        plot.clearAllRenderers();
-//
-//        if (langevinSolverResultSet == null || !langevinSolverResultSet.isAverageDataAvailable()) {
-//            return;
-//        }
-//
-//        ODESimData avgData = langevinSolverResultSet.getAvg();
-//        ODESimData minData = langevinSolverResultSet.getMin();
-//        ODESimData maxData = langevinSolverResultSet.getMax();
-//        ODESimData stdData = langevinSolverResultSet.getStd();
-//
-//        int indexTime = avgData.findColumn("t");
-//        double[] time = avgData.extractColumn(indexTime);
-//
-//        for (ColumnDescription cd : sel.selectedColumns) {
-//            String columnName = cd.getName();
-//            Color baseColor = persistentColorMap.get(columnName);
-//            Color mMColor = deriveMinMaxColor(baseColor);
-//            Color sDColor = deriveSDColor(baseColor);
-//
-//            MoleculeSpecificationPanel.StatisticSelection ss;
-//            // --- AVG ---
-//            ss = MoleculeSpecificationPanel.StatisticSelection.AVG;
-//            if (sel.selectedStatistics.contains(ss)) {
-//                double[] avg = LangevinSolverResultSet.getSeries(avgData, columnName);
-//                if (avg != null) {
-//                    plot.addAvgRenderer(time, avg, baseColor, columnName, ss);
-//                }
-//            }
-//
-//            // --- MIN/MAX ---
-//            ss = MoleculeSpecificationPanel.StatisticSelection.MIN_MAX;
-//            if (sel.selectedStatistics.contains(ss)) {
-//                double[] min = LangevinSolverResultSet.getSeries(minData, columnName);
-//                double[] max = LangevinSolverResultSet.getSeries(maxData, columnName);
-//                if (min != null && max != null) {
-//                    plot.addMinMaxRenderer(time, min, max, mMColor, columnName, ss);
-//                }
-//            }
-//
-//            // --- SD ---
-//            ss = MoleculeSpecificationPanel.StatisticSelection.SD;
-//            if (sel.selectedStatistics.contains(ss)) {
-//                double[] avg = LangevinSolverResultSet.getSeries(avgData, columnName);
-//                double[] sd  = LangevinSolverResultSet.getSeries(stdData, columnName);
-//
-//                if (avg != null && sd != null) {
-//                    double[] low  = new double[avg.length];
-//                    double[] high = new double[avg.length];
-//                    for (int i = 0; i < avg.length; i++) {
-//                        low[i]  = avg[i] - sd[i];
-//                        high[i] = avg[i] + sd[i];
-//                    }
-//                    plot.addSDRenderer(time, low, high, sDColor, columnName, ss);
-//                }
-//            }
-//        }
-//        plot.repaint();
+        System.out.println(getClass().getSimpleName() + ".redrawPlot() called, current selection: " + sel);
+
+        MoleculePlotPanel plot = getMoleculePlotPanel();
+        plot.clearAllRenderers();
+        if (sel == null || langevinSolverResultSet == null || !langevinSolverResultSet.isAverageDataAvailable()) {
+            plot.repaint();
+            return;
+        }
+
+        ODESimData avgData = langevinSolverResultSet.getAvg();
+        ODESimData minData = langevinSolverResultSet.getMin();
+        ODESimData maxData = langevinSolverResultSet.getMax();
+        ODESimData stdData = langevinSolverResultSet.getStd();
+
+        int indexTime = avgData.findColumn("t");
+        double[] time = avgData.extractColumn(indexTime);
+        // time may have suffered systematic numerical precision issues, so we reconstruct it based on the
+        // uniform output time step and the number of rows in the data
+        OutputTimeSpec outputTimeSpec = owner.getSimulation().getSolverTaskDescription().getOutputTimeSpec();
+        double dt = ((UniformOutputTimeSpec)outputTimeSpec).getOutputTimeStep();    // uniform output time step
+        double endingTime = owner.getSimulation().getSolverTaskDescription().getTimeBounds().getEndingTime();
+        for (int i = 0; i < time.length; i++) {
+            time[i] = i * dt;
+        }
+
+        // ------------------------------------------------------------
+        // FIRST PASS: collect all Y arrays and compute global min/max
+        // ------------------------------------------------------------
+        double globalMin = 0.0;                       // same baseline as clusters
+        double globalMax = Double.NEGATIVE_INFINITY;
+
+        // Store arrays so we don’t re-extract later
+        class Series {
+            double[] avg;
+            double[] min;
+            double[] max;
+            double[] sd;
+        }
+        Map<String, Series> map = new LinkedHashMap<>();
+
+        for (ColumnDescription cd : sel.selectedColumns) {
+            String name = cd.getName();
+            Series s = new Series();
+
+            s.avg = LangevinSolverResultSet.getSeries(avgData, name);
+            s.min = LangevinSolverResultSet.getSeries(minData, name);
+            s.max = LangevinSolverResultSet.getSeries(maxData, name);
+            s.sd  = LangevinSolverResultSet.getSeries(stdData, name);
+
+            map.put(name, s);
+
+            // AVG contributes to globalMax
+            if (s.avg != null) {
+                for (double v : s.avg) {
+                    if (v > globalMax) globalMax = v;
+                }
+            }
+
+            // MIN/MAX contributes to globalMin/globalMax
+            if (s.min != null) {
+                for (double v : s.min) {
+                    if (v < globalMin) globalMin = v;
+                }
+            }
+            if (s.max != null) {
+                for (double v : s.max) {
+                    if (v > globalMax) globalMax = v;
+                }
+            }
+
+            // SD envelope contributes to globalMin/globalMax
+            if (s.avg != null && s.sd != null) {
+                for (int i = 0; i < s.avg.length; i++) {
+                    double upper = s.avg[i] + s.sd[i];
+                    double lower = s.avg[i] - s.sd[i];
+                    if (upper > globalMax) globalMax = upper;
+                    if (lower < globalMin) globalMin = lower;
+                }
+            }
+        }
+
+        // ------------------------------------------------------------
+        // SECOND PASS: add renderers in correct order
+        // SD → MINMAX → AVG
+        // ------------------------------------------------------------
+        for (ColumnDescription cd : sel.selectedColumns) {
+            String name = cd.getName();
+            Series s = map.get(name);
+
+            Color baseColor = persistentColorMap.get(name);
+            Color mMColor = deriveMinMaxColor(baseColor);
+            Color sDColor = deriveSDColor(baseColor);
+
+            // --- SD band ---
+            if (sel.selectedStatistics.contains(MoleculeSpecificationPanel.StatisticSelection.SD)
+                    && s.avg != null && s.sd != null) {
+
+                int n = s.avg.length;
+                double[] low  = new double[n];
+                double[] high = new double[n];
+
+                for (int i = 0; i < n; i++) {
+                    low[i]  = s.avg[i] - s.sd[i];
+                    high[i] = s.avg[i] + s.sd[i];
+                    System.out.println("  " + s.avg[i] + " ± " + s.sd[i] + " → [" + low[i] + ", " + high[i] + "]");
+                }
+                plot.addSDRenderer(time, low, high, sDColor, name,
+                        MoleculeSpecificationPanel.StatisticSelection.SD);
+            }
+
+            // --- MIN/MAX band ---
+            if (sel.selectedStatistics.contains(MoleculeSpecificationPanel.StatisticSelection.MIN_MAX)
+                    && s.min != null && s.max != null) {
+                plot.addMinMaxRenderer(time, s.min, s.max, mMColor, name,
+                        MoleculeSpecificationPanel.StatisticSelection.MIN_MAX);
+            }
+
+            // --- AVG line ---
+            if (sel.selectedStatistics.contains(MoleculeSpecificationPanel.StatisticSelection.AVG)
+                    && s.avg != null) {
+                plot.addAvgRenderer(time, s.avg, baseColor, name,
+                        MoleculeSpecificationPanel.StatisticSelection.AVG);
+            }
+        }
+
+        // ------------------------------------------------------------
+        // FINALIZE
+        // ------------------------------------------------------------
+        if (globalMin > 0) globalMin = 0;
+        plot.setGlobalMinMax(globalMin, globalMax);
+
+        if (time.length > 1) {
+            plot.setDt(time[1] - time[0]);   // times[0] == 0
+        }
+
+        plot.repaint();
+    }
+
+    public Color deriveMinMaxColor(Color base) {
+        return new Color(
+                base.getRed(),
+                base.getGreen(),
+                base.getBlue(),
+                MINMAX_ALPHA
+        );
+    }
+
+    public Color deriveSDColor(Color base) {
+        return new Color(
+                base.getRed(),
+                base.getGreen(),
+                base.getBlue(),
+                SD_ALPHA
+        );
     }
 
     private void redrawLegend(MoleculeSpecificationPanel.MoleculeSelection sel) throws ExpressionException {
+        System.out.println(getClass().getSimpleName() + ".redrawLegend() called");
+        JPanel legend = getLegendContentPanel();
+        legend.removeAll();
+        for (ColumnDescription cd : sel.selectedColumns) {
+            String name = cd.getName();
+            Color c = persistentColorMap.get(name);     // // assigned color for this molecule
+            if (c == null) {
+                // fallback or auto-assign if needed
+                c = Color.GRAY;
+            }
+            legend.add(createLegendEntry(name, c));
+        }
+        legend.revalidate();
+        legend.repaint();
+    }
+    private JComponent createLegendEntry(String name, Color color) {
+        JPanel p = new JPanel();
+        p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
+        p.setOpaque(false);
 
+        String unitSymbol = "molecules";
+        String tooltip = "<html><b>" + name + "</b><br>" + unitSymbol + "</html>";
+        JLabel line = new JLabel(new LineIcon(color));
+
+//        JLabel text = new JLabel("<html>" + name + " <font color=\"#8B0000\">[" + unitSymbol + "]</font></html>");
+        JLabel text = new JLabel("<html>" + name + " <font color=\"#8B0000\"></font></html>");
+        line.setBorder(new EmptyBorder(6, 0, 1, 0));
+        text.setBorder(new EmptyBorder(1, 8, 6, 0));
+        line.setToolTipText(tooltip);
+        text.setToolTipText(tooltip);
+        p.setToolTipText(tooltip);
+        p.add(line);
+        p.add(text);
+        return p;
     }
 
     private void redrawDataTable(MoleculeSpecificationPanel.MoleculeSelection sel) throws ExpressionException {
         System.out.println(this.getClass().getSimpleName() + ".updateDataTable() called");
         getMoleculeDataPanel().updateData(sel, langevinSolverResultSet);
-
     }
 
     private void handleException(java.lang.Throwable exception) {
@@ -262,13 +390,25 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
     @Override
     protected void onSelectedObjectsChange(Object[] selectedObjects) {
         System.out.println(this.getClass().getSimpleName() + ".onSelectedObjectsChange() called with " + selectedObjects.length + " objects");
-
     }
+
+    // called directly from ODEDataViewer when a new value for vcDataIdentifier is set
+    // TODO: this is a little unreliable since it depends on the order of refreshData() calls in ODEDataViewer
+    // the right way to do it would be to add the simulationModelInfo and langevinSolverResultSet to MoleculeSelection object,
+    // the way it's done in ClusterVisualizationPanel, so that they are always in sync with the selections in the left panel
     public void refreshData() {
         System.out.println(this.getClass().getSimpleName() + ".refreshData() called");
         simulationModelInfo = owner.getSimulationModelInfo();
         langevinSolverResultSet = owner.getLangevinSolverResultSet();
 
+        if(owner != null && owner.getSimulation() != null) {
+            int jobs = owner.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions().getTotalNumberOfJobs();
+            String name = owner.getSimulation().getName();
+            String str = "<html><b>" + name + "</b> [" + jobs + " job" + (jobs != 1 ? "s" : "") + "]";
+            getBottomLabel().setText(str);
+        } else {
+            getBottomLabel().setText(" ");
+        }
     }
 
     // -------------------------------------------------------------------------------
