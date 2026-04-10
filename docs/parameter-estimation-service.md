@@ -37,34 +37,89 @@ Desktop Client / webapp
         v
 vcell-rest (Quarkus)
         | 1. Validate OptProblem
-        | 2. Generate UUID job ID
+        | 2. Get bigint job ID from database sequence (newSeq)
         | 3. Write OptProblem JSON to NFS: /simdata/parest_data/CopasiParest_{id}_optProblem.json
         | 4. Insert vc_optjob row (status=SUBMITTED)
-        | 5. Send ActiveMQ message to vcell-submit
+        | 5. Publish OptRequestMessage to Artemis "opt-request" queue (AMQP 1.0 via SmallRye)
         | 6. Return OptimizationJobStatus to client
         v
-ActiveMQ (activemqint)
-        |
+Artemis broker (artemismq:61616)
+        | ANYCAST queue "opt-request"
+        | Cross-protocol: AMQP 1.0 (vcell-rest) ↔ OpenWire JMS (vcell-submit)
         v
-vcell-submit
-        | 1. Receive message
-        | 2. Submit SLURM job via SlurmProxy (reuses existing code)
-        | 3. Send status update message back (QUEUED + htcJobId, or FAILED + error)
+vcell-submit (OpenWire JMS via ActiveMQConnectionFactory)
+        | 1. Consume OptRequestMessage from "opt-request" queue
+        | 2. Read OptProblem file from NFS path in message
+        | 3. Submit SLURM job via SlurmProxy.submitOptimizationJob()
+        | 4. Publish OptStatusMessage to "opt-status" queue (QUEUED + htcJobId, or FAILED + error)
         v
 SLURM → Singularity container → vcell-opt Python solver (UNCHANGED)
         | Writes to NFS:
         |   - CopasiParest_{id}_optReport.txt  (progress, written incrementally)
         |   - CopasiParest_{id}_optRun.json    (final results)
         v
-vcell-rest (polling on client request)
-        | 1. Client polls GET /api/v1/optimization/{id}
-        | 2. Check vc_optjob status in database
-        | 3. If RUNNING: read progress from report file on NFS (CopasiUtils.readProgressReportFromCSV)
-        | 4. If COMPLETE: read results from output file on NFS
-        | 5. Return OptimizationJobStatus with progress/results
+Artemis broker
+        | ANYCAST queue "opt-status"
+        | vcell-submit publishes via OpenWire JMS
+        | vcell-rest consumes via AMQP 1.0 (SmallRye @Incoming)
         v
-Client displays progress or results
+vcell-rest (OptimizationMQ.consumeOptStatus)
+        | Updates vc_optjob: status=QUEUED, htcJobId from message
+        v
+vcell-rest (polling on client request)
+        | 1. Client polls GET /api/v1/optimization/{id} every 2 seconds
+        | 2. Check vc_optjob status in database
+        | 3. For any active status (SUBMITTED/QUEUED/RUNNING):
+        |    a. Read progress from report file on NFS (CopasiUtils.readProgressReportFromCSV)
+        |    b. If progress exists and status is SUBMITTED/QUEUED: auto-promote to RUNNING
+        |    c. If result file exists: auto-promote to COMPLETE, read Vcellopt results
+        | 4. Return OptimizationJobStatus with progress/results
+        v
+Client displays progress (objective function vs iteration graph, best parameter values)
 ```
+
+### Cross-protocol messaging through Artemis
+
+The optimization messaging uses **cross-protocol communication** through an Apache Artemis broker. This is a critical architectural detail that has been a source of bugs.
+
+**Protocol mapping:**
+- **vcell-rest** uses **AMQP 1.0** via Quarkus SmallRye Reactive Messaging (`quarkus-smallrye-reactive-messaging-amqp`)
+- **vcell-submit** uses **OpenWire JMS** via ActiveMQ 5.x client (`org.apache.activemq.ActiveMQConnectionFactory`)
+- **Artemis** accepts both protocols on port 61616 (all-protocol acceptor) and routes messages between them
+
+**Queue configuration:**
+- `opt-request` — ANYCAST queue. vcell-rest produces (AMQP 1.0), vcell-submit consumes (OpenWire JMS)
+- `opt-status` — ANYCAST queue. vcell-submit produces (OpenWire JMS), vcell-rest consumes (AMQP 1.0)
+
+**Critical SmallRye AMQP settings** (in `application.properties`):
+
+```properties
+mp.messaging.outgoing.publisher-opt-request.connector=smallrye-amqp
+mp.messaging.outgoing.publisher-opt-request.address=opt-request
+mp.messaging.outgoing.publisher-opt-request.capabilities=queue
+
+mp.messaging.incoming.subscriber-opt-status.connector=smallrye-amqp
+mp.messaging.incoming.subscriber-opt-status.address=opt-status
+mp.messaging.incoming.subscriber-opt-status.capabilities=queue
+```
+
+**Lessons learned from deployment bugs:**
+
+1. **`address` is required.** Without explicit `address=opt-request`, SmallRye defaults to using the channel name (`publisher-opt-request`) as the AMQP address. The OpenWire consumer listens on queue `opt-request`, so messages are lost silently. The broker accepts and acknowledges the message (the AMQP disposition shows `Accepted`), but no consumer ever sees it.
+
+2. **`capabilities=queue` is required.** Artemis deploys queues as ANYCAST (point-to-point) by default, which is what OpenWire `session.createQueue()` creates. But SmallRye AMQP 1.0 consumers default to MULTICAST (pub-sub) semantics when attaching without specifying capabilities. This causes Artemis to create a separate MULTICAST subscription that never receives messages from the ANYCAST queue. The `capabilities=queue` annotation tells the AMQP client to attach with the "queue" capability, which Artemis interprets as ANYCAST.
+
+3. **vcell-submit needs Artemis connection properties.** The `vcell.jms.artemis.host.internal` and `vcell.jms.artemis.port.internal` Java system properties must be set in the vcell-submit Dockerfile and K8s deployment. These are separate from the existing `activemqint` connection used for simulation job dispatch.
+
+**K8s configuration** (in vcell-fluxcd `shared.env`):
+```
+jmshost_artemis_internal=artemismq
+jmsport_artemis_internal=61616
+```
+
+These are consumed by:
+- vcell-rest: `application.properties` `%prod.amqp-host=${jmshost_artemis_internal}` (AMQP connection)
+- vcell-submit: `Dockerfile-submit-dev` `-Dvcell.jms.artemis.host.internal="${jmshost_artemis_internal}"` (OpenWire connection)
 
 ### Key design decisions
 
@@ -72,13 +127,43 @@ Client displays progress or results
 
 **Filesystem for data, database for state.** The OptProblem input, result output, and progress report are files on NFS — this matches the Python solver's file-based interface and avoids putting large blobs in the database. The database tracks job metadata and status; the filesystem holds the actual data.
 
-**ActiveMQ for job dispatch (fire-and-forget).** vcell-rest sends a message to vcell-submit to trigger SLURM submission, and vcell-submit sends a status message back. This replaces the persistent TCP socket with a reliable message broker that already exists in the deployment (`activemqint`). The messages are small (job ID + file paths), and the pattern follows the existing `ExportRequestListenerMQ` in vcell-rest.
+**Artemis for job dispatch (cross-protocol).** vcell-rest sends a message to vcell-submit via Artemis to trigger SLURM submission, and vcell-submit sends a status message back. This replaces the persistent TCP socket with a durable message broker. The messages are small JSON payloads (job ID + file paths). The cross-protocol design (AMQP 1.0 ↔ OpenWire JMS) is necessary because vcell-rest uses Quarkus SmallRye AMQP while vcell-submit uses the ActiveMQ 5.x OpenWire client.
 
 **Database-sequence job IDs.** Replace the random 0–999,999 integer with `bigint` keys from the shared `newSeq` database sequence, consistent with every other VCell table (`vc_biomodel`, `vc_simulation`, etc.). Uses the existing `KeyValue` type and `KeyFactory.getNewKey()` infrastructure.
 
 **Progress reporting via filesystem polling.** The Python solver already writes a TSV report file incrementally as COPASI iterates. vcell-rest reads this file directly from NFS using `CopasiUtils.readProgressReportFromCSV()` (in `vcell-core`, already a dependency). This eliminates the batch server as a middleman for progress data. Each row contains: function evaluation count, best objective value, and best parameter vector.
 
-**User-initiated stop via messaging.** When a user determines the optimization has sufficiently converged and stops the job, vcell-rest sends a stop message (with the SLURM job ID from the database) via ActiveMQ to vcell-submit, which calls `killJobSafe()` → `scancel`. The report file retains all progress up to the kill point, so the client can read the best parameters found.
+**Filesystem-driven status promotion.** vcell-submit only sends a single `QUEUED` status message back after submitting the SLURM job. All subsequent status transitions are driven by vcell-rest reading the filesystem on each client poll:
+- **SUBMITTED/QUEUED → RUNNING**: when the progress report file appears on NFS (meaning the SLURM job has started writing)
+- **RUNNING → COMPLETE**: when the result output file appears on NFS (meaning the solver finished)
+
+This design avoids the need for vcell-submit to monitor SLURM job state and send incremental status updates. The filesystem is the source of truth for solver progress, and the database tracks the lifecycle state.
+
+**User-initiated stop via messaging.** When a user determines the optimization has sufficiently converged and stops the job, vcell-rest sends a stop message (with the SLURM job ID from the database) via Artemis to vcell-submit, which calls `killJobSafe()` → `scancel`. The report file retains all progress up to the kill point, so the client can read the best parameters found.
+
+### Real-time progress reporting
+
+The desktop client displays a real-time graph of objective function value vs. function evaluations, along with the current best parameter values. This updates every 2 seconds as the solver runs.
+
+**How it works:**
+
+1. The Python COPASI solver writes a TSV report file incrementally (`CopasiParest_{id}_optReport.txt`) with one row per sampled iteration. Format:
+   ```
+   ["k1","k2"]                    ← header: JSON array of parameter names
+   10	0.5	1.0	2.0            ← numEvals, objFuncValue, param1, param2, ...
+   20	0.1	1.3	2.4
+   30	0.01	1.5	2.5
+   ```
+
+2. On each client poll, `OptimizationRestService.getOptimizationStatus()` reads this file via `CopasiUtils.readProgressReportFromCSV()`, which returns an `OptProgressReport` containing:
+   - `progressItems`: list of `OptProgressItem` (numFunctionEvaluations, objFuncValue) — one per sampled iteration
+   - `bestParamValues`: map of parameter name → best value found so far
+
+3. The client receives the `OptProgressReport` in the `OptimizationJobStatus` response and dispatches it to `CopasiOptSolverCallbacks.setProgressReport()`, which fires a `PropertyChangeEvent` to the UI.
+
+4. `RunStatusProgressDialog` (in `ParameterEstimationRunTaskPanel`) listens for these events and updates the objective function vs. evaluations plot and the best parameter table.
+
+**Key design choice:** Progress is read from the filesystem on every poll, not sent through the message queue. This means progress is available as soon as the SLURM job starts writing, even before the `QUEUED` status message arrives from vcell-submit. The server auto-promotes the status from `SUBMITTED`/`QUEUED` → `RUNNING` when it detects progress data on disk. This replicates the behavior of the legacy socket-based design where every status query re-read the report file.
 
 ### Database schema
 
@@ -121,19 +206,22 @@ SUBMITTED → QUEUED → RUNNING → COMPLETE
 
 ```
 POST   /api/v1/optimization           Submit optimization job
+GET    /api/v1/optimization            List user's optimization jobs
 GET    /api/v1/optimization/{id}       Get job status, progress, or results
 POST   /api/v1/optimization/{id}/stop  Stop a running job
 ```
 
-**POST /api/v1/optimization** — Requires authenticated user. Accepts `OptProblem` JSON body. Writes input file to NFS, creates database record, sends dispatch message. Returns `OptimizationJobStatus` with the job ID and status=SUBMITTED.
+**POST /api/v1/optimization** — Requires authenticated user. Accepts `OptProblem` JSON body. Writes input file to NFS, creates database record, publishes dispatch message to Artemis. Returns `OptimizationJobStatus` with the job ID and status=SUBMITTED.
+
+**GET /api/v1/optimization** — Requires authenticated user. Returns array of `OptimizationJobStatus` for the user's jobs, most recent first. Lightweight (no progress/results).
 
 **GET /api/v1/optimization/{id}** — Requires authenticated user (must be job owner). Returns `OptimizationJobStatus` which includes:
 - `status` — current job state
-- `progressReport` — (when RUNNING) iteration count, objective value, best parameters from the report file
+- `progressReport` — (when RUNNING/QUEUED) iteration count, objective value, best parameters from the report file
 - `results` — (when COMPLETE) the full `Vcellopt` result
 - `statusMessage` — (when FAILED/STOPPED) error or cancellation description
 
-**POST /api/v1/optimization/{id}/stop** — Requires authenticated user (must be job owner). Sends stop message to vcell-submit, updates database status to STOPPED. The client can then GET the job to read the last progress report for the best parameters found.
+**POST /api/v1/optimization/{id}/stop** — Requires authenticated user (must be job owner). Sends stop message to vcell-submit via Artemis, updates database status to STOPPED. The client can then GET the job to read the last progress report for the best parameters found.
 
 ### Response DTO
 
@@ -142,12 +230,35 @@ public record OptimizationJobStatus(
     KeyValue id,
     OptJobStatus status,
     String statusMessage,
+    String htcJobId,
     OptProgressReport progressReport,
     Vcellopt results
 ) {}
 ```
 
 The client checks `status` and reads the appropriate nullable field. This avoids the current string-prefix parsing pattern (`"QUEUED:"`, `"RUNNING:"`, etc.).
+
+### Message types
+
+Shared in `vcell-core` (`org.vcell.optimization` package), serialized as JSON:
+
+```java
+public class OptRequestMessage {
+    public String jobId;
+    public String command;             // "submit" or "stop"
+    public String optProblemFilePath;   // for submit
+    public String optOutputFilePath;    // for submit
+    public String optReportFilePath;    // for submit
+    public String htcJobId;            // for stop (SLURM job to cancel)
+}
+
+public class OptStatusMessage {
+    public String jobId;
+    public OptJobStatus status;
+    public String statusMessage;
+    public String htcJobId;            // set when SLURM job is submitted
+}
+```
 
 ## Desktop client architecture (current)
 
@@ -161,12 +272,13 @@ The desktop client has a layered architecture for parameter estimation:
 
 ### Solver coordination layer
 
-- **`CopasiOptimizationSolverRemote`** (`vcell-client/.../copasi/CopasiOptimizationSolverRemote.java`) — Orchestrates the remote optimization call. The `solveRemoteApi()` method (line 27):
+- **`CopasiOptimizationSolverRemote`** (`vcell-client/src/main/java/copasi/CopasiOptimizationSolverRemote.java`) — Orchestrates the remote optimization call. The `solveRemoteApi()` method:
   1. Converts `ParameterEstimationTask` → `OptProblem` via `CopasiUtils.paramTaskToOptProblem()`
-  2. Calls `apiClient.submitOptimization(optProblemJson)` → gets back optimization ID
-  3. Polls `apiClient.getOptRunJson(optId, bStopRequested)` every ~2 seconds
-  4. Parses string-prefixed responses (`"QUEUED:"`, `"RUNNING:"`, etc.) and raw JSON for `OptProgressReport` and `Vcellopt`
-  5. Updates `CopasiOptSolverCallbacks` with progress, which fires property change events to the UI
+  2. Converts to generated client model type and calls `optApi.submitOptimization(optProblem)`
+  3. Polls `optApi.getOptimizationStatus(jobId)` every 2 seconds with a 200-second timeout
+  4. Uses typed `OptimizationJobStatus` fields (`status`, `progressReport`, `results`) instead of string-prefix parsing
+  5. Updates `CopasiOptSolverCallbacks` with progress via a pluggable `progressDispatcher` (SwingUtilities::invokeLater in GUI, Runnable::run in tests)
+  6. Handles user stop via `optApi.stopOptimization(jobId)`
 
 ### Callback / event layer
 
@@ -174,125 +286,95 @@ The desktop client has a layered architecture for parameter estimation:
 
 ### API client layer
 
-- **`VCellApiClient`** (`vcell-apiclient/.../api/client/VCellApiClient.java`) — HTTP client for the legacy `/api/v0/` endpoints:
-  - `submitOptimization()` (line 235) — POST to `/api/v0/optimization`, returns optimization ID as plain text
-  - `getOptRunJson()` (line 219) — GET to `/api/v0/optimization/{id}?bStop={bStop}`, returns raw JSON string that the caller must parse by inspecting string prefixes
+- **`OptimizationResourceApi`** (auto-generated in `vcell-restclient`) — Typed REST client for `/api/v1/optimization` endpoints. Generated from the OpenAPI spec via `tools/openapi-clients.sh`.
 
-- **`ClientServerManager`** (`vcell-apiclient/.../server/ClientServerManager.java`) — Provides the `VCellApiClient` instance to the desktop client.
+- **`VCellApiClient`** (`vcell-apiclient/.../api/client/VCellApiClient.java`) — Provides access to the generated `OptimizationResourceApi` via `getOptimizationApi()`.
 
-### What changes in the migration
+## Implementation status
 
-The new auto-generated `OptimizationResourceApi` (from `vcell-restclient`) replaces `VCellApiClient` for optimization. The key improvements:
+### Completed (parest-bug branch)
 
-1. **Typed responses.** `getOptimizationStatus()` returns `OptimizationJobStatus` with explicit `status`, `progressReport`, and `results` fields — replacing the error-prone string-prefix parsing in `CopasiOptimizationSolverRemote`.
-2. **Separate stop endpoint.** `POST /{id}/stop` replaces the `bStop` query parameter hack on the GET endpoint.
-3. **Auto-generated.** The Java client is generated from the OpenAPI spec, so it stays in sync with the server automatically.
+All commits listed below are on the `parest-bug` branch, ahead of `master`.
 
-The UI layer (`ParameterEstimationRunTaskPanel`, `RunStatusProgressDialog`) and the callback layer (`CopasiOptSolverCallbacks`) are **unchanged** — they already consume `OptProgressReport` and `Vcellopt` objects, which are the same types the new API returns.
+#### Commit 1: Database schema and service layer
+- `OptJobTable` in `vcell-core` with Oracle-compatible SQL generation
+- `OptimizationRestService` (`@ApplicationScoped`) with database CRUD and filesystem read methods
+- `OptimizationJobStatus` record DTO, `OptJobRecord`, `OptJobStatus` enum
+- Bigint job IDs from database sequence via `KeyFactory.getNewKey()`
 
-## Implementation plan
+#### Commit 2: REST endpoints
+- `OptimizationResource.java` — submit, status, list, stop endpoints
+- Authentication via `@RolesAllowed("user")`, ownership checks via user ID
+- `POST /api/v1/optimization`, `GET /api/v1/optimization/{id}`, `GET /api/v1/optimization`, `POST /api/v1/optimization/{id}/stop`
+- CodeQL path traversal fixes for optimization file paths
 
-### Commit 1: Database schema and service layer
+#### Commit 3: ActiveMQ messaging (vcell-rest side)
+- `OptimizationMQ.java` — SmallRye AMQP producer (`publisher-opt-request`) and consumer (`subscriber-opt-status`)
+- `OptRequestMessage` and `OptStatusMessage` shared types in `vcell-core`
+- AMQP channel config in `application.properties` with `capabilities=queue` for ANYCAST routing
+- Artemis broker connection: `%prod.amqp-host`, `%prod.amqp-port`
 
-- Add `vc_optjob` table to `vcell-rest/src/main/resources/scripts/init.sql`
-- Create `OptimizationJobStatus` DTO in `vcell-rest`
-- Create `OptimizationRestService` (`@ApplicationScoped`) with database CRUD operations and filesystem read methods
-- Oracle migration DDL script for production
+#### Commit 4: ActiveMQ messaging (vcell-submit side)
+- `OptimizationBatchServer.initOptimizationQueue()` — OpenWire JMS listener on `opt-request` queue
+- `handleSubmitRequest()` — reads OptProblem from NFS, submits to SLURM, sends QUEUED status back on `opt-status`
+- `handleStopRequest()` — kills SLURM job via `HtcProxy.killJobSafe()`
+- `sendStatusMessage()` — sends `OptStatusMessage` JSON on `opt-status` queue
+- Path validation via `validateParestPath()` to prevent traversal
+- Artemis connection configured via `vcell.jms.artemis.host.internal` / `vcell.jms.artemis.port.internal` system properties
+- `Dockerfile-submit-dev` updated with Artemis env vars and `-D` flags
 
-### Commit 2: REST endpoints
+#### Commit 5: Tests
 
-- Create `OptimizationResource.java` in `vcell-rest/src/main/java/org/vcell/restq/handlers/`
-- Endpoints: submit, status, stop
-- Authentication and ownership checks
-- Follow patterns from `SimulationResource.java`
+**Level 1: REST + DB + filesystem** (`OptimizationResourceTest.java`, `@Tag("Quarkus")`)
+- 10 tests covering submit, status polling, completion detection, stop, authorization, error handling
+- Uses testcontainers for PostgreSQL and Keycloak
+- Simulates solver by writing mock report/output files to temp directory
 
-### Commit 3: ActiveMQ messaging (vcell-rest side)
+**Level 1.5: E2E client flow** (`OptimizationE2ETest.java`, `@Tag("Quarkus")`)
+- Tests the same code path as `CopasiOptimizationSolverRemote.solveRemoteApi()`
+- Uses the generated `OptimizationResourceApi` client
+- Mock vcell-submit directly updates database (bypasses messaging)
+- Tests submit+poll+complete and submit+stop flows
 
-- Add AMQP channel configuration to `application.properties`
-- Create `OptimizationMQProducer` for sending submit/stop commands
-- Create `OptimizationMQConsumer` for receiving status updates from vcell-submit
-- Update `vc_optjob` status on incoming messages
+**Level 2: Cross-protocol messaging** (`OptimizationCrossProtocolTest.java`, `@Tag("Quarkus")`)
+- Full AMQP 1.0 ↔ OpenWire JMS round-trip through a real Artemis testcontainer
+- `ArtemisTestResource` — `QuarkusTestResourceLifecycleManager` that starts Artemis with both AMQP (5672) and OpenWire (61616) ports
+- `OpenWireOptSubmitStub` — mirrors `OptimizationBatchServer.handleSubmitRequest()` using `ActiveMQConnectionFactory` (same OpenWire protocol as production vcell-submit)
+- Validates: address mapping, ANYCAST/MULTICAST routing, JSON serialization across protocols, filesystem handoff (stub reads OptProblem file written by vcell-rest)
+- This test would have caught both production bugs (wrong AMQP address and MULTICAST subscription)
 
-### Commit 4: ActiveMQ messaging (vcell-submit side)
+#### Commit 6: OpenAPI client regeneration
+- Consolidated `tools/generate.sh` + `tools/compile-and-build-clients.sh` into `tools/openapi-clients.sh`
+- Regenerated Java (`vcell-restclient`), Python (`python-restclient`), TypeScript (`webapp-ng`) clients
+- New `OptimizationResourceApi` class with `submitOptimization()`, `getOptimizationStatus()`, `stopOptimization()`, `listOptimizationJobs()`
 
-- Add JMS queue listener in `HtcSimulationWorker` for optimization requests
-- On "submit": call `SlurmProxy.submitOptimizationJob()` (existing code), send back QUEUED + htcJobId
-- On "stop": call `killJobSafe()` with SLURM job ID from message
-- Reuse existing `OptimizationBatchServer.submitOptProblem()` logic
+#### Commit 7: Desktop client update
+- `CopasiOptimizationSolverRemote.solveRemoteApi()` rewritten to use generated `OptimizationResourceApi`
+- Typed `OptimizationJobStatus` fields replace string-prefix parsing
+- `POST /{id}/stop` replaces `bStop` query parameter
+- Testable overload accepts `OptimizationResourceApi` and `Consumer<Runnable>` dispatcher directly (no Swing dependency)
+- 200-second timeout, 2-second poll interval
 
-### Commit 5: Tests (three levels)
+#### Deployment fixes (discovered during dev deployment)
+- AMQP address mapping: added `address=opt-request` / `address=opt-status` to production channel config (without this, SmallRye sent to channel name instead of queue name)
+- ANYCAST routing: added `capabilities=queue` to all AMQP channel configs (without this, SmallRye created MULTICAST subscriptions that missed OpenWire messages)
+- Artemis connection for vcell-submit: added `vcell.jms.artemis.host.internal` / `vcell.jms.artemis.port.internal` to `Dockerfile-submit-dev`
+- JDBC resource leak: wrapped Statement/ResultSet in try-with-resources in `getOptJobRecord()` and `listOptimizationJobs()`
 
-Three levels of integration testing, each building on the previous:
+#### Progress reporting fix
+- Server: `SUBMITTED` status now reads the progress report file (the SLURM job may already be running before the async QUEUED message arrives). Auto-promotes SUBMITTED/QUEUED → RUNNING when progress data appears on disk.
+- Client: `SUBMITTED`/`QUEUED`/`RUNNING` all dispatch progress to `CopasiOptSolverCallbacks.setProgressReport()` when available, so the objective function graph and best parameter values update as soon as the solver starts writing.
 
-#### Level 1: REST + DB + filesystem — `@Tag("Quarkus")`
+### Remaining work
 
-Runs in CI. Uses testcontainers for PostgreSQL and Keycloak (already configured for other Quarkus tests). The ActiveMQ producer is mocked. Simulates solver completion by writing fake report/output files to a temp directory.
+#### Deploy and validate on dev
+- Deploy latest release to dev (vcell-dev.cam.uchc.edu)
+- Test full round-trip: desktop client → vcell-rest → Artemis → vcell-submit → SLURM → NFS → vcell-rest → client
+- Verify progress reporting works (client sees iteration updates)
+- Verify stop works (SLURM job is cancelled, client gets last progress)
+- Monitor for JDBC leak warnings (should be gone)
 
-Create `OptimizationApiTest.java` (`@QuarkusTest`):
-- Test submit: POST OptProblem, verify DB record created, verify OptProblem file written to disk
-- Test status polling: write mock report file with progress rows, call GET, verify `OptimizationJobStatus` contains correct `OptProgressReport` (iteration count, objective value, best parameters)
-- Test completion: write mock output file, call GET, verify status=COMPLETE with `Vcellopt` results
-- Test stop: POST stop, verify DB status updated to STOPPED
-- Test authorization: verify user can only access their own jobs
-- Test error: verify FAILED status with `statusMessage` error description
-
-#### Level 2: REST + DB + ActiveMQ round-trip — `@Tag("Quarkus")`
-
-Runs in CI. Adds an ActiveMQ testcontainer. Both the vcell-rest producer and a test-harness consumer run in the same JVM. The test consumer simulates vcell-submit: it receives the submit message, writes mock result files to the temp directory, and sends a status update message back.
-
-Create `OptimizationMQTest.java` (`@QuarkusTest`):
-- Test submit → message received by consumer → status update sent back → DB updated to QUEUED with htcJobId
-- Test stop → stop message received by consumer → DB updated to STOPPED
-- Test failure → consumer sends FAILED status with error description → DB and GET endpoint reflect failure
-
-This tests the full messaging contract between vcell-rest and vcell-submit without needing SLURM.
-
-#### Level 3: Full end-to-end with SLURM — `@Tag("SLURM_IT")`
-
-Does NOT run in CI. Requires a developer on the network with NFS mounted and SSH access to the SLURM cluster. Configured via system properties:
-
-```
-vcell.test.slurm.host                  SLURM login node (e.g. login.hpc.cam.uchc.edu)
-vcell.test.slurm.user                  SSH user for SLURM submission (e.g. vcell)
-vcell.test.slurm.keypath               Path to SSH private key (e.g. /path/to/id_rsa)
-vcell.test.slurm.singularity.image     Path to vcell-opt Singularity image on cluster
-vcell.test.nfs.parestdir               NFS path for optimization data, accessible from
-                                       both test machine and SLURM (e.g. /simdata/parest_data)
-```
-
-The test is skipped (via JUnit `Assumptions.assumeTrue`) if any required property is missing.
-
-Create `OptimizationSlurmIT.java` (`@QuarkusTest`):
-- Uses testcontainers for PostgreSQL and ActiveMQ
-- Includes a real submit-side handler (in-process) that SSHes to SLURM and submits the job using `SlurmProxy`
-- Submits a small, fast-converging OptProblem (few parameters, few data points, low max iterations) to minimize SLURM runtime
-- Polls the status endpoint with a generous timeout (5 minutes, to account for SLURM queue wait)
-- Verifies that:
-  - Progress reports arrive with real iteration counts and objective function values
-  - The final result contains optimized parameter values
-  - The parameter values are reasonable (within expected bounds)
-- Tests user-initiated stop: submit a longer-running problem, poll until RUNNING with progress, stop, verify report file has partial progress
-
-This test exercises the complete production path: REST → DB → ActiveMQ → SSH → SLURM → Singularity → Python/COPASI → NFS → filesystem polling → REST response.
-
-### Commit 6: Regenerate OpenAPI clients
-
-- Run `tools/generate.sh`
-- Verify downstream: `mvn compile test-compile -pl vcell-rest -am`
-- New `OptimizationResourceApi` class generated for Java, Python, TypeScript clients
-
-### Commit 7: Update desktop client
-
-- Modify `CopasiOptimizationSolverRemote.solveRemoteApi()` to use the auto-generated `OptimizationResourceApi` instead of `VCellApiClient`
-- Replace string-prefix parsing with typed `OptimizationJobStatus` fields:
-  - `status` field replaces parsing for `"QUEUED:"`, `"RUNNING:"`, `"FAILED:"` prefixes
-  - `progressReport` field replaces JSON deserialization of embedded progress strings
-  - `results` field replaces JSON deserialization of the final `Vcellopt`
-- Use `POST /{id}/stop` for stop requests instead of the `bStop` query parameter on GET
-- The UI layer (`ParameterEstimationRunTaskPanel`, `RunStatusProgressDialog`) and the callback layer (`CopasiOptSolverCallbacks`) require no changes — they already consume `OptProgressReport` and `Vcellopt` objects
-
-### Commit 8: Remove legacy optimization code
-
+#### Commit 8: Remove legacy optimization code (deferred until new path validated)
 - Delete `OptimizationRunServerResource.java` from `vcell-api`
 - Delete `OptimizationRunResource.java` (interface) from `vcell-api`
 - Delete `OptMessage.java` from `vcell-core`
@@ -300,25 +382,49 @@ This test exercises the complete production path: REST → DB → ActiveMQ → S
 - Remove socket initialization from `HtcSimulationWorker.init()`
 - Remove `submitOptimization()` / `getOptRunJson()` from `VCellApiClient`
 - Remove optimization route registration from `VCellApiApplication.java`
-- Refactor remaining `OptimizationBatchServer` methods into a focused `OptimizationJobSubmitter` class
+- Remove port 8877 exposure from vcell-submit
 
-### Commit 9: Kubernetes configuration
+#### Level 3 integration test (future)
+- Full end-to-end test with SLURM (`@Tag("SLURM_IT")`) — requires NFS and SSH access to SLURM cluster
+- Not run in CI; skipped if required system properties are missing
+- Submits a small, fast-converging OptProblem with low max iterations
+- Verifies real progress reports and optimized parameter values
 
-- Remove port 8877 from vcell-submit Service
-- Verify NFS mount paths for vcell-rest pod include `parest_data` directory
-- Update ingress if needed for new `/api/v1/optimization` route
+#### Future improvements
+- Consider migrating vcell-submit from ActiveMQ 5.x OpenWire client to Artemis JMS client (`jakarta.jms`) for protocol consistency
+- Add dead letter and expiry address configuration for opt-request/opt-status queues in Artemis
+- Add monitoring/alerting for optimization job failures
+- Consider increasing the 200-second client timeout or making it configurable
+
+## Key files
+
+| File | Purpose |
+|------|---------|
+| `vcell-rest/.../handlers/OptimizationResource.java` | REST endpoints |
+| `vcell-rest/.../services/OptimizationRestService.java` | DB CRUD and filesystem reads |
+| `vcell-rest/.../activemq/OptimizationMQ.java` | AMQP 1.0 producer/consumer |
+| `vcell-rest/src/main/resources/application.properties` | AMQP channel config |
+| `vcell-server/.../batch/opt/OptimizationBatchServer.java` | OpenWire JMS listener, SLURM dispatch |
+| `vcell-server/.../batch/sim/HtcSimulationWorker.java` | Starts opt queue listener in `init()` |
+| `vcell-core/.../optimization/OptRequestMessage.java` | Request message type |
+| `vcell-core/.../optimization/OptStatusMessage.java` | Status message type |
+| `vcell-core/.../optimization/OptJobStatus.java` | Status enum |
+| `vcell-core/.../modeldb/OptJobTable.java` | Database table definition |
+| `vcell-client/.../copasi/CopasiOptimizationSolverRemote.java` | Desktop client solver |
+| `docker/build/Dockerfile-submit-dev` | vcell-submit container with Artemis config |
+| `tools/openapi-clients.sh` | OpenAPI client generation script |
 
 ## Decommissioning the legacy `/api/v0/optimization` endpoints
 
 The legacy endpoints must remain available during a transition period because deployed desktop clients (already installed on user machines) will continue to call `/api/v0/optimization` until they update. The decommissioning plan:
 
-### Phase 1: Parallel operation (commits 1–6)
+### Phase 1: Parallel operation (CURRENT)
 
-Both old and new endpoints are live. The new `/api/v1/optimization` endpoints are deployed and functional. The old `/api/v0/optimization` endpoints continue to work as before (same socket-based implementation, same bugs). No client changes yet.
+Both old and new endpoints are live. The new `/api/v1/optimization` endpoints are deployed and being validated on dev. The old `/api/v0/optimization` endpoints continue to work as before (same socket-based implementation, same bugs). The desktop client on the `parest-bug` branch uses the new API.
 
-### Phase 2: Client migration (commit 7)
+### Phase 2: Client migration (after dev validation)
 
-The desktop client is updated to call `/api/v1/optimization`. New client builds use the new API exclusively. Old client installs still use `/api/v0/`.
+Merge `parest-bug` to `master` and release. New client builds use the new API exclusively. Old client installs still use `/api/v0/`.
 
 VCell uses a managed client update mechanism — when users launch the desktop client, it checks for updates and prompts to download the latest version. This means the transition window depends on how quickly users update.
 
@@ -333,5 +439,5 @@ After the updated client is released:
 
 Once legacy endpoint usage drops to zero (or an acceptable threshold):
 - Remove the legacy optimization endpoints, socket server, and related code
-- Remove port 8877 from the vcell-submit Kubernetes service (commit 9)
+- Remove port 8877 from the vcell-submit Kubernetes service
 - The `VCellApiClient` class itself is not deleted (it may still be used for other legacy endpoints), but its optimization methods are removed
