@@ -99,15 +99,23 @@ public class OptimizationRestService {
         Vcellopt results = null;
 
         switch (record.status()) {
+            case SUBMITTED:
             case RUNNING:
             case QUEUED:
-                // Try to read progress from the report file
+                // Try to read progress from the report file.
+                // Even in SUBMITTED state, the SLURM job may already be running and writing progress
+                // (the QUEUED status message from vcell-submit arrives asynchronously).
                 progressReport = readProgressReport(record.optReportFile());
                 // Check if the output file has appeared (solver completed)
                 results = readResults(record.optOutputFile());
                 if (results != null) {
                     updateOptJobStatus(jobKey, OptJobStatus.COMPLETE, null);
                     return new OptimizationJobStatus(jobKey, OptJobStatus.COMPLETE, null, record.htcJobId(), progressReport, results);
+                }
+                // Auto-promote to RUNNING if progress report exists and we're still in SUBMITTED/QUEUED
+                if (progressReport != null && record.status() != OptJobStatus.RUNNING) {
+                    updateOptJobStatus(jobKey, OptJobStatus.RUNNING, null);
+                    return new OptimizationJobStatus(jobKey, OptJobStatus.RUNNING, null, record.htcJobId(), progressReport, null);
                 }
                 break;
             case COMPLETE:
@@ -119,8 +127,6 @@ public class OptimizationRestService {
                 progressReport = readProgressReport(record.optReportFile());
                 break;
             case FAILED:
-            case SUBMITTED:
-                // No progress or results expected
                 break;
         }
 

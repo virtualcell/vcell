@@ -118,11 +118,6 @@ public class CopasiOptimizationSolverRemote {
                 switch (status.getStatus()) {
                     case SUBMITTED:
                     case QUEUED:
-                        if (clientTaskStatusSupport != null) {
-                            clientTaskStatusSupport.setMessage("Queued...");
-                        }
-                        break;
-
                     case RUNNING:
                         if (status.getProgressReport() != null) {
                             String progressJson = objectMapper.writeValueAsString(status.getProgressReport());
@@ -140,7 +135,10 @@ public class CopasiOptimizationSolverRemote {
                             });
                         } else {
                             if (clientTaskStatusSupport != null) {
-                                clientTaskStatusSupport.setMessage("Running (waiting for progress) ...");
+                                clientTaskStatusSupport.setMessage(
+                                        status.getStatus() == org.vcell.restclient.model.OptJobStatus.RUNNING
+                                                ? "Running (waiting for progress) ..."
+                                                : "Queued...");
                             }
                         }
                         break;
