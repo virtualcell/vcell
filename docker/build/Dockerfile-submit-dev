@@ -90,6 +90,8 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
     slurm_langevin_timeoutPerTaskSeconds="slurm_langevin_timeoutPerTaskSeconds-not-set" \
     slurm_langevin_batchMemoryLimitPerTaskMB="slurm_langevin_batchMemoryLimitPerTaskMB-not-set" \
     slurm_langevin_memoryBlockSizeMB="slurm_langevin_memoryBlockSizeMB-not-set" \
+    jmshost_artemis_internal=artemismq \
+    jmsport_artemis_internal=61616 \
     jmsblob_minsize=100000 \
     vcell_ssh_cmd_cmdtimeout="cmdSrvcSshCmdTimeoutMS-not-set" \
     vcell_ssh_cmd_restoretimeout="cmdSrvcSshCmdRestoreTimeoutFactor-not-set" \
@@ -167,6 +169,8 @@ ENTRYPOINT java \
 	-Dvcell.jms.sim.host.external="${jmshost_sim_external}" \
 	-Dvcell.jms.sim.port.external="${jmsport_sim_external}" \
 	-Dvcell.jms.sim.restport.external="${jmsrestport_sim_external}" \
+	-Dvcell.jms.artemis.host.internal="${jmshost_artemis_internal}" \
+	-Dvcell.jms.artemis.port.internal="${jmsport_artemis_internal}" \
 	-Dvcell.jms.blobMessageUseMongo=true \
 	-Dvcell.jms.blobMessageMinSize="${jmsblob_minsize}" \
 	-Dvcell.jms.user="${jmsuser}" \
