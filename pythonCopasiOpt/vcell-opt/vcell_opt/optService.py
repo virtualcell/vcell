@@ -57,7 +57,8 @@ def run_command(opt_file: Path = typer.Argument(..., file_okay=True, dir_okay=Fa
         param_names: List[str] = [param_desc.name for param_desc in opt_problem.parameter_description_list]
         f_report_file.write(json.dumps(param_names)+"\n")
 
-    basico.assign_report("parest report", task=basico.T.PARAMETER_ESTIMATION, filename=str(report_file), append=True)
+    basico.assign_report("parest report", task=basico.T.PARAMETER_ESTIMATION, filename=str(report_file), append=True,
+                         confirm_overwrite=False)
 
     fit_items = get_fit_parameters(opt_problem)
     basico.set_fit_parameters(fit_items)

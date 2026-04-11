@@ -249,3 +249,7 @@ pythonData/test_data/SimID_946368938_0_.vcg
 pythonData/test_data/SimID_946368938_mathmodel.vcml
 
 pythonData/test_data/zarr/
+
+pythonCopasiOpt/vcell-opt/.venv/
+
+pythonCopasiOpt/vcell-opt/test_data/optproblem.report

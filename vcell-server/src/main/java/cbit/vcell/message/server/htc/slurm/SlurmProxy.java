@@ -1119,11 +1119,10 @@ public class SlurmProxy extends HtcProxy {
 
 		LineStringBuilder lsb = new LineStringBuilder();
 		slurmScriptInit(jobName, false, memoryMBAllowed, lsb);
+		// vcell-rest creates the parest_data directory before writing the input file.
+		// Compute the external path for the SLURM script bindings (host-visible NFS mount point).
 		File optDataDir = optProblemInputFile.getParentFile();
 		File optDataDirExternal = new File(optDataDir.getAbsolutePath().replace(primaryDataDirInternal, primaryDataDirExternal));
-		if (!optDataDirExternal.exists() && !optDataDirExternal.mkdir()){
-			LG.error("failed to make optimization data directory "+optDataDir.getAbsolutePath());
-		}
 
 		List<SingularityBinding> bindings = List.of(
 				new SingularityBinding(optDataDirExternal.getAbsolutePath(), "/simdata"),

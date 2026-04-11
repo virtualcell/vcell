@@ -115,6 +115,11 @@ public class CopasiOptimizationSolverRemote {
                     throw UserCancelException.CANCEL_GENERIC;
                 }
 
+                lg.debug("job {}: poll status={}, hasProgressReport={}, hasResults={}",
+                        jobId, status.getStatus(),
+                        status.getProgressReport() != null,
+                        status.getResults() != null);
+
                 switch (status.getStatus()) {
                     case SUBMITTED:
                     case QUEUED:
@@ -147,14 +152,16 @@ public class CopasiOptimizationSolverRemote {
                         if (status.getResults() != null) {
                             String resultsJson = objectMapper.writeValueAsString(status.getResults());
                             optRun = objectMapper.readValue(resultsJson, Vcellopt.class);
+                            lg.info("job {}: COMPLETE, optResultSet={}", jobId, optRun.getOptResultSet() != null);
                             if (optRun.getOptResultSet() != null && optRun.getOptResultSet().getOptProgressReport() != null) {
                                 final OptProgressReport finalProgress = optRun.getOptResultSet().getOptProgressReport();
                                 progressDispatcher.accept(() -> optSolverCallbacks.setProgressReport(finalProgress));
                             }
-                            lg.info("job {}: COMPLETE {}", jobId, optRun.getOptResultSet());
                             if (clientTaskStatusSupport != null) {
                                 clientTaskStatusSupport.setProgress(100);
                             }
+                        } else {
+                            lg.warn("job {}: COMPLETE but results are null", jobId);
                         }
                         break;
 
