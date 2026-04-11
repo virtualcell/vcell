@@ -216,67 +216,6 @@ public class VCellApiClient implements AutoCloseable {
 		return eventWrappers;
 	}
 	
-	public String getOptRunJson(String optimizationId,boolean bStop) throws IOException {
-		
-		HttpGet httpget = new HttpGet(getApiUrlPrefix()+"/optimization/"+optimizationId+"?bStop="+bStop);
-		httpget.addHeader("Authorization","Bearer "+httpClientContext.getUserToken(String.class));
-
-		if (lg.isInfoEnabled()) {
-			lg.info("Executing request to retrieve optimization run " + httpget.getRequestLine());
-		}
-
-		String responseBody = httpclient.execute(httpget, new VCellStringResponseHandler("getOptRunJson()", httpget), httpClientContext);
-		if (lg.isInfoEnabled()) {
-			lg.info("returned: "+toStringTruncated(responseBody));
-		}
-		return responseBody;
-	}
-
-	public String submitOptimization(String optProblemJson) throws IOException, URISyntaxException {
-		  
-		HttpPost httppost = new HttpPost(getApiUrlPrefix()+"/optimization");
-		httppost.addHeader("Authorization", "Bearer "+httpClientContext.getUserToken(String.class));
-
-		StringEntity input = new StringEntity(optProblemJson);
-		input.setContentType("application/json");
-		httppost.setEntity(input);
-		
-		if (lg.isInfoEnabled()) {
-			lg.info("Executing request to submit optProblem " + httppost.getRequestLine());
-		}
-
-		ResponseHandler<String> handler = new ResponseHandler<String>() {
-
-			public String handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
-				int status = response.getStatusLine().getStatusCode();
-				if (status == 200) {
-					HttpEntity entity = response.getEntity();
-					String message = null;
-					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
-						message = reader.lines().collect(Collectors.joining());
-					}
-					return message;
-				} else {
-					HttpEntity entity = response.getEntity();
-					String message = null;
-					try (BufferedReader reader = new BufferedReader(new InputStreamReader(entity.getContent()));){
-						message = reader.lines().collect(Collectors.joining());
-					}
-					final URI uri = httppost.getURI();
-					lg.error("submitOptimization() ("+uri+") failed: response status: " + status + "\nreason: " + message);
-					throw new ClientProtocolException("submitOptimization() failed: response status: " + status + "\nreason: " + message);
-				}
-			}
-
-		};
-		String responseUri = httpclient.execute(httppost,handler,httpClientContext);
-		if (lg.isInfoEnabled()) {
-			lg.info("returned: "+toStringTruncated(responseUri));
-		}
-
-		return responseUri;
-	}
-	
 	public void createDefaultQuarkusClient(boolean bIgnoreCertProblems){
 		apiClient = new ApiClient(){{
 			if (bIgnoreCertProblems){setHttpClientBuilder(CustomApiClientCode.createInsecureHttpClientBuilder());};

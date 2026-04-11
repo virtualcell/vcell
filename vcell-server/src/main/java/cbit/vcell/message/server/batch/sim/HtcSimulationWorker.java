@@ -110,7 +110,6 @@ public HtcSimulationWorker() {
 
 public void init() {
 	initQueueConsumer();
-	optimizationBatchServer.initOptimizationSocket();
 
 	// Start JMS queue listener for optimization requests from vcell-rest (via Artemis broker)
 	String artemisHost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsArtemisHostInternal);

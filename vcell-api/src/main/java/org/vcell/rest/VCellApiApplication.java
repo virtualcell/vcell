@@ -91,10 +91,6 @@ public class VCellApiApplication extends WadlApplication {
 	
 	public static final String RPC = "rpc";
 	
-	public static final String OPTIMIZATION = "optimization";
-	public static final String RUNOPTIMIZATION = "run";
-	public static final String OPTIMIZATIONID = "optimizationid";
-	
 	public static final String PUBLICATION = "publication";
 	public static final String PUBLICATIONID = "publicationid";
 	
@@ -288,8 +284,6 @@ public class VCellApiApplication extends WadlApplication {
 		rootRouter.attach(PATH_PREFIX+"/"+SCRIPTS, new Directory(getContext(), ROOT_URI));
 	    rootRouter.attach(PATH_PREFIX+"/"+ACCESSTOKENRESOURCE, new AuthenticationTokenRestlet(getContext()));
 	    rootRouter.attach(PATH_PREFIX+"/"+WEBAPP, new Directory(getContext(), WEBAPP_URI));
-	    rootRouter.attach(PATH_PREFIX+"/"+OPTIMIZATION, OptimizationRunServerResource.class);
-	    rootRouter.attach(PATH_PREFIX+"/"+OPTIMIZATION+"/{"+OPTIMIZATIONID+"}", OptimizationRunServerResource.class);
 	    rootRouter.attach(PATH_PREFIX+"/"+PUBLICATION, PublicationsServerResource.class);
 	    rootRouter.attach(PATH_PREFIX+"/"+PUBLICATION+"/{"+PUBLICATIONID+"}", PublicationServerResource.class);
 		rootRouter.attach(PATH_PREFIX+"/"+BIOMODEL, BiomodelsServerResource.class);  
