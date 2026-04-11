@@ -44,10 +44,9 @@ def test_run() -> None:
     # define parameter estimation report format, note that header and footer are omitted to ease parsing
     #
     basico.add_report('parest report', task=basico.T.PARAMETER_ESTIMATION,
+                      separator='\t',
                       body=['CN=Root,Vector=TaskList[Parameter Estimation],Problem=Parameter Estimation,Reference=Function Evaluations',
-                            '\\\t',
                             'CN=Root,Vector=TaskList[Parameter Estimation],Problem=Parameter Estimation,Reference=Best Value',
-                            '\\\t',
                             'CN=Root,Vector=TaskList[Parameter Estimation],Problem=Parameter Estimation,Reference=Best Parameters'
                             ],
                       )
