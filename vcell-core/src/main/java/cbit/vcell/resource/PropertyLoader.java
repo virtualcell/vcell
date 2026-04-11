@@ -258,7 +258,6 @@ public class PropertyLoader {
 	public static final String vcellSMTPPort = record("vcell.smtp.port",ValueType.GEN);
 	public static final String vcellSMTPEmailAddress = record("vcell.smtp.emailAddress",ValueType.GEN);
 
-	public static final String vcellsubmit_service_host = record("vcell.submit.service.host",ValueType.GEN);
 	public static final String javaSimulationExecutable = record("vcell.javaSimulation.executable",ValueType.GEN);
 	public static final String simulationPreprocessor = record("vcell.simulation.preprocessor",ValueType.GEN);
 	public static final String simulationPostprocessor = record("vcell.simulation.postprocessor",ValueType.GEN);
