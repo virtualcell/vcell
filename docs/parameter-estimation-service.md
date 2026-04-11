@@ -1,5 +1,38 @@
 # Parameter Estimation Service Migration
 
+## Requirements
+
+Parameter estimation allows VCell users to fit model parameters to experimental data. The service must satisfy the following requirements:
+
+### Functional requirements
+
+1. **Submit optimization job.** An authenticated user submits an `OptProblem` (SBML model, experimental data, parameter bounds, optimization method) and receives a job ID. The problem is dispatched to a SLURM cluster for execution using the COPASI optimization engine.
+
+2. **Real-time progress reporting.** While the solver runs, the client receives periodic updates showing:
+   - Objective function value vs. function evaluations (displayed as a graph)
+   - Current best parameter values (displayed in a table)
+   - Progress updates every ~2 seconds via client polling
+
+3. **Retrieve results.** When optimization completes, the client retrieves the final optimized parameter values, objective function value, and the full progress history.
+
+4. **Stop running job.** A user can stop an optimization mid-run. The best parameters found up to the stop point are returned to the client, allowing the user to accept partial results when convergence is sufficient.
+
+5. **Job ownership.** Only the user who submitted a job can query its status, retrieve results, or stop it.
+
+6. **List jobs.** A user can list their optimization jobs with current status.
+
+### Non-functional requirements
+
+7. **Survive pod restarts.** Job state must be persisted so that in-flight jobs are not lost when the REST service or submit service restarts. This is routine in Kubernetes.
+
+8. **No single point of failure for job dispatch.** Communication between the REST service and the batch submission service must use a durable message broker, not in-memory connections.
+
+9. **Collision-free job IDs.** Job identifiers must be unique, using database-sequence keys rather than random numbers.
+
+10. **Auto-generated API clients.** The REST API must have an OpenAPI spec, and Java/Python/TypeScript clients must be auto-generated from it to stay in sync with the server.
+
+11. **Shared filesystem for solver I/O.** The optimization problem input, progress report, and result output are files on a shared NFS mount — matching the Python solver's file-based interface. The database tracks metadata and status; the filesystem holds the data.
+
 ## Motivation
 
 Parameter estimation (curve fitting) is a core VCell capability that allows users to optimize model parameters against experimental data using the COPASI optimization engine. The current implementation has been unreliable in production (GitHub #1653), and the root cause is architectural: the REST-to-batch-server communication relies on persistent in-memory TCP socket connections that are inherently fragile.
@@ -383,6 +416,12 @@ All commits listed below are on the `parest-bug` branch, ahead of `master`.
 - Remove `submitOptimization()` / `getOptRunJson()` from `VCellApiClient`
 - Remove optimization route registration from `VCellApiApplication.java`
 - Remove port 8877 exposure from vcell-submit
+
+#### Update design documentation after legacy removal
+- After commit 8, remove the "Motivation" section's references to the legacy design (socket protocol, random IDs, etc.) — they will no longer be relevant context
+- Remove the "Decommissioning" section (will be complete)
+- Update architecture diagram to remove references to legacy `/api/v0/` endpoints
+- Simplify the document to be a pure design reference rather than a migration plan
 
 #### Level 3 integration test (future)
 - Full end-to-end test with SLURM (`@Tag("SLURM_IT")`) — requires NFS and SSH access to SLURM cluster
