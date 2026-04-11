@@ -80,7 +80,7 @@ public class CopasiOptimizationSolverRemote {
             lg.info("submitted optimization jobID={}", jobId);
 
             // Poll for status and results
-            final long TIMEOUT_MS = 1000 * 200; // 200 second timeout
+            final long TIMEOUT_MS = 1000 * 600; // 10 minute timeout
             long startTime = System.currentTimeMillis();
             if (clientTaskStatusSupport != null) {
                 clientTaskStatusSupport.setMessage("Waiting for progress...");

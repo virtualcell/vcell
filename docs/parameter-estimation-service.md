@@ -231,7 +231,7 @@ The desktop client displays a real-time graph of objective function value vs. fu
 
 ### Solver coordination
 
-- **`CopasiOptimizationSolverRemote`** — Orchestrates the remote call: converts `ParameterEstimationTask` → `OptProblem`, submits via generated API client, polls every 2 seconds (200-second timeout), dispatches progress to callbacks, handles stop.
+- **`CopasiOptimizationSolverRemote`** — Orchestrates the remote call: converts `ParameterEstimationTask` → `OptProblem`, submits via generated API client, polls every 2 seconds (10-minute timeout), dispatches progress to callbacks, handles stop.
 
 ### Callback layer
 
@@ -286,5 +286,5 @@ The solver reads an `OptProblem` JSON, runs COPASI parameter estimation, writes 
 - Migrate vcell-submit from ActiveMQ 5.x OpenWire client to Artemis JMS client (`jakarta.jms`) for protocol consistency
 - Add dead letter and expiry address configuration for opt-request/opt-status queues in Artemis
 - Add monitoring/alerting for optimization job failures
-- Increase the 200-second client timeout or make it configurable
+- Make the 10-minute client timeout configurable
 - Add Level 3 SLURM integration test (`@Tag("SLURM_IT")`) for full end-to-end validation with real SLURM
