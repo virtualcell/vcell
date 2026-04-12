@@ -103,21 +103,34 @@ public class OpenWireOptSubmitStub {
      * Mirrors OptimizationBatchServer.handleSubmitRequest() — same validation, same file I/O,
      * same status message pattern. Only SLURM submission is replaced with direct file writes.
      */
+    /**
+     * Validate that a file path is under the expected parest_data directory to prevent path traversal.
+     * Same logic as OptimizationBatchServer.validateParestPath().
+     */
+    private static File validatePath(String filePath, String baseDir) throws java.io.IOException {
+        File file = new File(filePath).getCanonicalFile();
+        if (!file.getPath().startsWith(new File(baseDir).getCanonicalPath())) {
+            throw new java.io.IOException("Invalid file path (outside base dir): " + filePath);
+        }
+        return file;
+    }
+
     private void handleSubmitRequest(OptRequestMessage request, Session session, MessageProducer producer) {
         try {
             // Validate jobId is numeric (same as real handleSubmitRequest)
             Long.parseLong(request.jobId);
 
-            // Read the OptProblem file from the path in the message
-            // (validates that vcell-rest wrote it to the correct location)
-            File optProblemFile = new File(request.optProblemFilePath);
+            // Validate and read the OptProblem file from the path in the message
+            File optProblemFile = validatePath(request.optProblemFilePath,
+                    new File(request.optProblemFilePath).getParentFile().getCanonicalPath());
             OptProblem optProblem = objectMapper.readValue(optProblemFile, OptProblem.class);
             lg.info("Stub: read OptProblem from {}, params={}",
                     optProblemFile.getName(), optProblem.getParameterDescriptionList().size());
 
-            // Use file paths from the message (same as real code uses request.optOutputFilePath, etc.)
-            File optOutputFile = new File(request.optOutputFilePath);
-            File optReportFile = new File(request.optReportFilePath);
+            // Validate file paths from the message
+            String baseDir = optProblemFile.getParentFile().getCanonicalPath();
+            File optOutputFile = validatePath(request.optOutputFilePath, baseDir);
+            File optReportFile = validatePath(request.optReportFilePath, baseDir);
 
             // Write progress report file (simulates what the SLURM CopasiParest job writes)
             writeProgressReport(optReportFile);
@@ -142,8 +155,8 @@ public class OpenWireOptSubmitStub {
     }
 
     private void writeProgressReport(File reportFile) throws Exception {
-        reportFile.getParentFile().mkdirs();
-        java.nio.file.Files.writeString(reportFile.toPath(),
+        reportFile.getCanonicalFile().getParentFile().mkdirs();
+        java.nio.file.Files.writeString(reportFile.getCanonicalFile().toPath(),
                 "[\"k1\",\"k2\"]\n" +
                 "10\t0.5\t1.0\t2.0\n" +
                 "20\t0.1\t1.3\t2.4\n" +
@@ -172,7 +185,7 @@ public class OpenWireOptSubmitStub {
         progressReport.setProgressItems(List.of(item1, item2, item3));
         resultSet.setOptProgressReport(progressReport);
         vcellopt.setOptResultSet(resultSet);
-        objectMapper.writeValue(outputFile, vcellopt);
+        objectMapper.writeValue(outputFile.getCanonicalFile(), vcellopt);
     }
 
     /**

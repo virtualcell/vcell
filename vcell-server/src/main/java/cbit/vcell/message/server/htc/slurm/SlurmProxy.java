@@ -1084,13 +1084,18 @@ public class SlurmProxy extends HtcProxy {
 	public HtcJobID submitOptimizationJob(String jobName, File sub_file_internal, File sub_file_external,
 										  File optProblemInputFile,File optProblemOutputFile,File optReportFile) throws ExecutableException{
 		try {
+			// Validate sub_file_internal is under the configured htcLogDir to prevent path traversal
+			String htcLogDirInternal = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirInternal);
+			if (!sub_file_internal.getCanonicalPath().startsWith(new File(htcLogDirInternal).getCanonicalPath())) {
+				throw new ExecutableException("sub_file_internal path outside htcLogDir: " + sub_file_internal);
+			}
 			String scriptText = createOptJobScript(jobName, optProblemInputFile, optProblemOutputFile, optReportFile);
 			LG.info("sub_file_internal: " + sub_file_internal.getAbsolutePath() +
 					", sub_file_external: " + sub_file_external.getAbsolutePath() +
 					", optProblemInput: " + optProblemInputFile.getAbsolutePath() +
 					", optProblemOutput: " + optProblemOutputFile.getAbsolutePath() +
 					", optReport: " + optReportFile.getAbsolutePath());
-			Files.writeString(sub_file_internal.toPath(), scriptText);
+			Files.writeString(sub_file_internal.getCanonicalFile().toPath(), scriptText);
 		} catch (IOException ex) {
 			LG.error(ex);
 			return null;
