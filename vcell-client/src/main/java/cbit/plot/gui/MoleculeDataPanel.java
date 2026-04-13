@@ -13,6 +13,7 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ClusterSpecificationPanel;
 import cbit.vcell.solver.ode.gui.MoleculeSpecificationPanel;
+import cbit.vcell.solver.ode.gui.MoleculeVisualizationPanel;
 import cbit.vcell.util.ColumnDescription;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,6 +35,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 public class MoleculeDataPanel extends AbstractDataPanel {
+
+    private static final Logger lg = LogManager.getLogger(MoleculeDataPanel.class);
 
     public enum SubStatistic {
         AVG("AVG"),

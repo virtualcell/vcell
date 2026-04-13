@@ -7,6 +7,8 @@ import cbit.vcell.simdata.LangevinSolverResultSet;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.gui.CollapsiblePanel;
 
 import javax.swing.*;
@@ -24,6 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
+
+    private static final Logger lg = LogManager.getLogger(ClusterSpecificationPanel.class);
 
     public enum DisplayMode {
         COUNTS(
@@ -164,7 +168,7 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
         public void actionPerformed(ActionEvent e) {
             String cmd = e.getActionCommand();
             if (e.getSource() instanceof JRadioButton rb && SwingUtilities.isDescendingFrom(rb, ClusterSpecificationPanel.this)) {
-                System.out.println(this.getClass().getName() + ".actionPerformed() called. Source is JRadioButton: " + rb.getText());
+                lg.debug("actionPerformed() called. Source is JRadioButton: {}", rb.getText());
                 DisplayMode mode = DisplayMode.fromActionCommand(cmd);
                 populateYAxisChoices(mode);
             }
@@ -172,7 +176,8 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getSource() == ClusterSpecificationPanel.this) {
-                System.out.println(this.getClass().getName() + ".IvjEventHandler.propertyChange() called");
+                lg.debug("propertyChange() called. Source is ClusterSpecificationPanel. Property name: {}, old value: {}, new value: {}",
+                        evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
             }
         }
         @Override
@@ -181,7 +186,7 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
                 if(suppressEvents || e.getValueIsAdjusting()) {
                     return; // ignore events triggered during initialization
                 }
-                System.out.println(this.getClass().getName() + ".valueChanged() called. Source is YAxisChoice JList. Selected values: " + getYAxisChoice().getSelectedValuesList());
+                lg.debug("valueChanged() called. Source is YAxisChoice JList. Selected values: {}", getYAxisChoice().getSelectedValuesList());
                 enforceAcsSdAcoRule();
                 // extract selected ColumnDescriptions
                 java.util.List<ColumnDescription> selected = getYAxisChoice().getSelectedValuesList();
@@ -398,7 +403,7 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
 
     @Override
     protected void onSelectedObjectsChange(Object[] selectedObjects) {
-        System.out.println(this.getClass().getSimpleName() + ".onSelectedObjectsChange() called with " + selectedObjects.length + " objects");
+        lg.debug("onSelectedObjectsChange() called. Number of selected objects: {}", selectedObjects.length);
     }
 
     public void refreshData() {
@@ -410,7 +415,8 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
             yAxisCounts.put(DisplayMode.MEAN, countColumns(langevinSolverResultSet.getClusterMean()));
             yAxisCounts.put(DisplayMode.OVERALL, countColumns(langevinSolverResultSet.getClusterOverall()));
         }
-        System.out.println(this.getClass().getSimpleName() + ".refreshData() called");
+        lg.debug("refreshData() called. SimulationModelInfo: {}, LangevinSolverResultSet: {}, YAxisCounts: {}",
+                simulationModelInfo, langevinSolverResultSet, yAxisCounts);
 
         // find the selected radio button inside the collapsible panel and fire event as if it were just selected by mouse click
         // which will populate the y-axis choices based on the new data

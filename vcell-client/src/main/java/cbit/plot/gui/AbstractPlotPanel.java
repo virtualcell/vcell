@@ -1,5 +1,9 @@
 package cbit.plot.gui;
 
+import cbit.vcell.solver.ode.gui.MoleculeVisualizationPanel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
@@ -17,6 +21,8 @@ import javax.swing.KeyStroke;
 import javax.swing.border.Border;
 
 public abstract class AbstractPlotPanel extends JPanel {
+
+    private static final Logger lg = LogManager.getLogger(AbstractPlotPanel.class);
 
     // Insets and strokes
     protected static final int LEFT_INSET   = 50;

@@ -13,6 +13,8 @@ import cbit.vcell.solver.TimeStep;
 import cbit.vcell.solver.UniformOutputTimeSpec;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.util.ColumnDescription;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.ColorUtil;
 import org.vcell.util.gui.SpecialtyTableRenderer;
 
@@ -32,6 +34,8 @@ import java.util.List;
 
 public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
 
+    private static final Logger lg = LogManager.getLogger(MoleculeVisualizationPanel.class);
+
     private static final int MINMAX_ALPHA = 90;   // stronger envelope
     private static final int SD_ALPHA     = 60;   // lighter envelope
 
@@ -47,12 +51,12 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
     private MoleculePlotPanel moleculePlotPanel = null;   // here are the plots being drawn
     private MoleculeDataPanel moleculeDataPanel = null;   // here resides the data table
 
-
     class IvjEventHandler implements ActionListener, PropertyChangeListener, ListSelectionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof Component c && SwingUtilities.isDescendingFrom(c, MoleculeVisualizationPanel.this)) {
-                System.out.println(this.getClass().getName() + ".actionPerformed() called with " + e.getActionCommand());
+//                System.out.println(this.getClass().getName() + ".actionPerformed() called with " + e.getActionCommand());
+                lg.debug("actionPerformed() called with command: " + e.getActionCommand());
                 // switch selection between plot panel and data panel (located in a JCardLayout)
                 String cmd = e.getActionCommand();
                 // --- Card switching (plot <-> data) ---
@@ -77,7 +81,7 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {   // listens to changes in the MoleculeSpecificationPanel
             if (evt.getSource() == owner.getMoleculeSpecificationPanel() && "MoleculeSelectionChanged".equals(evt.getPropertyName())) {
-                System.out.println(this.getClass().getName() + ".propertyChange() called with " + evt.getPropertyName());
+                lg.debug("propertyChange() called with property: " + evt.getPropertyName());
                 // redraw everything based on the new selections
                 MoleculeSpecificationPanel.MoleculeSelection sel = (MoleculeSpecificationPanel.MoleculeSelection) evt.getNewValue();
                 ensureColorsAssigned(sel.selectedColumns);
@@ -93,7 +97,7 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
         @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getSource() instanceof Component c && SwingUtilities.isDescendingFrom(c, MoleculeVisualizationPanel.this)) {
-                System.out.println(this.getClass().getName() + ".valueChanged() called");
+                lg.debug("valueChanged() called");
             }
         }
     }
@@ -142,7 +146,8 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
                 moleculePlotPanel.addComponentListener(new ComponentAdapter() {
                     @Override
                     public void componentShown(ComponentEvent e) {
-                        System.out.println(this.getClass().getSimpleName() + ".componentShown() called, height = " + moleculePlotPanel.getHeight());
+//                        System.out.println(this.getClass().getSimpleName() + ".componentShown() called, height = " + moleculePlotPanel.getHeight());
+                        lg.debug("componentShown() called, height = " + moleculePlotPanel.getHeight());
                     }
                 });
             } catch (java.lang.Throwable ivjExc) {
@@ -185,7 +190,7 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
     // ----------------------------------------------------------------------
 
     private void redrawPlot(MoleculeSpecificationPanel.MoleculeSelection sel) throws ExpressionException {
-        System.out.println(getClass().getSimpleName() + ".redrawPlot() called, current selection: " + sel);
+        lg.debug("redrawPlot() called, current selection: " + sel);
 
         MoleculePlotPanel plot = getMoleculePlotPanel();
         plot.clearAllRenderers();
@@ -236,15 +241,12 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
 
             map.put(name, s);
 
-            // AVG contributes to globalMax
-            if (s.avg != null) {
+            if (s.avg != null) {            // AVG contributes to globalMax
                 for (double v : s.avg) {
                     if (v > globalMax) globalMax = v;
                 }
             }
-
-            // MIN/MAX contributes to globalMin/globalMax
-            if (s.min != null) {
+            if (s.min != null) {            // MIN/MAX contributes to globalMin/globalMax
                 for (double v : s.min) {
                     if (v < globalMin) globalMin = v;
                 }
@@ -254,9 +256,7 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
                     if (v > globalMax) globalMax = v;
                 }
             }
-
-            // SD envelope contributes to globalMin/globalMax
-            if (s.avg != null && s.sd != null) {
+            if (s.avg != null && s.sd != null) {        // SD envelope contributes to globalMin/globalMax
                 for (int i = 0; i < s.avg.length; i++) {
                     double upper = s.avg[i] + s.sd[i];
                     double lower = s.avg[i] - s.sd[i];
@@ -281,32 +281,26 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
             // --- SD band ---
             if (sel.selectedStatistics.contains(MoleculeSpecificationPanel.StatisticSelection.SD)
                     && s.avg != null && s.sd != null) {
-
                 int n = s.avg.length;
                 double[] low  = new double[n];
                 double[] high = new double[n];
-
                 for (int i = 0; i < n; i++) {
                     low[i]  = s.avg[i] - s.sd[i];
                     high[i] = s.avg[i] + s.sd[i];
-                    System.out.println("  " + s.avg[i] + " ± " + s.sd[i] + " → [" + low[i] + ", " + high[i] + "]");
                 }
-                plot.addSDRenderer(time, low, high, sDColor, name,
-                        MoleculeSpecificationPanel.StatisticSelection.SD);
+                plot.addSDRenderer(time, low, high, sDColor, name, MoleculeSpecificationPanel.StatisticSelection.SD);
             }
 
             // --- MIN/MAX band ---
             if (sel.selectedStatistics.contains(MoleculeSpecificationPanel.StatisticSelection.MIN_MAX)
                     && s.min != null && s.max != null) {
-                plot.addMinMaxRenderer(time, s.min, s.max, mMColor, name,
-                        MoleculeSpecificationPanel.StatisticSelection.MIN_MAX);
+                plot.addMinMaxRenderer(time, s.min, s.max, mMColor, name, MoleculeSpecificationPanel.StatisticSelection.MIN_MAX);
             }
 
             // --- AVG line ---
             if (sel.selectedStatistics.contains(MoleculeSpecificationPanel.StatisticSelection.AVG)
                     && s.avg != null) {
-                plot.addAvgRenderer(time, s.avg, baseColor, name,
-                        MoleculeSpecificationPanel.StatisticSelection.AVG);
+                plot.addAvgRenderer(time, s.avg, baseColor, name, MoleculeSpecificationPanel.StatisticSelection.AVG);
             }
         }
 
@@ -315,11 +309,9 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
         // ------------------------------------------------------------
         if (globalMin > 0) globalMin = 0;
         plot.setGlobalMinMax(globalMin, globalMax);
-
         if (time.length > 1) {
             plot.setDt(time[1] - time[0]);   // times[0] == 0
         }
-
         plot.repaint();
     }
 
@@ -342,7 +334,7 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
     }
 
     private void redrawLegend(MoleculeSpecificationPanel.MoleculeSelection sel) throws ExpressionException {
-        System.out.println(getClass().getSimpleName() + ".redrawLegend() called");
+        lg.debug("redrawLegend() called with selection: " + sel);
         JPanel legend = getLegendContentPanel();
         legend.removeAll();
         for (ColumnDescription cd : sel.selectedColumns) {
@@ -379,17 +371,19 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
     }
 
     private void redrawDataTable(MoleculeSpecificationPanel.MoleculeSelection sel) throws ExpressionException {
-        System.out.println(this.getClass().getSimpleName() + ".updateDataTable() called");
+        lg.debug("redrawDataTable() called with selection: " + sel);
         getMoleculeDataPanel().updateData(sel, langevinSolverResultSet);
     }
 
     private void handleException(java.lang.Throwable exception) {
+        lg.error("Uncaught exception: " + exception.getMessage(), exception);
         System.out.println("--------- UNCAUGHT EXCEPTION ---------");
         exception.printStackTrace(System.out);
     }
+
     @Override
     protected void onSelectedObjectsChange(Object[] selectedObjects) {
-        System.out.println(this.getClass().getSimpleName() + ".onSelectedObjectsChange() called with " + selectedObjects.length + " objects");
+        lg.debug("onSelectedObjectsChange() called with " + selectedObjects.length + " objects");
     }
 
     // called directly from ODEDataViewer when a new value for vcDataIdentifier is set
@@ -397,7 +391,7 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
     // the right way to do it would be to add the simulationModelInfo and langevinSolverResultSet to MoleculeSelection object,
     // the way it's done in ClusterVisualizationPanel, so that they are always in sync with the selections in the left panel
     public void refreshData() {
-        System.out.println(this.getClass().getSimpleName() + ".refreshData() called");
+        lg.debug("refreshData() called");
         simulationModelInfo = owner.getSimulationModelInfo();
         langevinSolverResultSet = owner.getLangevinSolverResultSet();
 
@@ -451,7 +445,7 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
     }
 
     public void setSpecialityRenderer(SpecialtyTableRenderer str) {
-//        getClusterDataPanel().setSpecialityRenderer(str);
+//        getMoleculeDataPanel().setSpecialityRenderer(str);
     }
 
 

@@ -28,7 +28,7 @@ import java.io.File;
 
 public class ClusterDataPanel extends AbstractDataPanel {
 
-    private static final Logger LG = LogManager.getLogger(ClusterDataPanel.class);
+    private static final Logger lg = LogManager.getLogger(ClusterDataPanel.class);
 
     // -------------------------------------------------------------------------
     // Cluster-specific header renderer

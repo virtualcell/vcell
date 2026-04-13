@@ -1,6 +1,8 @@
 package cbit.vcell.solver.ode.gui;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.gui.JToolBarToggleButton;
 import org.vcell.util.gui.VCellIcons;
 
@@ -13,6 +15,8 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public abstract class AbstractVisualizationPanel extends DocumentEditorSubPanel {
+
+    private static final Logger lg = LogManager.getLogger(AbstractVisualizationPanel.class);
 
     protected class LineIcon implements Icon {
         private final Color color;

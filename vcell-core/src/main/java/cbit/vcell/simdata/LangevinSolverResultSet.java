@@ -7,6 +7,8 @@ import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.util.ColumnDescription;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.model.ssld.SsldUtils;
 
 import java.io.*;
@@ -15,6 +17,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class LangevinSolverResultSet implements Serializable {
+
+    private static final Logger lg = LogManager.getLogger(LangevinSolverResultSet.class);
 
     private final LangevinBatchResultSet raw;
     public LangevinSolverResultSet(LangevinBatchResultSet raw) {
@@ -120,7 +124,7 @@ public class LangevinSolverResultSet implements Serializable {
             SimulationModelInfo.ModelCategoryType filterCategory = null;	// parse name to find the filter category
             SsldUtils.LangevinResult lr = SsldUtils.LangevinResult.fromString(columnName);
             if(lr.qualifier.equals(SsldUtils.Qualifier.NONE)) {
-                System.out.println("Ignoring LangevinResult token: " + columnName + ", qualifier missing");
+                lg.warn("Ignoring LangevinResult token: " + columnName + ", qualifier missing");
                 continue;
             }
             metadataMap.put(columnName, lr);
@@ -135,7 +139,7 @@ public class LangevinSolverResultSet implements Serializable {
                 try {
                     data = co.extractColumn(index);
                 } catch (ExpressionException e) {
-                    System.out.println("Failed to extract column: " + e.getMessage());
+                    lg.warn("Failed to extract column: " + e.getMessage());
                     continue;
                 }
                 if(data == null || data.length == 0) {

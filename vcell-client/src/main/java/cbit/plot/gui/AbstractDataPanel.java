@@ -17,7 +17,7 @@ import java.beans.PropertyChangeListener;
 
 public abstract class AbstractDataPanel extends JPanel {
 
-    protected static final Logger LG = LogManager.getLogger(AbstractDataPanel.class);
+    protected static final Logger lg = LogManager.getLogger(AbstractDataPanel.class);
 
     protected ScrollTable scrollPaneTable;
     protected NonEditableDefaultTableModel nonEditableDefaultTableModel = null;
@@ -40,7 +40,7 @@ public abstract class AbstractDataPanel extends JPanel {
             if (e.getSource() == getScrollPaneTable()) {
                 int row = getScrollPaneTable().rowAtPoint(e.getPoint());
                 int col = getScrollPaneTable().columnAtPoint(e.getPoint());
-                LG.debug(getClass().getSimpleName() + ": clicked row=" + row + " col=" + col);
+                lg.debug(getClass().getSimpleName() + ": clicked row=" + row + " col=" + col);
 
                 if (SwingUtilities.isRightMouseButton(e)) {
                     getPopupMenu().show(e.getComponent(), e.getX(), e.getY());
@@ -133,6 +133,7 @@ public abstract class AbstractDataPanel extends JPanel {
     }
 
     protected void handleException(Throwable exception) {
+        lg.error("Uncaught exception in " + getClass().getSimpleName(), exception);
         System.out.println("--------- UNCAUGHT EXCEPTION ---------");
         exception.printStackTrace(System.out);
     }

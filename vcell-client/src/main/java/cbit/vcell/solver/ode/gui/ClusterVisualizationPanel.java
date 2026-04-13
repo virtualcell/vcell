@@ -1,6 +1,8 @@
 package cbit.vcell.solver.ode.gui;
 
 import cbit.plot.gui.ClusterDataPanel;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -44,6 +46,8 @@ import java.util.List;
 
 
 public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
+
+    private static final Logger lg = LogManager.getLogger(ClusterVisualizationPanel.class);
 
     ODEDataViewer owner;
     IvjEventHandler ivjEventHandler = new IvjEventHandler();
@@ -97,13 +101,13 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
         @Override
         public void stateChanged(ChangeEvent e) {
             if (e.getSource() instanceof Component c && SwingUtilities.isDescendingFrom(c, ClusterVisualizationPanel.this)) {
-                System.out.println(this.getClass().getName() + ".stateChanged() called");
+                lg.debug("stateChanged() called, source = " + e.getSource().getClass().getSimpleName());
             }
         }
         @Override
         public void valueChanged(ListSelectionEvent e) {
             if (e.getSource() instanceof Component c && SwingUtilities.isDescendingFrom(c, ClusterVisualizationPanel.this)) {
-                System.out.println(this.getClass().getName() + ".valueChanged() called");
+                lg.debug("valueChanged() called, source = " + e.getSource().getClass().getSimpleName());
             }
         }
     };
@@ -145,7 +149,7 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                 clusterPlotPanel.addComponentListener(new ComponentAdapter() {
                     @Override
                     public void componentShown(ComponentEvent e) {
-                        System.out.println(this.getClass().getSimpleName() + ".componentShown() called, height = " + clusterPlotPanel.getHeight());
+                        lg.debug("componentShown() called, height = " + clusterPlotPanel.getHeight());
                     }
                 });
             } catch (java.lang.Throwable ivjExc) {
@@ -193,13 +197,14 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
 
 
     private void handleException(java.lang.Throwable exception) {
+        lg.error("Uncaught exception in " + this.getClass().getSimpleName(), exception);
         System.out.println("--------- UNCAUGHT EXCEPTION ---------");
         exception.printStackTrace(System.out);
     }
 
     @Override
     protected void onSelectedObjectsChange(Object[] selectedObjects) {
-        System.out.println(this.getClass().getSimpleName() + ".onSelectedObjectsChange() called with " + selectedObjects.length + " objects");
+        lg.debug("onSelectedObjectsChange() called with " + selectedObjects.length + " objects");
     }
 
     public void refreshData() {
@@ -215,7 +220,7 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
         // Instead, we receive them indirectly via the ClusterSelection object from the ClusterSpecificationPanel
 //        simulationModelInfo = owner.getSimulationModelInfo();
 //        langevinSolverResultSet = owner.getLangevinSolverResultSet();
-        System.out.println(this.getClass().getSimpleName() + ".refreshData() called");
+        lg.debug("refreshData() called, simulation = " + owner.getSimulation());
     }
     // ---------------------------------------------------------------------
 
@@ -321,7 +326,7 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
     }
 
     private void redrawPlot(ClusterSpecificationPanel.ClusterSelection sel) throws ExpressionException {
-        System.out.println(getClass().getSimpleName() + ".redrawPlot() called, current selection: " + sel);
+        lg.debug("redrawPlot() called, current selection: " + sel);
 
         ClusterPlotPanel plot = getClusterPlotPanel();
         plot.clearAllRenderers();
@@ -330,10 +335,8 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
             plot.repaint();
             return;
         }
-
         List<ColumnDescription> columns = sel.columns;
         ODESolverResultSet srs = sel.resultSet;
-
         int indexTime = srs.findColumn("t");
         double[] times = srs.extractColumn(indexTime);
 
@@ -433,12 +436,12 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
 
 
     private void redrawLegend(ClusterSpecificationPanel.ClusterSelection sel) {
-        System.out.println(this.getClass().getSimpleName() + ".redrawLegend() called");
+        lg.debug("redrawLegend() called, current selection: " + sel);
+
         getLegendContentPanel().removeAll();
 
         for (ColumnDescription cd : sel.columns) {
             String name = cd.getName();
-
             Color c;
             if (name.equals("SD")) {
                 // SD uses a translucent version of ACS color
@@ -448,7 +451,6 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                 // ACS, ACO, COUNTS all use their assigned colors
                 c = persistentColorMap.get(name);
             }
-
             getLegendContentPanel().add(createLegendEntry(name, c, sel.mode));
         }
         getLegendContentPanel().revalidate();
@@ -456,7 +458,7 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
     }
 
     private void redrawDataTable(ClusterSpecificationPanel.ClusterSelection sel) throws ExpressionException {
-        System.out.println(this.getClass().getSimpleName() + ".updateDataTable() called");
+        lg.debug("redrawDataTable() called, current selection: " + sel);
         getClusterDataPanel().updateData(sel);
     }
     public void setSpecialityRenderer(SpecialtyTableRenderer str) {

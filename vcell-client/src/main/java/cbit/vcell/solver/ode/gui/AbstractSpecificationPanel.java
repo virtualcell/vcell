@@ -7,6 +7,8 @@ import cbit.vcell.simdata.LangevinSolverResultSet;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.util.gui.CollapsiblePanel;
 
 import java.awt.*;
@@ -15,6 +17,8 @@ import javax.swing.*;
 
 @SuppressWarnings("serial")
 public abstract class AbstractSpecificationPanel extends DocumentEditorSubPanel {
+
+    private static final Logger lg = LogManager.getLogger(AbstractSpecificationPanel.class);
 
     // ------------------------------
     // Shared UI components
@@ -40,7 +44,7 @@ public abstract class AbstractSpecificationPanel extends DocumentEditorSubPanel 
     // Initialization (shared layout)
     // ------------------------------
     private void initialize() {
-        System.out.println(this.getClass().getSimpleName() + ".initialize() called");
+        lg.debug("initialize() called");
 
         setPreferredSize(new Dimension(213, 600));
         setLayout(new GridBagLayout());
@@ -176,6 +180,7 @@ public abstract class AbstractSpecificationPanel extends DocumentEditorSubPanel 
     // Shared exception handler
     // ------------------------------
     protected void handleException(Throwable exception) {
+        lg.error("Uncaught exception in AbstractSpecificationPanel", exception);
         System.out.println("--------- UNCAUGHT EXCEPTION ---------");
         exception.printStackTrace(System.out);
     }

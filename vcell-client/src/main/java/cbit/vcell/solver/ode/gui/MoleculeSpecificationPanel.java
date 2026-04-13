@@ -7,6 +7,8 @@ import cbit.vcell.simdata.LangevinSolverResultSet;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.model.ssld.SsldUtils;
 import org.vcell.util.gui.CollapsiblePanel;
 
@@ -26,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
+
+    private static final Logger lg = LogManager.getLogger(MoleculeSpecificationPanel.class);
 
     public enum DisplayMode {
         MOLECULES("MOLECULES", "Molecules", "Display molecule counts over time"),
@@ -146,8 +150,10 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() instanceof JCheckBox cb && SwingUtilities.isDescendingFrom(cb, MoleculeSpecificationPanel.this)) {
                 boolean selected = cb.isSelected();
-                System.out.println(this.getClass().getName() + ".actionPerformed() called with action command: " + e.getActionCommand() + " = " + selected);
                 String cmd = e.getActionCommand();
+//                System.out.println(this.getClass().getName() + ".actionPerformed() called with action command: " + e.getActionCommand() + " = " + selected);
+                lg.debug("actionPerformed() called with action command: {} = {}", cmd, selected);
+
                 if (DisplayMode.isDisplayModeActionCommand(cmd)) {
                     java.util.List<DisplayMode> displayModes = getSelectedDisplayModes();
                     populateYAxisChoices(displayModes);
@@ -157,7 +163,8 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
                             getSelectedStatistics(),
                             getSelectedDisplayModes()
                     );
-                    System.out.println("MoleculeSelection changed: " + sel.selectedColumns.size() + " columns, " + sel.selectedStatistics.size() + " statistics, " + sel.selectedDisplayModes.size() + " display modes");
+                    lg.debug("MoleculeSelection changed: {} columns, {} statistics, {} display modes",
+                            sel.selectedColumns.size(), sel.selectedStatistics.size(), sel.selectedDisplayModes.size());
                     firePropertyChange("MoleculeSelectionChanged", null, sel);
                 }
             }
@@ -165,7 +172,7 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getSource() == owner.getMoleculeSpecificationPanel()) {
-                System.out.println(this.getClass().getName() + ".IvjEventHandler.propertyChange() called with " + evt.getPropertyName());
+                lg.debug("propertyChange() called with property name: {}", evt.getPropertyName());
             }
         }
         @Override
@@ -174,13 +181,14 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
                 if (supressEvents || e.getValueIsAdjusting()) {
                     return;
                 }
-                System.out.println(this.getClass().getName() + ".IvjEventHandler.valueChanged() called");
+                lg.debug("valueChanged() called with selected indices: {}", getYAxisChoice().getSelectedIndices());
                 MoleculeSelection sel = new MoleculeSelection(
                         getYAxisChoice().getSelectedValuesList(),
                         getSelectedStatistics(),
                         getSelectedDisplayModes()
                 );
-                System.out.println("MoleculeSelection changed: " + sel.selectedColumns.size() + " columns, " + sel.selectedStatistics.size() + " statistics, " + sel.selectedDisplayModes.size() + " display modes");
+                lg.debug("MoleculeSelection changed: {} columns, {} statistics, {} display modes",
+                        sel.selectedColumns.size(), sel.selectedStatistics.size(), sel.selectedDisplayModes.size());
                 firePropertyChange("MoleculeSelectionChanged", null, sel);
             }
         }
@@ -394,16 +402,16 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
 
     @Override
     protected void onSelectedObjectsChange(Object[] selectedObjects) {
-        System.out.println(this.getClass().getSimpleName() + ".onSelectedObjectsChange() called with " + selectedObjects.length + " objects");
+        lg.debug("onSelectedObjectsChange() called with {} objects", selectedObjects.length);
 
     }
     public void refreshData() {
-        System.out.println(this.getClass().getSimpleName() + ".refreshData() called");
+        lg.debug("refreshData() called");
         simulationModelInfo = owner.getSimulationModelInfo();
         langevinSolverResultSet = owner.getLangevinSolverResultSet();
         if(displayOptionsCollapsiblePanel == null) {    // the whole panel should exist already at this point,
                                                         // lazy inilization here may be a bad idea but we'll do it anyway
-            System.out.println("displayOptionsCollapsiblePanel is null");
+            lg.warn("displayOptionsCollapsiblePanel is null during refreshData()");
         }
         JPanel content = getDisplayOptionsPanel().getContentPanel();
         for (Component c : content.getComponents()) {
