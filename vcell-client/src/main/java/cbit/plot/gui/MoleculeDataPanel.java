@@ -283,7 +283,7 @@ public class MoleculeDataPanel extends AbstractDataPanel {
             for (int i = 0; i < r; i++) rows[i] = i;
             for (int i = 0; i < c; i++) columns[i] = i;
 
-            LG.debug("Copying cluster data: rows=" + r + " columns=" + c + " isHDF5=" + isHDF5);
+            lg.debug("Copying cluster data: rows=" + r + " columns=" + c + " isHDF5=" + isHDF5);
 
             boolean bHistogram = false;
             String blankCellValue = "-1";
@@ -358,7 +358,7 @@ public class MoleculeDataPanel extends AbstractDataPanel {
             VCellTransferable.sendToClipboard(rvs);
 
         } catch (Exception ex) {
-            LG.error("Error copying cluster data", ex);
+            lg.error("Error copying cluster data", ex);
             JOptionPane.showMessageDialog(
                     this,
                     "Error copying cluster data: " + ex.getMessage(),
