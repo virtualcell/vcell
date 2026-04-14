@@ -9,15 +9,15 @@
  */
 
 package cbit.vcell.client.data;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.Hashtable;
 
-import javax.swing.JTabbedPane;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import cbit.vcell.simdata.LangevinSolverResultSet;
+import cbit.vcell.solver.ode.gui.*;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.document.VCDataIdentifier;
 import org.vcell.util.gui.DialogUtils;
@@ -37,10 +37,7 @@ import cbit.vcell.simdata.DataManager;
 import cbit.vcell.solver.DataSymbolMetadata;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.SimulationModelInfo;
-import cbit.vcell.solver.ode.ODESimData;
 import cbit.vcell.solver.ode.ODESolverResultSet;
-import cbit.vcell.solver.ode.gui.ODESolverPlotSpecificationPanel;
-import cbit.vcell.solver.ode.gui.OutputSpeciesResultsPanel;
 import cbit.vcell.util.ColumnDescription;
 /**
  * Insert the type's description here.
@@ -51,14 +48,25 @@ public class ODEDataViewer extends DataViewer {
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
 	private ODESolverPlotSpecificationPanel ivjODESolverPlotSpecificationPanel1 = null;
 	private PlotPane ivjPlotPane1 = null;
+
+	private MoleculeSpecificationPanel moleculeSpecificationPanel = null;
+	private MoleculeVisualizationPanel moleculeVisualizationPanel = null;
+	private ClusterSpecificationPanel clusterSpecificationPanel = null;
+	private ClusterVisualizationPanel clusterVisualizationPanel = null;
+
 	private JTabbedPane ivjJTabbedPane = null;
 	private ODESolverResultSet fieldOdeSolverResultSet = null;
+	public boolean hasLangevinBatchResults = false;
+	private LangevinSolverResultSet fieldLangevinSolverResultSet = null;
 	private NFSimMolecularConfigurations nFSimMolecularConfigurations = null;
-	private javax.swing.JPanel ivjViewData = null;
+	private javax.swing.JPanel viewData = null;
+	private JPanel viewMultiClustersPanel = null;
+	private JPanel viewMultiDataPanel = null;
 	private OutputSpeciesResultsPanel outputSpeciesResultsPanel = null;
 	private VCDataIdentifier fieldVcDataIdentifier = null;
 
 	private static final String OUTPUT_SPECIES_TABNAME = "Output Species";
+	private static final String LANGEVIN_CLUSTER_RESULTS_TABNAME = "Langevin Clusters";
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -217,6 +225,9 @@ public ODESolverPlotSpecificationPanel getODESolverPlotSpecificationPanel1() {
 public ODESolverResultSet getOdeSolverResultSet() {
 	return fieldOdeSolverResultSet;
 }
+public LangevinSolverResultSet getLangevinSolverResultSet() {
+	return fieldLangevinSolverResultSet;
+}
 public NFSimMolecularConfigurations getNFSimMolecularConfigurations() {
 	return nFSimMolecularConfigurations;
 }
@@ -265,7 +276,9 @@ new ChangeListener(){
 	public void stateChanged(ChangeEvent e) {
 		if(ivjJTabbedPane.getSelectedIndex() == ivjJTabbedPane.indexOfTab(OUTPUT_SPECIES_TABNAME)){
 			// TODO: here
-		}else {
+		} else if(ivjJTabbedPane.getSelectedIndex() == ivjJTabbedPane.indexOfTab(LANGEVIN_CLUSTER_RESULTS_TABNAME)) {
+
+		} else {
 
 		}
 	}
@@ -276,10 +289,18 @@ private javax.swing.JTabbedPane getJTabbedPane() {
 		try {
 			ivjJTabbedPane = new javax.swing.JTabbedPane();
 			ivjJTabbedPane.setName("JTabbedPane1");
-			ivjJTabbedPane.insertTab("View Data", null, getViewData(), null, 0);
+			if(getSimulation() != null && hasLangevinBatchResults) {
+				ivjJTabbedPane.insertTab("View Data", null, getViewMultiData(), null, 0);
+			} else {
+				ivjJTabbedPane.insertTab("View Data", null, getViewData(), null, 0);
+			}
+
+			ivjJTabbedPane.addTab(LANGEVIN_CLUSTER_RESULTS_TABNAME, getViewMultiClusters());
+
 			outputSpeciesResultsPanel = new OutputSpeciesResultsPanel(this);
 			outputSpeciesResultsPanel.addPropertyChangeListener(ivjEventHandler);
 			ivjJTabbedPane.addTab(OUTPUT_SPECIES_TABNAME, outputSpeciesResultsPanel);
+
 			ivjJTabbedPane.addChangeListener(mainTabChangeListener);
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
@@ -287,23 +308,105 @@ private javax.swing.JTabbedPane getJTabbedPane() {
 	}
 	return ivjJTabbedPane;
 }
-/**
- * Return the ViewData property value.
- * @return javax.swing.JPanel
- */
-private javax.swing.JPanel getViewData() {
-	if (ivjViewData == null) {
+public void replaceViewDataTab() {
+	if (getSimulation() != null && ivjJTabbedPane != null) {
+		int selected = ivjJTabbedPane.getSelectedIndex();
+		ivjJTabbedPane.removeTabAt(0);
+		ivjJTabbedPane.insertTab("View Data", null, getViewMultiData(), null, 0);
+		ivjJTabbedPane.setSelectedIndex(selected);
+	}
+}
+
+private JPanel getViewMultiData() {
+	if (viewMultiDataPanel == null) {
 		try {
-			ivjViewData = new javax.swing.JPanel();
-			ivjViewData.setName("ViewData");
-			ivjViewData.setLayout(new java.awt.BorderLayout());
-			getViewData().add(getODESolverPlotSpecificationPanel1(), "West");
-			getViewData().add(getPlotPane1(), "Center");
+			viewMultiDataPanel = new JPanel();
+			viewMultiDataPanel.setName("ViewMultiData");
+			viewMultiDataPanel.setLayout(new java.awt.BorderLayout());
+			viewMultiDataPanel.add(getMoleculeSpecificationPanel(), "West");
+			viewMultiDataPanel.add(getMoleculeVisualizationPanel(), "Center");
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
 	}
-	return ivjViewData;
+	return viewMultiDataPanel;
+}
+public MoleculeSpecificationPanel getMoleculeSpecificationPanel() {
+	if (moleculeSpecificationPanel == null) {
+		try {
+			moleculeSpecificationPanel = new MoleculeSpecificationPanel(this);
+			moleculeSpecificationPanel.setName("MoleculeSpecificationPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return moleculeSpecificationPanel;
+}
+private MoleculeVisualizationPanel getMoleculeVisualizationPanel() {
+	if (moleculeVisualizationPanel == null) {
+		try {
+			moleculeVisualizationPanel = new MoleculeVisualizationPanel(this);
+			moleculeVisualizationPanel.setName("DataVisualizationPanel");
+			SpecialtyTableRenderer str = new RenderDataViewerDoubleWithTooltip();
+			moleculeVisualizationPanel.setSpecialityRenderer(str);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return moleculeVisualizationPanel;
+}
+private JPanel getViewMultiClusters() {
+	if (viewMultiClustersPanel == null) {
+		try {
+			viewMultiClustersPanel = new JPanel();
+			viewMultiClustersPanel.setName("ViewMultiClusters");
+			viewMultiClustersPanel.setLayout(new java.awt.BorderLayout());
+			viewMultiClustersPanel.add(getClusterSpecificationPanel(), "West");
+			viewMultiClustersPanel.add(getClusterVisualizationPanel(), "Center");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return viewMultiClustersPanel;
+}
+public ClusterSpecificationPanel getClusterSpecificationPanel() {
+	if (clusterSpecificationPanel == null) {
+		try {
+			clusterSpecificationPanel = new ClusterSpecificationPanel(this);
+			clusterSpecificationPanel.setName("ClusterSpecificationPanel");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return clusterSpecificationPanel;
+}
+public ClusterVisualizationPanel getClusterVisualizationPanel() {
+	if (clusterVisualizationPanel == null) {
+		try {
+			clusterVisualizationPanel = new ClusterVisualizationPanel(this);
+			clusterVisualizationPanel.setName("ClusterVisualizationPanel");
+			SpecialtyTableRenderer str = new RenderDataViewerDoubleWithTooltip();
+			clusterVisualizationPanel.setSpecialityRenderer(str);
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return clusterVisualizationPanel;
+}
+
+private JPanel getViewData() {
+	if (viewData == null) {
+		try {
+			viewData = new JPanel();
+			viewData.setName("ViewData");
+			viewData.setLayout(new java.awt.BorderLayout());
+			viewData.add(getODESolverPlotSpecificationPanel1(), "West");
+			viewData.add(getPlotPane1(), "Center");
+		} catch (java.lang.Throwable ivjExc) {
+			handleException(ivjExc);
+		}
+	}
+	return viewData;
 }
 
 
@@ -390,6 +493,11 @@ public void setOdeSolverResultSet(ODESolverResultSet odeSolverResultSet) {
 	fieldOdeSolverResultSet = odeSolverResultSet;
 	firePropertyChange("odeSolverResultSet", oldValue, odeSolverResultSet);
 }
+public void setLangevinSolverResultSet(LangevinSolverResultSet langevinSolverResultSet) {
+	LangevinSolverResultSet oldValue = fieldLangevinSolverResultSet;
+	fieldLangevinSolverResultSet = langevinSolverResultSet;
+	firePropertyChange("langevinSolverResultSet", oldValue, langevinSolverResultSet);
+}
 public void setNFSimMolecularConfigurations(NFSimMolecularConfigurations nFSimMolecularConfigurations) {
 	NFSimMolecularConfigurations oldValue = nFSimMolecularConfigurations;
 	this.nFSimMolecularConfigurations = nFSimMolecularConfigurations;
@@ -426,14 +534,28 @@ public void setVcDataIdentifier(VCDataIdentifier vcDataIdentifier) {
 	fieldVcDataIdentifier = vcDataIdentifier;
 	setOdeDataContext();
 	firePropertyChange("vcDataIdentifier", oldValue, vcDataIdentifier);
-	outputSpeciesResultsPanel.refreshData();
+	if(hasLangevinBatchResults) {
+		getClusterVisualizationPanel().refreshData();
+		getMoleculeVisualizationPanel().refreshData();
+		// order is important, the visualization panels must refresh first so that necessary data will be present when
+		// the specification panels start sending events to the visualization panels
+		getClusterSpecificationPanel().refreshData();
+		getMoleculeSpecificationPanel().refreshData();
+	} else {
+		outputSpeciesResultsPanel.refreshData();
+	}
 }
 
 public void setOdeDataContext() {
-	if(getSimulation() != null && getNFSimMolecularConfigurations() != null) {
+	if(getSimulation() != null && hasLangevinBatchResults) {
+		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(OUTPUT_SPECIES_TABNAME), false);
+		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(LANGEVIN_CLUSTER_RESULTS_TABNAME), true);
+	} else if(getSimulation() != null && getNFSimMolecularConfigurations() != null) {
 		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(OUTPUT_SPECIES_TABNAME), true);
+		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(LANGEVIN_CLUSTER_RESULTS_TABNAME), false);
 	} else {
 		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(OUTPUT_SPECIES_TABNAME), false);
+		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(LANGEVIN_CLUSTER_RESULTS_TABNAME), false);
 	}
 }
 

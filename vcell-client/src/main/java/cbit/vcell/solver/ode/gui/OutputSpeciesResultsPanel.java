@@ -72,7 +72,6 @@ import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.RbmUtils;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.RbmUtils.BnglObjectConstructionVisitor;
-import org.vcell.model.rbm.gui.GeneratedSpeciesTableRow;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.solver.nfsim.NFSimSolver;
 import org.vcell.util.Pair;
@@ -134,7 +133,7 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 	private SpeciesPatternLargeShape spls;
 
 	// ===================================================================================================
-	private class OutputSpeciesResultsTableModel  extends VCellSortTableModel<GeneratedSpeciesTableRow> 
+	private class OutputSpeciesResultsTableModel  extends VCellSortTableModel<LocalGeneratedSpeciesTableRow>
 	implements  PropertyChangeListener, AutoCompleteTableModel {
 
 		public final int colCount = 4;
@@ -147,7 +146,7 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 		protected static final String PROPERTY_NAME_SEARCH_TEXT = "searchText";
 		protected String searchText = null;
 		private Model model;
-		private ArrayList<GeneratedSpeciesTableRow> allGeneratedSpeciesList;
+		private ArrayList<LocalGeneratedSpeciesTableRow> allGeneratedSpeciesList;
 
 		public OutputSpeciesResultsTableModel() {
 			super(table, new String[] {"Count", "Structure", "Depiction", "BioNetGen Definition"});
@@ -168,7 +167,7 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 			return Object.class;
 		}
 
-		public ArrayList<GeneratedSpeciesTableRow> getTableRows() {
+		public ArrayList<LocalGeneratedSpeciesTableRow> getTableRows() {
 			return allGeneratedSpeciesList;
 		}
 		
@@ -186,7 +185,7 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 		}
 		@Override
 		public Object getValueAt(int iRow, int iCol) {
-			GeneratedSpeciesTableRow speciesTableRow = getValueAt(iRow);
+			LocalGeneratedSpeciesTableRow speciesTableRow = getValueAt(iRow);
 			switch(iCol) {
 			case iColCount:
 				return speciesTableRow.count;
@@ -227,10 +226,10 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 		public void propertyChange(PropertyChangeEvent arg0) {
 		}
 		@Override
-		protected Comparator<GeneratedSpeciesTableRow> getComparator(int col, boolean ascending) {
+		protected Comparator<LocalGeneratedSpeciesTableRow> getComparator(int col, boolean ascending) {
 			final int scale = ascending ? 1 : -1;
-			return new Comparator<GeneratedSpeciesTableRow>() {
-			    public int compare(GeneratedSpeciesTableRow o1, GeneratedSpeciesTableRow o2) {
+			return new Comparator<LocalGeneratedSpeciesTableRow>() {
+			    public int compare(LocalGeneratedSpeciesTableRow o1, LocalGeneratedSpeciesTableRow o2) {
 					switch (col) {
 					case iColCount:
 						return scale * o1.count.compareTo(o2.count);
@@ -299,7 +298,7 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 				Map<String, Integer> molecularConfigurations = nfsmc.getMolecularConfigurations();
 				for(String pattern : molecularConfigurations.keySet()) {
 					Integer number = molecularConfigurations.get(pattern);
-					GeneratedSpeciesTableRow newRow = createTableRow(pattern, number);
+					LocalGeneratedSpeciesTableRow newRow = createTableRow(pattern, number);
 					allGeneratedSpeciesList.add(newRow);
 				}
 			} else {
@@ -310,12 +309,12 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 			System.out.println("Simulation: " + sim.getName());
 			
 			// apply text search function for particular columns
-			List<GeneratedSpeciesTableRow> speciesObjectList = new ArrayList<>();
+			List<LocalGeneratedSpeciesTableRow> speciesObjectList = new ArrayList<>();
 			if (searchText == null || searchText.length() == 0) {
 				speciesObjectList.addAll(allGeneratedSpeciesList);
 			} else {
 				String lowerCaseSearchText = searchText.toLowerCase();
-				for (GeneratedSpeciesTableRow rs : allGeneratedSpeciesList) {
+				for (LocalGeneratedSpeciesTableRow rs : allGeneratedSpeciesList) {
 					if (rs.expression.toLowerCase().contains(lowerCaseSearchText) ) {
 						speciesObjectList.add(rs);	// search for pure expression
 						continue;	// found already, no point to keep searching for another match for this row
@@ -352,7 +351,7 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 	}		// end OutputSpeciesResultsTableModel class
 	
 	// ======================================================================================
-	private class GeneratedSpeciesTableRow {
+	private class LocalGeneratedSpeciesTableRow {
 		private Integer count = 0;		// used only in relation to an observable
 		private String expression = "?";
 		private String structure = "?";
@@ -360,7 +359,7 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 		
 		// never call this directly, the object is not fully constructed
 		// always call createTableRow() instead
-		protected GeneratedSpeciesTableRow(Integer count) {
+		protected LocalGeneratedSpeciesTableRow(Integer count) {
 			if(count != null) {
 				this.count = count;
 			}
@@ -412,7 +411,7 @@ public class OutputSpeciesResultsPanel extends DocumentEditorSubPanel  {
 				species = null;
 			}
 		}
-	}		// end GeneratedSpeciesTableRow class
+	}		// end LocalGeneratedSpeciesTableRow class
 	// ======================================================================================
 	
 	private class EventHandler implements ActionListener, DocumentListener, ListSelectionListener, TableModelListener {
@@ -476,8 +475,8 @@ public OutputSpeciesResultsPanel(ODEDataViewer owner) {
 	initialize();
 }
 
-private GeneratedSpeciesTableRow createTableRow(String expression, Integer count) {
-	GeneratedSpeciesTableRow row = new GeneratedSpeciesTableRow(count);
+private LocalGeneratedSpeciesTableRow createTableRow(String expression, Integer count) {
+	LocalGeneratedSpeciesTableRow row = new LocalGeneratedSpeciesTableRow(count);
 	try {
 		row.deriveSpecies(expression);
 	}catch (Exception e) {
@@ -488,7 +487,7 @@ private GeneratedSpeciesTableRow createTableRow(String expression, Integer count
 }
 
 
-public ArrayList<GeneratedSpeciesTableRow> getTableRows() {
+public ArrayList<LocalGeneratedSpeciesTableRow> getTableRows() {
 	return tableModel.getTableRows();
 }
 
@@ -726,8 +725,8 @@ private void initialize() {
 						selectedObject = tableModel.getValueAt(row);
 					}
 					if (selectedObject != null) {
-						if(selectedObject instanceof GeneratedSpeciesTableRow) {
-							SpeciesContext sc = ((GeneratedSpeciesTableRow)selectedObject).species;
+						if(selectedObject instanceof LocalGeneratedSpeciesTableRow) {
+							SpeciesContext sc = ((LocalGeneratedSpeciesTableRow)selectedObject).species;
 							if(sc == null || sc.getSpeciesPattern() == null) {
 								spss = null;
 							} else {
@@ -764,8 +763,8 @@ private void initialize() {
 }
 
 public void updateShape(int selectedRow) {
-	
-	GeneratedSpeciesTableRow speciesTableRow = tableModel.getValueAt(selectedRow);
+
+	LocalGeneratedSpeciesTableRow speciesTableRow = tableModel.getValueAt(selectedRow);
 	SpeciesContext sc = speciesTableRow.species;
 	if(sc == null || sc.getSpeciesPattern() == null) {
 		spls = new SpeciesPatternLargeShape(20, 20, -1, shapePanel, true, issueManager);	// error (red circle)
