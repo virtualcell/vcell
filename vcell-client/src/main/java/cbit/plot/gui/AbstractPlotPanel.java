@@ -364,6 +364,17 @@ public abstract class AbstractPlotPanel extends JPanel {
         return null;
     }
 
+    private static Shape createDiamondShape(int size) {
+        Path2D.Double p = new Path2D.Double();
+        p.moveTo(0, -size);
+        p.lineTo(size, 0);
+        p.lineTo(0, size);
+        p.lineTo(-size, 0);
+        p.closePath();
+        return p;
+    }
+
+
     // -------------------------------------------------------------------
 
     @Override
