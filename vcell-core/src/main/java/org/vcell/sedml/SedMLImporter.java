@@ -85,7 +85,7 @@ public class SedMLImporter {
 	private final StrictnessPolicy strictnessPolicy;
 	private final VCLogger transLogger;
     private final Map<String, SolverDescription> kisaoToSolverMapping;
-    private final HashMap<BioModel, SBMLImporter> importMap;
+	private final Map<SimulationContext, SBMLImporter> contextToSBMLImporter;
 
     private SedMLDataContainer sedmlContainer;
 
@@ -105,7 +105,7 @@ public class SedMLImporter {
         this.transLogger = transLogger;
         this.strictnessPolicy = policy;
         this.kisaoToSolverMapping =  new HashMap<>();
-        this.importMap = new LinkedHashMap<>();
+		this.contextToSBMLImporter = new LinkedHashMap<>();
         this.sedmlContainer = null;
 	}
 
@@ -148,7 +148,7 @@ public class SedMLImporter {
     /**
      * Get the list of biomodels from the sedml initialized at construction time.
      */
-    public Map<BioModel, SBMLSymbolMapping> getBioModels(){
+    public Set<BioModel> getBioModels(){
         if (this.sedmlContainer == null) throw new IllegalStateException("Importer has not yet been initialized!");
 		Set<BioModel> bioModels = new LinkedHashSet<>();
 
@@ -160,7 +160,7 @@ public class SedMLImporter {
 	        // iterate through all the elements and show them at the console
             this.printSEDMLSummary(matchingSedml.getModels(), matchingSedml.getSimulations(), matchingSedml.getTasks(), matchingSedml.getDataGenerators(), matchingSedml.getOutputs());
             // If we don't have models, we don't have anything to do
-            if (this.sedmlContainer.getSedML().getModels().isEmpty()) return new HashMap<>(); // nothing to import
+            if (this.sedmlContainer.getSedML().getModels().isEmpty()) return new HashSet<>(); // nothing to import
 
 			// NB: We don't know how many BioModels we'll end up with,
 			// 		as some model changes may be translatable as simulations with overrides
@@ -208,15 +208,23 @@ public class SedMLImporter {
 			// try to consolidate SimContexts into fewer (possibly just one) BioModels
 			// unlikely to happen from SED-MLs not originating from VCell, but very useful for round-tripping if so
 			// TODO: maybe try to detect that and only try if of VCell origin
-			bioModels = this.mergeBioModels(bioModels);
+			Set<BioModel> mergedBioModels = this.mergeBioModels(bioModels);
 
 			// TODO: make imported BioModel(s) VCell-friendly
 			// TODO: apply TransformMassActions to usedBiomodels
 			// cannot do this for now, as it can be very expensive (hours!!)
 			// also has serious memory issues (runs out of memory even with bumping up to Xmx12G
-            Map<BioModel, SBMLSymbolMapping> mappings = new LinkedHashMap<>();
-            for (BioModel bm : bioModels) mappings.put(bm, this.getSBMLSymbolMapping(bm));
-            return mappings;
+
+			// We need to ensure any "new" sim-contexts get mapped to their corresponding SBMLImporter
+			for (BioModel mbm: mergedBioModels){
+				try {
+					mbm.updateAll(false);
+				} catch (MappingException e){
+					String message = "MappingException occurred: " + e.getMessage();
+					throw new RuntimeException(message, e);
+				}
+			}
+            return mergedBioModels;
 		} catch (Exception e) {
 			Tracer.failure(e,"Unable to initialize bioModel for the given selection: "+e.getMessage());
 			throw new RuntimeException("Unable to initialize bioModel for the given selection\n"+e.getMessage(), e);
@@ -463,6 +471,14 @@ public class SedMLImporter {
 			logger.error(e.getMessage(), e);
 			return bioModelSet;
 		}
+		Map<String, SBMLImporter> nameToImporter = this.contextToSBMLImporter.entrySet().stream()
+				.collect(Collectors.toMap(entry -> entry.getKey().getName(), Map.Entry::getValue));
+		for (SimulationContext simulationContext : mergedBioModel.getSimulationContexts()){
+			String simName = simulationContext.getName();
+			if (!nameToImporter.containsKey(simName)) continue;
+			this.contextToSBMLImporter.put(simulationContext, nameToImporter.get(simName));
+		}
+
 		// merge succeeded, replace the list
 		return Set.of(mergedBioModel);
 		// TODO more work here if we want to generalize
@@ -529,7 +545,7 @@ public class SedMLImporter {
 	}
 
 	private Expression scaleIfChanged (Expression exp, String targetID, SimulationContext importedSC, SimulationContext convertedSC) throws ExpressionException, SEDMLImportException {
-		SBMLImporter sbmlImporter = this.importMap.get(importedSC.getBioModel());
+		SBMLImporter sbmlImporter = this.contextToSBMLImporter.get(importedSC);
 		SBMLSymbolMapping sbmlMap = sbmlImporter.getSymbolMapping();
 		SBase targetSBase = sbmlMap.getMappedSBase(targetID);
 		Expression origExp = sbmlMap.getRuleSBMLExpression(targetSBase, SymbolContext.INITIAL);
@@ -573,7 +589,7 @@ public class SedMLImporter {
 		// returns null if there isn't
 
 		MathSymbolMapping mathSymbolMapping = (MathSymbolMapping)importedSimContext.getMathDescription().getSourceSymbolMapping();
-		SBMLSymbolMapping sbmlMap = this.getSBMLSymbolMapping(importedSimContext.getBioModel());
+		SBMLSymbolMapping sbmlMap = this.getSBMLSymbolMapping(importedSimContext);
 		SBase targetSBase = sbmlMap.getMappedSBase(SBMLTargetID);
 		if (targetSBase == null){
 			throw new SBMLImportException("couldn't find SBase with sid="+SBMLTargetID+" in SBMLSymbolMapping");
@@ -723,14 +739,16 @@ public class SedMLImporter {
                         bioModel.getSimulationContext(0),
                         modelPlusContextName, bSpatial, appType);
                 bioModel.addSimulationContext(matchingSimulationContext);
+				SimulationContext originalSimulationContext = bioModel.getSimulationContext(0);
                 try {
-                    String importedSCName = bioModel.getSimulationContext(0).getName();
-                    bioModel.getSimulationContext(0).setName("original_imported_"+importedSCName);
+                    String importedSCName = originalSimulationContext.getName();
+	                originalSimulationContext.setName("original_imported_"+importedSCName);
                     matchingSimulationContext.setName(importedSCName);
                 } catch (PropertyVetoException e) {
                     // we should never bomb out just for trying to set a pretty name
                     logger.warn("could not set pretty name on application from name of model "+sedmlModel);
                 }
+				this.contextToSBMLImporter.put(matchingSimulationContext, this.contextToSBMLImporter.get(originalSimulationContext));
             }
             matchingSimulationContext.refreshDependencies();
             MathMappingCallback callback = new MathMappingCallbackTaskAdapter(null);
@@ -1097,9 +1115,10 @@ public class SedMLImporter {
 				SBMLImporter sbmlImporter = new SBMLImporter(sbmlSource, this.transLogger, bValidateSBML);
 				bioModel = sbmlImporter.getBioModel();
 				bioModel.setName(bioModelName);
-				bioModel.getSimulationContext(0).setName(mm.getName() != null? mm.getName() : mm.getIdAsString());
+				SimulationContext simContext = bioModel.getSimulationContext(0);
+				simContext.setName(mm.getName() != null? mm.getName() : mm.getIdAsString());
 				bioModel.updateAll(false);
-				this.importMap.put(bioModel, sbmlImporter);
+				this.contextToSBMLImporter.put(simContext, sbmlImporter);
 			}
 			return bioModel;
 		} catch (PropertyVetoException e){
@@ -1282,8 +1301,8 @@ public class SedMLImporter {
 		return false;
 	}
 
-	public SBMLSymbolMapping getSBMLSymbolMapping(BioModel bioModel){
-		SBMLImporter sbmlImporter = this.importMap.get(bioModel);
+	public SBMLSymbolMapping getSBMLSymbolMapping(SimulationContext simContext){
+		SBMLImporter sbmlImporter = this.contextToSBMLImporter.get(simContext);
         return (sbmlImporter != null) ? sbmlImporter.getSymbolMapping() : null;
 	}
 

@@ -194,7 +194,7 @@ public class SpatialResultsConverter extends ResultsConverter {
             if (baseTask == null) throw new RuntimeException("Unable to find task referenced by var: " + var.getId().string());
 
             // from the task we get the sbml model
-            Simulation sedmlSim = sedml.findSimulationById(var.getTaskReference());
+            Simulation sedmlSim = sedml.findSimulationById(baseTask.getSimulationReference());
             if (null == sedmlSim) throw new RuntimeException("Unable to find simulation referenced by task: " + baseTask.getId().string());
 
             if (!(sedmlSim instanceof UniformTimeCourse utcSim)){

@@ -42,8 +42,8 @@ import org.apache.logging.log4j.Logger;
 import org.jdom2.*;
 import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.Libsedml;
-import org.jlibsedml.SEDMLDocument;
-import org.jlibsedml.SedML;
+import org.jlibsedml.SedMLDocument;
+import org.jlibsedml.SedMLDataContainer;
 import org.sbml.jsbml.SBMLException;
 import org.vcell.cellml.CellQuanVCTranslator;
 import org.vcell.sbml.SbmlException;
@@ -497,7 +497,7 @@ public class XmlHelper {
                 exactMatchOnly ? SedMLImporter.StrictnessPolicy.SolverMatchPolicy.STRICT_MATCH_OR_REJECT : SedMLImporter.StrictnessPolicy.SolverMatchPolicy.SUNDIALS_AS_LAST_RESORT
         ));
         sedmlImporter.initialize(externalDocInfo.getFile(), sedml);
-		return new ArrayList<>(sedmlImporter.getBioModels().keySet());
+		return new ArrayList<>(sedmlImporter.getBioModels());
 	}
 
 	public static BioModel XMLToBioModel(XMLSource xmlSource) throws XmlParseException {

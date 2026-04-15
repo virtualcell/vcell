@@ -5,6 +5,7 @@ import cbit.util.xml.VCLoggerException;
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.MathSymbolMapping;
+import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.math.FunctionColumnDescription;
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.Expression;
@@ -67,7 +68,8 @@ public class SolverHandler {
     // Initialization Vars
     private String modelReportingName;
     private SedMLDataContainer initializedSedMLContainer;
-    private Map<BioModel, SBMLSymbolMapping> bioModelToSBMLMapping;
+	private Set<BioModel> relevantBioModels;
+    private Map<SimulationContext, SBMLSymbolMapping> simulationContextToSBMLMapping;
     // // // //
     Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResults = new LinkedHashMap<>();
     Map<TaskJob, SpatialSBMLSimResults> spatialResults = new LinkedHashMap<>();
@@ -105,7 +107,7 @@ public class SolverHandler {
 
         //String outDirRoot = outputDirForSedml.toString().substring(0, outputDirForSedml.toString().lastIndexOf(System.getProperty("file.separator")));
         SedMLDataContainer actionableSedmlContainer;
-        Map<BioModel, SBMLSymbolMapping> bioModelMapping;
+		Set<BioModel> relevantBioModels;
         SedMLImporter sedmlImporter = new SedMLImporter(sedmlImportLogger, new SedMLImporter.StrictnessPolicy(
                 true,
                 SedMLImporter.StrictnessPolicy.MultipleSubTaskPolicy.CONDENSE_ELSE_REMOVE,
@@ -123,18 +125,18 @@ public class SolverHandler {
         }
 
         try {
-            bioModelMapping = sedmlImporter.getBioModels();
+	        relevantBioModels = sedmlImporter.getBioModels();
         } catch (Exception e) {
             logger.error("Unable to Parse SED-ML into Bio-Model, failed with err: {}", e.getMessage(), e);
             throw e;
         }
-        for (BioModel generatedBioModel : bioModelMapping.keySet()) SolverHandler.sanityCheck(generatedBioModel);
+        for (BioModel generatedBioModel : relevantBioModels) SolverHandler.sanityCheck(generatedBioModel);
 
-        this.countBioModels = bioModelMapping.size();
+        this.countBioModels = relevantBioModels.size();
 
         SedML sedML = initialSedmlContainer.getSedML();
         Set <AbstractTask> topmostTasks = new LinkedHashSet<> ();
-        for(BioModel bioModel : bioModelMapping.keySet()) {
+        for(BioModel bioModel : relevantBioModels) {
 			Simulation[] sims = bioModel.getSimulations();
 			for(Simulation sim : sims) {
 				if(sim.getImportedTaskID() == null) {
@@ -270,7 +272,11 @@ public class SolverHandler {
 			logger.info("Initialization Statistics:\n\t> taskToSimulationMap: {}\n\t> taskToListOfSubTasksMap: {}\n\t> taskToVariableMap: {}\n\t> topTaskToBaseTask: {}\n",
 					this.taskToTempSimulationMap.size(), this.taskToListOfSubTasksMap.size(), this.taskToVariableMap.size(), this.topTaskToBaseTask.size());
 		}
-        return new Configuration(this.initializedSedMLContainer = actionableSedmlContainer, this.bioModelToSBMLMapping = bioModelMapping);
+		Map<SimulationContext, SBMLSymbolMapping> contextualSymbolMappings = new LinkedHashMap<>();
+		for (BioModel bm : relevantBioModels)
+			for (SimulationContext simContext : bm.getSimulationContexts())
+				contextualSymbolMappings.put(simContext, sedmlImporter.getSBMLSymbolMapping(simContext));
+        return new Configuration(this.initializedSedMLContainer = actionableSedmlContainer, this.relevantBioModels = relevantBioModels, this.simulationContextToSBMLMapping = contextualSymbolMappings);
     }
 
 	private static class TempSimulationJob extends SimulationJob {
@@ -305,8 +311,8 @@ public class SolverHandler {
 			throws IOException, PropertyVetoException {
         // Input state validation
         if (this.initializedSedMLContainer == null) throw new IllegalStateException("Importer has not yet been initialized!");
-        if (this.bioModelToSBMLMapping == null) throw new IllegalStateException("Importer has not yet been initialized!");
-        if (this.bioModelToSBMLMapping.isEmpty()) throw new IllegalStateException("Importer failed to create biomodels for initialized SedML!");
+        if (this.simulationContextToSBMLMapping == null) throw new IllegalStateException("Importer has not yet been initialized!");
+        if (this.simulationContextToSBMLMapping.isEmpty()) throw new IllegalStateException("Importer failed to create biomodels for initialized SedML!");
         // create the VCDocument(s) (bioModel(s) + application(s) + simulation(s)), do sanity checks
 		Map<AbstractTask, BiosimulationLog.Status> biosimStatusMap = new LinkedHashMap<>();
 
@@ -316,7 +322,7 @@ public class SolverHandler {
         int bioModelCount = 0;
         boolean hasSomeSpatial = false;
         boolean bTimeoutFound = false;
-        for (BioModel bioModel : this.bioModelToSBMLMapping.keySet()) {
+        for (BioModel bioModel : this.relevantBioModels) {
 			Span biomodel_span = null;
 			try {
 				biomodel_span = Tracer.startSpan(Span.ContextType.BioModel, bioModel.getName(), Map.of("bioModelName", bioModel.getName()));
@@ -489,7 +495,8 @@ public class SolverHandler {
 					}
 
 					MathSymbolMapping mathMapping = (MathSymbolMapping) simTask.getSimulation().getMathDescription().getSourceSymbolMapping();
-					SBMLSymbolMapping sbmlMapping = this.bioModelToSBMLMapping.get(bioModel);
+					if (!(simTask.getSimulation().getSimulationOwner() instanceof SimulationContext simContext)) throw new IllegalStateException("SimContext expected for SBMLMapping.");
+					SBMLSymbolMapping sbmlMapping = this.simulationContextToSBMLMapping.get(simContext);
 					TaskJob taskJob = new TaskJob(task.getId(), tempSimulationJob.getJobIndex());
 					if (sd.isSpatial()) {
 						logger.info("Processing spatial results of execution...");
@@ -738,6 +745,6 @@ public class SolverHandler {
 */
     }
 
-    public record Configuration(SedMLDataContainer postInitializedSedml, Map<BioModel, SBMLSymbolMapping> bioModelsToSymbolMappings){}
+    public record Configuration(SedMLDataContainer postInitializedSedml, Set<BioModel> biomodels, Map<SimulationContext, SBMLSymbolMapping> contextToSymbolMappings){}
 }
 
