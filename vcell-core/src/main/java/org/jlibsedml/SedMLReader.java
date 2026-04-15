@@ -827,7 +827,7 @@ class SedMLReader {
         if (null != id) return new SId(id);
         if (filename == null) return null;
         String alternativeFilename = filename.substring(0, filename.lastIndexOf("."));
-        if (!alternativeFilename.matches("[a-zA-z0-9_]+")) return null;
+        if (!alternativeFilename.matches("[a-zA-Z0-9_]+")) return null;
         return new SId(alternativeFilename);
     }
 }
