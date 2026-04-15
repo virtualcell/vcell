@@ -130,17 +130,10 @@ private void exportHDF5() {
 /**
  * connEtoC3:  (Plot2DDataPanel.initialize() --> Plot2DDataPanel.controlKeys()V)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoC3() {
 	try {
-		// user code begin {1}
-		// user code end
 		this.controlKeys();
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -149,21 +142,14 @@ private void connEtoC3() {
  * connEtoM1:  (plot2D1.this --> DefaultTableModel1.setDataVector([[Ljava.lang.Object;[Ljava.lang.Object;)V)
  * @param value cbit.plot.Plot2D
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM1(Plot2D value) {
 	try {
-		// user code begin {1}
-		// user code end
 		if (getplot2D1() != null) {
 			getNonEditableDefaultTableModel1().setDataVector(getplot2D1().getVisiblePlotDataValuesByRow(), getplot2D1().getVisiblePlotColumnTitles());
 		}else{
 			getNonEditableDefaultTableModel1().setDataVector((Object [][])null,(Object [])null);			
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -172,19 +158,12 @@ private void connEtoM1(Plot2D value) {
  * connEtoM2:  (plot2D1.change.stateChanged(javax.swing.event.ChangeEvent) --> NonEditableDefaultTableModel1.setDataVector([[Ljava.lang.Object;[Ljava.lang.Object;)V)
  * @param arg1 javax.swing.event.ChangeEvent
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connEtoM2(javax.swing.event.ChangeEvent arg1) {
 	try {
-		// user code begin {1}
-		// user code end
 		if (getplot2D1() != null) {
 			getNonEditableDefaultTableModel1().setDataVector(getplot2D1().getVisiblePlotDataValuesByRow(), getplot2D1().getVisiblePlotColumnTitles());
 		}
-		// user code begin {2}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -193,17 +172,12 @@ private void connEtoM2(javax.swing.event.ChangeEvent arg1) {
 /**
  * connPtoP1SetTarget:  (DefaultTableModel1.this <--> ScrollPaneTable.model)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP1SetTarget() {
 	/* Set the target from the source */
 	try {
 		getScrollPaneTable().setModel(getNonEditableDefaultTableModel1());
 		getScrollPaneTable().createDefaultColumnsFromModel();
-		// user code begin {1}
-		// user code end
 	} catch (java.lang.Throwable ivjExc) {
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -211,25 +185,18 @@ private void connPtoP1SetTarget() {
 /**
  * connPtoP2SetSource:  (Plot2DDataPanel.plot2D <--> plot2D1.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP2SetSource() {
 	/* Set the source from the target */
 	try {
 		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP2Aligning = true;
 			if ((getplot2D1() != null)) {
 				this.setPlot2D(getplot2D1());
 			}
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP2Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -238,23 +205,16 @@ private void connPtoP2SetSource() {
 /**
  * connPtoP2SetTarget:  (Plot2DDataPanel.plot2D <--> plot2D1.this)
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void connPtoP2SetTarget() {
 	/* Set the target from the source */
 	try {
 		if (ivjConnPtoP2Aligning == false) {
-			// user code begin {1}
-			// user code end
 			ivjConnPtoP2Aligning = true;
 			setplot2D1(this.getPlot2D());
-			// user code begin {2}
-			// user code end
 			ivjConnPtoP2Aligning = false;
 		}
 	} catch (java.lang.Throwable ivjExc) {
 		ivjConnPtoP2Aligning = false;
-		// user code begin {3}
-		// user code end
 		handleException(ivjExc);
 	}
 }
@@ -453,18 +413,13 @@ private synchronized void copyCells0(CopyAction copyAction,boolean isHDF5) {
  * Return the JMenuItemCopy property value.
  * @return javax.swing.JMenuItem
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JMenuItem getJMenuItemCopy() {
 	if (ivjJMenuItemCopy == null) {
 		try {
 			ivjJMenuItemCopy = new javax.swing.JMenuItem();
 			ivjJMenuItemCopy.setName("JMenuItemCopy");
 			ivjJMenuItemCopy.setText("Copy Cells");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -476,18 +431,13 @@ private javax.swing.JMenuItem getJMenuItemCopy() {
  * Return the JMenuItemCopyAll property value.
  * @return javax.swing.JMenuItem
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private javax.swing.JMenuItem getJMenuItemCopyAll() {
 	if (ivjJMenuItemCopyAll == null) {
 		try {
 			ivjJMenuItemCopyAll = new javax.swing.JMenuItem();
 			ivjJMenuItemCopyAll.setName("JMenuItemCopyAll");
 			ivjJMenuItemCopyAll.setText("Copy All");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -501,11 +451,7 @@ private javax.swing.JMenuItem getJMenuItemExportHDF5() {
 			ivjJMenuItemExportHDF5 = new javax.swing.JMenuItem();
 			ivjJMenuItemExportHDF5.setName("JMenuItemExportHDF5");
 			ivjJMenuItemExportHDF5.setText("Export Selected cells as HDF5 file");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -518,11 +464,7 @@ private javax.swing.JMenuItem getJMenuItemCopyRow() {
 			ivjJMenuItemCopyRow = new javax.swing.JMenuItem();
 			ivjJMenuItemCopyRow.setName("JMenuItemCopyRow");
 			ivjJMenuItemCopyRow.setText("Copy Rows");
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -537,11 +479,7 @@ private javax.swing.JPopupMenu getJPopupMenu1() {
 			ivjJPopupMenu1.add(getJMenuItemCopyRow());
 			ivjJPopupMenu1.add(getJMenuItemCopyAll());
 			ivjJPopupMenu1.add(getJMenuItemExportHDF5());
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -552,16 +490,11 @@ private javax.swing.JPopupMenu getJPopupMenu1() {
  * Return the NonEditableDefaultTableModel1 property value.
  * @return cbit.gui.NonEditableDefaultTableModel
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private org.vcell.util.gui.NonEditableDefaultTableModel getNonEditableDefaultTableModel1() {
 	if (ivjNonEditableDefaultTableModel1 == null) {
 		try {
 			ivjNonEditableDefaultTableModel1 = new org.vcell.util.gui.NonEditableDefaultTableModel();
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -583,10 +516,7 @@ public Plot2D getPlot2D() {
  * Return the plot2D1 property value.
  * @return cbit.plot.Plot2D
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private Plot2D getplot2D1() {
-	// user code begin {1}
-	// user code end
 	return ivjplot2D1;
 }
 
@@ -595,7 +525,6 @@ private Plot2D getplot2D1() {
  * Return the ScrollPaneTable property value.
  * @return javax.swing.JTable
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private ScrollTable getScrollPaneTable() {
 	if (ivjScrollPaneTable == null) {
 		try {
@@ -609,11 +538,7 @@ private ScrollTable getScrollPaneTable() {
 			ivjScrollPaneTable.setDefaultRenderer(Object.class,rdwtt);
 			ivjScrollPaneTable.setDefaultRenderer(Number.class,rdwtt);
 			*/
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	}
@@ -636,10 +561,7 @@ private void handleException(java.lang.Throwable exception) {
  * Initializes connections
  * @exception java.lang.Exception The exception description.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initConnections() throws java.lang.Exception {
-	// user code begin {1}
-	// user code end
 	this.addPropertyChangeListener(ivjEventHandler);
 	getScrollPaneTable().addMouseListener(ivjEventHandler);
 	getJMenuItemCopy().addActionListener(ivjEventHandler);
@@ -653,11 +575,8 @@ private void initConnections() throws java.lang.Exception {
 /**
  * Initialize the class.
  */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
 private void initialize() {
 	try {
-		// user code begin {1}
-		// user code end
 		setName("Plot2DDataPanel");
 		setLayout(new java.awt.BorderLayout());
 		setSize(541, 348);
@@ -670,8 +589,6 @@ private void initialize() {
 	} catch (java.lang.Throwable ivjExc) {
 		handleException(ivjExc);
 	}
-	// user code begin {2}
-	// user code end
 }
 
 /**
@@ -735,16 +652,10 @@ private void setplot2D1(Plot2D newValue) {
 			connPtoP2SetSource();
 			connEtoM1(ivjplot2D1);
 			firePropertyChange("plot2D", oldValue, newValue);
-			// user code begin {1}
-			// user code end
 		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
 			handleException(ivjExc);
 		}
 	};
-	// user code begin {3}
-	// user code end
 }
 
 /**

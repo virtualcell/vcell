@@ -28,6 +28,8 @@ import static org.vcell.solver.langevin.LangevinLngvWriter.*;
 
 public class SsldUtils {
 
+    private static final Logger lg = LogManager.getLogger(SsldUtils.class);
+
     public enum Qualifier {
         FREE, BOUND, TOTAL, NONE;
         public static Qualifier fromPrefix(String s) {
@@ -39,8 +41,6 @@ public class SsldUtils {
             return NONE;
         }
     }
-
-    private static Logger lg = LogManager.getLogger(SsldUtils.class);
 
     // result entry from langevin output
     public static class LangevinResult {
@@ -56,34 +56,27 @@ public class SsldUtils {
 
             // Step 1: split only on DOUBLE underscore
             String[] parts = str.split("__");
-
             String first = parts[0];
 
             // Step 2: find first underscore
             int idx = first.indexOf('_');
-
             Qualifier qualifier = Qualifier.NONE;
             String molecule;
-
             if (idx > 0) {
                 String prefix = first.substring(0, idx);
                 qualifier = Qualifier.fromPrefix(prefix);
-
                 if (qualifier != Qualifier.NONE) {
-                    // Valid qualifier found
+                    // valid qualifier found
                     molecule = first.substring(idx + 1);
                 } else {
-                    // Not a valid qualifier → whole thing is molecule
-                    molecule = first;
+                    molecule = first;   // not a valid qualifier -> whole thing is molecule
                 }
             } else {
-                // No underscore at all → no qualifier
-                molecule = first;
+                molecule = first;       // no underscore at all -> no qualifier
             }
 
             String site = "";
             String state = "";
-
             if (parts.length >= 2) {
                 site = parts[1];
             }
@@ -93,7 +86,6 @@ public class SsldUtils {
             if (parts.length > 3) {
                 throw new RuntimeException("Too many '__' sections in: " + str);
             }
-
             return new LangevinResult(qualifier, molecule, site, state);
         }
 
@@ -1075,7 +1067,6 @@ public class SsldUtils {
             // the other end of the bond (the molecule and site of the transition product)
         } else {
             transitionMoleculeIndexInSpeciesPattern = 0;
-
             mtpConditionReactant = null;
             mcpConditionReactant = null;
             mtpConditionProduct = null;
@@ -1104,7 +1095,6 @@ public class SsldUtils {
             mcpConditionReactant.setBond(SpeciesPattern.generateBond(mtpTransitionReactant, mcpTransitionReactant));
             mcpTransitionReactant.setBond(SpeciesPattern.generateBond(mtpConditionReactant, mcpConditionReactant));
         }
-
         SpeciesPattern spProduct = m.getProductPatternOneFromMolecule(ssldTransitionMolecule).getSpeciesPattern();
         MolecularTypePattern mtpTransitionProduct = spProduct.getMolecularTypePatterns(ssldTransitionMolecule.getName()).get(transitionMoleculeIndexInSpeciesPattern);
         MolecularComponentPattern mcpTransitionProduct = mtpTransitionProduct.getMolecularComponentPattern(ssldSiteType.getName());
@@ -1112,7 +1102,8 @@ public class SsldUtils {
         ComponentStateDefinition csdFinal = mcpTransitionProduct.getMolecularComponent().getComponentStateDefinition(ssldFinalStateName);
         ComponentStatePattern cspTransitionProduct = new ComponentStatePattern(csdFinal);
         mcpTransitionProduct.setComponentStatePattern(cspTransitionProduct);
-        System.out.println("  " + ssldReaction.getCondition());
+        lg.debug("  " + ssldReaction.getCondition());
+
         if(ssldReaction.getCondition().equals(TransitionReaction.FREE_CONDITION)) {
             mcpTransitionProduct.setBondType(MolecularComponentPattern.BondType.None);
         } else if(ssldReaction.getCondition().equals(TransitionReaction.BOUND_CONDITION)) {
