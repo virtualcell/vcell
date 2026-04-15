@@ -65,9 +65,9 @@
 		</item>
 		<item> <bold>Publish</bold> - Convenience link (same as DocumentWindow->Help->'How to Publish a Model') on how to identify a VCell model in a publication and how to associate a model with publication information in the VCell Database.
 		</item>
-		<item> <bold>Compare With</bold> - allows user to compare models.  
+		<item> <bold>Compare With Saved</bold> - allows user to compare models.
 		In the dialog that appears, the user can select the model he/she wishes to compare against the selected baseline model and press the <bold>Open</bold> button.
-		Please refer to the section <link target= "ManageDBCompareWith">Compare With</link>.
+		Please refer to the section <link target= "CompareWithSaved">Compare With Saved</link>.
 		</item>
 	</list>
 	<para>

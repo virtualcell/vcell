@@ -5,13 +5,14 @@
     		<tocitem target="General" text="Overview"/>
 <!--      		<tocitem target="RuleBasedOverview" text="Rule-Based Features"/>  		-->
     		<tocitem target="GeneralNavAndWinSetup" text="General Navigation and Window Setup"/>
+			<tocitem target="Login" text="Logging into VCell"/>
     		<tocitem target="TopMenu" text="Top Menu"/>
-			<tocitem target="Login" text="User Login"/>
     		<tocitem target="File" text="File Menu">
 	    		<tocitem target="New" text="File->New Menu"/>
     			<tocitem target="Open" text="File->Open Menu"/>
     			<tocitem target="SaveAs" text="File->Save As Menu"/>
     			<tocitem target="RevertToSaved" text="File->Revert to Saved Menu"/>
+				<tocitem target="CompareWithSaved" text="Compare With Saved"/>
     			<tocitem target="Permissions" text="File->Permissions Menu"/> 			 
     			<tocitem target="FieldData" text="File->Field Data Menu"/>
     			<tocitem target="Import" text="File->Import Menu (SBML files)"/>
@@ -19,13 +20,7 @@
     			<tocitem target="Export" text="File->Export Menu"/>
     		</tocitem>
     		<tocitem target="Account" text="Account Menu">
-				<tocitem target="Auth0Overview" text="Website Login">
-					<tocitem target="Auth0ProfilePage" text="Website Profile Page">
-						<tocitem target="Auth0ExistingUserAccountLinking" text="Existing Users Profile Help"/>
-						<tocitem target="Auth0ReturningUserAccountLinking" text="Returning Users Profile Help"/>
-						<tocitem target="Auth0NewUserAccountCreation" text="New Users Profile Help"/>
-					</tocitem>
-				</tocitem>
+				<tocitem target="Auth0ProfilePage" text="Login"/>
     			<tocitem target="SetProxy" text= "Set Proxy Window"/>
     			<tocitem target="ViewSimStatus" text="View Simulation Jobs"/>
     		</tocitem>	
@@ -33,7 +28,6 @@
     		<tocitem target="Tools" text="Tools Menu">
     			<tocitem target="LaunchVirtualFRAP" text="Launch Virtual FRAP Menu"/>
 				<tocitem target="ExportedDataViewer" text="Exported Data Viewer"/>
- 				<tocitem target="TransformToStochCapable" text="Transform to Stochastic Capable Menu"/>
     		</tocitem>
     		<tocitem target="Help" text="Help Menu"/>
     	</tocitem>
@@ -62,8 +56,8 @@
     			<tocitem target="PathLink" text="Edit Pathway Links"/> 	
     		</tocitem>
     		<tocitem target="Molecules" text="Molecules Table">
-    			<tocitem target="PP_Molecules" text="Edit Molecule"/>
-      		</tocitem>	  			    	
+    			<tocitem target="PP_Molecules" text="Specify Molecular Details"/>
+      		</tocitem>
     		<tocitem target="Observables" text="Observables Table">
     			   <tocitem target="PP_Observables" text="Edit Observable"/>
     		</tocitem>	   
