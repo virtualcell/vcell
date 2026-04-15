@@ -1086,7 +1086,9 @@ public class SlurmProxy extends HtcProxy {
 		try {
 			// Validate sub_file_internal is under the configured htcLogDir to prevent path traversal
 			String htcLogDirInternal = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirInternal);
-			if (!sub_file_internal.getCanonicalPath().startsWith(new File(htcLogDirInternal).getCanonicalPath())) {
+			java.nio.file.Path subFilePath = sub_file_internal.getCanonicalFile().toPath();
+			java.nio.file.Path htcLogDirPath = new File(htcLogDirInternal).getCanonicalFile().toPath();
+			if (!subFilePath.startsWith(htcLogDirPath)) {
 				throw new ExecutableException("sub_file_internal path outside htcLogDir: " + sub_file_internal);
 			}
 			String scriptText = createOptJobScript(jobName, optProblemInputFile, optProblemOutputFile, optReportFile);

@@ -109,7 +109,8 @@ public class OpenWireOptSubmitStub {
      */
     private static File validatePath(String filePath, String baseDir) throws java.io.IOException {
         File file = new File(filePath).getCanonicalFile();
-        if (!file.getPath().startsWith(new File(baseDir).getCanonicalPath())) {
+        java.nio.file.Path basePath = new File(baseDir).getCanonicalFile().toPath();
+        if (!file.toPath().startsWith(basePath)) {
             throw new java.io.IOException("Invalid file path (outside base dir): " + filePath);
         }
         return file;

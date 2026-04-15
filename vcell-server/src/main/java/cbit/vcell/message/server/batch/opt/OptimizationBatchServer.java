@@ -89,9 +89,9 @@ public class OptimizationBatchServer {
      */
     private static File validateParestPath(String filePath) throws IOException {
         File file = new File(filePath).getCanonicalFile();
-        String parestDir = new File(PropertyLoader.getRequiredProperty(
-                PropertyLoader.primarySimDataDirInternalProperty), "parest_data").getCanonicalPath();
-        if (!file.getPath().startsWith(parestDir)) {
+        java.nio.file.Path parestDir = new File(PropertyLoader.getRequiredProperty(
+                PropertyLoader.primarySimDataDirInternalProperty), "parest_data").getCanonicalFile().toPath();
+        if (!file.toPath().startsWith(parestDir)) {
             throw new IOException("Invalid optimization file path (outside parest_data): " + filePath);
         }
         return file;
