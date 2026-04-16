@@ -23,10 +23,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
@@ -36,8 +33,8 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
 
     private static final Logger lg = LogManager.getLogger(MoleculeVisualizationPanel.class);
 
-    private static final int MINMAX_ALPHA = 90;   // stronger envelope
-    private static final int SD_ALPHA     = 60;   // lighter envelope
+    private static final int MINMAX_ALPHA = 60;
+    private static final int SD_ALPHA     = 90;
 
     private final ODEDataViewer owner;
     LangevinSolverResultSet langevinSolverResultSet = null;
@@ -150,6 +147,9 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
                         lg.debug("componentShown() called, height = " + moleculePlotPanel.getHeight());
                     }
                 });
+                moleculePlotPanel.setStepAvg(false);
+                moleculePlotPanel.setStepBand(true);
+
             } catch (java.lang.Throwable ivjExc) {
                 handleException(ivjExc);
             }
@@ -360,13 +360,40 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
 
 //        JLabel text = new JLabel("<html>" + name + " <font color=\"#8B0000\">[" + unitSymbol + "]</font></html>");
         JLabel text = new JLabel("<html>" + name + " <font color=\"#8B0000\"></font></html>");
-        line.setBorder(new EmptyBorder(6, 0, 1, 0));
-        text.setBorder(new EmptyBorder(1, 8, 6, 0));
+        line.setBorder(new EmptyBorder(5, 6, 1, 0));    // top and bottom add a little vertical distance between selected entities
+        text.setBorder(new EmptyBorder(1, 6, 5, 0));
         line.setToolTipText(tooltip);
         text.setToolTipText(tooltip);
         p.setToolTipText(tooltip);
+
+        line.setAlignmentX(Component.LEFT_ALIGNMENT);   // force full-width expansion of the label, so that hovering
+                                                        // anywhere on the line triggers the tooltip and hover behavior
+        line.setMaximumSize(new Dimension(Integer.MAX_VALUE, line.getPreferredSize().height));  // align label to the left
+        line.setHorizontalAlignment(SwingConstants.LEFT);   // force the icon itself to left-align inside the label
+        line.setHorizontalTextPosition(SwingConstants.LEFT);
+
+        text.setAlignmentX(Component.LEFT_ALIGNMENT);
+        text.setMaximumSize(new Dimension(Integer.MAX_VALUE, text.getPreferredSize().height));
+        text.setHorizontalAlignment(SwingConstants.LEFT);   // force align the text itself to the left inside the label
+        text.setHorizontalTextPosition(SwingConstants.LEFT);
         p.add(line);
         p.add(text);
+
+        // hover behavior - install the same listener on p, line, and text so that hovering anywhere on the legend entry triggers it
+        MouseAdapter hover = new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                getMoleculePlotPanel().setHoveredSeriesName(name);
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                // As soon as we leave line/text, we are no longer "over an entity"
+                getMoleculePlotPanel().setHoveredSeriesName(null);
+            }
+        };
+        line.addMouseListener(hover);
+        text.addMouseListener(hover);
+
         return p;
     }
 
@@ -440,7 +467,7 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
                 base.getRed(),
                 base.getGreen(),
                 base.getBlue(),
-                80   // smaller number means lighter color (more transparent)
+                60   // smaller number means lighter color (more transparent)
         );
     }
 

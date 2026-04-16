@@ -108,12 +108,13 @@ public class LangevinSolverResultSet implements Serializable {
             ODESimData co = getAvg();
             populateMetadata(co);
             checkTrivial(co);
-            co = getMin();
-            checkTrivial(co);
-            co = getMax();
-            checkTrivial(co);
-            co = getStd();
-            checkTrivial(co);
+            // if avg is trivial, then min, max and std will be trivial too
+//            co = getMin();
+//            checkTrivial(co);
+//            co = getMax();
+//            checkTrivial(co);
+//            co = getStd();
+//            checkTrivial(co);
         }
     }
     private void populateMetadata(ODESimData co) {

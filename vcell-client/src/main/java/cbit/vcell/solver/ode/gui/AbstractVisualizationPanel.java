@@ -26,13 +26,13 @@ public abstract class AbstractVisualizationPanel extends DocumentEditorSubPanel 
         @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             Graphics2D g2 = (Graphics2D)g;
-            g2.setStroke(new BasicStroke(4.0f));
+            g2.setStroke(new BasicStroke(6.0f));
             g2.setPaint(color);
             int midY = y + getIconHeight() / 2;
             g2.drawLine(x, midY, x + getIconWidth(), midY);
         }
         @Override
-        public int getIconWidth() { return 50; }
+        public int getIconWidth() { return 80; }
         @Override
         public int getIconHeight() {
             return 4;  // more vertical room for a wider stroke
