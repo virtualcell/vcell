@@ -156,6 +156,9 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
 
                 if (DisplayMode.isDisplayModeActionCommand(cmd)) {
                     java.util.List<DisplayMode> displayModes = getSelectedDisplayModes();
+                    // in ClusterSpecificationPanel need the mode for the renderer, so we had to put it in a ClientProperty
+                    // but in MoleculeSpecificationPanel we don't have that requirement
+                    // note that it's bad style to just query the checkboxes directly from within a renderer
                     populateYAxisChoices(displayModes);
                 } else if (StatisticSelection.isStatisticSelectionActionCommand(cmd)) {
                     MoleculeSelection sel = new MoleculeSelection(

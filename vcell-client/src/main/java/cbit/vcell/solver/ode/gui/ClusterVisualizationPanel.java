@@ -84,6 +84,11 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                     redrawLegend(sel);      // redraw legend (one plot, multiple curves)
                     redrawPlot(sel);        // redraw plot (one plot, multiple curves)
                     redrawDataTable(sel);   // redraw data table
+                    if(sel.mode == ClusterSpecificationPanel.DisplayMode.COUNTS) {
+                        getClusterPlotPanel().setStepAvg(true);
+                    } else {
+                        getClusterPlotPanel().setStepAvg(false);
+                    }
                 } catch (ExpressionException e) {
                     throw new RuntimeException(e);
                 }
@@ -144,8 +149,10 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                         lg.debug("componentShown() called, height = " + clusterPlotPanel.getHeight());
                     }
                 });
-                clusterPlotPanel.setStepAvg(false);
-                clusterPlotPanel.setStepBand(true);
+
+                // uncomment these to override the defaulta AbstractPlotPanel renderer options
+//                clusterPlotPanel.setStepAvg(false);
+//                clusterPlotPanel.setStepBand(true);
 
             } catch (java.lang.Throwable ivjExc) {
                 handleException(ivjExc);

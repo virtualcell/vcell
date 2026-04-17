@@ -239,6 +239,16 @@ public final class PlotRenderers {
                     // vertical segment: (xB, yA) → (xB, yB)
                     step.lineTo(xB, yB);
                 }
+                // VERTICAL SEGMENT from last upper point to first lower point
+                // compute first lower point at the rightmost x
+                double tLast = (time != null ? time[n - 1] : (n - 1) * dt);
+                double vLastLower = lower[n - 1];
+                double normLastLower = (vLastLower - yMinRounded) / (yMaxRounded - yMinRounded);
+                int xLast = x0 + (int)Math.round((tLast / xMaxRounded) * plotWidth);
+                int yLastLower = y0 - (int)Math.round(normLastLower * plotHeight);
+                // vertical segment from last upper point to first lower point
+                step.lineTo(xLast, yLastLower);
+
                 // ---- LOWER BOUNDARY (right → left) ----
                 for (int i = n - 1; i > 0; i--) {
                     // current point

@@ -147,8 +147,10 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
                         lg.debug("componentShown() called, height = " + moleculePlotPanel.getHeight());
                     }
                 });
-                moleculePlotPanel.setStepAvg(false);
-                moleculePlotPanel.setStepBand(true);
+
+                // uncomment these to override the defaulta AbstractPlotPanel renderer options, feel free to add more
+//                moleculePlotPanel.setStepAvg(true);
+//                moleculePlotPanel.setStepBand(true);
 
             } catch (java.lang.Throwable ivjExc) {
                 handleException(ivjExc);

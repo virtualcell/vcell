@@ -155,7 +155,11 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
                         "<html>Number of clusters of size <b>" + name +
                                 "</b> <font color=\"#8B0000\">[molecules]</font></html>";
                 case MEAN, OVERALL -> {
-                    ClusterStatistic stat = ClusterStatistic.valueOf(name);
+                    ClusterStatistic stat = ClusterStatistic.fromString(name);
+                    if(stat == null) {
+                        lg.error("Unknown column name in ClusterYAxisRenderer: " + name);
+                        yield name; // fallback to just showing the name without tooltip
+                    }
                     yield "<html>" + stat.description +
                             "<font color=\"#8B0000\"> [" + stat.unit + "]</font></html>";
                 }
@@ -170,6 +174,10 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
             if (e.getSource() instanceof JRadioButton rb && SwingUtilities.isDescendingFrom(rb, ClusterSpecificationPanel.this)) {
                 lg.debug("actionPerformed() called. Source is JRadioButton: {}", rb.getText());
                 DisplayMode mode = DisplayMode.fromActionCommand(cmd);
+                // set property to inform the list about current mode (needed for renderer)
+                // moved here from valueChanged() because the tooltip of the y-axis choices needs to be updated
+                // immediately when the mode changes, even before any selection is made in the list
+                yAxisChoiceList.putClientProperty("ClusterDisplayMode", mode);
                 populateYAxisChoices(mode);
             }
         }
@@ -192,8 +200,9 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
                 java.util.List<ColumnDescription> selected = getYAxisChoice().getSelectedValuesList();
                 DisplayMode mode = getCurrentDisplayMode();
                 ODESolverResultSet srs = getResultSetForMode(mode);
-                // set property to inform the list about current mode (needed for renderer)
-                yAxisChoiceList.putClientProperty("ClusterDisplayMode", mode);
+                // moved this to actionPerformed() where it belongs, it was being called too late here
+//                // set property to inform the list about current mode (needed for renderer)
+//                yAxisChoiceList.putClientProperty("ClusterDisplayMode", mode);
                 // fire the event upward
                 firePropertyChange("ClusterSelection", null, new ClusterSelection(mode, selected, srs));
             }
