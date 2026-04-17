@@ -45,7 +45,6 @@ public class ClientExportEventController implements ExportEventController {
         ExportEvent event = new ExportEvent(
                 this, jobID, user, vcdID.getID(), dataKey, ExportEnums.ExportProgressType.EXPORT_COMPLETE,
                 format, location, null);
-        event.setHumanReadableExportData(exportSpecs != null ? exportSpecs.getHumanReadableExportData() : null);
         fireExportEvent(event);
         return event;
     }

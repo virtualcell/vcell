@@ -15,6 +15,9 @@ import cbit.sql.InsertHashtable;
 import cbit.sql.QueryHashtable;
 import cbit.sql.RecordChangedException;
 import cbit.vcell.biomodel.BioModelMetaData;
+import cbit.vcell.exports.ExportHistory;
+import cbit.vcell.exports.ExportHistoryDBDriver;
+import cbit.vcell.exports.ExportHistoryDBRep;
 import cbit.vcell.field.FieldDataAllDBEntries;
 import cbit.vcell.field.FieldDataExternalDataIDEntry;
 import cbit.vcell.field.io.CopyFieldDataResult;
@@ -38,6 +41,7 @@ import org.vcell.util.document.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.Vector;
 /**
@@ -53,6 +57,7 @@ public class DBTopLevel extends AbstractDBTopLevel{
 	private final BioModelDbDriver bioModelDB;
 	private final MathModelDbDriver mathModelDB;
 	private final UserDbDriver userDB;
+	private final ExportHistoryDBDriver exportHistoryDBDriver;
 //	private DBCacheTable dbCacheTable = null;
 
 	private static final int SQL_ERROR_CODE_BADCONNECTION = 1010; //??????????????????????????????????????
@@ -75,6 +80,7 @@ DBTopLevel(ConnectionFactory aConFactory) throws SQLException{
 	this.userDB = new UserDbDriver(); 
 	this.bioModelDB = new BioModelDbDriver(databaseSyntax,keyFactory);
 	this.mathModelDB = new MathModelDbDriver(databaseSyntax, keyFactory);
+	this.exportHistoryDBDriver = new ExportHistoryDBDriver(databaseSyntax, keyFactory);
 }
 
 
@@ -2254,5 +2260,52 @@ public SimulationRep getSimulationRep(KeyValue simKey, boolean bEnableRetry) thr
 		conFactory.release(con,lock);
 	}
 }
+
+	public void insertExportHistory(User user, ExportHistoryDBRep exportHistoryValues, boolean bEnableRetry) throws SQLException, DataAccessException {
+		Object lock = new Object();
+		Connection con = conFactory.getConnection(lock);
+		try {
+			exportHistoryDBDriver.addExportHistory(con, user, exportHistoryValues, conFactory.getKeyFactory());
+		} catch (Throwable e) {
+			lg.error(e.getMessage(),e);
+			try {
+				con.rollback();
+			}catch (Throwable rbe){
+				lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
+			}
+			if (bEnableRetry && isBadConnection(con)) {
+				conFactory.failed(con,lock);
+				insertExportHistory(user, exportHistoryValues, false);
+			}else{
+				handle_DataAccessException_SQLException(e);
+			}
+		}finally{
+			conFactory.release(con,lock);
+		}
+	}
+
+	public List<ExportHistory> getUsersExportHistory(User user, int pagingNumber, boolean bEnableRetry) throws SQLException, DataAccessException {
+		Object lock = new Object();
+		Connection con = conFactory.getConnection(lock);
+		try {
+			return exportHistoryDBDriver.getExportHistoryForUser(con, user, pagingNumber);
+		} catch (Throwable e) {
+			lg.error(e.getMessage(),e);
+			try {
+				con.rollback();
+			}catch (Throwable rbe){
+				lg.error("exception during rollback, bEnableRetry = "+bEnableRetry, rbe);
+			}
+			if (bEnableRetry && isBadConnection(con)) {
+				conFactory.failed(con,lock);
+				return getUsersExportHistory(user, pagingNumber,false);
+			}else{
+				handle_DataAccessException_SQLException(e);
+				return null; // never gets here;
+			}
+		}finally{
+			conFactory.release(con,lock);
+		}
+	}
 
 }

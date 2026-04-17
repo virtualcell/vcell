@@ -14,6 +14,7 @@ import { HttpHeaders }                                       from '@angular/comm
 import { Observable }                                        from 'rxjs';
 
 import { ExportEvent } from '../model/models';
+import { ExportHistory } from '../model/models';
 import { N5ExportRequest } from '../model/models';
 import { VCellHTTPError } from '../model/models';
 
@@ -39,5 +40,12 @@ export interface ExportResourceServiceInterface {
      * @param timestamp 
      */
     exportStatus(timestamp?: number, extraHttpRequestParams?: any): Observable<Array<ExportEvent>>;
+
+    /**
+     * 
+     * 
+     * @param pageNumber 
+     */
+    getExportHistory(pageNumber?: number, extraHttpRequestParams?: any): Observable<Array<ExportHistory>>;
 
 }

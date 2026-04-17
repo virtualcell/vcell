@@ -32,10 +32,7 @@ import cbit.vcell.simdata.*;
 import cbit.vcell.solver.*;
 import cbit.vcell.solvers.CartesianMesh;
 import org.vcell.util.UserCancelException;
-import org.vcell.util.document.LocalVCDataIdentifier;
-import org.vcell.util.document.User;
-import org.vcell.util.document.VCDataIdentifier;
-import org.vcell.util.document.VCDocument;
+import org.vcell.util.document.*;
 import org.vcell.util.gui.*;
 
 import javax.swing.*;
@@ -48,6 +45,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.util.*;
+import java.util.List;
+
 /**
  * This type was created in VisualAge.
  */
@@ -650,7 +649,7 @@ private ExportSpecs getExportSpecs() {
 	MathOverrides mathOverrides = getSimulation().getMathOverrides();
 
 	String[] filteredConstants = mathOverrides.getFilteredConstantNames();
-	ArrayList<String> differentParameterValues = new ArrayList<>();
+	List<HumanReadableExportData.DifferentParameterValues> differentParameterValues = new ArrayList<>();
 	VCDataIdentifier vcDataIdentifier = getPdeDataContext().getVCDataIdentifier();
 	if (vcDataIdentifier instanceof VCSimulationDataIdentifier){
         for (String filteredConstant : filteredConstants) {
@@ -659,7 +658,9 @@ private ExportSpecs getExportSpecs() {
 			MathOverrides.ScanIndex scanIndex = simulation.getScanIndex(jobIndex);
 			String setValue = mathOverrides.getActualExpression(filteredConstant, scanIndex).infix();
 			if(!defaultValue.equals(setValue)){
-				differentParameterValues.add(filteredConstant + ":" +defaultValue + ":" + setValue);
+				differentParameterValues.add(new HumanReadableExportData.DifferentParameterValues(
+						filteredConstant, defaultValue, setValue
+				));
 			}
         }
 	}
@@ -690,7 +691,15 @@ private ExportSpecs getExportSpecs() {
 		throw new IllegalArgumentException("Expected " + SimulationContext.class.getName() + " or " + MathModel.class.getName());
 	}
 
-	ExportSpecs exportSpecs = new ExportSpecs(
+	VCDocument thisDocument = (getDataViewerManager() instanceof DocumentWindowManager?((DocumentWindowManager)getDataViewerManager()).getVCDocument():null);
+	KeyValue bioModelKey = null;
+	KeyValue mathModelKey = null;
+	if (thisDocument != null){
+		bioModelKey = thisDocument.getDocumentType() == VCDocument.VCDocumentType.BIOMODEL_DOC ? thisDocument.getVersion().getVersionKey() : null;
+		mathModelKey = thisDocument.getDocumentType() == VCDocument.VCDocumentType.MATHMODEL_DOC ? thisDocument.getVersion().getVersionKey() : null;
+	}
+
+	return new ExportSpecs(
 			vcDataIdentifier,
 			getExportSettings1().getSelectedFormat(),
 			variableSpecs,
@@ -698,10 +707,11 @@ private ExportSpecs getExportSpecs() {
 			geometrySpecs,
 			getExportSettings1().getFormatSpecificSpecs(),
 			dataInfoProvider.getSimulationModelInfo().getSimulationName(),
-			dataInfoProvider.getSimulationModelInfo().getContextName()
+			dataInfoProvider.getSimulationModelInfo().getContextName(),
+			bioModelKey,
+			mathModelKey,
+			getSimulation().getMathDescription().getKey()
 	);
-	exportSpecs.setExportMetaData(humanReadableExportData);
-	return exportSpecs;
 }
 
 private ExportSpecs.SimulationSelector createSimulationSelector(){

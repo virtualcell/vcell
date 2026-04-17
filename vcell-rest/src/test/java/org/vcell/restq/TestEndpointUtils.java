@@ -7,10 +7,12 @@ import cbit.vcell.model.Feature;
 import cbit.vcell.model.Kinetics;
 import cbit.vcell.model.SimpleReaction;
 import cbit.vcell.model.SpeciesContext;
-import cbit.vcell.modeldb.AdminDBTopLevel;
 import cbit.vcell.modeldb.DatabaseServerImpl;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.simdata.Cachetable;
+import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.DataSetControllerImpl;
 import cbit.vcell.solver.Simulation;
 import cbit.vcell.solver.TimeBounds;
 import cbit.vcell.xml.XMLSource;
@@ -28,13 +30,14 @@ import org.vcell.restclient.model.BiomodelRef;
 import org.vcell.restclient.model.Publication;
 import org.vcell.restclient.model.UserLoginInfoForMapping;
 import org.vcell.restq.db.AgroalConnectionFactory;
+import org.vcell.restq.exports.ExportRequestTest;
 import org.vcell.util.BigString;
 import org.vcell.util.DataAccessException;
-import org.vcell.util.document.KeyValue;
-import org.vcell.util.document.User;
+import org.vcell.util.document.*;
 
 import java.beans.PropertyVetoException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -112,6 +115,16 @@ public class TestEndpointUtils {
         return mathModel;
     }
 
+    public static Simulation getTestSimulation() throws IOException, XmlParseException, PropertyVetoException {
+        String vcmlString = IOUtils.toString(TestEndpointUtils.class.getResourceAsStream("/TestVCML.vcml"));
+        cbit.vcell.biomodel.BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(vcmlString));
+        bioModel.setName("TestBioModel");
+        bioModel.clearVersion();
+        Simulation simulation = bioModel.getSimulation(0);
+        simulation.setName("TestSimulation");
+        return simulation;
+    }
+
     public static Publication defaultPublication(){
         Publication publication = new Publication();
         publication.setAuthors(Arrays.asList("author1", "author2"));
@@ -171,12 +184,21 @@ public class TestEndpointUtils {
         return IOUtils.toString(inputStream);
     }
 
+    public static DataServerImpl createDataServerImpl() throws FileNotFoundException {
+        File testSimData = new File(ExportRequestTest.class.getResource("/simdata").getPath());
+        TestEndpointUtils.setSystemProperties(testSimData.getAbsolutePath(), System.getProperty("java.io.tmpdir"));
+        Cachetable cachetable = new Cachetable(10 * Cachetable.minute, 10000);
+        DataSetControllerImpl dataSetController = new DataSetControllerImpl(cachetable, testSimData, testSimData);
+        return new DataServerImpl(dataSetController, null);
+    }
+
     /**
      * Empties out all BioModel, Geometry, math, and simulation related tables
      */
     public static void clearAllBioModelEntries(AgroalConnectionFactory agroalConnectionFactory) throws DataAccessException, SQLException {
         Object object = new Object();
         Connection connection = agroalConnectionFactory.getConnection(object);
+        connection.prepareStatement("DELETE FROM VC_SIMULATION_EXPORT_HISTORY").execute();
         connection.prepareStatement("DELETE FROM VC_BIOMODEL").execute();
         connection.prepareStatement("DELETE FROM VC_BIOMODELXML").execute();
         connection.prepareStatement("DELETE FROM VC_BIOMODELSIM").execute();
@@ -185,6 +207,7 @@ public class TestEndpointUtils {
 
         connection.prepareStatement("DELETE FROM VC_MATHMODELSIM").execute();
         connection.prepareStatement("DELETE FROM VC_SIMCONTEXT").execute();
+        connection.prepareStatement("DELETE FROM VC_SIMULATION_EXPORT_HISTORY").execute();
         connection.prepareStatement("DELETE FROM VC_SIMULATION").execute();
 
         connection.prepareStatement("DELETE FROM VC_MATHMODELXML").execute();
@@ -204,17 +227,46 @@ public class TestEndpointUtils {
         connection.close();
     }
 
-    public static void insertAdminsSimulation(DatabaseServerImpl databaseServer, AgroalConnectionFactory connectionFactory) throws IOException, DataAccessException, SQLException {
-        InputStream xmlFile = TestEndpointUtils.class.getResourceAsStream("/simdata/Administrator/SimID_597714292_0__0.simtask.xml");
+    public static BioModel insertFrapModel(AgroalConnectionFactory connectionFactory) throws IOException, DataAccessException, SQLException, PropertyVetoException, XmlParseException {
+        DatabaseServerImpl databaseServer = new DatabaseServerImpl(connectionFactory, connectionFactory.getKeyFactory());
+        InputStream xmlFile = TestEndpointUtils.class.getResourceAsStream("/simdata/Administrator/Tutorial_FRAP.vcml");
         assert xmlFile != null;
-        String readXML = new String(xmlFile.readAllBytes());
-        xmlFile.close();
-        databaseServer.saveSimulation(administratorUser, new BigString(readXML), false);
+        BigString bioModelString = new BigString(new String(xmlFile.readAllBytes()));
+        bioModelString = databaseServer.saveBioModel(administratorUser, bioModelString, new String[]{});
+        BioModel bioModel = XmlHelper.XMLToBioModel(new XMLSource(bioModelString.toString()));
+        String simulationKey = bioModel.getSimulation(0).getKey().toString();
+
+        // Have the key be set, that way the simulation files match the key.
         Object object = new Object();
         Connection connection = connectionFactory.getConnection(object);
-        connection.prepareStatement("UPDATE vc_simulation SET id = 597714292 WHERE name = 'FRAP'").executeUpdate();
+        connection.prepareStatement(
+            "ALTER TABLE vc_biomodelsim DISABLE TRIGGER ALL; ALTER TABLE vc_simulation DISABLE TRIGGER ALL;" +
+                "UPDATE vc_biomodelsim SET simref = 597714292 WHERE simref = " + simulationKey + ";" +
+                "UPDATE vc_simulation SET id = 597714292 WHERE id = " + simulationKey + ";" +
+                "ALTER TABLE vc_biomodelsim ENABLE TRIGGER ALL; ALTER TABLE vc_simulation ENABLE TRIGGER ALL"
+        ).executeUpdate();
         connection.commit();
         connection.close();
+        Simulation originalSim = bioModel.getSimulation(0);
+        Simulation updatedSim = new Simulation(
+                new SimulationVersion(
+                        new KeyValue("597714292"),
+                        originalSim.getVersion().getName(),
+                        originalSim.getVersion().getOwner(),
+                        new GroupAccessAll(),
+                        originalSim.getVersion().getBranchPointRefKey(),
+                        originalSim.getVersion().getBranchID(),
+                        originalSim.getVersion().getDate(),
+                        originalSim.getVersion().getFlag(),
+                        originalSim.getVersion().getAnnot(),
+                        null
+                ),
+                originalSim.getMathDescription(),
+                originalSim.getSimulationOwner()
+        );
+        bioModel.removeSimulation(originalSim);
+        bioModel.addSimulation(updatedSim);
+        return bioModel;
     }
 
 

@@ -3,6 +3,7 @@ package cbit.vcell.client.data;
 import cbit.vcell.client.ClientRequestManager;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.export.server.ExportFormat;
+import cbit.vcell.export.server.HumanReadableExportData;
 import cbit.vcell.graph.GraphConstants;
 import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.resource.ResourceUtil;
@@ -33,6 +34,7 @@ import java.nio.file.Files;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.List;
 
 public class ExportedDataViewer extends DocumentEditorSubPanel implements ActionListener, PropertyChangeListener, ListSelectionListener, KeyListener {
 
@@ -509,7 +511,7 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
             exportVariableText.setText("");
             return;
         }
-        ArrayList<String> differentParameterValues = rowData.differentParameterValues;
+        List<HumanReadableExportData.DifferentParameterValues> differentParameterValues = rowData.differentParameterValues;
         StyleContext styleContext = new StyleContext();
 //        AttributeSet attributeSet = styleContext.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.)
         StyledDocument doc = new DefaultStyledDocument();
@@ -528,10 +530,9 @@ public class ExportedDataViewer extends DocumentEditorSubPanel implements Action
         }
 
         parameterScrollTableModel.resetData();
-        for(int i =0; i < differentParameterValues.size(); i++){
-            String[] parameterTokens = differentParameterValues.get(i).split(":");
+        for (HumanReadableExportData.DifferentParameterValues differentParameterValue : differentParameterValues) {
             ParameterTableModelExport.ParameterTableData data = new ParameterTableModelExport.ParameterTableData(
-                    parameterTokens[0], parameterTokens[1], parameterTokens[2]
+                    differentParameterValue.parameterName(), differentParameterValue.originalValue(), differentParameterValue.changedValue()
             );
             parameterScrollTableModel.addRow(data);
         }

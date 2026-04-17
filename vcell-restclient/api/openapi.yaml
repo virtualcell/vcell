@@ -499,6 +499,47 @@ paths:
       - Export Resource
       x-content-type: application/json
       x-accepts: application/json
+  /api/v1/export/history:
+    get:
+      operationId: getExportHistory
+      parameters:
+      - explode: true
+        in: query
+        name: pageNumber
+        required: false
+        schema:
+          format: int32
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ExportHistory'
+                type: array
+          description: OK
+        "401":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Not Authenticated
+        "403":
+          description: Not Allowed
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      security:
+      - openId:
+        - user
+      tags:
+      - Export Resource
+      x-accepts: application/json
   /api/v1/export/status:
     get:
       description: Get the status of your export jobs past the timestamp (Unix epoch
@@ -2939,6 +2980,19 @@ components:
       - WORKEREVENT_FAILURE
       - JOB_FAILED
       type: string
+    DifferentParameterValues:
+      example:
+        originalValue: originalValue
+        parameterName: parameterName
+        changedValue: changedValue
+      properties:
+        parameterName:
+          type: string
+        originalValue:
+          type: string
+        changedValue:
+          type: string
+      type: object
     Domain:
       example:
         name: name
@@ -2956,8 +3010,12 @@ components:
           numChannels: 5
           applicationType: applicationType
           differentParameterValues:
-          - differentParameterValues
-          - differentParameterValues
+          - originalValue: originalValue
+            parameterName: parameterName
+            changedValue: changedValue
+          - originalValue: originalValue
+            parameterName: parameterName
+            changedValue: changedValue
           serverSavedFileName: serverSavedFileName
           subVolume:
             key: subVolume
@@ -2997,6 +3055,76 @@ components:
           type: string
         humanReadableData:
           $ref: '#/components/schemas/HumanReadableExportData'
+      type: object
+    ExportFormat:
+      enum:
+      - CSV
+      - HDF5
+      - QUICKTIME
+      - GIF
+      - ANIMATED_GIF
+      - FORMAT_JPEG
+      - NRRD
+      - UCD
+      - VTK_UNSTRUCT
+      - VTK_IMAGE
+      - PLY
+      - N5
+      type: string
+    ExportHistory:
+      example:
+        mathModelRef: mathModelRef
+        variables:
+        - variables
+        - variables
+        simulationRef: simulationRef
+        mathRef: mathRef
+        startTimeValue: 6.027456183070403
+        endTimeValue: 1.4658129805029452
+        uri: uri
+        modelName: modelName
+        exportDate: 2022-03-10T16:15:50Z
+        eventStatus: null
+        simName: simName
+        exportJobID: 0
+        bioModelRef: bioModelRef
+        exportFormat: null
+      properties:
+        exportJobID:
+          format: int64
+          type: integer
+        simulationRef:
+          type: string
+        bioModelRef:
+          type: string
+        mathModelRef:
+          type: string
+        mathRef:
+          type: string
+        exportFormat:
+          $ref: '#/components/schemas/ExportFormat'
+        exportDate:
+          example: 2022-03-10T16:15:50Z
+          format: date-time
+          type: string
+        uri:
+          type: string
+        simName:
+          type: string
+        modelName:
+          type: string
+        variables:
+          items:
+            type: string
+          type: array
+        startTimeValue:
+          format: double
+          type: number
+        endTimeValue:
+          format: double
+          type: number
+        eventStatus:
+          $ref: '#/components/schemas/ExportProgressType'
       type: object
     ExportProgressType:
       enum:
@@ -3561,8 +3689,12 @@ components:
         numChannels: 5
         applicationType: applicationType
         differentParameterValues:
-        - differentParameterValues
-        - differentParameterValues
+        - originalValue: originalValue
+          parameterName: parameterName
+          changedValue: changedValue
+        - originalValue: originalValue
+          parameterName: parameterName
+          changedValue: changedValue
         serverSavedFileName: serverSavedFileName
         subVolume:
           key: subVolume
@@ -3581,7 +3713,7 @@ components:
           type: string
         differentParameterValues:
           items:
-            type: string
+            $ref: '#/components/schemas/DifferentParameterValues'
           type: array
         applicationType:
           type: string
@@ -3831,6 +3963,8 @@ components:
             variableNames:
             - variableNames
             - variableNames
+          bioModelKey: bioModelKey
+          mathDescriptionKey: mathDescriptionKey
           simulationName: simulationName
           geometrySpecs:
             selections:
@@ -3941,6 +4075,7 @@ components:
             sliceNumber: 4
             geometryMode: null
             axis: 1
+          mathModelKey: mathModelKey
           outputContext:
           - functionName: functionName
             domain:
@@ -4535,6 +4670,8 @@ components:
           variableNames:
           - variableNames
           - variableNames
+        bioModelKey: bioModelKey
+        mathDescriptionKey: mathDescriptionKey
         simulationName: simulationName
         geometrySpecs:
           selections:
@@ -4645,6 +4782,7 @@ components:
           sliceNumber: 4
           geometryMode: null
           axis: 1
+        mathModelKey: mathModelKey
         outputContext:
         - functionName: functionName
           domain:
@@ -4706,6 +4844,12 @@ components:
           $ref: '#/components/schemas/TimeSpecs'
         variableSpecs:
           $ref: '#/components/schemas/VariableSpecs'
+        bioModelKey:
+          type: string
+        mathModelKey:
+          type: string
+        mathDescriptionKey:
+          type: string
       type: object
     Status:
       enum:

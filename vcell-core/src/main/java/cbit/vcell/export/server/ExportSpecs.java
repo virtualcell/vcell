@@ -10,12 +10,17 @@
 
 package cbit.vcell.export.server;
 import java.io.Serializable;
+import java.util.Arrays;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import cbit.rmi.event.ExportEvent;
+import cbit.vcell.solver.MathOverrides;
+import cbit.vcell.solver.Simulation;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Compare;
 import org.vcell.util.Range;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.VCDataIdentifier;
 
 import cbit.image.DisplayAdapterService;
@@ -34,8 +39,9 @@ public class ExportSpecs implements Serializable {
 	private FormatSpecificSpecs formatSpecificSpecs;
 	private String simulatioName;
 	private String contextName;
-
-	private HumanReadableExportData humanReadableExportData;
+	private KeyValue bioModelKey;
+	private KeyValue mathModelKey;
+	private KeyValue mathDescriptionKey;
 
 	public interface SimulationSelector{
 		public void selectSimulations();
@@ -46,26 +52,13 @@ public class ExportSpecs implements Serializable {
 		public int getNumAvailableParamScans();
 	}
 
-	public ExportSpecs(org.vcell.util.document.VCDataIdentifier vcdID, ExportFormat format,
-			VariableSpecs variableSpecs, TimeSpecs timeSpecs, 
-			GeometrySpecs geometrySpecs, FormatSpecificSpecs formatSpecificSpecs,
-			String simulationName,String contextName) {
-		this.vcDataIdentifier = vcdID;
-		this.format = format;
-		this.variableSpecs = variableSpecs;
-		this.timeSpecs = timeSpecs;
-		this.geometrySpecs = geometrySpecs;
-		this.formatSpecificSpecs = formatSpecificSpecs;
-		this.simulatioName = simulationName;
-		this.contextName = contextName;
-	}
-
 	@JsonCreator
 	public ExportSpecs(@JsonProperty("vcdataIdentifier") VCDataIdentifier vcdataIdentifier, @JsonProperty("format") ExportFormat format,
 					   @JsonProperty("variableSpecs") VariableSpecs variableSpecs, @JsonProperty("timeSpecs") TimeSpecs timeSpecs,
 					   @JsonProperty("geometrySpecs") GeometrySpecs geometrySpecs, @JsonProperty("formatSpecificSpecs") FormatSpecificSpecs formatSpecificSpecs,
 					   @JsonProperty("simulationName") String simulationName, @JsonProperty("contextName") String contextName,
-					   @JsonProperty("humanReadableExportData") HumanReadableExportData humanReadableExportData) {
+					   @JsonProperty("bioModelKey")KeyValue bioModelKey, @JsonProperty("mathModelKey") KeyValue mathModelKey,
+					   @JsonProperty("mathDescriptionKey") KeyValue mathDescriptionKey) {
 		this.vcDataIdentifier = vcdataIdentifier;
 		this.format = format;
 		this.variableSpecs = variableSpecs;
@@ -74,7 +67,9 @@ public class ExportSpecs implements Serializable {
 		this.formatSpecificSpecs = formatSpecificSpecs;
 		this.simulatioName = simulationName;
 		this.contextName = contextName;
-		this.humanReadableExportData = humanReadableExportData;
+		this.bioModelKey = bioModelKey;
+		this.mathModelKey = mathModelKey;
+		this.mathDescriptionKey = mathDescriptionKey;
 	}
 
 	public String getContextName(){
@@ -164,6 +159,16 @@ public class ExportSpecs implements Serializable {
 		return vcDataIdentifier;
 	}
 
+	public KeyValue getBioModelKey() {
+		return bioModelKey;
+	}
+	public KeyValue getMathModelKey() {
+		return mathModelKey;
+	}
+	public KeyValue getMathDescriptionKey() {
+		return mathDescriptionKey;
+	}
+
 
 	/**
 	 * Insert the method's description here.
@@ -201,11 +206,4 @@ public class ExportSpecs implements Serializable {
 		System.arraycopy(specialColors, 0, displayAdapterService.getSpecialColors(), 0,specialColors.length);
 	}
 
-	public void setExportMetaData(HumanReadableExportData humanReadableExportData){
-		this.humanReadableExportData = humanReadableExportData;
-	}
-
-	public HumanReadableExportData getHumanReadableExportData(){
-		return humanReadableExportData;
-	}
 }

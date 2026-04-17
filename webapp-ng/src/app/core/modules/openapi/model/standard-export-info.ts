@@ -24,5 +24,8 @@ export interface StandardExportInfo {
     geometrySpecs?: GeometrySpecDTO;
     timeSpecs?: TimeSpecs;
     variableSpecs?: VariableSpecs;
+    bioModelKey?: string;
+    mathModelKey?: string;
+    mathDescriptionKey?: string;
 }
 

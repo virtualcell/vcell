@@ -19,8 +19,11 @@ docs/Curve.md
 docs/CurveSelectionInfo.md
 docs/DataIdentifier.md
 docs/DetailedState.md
+docs/DifferentParameterValues.md
 docs/Domain.md
 docs/ExportEvent.md
+docs/ExportFormat.md
+docs/ExportHistory.md
 docs/ExportProgressType.md
 docs/ExportResourceApi.md
 docs/ExportableDataType.md
@@ -138,8 +141,11 @@ src/main/java/org/vcell/restclient/model/Curve.java
 src/main/java/org/vcell/restclient/model/CurveSelectionInfo.java
 src/main/java/org/vcell/restclient/model/DataIdentifier.java
 src/main/java/org/vcell/restclient/model/DetailedState.java
+src/main/java/org/vcell/restclient/model/DifferentParameterValues.java
 src/main/java/org/vcell/restclient/model/Domain.java
 src/main/java/org/vcell/restclient/model/ExportEvent.java
+src/main/java/org/vcell/restclient/model/ExportFormat.java
+src/main/java/org/vcell/restclient/model/ExportHistory.java
 src/main/java/org/vcell/restclient/model/ExportProgressType.java
 src/main/java/org/vcell/restclient/model/ExportableDataType.java
 src/main/java/org/vcell/restclient/model/Extent.java

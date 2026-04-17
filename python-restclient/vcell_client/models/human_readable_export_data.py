@@ -22,6 +22,7 @@ import json
 from typing import Any, ClassVar, Dict, List, Optional
 from pydantic import BaseModel, StrictBool, StrictInt, StrictStr
 from pydantic import Field
+from vcell_client.models.different_parameter_values import DifferentParameterValues
 try:
     from typing import Self
 except ImportError:
@@ -34,7 +35,7 @@ class HumanReadableExportData(BaseModel):
     simulation_name: Optional[StrictStr] = Field(default=None, alias="simulationName")
     biomodel_name: Optional[StrictStr] = Field(default=None, alias="biomodelName")
     application_name: Optional[StrictStr] = Field(default=None, alias="applicationName")
-    different_parameter_values: Optional[List[StrictStr]] = Field(default=None, alias="differentParameterValues")
+    different_parameter_values: Optional[List[DifferentParameterValues]] = Field(default=None, alias="differentParameterValues")
     application_type: Optional[StrictStr] = Field(default=None, alias="applicationType")
     server_saved_file_name: Optional[StrictStr] = Field(default=None, alias="serverSavedFileName")
     non_spatial: Optional[StrictBool] = Field(default=None, alias="nonSpatial")
@@ -80,6 +81,13 @@ class HumanReadableExportData(BaseModel):
             },
             exclude_none=True,
         )
+        # override the default output from pydantic by calling `to_dict()` of each item in different_parameter_values (list)
+        _items = []
+        if self.different_parameter_values:
+            for _item in self.different_parameter_values:
+                if _item:
+                    _items.append(_item.to_dict())
+            _dict['differentParameterValues'] = _items
         return _dict
 
     @classmethod
@@ -100,7 +108,7 @@ class HumanReadableExportData(BaseModel):
             "simulationName": obj.get("simulationName"),
             "biomodelName": obj.get("biomodelName"),
             "applicationName": obj.get("applicationName"),
-            "differentParameterValues": obj.get("differentParameterValues"),
+            "differentParameterValues": [DifferentParameterValues.from_dict(_item) for _item in obj.get("differentParameterValues")] if obj.get("differentParameterValues") is not None else None,
             "applicationType": obj.get("applicationType"),
             "serverSavedFileName": obj.get("serverSavedFileName"),
             "nonSpatial": obj.get("nonSpatial"),

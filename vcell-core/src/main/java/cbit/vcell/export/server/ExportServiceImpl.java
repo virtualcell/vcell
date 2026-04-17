@@ -9,20 +9,15 @@
  */
 
 package cbit.vcell.export.server;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Collection;
-import java.util.zip.DataFormatException;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
+import cbit.rmi.event.ExportEvent;
 import cbit.rmi.event.ExportEventController;
+import cbit.vcell.export.nrrd.NrrdInfo;
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.simdata.DataServerImpl;
+import cbit.vcell.simdata.OutputContext;
+import cbit.vcell.solver.VCSimulationDataIdentifier;
+import com.google.common.io.Files;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.util.ClientTaskStatusSupport;
@@ -30,14 +25,15 @@ import org.vcell.util.DataAccessException;
 import org.vcell.util.UserCancelException;
 import org.vcell.util.document.User;
 
-import com.google.common.io.Files;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Collection;
+import java.util.zip.DataFormatException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
-import cbit.rmi.event.ExportEvent;
-import cbit.vcell.export.nrrd.NrrdInfo;
-import cbit.vcell.resource.PropertyLoader;
-import cbit.vcell.simdata.DataServerImpl;
-import cbit.vcell.simdata.OutputContext;
-import cbit.vcell.solver.VCSimulationDataIdentifier;
+
 
 /**
  * This type was created in VisualAge.
@@ -204,7 +200,7 @@ private static ExportEvent makeRemoteFile(String fileFormat, String exportBaseDi
 			if (nrrdInfos[i].isHasData()) {
 				// nrrdInfo 'header' file contains either just the header or both the header and data together
 				ZipEntry zipEntry = new ZipEntry(nrrdInfos[i].getCanonicalFilename((nrrdInfos[i].isSeparateHeader()?true:false)));
-				zipOut.putNextEntry(zipEntry);				
+				zipOut.putNextEntry(zipEntry);
 				fileDataContainerManager.writeAndFlush(nrrdInfos[i].getHeaderFileID(), zipOut);
 				if (nrrdInfos[i].isSeparateHeader()) {
 						// The data was not saved with the 'header' file so save it separately
@@ -222,7 +218,7 @@ private static ExportEvent makeRemoteFile(String fileFormat, String exportBaseDi
 	} finally {
 		zipOut.close();
 	}
-	
+
 	if (exportValid) {
 		if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
 		URL url = new URL(exportBaseURL + zipFile.getName());
@@ -267,7 +263,7 @@ private static ExportEvent saveResultsToRemoteFile(String fileFormat, String exp
 				}
 			}
 			zipOut.close();
-			
+
 			if (exportValid) {
 				if (lg.isTraceEnabled()) lg.trace("ExportServiceImpl.makeRemoteFile(): Successfully exported to file: " + zipFile.getName());
 				URL url = new URL(exportBaseURL + zipFile.getName());
@@ -303,7 +299,7 @@ private static ExportEvent makeRemoteFile_Unzipped(String fileFormat, String exp
 		//if there are more export outputs, loops through the second till the last.
 		for (int i=1;i<exportOutputs.length;i++)
 		{
-			if (exportOutputs[i].isValid()) 
+			if (exportOutputs[i].isValid())
 			{
 				File moreFile = new File(exportBaseDir + newExportJob.getExportJobID()+"_"+ i + extStr);
 				FileOutputStream moreFileOut = new FileOutputStream(moreFile);

@@ -2,8 +2,10 @@ package org.vcell.restq.handlers;
 
 import cbit.rmi.event.ExportEvent;
 import cbit.vcell.export.server.*;
+import cbit.vcell.exports.ExportHistory;
 import cbit.vcell.math.Variable;
 import cbit.vcell.math.VariableType;
+import cbit.vcell.exports.ExportHistoryDBRep;
 import cbit.vcell.simdata.SpatialSelection;
 import cbit.vcell.solver.AnnotatedFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -24,14 +26,14 @@ import org.vcell.restq.services.SimulationRestService;
 import org.vcell.restq.services.UserRestService;
 import org.vcell.util.DataAccessException;
 import org.vcell.util.ObjectNotFoundException;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.User;
 
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 
 @Path("/api/v1/export")
 public class ExportResource {
@@ -50,11 +52,11 @@ public class ExportResource {
     @Path("/history")
     @GET
     @RolesAllowed("user")
-    @Operation(operationId = "getExportHistory", hidden = true)
-    public ExportHistory getExportHistory() throws DataAccessWebException, NotAuthenticatedWebException {
+    @Operation(operationId = "getExportHistory")
+    public List<ExportHistory> getExportHistory(@QueryParam("pageNumber") @DefaultValue("0") Optional<Integer> pageNumber) throws DataAccessWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
         try {
-            return exportService.getExportHistory(user);
+            return exportService.getExportHistory(user, pageNumber.orElseGet(() -> 0));
         } catch (DataAccessException e) {
             throw new DataAccessWebException(e.getMessage(), e);
         }
@@ -64,13 +66,9 @@ public class ExportResource {
     @DELETE
     @RolesAllowed("user")
     @Operation(operationId = "deleteExportHistory", hidden = true)
-    public ExportHistory deleteExportHistoryEntry() throws DataAccessWebException, NotAuthenticatedWebException {
+    public void deleteExportHistoryEntry() throws DataAccessWebException, NotAuthenticatedWebException {
         User user = userRestService.getUserFromIdentity(securityIdentity);
-        try {
-            return exportService.getExportHistory(user);
-        } catch (DataAccessException e) {
-            throw new DataAccessWebException(e.getMessage(), e);
-        }
+        return;
     }
 
     @Path("/status")
@@ -132,7 +130,8 @@ public class ExportResource {
             ArrayList<AnnotatedFunctionDTO> outputContext, String contextName,
             String simulationName, String simulationKey, int simulationJob,
             GeometrySpecDTO geometrySpecs,
-            TimeSpecs timeSpecs, VariableSpecs variableSpecs
+            TimeSpecs timeSpecs, VariableSpecs variableSpecs,
+            KeyValue bioModelKey, KeyValue mathModelKey, KeyValue mathDescriptionKey
     ){ }
 
     public record AnnotatedFunctionDTO(
@@ -143,10 +142,6 @@ public class ExportResource {
             VariableType functionType,
             AnnotatedFunction.FunctionCategory category
     ) { }
-
-    public record ExportHistory(
-            String exportHistory
-    ){ }
 
     public record GeometrySpecDTO(
             SpatialSelection[] selections, int axis, int sliceNumber, ExportEnums.GeometryMode geometryMode

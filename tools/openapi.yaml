@@ -461,6 +461,45 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/export/history:
+    get:
+      tags:
+      - Export Resource
+      operationId: getExportHistory
+      parameters:
+      - name: pageNumber
+        in: query
+        required: false
+        schema:
+          format: int32
+          default: "0"
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExportHistory'
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+      security:
+      - openId:
+        - user
   /api/v1/export/status:
     get:
       tags:
@@ -2545,6 +2584,15 @@ components:
       - WORKEREVENT_FAILURE
       - JOB_FAILED
       type: string
+    DifferentParameterValues:
+      type: object
+      properties:
+        parameterName:
+          type: string
+        originalValue:
+          type: string
+        changedValue:
+          type: string
     Domain:
       type: object
       properties:
@@ -2573,6 +2621,57 @@ components:
           type: string
         humanReadableData:
           $ref: '#/components/schemas/HumanReadableExportData'
+    ExportFormat:
+      enum:
+      - CSV
+      - HDF5
+      - QUICKTIME
+      - GIF
+      - ANIMATED_GIF
+      - FORMAT_JPEG
+      - NRRD
+      - UCD
+      - VTK_UNSTRUCT
+      - VTK_IMAGE
+      - PLY
+      - N5
+      type: string
+    ExportHistory:
+      type: object
+      properties:
+        exportJobID:
+          format: int64
+          type: integer
+        simulationRef:
+          $ref: '#/components/schemas/KeyValue'
+        bioModelRef:
+          $ref: '#/components/schemas/KeyValue'
+        mathModelRef:
+          $ref: '#/components/schemas/KeyValue'
+        mathRef:
+          $ref: '#/components/schemas/KeyValue'
+        exportFormat:
+          $ref: '#/components/schemas/ExportFormat'
+        exportDate:
+          $ref: '#/components/schemas/Instant'
+        uri:
+          type: string
+        simName:
+          type: string
+        modelName:
+          type: string
+        variables:
+          type: array
+          items:
+            type: string
+        startTimeValue:
+          format: double
+          type: number
+        endTimeValue:
+          format: double
+          type: number
+        eventStatus:
+          $ref: '#/components/schemas/ExportProgressType'
     ExportProgressType:
       enum:
       - EXPORT_START
@@ -2848,7 +2947,7 @@ components:
         differentParameterValues:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/DifferentParameterValues'
         applicationType:
           type: string
         serverSavedFileName:
@@ -3329,6 +3428,12 @@ components:
           $ref: '#/components/schemas/TimeSpecs'
         variableSpecs:
           $ref: '#/components/schemas/VariableSpecs'
+        bioModelKey:
+          $ref: '#/components/schemas/KeyValue'
+        mathModelKey:
+          $ref: '#/components/schemas/KeyValue'
+        mathDescriptionKey:
+          $ref: '#/components/schemas/KeyValue'
     Status:
       enum:
       - UNKNOWN

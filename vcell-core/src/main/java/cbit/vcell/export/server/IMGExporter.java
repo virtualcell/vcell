@@ -95,7 +95,9 @@ public static void main(String [] args) throws Exception{
 	MovieSpecs movieSpecs = new MovieSpecs(
 		1000.0, false, new DisplayPreferences[] {displayPreferences}, ExportFormat.FORMAT_JPEG, ExportEnums.MirroringMethod.NO_MIRRORING, 1, 1, 1,///
 		ImagePaneModel.MESH_MODE, FormatSpecificSpecs.CODEC_JPEG, 1.0f, false,FormatSpecificSpecs.PARTICLE_SELECT);
-	ExportSpecs exportSpecs = new ExportSpecs(vcdID, ExportFormat.QUICKTIME, variableSpecs, timeSpecs, geometrySpecs, movieSpecs,"IMGExporterTest",null);
+	ExportSpecs exportSpecs = new ExportSpecs(vcdID, ExportFormat.QUICKTIME, variableSpecs, timeSpecs,
+			geometrySpecs, movieSpecs,"IMGExporterTest",null,
+			null, null, null);
 	exportServiceImpl.makeRemoteFile(null, user, dataServerImpl, exportSpecs);
 }
 

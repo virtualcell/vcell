@@ -49,19 +49,6 @@ public class N5Specs extends FormatSpecificSpecs implements Serializable {
 		GZIP
 	}
 
-/**
- * TextSpecs constructor comment.
- */
-	public N5Specs(ExportEnums.ExportableDataType dataType, ExportFormat format,
-                   CompressionLevel compressionLevel, String dataSetName) {
-		super("N5");
-		this.formatType = format;
-		this.dataType = dataType;
-		this.compression = compressionLevel;
-		this.dataSetName = dataSetName;
-		this.subVolumeMapping = null; // it gets set within the HumanReadableExportData
-	}
-
 	@JsonCreator
 	public N5Specs(@JsonProperty("dataType") ExportEnums.ExportableDataType dataType, @JsonProperty("format") ExportFormat format,
                    @JsonProperty("dataSetName") String dataSetName, @JsonProperty("subVolumeMapping") Map<Integer, String> subVolumeMapping) {

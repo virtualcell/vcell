@@ -18,6 +18,7 @@ import org.vcell.restclient.ApiResponse;
 import org.vcell.restclient.Pair;
 
 import org.vcell.restclient.model.ExportEvent;
+import org.vcell.restclient.model.ExportHistory;
 import org.vcell.restclient.model.N5ExportRequest;
 import org.vcell.restclient.model.VCellHTTPError;
 
@@ -215,6 +216,88 @@ public class ExportResourceApi {
     String localVarQueryParameterBaseName;
     localVarQueryParameterBaseName = "timestamp";
     localVarQueryParams.addAll(ApiClient.parameterToPairs("timestamp", timestamp));
+
+    if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
+      StringJoiner queryJoiner = new StringJoiner("&");
+      localVarQueryParams.forEach(p -> queryJoiner.add(p.getName() + '=' + p.getValue()));
+      if (localVarQueryStringJoiner.length() != 0) {
+        queryJoiner.add(localVarQueryStringJoiner.toString());
+      }
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath + '?' + queryJoiner.toString()));
+    } else {
+      localVarRequestBuilder.uri(URI.create(memberVarBaseUri + localVarPath));
+    }
+
+    localVarRequestBuilder.header("Accept", "application/json");
+
+    localVarRequestBuilder.method("GET", HttpRequest.BodyPublishers.noBody());
+    if (memberVarReadTimeout != null) {
+      localVarRequestBuilder.timeout(memberVarReadTimeout);
+    }
+    if (memberVarInterceptor != null) {
+      memberVarInterceptor.accept(localVarRequestBuilder);
+    }
+    return localVarRequestBuilder;
+  }
+  /**
+   * 
+   * 
+   * @param pageNumber  (optional)
+   * @return List&lt;ExportHistory&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public List<ExportHistory> getExportHistory(Integer pageNumber) throws ApiException {
+    ApiResponse<List<ExportHistory>> localVarResponse = getExportHistoryWithHttpInfo(pageNumber);
+    return localVarResponse.getData();
+  }
+
+  /**
+   * 
+   * 
+   * @param pageNumber  (optional)
+   * @return ApiResponse&lt;List&lt;ExportHistory&gt;&gt;
+   * @throws ApiException if fails to make API call
+   */
+  public ApiResponse<List<ExportHistory>> getExportHistoryWithHttpInfo(Integer pageNumber) throws ApiException {
+    HttpRequest.Builder localVarRequestBuilder = getExportHistoryRequestBuilder(pageNumber);
+    try {
+      HttpResponse<InputStream> localVarResponse = memberVarHttpClient.send(
+          localVarRequestBuilder.build(),
+          HttpResponse.BodyHandlers.ofInputStream());
+      if (memberVarResponseInterceptor != null) {
+        memberVarResponseInterceptor.accept(localVarResponse);
+      }
+      try {
+        if (localVarResponse.statusCode()/ 100 != 2) {
+          throw getApiException("getExportHistory", localVarResponse);
+        }
+        return new ApiResponse<List<ExportHistory>>(
+          localVarResponse.statusCode(),
+          localVarResponse.headers().map(),
+          localVarResponse.body() == null ? null : memberVarObjectMapper.readValue(localVarResponse.body(), new TypeReference<List<ExportHistory>>() {}) // closes the InputStream
+        );
+      } finally {
+      }
+    } catch (IOException e) {
+      throw new ApiException(e);
+    }
+    catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new ApiException(e);
+    }
+  }
+
+  private HttpRequest.Builder getExportHistoryRequestBuilder(Integer pageNumber) throws ApiException {
+
+    HttpRequest.Builder localVarRequestBuilder = HttpRequest.newBuilder();
+
+    String localVarPath = "/api/v1/export/history";
+
+    List<Pair> localVarQueryParams = new ArrayList<>();
+    StringJoiner localVarQueryStringJoiner = new StringJoiner("&");
+    String localVarQueryParameterBaseName;
+    localVarQueryParameterBaseName = "pageNumber";
+    localVarQueryParams.addAll(ApiClient.parameterToPairs("pageNumber", pageNumber));
 
     if (!localVarQueryParams.isEmpty() || localVarQueryStringJoiner.length() != 0) {
       StringJoiner queryJoiner = new StringJoiner("&");

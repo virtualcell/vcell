@@ -9,13 +9,14 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { DifferentParameterValues } from './different-parameter-values';
 
 
 export interface HumanReadableExportData { 
     simulationName?: string;
     biomodelName?: string;
     applicationName?: string;
-    differentParameterValues?: Array<string>;
+    differentParameterValues?: Array<DifferentParameterValues>;
     applicationType?: string;
     serverSavedFileName?: string;
     nonSpatial?: boolean;

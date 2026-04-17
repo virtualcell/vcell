@@ -19,8 +19,11 @@ docs/Curve.md
 docs/CurveSelectionInfo.md
 docs/DataIdentifier.md
 docs/DetailedState.md
+docs/DifferentParameterValues.md
 docs/Domain.md
 docs/ExportEvent.md
+docs/ExportFormat.md
+docs/ExportHistory.md
 docs/ExportProgressType.md
 docs/ExportResourceApi.md
 docs/ExportableDataType.md
@@ -136,8 +139,11 @@ vcell_client/models/curve.py
 vcell_client/models/curve_selection_info.py
 vcell_client/models/data_identifier.py
 vcell_client/models/detailed_state.py
+vcell_client/models/different_parameter_values.py
 vcell_client/models/domain.py
 vcell_client/models/export_event.py
+vcell_client/models/export_format.py
+vcell_client/models/export_history.py
 vcell_client/models/export_progress_type.py
 vcell_client/models/exportable_data_type.py
 vcell_client/models/extent.py
