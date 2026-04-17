@@ -286,7 +286,7 @@ jobs:
     needs: [setup, tag-and-push]
     steps:
     - name: Install Apptainer
-      uses: apptainer/setup-apptainer@v2
+      uses: eWaterCycle/setup-apptainer@v2
 
     - name: Log in to GHCR (for pull and push)
       run: apptainer registry login --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} oras://ghcr.io
