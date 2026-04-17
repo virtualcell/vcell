@@ -11,6 +11,7 @@
 package cbit.vcell.client.desktop.biomodel;
 
 import java.awt.Component;
+import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.MouseEvent;
@@ -96,6 +97,13 @@ public class DocumentEditorTreeCellEditor extends DefaultTreeCellEditor {
 				}
 			}
 		}
+		if (!(this.realEditor instanceof DefaultCellEditor defaultCellEditor)) throw new IllegalStateException("This class needs to extend DefaultTreeCellEditor");
+		defaultCellEditor.getComponent().addFocusListener(new FocusAdapter() {
+			@Override
+			public void focusLost(FocusEvent e) {
+				DocumentEditorTreeCellEditor.this.cancelCellEditing();
+			}
+		});
 		return component;
 	}
 }
