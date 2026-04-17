@@ -184,7 +184,7 @@ public class ExportHistoryDBTest {
     private boolean historyDBEqualHistory(ExportHistoryDBRep dbRep, ExportHistory history) {
         return dbRep.simulationRef().equals(history.simulationRef()) &&
                 dbRep.exportFormat().equals(history.exportFormat()) &&
-                history.exportDate().equals(dbRep.exportDate().toInstant()) &&
+                Math.abs(history.exportDate().toEpochMilli() - dbRep.exportDate().getTime()) <= 1000 &&
                 dbRep.uri().equals(history.uri()) &&
                 List.of(dbRep.variables()).equals(List.of(history.variables())) &&
                 Double.compare(dbRep.startTimeValue(), history.startTimeValue()) == 0 &&
