@@ -279,3 +279,32 @@ jobs:
     - name: Setup tmate session
       uses: mxschmitt/action-tmate@v3
       if: ${{ failure() }}
+
+  build-and-publish-sif:
+    name: Build and publish Apptainer SIF images
+    runs-on: ubuntu-22.04
+    needs: [setup, tag-and-push]
+    steps:
+    - name: Install Apptainer
+      uses: apptainer/setup-apptainer@v2
+
+    - name: Log in to GHCR (for pull and push)
+      run: apptainer registry login --username ${{ github.actor }} --password ${{ secrets.GITHUB_TOKEN }} oras://ghcr.io
+
+    - name: Build, validate, and publish SIF images
+      run: |
+        set -eux
+        REPO="${{ needs.setup.outputs.vcell_repo_namespace }}"
+        TAG="${{ needs.setup.outputs.friendly_tag }}"
+        for IMG in vcell-opt vcell-batch; do
+          SIF_NAME="$(echo "${REPO}/${IMG}_singularity:${TAG}" | tr '/:' '__').img"
+          echo "Building SIF for ${REPO}/${IMG}:${TAG} -> ${SIF_NAME}"
+          apptainer build "${SIF_NAME}" "docker://${REPO}/${IMG}:${TAG}"
+          apptainer inspect "${SIF_NAME}" > /dev/null
+          echo "Publishing ${SIF_NAME} to oras://${REPO}/${IMG}_singularity:${TAG}"
+          apptainer push "${SIF_NAME}" "oras://${REPO}/${IMG}_singularity:${TAG}"
+        done
+
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+      if: ${{ failure() }}

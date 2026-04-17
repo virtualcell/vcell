@@ -44,10 +44,18 @@ container_env+="--env secondary_datadir_external=/share/apps/vcell7/users "
 container_env+="--env htclogdir_external=/share/apps/vcell3/htclogs "
 container_env+="--env softwareVersion=Rel_Version_7.6.0_build_28 "
 container_env+="--env serverid=REL "
-solver_docker_name=ghcr.io/virtualcell/vcell-fvsolver:v0.9.4
-solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} docker://${solver_docker_name}"
-batch_docker_name=ghcr.io/virtualcell/vcell-batch:7.6.0.43
-batch_container_prefix="singularity run --containall ${container_bindings} ${container_env} docker://${batch_docker_name}"
+solver_sif=/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-fvsolver_singularity_v0.9.4.img
+if [ ! -f "$solver_sif" ]; then
+    echo "ERROR: missing SIF $solver_sif" >&2
+    exit 1
+fi
+solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} $solver_sif"
+batch_sif=/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-batch_singularity_7.6.0.43.img
+if [ ! -f "$batch_sif" ]; then
+    echo "ERROR: missing SIF $batch_sif" >&2
+    exit 1
+fi
+batch_container_prefix="singularity run --containall ${container_bindings} ${container_env} $batch_sif"
 
 
 sendFailureMsg() {
