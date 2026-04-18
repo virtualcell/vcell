@@ -195,7 +195,6 @@ services:
       - mongodb_database=test
     ports:
       - "${VCELL_DEBUG_PORT_VCELL_SUBMIT}:8000" # java remote debugging
-      - "8877"
     volumes:
       - "${VCELL_SIMDATADIR_HOST}:/simdata"
       - "${VCELL_SIMDATADIR_SECONDARY_HOST}:/simdata_secondary"

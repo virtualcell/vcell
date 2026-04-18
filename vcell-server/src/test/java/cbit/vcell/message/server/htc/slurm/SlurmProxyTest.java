@@ -77,14 +77,15 @@ public class SlurmProxyTest {
 		setProperty(PropertyLoader.simulationPreprocessor, "JavaPreprocessor64");
 
 		setProperty(PropertyLoader.primarySimDataDirInternalProperty, "/share/apps/vcell3/users");
-		setProperty(PropertyLoader.htc_vcellopt_docker_name, "ghcr.io/virtualcell/vcell-opt:7.6.0.43");
+		setProperty(PropertyLoader.htc_vcellopt_apptainer_image, "oras://ghcr.io/virtualcell/vcell-opt_singularity:7.6.0.43");
+		setProperty(PropertyLoader.htc_singularity_imagedir, "/share/apps/vcell3/singularityImages");
 
 		setProperty(PropertyLoader.htc_vcellfvsolver_solver_list, "Smoldyn,SundialsPDE");
-		setProperty(PropertyLoader.htc_vcellfvsolver_docker_name, "ghcr.io/virtualcell/vcell-fvsolver:v0.9.4");
+		setProperty(PropertyLoader.htc_vcellfvsolver_apptainer_image, "oras://ghcr.io/virtualcell/vcell-fvsolver_singularity:v0.9.4");
 		setProperty(PropertyLoader.htc_vcellsolvers_solver_list, "HybridMilstein,StochGibson,Smoldyn,MovingBoundary,SundialsPDE,CombinedSundials,NFSim");
-		setProperty(PropertyLoader.htc_vcellsolvers_docker_name, "ghcr.io/virtualcell/vcell-solvers:v0.8.1.2");
+		setProperty(PropertyLoader.htc_vcellsolvers_apptainer_image, "oras://ghcr.io/virtualcell/vcell-solvers_singularity:v0.8.1.2");
 		setProperty(PropertyLoader.htc_vcellbatch_solver_list, "RungeKuttaFehlberg,HybridMilstein,StochGibson,Langevin,AdamsMoulton,Smoldyn,MovingBoundary,SundialsPDE,CombinedSundials,NFSim");
-		setProperty(PropertyLoader.htc_vcellbatch_docker_name, "ghcr.io/virtualcell/vcell-batch:7.6.0.43");
+		setProperty(PropertyLoader.htc_vcellbatch_apptainer_image, "oras://ghcr.io/virtualcell/vcell-batch_singularity:7.6.0.43");
 
 		setProperty(PropertyLoader.htcPowerUserMemoryFloorMB, "51200");
 		setProperty(PropertyLoader.htcMinMemoryMB, "4096");
@@ -289,12 +290,12 @@ public class SlurmProxyTest {
 
 	@Test
 	public void testSimJobScriptLangevinBatch() throws IOException, XmlParseException, ExpressionException {
-		setProperty(PropertyLoader.htc_vcellopt_docker_name, "ghcr.io/virtualcell/vcell-opt:7.7.0.39");
+		setProperty(PropertyLoader.htc_vcellopt_apptainer_image, "oras://ghcr.io/virtualcell/vcell-opt_singularity:7.7.0.39");
 		setProperty(PropertyLoader.htcNodeList, "mantis-040");
 		setProperty(PropertyLoader.vcellSoftwareVersion, "Rel_Version_7.7.0_build_39");
 		setProperty(PropertyLoader.vcellServerIDProperty,"TEST2");
 		setProperty(PropertyLoader.jmsSimHostExternal, "k8s-wn-01.cam.uchc.edu");
-		setProperty(PropertyLoader.htc_vcellbatch_docker_name, "ghcr.io/virtualcell/vcell-batch:7.7.0.39");
+		setProperty(PropertyLoader.htc_vcellbatch_apptainer_image, "oras://ghcr.io/virtualcell/vcell-batch_singularity:7.7.0.39");
 
 		String simTaskResourcePath = "slurm_fixtures/langevin/SimID_999999999_0__0.simtask.xml";
 		String JOB_NAME = "V_TEST2_999999999_0_0";

@@ -31,7 +31,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 
 
@@ -59,10 +60,11 @@ class DummyExportRequestListenerMQ implements ExportMQInterface {
 @IfBuildProperty(name = "vcell.exporter", stringValue = "true")
 public class ExportRequestListenerMQ implements ExportMQInterface {
     private static final Logger logger = LogManager.getLogger(ExportRequestListenerMQ.class);
-    private final ExecutorService threadPoolExecutor = Executors.newFixedThreadPool(10);
     private DataServerImpl dataServer;
     private TimeUnit waitUnit = TimeUnit.MINUTES;
 
+    @Inject
+    org.eclipse.microprofile.context.ManagedExecutor managedExecutor;
     @Inject
     ServerExportEventController exportStatusCreator;
     @Inject
@@ -118,7 +120,7 @@ public class ExportRequestListenerMQ implements ExportMQInterface {
                     } catch (SQLException | DataAccessException e) {
                         throw new RuntimeException(e);
                     }
-                }, threadPoolExecutor)
+                }, managedExecutor)
                 .orTimeout(15, waitUnit);
 
         if (handleFailure){

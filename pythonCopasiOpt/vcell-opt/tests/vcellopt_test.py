@@ -1,6 +1,8 @@
 import json
+import multiprocessing
 import os
 import tempfile
+import time
 from pathlib import Path
 from typing import List
 
@@ -42,10 +44,9 @@ def test_run() -> None:
     # define parameter estimation report format, note that header and footer are omitted to ease parsing
     #
     basico.add_report('parest report', task=basico.T.PARAMETER_ESTIMATION,
+                      separator='\t',
                       body=['CN=Root,Vector=TaskList[Parameter Estimation],Problem=Parameter Estimation,Reference=Function Evaluations',
-                            '\\\t',
                             'CN=Root,Vector=TaskList[Parameter Estimation],Problem=Parameter Estimation,Reference=Best Value',
-                            '\\\t',
                             'CN=Root,Vector=TaskList[Parameter Estimation],Problem=Parameter Estimation,Reference=Best Parameters'
                             ],
                       )
@@ -55,7 +56,8 @@ def test_run() -> None:
         param_names: List[str] = [param_desc.name for param_desc in vcell_opt_problem.parameter_description_list]
         f_report_file.write(json.dumps(param_names)+"\n")
 
-    basico.assign_report("parest report", task=basico.T.PARAMETER_ESTIMATION, filename=str(report_file), append=True)
+    basico.assign_report("parest report", task=basico.T.PARAMETER_ESTIMATION, filename=str(report_file), append=True,
+                         confirm_overwrite=False)
 
     fit_items = get_fit_parameters(vcell_opt_problem)
     basico.set_fit_parameters(fit_items)
@@ -199,5 +201,65 @@ def test_solver() -> None:
     if report_file.exists():
         os.remove(report_file)
 
+    if result_file.exists():
+        os.remove(result_file)
+
+
+def _run_solver_in_subprocess(opt_file: str, report_file: str, result_file: str) -> None:
+    """Target function for multiprocessing — runs the solver in a separate process."""
+    optService.run_command(opt_file=Path(opt_file), report_file=Path(report_file), result_file=Path(result_file))
+
+
+def test_incremental_report_writing() -> None:
+    """Verify that the report file is written incrementally during optimization,
+    not buffered until completion. This requires confirm_overwrite=False in
+    basico.assign_report() (the default True causes COPASI to buffer all output).
+
+    Uses multiprocessing so the solver runs in a separate process (with its own GIL),
+    allowing the main process to monitor the report file size during execution.
+    """
+    test_data_dir = Path(__file__).resolve().parent.parent / "test_data"
+    opt_file = test_data_dir / "optproblem.json"
+    report_file = test_data_dir / "incremental_test.report"
+    result_file = test_data_dir / "incremental_test.json"
+
+    if report_file.exists():
+        os.remove(report_file)
+    if result_file.exists():
+        os.remove(result_file)
+
+    # Run the solver in a separate process
+    proc = multiprocessing.Process(
+        target=_run_solver_in_subprocess,
+        args=(str(opt_file), str(report_file), str(result_file))
+    )
+    proc.start()
+
+    # Monitor the report file size from the main process
+    file_sizes: List[int] = []
+    while proc.is_alive():
+        if report_file.exists():
+            file_sizes.append(report_file.stat().st_size)
+        time.sleep(0.01)  # 10ms polling
+
+    proc.join(timeout=30)
+    assert proc.exitcode == 0, f"Solver process failed with exit code {proc.exitcode}"
+
+    unique_sizes = sorted(set(file_sizes))
+    print(f"Sampled {len(file_sizes)} times, unique file sizes: {unique_sizes}")
+
+    # With confirm_overwrite=False, COPASI flushes progress incrementally.
+    # We expect at least 3 distinct sizes: header-only, intermediate progress, final.
+    # With confirm_overwrite=True (old behavior), we'd see only the header size
+    # until the solver finishes, then a single jump to the final size (2 unique sizes).
+    assert len(unique_sizes) >= 3, (
+        f"Expected at least 3 distinct file sizes (header, intermediate, final) "
+        f"but got {len(unique_sizes)}: {unique_sizes}. "
+        f"COPASI may be buffering output — check confirm_overwrite setting."
+    )
+
+    # Cleanup
+    if report_file.exists():
+        os.remove(report_file)
     if result_file.exists():
         os.remove(result_file)

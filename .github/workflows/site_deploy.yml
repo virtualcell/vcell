@@ -116,9 +116,15 @@ jobs:
         cd installers
         export MAC_INSTALLER=`ls *dmg`
         xcrun notarytool submit --output-format normal --no-progress --no-wait --team-id "${{ secrets.MACTEAMID }}" --apple-id "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" $MAC_INSTALLER > submit_output
+        SUBMIT_EXIT=$?
         echo "output returned by notarytool submit:"
         cat submit_output
-        cat submit_output | grep "id:" | cut -d ':' -f2 > UUID
+        cat submit_output | grep "id:" | cut -d ':' -f2 | tr -d '[:space:]' > UUID
+        if [[ $SUBMIT_EXIT != 0 || ! -s UUID ]]; then
+          echo "notarytool submit failed (exit=$SUBMIT_EXIT), no submission UUID obtained - aborting"
+          exit 1
+        fi
+        echo "submission UUID: $(cat UUID)"
         for minutes in {1..5}
         do
           sleep 60

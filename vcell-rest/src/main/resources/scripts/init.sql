@@ -76,6 +76,7 @@ CREATE TABLE vc_userlogininfo(id bigint PRIMARY KEY,userRef bigint NOT NULL REFE
 CREATE TABLE vc_metadata(id bigint PRIMARY KEY,bioModelRef bigint NOT NULL REFERENCES vc_biomodel(id) ON DELETE CASCADE,vcMetaDataLarge text ,vcMetaDataSmall varchar(4000) );
 CREATE TABLE vc_simdelfromdisk(deldate varchar(20) ,userid varchar(255) NOT NULL,userkey bigint ,simid bigint ,simpref bigint ,simdate varchar(20) ,simname varchar(255) NOT NULL,status varchar(10) ,numfiles bigint ,totalsize bigint );
 CREATE TABLE vc_useridentity(id bigint PRIMARY KEY,userRef bigint NOT NULL REFERENCES vc_userinfo(id),authSubject varchar(128) NOT NULL,authIssuer varchar(128) NOT NULL,insertDate timestamp NOT NULL);
+CREATE TABLE vc_optjob(id bigint PRIMARY KEY,ownerRef bigint NOT NULL REFERENCES vc_userinfo(id),status varchar(32) NOT NULL,optProblemFile varchar(512) NOT NULL,optOutputFile varchar(512) NOT NULL,optReportFile varchar(512) NOT NULL,htcJobId varchar(128) ,statusMessage varchar(4000) ,insertDate timestamp NOT NULL,updateDate timestamp NOT NULL);
 
 CREATE VIEW public.dual AS SELECT CAST('X' as varchar) AS dummy;
 
@@ -87,6 +88,7 @@ CREATE INDEX geom_extentref ON vc_geometry(extentRef);
 CREATE INDEX geom_imageref ON vc_geometry(imageRef);
 CREATE INDEX mathdesc_geomref ON vc_math(geometryRef);
 CREATE INDEX simcstat_simcref ON vc_simcontextstat(simContextRef);
+
 
 INSERT INTO vc_userinfo VALUES ( 0,'void','1700596370242','void@example.com','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'B9BDD75BC5382CA83D5AB82172A98D869555899C' );
 INSERT INTO vc_userinfo VALUES ( 2,'Administrator','1700596370260','Administrator@example.com','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty','empty',CURRENT_TIMESTAMP,'CD181552B879A2F29D10434D8ACF692B6C8126F9' );

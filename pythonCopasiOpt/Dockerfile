@@ -1,7 +1,8 @@
-FROM python:3.10-slim-bullseye
+FROM python:3.10-slim-bookworm
 
 RUN apt -y update && apt -y upgrade &&  \
-    apt install -y curl
+    apt install -y curl gcc python3-dev && \
+    rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /usr/local/app/vcell/installDir && \
     mkdir -p /usr/local/app/vcell/installDir/python/vcell_opt

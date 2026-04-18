@@ -110,7 +110,11 @@ public HtcSimulationWorker() {
 
 public void init() {
 	initQueueConsumer();
-	optimizationBatchServer.initOptimizationSocket();
+
+	// Start JMS queue listener for optimization requests from vcell-rest (via Artemis broker)
+	String artemisHost = PropertyLoader.getRequiredProperty(PropertyLoader.jmsArtemisHostInternal);
+	int artemisPort = Integer.parseInt(PropertyLoader.getRequiredProperty(PropertyLoader.jmsArtemisPortInternal));
+	optimizationBatchServer.initOptimizationQueue(artemisHost, artemisPort);
 }
 
 private static class PostProcessingChores {
@@ -704,13 +708,13 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.simulationPostprocessor,
 		PropertyLoader.simulationPreprocessor,
 		PropertyLoader.slurm_partition,
-		PropertyLoader.htc_vcellbatch_docker_name,
+		PropertyLoader.htc_vcellbatch_apptainer_image,
 		PropertyLoader.htc_vcellbatch_solver_list,
-		PropertyLoader.htc_vcellsolvers_docker_name,
+		PropertyLoader.htc_vcellsolvers_apptainer_image,
 		PropertyLoader.htc_vcellsolvers_solver_list,
-		PropertyLoader.htc_vcellbatch_docker_name,
+		PropertyLoader.htc_vcellbatch_apptainer_image,
 		PropertyLoader.htc_vcellbatch_solver_list,
-		PropertyLoader.htc_vcellopt_docker_name,
+		PropertyLoader.htc_vcellopt_apptainer_image,
 		PropertyLoader.slurm_singularity_module_name,
 		PropertyLoader.slurm_reservation,
 		PropertyLoader.slurm_qos,

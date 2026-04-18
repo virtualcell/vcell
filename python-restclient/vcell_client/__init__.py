@@ -25,6 +25,7 @@ from vcell_client.api.field_data_resource_api import FieldDataResourceApi
 from vcell_client.api.geometry_resource_api import GeometryResourceApi
 from vcell_client.api.hello_world_api import HelloWorldApi
 from vcell_client.api.math_model_resource_api import MathModelResourceApi
+from vcell_client.api.optimization_resource_api import OptimizationResourceApi
 from vcell_client.api.publication_resource_api import PublicationResourceApi
 from vcell_client.api.simulation_resource_api import SimulationResourceApi
 from vcell_client.api.solver_resource_api import SolverResourceApi
@@ -55,6 +56,11 @@ from vcell_client.models.biomodel_ref import BiomodelRef
 from vcell_client.models.composite_curve import CompositeCurve
 from vcell_client.models.control_point_curve import ControlPointCurve
 from vcell_client.models.coordinate import Coordinate
+from vcell_client.models.copasi_optimization_method import CopasiOptimizationMethod
+from vcell_client.models.copasi_optimization_method_optimization_method_type import CopasiOptimizationMethodOptimizationMethodType
+from vcell_client.models.copasi_optimization_parameter import CopasiOptimizationParameter
+from vcell_client.models.copasi_optimization_parameter_data_type import CopasiOptimizationParameterDataType
+from vcell_client.models.copasi_optimization_parameter_param_type import CopasiOptimizationParameterParamType
 from vcell_client.models.curve import Curve
 from vcell_client.models.curve_selection_info import CurveSelectionInfo
 from vcell_client.models.data_identifier import DataIdentifier
@@ -89,10 +95,19 @@ from vcell_client.models.math_type import MathType
 from vcell_client.models.mathmodel_ref import MathmodelRef
 from vcell_client.models.model_type import ModelType
 from vcell_client.models.n5_export_request import N5ExportRequest
+from vcell_client.models.opt_job_status import OptJobStatus
+from vcell_client.models.opt_problem import OptProblem
+from vcell_client.models.opt_progress_item import OptProgressItem
+from vcell_client.models.opt_progress_report import OptProgressReport
+from vcell_client.models.opt_result_set import OptResultSet
+from vcell_client.models.optimization_job_status import OptimizationJobStatus
 from vcell_client.models.origin import Origin
+from vcell_client.models.parameter_description import ParameterDescription
 from vcell_client.models.publication import Publication
 from vcell_client.models.publication_info import PublicationInfo
 from vcell_client.models.publish_models_request import PublishModelsRequest
+from vcell_client.models.reference_variable import ReferenceVariable
+from vcell_client.models.reference_variable_reference_variable_type import ReferenceVariableReferenceVariableType
 from vcell_client.models.specialclaim import SPECIALCLAIM
 from vcell_client.models.sampled_curve import SampledCurve
 from vcell_client.models.scheduler_status import SchedulerStatus
@@ -127,5 +142,7 @@ from vcell_client.models.variable_domain import VariableDomain
 from vcell_client.models.variable_mode import VariableMode
 from vcell_client.models.variable_specs import VariableSpecs
 from vcell_client.models.variable_type import VariableType
+from vcell_client.models.vcellopt import Vcellopt
+from vcell_client.models.vcellopt_status import VcelloptStatus
 from vcell_client.models.version import Version
 from vcell_client.models.version_flag import VersionFlag

@@ -1538,6 +1538,158 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VCellHTTPError'
+  /api/v1/optimization:
+    get:
+      tags:
+      - Optimization Resource
+      summary: List optimization jobs for the authenticated user
+      operationId: listOptimizationJobs
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OptimizationJobStatus'
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+      security:
+      - openId:
+        - user
+    post:
+      tags:
+      - Optimization Resource
+      summary: Submit a new parameter estimation optimization job
+      operationId: submitOptimization
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OptProblem'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptimizationJobStatus'
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+      security:
+      - openId:
+        - user
+  /api/v1/optimization/{optId}:
+    get:
+      tags:
+      - Optimization Resource
+      summary: "Get status, progress, or results of an optimization job"
+      operationId: getOptimizationStatus
+      parameters:
+      - name: optId
+        in: path
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptimizationJobStatus'
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+      security:
+      - openId:
+        - user
+  /api/v1/optimization/{optId}/stop:
+    post:
+      tags:
+      - Optimization Resource
+      summary: Stop a running optimization job
+      operationId: stopOptimization
+      parameters:
+      - name: optId
+        in: path
+        required: true
+        schema:
+          format: int64
+          type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OptimizationJobStatus'
+        "401":
+          description: Not Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "403":
+          description: Not Allowed
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+      security:
+      - openId:
+        - user
   /api/v1/publications:
     get:
       tags:
@@ -2404,6 +2556,63 @@ components:
         z:
           format: double
           type: number
+    CopasiOptimizationMethod:
+      type: object
+      properties:
+        optimizationMethodType:
+          $ref: '#/components/schemas/CopasiOptimizationMethodOptimizationMethodType'
+        optimizationParameter:
+          type: array
+          items:
+            $ref: '#/components/schemas/CopasiOptimizationParameter'
+    CopasiOptimizationMethodOptimizationMethodType:
+      enum:
+      - SRES
+      - evolutionaryProgram
+      - geneticAlgorithm
+      - geneticAlgorithmSR
+      - hookeJeeves
+      - levenbergMarquardt
+      - nelderMead
+      - particleSwarm
+      - praxis
+      - randomSearch
+      - simulatedAnnealing
+      - steepestDescent
+      - truncatedNewton
+      type: string
+    CopasiOptimizationParameter:
+      type: object
+      properties:
+        dataType:
+          $ref: '#/components/schemas/CopasiOptimizationParameterDataType'
+        paramType:
+          $ref: '#/components/schemas/CopasiOptimizationParameterParamType'
+        value:
+          format: double
+          type: number
+    CopasiOptimizationParameterDataType:
+      enum:
+      - double
+      - int
+      type: string
+    CopasiOptimizationParameterParamType:
+      enum:
+      - coolingFactor
+      - iterationLimit
+      - numberOfGenerations
+      - numberOfIterations
+      - pf
+      - populationSize
+      - randomNumberGenerator
+      - rho
+      - scale
+      - seed
+      - startTemperature
+      - stdDeviation
+      - swarmSize
+      - tolerance
+      type: string
     Curve:
       required:
       - type
@@ -2980,6 +3189,92 @@ components:
           $ref: '#/components/schemas/ExportableDataType'
         datasetName:
           type: string
+    OptJobStatus:
+      enum:
+      - SUBMITTED
+      - QUEUED
+      - RUNNING
+      - COMPLETE
+      - FAILED
+      - STOPPED
+      type: string
+    OptProblem:
+      type: object
+      properties:
+        copasiOptimizationMethod:
+          $ref: '#/components/schemas/CopasiOptimizationMethod'
+        dataSet:
+          type: array
+          items:
+            type: array
+            items:
+              format: double
+              type: number
+        mathModelSbmlContents:
+          type: string
+        numberOfOptimizationRuns:
+          format: int32
+          type: integer
+        parameterDescriptionList:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParameterDescription'
+        referenceVariable:
+          type: array
+          items:
+            $ref: '#/components/schemas/ReferenceVariable'
+    OptProgressItem:
+      type: object
+      properties:
+        numFunctionEvaluations:
+          format: int32
+          type: integer
+        objFuncValue:
+          format: double
+          type: number
+    OptProgressReport:
+      type: object
+      properties:
+        bestParamValues:
+          type: object
+          additionalProperties:
+            format: double
+            type: number
+        progressItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/OptProgressItem'
+    OptResultSet:
+      type: object
+      properties:
+        numFunctionEvaluations:
+          format: int32
+          type: integer
+        objectiveFunction:
+          format: double
+          type: number
+        optParameterValues:
+          type: object
+          additionalProperties:
+            format: double
+            type: number
+        optProgressReport:
+          $ref: '#/components/schemas/OptProgressReport'
+    OptimizationJobStatus:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/KeyValue'
+        status:
+          $ref: '#/components/schemas/OptJobStatus'
+        statusMessage:
+          type: string
+        htcJobId:
+          type: string
+        progressReport:
+          $ref: '#/components/schemas/OptProgressReport'
+        results:
+          $ref: '#/components/schemas/Vcellopt'
     Origin:
       type: object
       properties:
@@ -2998,6 +3293,23 @@ components:
           type: number
           xml:
             attribute: true
+    ParameterDescription:
+      type: object
+      properties:
+        initialValue:
+          format: double
+          type: number
+        maxValue:
+          format: double
+          type: number
+        minValue:
+          format: double
+          type: number
+        name:
+          type: string
+        scale:
+          format: double
+          type: number
     Publication:
       type: object
       properties:
@@ -3080,6 +3392,18 @@ components:
           items:
             format: int64
             type: integer
+    ReferenceVariable:
+      type: object
+      properties:
+        referenceVariableType:
+          $ref: '#/components/schemas/ReferenceVariableReferenceVariableType'
+        varName:
+          type: string
+    ReferenceVariableReferenceVariableType:
+      enum:
+      - dependent
+      - independent
+      type: string
     SPECIAL_CLAIM:
       enum:
       - admins
@@ -3538,6 +3862,24 @@ components:
           type: string
         typeName:
           type: string
+    Vcellopt:
+      type: object
+      properties:
+        optProblem:
+          $ref: '#/components/schemas/OptProblem'
+        optResultSet:
+          $ref: '#/components/schemas/OptResultSet'
+        status:
+          $ref: '#/components/schemas/VcelloptStatus'
+        statusMessage:
+          type: string
+    VcelloptStatus:
+      enum:
+      - complete
+      - failed
+      - queued
+      - running
+      type: string
     Version:
       type: object
       properties:

@@ -27,8 +27,12 @@ container_bindings+="--bind /scratch/vcell:/solvertmp "
 container_bindings+="--bind /share/apps/vcell3/htclogs:/htclogs "
 container_bindings+="--bind /share/apps/vcell12/users:/share/apps/vcell12/users "
 container_env="--env datadir_external=/share/apps/vcell3/users "
-solver_docker_name=ghcr.io/virtualcell/vcell-opt:7.6.0.43
-solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} docker://${solver_docker_name}"
+solver_sif=/share/apps/vcell3/singularityImages/ghcr.io_virtualcell_vcell-opt_singularity_7.6.0.43.img
+if [ ! -f "$solver_sif" ]; then
+    echo "ERROR: missing SIF $solver_sif" >&2
+    exit 1
+fi
+solver_container_prefix="singularity run --containall ${container_bindings} ${container_env} $solver_sif"
 
 cmd_prefix="$solver_container_prefix"
 echo "cmd_prefix is '${cmd_prefix}'"

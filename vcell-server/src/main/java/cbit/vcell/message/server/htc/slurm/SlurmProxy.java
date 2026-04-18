@@ -370,6 +370,23 @@ public class SlurmProxy extends HtcProxy {
 		return statusMap;
 	}
 
+	/**
+	 * Derive a local SIF filename from an ORAS URL.
+	 * e.g. "oras://ghcr.io/virtualcell/vcell-opt_singularity:7.7.0.71"
+	 *    → "ghcr.io_virtualcell_vcell-opt_singularity_7.7.0.71.img"
+	 */
+	static String sifFilenameFromOrasUrl(String orasUrl) {
+		String stripped = orasUrl.replaceFirst("^oras://", "");
+		return stripped.replace('/', '_').replace(':', '_') + ".img";
+	}
+
+	/**
+	 * Derive the full local SIF path from an ORAS URL and the SIF image directory.
+	 */
+	static String sifPathFromOrasUrl(String orasUrl, String sifImageDir) {
+		return sifImageDir + "/" + sifFilenameFromOrasUrl(orasUrl);
+	}
+
 	public static class SbatchSolverComponents {
 		private String sbatchCommands;
 		private String solverCommands;
@@ -612,24 +629,26 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("");
 	}
 	private void writeContainerImageAndPrefixes(LineStringBuilder lsb) {
-		// Resolve docker image names
-		final String batchDockerName = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_docker_name);
-		final String solverDockerName = batchDockerName;
+		final String batchApptainerImage = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_apptainer_image);
+		final String sifImageDir = PropertyLoader.getRequiredProperty(PropertyLoader.htc_singularity_imagedir);
+		final String sifPath = sifPathFromOrasUrl(batchApptainerImage, sifImageDir);
 
-		// Write out docker names and prefixes
 		lsb.write("# Full solver command");
-		lsb.write("solver_docker_name=" + solverDockerName);
-		lsb.write("solver_container_prefix=\"singularity run --containall " +
-				"${container_bindings} ${container_env} docker://${solver_docker_name}\"");
-
-		if (batchDockerName != null && !batchDockerName.isEmpty()) {
-			lsb.write("batch_docker_name=" + batchDockerName);
-			lsb.write("batch_container_prefix=\"singularity run --containall " +
-					"${container_bindings} ${container_env} docker://${batch_docker_name}\"");
-		}
+		writeSifContainerPrefix(lsb, "solver", sifPath);
+		writeSifContainerPrefix(lsb, "batch", sifPath);
 
 		lsb.write("slurm_prefix=\"srun -N1 -n1 -c${SLURM_CPUS_PER_TASK}\"");
 		lsb.write("");
+	}
+
+	private void writeSifContainerPrefix(LineStringBuilder lsb, String prefix, String sifPath) {
+		lsb.write(prefix + "_sif=" + sifPath);
+		lsb.write("if [ ! -f \"$" + prefix + "_sif\" ]; then");
+		lsb.write("    echo \"ERROR: missing SIF $" + prefix + "_sif\" >&2");
+		lsb.write("    exit 1");
+		lsb.write("fi");
+		lsb.write(prefix + "_container_prefix=\"singularity run --containall " +
+				"${container_bindings} ${container_env} $" + prefix + "_sif\"");
 	}
 	String  generateLangevinBatchScript(String jobName, ExecutableCommand.Container commandSet, double memSizeMB,
 										Collection<PortableCommand> postProcessingCommands, SimulationTask simTask) {
@@ -725,17 +744,18 @@ public class SlurmProxy extends HtcProxy {
 		List<String> vcellsolvers_solverList = List.of(PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellsolvers_solver_list).split(","));
 		List<String> vcellbatch_solverList = List.of(PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_solver_list).split(","));
 
-		final String solverDockerName;
-		final String batchDockerName = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_docker_name);
+		final String solverApptainerImage;
+		final String batchApptainerImage = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellbatch_apptainer_image);
 		if (vcellfvsolver_solverList.contains(solverName)) {
-			solverDockerName = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellfvsolver_docker_name);
+			solverApptainerImage = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellfvsolver_apptainer_image);
 		} else if (vcellsolvers_solverList.contains(solverName)) {
-			solverDockerName = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellsolvers_docker_name);
+			solverApptainerImage = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellsolvers_apptainer_image);
 		} else if (vcellbatch_solverList.contains(solverName)) {
-			solverDockerName = batchDockerName;
+			solverApptainerImage = batchApptainerImage;
 		} else {
 			throw new RuntimeException("solverName="+solverName+" not in vcellfvsolver_solverList="+vcellfvsolver_solverList+" or vcellsolvers_solverList="+vcellsolvers_solverList+" or vcellbatch_solverList="+vcellbatch_solverList);
 		}
+		final String sifImageDir = PropertyLoader.getRequiredProperty(PropertyLoader.htc_singularity_imagedir);
 
 		String[] environmentVars = new String[] {
 				"java_mem_Xmx="+memoryMBAllowed.getMemLimit()+"M",
@@ -763,10 +783,13 @@ public class SlurmProxy extends HtcProxy {
 				new SingularityBinding(slurm_tmpdir, "/solvertmp")
 		);
 
+		final String solverSifPath = sifPathFromOrasUrl(solverApptainerImage, sifImageDir);
+		final String batchSifPath = sifPathFromOrasUrl(batchApptainerImage, sifImageDir);
+
 		LineStringBuilder lsb = new LineStringBuilder();
 		LineStringBuilder singularityLSB = new LineStringBuilder();
 		slurmInitSingularity(singularityLSB,
-				solverDockerName, Optional.of(batchDockerName), bindings,
+				solverSifPath, Optional.of(batchSifPath), bindings,
 				slurm_tmpdir, slurm_singularity_cachedir, slurm_singularity_pullfolder,
 				slurm_singularity_module_name, environmentVars);
 
@@ -867,7 +890,7 @@ public class SlurmProxy extends HtcProxy {
 
 
 	private void slurmInitSingularity(LineStringBuilder lsb,
-				  String solverDockerName, Optional<String> batchDockerName, List<SingularityBinding> bindings,
+				  String solverSifPath, Optional<String> batchSifPath, List<SingularityBinding> bindings,
 				  String slurm_tmpdir, String slurm_singularity_cachedir, String slurm_singularity_pullfolder,
 				  String singularity_module_name, String[] environmentVars) {
 		lsb.write("TMPDIR="+slurm_tmpdir);
@@ -908,17 +931,9 @@ public class SlurmProxy extends HtcProxy {
 				lsb.write("container_env+=\"--env " + envVar + " \"");
 			}
 		}
-		lsb.write("solver_docker_name="+solverDockerName);
-		lsb.write("solver_container_prefix=\"singularity run --containall " +
-				"${container_bindings} " +
-				"${container_env} " +
-				"docker://${solver_docker_name}\"");
-		if (batchDockerName.isPresent()) {
-			lsb.write("batch_docker_name="+batchDockerName.get());
-			lsb.write("batch_container_prefix=\"singularity run --containall " +
-				"${container_bindings} " +
-				"${container_env} " +
-				"docker://${batch_docker_name}\"");
+		writeSifContainerPrefix(lsb, "solver", solverSifPath);
+		if (batchSifPath.isPresent()) {
+			writeSifContainerPrefix(lsb, "batch", batchSifPath.get());
 		}
 		lsb.newline();
 	}
@@ -1084,13 +1099,20 @@ public class SlurmProxy extends HtcProxy {
 	public HtcJobID submitOptimizationJob(String jobName, File sub_file_internal, File sub_file_external,
 										  File optProblemInputFile,File optProblemOutputFile,File optReportFile) throws ExecutableException{
 		try {
+			// Validate sub_file_internal is under the configured htcLogDir to prevent path traversal
+			String htcLogDirInternal = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirInternal);
+			java.nio.file.Path subFilePath = sub_file_internal.getCanonicalFile().toPath();
+			java.nio.file.Path htcLogDirPath = new File(htcLogDirInternal).getCanonicalFile().toPath();
+			if (!subFilePath.startsWith(htcLogDirPath)) {
+				throw new ExecutableException("sub_file_internal path outside htcLogDir: " + sub_file_internal);
+			}
 			String scriptText = createOptJobScript(jobName, optProblemInputFile, optProblemOutputFile, optReportFile);
 			LG.info("sub_file_internal: " + sub_file_internal.getAbsolutePath() +
 					", sub_file_external: " + sub_file_external.getAbsolutePath() +
 					", optProblemInput: " + optProblemInputFile.getAbsolutePath() +
 					", optProblemOutput: " + optProblemOutputFile.getAbsolutePath() +
 					", optReport: " + optReportFile.getAbsolutePath());
-			Files.writeString(sub_file_internal.toPath(), scriptText);
+			Files.writeString(sub_file_internal.getCanonicalFile().toPath(), scriptText);
 		} catch (IOException ex) {
 			LG.error(ex);
 			return null;
@@ -1109,8 +1131,10 @@ public class SlurmProxy extends HtcProxy {
 		final String slurm_singularity_module_name = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_singularity_module_name);
 		final String simDataDirArchiveExternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveExternal);
 		final String simDataDirArchiveInternal = PropertyLoader.getRequiredProperty(PropertyLoader.simDataDirArchiveInternal);
-		final String solverDockerName = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellopt_docker_name);
-		final Optional<String> batchDockerName = Optional.empty();
+		final String optApptainerImage = PropertyLoader.getRequiredProperty(PropertyLoader.htc_vcellopt_apptainer_image);
+		final String sifImageDir = PropertyLoader.getRequiredProperty(PropertyLoader.htc_singularity_imagedir);
+		final String solverSifPath = sifPathFromOrasUrl(optApptainerImage, sifImageDir);
+		final Optional<String> batchSifPath = Optional.empty();
 
 		MemLimitResults memoryMBAllowed = new MemLimitResults(256, "Optimization Default");
 		String[] environmentVars = new String[] {
@@ -1119,11 +1143,10 @@ public class SlurmProxy extends HtcProxy {
 
 		LineStringBuilder lsb = new LineStringBuilder();
 		slurmScriptInit(jobName, false, memoryMBAllowed, lsb);
+		// vcell-rest creates the parest_data directory before writing the input file.
+		// Compute the external path for the SLURM script bindings (host-visible NFS mount point).
 		File optDataDir = optProblemInputFile.getParentFile();
 		File optDataDirExternal = new File(optDataDir.getAbsolutePath().replace(primaryDataDirInternal, primaryDataDirExternal));
-		if (!optDataDirExternal.exists() && !optDataDirExternal.mkdir()){
-			LG.error("failed to make optimization data directory "+optDataDir.getAbsolutePath());
-		}
 
 		List<SingularityBinding> bindings = List.of(
 				new SingularityBinding(optDataDirExternal.getAbsolutePath(), "/simdata"),
@@ -1132,7 +1155,7 @@ public class SlurmProxy extends HtcProxy {
 				new SingularityBinding(simDataDirArchiveExternal, simDataDirArchiveInternal)
 		);
 
-		slurmInitSingularity(lsb, solverDockerName, batchDockerName,
+		slurmInitSingularity(lsb, solverSifPath, batchSifPath,
 				bindings, slurm_tmpdir, slurm_singularity_cachedir, slurm_singularity_pullfolder,
 				slurm_singularity_module_name, environmentVars);
 

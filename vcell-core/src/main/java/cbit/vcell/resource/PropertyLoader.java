@@ -85,13 +85,14 @@ public class PropertyLoader {
 	public static final String htcPowerUserMemoryFloorMB	= record("vcell.htc.memory.pu.floor.mb", ValueType.INT); // MIN memory allowed if declared to be a power user, currently 50g (Previously Existing Value)
 	public static final String htcPowerUserMemoryMaxMB	    = record("vcell.htc.memory.pu.max.mb", ValueType.INT); // MAX memory allowed if declared to be a power user
 
-	public static final String htc_vcellfvsolver_docker_name = 	record("vcell.htc.vcellfvsolver.docker.name",ValueType.GEN);
+	public static final String htc_vcellfvsolver_apptainer_image = 	record("vcell.htc.vcellfvsolver.apptainer.image",ValueType.GEN);
 	public static final String htc_vcellfvsolver_solver_list =	record("vcell.htc.vcellfvsolver.solver.list",ValueType.GEN);
-	public static final String htc_vcellsolvers_docker_name = 	record("vcell.htc.vcellsolvers.docker.name",ValueType.GEN);
+	public static final String htc_vcellsolvers_apptainer_image = 	record("vcell.htc.vcellsolvers.apptainer.image",ValueType.GEN);
 	public static final String htc_vcellsolvers_solver_list = 	record("vcell.htc.vcellsolvers.solver.list",ValueType.GEN);
-	public static final String htc_vcellbatch_docker_name = 	record("vcell.htc.vcellbatch.docker.name",ValueType.GEN);
+	public static final String htc_vcellbatch_apptainer_image = 	record("vcell.htc.vcellbatch.apptainer.image",ValueType.GEN);
 	public static final String htc_vcellbatch_solver_list = 	record("vcell.htc.vcellbatch.solver.list",ValueType.GEN);
-	public static final String htc_vcellopt_docker_name = 		record("vcell.htc.vcellopt.docker.name",ValueType.GEN);
+	public static final String htc_vcellopt_apptainer_image = 	record("vcell.htc.vcellopt.apptainer.image",ValueType.GEN);
+	public static final String htc_singularity_imagedir = 		record("vcell.htc.singularity.imagedir",ValueType.GEN);
 
 	public static final String slurm_cmd_sbatch				= record("vcell.slurm.cmd.sbatch",ValueType.GEN);
 	public static final String slurm_cmd_scancel				= record("vcell.slurm.cmd.scancel",ValueType.GEN);
@@ -224,6 +225,8 @@ public class PropertyLoader {
 	public static final String jmsSimHostExternal			= record("vcell.jms.sim.host.external",ValueType.GEN);
 	public static final String jmsSimPortExternal			= record("vcell.jms.sim.port.external",ValueType.GEN);
 	public static final String jmsSimRestPortExternal		= record("vcell.jms.sim.restport.external",ValueType.GEN);
+	public static final String jmsArtemisHostInternal		= record("vcell.jms.artemis.host.internal",ValueType.GEN);
+	public static final String jmsArtemisPortInternal		= record("vcell.jms.artemis.port.internal",ValueType.GEN);
 	public static final String jmsUser						= record("vcell.jms.user",ValueType.GEN);
 	public static final String jmsPasswordValue				= record("vcell.jms.password",ValueType.GEN);
 	public static final String jmsPasswordFile				= record("vcell.jms.pswdfile",ValueType.GEN);
@@ -256,7 +259,6 @@ public class PropertyLoader {
 	public static final String vcellSMTPPort = record("vcell.smtp.port",ValueType.GEN);
 	public static final String vcellSMTPEmailAddress = record("vcell.smtp.emailAddress",ValueType.GEN);
 
-	public static final String vcellsubmit_service_host = record("vcell.submit.service.host",ValueType.GEN);
 	public static final String javaSimulationExecutable = record("vcell.javaSimulation.executable",ValueType.GEN);
 	public static final String simulationPreprocessor = record("vcell.simulation.preprocessor",ValueType.GEN);
 	public static final String simulationPostprocessor = record("vcell.simulation.postprocessor",ValueType.GEN);

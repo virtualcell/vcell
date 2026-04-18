@@ -69,7 +69,6 @@ ENV softwareVersion=SOFTWARE-VERSION-NOT-SET \
 	ssl_ignoreCertProblems=false \
 	serverPrefixV0="server-path-prefix-v0-not-set" \
 	protocol="https" \
-	submit_service_host="submit" \
 	workingDir="/usr/local/app"
 
 ENV dbpswdfile=/run/secrets/dbpswd \
@@ -117,7 +116,6 @@ ENTRYPOINT java \
 	-Dvcell.smtp.emailAddress="${smtp_emailaddress}" \
 	-Dvcell.ssl.ignoreHostMismatch="${ssl_ignoreHostMismatch}" \
 	-Dvcell.ssl.ignoreCertProblems="${ssl_ignoreCertProblems}" \
-	-Dvcell.submit.service.host="${submit_service_host}" \
 	-Dvcellapi.privateKey.file="${vcellapi_privatekeyfile}" \
 	-Dvcellapi.publicKey.file="${vcellapi_publickeyfile}" \
 	-cp "./lib/*" org.vcell.rest.VCellApiMain \
