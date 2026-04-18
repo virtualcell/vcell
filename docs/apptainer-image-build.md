@@ -72,11 +72,11 @@ from the ORAS URL: strip `oras://`, replace `/:` with `_`, append
   `GITHUB_TOKEN`). The k8s Job uses the existing SSH key to scp to the
   submit node. No new credentials.
 - **No custom Docker image.** The k8s Job uses
-  `ghcr.io/apptainer/apptainer:1.4` (Debian bookworm, Apptainer 1.4.5)
-  with an inline command that installs `openssh-client` at startup.
-- **No hardcoded hostnames.** The `batchhost` env var comes from the
-  site's kustomize `submit.env` ConfigMap — same source `vcell-submit`
-  already uses.
+  `ghcr.io/apptainer/apptainer:latest` (Debian bookworm)
+  with no additional package installs needed.
+- **Direct NFS write.** The Job mounts the same `nfs-primary-pvc`
+  used by other VCell pods (backed by `cfs09:/vcell`) and writes SIFs
+  directly to the `singularityImages` subpath. No SSH/SCP needed.
 - **CI only builds what it knows.** The release CI builds SIFs for
   vcell-opt and vcell-batch (same tag). Solver SIFs (vcell-solvers,
   vcell-fvsolver) are built separately when those images change. The
@@ -118,15 +118,14 @@ Standalone workflow_dispatch or manual build
 FluxCD reconcile (deploy)
      │
      ▼
-vcell-sif-prepull-<tag> (Kubernetes Job)
+vcell-sif-prepull (Kubernetes Job, force-replaced each deploy)
      │
-     ├─ image: ghcr.io/apptainer/apptainer:1.4
-     ├─ apt-get install openssh-client
+     ├─ image: ghcr.io/apptainer/apptainer:latest
+     ├─ apptainer registry login (credentials from ghcr-secret)
      ├─ reads ALL 4 ORAS URLs from submit.env (via ConfigMap)
-     ├─ for each: apptainer pull oras://... → SIF in pod
-     ├─ scp SIF.tmp vcell@${batchhost}:<SIF_DIR>/
-     ├─ ssh vcell@${batchhost} 'mv -n SIF.tmp SIF'
-     └─ ssh vcell@${batchhost} 'find ... -mtime +90 -delete' (GC)
+     ├─ for each (parallel): apptainer pull oras://... → SIF in emptyDir
+     ├─ for each: mv -n SIF to NFS mount (nfs-primary-pvc/singularityImages)
+     └─ skip if SIF already exists on NFS (idempotent)
            │
            ▼
      /share/apps/vcell3/singularityImages/  (NFS, shared across nodes)
@@ -184,11 +183,12 @@ then derives the local SIF filename from that ORAS URL.
 
 ## Atomic write
 
-The post-deploy k8s Job writes each SIF with:
+The post-deploy k8s Job pulls each SIF to a local emptyDir, then
+moves it to NFS:
 
 ```
-scp <SIF> vcell@${batchhost}:/share/apps/vcell3/singularityImages/${SIF}.tmp
-ssh vcell@${batchhost} "mv -n '${SIF}.tmp' '${SIF}'"
+apptainer pull /work/${SIF_NAME} oras://ghcr.io/virtualcell/...
+mv -n /work/${SIF_NAME} /sif-data/${SIF_NAME}
 ```
 
 `-n` (no-clobber) ensures re-cutting the same tag with different
@@ -197,12 +197,11 @@ running jobs may have mapped.
 
 ## Garbage collection
 
-The post-deploy Job trims SIFs older than 90 days:
-
-```
-ssh vcell@${batchhost} "find /share/apps/vcell3/singularityImages \
-  -maxdepth 1 -name 'ghcr.io_virtualcell_vcell-*.img' -mtime +90 -delete"
-```
+No automatic GC. Multiple deployment sites (dev, stage, prod) share
+the same NFS filesystem and may reference different SIF versions at
+different tags. Deleting old SIFs could break a site that hasn't been
+updated recently. Old SIFs should be cleaned up manually when all
+sites have moved past a given version.
 
 ## Runtime usage in SLURM scripts
 
@@ -278,12 +277,12 @@ If a SIF is corrupted or bad:
 
 | Mode | Handling |
 |------|----------|
-| Partial scp | Atomic `mv -n` from `.tmp`: nodes never see partial SIF |
+| Partial download | Pull to emptyDir first, `mv -n` to NFS: nodes never see partial SIF |
 | Tag reuse with different content | `mv -n` fails; Job surfaces error via FluxCD |
 | CI publishes docker but fails SIF | Release blocks at `build-and-publish-sif` GHA job |
 | Post-deploy Job fails | FluxCD surfaces; manual retry or re-reconcile |
 | SIF missing at runtime | Fail-fast in SLURM script with clear error |
-| Cluster filesystem fills up | 90-day GC in the post-deploy Job |
+| Cluster filesystem fills up | Manual cleanup of old SIFs when all sites have moved past a version |
 | SIF format mismatch | CI uses Apptainer (same as cluster); validated via `apptainer inspect` |
 
 ## Related files
