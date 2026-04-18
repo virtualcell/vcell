@@ -39,6 +39,8 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
 
     private static final Logger lg = LogManager.getLogger(ClusterVisualizationPanel.class);
 
+    private static final int SD_ALPHA     = 90;
+
     ODEDataViewer owner;
     IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
@@ -82,6 +84,11 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                     redrawLegend(sel);      // redraw legend (one plot, multiple curves)
                     redrawPlot(sel);        // redraw plot (one plot, multiple curves)
                     redrawDataTable(sel);   // redraw data table
+                    if(sel.mode == ClusterSpecificationPanel.DisplayMode.COUNTS) {
+                        getClusterPlotPanel().setStepAvg(true);
+                    } else {
+                        getClusterPlotPanel().setStepAvg(false);
+                    }
                 } catch (ExpressionException e) {
                     throw new RuntimeException(e);
                 }
@@ -142,6 +149,11 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                         lg.debug("componentShown() called, height = " + clusterPlotPanel.getHeight());
                     }
                 });
+
+                // uncomment these to override the defaulta AbstractPlotPanel renderer options
+//                clusterPlotPanel.setStepAvg(false);
+//                clusterPlotPanel.setStepBand(true);
+
             } catch (java.lang.Throwable ivjExc) {
                 handleException(ivjExc);
             }
@@ -436,7 +448,7 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
             if (name.equals("SD")) {
                 // SD uses a translucent version of ACS color
                 Color cACS = persistentColorMap.get("ACS");
-                c = new Color(cACS.getRed(), cACS.getGreen(), cACS.getBlue(), 80);   // alpha 0–255 -> ~30% opacity
+                c = new Color(cACS.getRed(), cACS.getGreen(), cACS.getBlue(), SD_ALPHA);   // alpha 0–255
             } else {
                 // ACS, ACO, COUNTS all use their assigned colors
                 c = persistentColorMap.get(name);

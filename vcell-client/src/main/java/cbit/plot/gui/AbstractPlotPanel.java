@@ -1,24 +1,17 @@
 package cbit.plot.gui;
 
-import cbit.vcell.solver.ode.gui.MoleculeVisualizationPanel;
+import static cbit.plot.gui.PlotRenderers.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.border.Border;
 
 public abstract class AbstractPlotPanel extends JPanel {
 
@@ -30,167 +23,21 @@ public abstract class AbstractPlotPanel extends JPanel {
     protected static final int TOP_INSET    = 20;
     protected static final int BOTTOM_INSET = 30;
 
-    protected static final float AXIS_STROKE  = 1.0f;
-    protected static final float CURVE_STROKE = 1.5f;
+    protected static final float AXIS_STROKE  = 1.0f;    // axis stroke
+    protected static final float CURVE_STROKE = 1.5f;   // stroke for the main curve (avg line); bands will be filled, not stroked
+    protected static final int DIMMED_LINE_ALPHA = 20;   // for dimming non-hovered series (0–255)
+    protected static final int DIMMED_BAND_ALPHA = 0;    // for dimming non-hovered bands (0–255)
 
-    // Generic renderer interface
-    protected interface SeriesRenderer {
-        void draw(Graphics2D g2,
-                  int x0, int x1, int y0, int y1,
-                  int plotWidth, int plotHeight,
-                  double xMaxRounded, double yMaxRounded, double yMinRounded,
-                  double dt);
-        /**
-         * Returns the closest pixel-space point to (mouseX, mouseY),
-         * or null if this renderer does not support snapping.
-         */
-        default Point getClosestPoint(int mouseX, int mouseY) {
-            return null;    // default: no snapping
-        }
-    }
-
-    // AVG renderer: polyline
-    protected static class AvgRenderer implements SeriesRenderer {
-        final double[] time;
-        final double[] values;
-        final Color color;
-        final AbstractPlotPanel parent;
-
-        private int[] xs;
-        private int[] ys;
-
-        AvgRenderer(double[] time, double[] values, Color color, AbstractPlotPanel parent) {
-            this.time = time;
-            this.values = values;
-            this.color = color;
-            this.parent = parent;
-        }
-        @Override
-        public void draw(Graphics2D g2,
-                         int x0, int x1, int y0, int y1,
-                         int plotWidth, int plotHeight,
-                         double xMaxRounded, double yMaxRounded, double yMinRounded,
-                         double dt) {
-
-            int n = values.length;
-            if (n < 2) return;
-
-            xs = new int[n];
-            ys = new int[n];
-
-            for (int i = 0; i < n; i++) {
-                double t = (time != null ? time[i] : i * dt);
-                xs[i] = x0 + (int)Math.round((t / xMaxRounded) * plotWidth);
-                double v = values[i];
-                double norm = (v - yMinRounded) / (yMaxRounded - yMinRounded);
-                ys[i] = y0 - (int)Math.round(norm * plotHeight);
-            }
-
-            g2.setColor(color);
-            g2.setStroke(new BasicStroke(CURVE_STROKE, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            g2.drawPolyline(xs, ys, n);
-
-            // Draw the polyline
-            g2.setColor(color);
-            g2.setStroke(new BasicStroke(CURVE_STROKE, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-            g2.drawPolyline(xs, ys, n);
-
-            // Draw nodes if enabled
-            if (parent.getShowNodes()) {          // parent is the AbstractPlotPanel
-                g2.setColor(color);
-                int diameter = 4;                 // small, unobtrusive
-                int radius = diameter / 2;
-
-                for (int i = 0; i < n; i++) {
-                    int cx = xs[i] - radius;
-                    int cy = ys[i] - radius;
-                    g2.fillOval(cx, cy, diameter, diameter);
-                }
-            }
-        }
-        @Override
-        public Point getClosestPoint(int mouseX, int mouseY) {
-            if (xs == null || ys == null) return null;
-            int bestIndex = -1;
-            double bestDist2 = Double.POSITIVE_INFINITY;
-            for (int i = 0; i < xs.length; i++) {
-                double dx = xs[i] - mouseX;
-                double dy = ys[i] - mouseY;
-                double d2 = dx*dx + dy*dy;
-
-                if (d2 < bestDist2) {
-                    bestDist2 = d2;
-                    bestIndex = i;
-                }
-            }
-            if (bestIndex < 0) return null;
-            return new Point(xs[bestIndex], ys[bestIndex]);
-        }
-    }
-
-    // Band renderer: min/max or sd (envelope)
-    protected static class BandRenderer implements SeriesRenderer {
-        final double[] time;
-        final double[] upper;
-        final double[] lower;
-        final Color fillColor;
-        final AbstractPlotPanel parent;
-
-        BandRenderer(double[] time, double[] upper, double[] lower, Color fillColor, AbstractPlotPanel parent) {
-            this.time = time;
-            this.upper = upper;
-            this.lower = lower;
-            this.fillColor = fillColor;
-            this.parent = parent;
-        }
-
-        @Override
-        public void draw(Graphics2D g2,
-                         int x0, int x1, int y0, int y1,
-                         int plotWidth, int plotHeight,
-                         double xMaxRounded, double yMaxRounded, double yMinRounded,
-                         double dt) {
-
-            int n = upper.length;
-            if (n < 2) return;
-
-            Path2D path = new Path2D.Double();
-
-            double t0 = (time != null ? time[0] : 0.0);
-            double v0 = upper[0];
-            double norm0 = (v0 - yMinRounded) / (yMaxRounded - yMinRounded);
-            int xStart = x0 + (int)Math.round((t0 / xMaxRounded) * plotWidth);
-            int yStart = y0 - (int)Math.round(norm0 * plotHeight);
-            path.moveTo(xStart, yStart);
-
-            for (int i = 1; i < n; i++) {
-                double t = (time != null ? time[i] : i * dt);
-                double v = upper[i];
-                double norm = (v - yMinRounded) / (yMaxRounded - yMinRounded);
-                int x = x0 + (int)Math.round((t / xMaxRounded) * plotWidth);
-                int y = y0 - (int)Math.round(norm * plotHeight);
-                path.lineTo(x, y);
-            }
-
-            for (int i = n - 1; i >= 0; i--) {
-                double t = (time != null ? time[i] : i * dt);
-                double v = lower[i];
-                double norm = (v - yMinRounded) / (yMaxRounded - yMinRounded);
-                int x = x0 + (int)Math.round((t / xMaxRounded) * plotWidth);
-                int y = y0 - (int)Math.round(norm * plotHeight);
-                path.lineTo(x, y);
-            }
-
-            path.closePath();
-            g2.setColor(fillColor);
-            g2.fill(path);
-        }
-    }
 
     // Renderer options list
-    private boolean fieldShowNodes = true;      // whether to draw small circles at the data points (nodes)
-    private boolean fieldSnapToNodes = true;    // whether the crosshair snaps to the nearest node (if false, it shows exact mouse coordinates)
-    private boolean fieldShowCrosshair = true;  // whether to show the crosshair at all (if false, mouse coordinates are still tracked and sent to the callback, but no crosshair is drawn)
+    private boolean useBarRendererForSD = true; // whether to use bar renderer (instead of band renderer) for SD; only applies to SD renderers, not min-max bands
+    private boolean showLines = true;      // whether to draw lines connecting the data points (only applies to avg renderer, not bands)
+    private boolean showNodes = true;      // whether to draw small circles at the data points (nodes) (only applies to avg renderer, not bands)
+    private boolean snapToNodes = true;    // whether the crosshair snaps to the nearest node (if false, it shows exact mouse coordinates)
+    private boolean showCrosshair = true;  // whether to show the crosshair at all (if false, mouse coordinates are still tracked and sent to the callback, but no crosshair is drawn)
+    protected boolean stepAvg = false;     // whether to draw the average as a step function (instead of linear interpolation) meaning the value is constant between time[i] and time[i+1], then jumps at time[i+1]
+    protected boolean stepBand = true;     // whether to draw bands with steps (instead of linear interpolation);
+    protected int nodeDiameter = 4;        // diameter of the circles drawn at data points (nodes), if enabled
 
     // Renderers list
     protected final List<SeriesRenderer> renderers = new ArrayList<>();
@@ -203,6 +50,8 @@ public abstract class AbstractPlotPanel extends JPanel {
     // Crosshair state
     protected Integer mouseX = null;    // mouse coordinates in pixels, relative to the panel; null if mouse is outside the plot area
     protected Integer mouseY = null;
+    protected Integer snappedX = null;  // we are snapped here (or null)
+    protected Integer snappedY = null;
     protected boolean crosshairEnabled = true;
     protected Consumer<double[]> coordCallback;
 
@@ -211,6 +60,10 @@ public abstract class AbstractPlotPanel extends JPanel {
     protected double lastXMaxRounded;   // in seconds
     protected double lastYMaxRounded;   // in molecules
     protected double lastYMinRounded;   // in molecules (could be negative if avg-sd<0
+
+    // we'll track when the mouse hovers over any entity in the legend
+    // we'll make min/max and SD bands very transparent for all other entities
+    protected String hoveredSeriesName = null;
 
     public AbstractPlotPanel() {
         addMouseMotionListener(new MouseMotionAdapter() {
@@ -230,14 +83,22 @@ public abstract class AbstractPlotPanel extends JPanel {
                 if (crosshairEnabled && mouseX != null && mouseY != null) {
                     mx = mouseX;
                     my = mouseY;
-                    if (fieldSnapToNodes) {
+                    if (snapToNodes) {
                         Point snapped = findClosestNode(mx, my);
                         if (snapped != null) {
-                            mx = snapped.x;     // mx and my are now snapped to the nearest node's pixel coordinates
+                            mx = snapped.x;  // mx and my are now snapped to the nearest node's pixel coordinates
                             my = snapped.y;
-                            mouseX = mx;        // update mouseX and mouseY to the snapped coordinates for crosshair drawing
+                            mouseX = mx;     // update mouseX and mouseY to the snapped coordinates for crosshair drawing
                             mouseY = my;
+                            snappedX = mx;   // store snapped coordinates for highlight the point we snapped to
+                            snappedY = my;
+                        } else {             // clear highlight if no snap occurred
+                            snappedX = null;
+                            snappedY = null;
                         }
+                    } else {
+                        snappedX = null;
+                        snappedY = null;
                     }
                     double fracX = (mx - lastX0) / (double)(lastX1 - lastX0);
                     double xVal = fracX * lastXMaxRounded;      // mouse coord on x-axis in seconds
@@ -261,6 +122,8 @@ public abstract class AbstractPlotPanel extends JPanel {
             public void mouseExited(MouseEvent e) {
                 mouseX = null;
                 mouseY = null;
+                snappedX = null;
+                snappedY = null;
                 repaint();
             }
         });
@@ -293,15 +156,17 @@ public abstract class AbstractPlotPanel extends JPanel {
     // High-level, stat-aware renderers
 
     public void addAvgRenderer(double[] time, double[] avg, Color color, String name, Object statTag) {
-        renderers.add(new AvgRenderer(time, avg, color, this));
+        renderers.add(new AvgRenderer(name, time, avg, color, this));
     }
-
     public void addMinMaxRenderer(double[] time, double[] min, double[] max, Color color, String name, Object statTag) {
-        renderers.add(new BandRenderer(time, max, min, color, this));
+        renderers.add(new BandRenderer(name, time, max, min, color, this));
     }
-
     public void addSDRenderer(double[] time, double[] low, double[] high, Color color, String name, Object statTag) {
-        renderers.add(new BandRenderer(time, high, low, color, this));
+        if(useBarRendererForSD) {
+            renderers.add(new BarRenderer(name, time, low, high, color, this));
+        } else {
+            renderers.add(new BandRenderer(name, time, low, high, color, this));
+        }
     }
 
     // Utilities
@@ -336,12 +201,14 @@ public abstract class AbstractPlotPanel extends JPanel {
         return s;
     }
 
-    public boolean getShowNodes() {
-        return fieldShowNodes;
-    }
-    public boolean getSnapToNodes() {
-        return fieldSnapToNodes;
-    }
+    public void setStepAvg(boolean b) { this.stepAvg = b; repaint(); }
+    public void setStepBand(boolean b) { this.stepBand = b; repaint(); }
+    public boolean getStepAvg() { return stepAvg; }
+    public boolean getStepBand() { return stepBand; }
+    public boolean getShowLines() { return showLines; }
+    public boolean getShowNodes() { return showNodes; }
+    public boolean getSnapToNodes() { return snapToNodes; }
+
     private Point findClosestNode(int mouseX, int mouseY) {     // use for SnapToNodes feature
         Point best = null;
         double bestDist2 = Double.POSITIVE_INFINITY;
@@ -364,16 +231,13 @@ public abstract class AbstractPlotPanel extends JPanel {
         return null;
     }
 
-    private static Shape createDiamondShape(int size) {
-        Path2D.Double p = new Path2D.Double();
-        p.moveTo(0, -size);
-        p.lineTo(size, 0);
-        p.lineTo(0, size);
-        p.lineTo(-size, 0);
-        p.closePath();
-        return p;
+    public void setHoveredSeriesName(String name) {
+        this.hoveredSeriesName = name;
+        repaint();
     }
-
+    public String getSeriesNameForRenderer(SeriesRenderer r) {
+        return r.getSeriesName();
+    }
 
     // -------------------------------------------------------------------
 
@@ -408,6 +272,8 @@ public abstract class AbstractPlotPanel extends JPanel {
             if (r instanceof AvgRenderer ar) {
                 maxLength = Math.max(maxLength, ar.values.length);
             } else if (r instanceof BandRenderer br) {
+                maxLength = Math.max(maxLength, br.upper.length);
+            } else if (r instanceof BarRenderer br) {
                 maxLength = Math.max(maxLength, br.upper.length);
             }
         }
@@ -527,9 +393,18 @@ public abstract class AbstractPlotPanel extends JPanel {
             g2.drawLine(x0, mouseY, x1, mouseY);
         }
 
+        // Highlight snapped point (if any)
+        if (snappedX != null && snappedY != null) {
+            Graphics2D g3 = (Graphics2D) g2.create();
+            g3.setColor(new Color(255, 80, 0));   // bright red-ish
+            int r = 5;                           // radius of highlight
+            g3.fillOval(snappedX - r, snappedY - r, 2*r, 2*r);
+            g3.dispose();
+        }
+
         // Renderers (bands first, then lines)
         for (SeriesRenderer r : renderers) {
-            if (r instanceof BandRenderer) {
+            if (r instanceof BandRenderer || r instanceof BarRenderer) {
                 r.draw(g2, x0, x1, y0, y1, plotWidth, plotHeight, xMaxRounded, yMaxRounded, yMinRounded, dt);
             }
         }
