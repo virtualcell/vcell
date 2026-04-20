@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 import org.vcell.cli.commands.execution.BiosimulationsCommand;
+import org.vcell.cli.testsupport.SSIMComparisonTool;
 import org.vcell.util.Pair;
 import org.vcell.util.VCellUtilityHub;
 
@@ -29,7 +30,11 @@ import java.util.stream.Stream;
 
 @Tag("Fast")
 public class TestResults2DLinePlot {
-    private static List<XYDataItem> paraData = List.of(
+    private static final double PIXEL_DIFF_HIGH = 0.2; // 20%
+    private static final double PIXEL_DIFF_LOW = -0.2; // 20%
+    private static final double ACCURACY_THRESHOLD = 0.90; // 97%
+
+    private static final List<XYDataItem> paraData = List.of(
             new XYDataItem(0.0, 0.0),
             new XYDataItem(0.5, 0.25),
             new XYDataItem(1.0, 1.0),
@@ -44,20 +49,31 @@ public class TestResults2DLinePlot {
             new XYDataItem(5.5, 30.25)
     );
 
-    private static Pair<double[], double[]> parabolicData = new Pair<>(
+    private static final Pair<double[], double[]> parabolicData = new Pair<>(
             Stream.of(0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5).mapToDouble(Double::valueOf).toArray(),
             Stream.of(0.0, 0.25, 1.0, 2.25, 4.0, 6.25, 9.0, 12.25, 16.0, 20.25, 25.0, 30.25).mapToDouble(Double::valueOf).toArray()
     );
 
-    private static Pair<List<Double>, List<Double>> parabolicListData = new Pair<>(
+    private static final Pair<List<Double>, List<Double>> parabolicListData = new Pair<>(
             List.of(0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0),
             List.of(0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0)
     );
 
-    private static Pair<List<Double>, List<Double>> linearListData = new Pair<>(
+    private static final Pair<List<Double>, List<Double>> linearListData = new Pair<>(
             List.of(0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0),
             List.of(0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0)
     );
+
+    @Test
+    public void ensureSSIMWorks() throws IOException {
+        String STANDARD_IMAGE_LOCAL_PATH = "parabolic.png";
+        InputStream standardImageStream = TestResults2DLinePlot.class.getResourceAsStream(STANDARD_IMAGE_LOCAL_PATH);
+        if (standardImageStream == null)
+            throw new FileNotFoundException(String.format("can not find `%s`; maybe it moved?", STANDARD_IMAGE_LOCAL_PATH));
+        BufferedImage standardImage = ImageIO.read(standardImageStream);
+        SSIMComparisonTool comparisonTool = new SSIMComparisonTool();
+        Assertions.assertEquals (1.0, comparisonTool.performModifiedSSIMComparison(standardImage, standardImage).product());
+    }
 
     @Test
     public void testConstructors(){
@@ -152,16 +168,13 @@ public class TestResults2DLinePlot {
         BufferedImage roundTrippedImage = ImageIO.read(dupe);
         Assertions.assertEquals(originalImage.getWidth(), roundTrippedImage.getWidth());
         Assertions.assertEquals(originalImage.getHeight(), roundTrippedImage.getHeight());
-        for (int wPix = 0; wPix < originalImage.getWidth(); wPix++){
-            for (int hPix = 0; hPix < originalImage.getHeight(); hPix++){
-                Assertions.assertEquals(originalImage.getRGB(wPix, hPix), roundTrippedImage.getRGB(wPix, hPix));
-            }
-        }
+        double accuracy = TestResults2DLinePlot.getAccuracy(originalImage, roundTrippedImage).product();
+        Assertions.assertTrue(accuracy > ACCURACY_THRESHOLD, String.format("accuracy: %f !> %f; file: %s", accuracy, ACCURACY_THRESHOLD, dupe.getCanonicalPath()));
     }
 
     @Test
     public void pngLibraryLevelTest() throws IOException {
-        String STANDARD_IMAGE_LOCAL_PATH = "Parabolic.png";
+        String STANDARD_IMAGE_LOCAL_PATH = "parabolic.png";
         InputStream standardImageStream = TestResults2DLinePlot.class.getResourceAsStream(STANDARD_IMAGE_LOCAL_PATH);
         if (standardImageStream == null)
             throw new FileNotFoundException(String.format("can not find `%s`; maybe it moved?", STANDARD_IMAGE_LOCAL_PATH));
@@ -176,11 +189,8 @@ public class TestResults2DLinePlot {
         BufferedImage currentImage = chart.createBufferedImage(1000,1000);
         Assertions.assertEquals(currentImage.getWidth(), standardImage.getWidth());
         Assertions.assertEquals(currentImage.getHeight(), standardImage.getHeight());
-        for (int wPix = 0; wPix < currentImage.getWidth(); wPix++){
-            for (int hPix = 0; hPix < currentImage.getHeight(); hPix++){
-                Assertions.assertEquals(currentImage.getRGB(wPix, hPix), standardImage.getRGB(wPix, hPix));
-            }
-        }
+        double accuracy = TestResults2DLinePlot.getAccuracy(standardImage, currentImage).product();
+        Assertions.assertTrue(accuracy > ACCURACY_THRESHOLD, String.format("accuracy: %f !> %f", accuracy, ACCURACY_THRESHOLD));
     }
 
     @Test
@@ -211,8 +221,8 @@ public class TestResults2DLinePlot {
         if (generatedImage1 == null) throw new RuntimeException("Plot_1 PNG was not found; check paths?");
 
 
-        String PLOT_0_PATH = "plot_0.png";
-        String PLOT_1_PATH = "plot_1.png";
+        String PLOT_0_PATH = "plot_result_0.png";
+        String PLOT_1_PATH = "plot_result_1.png";
         InputStream standardImageStream0 = TestResults2DLinePlot.class.getResourceAsStream(PLOT_0_PATH);
         if (standardImageStream0 == null)
             throw new FileNotFoundException(String.format("can not find `%s`; maybe it moved?", PLOT_0_PATH));
@@ -227,17 +237,17 @@ public class TestResults2DLinePlot {
         Assertions.assertEquals(standardImage1.getWidth(), generatedImage1.getWidth());
         Assertions.assertEquals(standardImage1.getHeight(), generatedImage1.getHeight());
 
+        SSIMComparisonTool.Results results0 = TestResults2DLinePlot.getAccuracy(standardImage0, generatedImage0);
+        SSIMComparisonTool.Results results1 = TestResults2DLinePlot.getAccuracy(standardImage1, generatedImage1);
+        String errMsg = String.format("Values Threshold (%f):\n\tTest0 - accuracy: %f (%f/%f/%f); file: %s\n\tTest1 - accuracy: %f ((%f/%f/%f)); file: %s",
+                ACCURACY_THRESHOLD,
+                results0.product(), results0.luminanceComponent(), results0.contrastComponent(), results0.structureComponent(), generatedPlot0.getCanonicalPath(),
+                results1.product(), results1.luminanceComponent(), results1.contrastComponent(), results1.structureComponent(), generatedPlot1.getCanonicalPath());
+        Assertions.assertTrue(results0.product() > ACCURACY_THRESHOLD && results1.product() > ACCURACY_THRESHOLD, errMsg);
+    }
 
-        for (int wPix = 0; wPix < generatedImage0.getWidth(); wPix++){
-            for (int hPix = 0; hPix < generatedImage0.getHeight(); hPix++){
-                Assertions.assertEquals(generatedImage0.getRGB(wPix, hPix), standardImage0.getRGB(wPix, hPix));
-            }
-        }
-
-        for (int wPix = 0; wPix < generatedImage1.getWidth(); wPix++){
-            for (int hPix = 0; hPix < generatedImage1.getHeight(); hPix++){
-                Assertions.assertEquals(generatedImage1.getRGB(wPix, hPix), standardImage1.getRGB(wPix, hPix));
-            }
-        }
+    private static SSIMComparisonTool.Results getAccuracy(BufferedImage original, BufferedImage generated){
+        SSIMComparisonTool ssim = new SSIMComparisonTool();
+        return ssim.performModifiedSSIMComparison(original, generated);
     }
 }

@@ -15,32 +15,35 @@ package org.jlibsedml.validation;
    limitations under the License.
 
  */
+
 import java.util.ArrayList;
 import java.util.List;
 
 import org.jdom2.Document;
-import org.jlibsedml.SedML;
+import org.jlibsedml.SedMLDataContainer;
 import org.jlibsedml.SedMLError;
 
 /**
  * Main point of access for validating the model for semantic consistency.
+ *
  * @author radams
  *
  */
-  class SemanticValidationManager implements ISedMLValidator{
-	private SedML sedml;
-	private Document doc;
-	public SemanticValidationManager(SedML sedml, Document doc) {
-		this.sedml=sedml;
-		this.doc=doc;
-	}
+class SemanticValidationManager implements ISedMLValidator {
+    private final SedMLDataContainer sedml;
+    private final Document doc;
 
-	public  List<SedMLError> validate () {
-		List<SedMLError> errs = new ArrayList<SedMLError>();
-		errs.addAll(new KisaoIDValidator(sedml.getSimulations(),doc).validate());
-		errs.addAll(new URIValidator(sedml.getModels()).validate());
-		return errs;
-		
-	}
+    public SemanticValidationManager(SedMLDataContainer sedml, Document doc) {
+        this.sedml = sedml;
+        this.doc = doc;
+    }
+
+    public List<SedMLError> validate() {
+        List<SedMLError> errs = new ArrayList<SedMLError>();
+        errs.addAll(new KisaoIDValidator(this.sedml.getSedML().getSimulations(), this.doc).validate());
+        errs.addAll(new URIValidator(this.sedml.getSedML().getModels()).validate());
+        return errs;
+
+    }
 
 }

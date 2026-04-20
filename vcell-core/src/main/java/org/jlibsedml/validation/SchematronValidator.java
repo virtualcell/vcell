@@ -29,11 +29,12 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdom2.Document;
-import org.jlibsedml.SEDMLDocument;
-import org.jlibsedml.SedML;
+import org.jlibsedml.SedMLDataContainer;
+import org.jlibsedml.SedMLDocument;
 import org.jlibsedml.SedMLError;
 import org.jlibsedml.SedMLError.ERROR_SEVERITY;
 import org.jlibsedml.XMLException;
+import org.jlibsedml.components.SId;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -50,10 +51,10 @@ public class SchematronValidator extends AbstractDocumentValidator {
 
     private static final String SVRL_NS_PREFIX = "svrl";
     private static final String SCHEMATRON_NS_URI = "http://purl.oclc.org/dsdl/svrl";
-    private SedML sedml;
+    private SedMLDataContainer sedml;
     XPathFactory xpf = XPathFactory.newInstance();
 
-    public SchematronValidator(Document doc, SedML sedml) {
+    public SchematronValidator(Document doc, SedMLDataContainer sedml) {
         super(doc);
         this.sedml = sedml;
     }
@@ -61,7 +62,7 @@ public class SchematronValidator extends AbstractDocumentValidator {
     public List<SedMLError> validate() throws XMLException {
 
         // first of all, get Validation report from Schematron stylesheets.
-        SEDMLDocument seddoc = new SEDMLDocument(sedml);
+        SedMLDocument seddoc = new SedMLDocument(sedml);
         List<SedMLError> rc = new ArrayList<SedMLError>();
         String docAsString = seddoc.writeDocumentToString();
         String schematron = getSchematronXSL();
@@ -111,12 +112,12 @@ public class SchematronValidator extends AbstractDocumentValidator {
     }
 
     private String getSchematronXSL() {
-        if (sedml.isL1V1()) {
+        if (this.sedml.isL1V1()) {
             return "validatorl1v1.xsl";
-        } else if (sedml.isL1V2()) {
+        } else if (this.sedml.isL1V2()) {
             return "validatorl1v2.xsl";
         } else {
-        	lg.warn("Unsupported sedml version `L{}V{}` detected, validating as L1V2", sedml.getLevel(), sedml.getVersion());
+        	lg.warn("Unsupported sedml version `L{}V{}` detected, validating as L1V2", this.sedml.getSedML().getLevel(), this.sedml.getSedML().getVersion());
         	return "validatorl1v2.xsl";
 //            throw new UnsupportedOperationException(MessageFormat.format(
 //                    "Invalid level and version -  {0}-{1}", sedml.getLevel(),
@@ -138,9 +139,7 @@ public class SchematronValidator extends AbstractDocumentValidator {
 
     int getLineNumber(Node sedmlNode) {
         LineFinderUtil util = new LineFinderUtil();
-        int num = util.getLineForElement(sedmlNode.getLocalName(), sedmlNode
-                .getAttributes().getNamedItem("id").getNodeValue(), getDoc());
-        return num;
+        return util.getLineForElement(sedmlNode.getLocalName(), new SId(sedmlNode.getAttributes().getNamedItem("id").getNodeValue()), this.getDoc());
     }
 
     private NodeList getSedmlNodes(String locationInSEDMLXPath, String st) {

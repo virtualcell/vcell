@@ -74,12 +74,12 @@ public class Libsedml {
      * 
      * @param file
      *            A non-null, readable file of a SED-ML xml file
-     * @return A non null {@link SEDMLDocument}
+     * @return A non null {@link SedMLDocument}
      * @throws XMLException
      *             for parsing errors, or if file doesn't exist or is not
      *             readable
      */
-    public static SEDMLDocument readDocument(File file) throws XMLException {
+    public static SedMLDocument readDocument(File file) throws XMLException {
         String fileContents = null;
         try {
             fileContents = FileUtils.readFileToString(file);
@@ -93,12 +93,12 @@ public class Libsedml {
      * Reads SEDML from an input stream
      * @param is
      * @param encoding - the character encoding. Defaults to default encoding if this is <code>null</code>.
-     * @return A {@link SEDMLDocument}
+     * @return A {@link SedMLDocument}
      * @throws XMLException
      * @throws IOException if stream cannot be read
      * @since 2.2.3
      */
-    public static SEDMLDocument readDocument(InputStream is, String encoding) throws XMLException, IOException {
+    public static SedMLDocument readDocument(InputStream is, String encoding) throws XMLException, IOException {
         if(encoding == null) {
             encoding = Charset.defaultCharset().name();
         }     
@@ -142,10 +142,10 @@ public class Libsedml {
         } catch (XMLException e) {
             return false;
         }
-        return SEDMLTags.SEDML_L1V1_NS.equalsIgnoreCase(doc.getRootElement()
-                .getNamespaceURI()) || SEDMLTags.SEDML_L1V2_NS.equalsIgnoreCase(doc.getRootElement()
-                        .getNamespaceURI()) || SEDMLTags.SEDML_L1V3_NS.equalsIgnoreCase(doc.getRootElement()
-                                .getNamespaceURI()) || SEDMLTags.SEDML_L1V4_NS.equalsIgnoreCase(doc.getRootElement()
+        return SedMLTags.SEDML_L1V1_NS.equalsIgnoreCase(doc.getRootElement()
+                .getNamespaceURI()) || SedMLTags.SEDML_L1V2_NS.equalsIgnoreCase(doc.getRootElement()
+                        .getNamespaceURI()) || SedMLTags.SEDML_L1V3_NS.equalsIgnoreCase(doc.getRootElement()
+                                .getNamespaceURI()) || SedMLTags.SEDML_L1V4_NS.equalsIgnoreCase(doc.getRootElement()
                                 		.getNamespaceURI());
 
     }
@@ -188,30 +188,30 @@ public class Libsedml {
                 && text.trim().indexOf(")") == (text.length() - 1);
     }
 
-    private static SEDMLDocument buildDocumentFromXMLTree(Document doc,
-            List<SedMLError> errs) throws XMLException {
+    private static SedMLDocument buildDocumentFromXMLTree(Document doc,
+                                                          List<SedMLError> errs) throws XMLException {
         Element sedRoot = doc.getRootElement();
-        SEDMLReader reader = new SEDMLReader();
+        SedMLReader reader = new SedMLReader();
         try {
-            SEDMLElementFactory.getInstance().setStrictCreation(false);
-            SedML sedML = reader.getSedDocument(sedRoot);
-            SEDMLDocument sedmlDoc = new SEDMLDocument(sedML, errs);
+            SedMLElementFactory.getInstance().setStrictCreation(false);
+            SedMLDataContainer sedMLDataContainer = reader.getSedDocument(sedRoot);
+            SedMLDocument sedmlDoc = new SedMLDocument(sedMLDataContainer, errs);
             sedmlDoc.validate();
             return sedmlDoc;
         } finally {
-            SEDMLElementFactory.getInstance().setStrictCreation(true);
+            SedMLElementFactory.getInstance().setStrictCreation(true);
         }
     }
 
     /**
      * Creates a new, empty SED-ML document
      * 
-     * @return A non-null, empty {@link SEDMLDocument}. This document is not
+     * @return A non-null, empty {@link SedMLDocument}. This document is not
      *         free of errors after creation, as a valid document contains at
      *         least one task, for example.
      */
-    public static SEDMLDocument createDocument() {
-        return new SEDMLDocument();
+    public static SedMLDocument createDocument() {
+        return new SedMLDocument();
     }
 
     /**
@@ -293,24 +293,22 @@ public class Libsedml {
             throw new IllegalArgumentException();
         }
 
-        ZipInputStream zis = new ZipInputStream(archive);
-        ZipEntry entry = null;
-
-        int read;
-        List<IModelContent> contents = new ArrayList<IModelContent>();
-        List<SEDMLDocument> docs = new ArrayList<SEDMLDocument>();
-        try {
+        try (ZipInputStream zis = new ZipInputStream(archive)) {
+            ZipEntry entry;
+            int read;
+            List<IModelContent> contents = new ArrayList<>();
+            List<SedMLDocument> docs = new ArrayList<>();
             while ((entry = zis.getNextEntry()) != null) {
-            	if(entry.getName().endsWith(".rdf")) {
-            		continue;		// we skip rdf files, otherwise isSEDML() below fails
-            	}
+                if (entry.getName().endsWith(".rdf")) {
+                    continue;        // we skip rdf files, otherwise isSEDML() below fails
+                }
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 byte[] buf = new byte[4096];
                 while ((read = zis.read(buf)) != -1) {
                     baos.write(buf, 0, read);
                 }
                 if (isSEDML(new ByteArrayInputStream(baos.toByteArray()))) {
-                    SEDMLDocument doc = readDocumentFromString(baos.toString());
+                    SedMLDocument doc = readDocumentFromString(baos.toString());
                     String fullPath = entry.getName();
                     int lastSeparator = Math.max(fullPath.lastIndexOf("\\"), fullPath.lastIndexOf("/")) + 1;
                     String path = fullPath.substring(0, lastSeparator);
@@ -326,12 +324,9 @@ public class Libsedml {
             }
             return new ArchiveComponents(contents, docs);
         } catch (Exception e) {
-            throw new XMLException("Error reading archive: " + e.getMessage());
-        } finally {
-            try {
-                zis.close();
-            } catch (IOException e) {}// ignore
+            throw new XMLException("Error reading archive: ", e);
         }
+        // ignore
     }
 
     /**
@@ -344,7 +339,7 @@ public class Libsedml {
      * @throws XMLException
      *             if the XML was malformed or could not otherwise be parsed.
      */
-    public static SEDMLDocument readDocumentFromString(String sedmlString)
+    public static SedMLDocument readDocumentFromString(String sedmlString)
             throws XMLException {
         SAXBuilder builder = new SAXBuilder();
         List<SedMLError> errs = new RawContentsSchemaValidator(sedmlString)
@@ -357,7 +352,7 @@ public class Libsedml {
         } catch (IOException e) {
             throw new XMLException("Error reading file", e);
         }
-        SEDMLDocument sedmlDoc = buildDocumentFromXMLTree(doc, errs);
+        SedMLDocument sedmlDoc = buildDocumentFromXMLTree(doc, errs);
         return sedmlDoc;
     }
 

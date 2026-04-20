@@ -14,7 +14,7 @@ import cbit.vcell.solver.SimulationJob;
 import cbit.vcell.solver.VCSimulationDataIdentifier;
 import cbit.vcell.solver.VCSimulationIdentifier;
 import cbit.vcell.solvers.CartesianMesh;
-import org.jlibsedml.UniformTimeCourse;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
 import org.sbml.jsbml.SBase;
 import org.vcell.sbml.vcell.lazy.LazySBMLSpatialDataAccessor;
 import org.vcell.util.DataAccessException;

@@ -8,6 +8,16 @@ import cbit.vcell.solver.TempSimulation;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jlibsedml.*;
+import org.jlibsedml.components.SId;
+import org.jlibsedml.components.SedBase;
+import org.jlibsedml.components.SedML;
+import org.jlibsedml.components.Variable;
+import org.jlibsedml.components.dataGenerator.DataGenerator;
+import org.jlibsedml.components.output.*;
+import org.jlibsedml.components.simulation.UniformTimeCourse;
+import org.jlibsedml.components.task.AbstractTask;
+import org.jlibsedml.components.task.RepeatedTask;
+import org.jlibsedml.components.task.Task;
 import org.vcell.cli.run.TaskJob;
 import org.vcell.cli.run.hdf5.Hdf5SedmlResults;
 import org.vcell.cli.run.hdf5.Hdf5SedmlResultsNonSpatial;
@@ -24,25 +34,33 @@ import java.util.*;
 public class NonSpatialResultsConverter extends ResultsConverter {
     private final static Logger logger = LogManager.getLogger(NonSpatialResultsConverter.class);
 
-    public static Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizeNonSpatialResultsBySedmlDataGenerator(SedML sedml, Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, SEDMLImportException {
+    public static Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> organizeNonSpatialResultsBySedmlDataGenerator(SedMLDataContainer sedmlContainer, Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash, Map<AbstractTask, TempSimulation> taskToSimulationMap) throws ExpressionException, SEDMLImportException {
         Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> nonSpatialOrganizedResultsMap = new HashMap<>();
         if (nonSpatialResultsHash.isEmpty()) return nonSpatialOrganizedResultsMap;
 
-        for (Output output : ResultsConverter.getValidOutputs(sedml)){
+        SedML sedML = sedmlContainer.getSedML();
+        for (Output output : ResultsConverter.getValidOutputs(sedmlContainer)){
             Set<DataGenerator> dataGeneratorsToProcess;
             if (output instanceof Report report){
                 dataGeneratorsToProcess = new LinkedHashSet<>();
-                for (DataSet dataSet : report.getListOfDataSets()){
+                for (DataSet dataSet : report.getDataSets()){
                     // use the data reference to obtain the data generator
-                    dataGeneratorsToProcess.add(sedml.getDataGeneratorWithId(dataSet.getDataReference()));
-                    BiosimulationLog.instance().updateDatasetStatusYml(Paths.get(sedml.getPathForURI(), sedml.getFileName()).toString(), output.getId(), dataSet.getId(), BiosimulationLog.Status.SUCCEEDED);
+                    DataGenerator dg = sedmlContainer.findDataGeneratorById(dataSet.getDataReference());
+                    if (dg == null) throw new RuntimeException("Requested data generator does not exist");
+                    dataGeneratorsToProcess.add(dg);
+                    BiosimulationLog.instance().updateDatasetStatusYml(Paths.get(sedmlContainer.getPathForURI(), sedmlContainer.getFileName()).toString(), output.getIdAsString(), dataSet.getIdAsString(), BiosimulationLog.Status.SUCCEEDED);
                 }
             }
             else if (output instanceof Plot2D plot2D){
                 Set<DataGenerator> uniqueDataGens = new LinkedHashSet<>();
-                for (Curve curve : plot2D.getListOfCurves()){
-                    uniqueDataGens.add(sedml.getDataGeneratorWithId(curve.getXDataReference()));
-                    uniqueDataGens.add(sedml.getDataGeneratorWithId(curve.getYDataReference()));
+                for (AbstractCurve abstractCurve : plot2D.getCurves()){
+                    if (!(abstractCurve instanceof Curve curve)) continue;
+                    DataGenerator xDataGen = sedmlContainer.findDataGeneratorById(curve.getXDataReference());
+                    if (xDataGen == null) throw new RuntimeException("Non-data-generator found");
+                    uniqueDataGens.add(xDataGen);
+                    DataGenerator yDataGen = sedmlContainer.findDataGeneratorById(curve.getYDataReference());
+                    if (yDataGen == null) throw new RuntimeException("Non-data-generator found");
+                    uniqueDataGens.add(yDataGen);
                 }
                 dataGeneratorsToProcess = uniqueDataGens;
             } else {
@@ -52,18 +70,17 @@ public class NonSpatialResultsConverter extends ResultsConverter {
             // We need to determine the "correct" number of data points to pad correctly.
             int maxTimeLength = 0;
             for (DataGenerator dataGenerator : dataGeneratorsToProcess){
-                for (Variable variable : dataGenerator.getListOfVariables()){
-                    AbstractTask task = sedml.getTaskWithId(variable.getReference());
-                    AbstractTask derivedTask = ResultsConverter.getBaseTask(task, sedml);
-                    if (!(derivedTask instanceof Task baseTask)) throw new SEDMLImportException("Unable to find base task referred to by var `" + variable.getId() + "`");
-                    org.jlibsedml.Simulation sim = sedml.getSimulation(baseTask.getSimulationReference());
-                    if (!(sim instanceof UniformTimeCourse utcSim)) throw new SEDMLImportException("Unable to find utc sim referred to by var `" + variable.getId() + "`");
+                for (Variable variable : dataGenerator.getVariables()){
+                    Task baseTask = sedmlContainer.findBaseTaskByAbstractTaskId(variable.getTaskReference());
+                    if (baseTask == null) throw new SEDMLImportException("Unable to find base task referred to by var `" + variable.getId() + "`");
+                    UniformTimeCourse utcSim = sedmlContainer.findUniformTimeCourseById(baseTask.getSimulationReference());
+                    if (utcSim == null) throw new SEDMLImportException("Unable to find utc sim referred to by var `" + variable.getId() + "`");
                     maxTimeLength = Math.max(utcSim.getNumberOfSteps() + 1, maxTimeLength);
                 }
             }
 
             for (DataGenerator dataGen : dataGeneratorsToProcess) {
-                ValueHolder<LazySBMLNonSpatialDataAccessor> valueHolder = NonSpatialResultsConverter.getNonSpatialValueHolderForDataGenerator(sedml, dataGen, nonSpatialResultsHash, taskToSimulationMap, maxTimeLength);
+                ValueHolder<LazySBMLNonSpatialDataAccessor> valueHolder = NonSpatialResultsConverter.getNonSpatialValueHolderForDataGenerator(sedmlContainer, dataGen, nonSpatialResultsHash, taskToSimulationMap, maxTimeLength);
                 if (valueHolder == null) continue;
                 nonSpatialOrganizedResultsMap.put(dataGen, valueHolder);
             }
@@ -73,29 +90,29 @@ public class NonSpatialResultsConverter extends ResultsConverter {
     }
 
 
-    public static Map<Report, List<Hdf5SedmlResults>> prepareNonSpatialDataForHdf5(SedML sedml, Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> nonSpatialResultsMapping,
+    public static Map<Report, List<Hdf5SedmlResults>> prepareNonSpatialDataForHdf5(SedMLDataContainer sedmlContainer, Map<DataGenerator, ValueHolder<LazySBMLNonSpatialDataAccessor>> nonSpatialResultsMapping,
                                                                                    Set<DataGenerator> allValidDataGenerators, String sedmlLocation, boolean isBioSimMode) {
         Map<Report, List<Hdf5SedmlResults>> results = new LinkedHashMap<>();
         if (nonSpatialResultsMapping.isEmpty()){
             logger.debug("No non-spatial data generated; No need to prepare non-existent data!");
             return results;
         }
-        List<Report> modifiedList = new ArrayList<>(sedml.getOutputs().stream().filter(Report.class::isInstance).map(Report.class::cast).toList());
+        SedML sedML = sedmlContainer.getSedML();
+        List<Report> modifiedList = new ArrayList<>(sedML.getOutputs().stream().filter(Report.class::isInstance).map(Report.class::cast).toList());
 
 
         Map<DataGenerator, ValueHolder<LazySBMLDataAccessor>> generalizedResultsMapping = new LinkedHashMap<>();
         for (var set : nonSpatialResultsMapping.entrySet()) generalizedResultsMapping.put(set.getKey(), new ValueHolder<>(set.getValue()));
         // If we're not doing biosimulators mode, we need to record the plot2D as reports as well.
-        if (isBioSimMode) ResultsConverter.add2DPlotsAsReports(sedml, generalizedResultsMapping, modifiedList);
+        if (isBioSimMode) ResultsConverter.add2DPlotsAsReports(sedmlContainer, generalizedResultsMapping, modifiedList);
 
         for (Report report : modifiedList){
             Map<DataSet, ValueHolder<LazySBMLDataAccessor>> dataSetValues = new LinkedHashMap<>();
 
-            for (DataSet dataset : report.getListOfDataSets()) {
+            for (DataSet dataset : report.getDataSets()) {
                 // use the data reference to obtain the data generator
-                DataGenerator dataGen = sedml.getDataGeneratorWithId(dataset.getDataReference());
-                if (dataGen == null)
-                    throw new RuntimeException("No data for Data Generator `" + dataset.getDataReference() + "` can be found!");
+                DataGenerator dataGen = sedmlContainer.findDataGeneratorById(dataset.getDataReference());
+                if (dataGen == null) throw new RuntimeException("No data for Data Generator `" + dataset.getDataReference() + "` can be found!");;
                 if (!generalizedResultsMapping.containsKey(dataGen)){
                     if (allValidDataGenerators.contains(dataGen)) continue;
                     throw new RuntimeException("No data for Data Generator `" + dataset.getDataReference() + "` can be found!");
@@ -115,10 +132,10 @@ public class NonSpatialResultsConverter extends ResultsConverter {
 
             if (dataSetValues.entrySet().iterator().next().getValue().isEmpty()) continue; // Check if we have data to work with.
 
-            hdf5DatasetWrapper.datasetMetadata._type = NonSpatialResultsConverter.getKind(report.getId());
-            hdf5DatasetWrapper.datasetMetadata.sedmlId = ResultsConverter.removeVCellPrefixes(report.getId(), report.getId());
+            hdf5DatasetWrapper.datasetMetadata._type = NonSpatialResultsConverter.getKind(report.getIdAsString());
+            hdf5DatasetWrapper.datasetMetadata.sedmlId = ResultsConverter.removeVCellPrefixes(report.getIdAsString(), report.getIdAsString());
             hdf5DatasetWrapper.datasetMetadata.sedmlName = report.getName();
-            hdf5DatasetWrapper.datasetMetadata.uri = Paths.get(sedmlLocation, report.getId()).toString();
+            hdf5DatasetWrapper.datasetMetadata.uri = Paths.get(sedmlLocation, report.getIdAsString()).toString();
 
             for (DataSet dataSet : dataSetValues.keySet()){
                 ValueHolder<LazySBMLDataAccessor> dataSetValuesSource = dataSetValues.get(dataSet);
@@ -148,7 +165,7 @@ public class NonSpatialResultsConverter extends ResultsConverter {
                 hdf5DatasetWrapper.dataSource = dataSourceNonSpatial; // Using upcasting
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetDataTypes.add("float64");
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetIds.add(
-                    ResultsConverter.removeVCellPrefixes(dataSet.getId(), hdf5DatasetWrapper.datasetMetadata.sedmlId));
+                    ResultsConverter.removeVCellPrefixes(dataSet.getIdAsString(), hdf5DatasetWrapper.datasetMetadata.sedmlId));
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetLabels.add(dataSet.getLabel());
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetNames.add(dataSet.getName());
                 hdf5DatasetWrapper.datasetMetadata.sedmlDataSetShapes = shapes;
@@ -159,21 +176,23 @@ public class NonSpatialResultsConverter extends ResultsConverter {
         return results;
     }
 
-    private static ValueHolder<LazySBMLNonSpatialDataAccessor> getNonSpatialValueHolderForDataGenerator(SedML sedml, DataGenerator dataGen,
-                                                                                  Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash,
-                                                                                  Map<AbstractTask, TempSimulation> taskToSimulationMap, int padToLength) throws ExpressionException {
+    private static ValueHolder<LazySBMLNonSpatialDataAccessor> getNonSpatialValueHolderForDataGenerator(SedMLDataContainer sedmlContainer, DataGenerator dataGen,
+                                                                                                        Map<TaskJob, NonSpatialSBMLSimResults> nonSpatialResultsHash,
+                                                                                                        Map<AbstractTask, TempSimulation> taskToSimulationMap, int padToLength) throws ExpressionException {
         if (dataGen == null) throw new IllegalArgumentException("Provided Data Generator can not be null!");
         Map<Variable, ValueHolder<LazySBMLNonSpatialDataAccessor>> resultsByVariable = new HashMap<>();
 
+        SedML sedml = sedmlContainer.getSedML();
         // get the list of variables associated with the data reference
-        for (Variable var : dataGen.getListOfVariables()) {
+        for (Variable var : dataGen.getVariables()) {
             // for each variable we recover the task
-            AbstractTask topLevelTask = sedml.getTaskWithId(var.getReference());
-            AbstractTask baseTask = ResultsConverter.getBaseTask(topLevelTask, sedml); // if !RepeatedTask, baseTask == topLevelTask
+            AbstractTask topLevelTask = sedmlContainer.findAbstractTaskById(var.getTaskReference());
+            if (topLevelTask == null) throw new RuntimeException("Task referenced by variable could not be found!");
+            Task baseTask = sedmlContainer.findBaseTaskByAbstractTaskId(var.getTaskReference());
 
             // from the task we get the sbml model
-            org.jlibsedml.Simulation sedmlSim = sedml.getSimulation(baseTask.getSimulationReference());
-
+            org.jlibsedml.components.simulation.Simulation sedmlSim = sedmlContainer.findSimulationById(baseTask.getSimulationReference());
+            if (null == sedmlSim) throw new RuntimeException("Simulation referenced by task could not be found!");
             if (!(sedmlSim instanceof UniformTimeCourse utcSim)){
                 logger.error("only uniform time course simulations are supported");
                 continue;
@@ -218,9 +237,11 @@ public class NonSpatialResultsConverter extends ResultsConverter {
 
         // We now need to condense the multiple variables into a single resolved value
 
-        String exampleReference = resultsByVariable.keySet().iterator().next().getReference();
+        SId exampleTaskReference = resultsByVariable.keySet().iterator().next().getTaskReference();
         int numJobs = resultsByVariable.values().iterator().next().listOfResultSets.size();
-        ValueHolder<LazySBMLNonSpatialDataAccessor> synthesizedResults = new ValueHolder<>(taskToSimulationMap.get(sedml.getTaskWithId(exampleReference)));
+        AbstractTask abstractTask = sedmlContainer.findAbstractTaskById(exampleTaskReference);
+        if (null == abstractTask) throw new RuntimeException("Task referenced by variable could not be found!");
+        ValueHolder<LazySBMLNonSpatialDataAccessor> synthesizedResults = new ValueHolder<>(taskToSimulationMap.get(abstractTask));
         SimpleDataGenCalculator calc = new SimpleDataGenCalculator(dataGen);
 
         // Perform the math!
@@ -245,7 +266,7 @@ public class NonSpatialResultsConverter extends ResultsConverter {
                 LazySBMLNonSpatialDataAccessor specificJobDataSet = nonSpatialValue.listOfResultSets.get(jobNum);
                 double[] lazyData = specificJobDataSet.getData().data();
                 double datum = datumIndex >= lazyData.length ? Double.NaN : lazyData[datumIndex];
-                calc.setArgument(var.getId(), datum);
+                calc.setArgument(var.getId().string(), datum);
                 if (!vcSimulation.equals(nonSpatialValue.vcSimulation)){
                     logger.warn("Simulations differ across variables; need to fix data structures to accommodate?");
                 }
