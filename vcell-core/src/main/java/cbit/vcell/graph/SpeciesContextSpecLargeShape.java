@@ -3,6 +3,7 @@ package cbit.vcell.graph;
 import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.StructuralSite;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import org.vcell.model.rbm.*;
@@ -413,12 +414,23 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             return;
         }
         Map<MolecularComponentPattern, SiteAttributesSpec> sasMap = scs.getSiteAttributesMap();
+        Map<StructuralSite, SiteAttributesSpec> structuralSiteAttributesMap = scs.getStructuralSiteAttributesMap();
+        Map<LinkNode, SiteAttributesSpec> merged = new LinkedHashMap<>();
+        // Add physiological sites
+        for (Map.Entry<MolecularComponentPattern, SiteAttributesSpec> e : sasMap.entrySet()) {
+            merged.put(e.getKey(), e.getValue());
+        }
+        // Add structural sites
+        for (Map.Entry<StructuralSite, SiteAttributesSpec> e : structuralSiteAttributesMap.entrySet()) {
+            merged.put(e.getKey(), e.getValue());
+        }
+
         Set<MolecularInternalLinkSpec> internalLinkSet = scs.getInternalLinkSet();
 
         // we draw all objects as unselected first, and then we redraw the selected objects on top of everything else,
         // so that they look highlighted and are not hidden behind other objects
-        for(MolecularInternalLinkSpec mils : internalLinkSet) {
-            Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
+        for(MolecularInternalLinkSpec mils : internalLinkSet) {     // draw links first, so that they are under the sites
+            Pair<LinkNode, LinkNode> link = mils.getLink();
             SiteAttributesSpec sas1 = sasMap.get(link.one);
             SiteAttributesSpec sas2 = sasMap.get(link.two);
             double x1 = x_offset + sas1.getCoordinate().getZ();
@@ -429,8 +441,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             lineToMilsMap.put(line, mils);
             milsToLineMap.put(mils, line);
         }
-        for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
-            SiteAttributesSpec sas = sasMap.get(mcp);
+        for (Map.Entry<LinkNode, SiteAttributesSpec> entry : merged.entrySet()) {    // draw the sites now
+            SiteAttributesSpec sas = entry.getValue();
             Coordinate coord = sas.getCoordinate();
             double radius = sas.getRadius();
             NamedColor color = sas.getColor();
@@ -456,7 +468,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             ellipseToSasMap.put(newOval, sas);
         }
         if(milsSelected != null) {
-            Pair<MolecularComponentPattern, MolecularComponentPattern> link = milsSelected.getLink();
+            Pair<LinkNode, LinkNode> link = milsSelected.getLink();
             SiteAttributesSpec sas1 = sasMap.get(link.one);
             SiteAttributesSpec sas2 = sasMap.get(link.two);
             double x1 = x_offset + sas1.getCoordinate().getZ();
@@ -474,8 +486,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
 
         // we now redraw the last selected object on top of everything else
         if(lastSelectedObject != null) {
-            if(lastSelectedObject instanceof MolecularComponentPattern) {
-                MolecularComponentPattern mcp = (MolecularComponentPattern)lastSelectedObject;
+            if(lastSelectedObject instanceof LinkNode) {
+                LinkNode mcp = (LinkNode)lastSelectedObject;
                 SiteAttributesSpec sas = sasMap.get(mcp);
                 Coordinate coord = sas.getCoordinate();
                 double radius = sas.getRadius();
@@ -489,7 +501,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
                 ellipseToSasMap.put(newOval, sas);
             } else if(lastSelectedObject instanceof MolecularInternalLinkSpec) {
                 MolecularInternalLinkSpec mils = (MolecularInternalLinkSpec)lastSelectedObject;
-                Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
+                Pair<LinkNode, LinkNode> link = mils.getLink();
                 SiteAttributesSpec sas1 = sasMap.get(link.one);
                 SiteAttributesSpec sas2 = sasMap.get(link.two);
                 double x1 = x_offset + sas1.getCoordinate().getZ();

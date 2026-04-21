@@ -15,13 +15,7 @@ import java.beans.PropertyVetoException;
 import java.util.*;
 
 import cbit.vcell.geometry.surface.GeometricRegion;
-import org.vcell.model.rbm.ComponentStateDefinition;
-import org.vcell.model.rbm.ComponentStatePattern;
-import org.vcell.model.rbm.MolecularComponent;
-import org.vcell.model.rbm.MolecularComponentPattern;
-import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.*;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 
@@ -1199,7 +1193,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					throw new RuntimeException("LangevinMathMapping: the internal link set cannot be null");
 				}
 				for(MolecularInternalLinkSpec mils : internalLinkSet) {
-					Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
+					Pair<LinkNode, LinkNode> link = mils.getLink();
 					LangevinParticleMolecularComponent one = mcpToLpmc.get(link.one);
 					LangevinParticleMolecularComponent two = mcpToLpmc.get(link.two);
 					// error: Cannot invoke "Object.equals(Object)" because "this.one" is null

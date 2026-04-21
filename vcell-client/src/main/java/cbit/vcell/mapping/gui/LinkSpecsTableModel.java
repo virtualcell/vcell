@@ -94,8 +94,6 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
         ColumnType columnType = columns.get(col);
         SpeciesContextSpec scs = getSpeciesContextSpec();
 
-        MolecularComponentPattern mcpOne = mils.getMolecularComponentPatternOne();
-        MolecularComponentPattern mcpTwo = mils. getMolecularComponentPatternTwo();
         SiteAttributesSpec sasOne = mils. getSite1();
         SiteAttributesSpec sasTwo = mils. getSite2();
 
@@ -267,11 +265,11 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
                 if(fieldSpeciesContextSpec != scs) {
                     throw new RuntimeException("SpeciesContextSpec inconsistent.");
                 }
-                MolecularComponentPattern mcp1 = mils1.getLink().one;
-                MolecularComponentPattern mcp2 = mils2.getLink().one;
+                LinkNode node1 = mils1.getLink().one;
+                LinkNode node2 = mils2.getLink().one;
                 Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = getSpeciesContextSpec().getSiteAttributesMap();
-                SiteAttributesSpec sas1 = siteAttributesMap.get(mcp1);
-                SiteAttributesSpec sas2 = siteAttributesMap.get(mcp2);
+                SiteAttributesSpec sas1 = siteAttributesMap.get(node1);
+                SiteAttributesSpec sas2 = siteAttributesMap.get(node2);
                 Double z1 = sas1.getCoordinate().getZ();
                 Double z2 = sas2.getCoordinate().getZ();
                 return z1.compareTo(z2);

@@ -1718,8 +1718,8 @@ private Element getXML(SpeciesContextSpec param, SimulationContext simContext) {
 			
 			Element milsElement = new Element(XMLTags.InternalLinkSpecTag);
 			milsElement.setAttribute(XMLTags.MoleculeRefAttrTag, mt.getName());
-			milsElement.setAttribute(XMLTags.SiteOneRefAttrTag, mils.getMolecularComponentPatternOne().getMolecularComponent().getName());
-			milsElement.setAttribute(XMLTags.SiteTwoRefAttrTag, mils.getMolecularComponentPatternTwo().getMolecularComponent().getName());
+			milsElement.setAttribute(XMLTags.SiteOneRefAttrTag, mils.getLinkNodeOne().getName());
+			milsElement.setAttribute(XMLTags.SiteTwoRefAttrTag, mils.getLinkNodeTwo().getName());
 			speciesContextSpecElement.addContent(milsElement);
 		}
 	}

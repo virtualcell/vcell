@@ -16,16 +16,10 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.*;
 
-import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.model.rbm.ComponentStateDefinition;
-import org.vcell.model.rbm.MolecularComponent;
-import org.vcell.model.rbm.MolecularComponentPattern;
-import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.*;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -457,6 +451,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     // SpringSaLaD specific entities
     public Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<>();
     private Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = new LinkedHashMap<>();
+    private Map<StructuralSite, SiteAttributesSpec> structuralSiteAttributesMap = new LinkedHashMap<>();
     // is2D flag, used by the solver for collision / overlapping calculations, exact meaning uncertain
     // membrane species may have it set to true, for compartment species is always false
     // for now we have it hardcoded to false and non-editable
@@ -691,6 +686,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         }
     }
 
+    // TODO: add sanity checks for StructuralSites
     public void initializeForSpringSaLaD(MolecularType molecularType) {
         // we need to make sure that the mcp in the siteAttributesMap:
         // Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = scs.getSiteAttributesMap();
@@ -878,10 +874,13 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             // step 1.1: build the set of "old" mcp and mils from the siteAttributesMap
             oldMcpSet = new LinkedHashSet<> ();     // Set<MolecularComponentPattern>
             for(MolecularInternalLinkSpec oldMils : getInternalLinkSet()) {
-                MolecularComponentPattern mcpOne = oldMils.getMolecularComponentPatternOne();
-                MolecularComponentPattern mcpTwo = oldMils.getMolecularComponentPatternTwo();
-                oldMcpSet.add(mcpOne);
-                oldMcpSet.add(mcpTwo);
+                LinkNode lnOne = oldMils.getLinkNodeOne();
+                LinkNode lnTwo = oldMils.getLinkNodeTwo();
+                if(lnOne instanceof MolecularComponentPattern) {
+                    oldMcpSet.add((MolecularComponentPattern) lnOne);
+                }                if(lnTwo instanceof MolecularComponentPattern) {
+                    oldMcpSet.add((MolecularComponentPattern) lnTwo);
+                }
             }
             // step 1.2: we build set of authoritative MolecularComponentPattern from the SpeciesPattern
             Set<MolecularComponentPattern> authoritativeMcpSet = new LinkedHashSet<>();
@@ -928,17 +927,24 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 
             // step 3: we iterate through the internal link set, we replace all mcs with the new mcs in oldToNewMcp
             // any mcp not found there was deleted, we must delete the link containing it
+            // TODO: keep checking this code carefuly after introducing StructuralSites, it's easy to mess up the logic
             Set<MolecularInternalLinkSpec> linksToRemove = new LinkedHashSet<> ();
             for(MolecularInternalLinkSpec oldMils : getInternalLinkSet()) {
-                Pair<MolecularComponentPattern, MolecularComponentPattern> link = oldMils.getLink();
-                MolecularComponentPattern mcpOne = oldMils.getMolecularComponentPatternOne();
-                MolecularComponentPattern mcpTwo = oldMils.getMolecularComponentPatternTwo();
-                if(!oldToNewMcp.containsKey(mcpOne) || !oldToNewMcp.containsKey(mcpTwo)) {
+                Pair<LinkNode, LinkNode> link = oldMils.getLink();
+                LinkNode lnOne = oldMils.getLinkNodeOne();
+                LinkNode lnTwo = oldMils.getLinkNodeTwo();
+                if(lnOne instanceof MolecularComponentPattern mcpOne && !oldToNewMcp.containsKey(mcpOne)) {
                     linksToRemove.add(oldMils);
-                } else {
-                    Pair<MolecularComponentPattern, MolecularComponentPattern> newLink = new Pair(oldToNewMcp.get(mcpOne), oldToNewMcp.get(mcpTwo));
-                    oldMils.setLink(newLink);
+                    continue;
                 }
+                if(lnTwo instanceof MolecularComponentPattern mcpTwo && !oldToNewMcp.containsKey(mcpTwo)) {
+                    linksToRemove.add(oldMils);
+                    continue;
+                }
+                // both lnOne and lnTwo are either StructuralSites or are MolecularComponentPattern with a match in oldToNewMcp,
+                // then we update the link
+                Pair<LinkNode, LinkNode> newLink = new Pair(oldToNewMcp.get(lnOne), oldToNewMcp.get(lnTwo));
+                oldMils.setLink(newLink);
             }
             getInternalLinkSet().removeAll(linksToRemove);
 
@@ -951,14 +957,14 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                 authoritativeMcpSet2.add(mcp);
             }
             // step 4.2: we can't assume how many links we have, even 0 is possible if we deleted them manually
-            // hoever, any mcp instance present in a link must be valid (present in the authoritativeMcpSet)
+            // however, any mcp instance present in a link must be valid (present in the authoritativeMcpSet)
             for(MolecularInternalLinkSpec link : getInternalLinkSet()) {
-                MolecularComponentPattern mcpOne = link.getMolecularComponentPatternOne();
-                MolecularComponentPattern mcpTwo = link.getMolecularComponentPatternTwo();
-                if(!authoritativeMcpSet2.contains(mcpOne)) {
+                LinkNode lnOne = link.getLinkNodeOne();
+                LinkNode lnTwo = link.getLinkNodeTwo();
+                if(lnOne instanceof MolecularComponentPattern mcpOne && !authoritativeMcpSet2.contains(mcpOne)) {
                     throw new RuntimeException(ilSetExceptionPrefix + "has invalid MolecularComponentPattern instance");
                 }
-                if(!authoritativeMcpSet2.contains(mcpTwo)) {
+                if(lnTwo instanceof MolecularComponentPattern mcpTwo && !authoritativeMcpSet2.contains(mcpTwo)) {
                     throw new RuntimeException(ilSetExceptionPrefix + "has invalid MolecularComponentPattern instance");
                 }
             }
@@ -1290,7 +1296,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                     return;
                 }
                 for(MolecularInternalLinkSpec mils : getInternalLinkSet()){
-                    if(mils.getMolecularComponentPatternOne() == mils.getMolecularComponentPatternTwo()){
+                    if(mils.getLinkNodeOne() == mils.getLinkNodeTwo()){
                         String msg = "Both sites of the Link are identical. A site cannot be linked to itself.";
                         String tip = msg;
                         issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
@@ -1305,7 +1311,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                         mcpMap.put(mcp, i);
                     }
                     for(MolecularInternalLinkSpec mils : getInternalLinkSet()) {
-                        Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
+                        Pair<LinkNode, LinkNode> link = mils.getLink();
                         int one = mcpMap.get(link.one);
                         int two = mcpMap.get(link.two);
                         graph.addEdge(one, two);
@@ -1323,8 +1329,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                             continue;
                         }
                         if(candidate.compareEqual(other)){
-                            String one = candidate.getMolecularComponentPatternOne().getMolecularComponent().getName();
-                            String two = candidate.getMolecularComponentPatternTwo().getMolecularComponent().getName();
+                            String one = candidate.getLinkNodeOne().getName();
+                            String two = candidate.getLinkNodeTwo().getName();
                             String msg = "Duplicate link: " + one + " :: " + two;
                             String tip = msg;
                             issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
@@ -2453,21 +2459,25 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         return speciesContextSpecParameterList;
     }
 
+    // springsalad-related collections getter / setters
     public Set<MolecularInternalLinkSpec> getInternalLinkSet(){
         return internalLinkSet;
     }
-
     public void setInternalLinkSet(Set<MolecularInternalLinkSpec> internalLinkSet){
         this.internalLinkSet = internalLinkSet;
     }
-
-
     public Map<MolecularComponentPattern, SiteAttributesSpec> getSiteAttributesMap(){
         return siteAttributesMap;
     }
-
     public void setSiteAttributesMap(Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap){
         this.siteAttributesMap = siteAttributesMap;
+    }
+    // TODO: call these wherever we call the above get/set methods
+    public Map<StructuralSite, SiteAttributesSpec> getStructuralSiteAttributesMap(){
+        return structuralSiteAttributesMap;
+    }
+    public void setStructuralSiteAttributesMap(Map<StructuralSite, SiteAttributesSpec> structuralSiteAttributesMap){
+        this.structuralSiteAttributesMap = structuralSiteAttributesMap;
     }
 
     public SpatialQuantity[] getVelocityQuantities(QuantityComponent component){

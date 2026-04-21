@@ -11,33 +11,25 @@
 package cbit.vcell.mapping;
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.io.PrintWriter;
 import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import cbit.vcell.model.*;
+import org.vcell.model.rbm.LinkNode;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.*;
-import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
-import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.document.Identifiable;
-import org.vcell.util.document.VersionFlag;
 
 @SuppressWarnings("serial")
 public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Matchable, Serializable {
 	private final SpeciesContextSpec fieldSpeciesContextSpec;
-	private MolecularComponentPattern fieldMolecularComponentPatternOne = null;
-	private MolecularComponentPattern fieldMolecularComponentPatternTwo = null;
+	private LinkNode fieldLinkNodeOne = null;
+	private LinkNode fieldLinkNodeTwo = null;
 //	private double linkLength = 0;		// it's a derived value which we don't store, we just compute it at need
 
-	public MolecularInternalLinkSpec(SpeciesContextSpec scs, MolecularComponentPattern linkOne, MolecularComponentPattern linkTwo) throws IllegalArgumentException {
+	public MolecularInternalLinkSpec(SpeciesContextSpec scs, LinkNode linkOne, LinkNode linkTwo) throws IllegalArgumentException {
 		fieldSpeciesContextSpec = scs;
 		SpeciesContext sc = scs.getSpeciesContext();
 		SpeciesPattern sp = sc.getSpeciesPattern();
@@ -46,11 +38,17 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 		}
 		MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);	// the one and only
 		// sanity check
-		if(linkOne == null || linkOne.getMolecularComponent() == null) {
+		if(linkOne == null) {
 			throw new IllegalArgumentException("A link component doesn't exist");
 		}
-		if(linkTwo == null || linkTwo.getMolecularComponent() == null) {
+		if(linkOne instanceof MolecularComponentPattern mcp && mcp.getMolecularComponent() == null) {
+			throw new IllegalArgumentException("The MolecularComponent of a link component is null");
+		}
+		if(linkTwo == null) {
 			throw new IllegalArgumentException("A link component doesn't exist");
+		}
+		if(linkTwo instanceof MolecularComponentPattern mcp && mcp.getMolecularComponent() == null) {
+			throw new IllegalArgumentException("The MolecularComponent of a link component is null");
 		}
 		boolean foundOne = false;
 		boolean foundTwo = false;
@@ -59,42 +57,70 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 				foundOne = true;
 			}
 		}
+		if(!foundOne && linkOne instanceof MolecularComponentPattern) {
+			throw new IllegalArgumentException("A MolecularComponentPattern link component doesn't match any molecule component");
+		}
 		for(MolecularComponentPattern mpc : mtp.getComponentPatternList()) {
 			if(mpc == linkTwo) {
 				foundTwo = true;
 			}
 		}
-		if(!foundOne || !foundTwo) {
-			throw new IllegalArgumentException("A link component doesn't match any molecule component");
+		if(!foundTwo && linkTwo instanceof MolecularComponentPattern) {
+			throw new IllegalArgumentException("A MolecularComponentPattern link component doesn't match any molecule component");
 		}
-		// order them based on position in the Molecule
 		// we may only have one molecule in the species pattern for the current version of springsalad impl, but who knows in the future
-		for(MolecularComponentPattern mpc : mtp.getComponentPatternList()) {
-			if(mpc == linkOne) {					// linkOne comes first
-				fieldMolecularComponentPatternOne = linkOne;
-				fieldMolecularComponentPatternTwo = linkTwo;
-				break;
-			} else if(mpc == linkTwo) {				// linkTwo comes first
-				fieldMolecularComponentPatternOne = linkTwo;
-				fieldMolecularComponentPatternTwo = linkOne;
-				break;
-			}
+		// deterministic ordering (for equals/hashCode)
+		if(compareOrder(linkOne, linkTwo) <= 0) {
+			fieldLinkNodeOne = linkOne;
+			fieldLinkNodeTwo = linkTwo;
+		} else {
+			fieldLinkNodeOne = linkTwo;
+			fieldLinkNodeTwo = linkOne;
 		}
 	}
+
+	private int compareOrder(LinkNode a, LinkNode b) {
+		if (a == b) {
+			return 0;
+		}
+		if (a == null) {
+			return -1;
+		}
+		if (b == null) {
+			return 1;
+		}
+
+		String nameA = a.getName();
+		String nameB = b.getName();
+
+		// Null-safe name comparison
+		if (nameA == null && nameB == null) {
+			return 0;
+		}
+		if (nameA == null) {
+			return -1;
+		}
+		if (nameB == null) {
+			return 1;
+		}
+
+		return nameA.compareTo(nameB);
+	}
+
 	public SpeciesContextSpec getSpeciesContextSpec() {
 		return fieldSpeciesContextSpec;
 	}
-	public MolecularComponentPattern getMolecularComponentPatternOne() {
-		return fieldMolecularComponentPatternOne;
+	public LinkNode getLinkNodeOne() {
+		return fieldLinkNodeOne;
 	}
-	public MolecularComponentPattern getMolecularComponentPatternTwo() {
-		return fieldMolecularComponentPatternTwo;
+	public LinkNode getLinkNodeTwo() {
+		return fieldLinkNodeTwo;
 	}
 	public SiteAttributesSpec getSite1() {
-		return getSpeciesContextSpec().getSiteAttributesMap().get(fieldMolecularComponentPatternOne);
+		return getSpeciesContextSpec().getSiteAttributesMap().get(fieldLinkNodeOne);
 	}
 	public SiteAttributesSpec getSite2() {
-		return getSpeciesContextSpec().getSiteAttributesMap().get(fieldMolecularComponentPatternTwo);
+		return getSpeciesContextSpec().getSiteAttributesMap().get(fieldLinkNodeTwo);
 	}
 
 	public double getX1() {
@@ -174,31 +200,24 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 	}
 
 	
-	public Pair<MolecularComponentPattern, MolecularComponentPattern> getLink() {
-		return new Pair<MolecularComponentPattern, MolecularComponentPattern>(fieldMolecularComponentPatternOne, fieldMolecularComponentPatternTwo);
+	public Pair<LinkNode, LinkNode> getLink() {
+		return new Pair<LinkNode, LinkNode>(fieldLinkNodeOne, fieldLinkNodeTwo);
 	}
-	public static Pair<MolecularComponentPattern, MolecularComponentPattern> getLink(MolecularInternalLinkSpec internalLink) {
-		if(internalLink == null) {
-			return null;
-		}
-		return new Pair<MolecularComponentPattern, MolecularComponentPattern>(internalLink.fieldMolecularComponentPatternOne, internalLink.fieldMolecularComponentPatternTwo);
-	}
-	public void setLink(Pair<MolecularComponentPattern, MolecularComponentPattern> link) {
+
+	public void setLink(Pair<LinkNode, LinkNode> link) {
 		SpeciesContext sc = fieldSpeciesContextSpec.getSpeciesContext();
 		SpeciesPattern sp = sc.getSpeciesPattern();
 		MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);	// the one and only
-		for(MolecularComponentPattern mpc : mtp.getComponentPatternList()) {
-			if(mpc == link.one) {					// linkOne comes first
-				fieldMolecularComponentPatternOne = link.one;
-				fieldMolecularComponentPatternTwo = link.two;
-				break;
-			} else if(mpc == link.two) {				// linkTwo comes first
-				fieldMolecularComponentPatternOne = link.two;
-				fieldMolecularComponentPatternTwo = link.one;
-				break;
-			}
+
+		if(compareOrder(link.one, link.two) <= 0) {
+			fieldLinkNodeOne = link.one;
+			fieldLinkNodeTwo = link.two;
+		} else {
+			fieldLinkNodeOne = link.two;
+			fieldLinkNodeTwo = link.one;
 		}
 	}
+
 	@Override
 	public boolean compareEqual(Matchable obj) {
 		if (obj == this) {
@@ -215,11 +234,10 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 		if(!fieldSpeciesContextSpec.getSpeciesContext().compareEqual(theirMils.getSpeciesContextSpec().getSpeciesContext())) {
 			return false;
 		}
-		// note that while the link is scalar, not vector, we order one and two by the position of the
-		// MolecularComponent in the MolecularType definition
-		// hence, no need to also compare thisOne with that.Two (I hope, at least)
-		if((fieldMolecularComponentPatternOne.compareEqual(theirMils.fieldMolecularComponentPatternOne)) &&
-				(fieldMolecularComponentPatternTwo.compareEqual(theirMils.fieldMolecularComponentPatternTwo))) {
+		// note that while the link is scalar, not vector, we order one and two alphabetically
+		// hence, no need to also compare this.One with that.Two (I hope, at least)
+		if((fieldLinkNodeOne.compareEqual(theirMils.fieldLinkNodeOne)) &&
+				(fieldLinkNodeTwo.compareEqual(theirMils.fieldLinkNodeTwo))) {
 			return true;
 		}
 		return false;

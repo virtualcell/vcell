@@ -25,6 +25,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.units.VCUnitDefinition;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.vcell.model.rbm.LinkNode;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
@@ -32,7 +33,6 @@ import org.vcell.util.Coordinate;
 import org.vcell.util.gui.*;
 import org.vcell.util.gui.ScrollTable.ScrollTableBooleanCellRenderer;
 import org.vcell.util.gui.sorttable.SortTableModel;
-import org.vcell.util.springsalad.Colors;
 import org.vcell.util.springsalad.NamedColor;
 
 import javax.swing.*;
@@ -42,7 +42,6 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -630,16 +629,16 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 					if (table.getModel() instanceof LinkSpecsTableModel) {
 						if (value instanceof MolecularInternalLinkSpec) {
 							MolecularInternalLinkSpec mils = (MolecularInternalLinkSpec)value;
-							MolecularComponentPattern firstMcp = mils.getMolecularComponentPatternOne();
-							MolecularComponentPattern secondtMcp = mils.getMolecularComponentPatternTwo();
-							setText(firstMcp.getMolecularComponent().getName() + " :: " + secondtMcp.getMolecularComponent().getName());
+							LinkNode firstNode = mils.getLinkNodeOne();
+							LinkNode secondNode = mils.getLinkNodeTwo();
+							setText(firstNode.getName() + " :: " + secondNode.getName());
 							SpeciesContextSpec scs = mils.getSpeciesContextSpec();
 							if(fieldSpeciesContextSpec != scs) {
 								throw new RuntimeException("SpeciesContextSpec inconsistent.");
 							}
 							Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = getSpeciesContextSpec().getSiteAttributesMap();
-							SiteAttributesSpec sasFirst = siteAttributesMap.get(firstMcp);
-							SiteAttributesSpec sasSecond = siteAttributesMap.get(secondtMcp);
+							SiteAttributesSpec sasFirst = siteAttributesMap.get(firstNode);
+							SiteAttributesSpec sasSecond = siteAttributesMap.get(secondNode);
 							NamedColor ncFirst = sasFirst.getColor();
 							NamedColor ncSecond = sasSecond.getColor();
 							Icon iconFirst = new ColorIcon(10,10,ncFirst.getColor(), true);
