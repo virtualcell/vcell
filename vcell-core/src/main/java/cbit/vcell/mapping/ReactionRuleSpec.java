@@ -1211,6 +1211,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 				SpeciesPattern spCandidate = scCandidate.getSpeciesPattern();
 				MolecularTypePattern mtpCandidate = spCandidate.getMolecularTypePatterns().get(0);
 				MolecularType mtCandidate = mtpCandidate.getMolecularType();
+				// I think we can safely ignore the structural sites since they do not participate in any reaction
 				if(mtOursOne == mtCandidate) {
 					siteAttributesMapOne = scs.getSiteAttributesMap();
 				}

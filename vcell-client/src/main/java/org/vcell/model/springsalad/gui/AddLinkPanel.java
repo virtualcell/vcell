@@ -19,6 +19,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -38,11 +40,9 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 
-import org.vcell.model.rbm.MolecularComponent;
-import org.vcell.model.rbm.MolecularComponentPattern;
-import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.NetworkConstraints;
-import org.vcell.model.rbm.SpeciesPattern;
+import cbit.vcell.mapping.SiteAttributesSpec;
+import cbit.vcell.mapping.StructuralSite;
+import org.vcell.model.rbm.*;
 import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.EditorScrollTable;
 
@@ -70,28 +70,28 @@ public class AddLinkPanel extends DocumentEditorSubPanel  {
 	private final MolecularStructuresPanel owner;
 	private ChildWindow parentChildWindow;
 	
-	private JList<MolecularComponentPattern> firstSiteList = null;
-	private DefaultListModel<MolecularComponentPattern> firstSiteListModel = new DefaultListModel<>();
+	private JList<LinkNode> firstSiteList = null;
+	private DefaultListModel<LinkNode> firstSiteListModel = new DefaultListModel<>();
 	private ListCellRenderer<Object> firstSiteCellRenderer = new DefaultListCellRenderer(){
 		@Override
 		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-			if (value instanceof MolecularComponentPattern && component instanceof JLabel) {
-				MolecularComponentPattern mcp = (MolecularComponentPattern)value;
-				((JLabel)component).setText(mcp.getMolecularComponent().getName());
+			if (value instanceof LinkNode && component instanceof JLabel) {
+				LinkNode mcp = (LinkNode)value;
+				((JLabel)component).setText(mcp.getName());
 			}
 			return component;
 		}
 	};
-	private JList<MolecularComponentPattern> secondSiteList = null;
-	private DefaultListModel<MolecularComponentPattern> secondSiteListModel = new DefaultListModel<>();
+	private JList<LinkNode> secondSiteList = null;
+	private DefaultListModel<LinkNode> secondSiteListModel = new DefaultListModel<>();
 	private ListCellRenderer<Object> secondSiteCellRenderer = new DefaultListCellRenderer() {
 		@Override
 		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 			Component component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-			if (value instanceof MolecularComponentPattern && component instanceof JLabel){
-				MolecularComponentPattern mcp = (MolecularComponentPattern)value;
-				((JLabel)component).setText(mcp.getMolecularComponent().getName());
+			if (value instanceof LinkNode && component instanceof JLabel){
+				LinkNode mcp = (LinkNode)value;
+				((JLabel)component).setText(mcp.getName());
 			}
 			return component;
 		}
@@ -117,8 +117,8 @@ public class AddLinkPanel extends DocumentEditorSubPanel  {
 		@Override
 		public void valueChanged(ListSelectionEvent e) {
 			if(e.getSource() == firstSiteList || e.getSource() == secondSiteList) {
-				MolecularComponentPattern firstMcp = firstSiteList.getSelectedValue();
-				MolecularComponentPattern secondMcp = secondSiteList.getSelectedValue();
+				LinkNode firstMcp = firstSiteList.getSelectedValue();
+				LinkNode secondMcp = secondSiteList.getSelectedValue();
 				if(firstMcp != null && secondMcp != null) {
 					getApplyButton().setEnabled(true);
 				} else {
@@ -158,19 +158,24 @@ private void initialize() {
 			return;
 		}
 
-		firstSiteList = new JList<MolecularComponentPattern>(firstSiteListModel);
+		firstSiteList = new JList<LinkNode>(firstSiteListModel);
 		firstSiteList.setCellRenderer(firstSiteCellRenderer);
-		secondSiteList = new JList<MolecularComponentPattern>(secondSiteListModel);
+		secondSiteList = new JList<LinkNode>(secondSiteListModel);
 		secondSiteList.setCellRenderer(secondSiteCellRenderer);
 		firstSiteList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		secondSiteList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-		for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
+		for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {	// use the physiology to populate, that's authoritative
 			firstSiteListModel.addElement(mcp);
 			secondSiteListModel.addElement(mcp);
 		}
-		
-			
+		for (Map.Entry<StructuralSite, SiteAttributesSpec> entry : scs.getStructuralSiteAttributesMap().entrySet()) {
+			StructuralSite ss = entry.getKey();
+			SiteAttributesSpec sas = entry.getValue();
+			firstSiteListModel.addElement(ss);
+			secondSiteListModel.addElement(ss);
+		}
+
 		JPanel p = new JPanel();
 		p.setLayout(new GridBagLayout());
 		
@@ -286,10 +291,8 @@ private JButton getCancelButton() {
 	return cancelButton;
 }
 
-public JList<MolecularComponentPattern> getFirstSiteList() {
-	return firstSiteList;
-}
-public JList<MolecularComponentPattern> getSecondSiteList() {
+public JList<LinkNode> getFirstSiteList() { return firstSiteList; }
+public JList<LinkNode> getSecondSiteList() {
 	return secondSiteList;
 }
 

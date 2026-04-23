@@ -11,7 +11,6 @@
 package cbit.vcell.modeldb;
 
 import cbit.vcell.mapping.MolecularInternalLinkSpec;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -188,7 +187,7 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 		StringBuilder sb = new StringBuilder();
 		for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : scs.getSiteAttributesMap().entrySet()) {
 			SiteAttributesSpec sas = entry.getValue();
-			sb.append(sas.getMolecularComponentPattern().getMolecularComponent().getName() + ",");
+			sb.append(sas.getLinkNode().getName() + ",");
 			sb.append(sas.getLocation().getName() + ",");
 			sb.append(sas.getRadius() + ",");
 			sb.append(sas.getDiffusionRate() +",");
@@ -254,8 +253,8 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 		for( MolecularInternalLinkSpec mils : scs.internalLinkSet) {
 			SiteAttributesSpec sas1 = mils.getSite1();
 			SiteAttributesSpec sas2 = mils.getSite2();
-			sb.append(sas1.getMolecularComponentPattern().getMolecularComponent().getName() + ",");
-			sb.append(sas2.getMolecularComponentPattern().getMolecularComponent().getName() + ";");
+			sb.append(sas1.getLinkNode().getName() + ",");
+			sb.append(sas2.getLinkNode().getName() + ";");
 		}
 		return sb.toString();
 	}

@@ -15,7 +15,7 @@ public class StructuralSite extends RbmElementAbstract implements LinkNode {
 
     @Override
     public String getName() {
-        return null;
+        return name;
     }
 
 
@@ -25,7 +25,7 @@ public class StructuralSite extends RbmElementAbstract implements LinkNode {
         if (this == aThat) {
             return true;
         }
-        if (!(aThat instanceof MolecularComponentPattern)) {
+        if (!(aThat instanceof StructuralSite)) {
             return false;
         }
         StructuralSite that = (StructuralSite)aThat;

@@ -10,24 +10,14 @@
 
 package cbit.vcell.mapping;
 
-import java.awt.Color;
-import java.io.PrintWriter;
 import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import cbit.vcell.model.*;
 
-import org.vcell.model.rbm.ComponentStateDefinition;
-import org.vcell.model.rbm.ComponentStatePattern;
-import org.vcell.model.rbm.MolecularComponent;
-import org.vcell.model.rbm.MolecularComponentPattern;
-import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.*;
+import org.vcell.model.ssld.SsldUtils;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -39,8 +29,11 @@ import org.vcell.util.springsalad.NamedColor;
 
 @SuppressWarnings("serial")
 public class SiteAttributesSpec implements Serializable, Identifiable, Displayable, IssueSource, Matchable {
+
+	public final static double DEFAULT_STRUCTURAL_SITE_RADIUS = 0.6;		// nm, we make them smaller as visual cue
+
 	private final SpeciesContextSpec fieldSpeciesContextSpec;
-	private MolecularComponentPattern fieldMolecularComponentPattern = null;
+	private LinkNode fieldLinkNode = null;
 	private double fieldRadius = 1.0;
 	private double fieldDiffusionRate = 1.0;
 	private Structure fieldLocation = null;		// feature or membrane
@@ -51,13 +44,13 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 	// the ComponentStatePattern must not be Any; can be recovered from the MolecularComponentPattern
 	// the BondType must be None, can be recovered from the MolecularComponentPattern
 	
-	public SiteAttributesSpec(SpeciesContextSpec scs, MolecularComponentPattern mcp, Structure structure) {
+	public SiteAttributesSpec(SpeciesContextSpec scs, LinkNode ln, Structure structure) {
 		fieldSpeciesContextSpec = scs;
-		setMolecularComponentPattern(mcp);
+		setLinkNode(ln);
 		setLocation(structure);
 	}
-	public SiteAttributesSpec(SpeciesContextSpec scs, MolecularComponentPattern mcp, double radius, double diffusion, Structure structure, Coordinate coordinate, NamedColor color) {
-		this(scs, mcp, structure);
+	public SiteAttributesSpec(SpeciesContextSpec scs, LinkNode ln, double radius, double diffusion, Structure structure, Coordinate coordinate, NamedColor color) {
+		this(scs, ln, structure);
 		setRadius(radius);
 		setDiffusionRate(diffusion);
 		setCoordinate(coordinate);
@@ -67,11 +60,11 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 	public SpeciesContextSpec getSpeciesContextSpec() {
 		return fieldSpeciesContextSpec;
 	}
-	public MolecularComponentPattern getMolecularComponentPattern() {
-		return fieldMolecularComponentPattern;
+	public LinkNode getLinkNode() {
+		return fieldLinkNode;
 	}
-	public void setMolecularComponentPattern(MolecularComponentPattern molecularComponentPattern) {
-		this.fieldMolecularComponentPattern = molecularComponentPattern;
+	public void setLinkNode(LinkNode ln) {
+		this.fieldLinkNode = ln;
 	}
 
 	public double getRadius() {
@@ -119,18 +112,31 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 	}
 
 	public int getIndex() {
-		MolecularComponent mc = getMolecularComponentPattern().getMolecularComponent();
-		int index = mc.getIndex();
-		return index;
+		LinkNode ln = getLinkNode();
+		if(ln instanceof MolecularComponentPattern mcp) {
+			MolecularComponent mc = mcp.getMolecularComponent();
+			int index = mc.getIndex();
+			return index;
+		} else if(ln instanceof StructuralSite ss) {
+			int saMapSize = getSpeciesContextSpec().getSiteAttributesMap().size();
+			int idx = SsldUtils.indexOfKey(getSpeciesContextSpec().getStructuralSiteAttributesMap(), ss);
+			return saMapSize + idx;		// structural sites are indexed after the molecular component sites
+		} else {
+			throw new RuntimeException("getIndex(): unknown LinkNode type");
+		}
 	}
-	
+
 	public void writeType(StringBuilder sb) {		// I/O the Site Type (mMlecularComponent)
-		if(getMolecularComponentPattern() == null) {
+		if(getLinkNode() == null) {
 			throw new RuntimeException("writeType(): MolecularComponentPattern is null");
 		}
-		MolecularComponent mc = getMolecularComponentPattern().getMolecularComponent();
-		List<ComponentStateDefinition> csdList = mc.getComponentStateDefinitions();
-		sb.append("TYPE: Name \"" + mc.getName() + "\"");
+		List<ComponentStateDefinition> csdList = null;
+		LinkNode ln = getLinkNode();
+		if(ln instanceof MolecularComponentPattern mcp) {
+			MolecularComponent mc = mcp.getMolecularComponent();
+			csdList = mc.getComponentStateDefinitions();
+		}
+		sb.append("TYPE: Name \"" + ln.getName() + "\"");
 		sb.append(" Radius " + IOHelp.DF[5].format(getRadius()) + " D " + IOHelp.DF[3].format(getDiffusionRate()) + " Color " + getColor().getName());
 		sb.append(" STATES ");
 		if(csdList == null || csdList.isEmpty()) {
@@ -143,10 +149,15 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 		sb.append("\n");
 	}
 	public void writeSite(StringBuilder sb) {
-		if(getMolecularComponentPattern() == null) {
+		if(getLinkNode() == null) {
 			throw new RuntimeException("writeSite(): MolecularComponentPattern is null");
 		}
-		ComponentStatePattern csp = getMolecularComponentPattern().getComponentStatePattern();
+		ComponentStatePattern csp = null;
+		LinkNode ln = getLinkNode();
+		if(ln instanceof MolecularComponentPattern mcp) {
+			MolecularComponent mc = mcp.getMolecularComponent();
+			csp = mcp.getComponentStatePattern();
+		}
 		ComponentStateDefinition csd = null;
 		if(csp != null) {
 			csd = csp.getComponentStateDefinition();
@@ -177,7 +188,7 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 		if(!fieldSpeciesContextSpec.compareEqual(candidate.getSpeciesContextSpec())) {
 			return false;
 		}
-		if(!fieldMolecularComponentPattern.compareEqual(candidate.getMolecularComponentPattern())) {
+		if(!fieldLinkNode.compareEqual(candidate.getLinkNode())) {
 			return false;
 		}
 		if(fieldRadius != candidate.getRadius()) {
@@ -220,8 +231,13 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 	public static final String typeName = "SiteAttributesSpec";
 	@Override
 	public String getDisplayName() {
-		if(fieldMolecularComponentPattern != null) {
-			return fieldMolecularComponentPattern.getMolecularComponent().getDisplayName();
+		if(fieldLinkNode != null) {
+			LinkNode ln = getLinkNode();
+			if(ln instanceof MolecularComponentPattern mcp) {
+				return mcp.getMolecularComponent().getDisplayName();
+			} else {
+				return ln.getDisplayName();
+			}
 		}
 		return("?");
 	}

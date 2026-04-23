@@ -42,6 +42,18 @@ public class SsldUtils {
         }
     }
 
+    public static <K, V> int indexOfKey(Map<K, V> map, K key) {
+        // we know it's a LinkedHashMap, so the order is deterministic; we want the index of the key in the order of insertion
+        int index = 0;
+        for (K k : map.keySet()) {
+            if (k.equals(key)) {
+                return index;
+            }
+            index++;
+        }
+        return -1; // not found
+    }
+
     // result entry from langevin output
     public static class LangevinResult {
         public final Qualifier qualifier;

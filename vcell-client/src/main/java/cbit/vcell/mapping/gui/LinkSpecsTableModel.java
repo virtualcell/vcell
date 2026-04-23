@@ -267,9 +267,9 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
                 }
                 LinkNode node1 = mils1.getLink().one;
                 LinkNode node2 = mils2.getLink().one;
-                Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = getSpeciesContextSpec().getSiteAttributesMap();
-                SiteAttributesSpec sas1 = siteAttributesMap.get(node1);
-                SiteAttributesSpec sas2 = siteAttributesMap.get(node2);
+                Map<LinkNode, SiteAttributesSpec> merged = getSpeciesContextSpec().getAllSiteAttributes();
+                SiteAttributesSpec sas1 = merged.get(node1);
+                SiteAttributesSpec sas2 = merged.get(node2);
                 Double z1 = sas1.getCoordinate().getZ();
                 Double z2 = sas2.getCoordinate().getZ();
                 return z1.compareTo(z2);

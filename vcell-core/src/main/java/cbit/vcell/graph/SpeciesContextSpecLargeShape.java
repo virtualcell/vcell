@@ -55,7 +55,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     private Structure structure = null;
 
     private boolean hasAnchor = false;
-    private MolecularComponentPattern mcpAnchor = null;
+    private LinkNode mcpAnchor = null;
     private double membraneX = 0;
     private double membraneY = 0;
     private double membraneRadius = 0;
@@ -65,9 +65,9 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
 
     // we use these to compute some offset from top and left, so that the molecule will look nicely centered on screen
     private double minX = 0;            // coordinate of the leftmost site
-    private MolecularComponentPattern leftmostSite = null;
+    private LinkNode leftmostSite = null;
     private double minY = 0;            // coordinate of the topmost site
-    private MolecularComponentPattern topmostSite = null;   // if more sites qualify we just keep the first we find
+    private LinkNode topmostSite = null;   // if more sites qualify we just keep the first we find
     private double maxX = 0;            // coordinate of the rightmost site
     private double maxY = 0;            // coordinate of the bottommost site
 
@@ -77,12 +77,12 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     Map<SiteAttributesSpec, Ellipse2D> sasToEllipseMap = new LinkedHashMap<>();
     Map<MolecularInternalLinkSpec, CustomLine2D> milsToLineMap = new LinkedHashMap<>();
 
-    private MolecularComponentPattern mcpSelected = null;   // any or both of these may be selected in their tables, they are highlighted on the shape
+    private LinkNode lnSelected = null;   // any or both of these may be selected in their tables, they are highlighted on the shape
     private MolecularInternalLinkSpec milsSelected = null;
     private Object lastSelectedObject = null;    // this is the last selected object, we show it on top of everything else
 
     public SpeciesContextSpecLargeShape(SpeciesContextSpec scs, LargeShapeCanvas shapePanel, Displayable owner,
-                                        MolecularComponentPattern mcpSelected, MolecularInternalLinkSpec milsSelected,
+                                        LinkNode lnSelected, MolecularInternalLinkSpec milsSelected,
                                         Object lastSelectedObject, IssueListProvider issueListProvider) {
         super(issueListProvider);
 
@@ -90,7 +90,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         this.scs = scs;
         this.shapePanel = shapePanel;
 
-        this.mcpSelected = mcpSelected;
+        this.lnSelected = lnSelected;
         this.milsSelected = milsSelected;
         this.lastSelectedObject = lastSelectedObject;
 
@@ -110,26 +110,27 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             return;
         }
 
-        Map<MolecularComponentPattern, SiteAttributesSpec> sasMap = scs.getSiteAttributesMap();
+        Map<LinkNode, SiteAttributesSpec> merged = scs.getAllSiteAttributes();
         Set<MolecularInternalLinkSpec> ilSet = scs.getInternalLinkSet();
         MolecularType mt = mtp.getMolecularType();
         int counter = 0;    // site counter
-        for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
-            MolecularComponent mc = mcp.getMolecularComponent();
-            SiteAttributesSpec sas = sasMap.get(mcp);
+
+        for(Map.Entry<LinkNode, SiteAttributesSpec> e : merged.entrySet()) {
+            LinkNode ln = e.getKey();
+            SiteAttributesSpec sas = e.getValue();
             Structure structure = sas.getLocation();
             if(structure.getName().equals(Structure.SpringStructureEnum.Extracellular.columnName)) {
                 hasExtracellularSite = true;
             } else if(structure.getName().equals(Structure.SpringStructureEnum.Intracellular.columnName)) {
                 hasIntracellularSite = true;
             }
-            if(mc.getName().equals(SpeciesContextSpec.AnchorSiteString)) {
+            if(ln.getName().equals(SpeciesContextSpec.AnchorSiteString)) {
                 hasAnchor = true;
-                mcpAnchor = mcp;
+                mcpAnchor = ln;
                 hasMembraneSite = true;
-                membraneX = sasMap.get(mcp).getZ();
-                membraneY = sasMap.get(mcp).getY();
-                membraneRadius = sasMap.get(mcp).getRadius();
+                membraneX = merged.get(ln).getZ();
+                membraneY = merged.get(ln).getY();
+                membraneRadius = merged.get(ln).getRadius();
             }
             Coordinate coordinate = sas.getCoordinate();
             double x = coordinate.getZ();
@@ -137,18 +138,18 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             if(counter == 0) {
                 minX = x;
                 minY = y;
-                leftmostSite = mcp;
-                topmostSite = mcp;
+                leftmostSite = ln;
+                topmostSite = ln;
                 maxX = x;
                 maxY = y;
             } else {
                 if(x < minX) {
                     minX = x;
-                    leftmostSite = mcp;
+                    leftmostSite = ln;
                 }
                 if(y < minY) {
                     minY = y;
-                    topmostSite = mcp;
+                    topmostSite = ln;
                 }
                 if(x > maxX) {
                     maxX = x;
@@ -166,15 +167,12 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     }
 
     private boolean isPlanarYZ() {    // we only show entities that are 2D in the YZ plane
-        Map<MolecularComponentPattern, SiteAttributesSpec> sasMap = scs.getSiteAttributesMap();
-        // here we could either iterate through the sasMap, or through the components of the mtp
-        // we use the second method because it provides a sanity check between the components in the sasMap (application level)
-        // and the physiology (which is authoritative)
+        Map<LinkNode, SiteAttributesSpec> merged = scs.getAllSiteAttributes();
         double oldX = 0;    // dummy value to indulge the compiler
-        for(int i=0; i< mtp.getComponentPatternList().size(); i++) {
-            MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
-            SiteAttributesSpec sas = sasMap.get(mcp);
-            Structure structure = sas.getLocation();
+        int i=0;
+        for(Map.Entry<LinkNode, SiteAttributesSpec> e : merged.entrySet()) {
+            LinkNode ln = e.getKey();
+            SiteAttributesSpec sas = e.getValue();
             Coordinate coordinate = sas.getCoordinate();
             // to be planar in YZ, the X coordinates of all sites must be equal
             double x = coordinate.getX();   // here x means x
@@ -184,6 +182,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             if(oldX != x) {
                 return false;
             }
+            i++;
         }
         return true;
     }
@@ -413,26 +412,15 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             paintDummy(g);
             return;
         }
-        Map<MolecularComponentPattern, SiteAttributesSpec> sasMap = scs.getSiteAttributesMap();
-        Map<StructuralSite, SiteAttributesSpec> structuralSiteAttributesMap = scs.getStructuralSiteAttributesMap();
-        Map<LinkNode, SiteAttributesSpec> merged = new LinkedHashMap<>();
-        // Add physiological sites
-        for (Map.Entry<MolecularComponentPattern, SiteAttributesSpec> e : sasMap.entrySet()) {
-            merged.put(e.getKey(), e.getValue());
-        }
-        // Add structural sites
-        for (Map.Entry<StructuralSite, SiteAttributesSpec> e : structuralSiteAttributesMap.entrySet()) {
-            merged.put(e.getKey(), e.getValue());
-        }
-
+        Map<LinkNode, SiteAttributesSpec> merged = scs.getAllSiteAttributes();
         Set<MolecularInternalLinkSpec> internalLinkSet = scs.getInternalLinkSet();
 
         // we draw all objects as unselected first, and then we redraw the selected objects on top of everything else,
         // so that they look highlighted and are not hidden behind other objects
         for(MolecularInternalLinkSpec mils : internalLinkSet) {     // draw links first, so that they are under the sites
             Pair<LinkNode, LinkNode> link = mils.getLink();
-            SiteAttributesSpec sas1 = sasMap.get(link.one);
-            SiteAttributesSpec sas2 = sasMap.get(link.two);
+            SiteAttributesSpec sas1 = merged.get(link.one);
+            SiteAttributesSpec sas2 = merged.get(link.two);
             double x1 = x_offset + sas1.getCoordinate().getZ();
             double x2 = x_offset + sas2.getCoordinate().getZ();
             double y1 = y_offset + sas1.getCoordinate().getY();
@@ -454,8 +442,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         }
 
         // we redraw the selected objects on top of all unselected objects
-        if(mcpSelected != null) {
-            SiteAttributesSpec sas = sasMap.get(mcpSelected);
+        if(lnSelected != null) {
+            SiteAttributesSpec sas = merged.get(lnSelected);
             Coordinate coord = sas.getCoordinate();
             double radius = sas.getRadius();
             NamedColor color = sas.getColor();
@@ -469,8 +457,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         }
         if(milsSelected != null) {
             Pair<LinkNode, LinkNode> link = milsSelected.getLink();
-            SiteAttributesSpec sas1 = sasMap.get(link.one);
-            SiteAttributesSpec sas2 = sasMap.get(link.two);
+            SiteAttributesSpec sas1 = merged.get(link.one);
+            SiteAttributesSpec sas2 = merged.get(link.two);
             double x1 = x_offset + sas1.getCoordinate().getZ();
             double x2 = x_offset + sas2.getCoordinate().getZ();
             double y1 = y_offset + sas1.getCoordinate().getY();
@@ -488,7 +476,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         if(lastSelectedObject != null) {
             if(lastSelectedObject instanceof LinkNode) {
                 LinkNode mcp = (LinkNode)lastSelectedObject;
-                SiteAttributesSpec sas = sasMap.get(mcp);
+                SiteAttributesSpec sas = merged.get(mcp);
                 Coordinate coord = sas.getCoordinate();
                 double radius = sas.getRadius();
                 NamedColor color = sas.getColor();
@@ -502,8 +490,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             } else if(lastSelectedObject instanceof MolecularInternalLinkSpec) {
                 MolecularInternalLinkSpec mils = (MolecularInternalLinkSpec)lastSelectedObject;
                 Pair<LinkNode, LinkNode> link = mils.getLink();
-                SiteAttributesSpec sas1 = sasMap.get(link.one);
-                SiteAttributesSpec sas2 = sasMap.get(link.two);
+                SiteAttributesSpec sas1 = merged.get(link.one);
+                SiteAttributesSpec sas2 = merged.get(link.two);
                 double x1 = x_offset + sas1.getCoordinate().getZ();
                 double x2 = x_offset + sas2.getCoordinate().getZ();
                 double y1 = y_offset + sas1.getCoordinate().getY();

@@ -34,6 +34,7 @@ import org.vcell.util.gui.*;
 import org.vcell.util.gui.ScrollTable.ScrollTableBooleanCellRenderer;
 import org.vcell.util.gui.sorttable.SortTableModel;
 import org.vcell.util.springsalad.NamedColor;
+import org.vcell.util.ColorUtil;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -50,7 +51,10 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeListener;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @SuppressWarnings("serial")
@@ -59,7 +63,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private EventHandler eventHandler = new EventHandler();
 	private SimulationContext fieldSimulationContext;
 	private SpeciesContextSpec fieldSpeciesContextSpec;
-	private MolecularComponentPattern fieldMolecularComponentPattern;
+	private LinkNode fieldLinkNode;
 	private MolecularInternalLinkSpec fieldMolecularInternalLinkSpec;
 
 	private EditorScrollTable speciesContextSpecsTable = null;
@@ -72,6 +76,8 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	private EditorScrollTable linkSpecsTable = null;
 	private LinkSpecsTableModel linkSpecsTableModel = null;
 
+	private JButton addStructuralSiteButton = null;
+	private JButton deleteStructuralSiteButton = null;
 	private JButton addLinkButton = null;
 	private JButton deleteLinkButton = null;
 	//
@@ -120,12 +126,14 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 
 		public void actionPerformed(ActionEvent e) {
 			Object source = e.getSource();
-			if(source == addLinkButton) {
-				addLinkActionPerformed();
-				refreshSiteLinksList();
+			if(source == addStructuralSiteButton) {		// molecularTypeSpecsTableModel.refreshData() called within
+				addStructuralSiteActionPerformed();
+			} else if(source == deleteStructuralSiteButton) {
+				deleteStructuralSiteActionPerformed();
+			} else if(source == addLinkButton) {
+				addLinkActionPerformed();				// linkSpecsTableModel.refreshData() called within
 			} else if(source == deleteLinkButton) {
 				deleteLinkActionPerformed();
-				refreshSiteLinksList();
 			}
 		}
 		public void focusGained(FocusEvent e) {
@@ -141,9 +149,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				// notified that the user clicked in a site oval shape or link line shape
 				// we need to update the selected row in the corresponding table
 				for(int row=0 ; row < molecularTypeSpecsTableModel.getRowCount(); row++) {
-					MolecularComponentPattern mcp = molecularTypeSpecsTableModel.getValueAt(row);
-					if(e.getNewValue() instanceof MolecularComponentPattern mcpSelected) {
-						if(mcpSelected == mcp) {
+					LinkNode ln = molecularTypeSpecsTableModel.getValueAt(row);
+					if(e.getNewValue() instanceof LinkNode lnSelected) {
+						if(lnSelected == ln) {
 							// select the table row
 							getMolecularTypeSpecsTable().setRowSelectionInterval(row, row);
 							// bring the row into view if it's not visible
@@ -195,10 +203,15 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			} else if (e.getSource() == getMolecularTypeSpecsTable().getSelectionModel()) {
 				System.out.println("valueChanged: molecularTypeSpecsTableModel");
 				int row = getMolecularTypeSpecsTable().getSelectedRow();
-				MolecularComponentPattern mcmSelected = molecularTypeSpecsTableModel.getValueAt(row);
-				setMolecularComponentPattern(mcmSelected);
+				LinkNode lnSelected = molecularTypeSpecsTableModel.getValueAt(row);
+				setSelectedLinkNode(lnSelected);
+				if(lnSelected instanceof StructuralSite) {	// we can only delete StructuralSites from here
+					deleteStructuralSiteButton.setEnabled(true);
+				} else {
+					deleteStructuralSiteButton.setEnabled(false);
+				}
 
-			} else if(e.getSource() == getLinkSpecsTable().getSelectionModel()) {		// links table
+			} else if(e.getSource() == getLinkSpecsTable().getSelectionModel()) {		// selection in the links table
 				System.out.println("valueChanged: linkSpecsTableModel");
 				int row = getLinkSpecsTable().getSelectedRow();
 				MolecularInternalLinkSpec milsSelected = linkSpecsTableModel.getValueAt(row);
@@ -223,6 +236,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	}
 	
 	private void initConnections() throws java.lang.Exception {		// listeners here!
+
+		addStructuralSiteButton.addActionListener(eventHandler);
+		deleteStructuralSiteButton.addActionListener(eventHandler);
 		addLinkButton.addActionListener(eventHandler);
 		deleteLinkButton.addActionListener(eventHandler);
 
@@ -248,9 +264,13 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	
 	private void initialize() {
 		try {
+			addStructuralSiteButton = new JButton("Add Structural Site");
+			deleteStructuralSiteButton = new JButton("Delete Structural Site");
 			addLinkButton = new JButton("Add Link");
 			deleteLinkButton = new JButton("Delete Link");
 
+			addStructuralSiteButton.setEnabled(false);
+			deleteStructuralSiteButton.setEnabled(false);
 			addLinkButton.setEnabled(true);
 			deleteLinkButton.setEnabled(false);
 		
@@ -434,7 +454,6 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 				return this;
 			}
 		};
-
 		getSpeciesContextSpecsTable().setDefaultRenderer(SpeciesContext.class, renderer);
 		getSpeciesContextSpecsTable().setDefaultRenderer(Structure.class, renderer);
 		getSpeciesContextSpecsTable().setDefaultRenderer(SpeciesPattern.class, rbmSpeciesShapeDepictionCellRenderer);	// depiction icons
@@ -473,13 +492,28 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.weightx = 1.0;
 		gbc.weighty = 1.0;
 		gbc.gridwidth = 8;
-		gbc.gridheight = 5;
+//		gbc.gridheight = 5;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.anchor = GridBagConstraints.NORTHWEST;
 		gbc.insets = new Insets(2, 3, 3, 4);
 		sitesPanel.add(pb, gbc);		// MolecularTypeSpecsTable
 
-		// The NamedColor combobox cell renderer in the MolecularTypeSpecsTable
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 1;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		sitesPanel.add(addStructuralSiteButton, gbc);
+
+		gbc = new GridBagConstraints();
+		gbc.gridx = 1;
+		gbc.gridy = 1;
+//		gbc.fill = GridBagConstraints.HORIZONTAL;
+		gbc.insets = new Insets(5, 2, 2, 3);
+		sitesPanel.add(deleteStructuralSiteButton, gbc);
+
+
+			// The NamedColor combobox cell renderer in the MolecularTypeSpecsTable
 		DefaultScrollTableCellRenderer namedColorTableCellRenderer = new DefaultScrollTableCellRenderer() {
 			final Color lightBlueBackground = new Color(214, 234, 248);
 			@Override
@@ -620,39 +654,39 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.insets = new Insets(5, 2, 2, 3);
 		linksPanel.add(linksScrollPane, gbc);
 
-			DefaultScrollTableCellRenderer linkSpecsTableCellRenderer = new DefaultScrollTableCellRenderer() {
-				final Color lightBlueBackground = new Color(214, 234, 248);
-				@Override
-				public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+		DefaultScrollTableCellRenderer linkSpecsTableCellRenderer = new DefaultScrollTableCellRenderer() {
+			final Color lightBlueBackground = new Color(214, 234, 248);
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 															   int row, int column) {
-					super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-					if (table.getModel() instanceof LinkSpecsTableModel) {
-						if (value instanceof MolecularInternalLinkSpec) {
-							MolecularInternalLinkSpec mils = (MolecularInternalLinkSpec)value;
-							LinkNode firstNode = mils.getLinkNodeOne();
-							LinkNode secondNode = mils.getLinkNodeTwo();
-							setText(firstNode.getName() + " :: " + secondNode.getName());
-							SpeciesContextSpec scs = mils.getSpeciesContextSpec();
-							if(fieldSpeciesContextSpec != scs) {
-								throw new RuntimeException("SpeciesContextSpec inconsistent.");
-							}
-							Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = getSpeciesContextSpec().getSiteAttributesMap();
-							SiteAttributesSpec sasFirst = siteAttributesMap.get(firstNode);
-							SiteAttributesSpec sasSecond = siteAttributesMap.get(secondNode);
-							NamedColor ncFirst = sasFirst.getColor();
-							NamedColor ncSecond = sasSecond.getColor();
-							Icon iconFirst = new ColorIcon(10,10,ncFirst.getColor(), true);
-							Icon iconSecond = new ColorIcon(10,10,ncSecond.getColor(), true);
-							Icon compositeIcon = new CompositeIcon(iconFirst, iconSecond);
-//							setHorizontalTextPosition(SwingConstants.RIGHT);
-							setIcon(compositeIcon);
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (table.getModel() instanceof LinkSpecsTableModel) {
+					if (value instanceof MolecularInternalLinkSpec) {
+						MolecularInternalLinkSpec mils = (MolecularInternalLinkSpec)value;
+						LinkNode firstNode = mils.getLinkNodeOne();
+						LinkNode secondNode = mils.getLinkNodeTwo();
+						setText(firstNode.getName() + " :: " + secondNode.getName());
+						SpeciesContextSpec scs = mils.getSpeciesContextSpec();
+						if(fieldSpeciesContextSpec != scs) {
+							throw new RuntimeException("SpeciesContextSpec inconsistent.");
 						}
+						Map<LinkNode, SiteAttributesSpec> merged = getSpeciesContextSpec().getAllSiteAttributes();
+						SiteAttributesSpec sasFirst = merged.get(firstNode);
+						SiteAttributesSpec sasSecond = merged.get(secondNode);
+						NamedColor ncFirst = sasFirst.getColor();
+						NamedColor ncSecond = sasSecond.getColor();
+						Icon iconFirst = new ColorIcon(10,10,ncFirst.getColor(), true);
+						Icon iconSecond = new ColorIcon(10,10,ncSecond.getColor(), true);
+						Icon compositeIcon = new CompositeIcon(iconFirst, iconSecond);
+//							setHorizontalTextPosition(SwingConstants.RIGHT);
+						setIcon(compositeIcon);
 					}
-					return this;
 				}
-			};
-			getLinkSpecsTable().setDefaultRenderer(MolecularInternalLinkSpec.class, linkSpecsTableCellRenderer);	// MolecularInternalLinkSpec field cell renderer
-			getLinkSpecsTable().setDefaultRenderer(Expression.class, expressionTableCellRenderer);	// Expression field cell renderer
+				return this;
+			}
+		};
+		getLinkSpecsTable().setDefaultRenderer(MolecularInternalLinkSpec.class, linkSpecsTableCellRenderer);	// MolecularInternalLinkSpec field cell renderer
+		getLinkSpecsTable().setDefaultRenderer(Expression.class, expressionTableCellRenderer);	// Expression field cell renderer
 
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -773,10 +807,10 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	public SpeciesContextSpec getSpeciesContextSpec() {
 		return fieldSpeciesContextSpec;
 	}
-	void setMolecularComponentPattern(MolecularComponentPattern mcp) {
-		fieldMolecularComponentPattern = mcp;
+	void setSelectedLinkNode(LinkNode ln) {
+		fieldLinkNode = ln;		// this is the selected link node
 		if(fieldSpeciesContextSpec != null) {		// mcp may be null
-			fieldSpeciesContextSpec.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_SELECTED_IN_TABLE, null, mcp);
+			fieldSpeciesContextSpec.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_SELECTED_IN_TABLE, null, ln);
 		}
 		updateInterface();
 	}
@@ -810,18 +844,16 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		} else {
 			addLinkButton.setEnabled(false);
 		}
+		if(bNonNullMolecularTypePattern) {
+			addStructuralSiteButton.setEnabled(true);
+		} else {
+			addStructuralSiteButton.setEnabled(false);
+		}
 		if(linkSpecsTableModel.getRowCount() > 0 && fieldMolecularInternalLinkSpec != null) {	// there are links we can delete
 			deleteLinkButton.setEnabled(true);
 		} else {
 			deleteLinkButton.setEnabled(false);
 		}
-	}
-
-	/*
-	 * Here we refresh the links table when we add or delete a link
-	 */
-	private void refreshSiteLinksList() {
-		linkSpecsTableModel.refreshData();
 	}
 
 	@Override
@@ -834,7 +866,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 	}
 
 	private void changePosition(JTextField source) {
-		SiteAttributesSpec sas = fieldSpeciesContextSpec.getSiteAttributesMap().get(fieldMolecularComponentPattern);
+		SiteAttributesSpec sas = fieldSpeciesContextSpec.getSiteAttributesMap().get(fieldLinkNode);
 		String text = source.getText();
 		if(sas == null || text == null) {
 			return;
@@ -847,7 +879,70 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			return;
 		}
 	}
-
+	private static final String StructuralSiteNamePrefix = "s";
+	private int nextStructuralSiteIndex() {
+		Set<String> existingNames = getSpeciesContextSpec()
+				.getStructuralSiteAttributesMap()
+				.keySet()
+				.stream()
+				.map(StructuralSite::getName)
+				.collect(Collectors.toSet());
+		int i = 1;
+		while (existingNames.contains(StructuralSiteNamePrefix + i)) {
+			i++;
+		}
+		return i;
+	}
+	private void addStructuralSiteActionPerformed() {
+		int selectedRowBefore = molecularTypeSpecsTable.getSelectedRow();	// capture whether anything is selected BEFORE adding
+		// generate better site name here
+		int componentCount = fieldSpeciesContextSpec.getSiteAttributesMap().size();
+		int structuralSiteCount = fieldSpeciesContextSpec.getStructuralSiteAttributesMap().size() + 1;
+		int structuralSiteIndex = nextStructuralSiteIndex();
+		StructuralSite newSite = new StructuralSite(StructuralSiteNamePrefix + structuralSiteIndex);
+		Structure struct = getSpeciesContextSpec().getSpeciesContext().getStructure();
+		if(Structure.SpringStructureEnum.Membrane.columnName.equals((struct.getName()))) {
+			struct = getSimulationContext().getModel().getStructure(Structure.SpringStructureEnum.Intracellular.columnName);
+		}
+		SiteAttributesSpec sas = new SiteAttributesSpec(getSpeciesContextSpec(), newSite, struct);
+		int displacement = componentCount*4 + structuralSiteCount*3;
+		Coordinate coordinate = new Coordinate(0, SpeciesContextSpec.INITIAL_YZ_SITE_OFFSET, SpeciesContextSpec.INITIAL_YZ_SITE_OFFSET + displacement);
+		sas.setCoordinate(coordinate);
+		NamedColor color = new NamedColor("siteColor" + structuralSiteCount, ColorUtil.LIGHT20[structuralSiteCount % ColorUtil.LIGHT20.length]);
+		sas.setColor(color);
+		double radius = SiteAttributesSpec.DEFAULT_STRUCTURAL_SITE_RADIUS;
+		sas.setRadius(radius);				// for now we stay with the default
+//		sas.setDiffusionRate(diffusion);
+		Map<StructuralSite, SiteAttributesSpec> structureSiteAttributesMap = getSpeciesContextSpec().getStructuralSiteAttributesMap();
+		structureSiteAttributesMap.put(newSite, sas);
+		molecularTypeSpecsTableModel.refreshData();		// refresh the model
+		fieldSpeciesContextSpec.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, newSite);
+		if (selectedRowBefore < 0) {	// nothing was selected before, scroll up at need so that the new row is visible
+			int newRow = molecularTypeSpecsTableModel.getRowCount() - 1;
+			SwingUtilities.invokeLater(() -> {		// must run after table update to ensure the new row is present in the table
+//				molecularTypeSpecsTable.setRowSelectionInterval(newRow, newRow);
+				molecularTypeSpecsTable.scrollRectToVisible(molecularTypeSpecsTable.getCellRect(newRow, 0, true));
+			});
+		}
+	}
+	private void deleteStructuralSiteActionPerformed() {
+		int row = molecularTypeSpecsTable.getSelectedRow();
+		int rowToSelect = row;	// capture the row BEFORE deleting
+		LinkNode ln = molecularTypeSpecsTableModel.getValueAt(row);
+		if(ln instanceof StructuralSite ss) {
+			Map<StructuralSite, SiteAttributesSpec> structureSiteAttributesMap = getSpeciesContextSpec().getStructuralSiteAttributesMap();
+			structureSiteAttributesMap.remove(ss);
+		}
+		molecularTypeSpecsTableModel.refreshData();		// refresh the model
+		int rowCount = molecularTypeSpecsTableModel.getRowCount();	// compute the new row index after deletion
+		if (rowCount == 0) {
+			return; // table is empty now
+		}
+		if (rowToSelect >= rowCount) {
+			rowToSelect = rowCount - 1; // we deleted the last row, select new last row (one up)
+		}
+		molecularTypeSpecsTable.setRowSelectionInterval(rowToSelect, rowToSelect);	// Restore selection
+	}
 
 	private void addLinkActionPerformed() {
 		AddLinkPanel panel = new AddLinkPanel(this);
@@ -858,27 +953,21 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		panel.setChildWindow(childWindow);
 		childWindow.setPreferredSize(dim);
 		childWindow.showModal();
-
 		if(panel.getButtonPushed() == AddLinkPanel.ActionButtons.Apply) {
-			MolecularComponentPattern firstMcp = panel.getFirstSiteList().getSelectedValue();
-			MolecularComponentPattern secondMcp = panel.getSecondSiteList().getSelectedValue();
+			LinkNode firstMcp = panel.getFirstSiteList().getSelectedValue();
+			LinkNode secondMcp = panel.getSecondSiteList().getSelectedValue();
 			MolecularInternalLinkSpec mils = new MolecularInternalLinkSpec(fieldSpeciesContextSpec, firstMcp, secondMcp);
 			fieldSpeciesContextSpec.getInternalLinkSet().add(mils);
-//			System.out.println("addLinkActionPerformed");
-			return;
-		} else {
-			return;
 		}
+		linkSpecsTableModel.refreshData();
 	}
 	private void deleteLinkActionPerformed() {
-
 		int row = linkSpecsTable.getSelectedRow();
 		MolecularInternalLinkSpec selectedValue = linkSpecsTableModel.getValueAt(row);
 		if(selectedValue != null) {
 			fieldSpeciesContextSpec.getInternalLinkSet().remove(selectedValue);
-//			System.out.println("deleteLinkActionPerformed");
 		}
-		return;
+		linkSpecsTableModel.refreshData();
 	}
 
 }

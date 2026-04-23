@@ -2,12 +2,9 @@ package cbit.vcell.mapping.gui;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
-import cbit.vcell.graph.PointLocationInShapeContext;
 import cbit.vcell.graph.ReactionCartoon;
 import cbit.vcell.graph.SpeciesContextSpecLargeShape;
-import cbit.vcell.graph.SpeciesPatternLargeShape;
 import cbit.vcell.graph.gui.LargeShapePanel;
-import cbit.vcell.graph.gui.SsldLargeShapePanel;
 import cbit.vcell.graph.gui.ZoomShapeIcon;
 import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.SiteAttributesSpec;
@@ -15,11 +12,10 @@ import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.GroupingCriteria;
 import cbit.vcell.model.Model;
 import cbit.vcell.model.RuleParticipantSignature;
-import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.parser.ExpressionException;
+import org.vcell.model.rbm.LinkNode;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.SpeciesPattern;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,7 +23,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.geom.Ellipse2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -44,7 +39,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
     private LargeShapePanel shapePanel = null;
     private SpeciesContextSpecLargeShape scsls;     // the real thing
 
-    private MolecularComponentPattern mcpSelected = null;
+    private LinkNode lnSelected = null;
     private MolecularInternalLinkSpec milsSelected = null;
     private Object lastSelectedObject = null;       // may be either MolecularComponentPattern or MolecularInternalLinkSpec
 
@@ -80,10 +75,10 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
             } else if(evt.getSource() instanceof SpeciesContextSpec && evt.getPropertyName().equals(SpeciesContextSpec.PROPERTY_NAME_SITE_SELECTED_IN_TABLE)) {
                 Object o = evt.getNewValue();
                 if(o instanceof MolecularComponentPattern mcp) {
-                    mcpSelected = mcp;
-                    lastSelectedObject = mcpSelected;
+                    lnSelected = mcp;
+                    lastSelectedObject = lnSelected;
                 } else {
-                    mcpSelected = null;
+                    lnSelected = null;
                     if(milsSelected != null) {
                         // if we had a link selected before, it becomes the last (and only) selected
                         lastSelectedObject = milsSelected;
@@ -100,9 +95,9 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                     lastSelectedObject = milsSelected;
                 } else {
                     milsSelected = null;
-                    if(mcpSelected != null) {
+                    if(lnSelected != null) {
                         // if we had a site selected before, it becomes the last (and only) selected
-                        lastSelectedObject = mcpSelected;
+                        lastSelectedObject = lnSelected;
                     } else {
                         // nothing is selected anymore
                         lastSelectedObject = null;
@@ -138,7 +133,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                         return;
                     }
                     scsls = new SpeciesContextSpecLargeShape(speciesContextSpec, shapePanel, speciesContextSpec,
-                            mcpSelected, milsSelected, lastSelectedObject, issueManager);
+                            lnSelected, milsSelected, lastSelectedObject, issueManager);
                     scsls.paintSelf(g);
                 }
                 @Override
@@ -211,12 +206,12 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                         // we tell the table in the upper panel to update the selected row
                         speciesContextSpec.firePropertyChange(PROPERTY_NAME_LINK_SELECTED_IN_SHAPE, null, milsSelected);
                     } else if(overObject instanceof SiteAttributesSpec sas) {
-                        mcpSelected = sas.getMolecularComponentPattern();
-                        lastSelectedObject = mcpSelected;
+                        lnSelected = sas.getLinkNode();
+                        lastSelectedObject = lnSelected;
                         // redraw the whole shape to highlight the selected link line
                         updateShape();
                         // we tell the table in the upper panel to update the selected row
-                        speciesContextSpec.firePropertyChange(PROPERTY_NAME_SITE_SELECTED_IN_SHAPE, null, mcpSelected);
+                        speciesContextSpec.firePropertyChange(PROPERTY_NAME_SITE_SELECTED_IN_SHAPE, null, lnSelected);
                     }
                 }
             });
@@ -301,7 +296,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
             return;
         }
         scsls = new SpeciesContextSpecLargeShape(speciesContextSpec, shapePanel, speciesContextSpec,
-                mcpSelected, milsSelected, lastSelectedObject, issueManager);
+                lnSelected, milsSelected, lastSelectedObject, issueManager);
 
 //        shapePanel.setPreferredSize(scsls.getMaxSize());
 
@@ -321,7 +316,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
         }
 //        getSpeciesContextSpecParameterTableModel().setSpeciesContextSpec(scSpec);
 
-        mcpSelected = null;
+        lnSelected = null;
         milsSelected = null;
         updateInterface();
     }

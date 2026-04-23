@@ -12,6 +12,7 @@ package cbit.vcell.mapping;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.io.Serializable;
+import java.util.Map;
 
 import cbit.vcell.model.*;
 import org.vcell.model.rbm.LinkNode;
@@ -117,10 +118,12 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 		return fieldLinkNodeTwo;
 	}
 	public SiteAttributesSpec getSite1() {
-		return getSpeciesContextSpec().getSiteAttributesMap().get(fieldLinkNodeOne);
+		Map<LinkNode, SiteAttributesSpec> merged = getSpeciesContextSpec().getAllSiteAttributes();
+		return merged.get(fieldLinkNodeOne);
 	}
 	public SiteAttributesSpec getSite2() {
-		return getSpeciesContextSpec().getSiteAttributesMap().get(fieldLinkNodeTwo);
+		Map<LinkNode, SiteAttributesSpec> merged = getSpeciesContextSpec().getAllSiteAttributes();
+		return merged.get(fieldLinkNodeTwo);
 	}
 
 	public double getX1() {

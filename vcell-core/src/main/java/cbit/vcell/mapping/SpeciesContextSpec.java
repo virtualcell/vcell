@@ -72,7 +72,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     public static final String PROPERTY_NAME_SITE_SELECTED_IN_SHAPE = "SiteSelectedInShape";
     public static final String PROPERTY_NAME_LINK_SELECTED_IN_SHAPE = "LinkSelectedInShape";
 
-    private static final int INITIAL_YZ_SITE_OFFSET = 4;
+    public static final int INITIAL_YZ_SITE_OFFSET = 4;
 
     public static final boolean TrackClusters = true;            // SpringSaLaD specific
     public static final boolean InitialLocationRandom = true;
@@ -941,7 +941,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                     linksToRemove.add(oldMils);
                     continue;
                 }
-                // both lnOne and lnTwo are either StructuralSites or are MolecularComponentPattern with a match in oldToNewMcp,
+                // lnOne and lnTwo are StructuralSites or MolecularComponentPattern with a match in oldToNewMcp,
                 // then we update the link
                 Pair<LinkNode, LinkNode> newLink = new Pair(oldToNewMcp.get(lnOne), oldToNewMcp.get(lnTwo));
                 oldMils.setLink(newLink);
@@ -975,14 +975,12 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         return speciesContext.getUnitDefinition().multiplyBy(getLengthPerTimeUnit());
     }
 
-
     /**
      * The addPropertyChangeListener method was generated to support the propertyChange field.
      */
     public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener){
         getPropertyChange().addPropertyChangeListener(listener);
     }
-
 
     /**
      * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
@@ -1304,12 +1302,18 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                     }
                 }
                 if(mcpList.size() > 1 && getInternalLinkSet().size() > 0) {
-                    GraphContinuity.Graph graph = new GraphContinuity.Graph(mcpList.size());
-                    Map<MolecularComponentPattern, Integer> mcpMap = new LinkedHashMap<> ();
-                    for(int i=0; i<mcpList.size(); i++) {
-                        MolecularComponentPattern mcp = mcpList.get(i);
-                        mcpMap.put(mcp, i);
+                    Map<LinkNode, Integer> mcpMap = new LinkedHashMap<> ();
+                    int count = 0;  // total number of LinkNodes (MolecularComponentPattern and StructuralSite) in the molecule, used to build the graph
+                    for(MolecularComponentPattern mcp : mcpList) {
+                        mcpMap.put(mcp, count);
+                        count++;
                     }
+                    for (Map.Entry<StructuralSite, SiteAttributesSpec> e : getStructuralSiteAttributesMap().entrySet()) {
+                        StructuralSite ss = e.getKey();
+                        mcpMap.put(ss, count);
+                        count++;
+                    }
+                    GraphContinuity.Graph graph = new GraphContinuity.Graph(count);
                     for(MolecularInternalLinkSpec mils : getInternalLinkSet()) {
                         Pair<LinkNode, LinkNode> link = mils.getLink();
                         int one = mcpMap.get(link.one);
@@ -2472,12 +2476,23 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     public void setSiteAttributesMap(Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap){
         this.siteAttributesMap = siteAttributesMap;
     }
-    // TODO: call these wherever we call the above get/set methods
     public Map<StructuralSite, SiteAttributesSpec> getStructuralSiteAttributesMap(){
         return structuralSiteAttributesMap;
     }
     public void setStructuralSiteAttributesMap(Map<StructuralSite, SiteAttributesSpec> structuralSiteAttributesMap){
         this.structuralSiteAttributesMap = structuralSiteAttributesMap;
+    }
+    // -----------------------------------------------------------------------------
+    // utility for merging siteAttributesMap and structuralSiteAttributesMap
+    public Map<LinkNode, SiteAttributesSpec> getAllSiteAttributes() {
+        Map<LinkNode, SiteAttributesSpec> merged = new LinkedHashMap<>();
+        for (var e : siteAttributesMap.entrySet()) {
+            merged.put(e.getKey(), e.getValue());
+        }
+        for (var e : structuralSiteAttributesMap.entrySet()) {
+            merged.put(e.getKey(), e.getValue());
+        }
+        return merged;
     }
 
     public SpatialQuantity[] getVelocityQuantities(QuantityComponent component){
