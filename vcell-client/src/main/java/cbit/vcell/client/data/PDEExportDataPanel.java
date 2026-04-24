@@ -65,7 +65,7 @@ public class PDEExportDataPanel extends JPanel {
 	private JPanel ivjJPanelExport = null;
 	private ExportSettings ivjExportSettings1 = null;
 	IvjEventHandler ivjEventHandler = new IvjEventHandler();
-	private JScrollPane ivjJScrollPane1 = null;
+	private CheckBoxScrollList checkboxScrollPane = null;
 	private JSlider ivjJSlider1 = null;
 	private JSlider ivjJSlider2 = null;
 	private JTextField ivjJTextField1 = null;
@@ -224,6 +224,9 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 						if ((getpdeDataContext1() != null)) {
 							PDEExportDataPanel.this.updateAllChoices(getpdeDataContext1());
 						}
+				if (evt.getSource() == PDEExportDataPanel.this.getCheckboxScrollPane() && evt.getPropertyName().contains("isSelected")){
+					PDEExportDataPanel.this.updateInterface();
+				}
 			}
 			catch (Throwable ivjExc){
 				handleException(ivjExc);
@@ -245,10 +248,10 @@ class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.F
 
 		public void valueChanged(javax.swing.event.ListSelectionEvent e) {
 			try{
-				if (e.getSource() == PDEExportDataPanel.this.getJListVariables())
-						PDEExportDataPanel.this.updateInterface();
-				if (e.getSource() == PDEExportDataPanel.this.getROISelections())
-						PDEExportDataPanel.this.updateInterface();
+				if (
+					e.getSource() == PDEExportDataPanel.this.getCheckboxScrollPane() ||
+					e.getSource() == PDEExportDataPanel.this.getROISelections()
+				) PDEExportDataPanel.this.updateInterface();
 			}
 			catch (Throwable ivjExc){
 				handleException(ivjExc);
@@ -393,7 +396,7 @@ private ExportFormat getSelectedFormat( ) {
 private void connPtoP1SetTarget() {
 	/* Set the target from the source */
 	try {
-		getJListVariables().setModel(getDefaultListModelCivilizedVariables());
+		getCheckboxScrollPane().applyListModelToEntries(getDefaultListModelCivilizedVariables());
 		// user code begin {1}
 		// user code end
 	} catch (java.lang.Throwable ivjExc) {
@@ -629,11 +632,7 @@ private ExportSettings getExportSettings1() {
  */
 private ExportSpecs getExportSpecs() {
 	@SuppressWarnings("deprecation")
-	Object[] variableSelections = getJListVariables().getSelectedValues();
-	String[] variableNames = new String[variableSelections.length];
-	for (int i = 0; i < variableSelections.length; i++){
-		variableNames[i] = (String)variableSelections[i];
-	}
+	String[] variableNames = getCheckboxScrollPane().getCheckedItems().toArray(String[]::new);
 	VariableSpecs variableSpecs = new VariableSpecs(variableNames, ExportEnums.VariableMode.VARIABLE_MULTI);
 	TimeSpecs timeSpecs = new TimeSpecs(getJSlider1().getValue(), getJSlider2().getValue(), getPdeDataContext().getTimePoints(), ExportEnums.TimeMode.TIME_RANGE);
 	ExportEnums.GeometryMode geoMode = ExportEnums.GeometryMode.GEOMETRY_SELECTIONS;
@@ -1075,28 +1074,6 @@ private javax.swing.JList<Object> getROISelections() {
 }
 
 /**
- * Return the JList1 property value.
- * @return javax.swing.JList
- */
-/* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JList<?> getJListVariables() {
-	if (ivjJListVariables == null) {
-		try {
-			ivjJListVariables = new javax.swing.JList<Object>();
-			ivjJListVariables.setName("JListVariables");
-			ivjJListVariables.setBounds(0, 0, 160, 120);
-			// user code begin {1}
-			// user code end
-		} catch (java.lang.Throwable ivjExc) {
-			// user code begin {2}
-			// user code end
-			handleException(ivjExc);
-		}
-	}
-	return ivjJListVariables;
-}
-
-/**
  * Return the JPanelExport property value.
  * @return javax.swing.JPanel
  */
@@ -1369,7 +1346,7 @@ private javax.swing.JPanel getJPanelVariables() {
 			gridBagConstraints_2.gridy = 1;
 			gridBagConstraints_2.gridx = 1;
 			ivjJPanelVariables.add(getMembVarRadioButton(), gridBagConstraints_2);
-			getJPanelVariables().add(getJScrollPane1(), gridBagConstraints_1);
+			ivjJPanelVariables.add(getCheckboxScrollPane(), gridBagConstraints_1);
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1456,8 +1433,8 @@ private javax.swing.JRadioButton getJRadioButtonSlice() {
  * @return javax.swing.JScrollPane
  */
 /* WARNING: THIS METHOD WILL BE REGENERATED. */
-private javax.swing.JScrollPane getJScrollPane1() {
-	if (ivjJScrollPane1 == null) {
+private CheckBoxScrollList getCheckboxScrollPane() {
+	if (checkboxScrollPane == null) {
 		try {
 			final GridBagConstraints gridBagConstraints_3 = new GridBagConstraints();
 			gridBagConstraints_3.gridwidth = 3;
@@ -1468,10 +1445,9 @@ private javax.swing.JScrollPane getJScrollPane1() {
 			gridBagConstraints.gridy = 1;
 			gridBagConstraints.gridx = 2;
 			getJPanelVariables().add(getBothVarRadioButton(), gridBagConstraints);
-			ivjJPanelVariables.add(getSelectVariablesLabel(), gridBagConstraints_3);
-			ivjJScrollPane1 = new javax.swing.JScrollPane();
-			ivjJScrollPane1.setName("JScrollPane1");
-			getJScrollPane1().setViewportView(getJListVariables());
+			getJPanelVariables().add(getSelectVariablesLabel(), gridBagConstraints_3);
+			checkboxScrollPane = new CheckBoxScrollList();
+			checkboxScrollPane.setName("ObservablesCheckboxSelectionListPane");
 			// user code begin {1}
 			// user code end
 		} catch (java.lang.Throwable ivjExc) {
@@ -1480,7 +1456,7 @@ private javax.swing.JScrollPane getJScrollPane1() {
 			handleException(ivjExc);
 		}
 	}
-	return ivjJScrollPane1;
+	return checkboxScrollPane;
 }
 
 /**
@@ -1703,7 +1679,7 @@ private void initConnections() throws java.lang.Exception {
 	getJButtonExport().addActionListener(ivjEventHandler);
 	this.addPropertyChangeListener(ivjEventHandler);
 	getExportSettings1().addPropertyChangeListener(ivjEventHandler);
-	getJListVariables().addListSelectionListener(ivjEventHandler);
+	getCheckboxScrollPane().addListSelectionListener(ivjEventHandler);
 	getButtonGroupCivilized1().addPropertyChangeListener(ivjEventHandler);
 	getDefaultListModelCivilizedSelections().addListDataListener(ivjEventHandler);
 	getROISelections().addListSelectionListener(ivjEventHandler);
@@ -1996,7 +1972,7 @@ private void startExport() {
 	}
 	DisplayPreferences[] displayPreferences = null;
 	@SuppressWarnings("deprecation")
-	Object[] variableSelections = getJListVariables().getSelectedValues();
+	Object[] variableSelections = getCheckboxScrollPane().getCheckedItems().toArray();
 	boolean selectionHasVolumeVariables = false;
 	boolean selectionHasMembraneVariables = false;
 	switch (getExportSettings1().getSelectedFormat()) {
@@ -2341,7 +2317,7 @@ private void updateInterface() {
 	}
 	//
 	boolean startExportEnabled =
-		(getJListVariables().getSelectedIndex() != -1)
+		(getCheckboxScrollPane().hasItemsSelected())
 		&&
 		(
 		(getJRadioButtonROI().isSelected() && getROISelections().getSelectedIndex() != -1)
