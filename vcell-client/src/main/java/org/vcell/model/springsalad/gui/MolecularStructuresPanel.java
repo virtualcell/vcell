@@ -312,14 +312,22 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		sitesPanel.setBorder(titleSites);
 		linksPanel.setBorder(titleLinks);
 
-		top.setMinimumSize(new Dimension(0, 100));
-		
+		// calculate the preferred height of the speciesContextSpecsTable based on the row height and header height,
+		// so that we show 3.2 rows worth of data (with the "more below" hint) without needing to scroll
+		JTable speciesTable = getSpeciesContextSpecsTable();
+		int rowHeight = speciesTable.getRowHeight();
+		int headerHeight = speciesTable.getTableHeader().getPreferredSize().height;
+		// 3.15 rows worth of height so user sees "more below"
+		int visibleRows = 3;
+		int extraPixels = (int)(0.15 * rowHeight);
+		int scsTablePreferredHeight = headerHeight + visibleRows * rowHeight + extraPixels;
+
 		thePanel.setLayout(new GridBagLayout());
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
 		gbc.gridy = 0;
 		gbc.weightx = 1.0;
-		gbc.weighty = 0.4;
+		gbc.weighty = 0.25;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(3, 0, 0, 0);	//  top, left, bottom, right 
 		thePanel.add(top, gbc);
@@ -328,7 +336,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.gridx = 0;
 		gbc.gridy = 1;
 		gbc.weightx = 1.0;
-		gbc.weighty = 0.6;
+		gbc.weighty = 0.75;
 //		gbc.gridheight = 2;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.insets = new Insets(1, 0, 0, 0);
@@ -337,6 +345,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		// we may want to use a scroll pane whose viewing area is the JTable to provide similar look with NetGen Console
 		JScrollPane pt = new JScrollPane(getSpeciesContextSpecsTable());
 		pt.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		pt.setPreferredSize(new Dimension(0, scsTablePreferredHeight));
 		top.setLayout(new GridBagLayout());		// --- table of top panel
 		gbc = new GridBagConstraints();
 		gbc.gridx = 0;
@@ -345,7 +354,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		gbc.weighty = 1.0;
 		gbc.fill = GridBagConstraints.BOTH;
 		gbc.anchor = GridBagConstraints.NORTHWEST;
-		gbc.insets = new Insets(2, 3, 3, 4);
+		gbc.insets = new Insets(2, 3, 2, 2);
 		top.add(pt, gbc);
 
 		DefaultTableCellRenderer renderer = new DefaultScrollTableCellRenderer() {

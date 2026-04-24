@@ -831,6 +831,19 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                 } else {    // if this is a new site added to an existing molecule, the existing sites already have
                     ;       // attributes (like coordinates, diffusion rates, colors) and links.
                             // We cannot guess how the user will want to deal with the new site.
+                    // Dan 4/24/2026 On the other hand, why not do an educated guess. If the new site is added to an
+                    // existing molecule, then we can assume that the user wants it to be similar to the existing sites.
+                    // So we can initialize the new site's attributes based on the existing sites. For example, we can
+                    // set the new site's coordinates to be offset from the existing sites, and we can set the new
+                    // site's color to be the next in the color array. This way, the user will have a reasonable
+                    // starting point for the new site, and they can then adjust it as needed.
+                    Map<LinkNode, SiteAttributesSpec> merged = getAllSiteAttributes();
+                    Coordinate minc = SiteAttributesSpec.getMinCoordinate(merged);
+                    Coordinate maxc = SiteAttributesSpec.getMaxCoordinate(merged);
+                    Coordinate coordinate = new Coordinate(minc.getX(), minc.getY(), maxc.getZ() + INITIAL_YZ_SITE_OFFSET);
+                    sas.setCoordinate(coordinate);
+                    NamedColor nextColor = Colors.COLORARRAY[merged.size() % Colors.COLORARRAY.length];
+                    sas.setColor(nextColor);
                 }
                 siteAttributesMap.put(mcp, sas);
             }

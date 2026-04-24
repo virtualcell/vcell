@@ -74,8 +74,8 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                 updateShape();
             } else if(evt.getSource() instanceof SpeciesContextSpec && evt.getPropertyName().equals(SpeciesContextSpec.PROPERTY_NAME_SITE_SELECTED_IN_TABLE)) {
                 Object o = evt.getNewValue();
-                if(o instanceof MolecularComponentPattern mcp) {
-                    lnSelected = mcp;
+                if(o instanceof LinkNode ln) {
+                    lnSelected = ln;
                     lastSelectedObject = lnSelected;
                 } else {
                     lnSelected = null;

@@ -13,6 +13,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Objects;
 
 import cbit.vcell.model.*;
 import org.vcell.model.rbm.LinkNode;
@@ -237,10 +238,13 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 		if(!fieldSpeciesContextSpec.getSpeciesContext().compareEqual(theirMils.getSpeciesContextSpec().getSpeciesContext())) {
 			return false;
 		}
-		// note that while the link is scalar, not vector, we order one and two alphabetically
-		// hence, no need to also compare this.One with that.Two (I hope, at least)
+		// we order linkOne and Two alphabetically in the constructor, but the user may rename the sites in the
+		// physiology editor, so we need to compare both orders here
 		if((fieldLinkNodeOne.compareEqual(theirMils.fieldLinkNodeOne)) &&
 				(fieldLinkNodeTwo.compareEqual(theirMils.fieldLinkNodeTwo))) {
+			return true;
+		} else if((fieldLinkNodeOne.compareEqual(theirMils.fieldLinkNodeTwo)) &&
+				(fieldLinkNodeTwo.compareEqual(theirMils.fieldLinkNodeOne))) {
 			return true;
 		}
 		return false;
@@ -272,8 +276,25 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 		sb.append("\n");
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!(obj instanceof MolecularInternalLinkSpec)) {
+			return false;
+		}
+		MolecularInternalLinkSpec other = (MolecularInternalLinkSpec) obj;
+		return compareEqual(other);		// delegate to the domain-specific equality
+	}
+	@Override
+	public int hashCode() {		// the HashSet has mutable objects, so we can't compute a proper hashCode based on the
+		// fields, otherwise we would have to remove and re-add the object to the HashSet every time we change it,
+		// which is not feasible, so we just return a constant here. This is not ideal, but it works because we don't
+		// have too many objects in the HashSet.
+		return 27;
+	}
 
-	
 //	// TODO: not working properly, will use direct calls from SpeciesContextSpec
 //	public void gatherIssues(IssueContext issueContext, List<Issue> issueVector) {
 //		issueContext = issueContext.newChildContext(ContextType.MolecularInternalLinkSpec, this);

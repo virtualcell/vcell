@@ -30,7 +30,7 @@ import org.vcell.util.springsalad.NamedColor;
 @SuppressWarnings("serial")
 public class SiteAttributesSpec implements Serializable, Identifiable, Displayable, IssueSource, Matchable {
 
-	public final static double DEFAULT_STRUCTURAL_SITE_RADIUS = 0.6;		// nm, we make them smaller as visual cue
+	public final static double DEFAULT_STRUCTURAL_SITE_RADIUS = 0.8;		// nm, we make them smaller as visual cue
 
 	private final SpeciesContextSpec fieldSpeciesContextSpec;
 	private LinkNode fieldLinkNode = null;
@@ -227,7 +227,42 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 			issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 		}
 	}
-	
+
+	public static Coordinate getMinCoordinate(Map<LinkNode, SiteAttributesSpec> map) {
+		double minX = Double.POSITIVE_INFINITY;
+		double minY = Double.POSITIVE_INFINITY;
+		double minZ = Double.POSITIVE_INFINITY;
+		for (SiteAttributesSpec sas : map.values()) {
+			Coordinate c = sas.getCoordinate();
+			if (c != null) {
+				if (c.getX() < minX) minX = c.getX();
+				if (c.getY() < minY) minY = c.getY();
+				if (c.getZ() < minZ) minZ = c.getZ();
+			}
+		}
+		if (minX == Double.POSITIVE_INFINITY) {
+			return null; // map empty or all coords null
+		}
+		return new Coordinate(minX, minY, minZ);
+	}
+	public static Coordinate getMaxCoordinate(Map<LinkNode, SiteAttributesSpec> map) {
+		double maxX = Double.NEGATIVE_INFINITY;
+		double maxY = Double.NEGATIVE_INFINITY;
+		double maxZ = Double.NEGATIVE_INFINITY;
+		for (SiteAttributesSpec sas : map.values()) {
+			Coordinate c = sas.getCoordinate();
+			if (c != null) {
+				if (c.getX() > maxX) maxX = c.getX();
+				if (c.getY() > maxY) maxY = c.getY();
+				if (c.getZ() > maxZ) maxZ = c.getZ();
+			}
+		}
+		if (maxX == Double.NEGATIVE_INFINITY) {
+			return null; // map empty or all coords null
+		}
+		return new Coordinate(maxX, maxY, maxZ);
+	}
+
 	public static final String typeName = "SiteAttributesSpec";
 	@Override
 	public String getDisplayName() {

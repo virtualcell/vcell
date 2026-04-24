@@ -30,18 +30,6 @@ public class SsldUtils {
 
     private static final Logger lg = LogManager.getLogger(SsldUtils.class);
 
-    public enum Qualifier {
-        FREE, BOUND, TOTAL, NONE;
-        public static Qualifier fromPrefix(String s) {
-            for (Qualifier q : values()) {
-                if (q != NONE && q.name().equals(s)) {
-                    return q;
-                }
-            }
-            return NONE;
-        }
-    }
-
     public static <K, V> int indexOfKey(Map<K, V> map, K key) {
         // we know it's a LinkedHashMap, so the order is deterministic; we want the index of the key in the order of insertion
         int index = 0;
@@ -52,6 +40,18 @@ public class SsldUtils {
             index++;
         }
         return -1; // not found
+    }
+
+    public enum Qualifier {
+        FREE, BOUND, TOTAL, NONE;
+        public static Qualifier fromPrefix(String s) {
+            for (Qualifier q : values()) {
+                if (q != NONE && q.name().equals(s)) {
+                    return q;
+                }
+            }
+            return NONE;
+        }
     }
 
     // result entry from langevin output
