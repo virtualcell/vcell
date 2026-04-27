@@ -235,6 +235,9 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 		// we skip compareEqual for the SpeciesContextSpec, otherwise we end up in an infinite loop !!!
 		// we just compare the SpeciesContext (which is perfectly legit from a springsalad perspective,
 		// where we can only have one SpeciesContext object for each Molecule)
+		if (fieldSpeciesContextSpec == null || fieldSpeciesContextSpec.getSpeciesContext() == null) {
+			return false; // or throw
+		}
 		if(!fieldSpeciesContextSpec.getSpeciesContext().compareEqual(theirMils.getSpeciesContextSpec().getSpeciesContext())) {
 			return false;
 		}

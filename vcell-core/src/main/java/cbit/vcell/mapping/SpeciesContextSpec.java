@@ -1508,7 +1508,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                 if(!sc.getName().equals(mtp.getMolecularType().getName())){
                     String msg = "The Species and the Molecular Type must share the same name.";
                     String tip = msg;
-                    issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                    issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
                     return;
                 }
 

@@ -30,6 +30,7 @@ import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.util.Coordinate;
+import org.vcell.util.Pair;
 import org.vcell.util.gui.*;
 import org.vcell.util.gui.ScrollTable.ScrollTableBooleanCellRenderer;
 import org.vcell.util.gui.sorttable.SortTableModel;
@@ -940,7 +941,25 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		LinkNode ln = molecularTypeSpecsTableModel.getValueAt(row);
 		if(ln instanceof StructuralSite ss) {
 			Map<StructuralSite, SiteAttributesSpec> structureSiteAttributesMap = getSpeciesContextSpec().getStructuralSiteAttributesMap();
-			structureSiteAttributesMap.remove(ss);
+			structureSiteAttributesMap.remove(ss);		// remove the site itself
+
+			// we also need to remove any links that are connected to this site
+			Set<MolecularInternalLinkSpec> links = fieldSpeciesContextSpec.getInternalLinkSet();
+			java.util.List<MolecularInternalLinkSpec> toRemove = new ArrayList<>();
+			boolean hasLinksToRemove = false;
+			for (MolecularInternalLinkSpec mils : links) {
+				Pair<LinkNode, LinkNode> p = mils.getLink();
+				if (p.one == ss || p.two == ss) {
+					toRemove.add(mils);
+					hasLinksToRemove = true;
+				}
+			}
+			for (MolecularInternalLinkSpec mils : toRemove) {
+				links.remove(mils);
+			}
+			if(hasLinksToRemove) {
+				linkSpecsTableModel.refreshData();
+			}
 		}
 		molecularTypeSpecsTableModel.refreshData();		// refresh the model
 		int rowCount = molecularTypeSpecsTableModel.getRowCount();	// compute the new row index after deletion
@@ -967,6 +986,7 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 			LinkNode secondMcp = panel.getSecondSiteList().getSelectedValue();
 			MolecularInternalLinkSpec mils = new MolecularInternalLinkSpec(fieldSpeciesContextSpec, firstMcp, secondMcp);
 			fieldSpeciesContextSpec.getInternalLinkSet().add(mils);
+			fieldSpeciesContextSpec.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_LINK_LENGTH, null, mils);
 		}
 		linkSpecsTableModel.refreshData();
 	}

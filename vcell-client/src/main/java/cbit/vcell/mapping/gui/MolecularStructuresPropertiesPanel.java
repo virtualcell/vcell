@@ -46,9 +46,14 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
     private JButton zoomLargerButton = null;
     private JButton zoomSmallerButton = null;
 
+    // traching mouse coordinates in nm (not pixels)
+    // will use for drag and drop (not implemented yet, but we need to track the mouse movements for that)
+    private double mouseX_nm = Double.NaN;
+    private double mouseY_nm = Double.NaN;
+    private Integer mousePixelX = null; // we also track the mouse in pixel coordinates, to decide whether to show the coordinates (we hide them if the mouse is outside the panel)
+    private Integer mousePixelY = null;
 
     private class EventHandler implements ActionListener, PropertyChangeListener {
-
         @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
             if (e.getSource() == getZoomLargerButton()) {
@@ -134,7 +139,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                     }
                     scsls = new SpeciesContextSpecLargeShape(speciesContextSpec, shapePanel, speciesContextSpec,
                             lnSelected, milsSelected, lastSelectedObject, issueManager);
-                    scsls.paintSelf(g);
+                    scsls.paintSelf(g, mouseX_nm, mouseY_nm, mousePixelX, mousePixelY, shapePanel.getWidth(), shapePanel.getHeight());
                 }
                 @Override
                 public DisplayMode getDisplayMode() {
@@ -189,6 +194,16 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
 //                    }
                 }
             });
+            shapePanel.addMouseMotionListener(new MouseMotionAdapter() {
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    mouseX_nm = scsls.screenToNmX(e.getX());
+                    mouseY_nm = scsls.screenToNmY(e.getY());
+                    mousePixelX = e.getX();
+                    mousePixelY = e.getY();
+                    shapePanel.repaint();
+                }
+            });
             shapePanel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
@@ -213,6 +228,14 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                         // we tell the table in the upper panel to update the selected row
                         speciesContextSpec.firePropertyChange(PROPERTY_NAME_SITE_SELECTED_IN_SHAPE, null, lnSelected);
                     }
+                }
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    mouseX_nm = Double.NaN;
+                    mouseY_nm = Double.NaN;
+                    mousePixelX = null;
+                    mousePixelY = null;
+                    shapePanel.repaint();
                 }
             });
             shapePanel.setPreferredSize(new Dimension(2000, 800));
@@ -320,6 +343,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
         milsSelected = null;
         updateInterface();
     }
+
     public void setBioModel(BioModel newValue) {
         if (bioModel == newValue) {
             return;

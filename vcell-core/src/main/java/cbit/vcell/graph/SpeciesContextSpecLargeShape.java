@@ -34,8 +34,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     }
 
     private static final double NmToPixelRatio = 18;
-    private static final double DEFAULT_UPPER_CORNER = 5.3;     // default screen coordinates where we want to display the first site
-    private static final double DEFAULT_LEFT_CORNER = 13;       // in nm
+    private static final double DEFAULT_UPPER_CORNER = 3;     // default screen coordinates where we want to display the first site
+    private static final double DEFAULT_LEFT_CORNER = 8;       // in nm
 
     // x, y positions where we want to begin drawing the shape (nm from top and left of painting area)
     private double x_offset = DEFAULT_LEFT_CORNER;
@@ -80,6 +80,13 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     private LinkNode lnSelected = null;   // any or both of these may be selected in their tables, they are highlighted on the shape
     private MolecularInternalLinkSpec milsSelected = null;
     private Object lastSelectedObject = null;    // this is the last selected object, we show it on top of everything else
+
+    private double mouseX_nm = Double.NaN;    // tracking mouse over the shape, in nm coordinates (depends on the zoom level)
+    private double mouseY_nm = Double.NaN;
+    private Integer mousePixelX = null; // we also track the mouse in pixel coordinates, to decide whether to show the coordinates (we hide them if the mouse is outside the panel)
+    private Integer mousePixelY = null;
+    private int panelWidth = 0;
+    private int panelHeight = 0;
 
     public SpeciesContextSpecLargeShape(SpeciesContextSpec scs, LargeShapeCanvas shapePanel, Displayable owner,
                                         LinkNode lnSelected, MolecularInternalLinkSpec milsSelected,
@@ -162,8 +169,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         }
         // now compute the offsets, we want the sites nicely centered on screen
         // UPPER_CORNER, LEFT_CORNER
-        x_offset = DEFAULT_LEFT_CORNER - minX;
-        y_offset = DEFAULT_UPPER_CORNER - minY;
+//        x_offset = DEFAULT_LEFT_CORNER - minX;
+//        y_offset = DEFAULT_UPPER_CORNER - minY;
     }
 
     private boolean isPlanarYZ() {    // we only show entities that are 2D in the YZ plane
@@ -224,7 +231,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         g.setColor(Color.black);
         double VerticalTextOffset = 1.0;    // vertical means y coord
         if(!hasMembraneSite) {
-            double x = minX+x_offset;
+//            double x = minX+x_offset;
+            double x = x_offset;
             double y = VerticalTextOffset;
             g2.drawString(name, (int)(nmToPixelRatio * x), (int)(NmToPixelRatio * y));
         } else {
@@ -257,18 +265,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         RenderingHints hintsOld = g2.getRenderingHints();
         Stroke strokeOld = g2.getStroke();
 
-        Font font;
-        int z = shapePanel.getZoomFactor();
-        nmToPixelRatio = NmToPixelRatio + z;
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        if(z > -3) {
-            font = fontOld.deriveFont(Font.BOLD);
-            g.setFont(font);
-        } else {
-            font = fontOld;
-            g.setFont(font);
-        }
+        setFontForZoom(g);
 
         int startX = 15;                            // coordinates for the arrow line (z-axis)
         int startY = 15;
@@ -318,10 +315,51 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             String regularText = "The molecule is ";
             g2.drawString(regularText, startX, startY);
             int regularTextWidth = fm.stringWidth(regularText);
-            font = fontOld.deriveFont(Font.BOLD);
+            Font font = fontOld.deriveFont(Font.BOLD);
             g2.setFont(font);
             g2.drawString("3D", startX + regularTextWidth, startY);
         }
+        g2.setStroke(strokeOld);
+        g2.setRenderingHints(hintsOld);
+        g2.setFont(fontOld);
+        g2.setPaint(paintOld);
+        g2.setColor(colorOld);
+    }
+
+    private void paintCoordinates(Graphics g) {
+
+        if (Double.isNaN(mouseX_nm) || Double.isNaN(mouseY_nm)) {
+            return; // do not draw coordinates yet
+        }
+        if (mousePixelX == null || mousePixelY == null) {
+            return; // no pixel position yet
+        }
+        if (mouseX_nm < 0 || mouseY_nm < 0) {
+            return; // do not show negative nm coordinates
+        }
+        if (mousePixelX < 0 || mousePixelX > panelWidth || mousePixelY < 0 || mousePixelY > panelHeight) {
+            return; // do not show if outside panel bounds
+        }
+
+        Graphics2D g2 = (Graphics2D) g;
+        Color colorOld = g2.getColor();
+        Paint paintOld = g2.getPaint();
+        Font fontOld = g2.getFont();
+        RenderingHints hintsOld = g2.getRenderingHints();
+        Stroke strokeOld = g2.getStroke();
+
+        int startX = 15;                                // coordinates for the arrow line (Y-axis)
+        int startY = 160;
+        g2.setColor(Color.darkGray);
+        setFontForZoom(g);
+
+        // snap to nearest 0.1 nm
+        double y_snapped = snapToTenth(mouseY_nm);
+        double z_snapped = snapToTenth(mouseX_nm);
+        // note that screen x coordinate corresponds to z coordinate in the model,
+        // and screen y coordinate corresponds to y coordinate in the model
+        String text = String.format("Y = %.1f nm, Z = %.1f nm", y_snapped, z_snapped);
+        g2.drawString(text, startX, startY);
 
         g2.setStroke(strokeOld);
         g2.setRenderingHints(hintsOld);
@@ -408,6 +446,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
 //        }
         paintCompartments(g);
         paintAxes(g);
+        paintCoordinates(g);
         if(mtp == null || mtp.getComponentPatternList().size() == 0) {		// paint empty dummy
             paintDummy(g);
             return;
@@ -508,7 +547,6 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
 
 
     public Object contains(Point point) {
-
         for (Map.Entry<Ellipse2D, SiteAttributesSpec> entry : ellipseToSasMap.entrySet()) {
             Ellipse2D oval = entry.getKey();
             SiteAttributesSpec sas = entry.getValue();
@@ -526,10 +564,45 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         return null;
     }
 
+    private Font setFontForZoom(Graphics g) {
+        Graphics2D g2 = (Graphics2D)g;
+        Font fontOld = g2.getFont();
+        Font font;
+        int z = shapePanel.getZoomFactor();
+        if(z > -3) {
+            font = fontOld.deriveFont(Font.BOLD);
+            g.setFont(font);
+        } else {
+            font = fontOld;
+            g.setFont(font);
+        }
+        return font;
+    }
+    public double screenToNmX(int pixelX) {
+        return (pixelX / nmToPixelRatio) - x_offset;
+    }
+    public double screenToNmY(int pixelY) {
+        return (pixelY / nmToPixelRatio) - y_offset;
+    }
+    private static double snapToTenth(double v) {
+        return Math.round(v * 10.0) / 10.0;
+    }
+
     @Override
     public void paintSelf(Graphics g) {
         paintSelf(g, true);
     }
+    public void paintSelf(Graphics g, Double mouseX_nm, Double mouseY_nm, Integer mousePixelX, Integer mousePixelY,
+                          int panelWidth, int panelHeight) {
+        this.mouseX_nm = mouseX_nm;
+        this.mouseY_nm = mouseY_nm;
+        this.mousePixelX = mousePixelX;
+        this.mousePixelY = mousePixelY;
+        this.panelWidth = panelWidth;
+        this.panelHeight = panelHeight;
+        paintSelf(g);
+    }
+
     @Override
     public boolean isHighlighted() {
         return false;
