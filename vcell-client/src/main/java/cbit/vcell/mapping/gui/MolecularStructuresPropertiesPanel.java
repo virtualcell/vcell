@@ -341,6 +341,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
 
         lnSelected = null;
         milsSelected = null;
+        lastSelectedObject = null;
         updateInterface();
     }
 

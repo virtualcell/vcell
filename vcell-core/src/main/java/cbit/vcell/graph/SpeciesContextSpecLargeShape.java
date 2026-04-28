@@ -514,8 +514,11 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         // we now redraw the last selected object on top of everything else
         if(lastSelectedObject != null) {
             if(lastSelectedObject instanceof LinkNode) {
-                LinkNode mcp = (LinkNode)lastSelectedObject;
-                SiteAttributesSpec sas = merged.get(mcp);
+                LinkNode ln = (LinkNode)lastSelectedObject;
+                SiteAttributesSpec sas = merged.get(ln);
+                if(sas == null) {
+                    throw new RuntimeException("Stale last selected site: " + ln.getName());
+                }
                 Coordinate coord = sas.getCoordinate();
                 double radius = sas.getRadius();
                 NamedColor color = sas.getColor();
