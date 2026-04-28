@@ -1,5 +1,6 @@
 package cbit.vcell.exports;
 
+import cbit.vcell.modeldb.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.vcell.db.DatabaseSyntax;
 import org.vcell.db.KeyFactory;
@@ -59,7 +60,7 @@ public class ExportHistoryDBDriver {
 
     public void deleteExportHistory(Connection conn, String uri) throws SQLException {
         // Concern, data id could mean multiple items get deleted
-        String deleteSQL = "DELETE FROM vc_simulation_export_history WHERE uri = ?";
+        String deleteSQL = "DELETE FROM " + ExportHistoryTable.table.tableName + " WHERE " + ExportHistoryTable.table.uri.getUnqualifiedColName() + " = ?";
         try (PreparedStatement psDel = conn.prepareStatement(deleteSQL)) {
             psDel.setString(1, uri);
             psDel.executeUpdate();
@@ -68,18 +69,18 @@ public class ExportHistoryDBDriver {
 
     // sub selection of sim ref key for that export event, then tie it back to biomodel/sim for getting metadata (name, application, etc)
     public List<ExportHistory> getExportHistoryForUser(Connection conn, User user, int pageNumber) throws SQLException, JsonProcessingException, DataAccessException {
-        String sql = """
-        SELECT eh.*, sim.name as sim_name, bio.name as bio_name, bio.childSummaryLRG, bio.childSummarySML, math.name as math_model_name,
-        sim.mathoverrides, sim.mathOverridesLRG, sim.mathOverridesSML, simContext.name as application_name, simContext.appComponentsLRG, simContext.appComponentsSML
-        FROM vc_simulation_export_history eh 
-        INNER JOIN vc_simulation sim ON sim.id = eh.simulation_ref
-        LEFT JOIN vc_biomodel bio ON bio.id = eh.biomodel_ref
-        LEFT JOIN vc_mathmodel math ON math.id = eh.mathmodel_ref
-        LEFT JOIN vc_simcontext simContext ON simContext.mathRef = eh.math_ref
-        WHERE user_ref = ? ORDER BY export_date DESC
-        OFFSET ? ROWS FETCH NEXT 100 ROWS ONLY
-""";
-        PreparedStatement ps = conn.prepareStatement(sql);
+        String properSQL = "SELECT eh.*, sim." + SimulationTable.table.name.getUnqualifiedColName()
+                + " as sim_name, bio." + BioModelTable.table.name.getUnqualifiedColName()
+                + " as bio_name, math." + MathModelTable.table.name.getUnqualifiedColName()
+                + " as math_model_name, simContext." + SimContextTable.table.name.getUnqualifiedColName() + " as application_name" +
+                " FROM " + ExportHistoryTable.table.tableName + " eh " +
+                " INNER JOIN " + SimulationTable.table.tableName + " sim ON sim." + SimulationTable.table.id.getUnqualifiedColName() + " = eh." + ExportHistoryTable.table.simulationRef.getUnqualifiedColName() +
+                " LEFT JOIN " + BioModelTable.table.tableName + " bio ON bio." + BioModelTable.table.id.getUnqualifiedColName() + " = eh." + ExportHistoryTable.table.bioModelRef.getUnqualifiedColName() +
+                " LEFT JOIN " + MathDescTable.table.tableName + " math ON math." + MathModelTable.table.id.getUnqualifiedColName() + " = eh." + ExportHistoryTable.table.mathModelRef.getUnqualifiedColName() +
+                " LEFT JOIN " + SimContextTable.table.tableName + " simContext ON simContext." + SimContextTable.table.id.getUnqualifiedColName() + " = eh." + ExportHistoryTable.table.mathRef.getUnqualifiedColName() +
+                " WHERE " + ExportHistoryTable.table.userRef.getUnqualifiedColName() + " = ? ORDER BY " + ExportHistoryTable.table.exportDate.getUnqualifiedColName() + " DESC OFFSET ? ROWS FETCH NEXT 100 ROWS ONLY";
+
+        PreparedStatement ps = conn.prepareStatement(properSQL);
         ps.setLong(1, Long.parseLong(user.getID().toString()));
         pageNumber = (0 < pageNumber) && (pageNumber < 10000) ? pageNumber : 0;
         ps.setInt(2, pageNumber * 100);
