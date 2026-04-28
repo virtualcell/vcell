@@ -84,7 +84,7 @@ public class ExportHistoryDBTest {
 
     @AfterEach
     public void cleanUp() throws SQLException, DataAccessException {
-        String sql = "DELETE FROM VC_SIMULATION_EXPORT_HISTORY";
+        String sql = "DELETE FROM VC_SIMULATION_EXPORT_JOB";
         Connection connection = agroalConnectionFactory.getConnection(null);
         connection.prepareStatement(sql).execute();
         connection.commit();

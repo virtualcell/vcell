@@ -12,7 +12,7 @@ import java.sql.*;
 import java.util.StringJoiner;
 
 public class ExportHistoryTable extends Table {
-    private static final String TABLE_NAME = "vc_simulation_export_history";
+    private static final String TABLE_NAME = "vc_simulation_export_job";
 
    // public final Field id = new Field(id_ColumnName, Field.SQLDataType.integer,"PRIMARY KEY");
 
