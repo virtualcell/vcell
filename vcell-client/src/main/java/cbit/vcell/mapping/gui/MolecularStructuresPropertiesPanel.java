@@ -19,10 +19,7 @@ import org.vcell.model.rbm.MolecularTypePattern;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
@@ -46,11 +43,10 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
     private JButton zoomLargerButton = null;
     private JButton zoomSmallerButton = null;
 
-    // traching mouse coordinates in nm (not pixels)
+    // tracking mouse coordinates
     // will use for drag and drop (not implemented yet, but we need to track the mouse movements for that)
-    private double mouseX_nm = Double.NaN;
-    private double mouseY_nm = Double.NaN;
-    private Integer mousePixelX = null; // we also track the mouse in pixel coordinates, to decide whether to show the coordinates (we hide them if the mouse is outside the panel)
+    private boolean mouseInsidePanel = false;    // whether mouse is inside the panel client area (we use this to decide whether to show the coordinates or not, we hide them when the mouse is outside the panel)
+    private Integer mousePixelX = null; // we also track the mouse in pixel coordinates, which we transform in nm units in the shape
     private Integer mousePixelY = null;
 
     private class EventHandler implements ActionListener, PropertyChangeListener {
@@ -137,9 +133,10 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                     if (speciesContextSpec == null || speciesContextSpec.getSpeciesContext() == null) {
                         return;
                     }
+                    Rectangle visibleViewport = getVisibleRect();
                     scsls = new SpeciesContextSpecLargeShape(speciesContextSpec, shapePanel, speciesContextSpec,
                             lnSelected, milsSelected, lastSelectedObject, issueManager);
-                    scsls.paintSelf(g, mouseX_nm, mouseY_nm, mousePixelX, mousePixelY, shapePanel.getWidth(), shapePanel.getHeight());
+                    scsls.paintSelf(g, mousePixelX, mousePixelY, mouseInsidePanel, visibleViewport);
                 }
                 @Override
                 public DisplayMode getDisplayMode() {
@@ -185,20 +182,12 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
             shapePanel.addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
                 public void mouseMoved(MouseEvent e) {
-                    // this will fire if the mouse moves over the panel, we may need it for drag and drop
-                    super.mouseMoved(e);
-//                    Point overWhat = e.getPoint();
-//                    Object overObject = scsls.contains(overWhat);
-//                    if(overObject != null) {
-//                        System.out.println("MouseMotionAdapter: over something");
-//                    }
+                    mousePixelX = e.getX();
+                    mousePixelY = e.getY();
+                    shapePanel.repaint();
                 }
-            });
-            shapePanel.addMouseMotionListener(new MouseMotionAdapter() {
                 @Override
-                public void mouseMoved(MouseEvent e) {
-                    mouseX_nm = scsls.screenToNmX(e.getX());
-                    mouseY_nm = scsls.screenToNmY(e.getY());
+                public void mouseDragged(MouseEvent e) {
                     mousePixelX = e.getX();
                     mousePixelY = e.getY();
                     shapePanel.repaint();
@@ -230,14 +219,39 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
                     }
                 }
                 @Override
+                public void mouseReleased(MouseEvent e) {
+                    mousePixelX = e.getX();
+                    mousePixelY = e.getY();
+                    shapePanel.repaint();
+                }
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    mouseInsidePanel = true;
+                }
+                @Override
                 public void mouseExited(MouseEvent e) {
-                    mouseX_nm = Double.NaN;
-                    mouseY_nm = Double.NaN;
+                    mouseInsidePanel = false;
                     mousePixelX = null;
                     mousePixelY = null;
                     shapePanel.repaint();
                 }
             });
+            shapePanel.addMouseWheelListener(new MouseWheelListener() {
+                @Override
+                public void mouseWheelMoved(MouseWheelEvent e) {
+                    if (!mouseInsidePanel) {
+                        return;
+                    }
+                    Point mouseScreen = MouseInfo.getPointerInfo().getLocation();   // get current mouse location on screen
+                    Point mousePanel = new Point(mouseScreen);      // convert to shapePanel coordinate system
+                    SwingUtilities.convertPointFromScreen(mousePanel, shapePanel);
+                    mousePixelX = mousePanel.x;     // update stored pixel coordinates
+                    mousePixelY = mousePanel.y;
+                    shapePanel.repaint();
+                    shapePanel.getParent().dispatchEvent(e);  // we dispatch the event to the parent scroll pane, which will handle the actual scrolling
+                }
+            });
+
             shapePanel.setPreferredSize(new Dimension(2000, 800));
             shapePanel.setBackground(new Color(0xe0e0e0));
             shapePanel.setZoomFactor(-2);
@@ -269,20 +283,6 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
             gbc.anchor = GridBagConstraints.WEST;
             optionsPanel.add(getZoomSmallerButton(), gbc);
 
-//            gbc = new GridBagConstraints();
-//            gbc.gridx = 0;
-//            gbc.gridy = 2;
-//            gbc.anchor = GridBagConstraints.WEST;
-//            gbc.insets = new Insets(4, 4, 4, 10);
-//            optionsPanel.add(new JLabel("Reaction Radius"), gbc);
-//
-//            gbc = new GridBagConstraints();
-//            gbc.gridx = 1;
-//            gbc.gridy = 2;
-//            gbc.anchor = GridBagConstraints.WEST;
-//            gbc.insets = new Insets(4, 4, 4, 10);
-//            optionsPanel.add(new JLabel("2 nm"), gbc);
-
             gbc = new GridBagConstraints();
             gbc.gridx = 0;
             gbc.gridy = 2;          // make this 3 if we show reaction radius here
@@ -313,16 +313,12 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
         }
         updateShape();
     }
-
     private void updateShape() {
         if(speciesContextSpec == null || speciesContextSpec.getSpeciesContext() == null) {
             return;
         }
         scsls = new SpeciesContextSpecLargeShape(speciesContextSpec, shapePanel, speciesContextSpec,
                 lnSelected, milsSelected, lastSelectedObject, issueManager);
-
-//        shapePanel.setPreferredSize(scsls.getMaxSize());
-
         shapePanel.repaint();
     }
 
@@ -337,8 +333,6 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
             this.speciesContextSpec = scSpec;
             scSpec.addPropertyChangeListener(eventHandler);
         }
-//        getSpeciesContextSpecParameterTableModel().setSpeciesContextSpec(scSpec);
-
         lnSelected = null;
         milsSelected = null;
         lastSelectedObject = null;
@@ -394,4 +388,5 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
         }
         return zoomSmallerButton;
     }
+
 }

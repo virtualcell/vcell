@@ -81,12 +81,10 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     private MolecularInternalLinkSpec milsSelected = null;
     private Object lastSelectedObject = null;    // this is the last selected object, we show it on top of everything else
 
-    private double mouseX_nm = Double.NaN;    // tracking mouse over the shape, in nm coordinates (depends on the zoom level)
-    private double mouseY_nm = Double.NaN;
+    boolean mouseInsidePanel = false;   // we track whether the mouse is inside the panel, to decide whether to show the coordinates (we hide them if the mouse is outside the panel)
     private Integer mousePixelX = null; // we also track the mouse in pixel coordinates, to decide whether to show the coordinates (we hide them if the mouse is outside the panel)
     private Integer mousePixelY = null;
-    private int panelWidth = 0;
-    private int panelHeight = 0;
+    private Rectangle visibleViewport = null;   // we track the visible viewport of the scroll pane, to decide where to show the coordinates
 
     public SpeciesContextSpecLargeShape(SpeciesContextSpec scs, LargeShapeCanvas shapePanel, Displayable owner,
                                         LinkNode lnSelected, MolecularInternalLinkSpec milsSelected,
@@ -328,17 +326,22 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
 
     private void paintCoordinates(Graphics g) {
 
-        if (Double.isNaN(mouseX_nm) || Double.isNaN(mouseY_nm)) {
-            return; // do not draw coordinates yet
-        }
+        int locationX = 15;             // default location where to paint the mouse coordinates
+        int locationY = 160;
         if (mousePixelX == null || mousePixelY == null) {
             return; // no pixel position yet
         }
-        if (mouseX_nm < 0 || mouseY_nm < 0) {
-            return; // do not show negative nm coordinates
-        }
-        if (mousePixelX < 0 || mousePixelX > panelWidth || mousePixelY < 0 || mousePixelY > panelHeight) {
+        if (mousePixelX < 0 || mousePixelY < 0 || mouseInsidePanel == false) {
             return; // do not show if outside panel bounds
+        }
+        if(visibleViewport != null) {       // this should always be the case
+            locationX = visibleViewport.x + 15;
+            locationY = visibleViewport.y + visibleViewport.height - 20;
+        }
+        double mouseY_nm = screenToNmY(mousePixelY);
+        double mouseX_nm = screenToNmX(mousePixelX);
+        if(mouseY_nm <= 0 || mouseX_nm <= 0) {
+            return; // do not show if the mouse would be outside shape area bounds
         }
 
         Graphics2D g2 = (Graphics2D) g;
@@ -348,18 +351,23 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         RenderingHints hintsOld = g2.getRenderingHints();
         Stroke strokeOld = g2.getStroke();
 
-        int startX = 15;                                // coordinates for the arrow line (Y-axis)
-        int startY = 160;
-        g2.setColor(Color.darkGray);
-        setFontForZoom(g);
-
-        // snap to nearest 0.1 nm
-        double y_snapped = snapToTenth(mouseY_nm);
+        double y_snapped = snapToTenth(mouseY_nm);  // snap to nearest 0.1 nm
         double z_snapped = snapToTenth(mouseX_nm);
         // note that screen x coordinate corresponds to z coordinate in the model,
         // and screen y coordinate corresponds to y coordinate in the model
+        g2.setColor(Color.darkGray);
+        setFontForZoom(g);
         String text = String.format("Y = %.1f nm, Z = %.1f nm", y_snapped, z_snapped);
-        g2.drawString(text, startX, startY);
+        g2.drawString(text, locationX, locationY);
+
+        // draw crosshair at snapped location
+        int snapPixelY = nmToScreenY(y_snapped);
+        int snapPixelX = nmToScreenX(z_snapped);
+        g2.setColor(Color.black);
+        g2.setStroke(new BasicStroke(1f));
+        int arm = 8;        // length of the crosshair arms in pixels
+        g2.drawLine(snapPixelX - arm, snapPixelY, snapPixelX + arm, snapPixelY);
+        g2.drawLine(snapPixelX, snapPixelY - arm, snapPixelX, snapPixelY + arm);
 
         g2.setStroke(strokeOld);
         g2.setRenderingHints(hintsOld);
@@ -446,9 +454,9 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
 //        }
         paintCompartments(g);
         paintAxes(g);
-        paintCoordinates(g);
         if(mtp == null || mtp.getComponentPatternList().size() == 0) {		// paint empty dummy
             paintDummy(g);
+            paintCoordinates(g);
             return;
         }
         Map<LinkNode, SiteAttributesSpec> merged = scs.getAllSiteAttributes();
@@ -545,6 +553,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
                 lineToMilsMap.put(newLine, mils);
             }
         }
+        paintCoordinates(g);
     }
 
 
@@ -587,6 +596,12 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     public double screenToNmY(int pixelY) {
         return (pixelY / nmToPixelRatio) - y_offset;
     }
+    public int nmToScreenX(double nmX) {
+        return (int) Math.round((nmX + x_offset) * nmToPixelRatio);
+    }
+    public int nmToScreenY(double nmY) {
+        return (int) Math.round((nmY + y_offset) * nmToPixelRatio);
+    }
     private static double snapToTenth(double v) {
         return Math.round(v * 10.0) / 10.0;
     }
@@ -595,14 +610,12 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     public void paintSelf(Graphics g) {
         paintSelf(g, true);
     }
-    public void paintSelf(Graphics g, Double mouseX_nm, Double mouseY_nm, Integer mousePixelX, Integer mousePixelY,
-                          int panelWidth, int panelHeight) {
-        this.mouseX_nm = mouseX_nm;
-        this.mouseY_nm = mouseY_nm;
+    public void paintSelf(Graphics g, Integer mousePixelX, Integer mousePixelY, boolean mouseInsidePanel,
+                          Rectangle visibleViewport) {
         this.mousePixelX = mousePixelX;
         this.mousePixelY = mousePixelY;
-        this.panelWidth = panelWidth;
-        this.panelHeight = panelHeight;
+        this.mouseInsidePanel = mouseInsidePanel;
+        this.visibleViewport = visibleViewport;
         paintSelf(g);
     }
 
