@@ -75,8 +75,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 
-public class SedMLExporter {
-    private final static Logger logger = LogManager.getLogger(SedMLExporter.class);
+public class SEDMLExporter {
+    private final static Logger logger = LogManager.getLogger(SEDMLExporter.class);
 
     private final int sedmlLevel;
     private final int sedmlVersion;
@@ -100,11 +100,11 @@ public class SedMLExporter {
     private final SBMLSupport sbmlSupport = new SBMLSupport();
 
 
-    public SedMLExporter(String argJobId, BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport) {
+    public SEDMLExporter(String argJobId, BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport) {
         this(argJobId, argBiomodel, argLevel, argVersion, argSimsToExport, null);
     }
 
-    public SedMLExporter(String argJobId, BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport, String jsonFilePath) {
+    public SEDMLExporter(String argJobId, BioModel argBiomodel, int argLevel, int argVersion, List<Simulation> argSimsToExport, String jsonFilePath) {
 
         super();
 
@@ -1458,7 +1458,7 @@ public class SedMLExporter {
 
         Predicate<SimulationContext> simContextExportFilter = sc -> true;
         if (bSkipUnsupportedApps) {
-            Map<String, String> unsupportedApplications = SedMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);
+            Map<String, String> unsupportedApplications = SEDMLExporter.getUnsupportedApplicationMap(bioModel, modelFormat);
             simContextExportFilter = (SimulationContext sc) -> !unsupportedApplications.containsKey(sc.getName());
         }
 
@@ -1530,7 +1530,7 @@ public class SedMLExporter {
             if (jsonReportFile.isPresent()) {
                 jsonReportPath = jsonReportFile.get().getAbsolutePath();
             }
-            SedMLExporter sedmlExporter = new SedMLExporter(sBaseFileName, bioModel, sedmlLevel, sedmlVersion, simsToExport, jsonReportPath);
+            SEDMLExporter sedmlExporter = new SEDMLExporter(sBaseFileName, bioModel, sedmlLevel, sedmlVersion, simsToExport, jsonReportPath);
             String sedmlString = sedmlExporter.getSEDMLDocument(sOutputDirPath, sBaseFileName, modelFormat, bValidate, simContextExportFilter).writeDocumentToString();
 
             if (bCreateOmexArchive) {

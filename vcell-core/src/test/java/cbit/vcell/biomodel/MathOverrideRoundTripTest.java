@@ -17,7 +17,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sedml.ModelFormat;
 import org.vcell.sedml.PublicationMetadata;
-import org.vcell.sedml.SedMLExporter;
+import org.vcell.sedml.SEDMLExporter;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -91,7 +91,7 @@ public class MathOverrideRoundTripTest {
         boolean bWriteOmexArchive = true;
         Optional<PublicationMetadata> publicationMetadata = Optional.empty();
         Predicate<SimulationContext> simContextFilter = (sc) -> true;
-        SedMLExporter.writeBioModel(bioModel, publicationMetadata, omexFile, ModelFormat.SBML, simContextFilter, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive);
+        SEDMLExporter.writeBioModel(bioModel, publicationMetadata, omexFile, ModelFormat.SBML, simContextFilter, bHasPython, bRoundTripSBMLValidation, bWriteOmexArchive);
 
         SBMLExporter.MemoryVCLogger memoryVCLogger = new SBMLExporter.MemoryVCLogger();
         List<BioModel> bioModels = XmlHelper.readOmex(omexFile, memoryVCLogger);
