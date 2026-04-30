@@ -1355,7 +1355,21 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                         }
                     }
                 }
-
+                // alternate way to check for duplicate links, we use the string representation of the links
+                Set<String> linkStringSet = new LinkedHashSet<> ();
+                for(MolecularInternalLinkSpec mils : getInternalLinkSet()) {
+                    String one = mils.getLinkNodeOne().getName();
+                    String two = mils.getLinkNodeTwo().getName();
+                    boolean ret0 = linkStringSet.add(one + "::" + two);     // returns false if already exists
+                    boolean ret1 = linkStringSet.add(two + "::" + one);
+                    if(ret0 == false || ret1 == false) {
+                        String msg = "Duplicate link: " + one + " :: " + two + ". Alternate method failed to detect the duplicate.";
+                        String tip = msg;
+                        // we escalate to error to also emphasize that previous method failed to detect the duplicate
+                        issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+                        return;
+                    }
+                }
                 // if the species context is on membrane it must have a site named Anchor on the membrane, the other sites must NOT be on membrane
                 Structure struct = sc.getStructure();
                 MolecularComponentPattern mcpAnchor = null;

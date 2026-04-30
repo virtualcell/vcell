@@ -2248,7 +2248,29 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                             setWarning(ex.getMessage());
                         }
                     }
-                } else if(isRuleBased()){
+                } else if(isRuleBased()) {
+
+                } else if(isLangevin()) {
+                    List<ParticleMolecularType> pmtList = getParticleMolecularTypes();
+                    for(ParticleMolecularType pmt : pmtList) {
+                        if(!(pmt instanceof LangevinParticleMolecularType)) {
+                            Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel,
+                                    "LangevinParticleMolecularType expected", Issue.SEVERITY_WARNING);
+                            issueList.add(issue);
+                        }
+                        for(ParticleMolecularComponent pmc : pmt.getComponentList()) {
+                            if(!(pmc instanceof LangevinParticleMolecularComponent)) {
+                                Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel,
+                                        "LangevinParticleMolecularComponent expected", Issue.SEVERITY_WARNING);
+                            }
+                            LangevinParticleMolecularComponent lpmc = (LangevinParticleMolecularComponent) pmc;
+                            // this is very useful test to catch math-related roundtrip errors and missing initializations
+                            if(lpmc.getIndex() == 0) {
+                                Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel,
+                                        "LangevinParticleMolecularComponent index should start with 1", Issue.SEVERITY_WARNING);
+                            }
+                        }
+                    }
                 } else {
                     // ODE model
                     //

@@ -1143,8 +1143,9 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		Model model = getSimulationContext().getModel();
 		List<RbmObservable> observableList = model.getRbmModelContainer().getObservableList();
 		List<MolecularType> molecularTypeList = model.getRbmModelContainer().getMolecularTypeList();
+		int siteIndex = 1;
 		for (MolecularType molecularType : molecularTypeList) {
-			Map<MolecularComponentPattern, LangevinParticleMolecularComponent> mcpToLpmc = new LinkedHashMap<> ();
+			Map<LinkNode, LangevinParticleMolecularComponent> mcpToLpmc = new LinkedHashMap<> ();
 			LangevinParticleMolecularType particleMolecularType = new LangevinParticleMolecularType(molecularType.getName());
 			SpeciesContextSpec scs = molecularTypeToSpeciesContextSpecMap.get(molecularType);	// scs may be null for Sink and Source
 			if(scs != null) {
@@ -1171,6 +1172,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					// pairs of mcp / sas are being added to the siteAttributesMap
 					SiteAttributesSpec sas = siteAttributesMap.get(mcp);
 					// TODO: perhaps move this to constructor so that object will be complete from the start
+					particleMolecularComponent.setIndex(siteIndex);
 					particleMolecularComponent.setColor(sas.getColor());
 					particleMolecularComponent.setLocation(sas.getLocation().getName());
 					particleMolecularComponent.setCoordinate(sas.getCoordinate());
@@ -1179,6 +1181,26 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					mcpToLpmc.put(mcp, particleMolecularComponent);
 				}
 				particleMolecularType.addMolecularComponent(particleMolecularComponent);
+				siteIndex++;
+			}
+			if(scs != null) {
+				Map<StructuralSite, SiteAttributesSpec> structuralSiteAttributesMap = scs.getStructuralSiteAttributesMap();
+				for(Map.Entry<StructuralSite, SiteAttributesSpec> entry : structuralSiteAttributesMap.entrySet()) {
+					StructuralSite structuralSite = entry.getKey();
+					SiteAttributesSpec sas = entry.getValue();
+					String pmcName = structuralSite.getName();
+					String pmcId = particleMolecularType.getName() + "_" + structuralSite.getName();
+					LangevinParticleMolecularComponent particleMolecularComponent = new LangevinParticleMolecularComponent(pmcId, pmcName);
+					particleMolecularComponent.setIndex(siteIndex);
+					particleMolecularComponent.setColor(sas.getColor());
+					particleMolecularComponent.setLocation(sas.getLocation().getName());
+					particleMolecularComponent.setCoordinate(sas.getCoordinate());
+					particleMolecularComponent.setRadius(sas.getRadius());
+					particleMolecularComponent.setDiffusionRate(sas.getDiffusionRate());
+					mcpToLpmc.put(structuralSite, particleMolecularComponent);
+					particleMolecularType.addMolecularComponent(particleMolecularComponent);
+					siteIndex++;
+				}
 			}
 			if(!molecularType.isAnchorAll()) {
 				List<String> anchorList = new ArrayList<>();
