@@ -57,8 +57,8 @@ public class PlottingDataExtractor {
             Results2DLinePlot plot = new Results2DLinePlot();
             plot.setTitle(requestedPlot.getName());
 
-
             for (AbstractCurve abstractCurve: requestedPlot.getCurves()){
+                logger.debug("Processing Abstract curve: {}", abstractCurve);
                 if (!(abstractCurve instanceof Curve curve )){
                     logger.warn("AbstractCurve `{}` is not a Curve for PlottingDataExtractor; skipping...", abstractCurve);
                     continue;

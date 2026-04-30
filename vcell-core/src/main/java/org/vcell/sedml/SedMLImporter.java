@@ -1303,7 +1303,8 @@ public class SedMLImporter {
 
 	public SBMLSymbolMapping getSBMLSymbolMapping(SimulationContext simContext){
 		SBMLImporter sbmlImporter = this.contextToSBMLImporter.get(simContext);
-        return (sbmlImporter != null) ? sbmlImporter.getSymbolMapping() : null;
+		if (null == sbmlImporter) return null; // This is what you'd expect from a vcml import
+		return sbmlImporter.getSymbolMapping(); // This can never be null
 	}
 
     public record StrictnessPolicy(boolean skipUnsupportedSimulationTypes, MultipleSubTaskPolicy multipleSubTaskPolicy, SolverMatchPolicy solverMatchPolicy){

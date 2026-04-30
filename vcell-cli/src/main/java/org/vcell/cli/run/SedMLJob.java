@@ -227,10 +227,10 @@ public class SedMLJob {
         RunUtils.drawBreakLine("-", 100);
         try {
             span = Tracer.startSpan(Span.ContextType.SIMULATIONS_RUN, "runSimulations", null);
-            SolverHandler.Configuration initializedModelPair = solverHandler.initialize(externalDocInfo, this.sedml, this.ACCEPT_EXACT_MATCH_ONLY);
-            if (!this.sedml.equals(initializedModelPair.postInitializedSedml())){
+            SolverHandler.Configuration initializedModelDetails = solverHandler.initialize(externalDocInfo, this.sedml, this.ACCEPT_EXACT_MATCH_ONLY);
+            if (!this.sedml.equals(initializedModelDetails.postInitializedSedml())){
                 logger.warn("Importer returned modified SedML to process; now using modified SedML");
-                this.sedml = initializedModelPair.postInitializedSedml();
+                this.sedml = initializedModelDetails.postInitializedSedml();
             }
             Map<AbstractTask, BiosimulationLog.Status> taskResults =  solverHandler.simulateAllTasks(this.CLI_RECORDER,
                     this.OUTPUT_DIRECTORY_FOR_CURRENT_SEDML, this.SEDML_LOCATION, this.SHOULD_KEEP_TEMP_FILES, this.SHOULD_OVERRIDE_FOR_SMALL_MESH);
