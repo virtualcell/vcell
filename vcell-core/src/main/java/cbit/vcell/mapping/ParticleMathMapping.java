@@ -729,7 +729,11 @@ private void refreshMathDescription() throws MappingException, MatrixException, 
 				{
 					maFunc = (MassActionStochasticFunction)stochasticFunction;
 				}
-				if ((maFunc.forwardRate() == null && maFunc.reverseRate() == null))
+				// transformToStochastic falls back to GeneralKineticsStochasticFunction
+				// when the rate law can't be reduced to mass-action form (e.g. Hill /
+				// Michaelis-Menten kinetics). Particle math mapping requires mass-action
+				// shape, so report the same error in either case rather than NPE.
+				if (maFunc == null || (maFunc.forwardRate() == null && maFunc.reverseRate() == null))
 				{
 					throw new MappingException("Cannot generate stochastic math mapping for the reaction:" + reactionStep.getName() + "\nLooking for the rate function according to the form of k1*Reactant1^Stoir1*Reactant2^Stoir2...-k2*Product1^Stoip1*Product2^Stoip2.");
 				}
