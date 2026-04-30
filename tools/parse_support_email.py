@@ -179,6 +179,30 @@ def all_frames(trace: str) -> list[str]:
     return out
 
 
+def deepest_cause_frames(trace: str) -> list[str]:
+    """Frames belonging to the innermost 'Caused by:' chain (the actual
+    root-cause exception).  If the trace has no Caused-by chains, return
+    all frames.
+
+    Why: Java prints the OUTER exception first and chains 'Caused by:'
+    sections for inner causes. The actual buggy code is in the LAST
+    chain. Iterating top-down across the full trace would find the
+    catch/wrap site, not the throw site — that hides the real bug.
+    """
+    lines = trace.split("\n")
+    last_cb = -1
+    for i, line in enumerate(lines):
+        if line.strip().startswith("Caused by:"):
+            last_cb = i
+    start = last_cb + 1 if last_cb >= 0 else 0
+    out = []
+    for line in lines[start:]:
+        s = line.strip()
+        if s.startswith("at "):
+            out.append(normalize_frame(s))
+    return out
+
+
 # VCell-owned package prefixes used to identify "our code" in a stack frame.
 VCELL_PACKAGE_PREFIXES = (
     "at cbit.",
@@ -352,11 +376,14 @@ def extract_email_record(path: Path) -> tuple[dict, list[dict], str]:
     distinct_classes: list[str] = []
     for idx, trace in enumerate(traces):
         exc = trace_top_exception(trace)
-        frames = all_frames(trace)
-        sig = short_signature(exc, frames[:5])
-        sig_top1 = short_signature(exc, frames[:1])
-        sig_top2 = short_signature(exc, frames[:2])
-        innermost = innermost_vcell_frame(frames)
+        all_fr = all_frames(trace)
+        cause_fr = deepest_cause_frames(trace)
+        # All cluster keys are computed against the deepest cause chain so
+        # they identify the throw site, not the wrapping catch site.
+        sig = short_signature(exc, cause_fr[:5])
+        sig_top1 = short_signature(exc, cause_fr[:1])
+        sig_top2 = short_signature(exc, cause_fr[:2])
+        innermost = innermost_vcell_frame(cause_fr)
         sig_innermost_vcell = (
             short_signature(exc, [innermost]) if innermost else "no-vcell-frame"
         )
@@ -377,9 +404,9 @@ def extract_email_record(path: Path) -> tuple[dict, list[dict], str]:
             "innermost_vcell_class": innermost_parts.get("simple_class", ""),
             "innermost_vcell_method": innermost_parts.get("method", ""),
             "exception_class": exc,
-            "frame_count": len(frames),
+            "frame_count": len(all_fr),
             "caused_by_count": caused_by_count,
-            "top_frames": "\n".join(frames[:5]),
+            "top_frames": "\n".join(cause_fr[:5]),
             "full_trace": trace,
         })
         if sig not in seen_sigs:
