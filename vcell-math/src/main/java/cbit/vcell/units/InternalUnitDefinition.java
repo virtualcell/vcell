@@ -43,8 +43,6 @@ import ucar.units_vcell.UnitName;
 class InternalUnitDefinition implements Matchable, Serializable {
 
     public static final String TBD_SYMBOL = "tbd";
-    private static final java.text.NumberFormat numberFormatForRounding =
-        new java.text.DecimalFormat("#0.0#E0#");
 
     //VC standard Unit definitions
     public static final InternalUnitDefinition UNIT_s;
@@ -110,8 +108,6 @@ class InternalUnitDefinition implements Matchable, Serializable {
     //private static ucar.units_vcell.PrefixDB prefixDB = null;
 
     static {
-        numberFormatForRounding.setMaximumFractionDigits(12);
-
         defs = new ArrayList<InternalUnitDefinition>();
 
         InternalUnitDefinition unit_s = null;
@@ -674,19 +670,20 @@ public boolean isTBD() {
 
 
 /**
- * Insert the method's description here.
- * Creation date: (6/13/2004 3:03:36 PM)
- * @return double
- * @param value double
+ * Round a value to at most 12 significant digits.
+ *
+ * Implementation note: previously used a shared static DecimalFormat
+ * for round-trip format/parse. DecimalFormat is not thread-safe and the
+ * shared instance produced corrupted strings (e.g., "11E.11-83E-83")
+ * under concurrent access from background-thread unit arithmetic,
+ * causing NumberFormatException to escape the catch block. This
+ * implementation is stateless and locale-independent.
  */
 public static double round(double value) {
-	try {
-		double roundedValue = numberFormatForRounding.parse(numberFormatForRounding.format(value)).doubleValue();
-		return roundedValue;
-	}catch (java.text.ParseException e){
-		e.printStackTrace(System.out);
+	if (Double.isNaN(value) || Double.isInfinite(value)) {
 		return value;
 	}
+	return Double.parseDouble(String.format(java.util.Locale.US, "%.12e", value));
 }
 
 
