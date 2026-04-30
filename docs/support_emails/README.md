@@ -162,6 +162,8 @@ then `incidents_total` desc.
 | `incidents_total`, `emails_total`, `traces_total` | weight |
 | `first_seen_date`, `last_seen_date`, `versions_seen` | when |
 | `sample_email_file` | one example to drill into |
+| `recent_commit_count` | commits to `source_paths` since 1 year before `first_seen_date` (git archaeology) |
+| `recent_commits` | first few commit subjects, joined with ` \| ` — eyeball for "fix"-shaped messages |
 | `v_<version>` | per-version incident count (presence map, NOT fix status) |
 
 ### version_pivot.csv (secondary)
@@ -206,6 +208,26 @@ In single-digit territory, ranking by 7 vs 6 vs 5 incidents tells you very
 little. Use counts to filter the long tail of `n=1` clusters, then read the
 actual `full_trace`. The corpus answers "what kinds of things go wrong",
 not "how often."
+
+### L7. `Thread.dumpStack()` output is not an exception
+Java's `Thread.dumpStack()` constructs a synthetic `Exception` headed
+`"java.lang.Exception: Stack trace"` solely to print the current call
+stack. The program continues. `VCellThreadChecker` uses it to log
+threading-hygiene advisories. The parser detects this pattern (header +
+`at java.base/java.lang.Thread.dumpStack` frame) and excludes those
+"traces" from clusters — otherwise they inflate counts with non-failures
+the user never noticed.
+
+### L8. Pair version-presence with git-archaeology
+A bug that appears only in older builds may be a real fix-already-shipped
+case (the user is on outdated software) or sampling noise — version
+counts alone can't tell you which. The `recent_commit_count` /
+`recent_commits` columns surface git activity on the cluster's source
+files since one year before the earliest incident, so you can spot
+fix-shaped commit subjects before re-investigating. (`MathSymbolMapping`
+in the current corpus shows two such commits: literally "NullPointerException
+in TreeMap because of concurrent modification" and a follow-up — the
+14 corpus traces are users on a pre-fix build.)
 
 ## Open questions / future work
 

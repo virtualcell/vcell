@@ -21,6 +21,7 @@ import email.utils
 import hashlib
 import json
 import re
+import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -177,6 +178,28 @@ def all_frames(trace: str) -> list[str]:
         if s.startswith("at "):
             out.append(normalize_frame(s))
     return out
+
+
+def is_thread_dumpstack(trace: str) -> bool:
+    """Detect Thread.dumpStack() output (a developer-diagnostic artifact,
+    not a real exception). Java's Thread.dumpStack constructs a synthetic
+    Exception just to print its trace, headed by 'java.lang.Exception:
+    Stack trace' followed by 'at java.base/java.lang.Thread.dumpStack'.
+    The program continues afterwards. VCellThreadChecker uses it to log
+    threading-hygiene violations; treating those as exceptions inflates
+    cluster counts with non-failures.
+    """
+    lines = trace.split("\n")
+    if not lines:
+        return False
+    head = lines[0].strip()
+    if head not in ("java.lang.Exception: Stack trace", "java.lang.Exception"):
+        return False
+    for line in lines[1:]:
+        s = line.strip()
+        if s.startswith("at "):
+            return "java.lang.Thread.dumpStack" in s
+    return False
 
 
 def deepest_cause_frames(trace: str) -> list[str]:
@@ -371,7 +394,7 @@ def extract_email_record(path: Path) -> tuple[dict, list[dict], str]:
     base["log_prefix_sha1_10k"] = sha1_prefix(log, 10 * 1024)
     base["log_prefix_sha1_100k"] = sha1_prefix(log, 100 * 1024)
 
-    traces = extract_stack_traces(log)
+    traces = [t for t in extract_stack_traces(log) if not is_thread_dumpstack(t)]
     seen_sigs: list[str] = []
     distinct_classes: list[str] = []
     for idx, trace in enumerate(traces):
@@ -607,6 +630,46 @@ def find_repo_root(start: Path) -> Path:
     return Path.cwd()
 
 
+def _date_minus_days(date_str: str, days: int) -> str:
+    """'YYYY-MM-DD' minus N days → 'YYYY-MM-DD' (best-effort)."""
+    try:
+        d = datetime.strptime(date_str[:10], "%Y-%m-%d")
+        from datetime import timedelta
+        return (d - timedelta(days=days)).strftime("%Y-%m-%d")
+    except (ValueError, TypeError):
+        return ""
+
+
+def git_log_since(repo_root: Path, paths: list[str], since_date: str,
+                  max_subjects: int = 5) -> tuple[int, list[str]]:
+    """Return (commit_count, [recent_subjects]) for `paths` since `since_date`.
+
+    Used to flag clusters whose source files have been touched since the
+    earliest user incident — a cluster with several recent commits may
+    have been fixed already and is worth a code-archaeology check before
+    re-investigation. since_date should be 'YYYY-MM-DD'; paths are
+    repo-relative.
+    """
+    if not paths or not since_date:
+        return 0, []
+    try:
+        result = subprocess.run(
+            ["git", "log", f"--since={since_date}", "--format=%h %s", "--"] + paths,
+            cwd=str(repo_root), capture_output=True, text=True, timeout=10,
+        )
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return 0, []
+    if result.returncode != 0:
+        return 0, []
+    lines = [ln.strip() for ln in result.stdout.split("\n") if ln.strip()]
+    subjects = []
+    for ln in lines[:max_subjects]:
+        # "abc1234 Subject text here" -> "Subject text here"
+        parts = ln.split(" ", 1)
+        subjects.append(parts[1] if len(parts) == 2 else ln)
+    return len(lines), subjects
+
+
 def index_java_sources(repo_root: Path) -> dict[str, list[Path]]:
     """Index all <Class>.java files under vcell-*/src/main/java by simple class name."""
     index: dict[str, list[Path]] = {}
@@ -666,8 +729,11 @@ def verify_code_presence(trace_rows: list[dict], repo_root: Path) -> dict[tuple[
 
 
 def compute_file_pivot(email_rows: list[dict], trace_rows: list[dict],
-                       presence: dict[tuple[str, str], dict]) -> tuple[list[dict], list[str]]:
-    """One row per innermost_vcell_file, with code-presence status and incident counts."""
+                       presence: dict[tuple[str, str], dict],
+                       repo_root: Path) -> tuple[list[dict], list[str]]:
+    """One row per innermost_vcell_file, with code-presence status, incident
+    counts, and a git-archaeology check (commits to the source files since
+    the cluster's earliest incident date)."""
     file_to_email = {r["file"]: r for r in email_rows}
     versions = sorted({r["software_version"] for r in email_rows if r["software_version"]})
 
@@ -752,6 +818,18 @@ def compute_file_pivot(email_rows: list[dict], trace_rows: list[dict],
             "versions_seen": ";".join(sorted(c["versions"])),
             "sample_email_file": c["sample_email_file"],
         }
+        # Git archaeology: any commits to these source paths recently
+        # enough to plausibly be a fix? Look back one year *before* the
+        # earliest incident — fixes often ship before users on older
+        # builds report their problem (e.g., MathSymbolMapping was fixed
+        # in March 2025 but build_15 users hit it in November 2025).
+        first_seen = row["first_seen_date"]
+        since = _date_minus_days(first_seen, 365) if first_seen else ""
+        commit_count, recent_subjects = git_log_since(
+            repo_root, sorted(c["source_paths"]), since
+        )
+        row["recent_commit_count"] = commit_count
+        row["recent_commits"] = " | ".join(s[:60] for s in recent_subjects)
         for v in versions:
             row[f"v_{v}"] = len(per_v_inc[v])
         rows.append(row)
@@ -784,7 +862,7 @@ def run_batch(dir_path: Path, out_emails: Path, out_traces: Path,
     assign_incident_ids(email_rows, trace_rows)
     repo_root = find_repo_root(Path(__file__).parent)
     presence = verify_code_presence(trace_rows, repo_root)
-    file_pivot_rows, file_version_cols = compute_file_pivot(email_rows, trace_rows, presence)
+    file_pivot_rows, file_version_cols = compute_file_pivot(email_rows, trace_rows, presence, repo_root)
     version_pivot_rows, version_cols = compute_version_pivot(email_rows, trace_rows)
 
     with open(out_emails, "w", newline="") as f:
@@ -801,6 +879,7 @@ def run_batch(dir_path: Path, out_emails: Path, out_traces: Path,
         "exception_classes", "distinct_signatures",
         "incidents_total", "emails_total", "traces_total",
         "first_seen_date", "last_seen_date", "versions_seen", "sample_email_file",
+        "recent_commit_count", "recent_commits",
     ] + file_version_cols
     with open(out_file_pivot, "w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=file_pivot_fields)
@@ -834,6 +913,8 @@ def run_batch(dir_path: Path, out_emails: Path, out_traces: Path,
             print(f"    {s:<18}{status_counts[s]:>3} files")
 
     print(f"\n  Top files by incidents (PRESENT in current code only):")
+    print(f"  (commits=N is git activity since 1 year before first incident — flags 'check for an")
+    print(f"   already-applied fix before investigating'. commits=0 means no recent activity = real candidate.)")
     shown = 0
     for r in file_pivot_rows:
         if r["code_status"] not in ("present", "partial_present"):
@@ -841,10 +922,13 @@ def run_batch(dir_path: Path, out_emails: Path, out_traces: Path,
         if shown >= 15:
             break
         shown += 1
-        excs = r["exception_classes"][:60]
+        excs = r["exception_classes"][:55]
         per_v = " ".join(f"{v.split('_')[-1]}={r[f'v_{v}']}" for v in versions if r[f'v_{v}'] > 0)
-        print(f"    inc={r['incidents_total']:>3}  {r['innermost_vcell_file']:<48}  [{per_v}]")
+        cs = int(r.get("recent_commit_count") or 0)
+        print(f"    inc={r['incidents_total']:>3}  commits={cs:<2}  {r['innermost_vcell_file']:<46}  [{per_v}]")
         print(f"          methods={r['distinct_methods']}  status={r['code_status']}  excs={excs}")
+        if cs:
+            print(f"          recent: {r['recent_commits'][:140]}")
 
     if status_counts.get("file_missing") or status_counts.get("method_missing"):
         print(f"\n  Files NOT confirmed in current code (probably refactored or stale):")
