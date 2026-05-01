@@ -142,7 +142,11 @@ public class StochMathMapping extends AbstractStochMathMapping {
 
 		// collect symbolTableEntries for speciesContexts within netRateExpr and replace with concentration parameter
 		netRateExpr = new Expression(netRateExpr);
-		for (String symbol : netRateExpr.getSymbols()) {
+		// Expression.getSymbols() returns null when the expression has no free symbols
+		// (e.g. a constant rate, or a rate that only references already-resolved values).
+		String[] symbols = netRateExpr.getSymbols();
+		for (int i = 0; symbols != null && i < symbols.length; i++) {
+			String symbol = symbols[i];
 			SymbolTableEntry symbolTableEntry = netRateExpr.getSymbolBinding(symbol);
 			if (symbolTableEntry instanceof Kinetics.KineticsProxyParameter proxyParameter
 					&& proxyParameter.getTarget() instanceof SpeciesContext sc) {
