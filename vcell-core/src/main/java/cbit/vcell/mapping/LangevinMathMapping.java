@@ -1171,8 +1171,6 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					// need to clean up and update the scs -> ils, scs -> siteAttributesMap at the point where the new
 					// pairs of mcp / sas are being added to the siteAttributesMap
 					SiteAttributesSpec sas = siteAttributesMap.get(mcp);
-					// TODO: perhaps move this to constructor so that object will be complete from the start
-					particleMolecularComponent.setIndex(siteIndex);
 					particleMolecularComponent.setColor(sas.getColor());
 					particleMolecularComponent.setLocation(sas.getLocation().getName());
 					particleMolecularComponent.setCoordinate(sas.getCoordinate());
@@ -1191,7 +1189,6 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					String pmcName = structuralSite.getName();
 					String pmcId = particleMolecularType.getName() + "_" + structuralSite.getName();
 					LangevinParticleMolecularComponent particleMolecularComponent = new LangevinParticleMolecularComponent(pmcId, pmcName);
-					particleMolecularComponent.setIndex(siteIndex);
 					particleMolecularComponent.setColor(sas.getColor());
 					particleMolecularComponent.setLocation(sas.getLocation().getName());
 					particleMolecularComponent.setCoordinate(sas.getCoordinate());

@@ -8,6 +8,7 @@ import cbit.vcell.geometry.SubVolume;
 import cbit.vcell.math.*;
 import cbit.vcell.model.Structure;
 import cbit.vcell.solver.*;
+import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.util.Pair;
 
 import cbit.vcell.geometry.Geometry;
@@ -66,6 +67,7 @@ public class LangevinLngvWriter {
 	private static Map<ParticleProperties, SubDomain> particlePropertiesMap = new LinkedHashMap<> ();			// initial conditions for seed species
 	private static Map<LangevinParticleJumpProcess, SubDomain> particleJumpProcessMap = new LinkedHashMap<> ();	// list of reactions
 	private static Set<LangevinParticleMolecularType> particleMolecularTytpeSet = new LinkedHashSet<> ();		// molecular types
+	private static Set<ParticleMolecularComponent> structuralSiteSet = new LinkedHashSet<> ();	// the components that are structural sites
 	private static MathDescription mathDescription = null;
 	
 //	static ArrayList<MappingOfReactionParticipants> currentMappingOfReactionParticipants = new ArrayList<MappingOfReactionParticipants>();
@@ -853,6 +855,8 @@ public class LangevinLngvWriter {
 	}
 	
 	private static void writeSpeciesInfo(StringBuilder sb) {
+		structuralSiteSet.clear();		// we will populate this map as we write the species info, and then use it
+										// to exclude them from tracking
 		for( Map.Entry<ParticleProperties, SubDomain> entry : particlePropertiesMap.entrySet()) {
 			ParticleProperties pp = entry.getKey();
 			SubDomain subDomain = entry.getValue();
@@ -924,23 +928,37 @@ public class LangevinLngvWriter {
 				lpmc.writeType(sb);
 			}
 			sb.append("\n");
-			for(ParticleMolecularComponent pmc : lpmt.getComponentList()) {
+			for(int siteIndex = 0; siteIndex < lpmt.getComponentList().size(); siteIndex++) {
+				ParticleMolecularComponent pmc = lpmt.getComponentList().get(siteIndex);
 				// a few lines that follow are needed to extract the initial state from the ParticleMolecularComponentPattern
 				ParticleMolecularComponentPattern pmcp = particleMolecularTypePattern.getMolecularComponentPattern(pmc);
-				ParticleComponentStatePattern pcsp = pmcp.getComponentStatePattern();
-				ParticleComponentStateDefinition pcsd = null;
-				if(pcsp != null) {
-					pcsd = pcsp.getParticleComponentStateDefinition();
-				}
-				String initialState;
-				if(pcsp == null || pcsd == null) {
-					initialState = StateZero;
+				if(pmcp != null) {		// if there is a pattern for the component, we can extract the initial state
+										// from it. If not, we assume it's a structural site
+					ParticleComponentStatePattern pcsp = pmcp.getComponentStatePattern();
+					ParticleComponentStateDefinition pcsd = null;
+					if (pcsp != null) {
+						pcsd = pcsp.getParticleComponentStateDefinition();
+					}
+					String initialState;
+					if (pcsp == null || pcsd == null) {
+						initialState = StateZero;
+					} else {
+						initialState = pcsd.getName();
+					}
+					LangevinParticleMolecularComponent lpmc = (LangevinParticleMolecularComponent) pmc;
+					sb.append("     ");
+					lpmc.writeSite(sb, lpmt.getComponentList().indexOf(lpmc), initialState);
 				} else {
-					initialState = pcsd.getName();
+					structuralSiteSet.add(pmc);
+					// if there is no pattern for the component, we assume it's a structural site with no state,
+					// and we set the initial state to StateZero by default
+					String initialState = StateZero;
+					LangevinParticleMolecularComponent lpmc = (LangevinParticleMolecularComponent) pmc;
+					sb.append("     ");
+					// for structural sites, the index is just the position in the component list, starting with 0,
+					// which is exactly what we have here with siteIndex
+					lpmc.writeSite(sb, siteIndex, initialState);
 				}
-				LangevinParticleMolecularComponent lpmc = (LangevinParticleMolecularComponent)pmc;
-				sb.append("     ");
-				lpmc.writeSite(sb, lpmt.getComponentList().indexOf(lpmc), initialState);
 			}
 			sb.append("\n");
 			Set<Pair<LangevinParticleMolecularComponent, LangevinParticleMolecularComponent>> internalLinkSpec = lpmt.getInternalLinkSpec();
@@ -1099,6 +1117,12 @@ public class LangevinLngvWriter {
 			}
 			List <ParticleMolecularComponent> pmcList = pmt.getComponentList();
 			for(ParticleMolecularComponent pmc : pmcList)  {
+				if(structuralSiteSet.contains(pmc)) {
+					continue;		// skip structural sites, we don't want to track them with counters
+				}
+				if(pmc.getName().equals(SpeciesContextSpec.AnchorSiteString)) {
+					continue;		// skip anchor component, we don't want to track it with counters
+				}
 				List <ParticleComponentStateDefinition> pcsdList = pmc.getComponentStateDefinitions();
 				if(pcsdList == null || pcsdList.isEmpty()) {
 					sb.append("'").append(pmt.getName()).append("' : ")

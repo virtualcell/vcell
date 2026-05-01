@@ -2263,12 +2263,6 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
                                 Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel,
                                         "LangevinParticleMolecularComponent expected", Issue.SEVERITY_WARNING);
                             }
-                            LangevinParticleMolecularComponent lpmc = (LangevinParticleMolecularComponent) pmc;
-                            // this is very useful test to catch math-related roundtrip errors and missing initializations
-                            if(lpmc.getIndex() == 0) {
-                                Issue issue = new Issue(this, issueContext, IssueCategory.MathDescription_CompartmentalModel,
-                                        "LangevinParticleMolecularComponent index should start with 1", Issue.SEVERITY_WARNING);
-                            }
                         }
                     }
                 } else {

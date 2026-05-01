@@ -34,6 +34,7 @@ import org.vcell.util.Pair;
 import org.vcell.util.gui.*;
 import org.vcell.util.gui.ScrollTable.ScrollTableBooleanCellRenderer;
 import org.vcell.util.gui.sorttable.SortTableModel;
+import org.vcell.util.springsalad.Colors;
 import org.vcell.util.springsalad.NamedColor;
 import org.vcell.util.ColorUtil;
 
@@ -918,8 +919,9 @@ public class MolecularStructuresPanel extends DocumentEditorSubPanel implements 
 		int displacement = componentCount*4 + structuralSiteCount*3;
 		Coordinate coordinate = new Coordinate(0, SpeciesContextSpec.INITIAL_YZ_SITE_OFFSET, SpeciesContextSpec.INITIAL_YZ_SITE_OFFSET + displacement);
 		sas.setCoordinate(coordinate);
-		NamedColor color = new NamedColor("siteColor" + structuralSiteCount, ColorUtil.LIGHT20[structuralSiteCount % ColorUtil.LIGHT20.length]);
-		sas.setColor(color);
+//		NamedColor nextColor = Colors.COLORARRAY[(componentCount+structuralSiteCount) % Colors.COLORARRAY.length];
+//		NamedColor color = new NamedColor("siteColor" + structuralSiteCount, ColorUtil.LIGHT20[structuralSiteCount % ColorUtil.LIGHT20.length]);
+		sas.setColor(Colors.GOLD);
 		double radius = SiteAttributesSpec.DEFAULT_STRUCTURAL_SITE_RADIUS;
 		sas.setRadius(radius);				// for now we stay with the default
 //		sas.setDiffusionRate(diffusion);
