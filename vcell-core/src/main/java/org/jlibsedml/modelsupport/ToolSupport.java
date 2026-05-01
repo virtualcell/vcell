@@ -2,7 +2,7 @@ package org.jlibsedml.modelsupport;
 
 import java.util.HashMap;
 
-import org.jlibsedml.SEDMLTags;
+import org.jlibsedml.SedMLTags;
 
 /** List of constants useful in this package (model type, simulator type, etc.)
  * 
@@ -22,9 +22,9 @@ public class ToolSupport {
 	public static HashMap<String, String> nameSpaces_PrefixesHashMap = new HashMap<String, String>();
 	
 	static {
-		nameSpaces_PrefixesHashMap.put(SEDMLTags.SBML_NS_PREFIX, SEDMLTags.SBML_NS);
-		nameSpaces_PrefixesHashMap.put(SEDMLTags.SBML_NS_PREFIX, SEDMLTags.SBML_NS_L2V4);
-		nameSpaces_PrefixesHashMap.put(SEDMLTags.MATHML_NS_PREFIX, SEDMLTags.MATHML_NS);
+		nameSpaces_PrefixesHashMap.put(SedMLTags.SBML_NS_PREFIX, SedMLTags.SBML_NS);
+		nameSpaces_PrefixesHashMap.put(SedMLTags.SBML_NS_PREFIX, SedMLTags.SBML_NS_L2V4);
+		nameSpaces_PrefixesHashMap.put(SedMLTags.MATHML_NS_PREFIX, SedMLTags.MATHML_NS);
 	}
 
 }

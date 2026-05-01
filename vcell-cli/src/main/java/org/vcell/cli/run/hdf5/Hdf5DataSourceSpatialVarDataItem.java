@@ -3,12 +3,11 @@ package org.vcell.cli.run.hdf5;
 import io.jhdf.api.Dataset;
 import io.jhdf.api.Group;
 import io.jhdf.api.Node;
-import org.jlibsedml.DataSet;
-import org.jlibsedml.Report;
-import org.jlibsedml.Variable;
+import org.jlibsedml.components.output.DataSet;
+import org.jlibsedml.components.output.Report;
+import org.jlibsedml.components.Variable;
 
 import java.io.File;
-import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.LinkedHashMap;

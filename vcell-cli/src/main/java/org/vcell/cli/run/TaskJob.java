@@ -1,11 +1,13 @@
 package org.vcell.cli.run;
 
 
+import org.jlibsedml.components.SId;
+
 public class TaskJob {
     final int jobID;
-    final String taskID; // base task for a simulation (instance of Task)
+    final SId taskID; // base task for a simulation (instance of Task)
 
-    public TaskJob(String taskID, int jobID) {
+    public TaskJob(SId taskID, int jobID) {
         this.taskID = taskID;
         this.jobID = jobID;
     }
@@ -14,7 +16,7 @@ public class TaskJob {
         return taskID + "_" + jobID;
     }
 
-    public String getTaskId() {
+    public SId getTaskId() {
         return taskID;
     }
 

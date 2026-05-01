@@ -5,7 +5,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jlibsedml.Model;
+import org.jlibsedml.components.model.Model;
 import org.jlibsedml.SedMLError;
 import org.jlibsedml.SedMLError.ERROR_SEVERITY;
 /**
@@ -32,7 +32,7 @@ public class URIValidator implements ISedMLValidator {
 				try {
 					URI uri = model.getSourceURI();
 				} catch (URISyntaxException e) {
-					errs.add(new SedMLError(0,"ErrMessageRoot[" + model.getSourcePathOrURIString() +"]", ERROR_SEVERITY.WARNING ));
+					errs.add(new SedMLError(0,"ErrMessageRoot[" + model.getSourceAsString() +"]", ERROR_SEVERITY.WARNING ));
 				}
 			
 			

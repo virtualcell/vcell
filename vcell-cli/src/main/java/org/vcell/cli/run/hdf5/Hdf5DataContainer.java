@@ -1,6 +1,6 @@
 package org.vcell.cli.run.hdf5;
 
-import org.jlibsedml.Report;
+import org.jlibsedml.components.output.Report;
 
 import java.util.LinkedHashMap;
 import java.util.List;

@@ -42,8 +42,8 @@ import org.apache.logging.log4j.Logger;
 import org.jdom2.*;
 import org.jlibsedml.ArchiveComponents;
 import org.jlibsedml.Libsedml;
-import org.jlibsedml.SEDMLDocument;
-import org.jlibsedml.SedML;
+import org.jlibsedml.SedMLDocument;
+import org.jlibsedml.SedMLDataContainer;
 import org.sbml.jsbml.SBMLException;
 import org.vcell.cellml.CellQuanVCTranslator;
 import org.vcell.sbml.SbmlException;
@@ -51,7 +51,7 @@ import org.vcell.sbml.vcell.MathModel_SBMLExporter;
 import org.vcell.sbml.vcell.SBMLAnnotationUtil;
 import org.vcell.sbml.vcell.SBMLExporter;
 import org.vcell.sbml.vcell.SBMLImporter;
-import org.vcell.sedml.SEDMLImporter;
+import org.vcell.sedml.SedMLImporter;
 import org.vcell.util.BeanUtils;
 import org.vcell.util.Extent;
 import org.vcell.util.Pair;
@@ -463,21 +463,21 @@ public class XmlHelper {
 		// iterate through one or more SEDML objects
 		ArchiveComponents ac = null;
 		ac = Libsedml.readSEDMLArchive(new FileInputStream(omexFile));
-		List<SEDMLDocument> sedmlDocs = ac.getSedmlDocuments();
+		List<SedMLDocument> sedmlDocs = ac.getSedmlDocuments();
 
 
-		List<SedML> sedmls = new ArrayList<>();
-		for (SEDMLDocument sedmlDoc : sedmlDocs) {
-			SedML sedml = sedmlDoc.getSedMLModel();
+		List<SedMLDataContainer> sedmls = new ArrayList<>();
+		for (SedMLDocument sedmlDoc : sedmlDocs) {
+			SedMLDataContainer sedml = sedmlDoc.getSedMLModel();
 			if (sedml == null) {
 				throw new RuntimeException("Failed importing " + omexFile.getName());
 			}
-			if (sedml.getModels().isEmpty()) {
+			if (sedml.getSedML().getModels().isEmpty()) {
 				throw new RuntimeException("There are no models in " + omexFile.getName());
 			}
 			sedmls.add(sedml);
 		}
-		for (SedML sedml : sedmls) {
+		for (SedMLDataContainer sedml : sedmls) {
 			// default to import all tasks
 			ExternalDocInfo externalDocInfo = new ExternalDocInfo(omexFile,true);
 			List<BioModel> biomodels = importSEDML(vcLogger, externalDocInfo, sedml, false);
@@ -490,10 +490,14 @@ public class XmlHelper {
 
 
 	public static List<BioModel> importSEDML(VCLogger transLogger, ExternalDocInfo externalDocInfo,
-	   SedML sedml, boolean exactMatchOnly) throws Exception {
-		SEDMLImporter sedmlImporter = new SEDMLImporter(transLogger, externalDocInfo.getFile(),
-				sedml, exactMatchOnly);
-		return sedmlImporter.getBioModels();
+                                             SedMLDataContainer sedml, boolean exactMatchOnly) throws Exception {
+		SedMLImporter sedmlImporter = new SedMLImporter(transLogger, new SedMLImporter.StrictnessPolicy(
+                true,
+                SedMLImporter.StrictnessPolicy.MultipleSubTaskPolicy.CONDENSE_ELSE_REMOVE,
+                exactMatchOnly ? SedMLImporter.StrictnessPolicy.SolverMatchPolicy.STRICT_MATCH_OR_REJECT : SedMLImporter.StrictnessPolicy.SolverMatchPolicy.SUNDIALS_AS_LAST_RESORT
+        ));
+        sedmlImporter.initialize(externalDocInfo.getFile(), sedml);
+		return new ArrayList<>(sedmlImporter.getBioModels());
 	}
 
 	public static BioModel XMLToBioModel(XMLSource xmlSource) throws XmlParseException {

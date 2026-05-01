@@ -27,7 +27,7 @@ public class Function{
     }
 
     public String getElementName() {
-        return SEDMLTags.FUNCTIONAL_RANGE_TAG;
+        return SedMLTags.FUNCTIONAL_RANGE_TAG;
     }
 
 }

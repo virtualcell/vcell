@@ -51,7 +51,7 @@ public class BSTSBasedOmexExecTest {
 
 	public static Collection<OmexTestCase> testCases() throws IOException {
 		Predicate<OmexTestCase> filter = (t) -> !OmexTestCase.Status.SKIP.equals(t.known_status);
-		return Arrays.stream(BSTSBasedTestSuiteFiles.getBSTSTestCases()).filter(filter).collect(Collectors.toList());
+		return BSTSBasedTestSuiteFiles.getBSTSTestCases().stream().filter(filter).collect(Collectors.toList());
 	}
 
 	static class TestRecorder implements CLIRecordable {

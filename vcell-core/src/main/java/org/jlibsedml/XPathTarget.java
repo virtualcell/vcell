@@ -1,5 +1,8 @@
 package org.jlibsedml;
 
+import org.jlibsedml.components.SedGeneralClass;
+import org.jlibsedml.components.model.Change;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -23,8 +26,7 @@ public final  class XPathTarget {
 	 */
 	public XPathTarget(String xPathStr) {
 		super();
-		Assert.checkNoNullArgs(xPathStr);
-		Assert.stringsNotEmpty(xPathStr);
+        if (xPathStr == null || xPathStr.isEmpty()) throw new IllegalArgumentException("xPathStr is null or empty");
 		this.xPathStr = xPathStr;
 	}
 

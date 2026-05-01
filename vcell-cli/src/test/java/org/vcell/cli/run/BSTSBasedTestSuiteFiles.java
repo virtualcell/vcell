@@ -17,7 +17,7 @@ import java.util.function.Predicate;
 public class BSTSBasedTestSuiteFiles {
 
 
-    public static OmexTestCase[] getBSTSTestCases() throws IOException {
+    public static List<OmexTestCase> getBSTSTestCases() throws IOException {
         List<OmexTestCase> allTestCases = OmexTestingDatabase.loadOmexTestCases();
         Predicate<OmexTestCase> testFilter = t ->
                         t.test_collection == OmexTestingDatabase.TestCollection.VCELL_BIOMD ||
@@ -25,7 +25,7 @@ public class BSTSBasedTestSuiteFiles {
                         t.test_collection == OmexTestingDatabase.TestCollection.VCELL_BSTS_SBML_CORE ||
                         t.test_collection == OmexTestingDatabase.TestCollection.VCELL_BSTS_SYNTHS;
 
-        return allTestCases.stream().filter(testFilter).toArray(OmexTestCase[]::new);
+        return allTestCases.stream().filter(testFilter).toList();
     }
 
     public static InputStream getBSTSTestCase(OmexTestCase testCase) throws FileNotFoundException {
@@ -46,7 +46,7 @@ public class BSTSBasedTestSuiteFiles {
 
     @Test
     public void test_read_BSTS_omex_file() throws IOException {
-        List<OmexTestCase> allTestCases = OmexTestingDatabase.loadOmexTestCases();
+        List<OmexTestCase> allTestCases = getBSTSTestCases();
         InputStream inputStream = getBSTSTestCase(allTestCases.get(0));
         Assertions.assertTrue(inputStream != null);
     }

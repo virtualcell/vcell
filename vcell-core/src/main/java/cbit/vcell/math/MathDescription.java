@@ -103,7 +103,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
             this.fieldName = argVersion.getName();
             this.fieldDescription = argVersion.getAnnot();
         }
-        this.sourceSymbolMapping = mathSymbolMapping;
+        this.setSourceSymbolMapping(mathSymbolMapping);
     }
 
     public MathDescription(Version argVersion){
@@ -133,7 +133,7 @@ public class MathDescription implements Versionable, Matchable, SymbolTable, Ser
     public MathDescription(String name, SourceSymbolMapping mathSymbolMapping){
         this.fieldName = name;
         this.version = null;
-        this.sourceSymbolMapping = mathSymbolMapping;
+        this.setSourceSymbolMapping(mathSymbolMapping);
     }
 
     public MathDescription(String name){
