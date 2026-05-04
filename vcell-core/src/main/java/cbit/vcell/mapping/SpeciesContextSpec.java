@@ -2585,21 +2585,24 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             throw new RuntimeException("Initial concentration must be a number");
         }
 
+        int siteTypes = componentList.size() + structuralSiteAttributesMap.size();
+        int totalSites = siteAttributesMap.size() + structuralSiteAttributesMap.size();
         sb.append("MOLECULE: \"" + getSpeciesContext().getName() + "\" " + getSpeciesContext().getStructure().getName() +
                 " Number " + scount +
-                " Site_Types " + componentList.size() + " Total" + "_Sites " + siteAttributesMap.size() +
+                " Site_Types " + siteTypes + " Total" + "_Sites " + totalSites +
                 " Total_Links " + internalLinkSet.size() + " is2D " + (dimension == 2 ? true : false));    // TODO: molecule is flat, unrelated to geometry
         sb.append("\n");
         sb.append("{");
         sb.append("\n");
 
-        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()){
+        Map<LinkNode, SiteAttributesSpec> map = getAllSiteAttributes();
+        for(Map.Entry<LinkNode, SiteAttributesSpec> entry : map.entrySet()){
             SiteAttributesSpec sas = entry.getValue();
             sb.append("     ");
             sas.writeType(sb);        // writeMolecularComponent
         }
         sb.append("\n");
-        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()){
+        for(Map.Entry<LinkNode, SiteAttributesSpec> entry : map.entrySet()){
             SiteAttributesSpec sas = entry.getValue();
             sb.append("     ");
             sas.writeSite(sb);
@@ -2628,7 +2631,6 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         sb.append("}");
         sb.append("\n");
         sb.append("\n");
-        return;
     }
 
     public String getFilename(){    // SpringSaLaD specific, external file with molecule information

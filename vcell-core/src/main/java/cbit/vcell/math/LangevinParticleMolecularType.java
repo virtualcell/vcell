@@ -64,7 +64,8 @@ public class LangevinParticleMolecularType extends ParticleMolecularType {
 			}
 			buffer.append("\n"+VCML.EndBlock+"\n");
 		}
-		return buffer.toString();
+		String ret = buffer.toString();
+		return ret;
 	}
 
 	public void read(CommentStringTokenizer tokens) throws MathFormatException {

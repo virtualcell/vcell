@@ -119,8 +119,9 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 			return index;
 		} else if(ln instanceof StructuralSite ss) {
 			int saMapSize = getSpeciesContextSpec().getSiteAttributesMap().size();
+			int lastMolecularComponentSiteIndex = saMapSize + 1;		// +1 because site indices are 1-based in the .vcell file
 			int idx = SsldUtils.indexOfKey(getSpeciesContextSpec().getStructuralSiteAttributesMap(), ss);
-			return saMapSize + idx;		// structural sites are indexed after the molecular component sites
+			return lastMolecularComponentSiteIndex + idx;		// structural sites are indexed after the molecular component sites
 		} else {
 			throw new RuntimeException("getIndex(): unknown LinkNode type");
 		}
@@ -166,7 +167,8 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 			csd = new ComponentStateDefinition(StateZero);
 		}
 		String initialState = csd.getName();
-		sb.append("SITE " + (this.getIndex()-1) + " : " + getLocation().getName() + " : Initial State '" + initialState + "'");
+		int index = this.getIndex() - 1;
+		sb.append("SITE " + index + " : " + getLocation().getName() + " : Initial State '" + initialState + "'");
 		sb.append("\n");
 		sb.append("          ");
 		this.writeType(sb);	// ex: TYPE: Name "Type2" Radius 1.00000 D 1.000 Color LIME STATES "State0" "State1" 
