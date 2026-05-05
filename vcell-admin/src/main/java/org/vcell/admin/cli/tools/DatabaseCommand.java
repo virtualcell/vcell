@@ -35,6 +35,9 @@ public class DatabaseCommand implements Callable<Integer> {
     @Option(names = "--user", description = "userid and key for private models --biomodel-id (format is 'userid:key')")
     private User user = User.tempUser;
 
+    @Option(names = "--userid", description = "userid alone for private --biomodel-id; user key resolved via DB lookup")
+    private String userid;
+
     @Option(names = {"-d", "--debug"}, description = "full application debug mode")
     private boolean bDebug = false;
 
@@ -61,6 +64,10 @@ public class DatabaseCommand implements Callable<Integer> {
                 throw new RuntimeException("outputDir '" + (outputDir == null ? "" : outputDir) + "' is not a 'valid directory'");
 
             try (CLIDatabaseService cliDatabaseService = new CLIDatabaseService()) {
+                if (userid != null) {
+                    user = cliDatabaseService.resolveUser(userid);
+                    logger.info("resolved userid '" + userid + "' to user " + user.getName() + ":" + user.getID());
+                }
                 if (biomodelsFile != null) {
                     List<String> lines = Files.readAllLines(biomodelsFile.toPath());
                     for (String line : lines) {
