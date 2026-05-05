@@ -3,6 +3,7 @@ package org.jlibsedml;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -51,7 +52,7 @@ public class XpathGeneratorHelper {
             String modelStrRep = modelResolver.getModelXMLFor(modelFound.getSourceURI());
             if (modelStrRep == null) return false;
 
-            Document doc = utils.readDoc(new ByteArrayInputStream(modelStrRep.getBytes()));
+            Document doc = utils.readDoc(new ByteArrayInputStream(modelStrRep.getBytes(StandardCharsets.UTF_8)));
 
             List<AllOrNothingConfig> configs = new ArrayList<>();
             for (IdName idn : idNameList) {

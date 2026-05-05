@@ -18,6 +18,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Vector;
 
@@ -42,6 +43,13 @@ public class DOMUtil {
 	protected static void initBuilder() throws ParserConfigurationException {
 		if(builder == null) {
 			DocumentBuilderFactory factory = new DocumentBuilderFactoryImpl();
+			// CWE-611: disable DTD and external entity processing
+			factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+			factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+			factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+			factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+			factory.setXIncludeAware(false);
+			factory.setExpandEntityReferences(false);
 			builder = factory.newDocumentBuilder();
 		}
 	}
@@ -55,7 +63,7 @@ public class DOMUtil {
 	public static Document parse(String text) 
 	throws SAXException, IOException, ParserConfigurationException {
 		initBuilder();
-		return builder.parse(new ByteArrayInputStream(text.getBytes()));
+		return builder.parse(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)));
 	}
 	
 	public static void serialize(Document document, OutputStream out) throws IOException {
