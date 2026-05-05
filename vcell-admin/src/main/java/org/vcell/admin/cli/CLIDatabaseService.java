@@ -181,4 +181,8 @@ public class CLIDatabaseService implements AutoCloseable {
     public List<MathModelInfo> queryMathmodelsByOwner(User owner) throws DataAccessException {
         return Arrays.asList(getDatabaseServer().getMathModelInfos(owner, false));
     }
+
+    public ConnectionFactory getConnectionFactory() {
+        return conFactory;
+    }
 }
