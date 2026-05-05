@@ -41,6 +41,7 @@ import org.vcell.util.*;
 import org.vcell.util.document.*;
 import org.vcell.util.document.VCDocument.VCDocumentType;
 
+import java.io.Reader;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.text.SimpleDateFormat;
@@ -1060,15 +1061,26 @@ public abstract class DbDriver {
                     //If its a CLOB return a String
                 } else if(lob_object instanceof java.sql.Clob){
                     java.sql.Clob clob_object = (java.sql.Clob) lob_object;
-                    byte[] ins = new byte[(int) clob_object.length()];
                     try {
-                        clob_object.getAsciiStream().read(ins);
+                        long lenChars = clob_object.length();
+                        if (lenChars > Integer.MAX_VALUE) {
+                            throw new DataAccessException("CLOB too large to read into a String: "
+                                    + lenChars + " chars (column=" + column.getUnqualifiedColName() + ")");
+                        }
+                        char[] cbuf = new char[(int) lenChars];
+                        int off = 0;
+                        try (Reader r = clob_object.getCharacterStream()) {
+                            int n;
+                            while (off < cbuf.length && (n = r.read(cbuf, off, cbuf.length - off)) != -1) {
+                                off += n;
+                            }
+                        }
+                        return new String(cbuf, 0, off);
                     } catch(Exception e){
                         throw new DataAccessException(e.toString());
                     } finally {
                         clob_object.free();
                     }
-                    return new String(ins);
                 }
                 //
                 throw new DataAccessException(
