@@ -128,7 +128,7 @@ jobs:
         run: mkdir /tmp/docker
 
       - name: Download Docker Image from `build` Job
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.3
         with:
           name: docker-image
           path: /tmp/docker
@@ -313,7 +313,7 @@ jobs:
         run: mkdir /tmp/docker
 
       - name: Download Docker Image from `build` Job
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.3
         with:
           name: docker-image
           path: /tmp/docker
@@ -322,7 +322,7 @@ jobs:
         run: docker load --input /tmp/docker/$(ls /tmp/docker)
 
       - name: Gather Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4.1.3
         with:
           path: ${{ github.workspace }}/bmdb-results
 

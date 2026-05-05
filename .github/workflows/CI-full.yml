@@ -207,7 +207,7 @@ jobs:
 
     - name: Download Maven artifacts
       if: ${{ matrix.image.needs_maven }}
-      uses: actions/download-artifact@v4
+      uses: actions/download-artifact@v4.1.3
       with:
         name: maven-build-output
         path: .
