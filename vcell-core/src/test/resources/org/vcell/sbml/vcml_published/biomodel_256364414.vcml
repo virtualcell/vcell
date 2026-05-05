@@ -2913,7 +2913,7 @@ cloned from 'Simulation0' owned by user temp</Annotation>
           <GroupAccess Type="1" />
         </Version>
       </MathDescription>
-      <Simulation Name="Vary Bleach Radius, FluorD=1, Figure 2 is 4� micrometer radius">
+      <Simulation Name="Vary Bleach Radius, FluorD=1, Figure 2 is 4u micrometer radius">
         <Annotation>cloned from 'Vary Bleach Radius, FluorD=1_1' owned by user temp
 cloned from 'Simulation0_1' owned by user temp
 cloned from 'Simulation0_1' owned by user temp
@@ -2936,7 +2936,7 @@ cloned from 'Simulation0' owned by user temp</Annotation>
         <MeshSpecification>
           <Size X="402" Y="402" Z="3" />
         </MeshSpecification>
-        <Version Name="Vary Bleach Radius, FluorD=1, Figure 2 is 4� micrometer radius" KeyValue="256364412" BranchId="256354044" Archived="0" Date="24-May-2023 20:41:20" FromVersionable="false">
+        <Version Name="Vary Bleach Radius, FluorD=1, Figure 2 is 4u micrometer radius" KeyValue="256364412" BranchId="256354044" Archived="0" Date="24-May-2023 20:41:20" FromVersionable="false">
           <Owner Name="les" Identifier="6" />
           <GroupAccess Type="1" />
           <Annotation>cloned from 'Vary Bleach Radius, FluorD=1_1' owned by user temp

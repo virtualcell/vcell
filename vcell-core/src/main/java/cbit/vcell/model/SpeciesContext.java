@@ -10,6 +10,8 @@
 
 package cbit.vcell.model;
 
+import org.vcell.util.xml.XmlChars;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -299,10 +301,23 @@ public static String fixSbmlName(String newString) {
 	String newValue = sb.toString();
 	return newValue;
 }
+
+public static String fixAndValidateSbmlName(String newString, Object source) throws PropertyVetoException {
+	String newValue = fixSbmlName(newString);
+	if (newValue == null) return null;
+	try {
+		XmlChars.requireValidAttributeContent(newValue, "sbmlName");
+	} catch (IllegalArgumentException ex) {
+		throw new PropertyVetoException(ex.getMessage(),
+				new PropertyChangeEvent(source, "sbmlName", null, newValue));
+	}
+	return newValue;
+}
+
 public void setSbmlName(String newString) throws PropertyVetoException {
 	String oldValue = this.sbmlName;
-	String newValue = fixSbmlName(newString);
-	
+	String newValue = fixAndValidateSbmlName(newString, this);
+
 	fireVetoableChange("sbmlName", oldValue, newValue);
 	this.sbmlName = newValue;
 	firePropertyChange("sbmlName", oldValue, newValue);
