@@ -43,6 +43,13 @@ public class DOMUtil {
 	protected static void initBuilder() throws ParserConfigurationException {
 		if(builder == null) {
 			DocumentBuilderFactory factory = new DocumentBuilderFactoryImpl();
+			// CWE-611: disable DTD and external entity processing
+			factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+			factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+			factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+			factory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+			factory.setXIncludeAware(false);
+			factory.setExpandEntityReferences(false);
 			builder = factory.newDocumentBuilder();
 		}
 	}
