@@ -36,7 +36,7 @@ jobs:
           sudo apt install -y --no-install-recommends xppaut
 
       - name: Install Go (for Singularity)
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: '^1.13.1' # The Go version to download (if necessary) and use.
 
@@ -130,7 +130,7 @@ jobs:
       #   timeout-minutes: 40
 
       - name: Save test results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         if: success() || failure()
         with:
           name: Validation test results

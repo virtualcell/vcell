@@ -22,7 +22,7 @@ jobs:
         run: echo '${{ github.ref }}' >> ~/github.ref
         
       - name: Upload Ref
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: github_hash
           path: ~/github.ref
@@ -91,10 +91,10 @@ jobs:
         run: mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=True
         
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
         
       - name: Build and Export
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
@@ -103,7 +103,7 @@ jobs:
             MAX_JAVA_MEM=5734
           
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image
           path: /tmp/image.tar
@@ -125,7 +125,7 @@ jobs:
         run: mkdir /tmp/docker
         
       - name: Download Docker Image from `build` Job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: docker-image
           path: /tmp/docker
@@ -175,20 +175,20 @@ jobs:
         
         # Upload Converted Files
       - name: Upload Converted Files
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: omexes.tar
           path: ~/work/vcell/vcell/export_conversion/output/omexes.tar # Action only has basic ~ based expansion, env variables dont appear to work
         
         # Upload Results
       - name: Upload results of round-trip
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: export_results.txt
           path: ~/work/vcell/vcell/export_conversion/output/export_results.txt
       
       - name: Upload original log of export
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: export_log_original
           path: ~/work/vcell/vcell/export_conversion/output/jobLog.txt
@@ -210,7 +210,7 @@ jobs:
         run: mkdir ~/wrk
         
       - name: Download Docker Image from `build` Job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: docker-image
           path: ~/wrk
@@ -224,7 +224,7 @@ jobs:
       
       # Get the coverted omexes from before
       - name: Download Converted COMBINE Archives
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: omexes.tar
           path: ~/input_files/input
@@ -250,13 +250,13 @@ jobs:
       
       # Upload results
       - name: Upload Results of Round-Trip
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: import_results.txt
           path: ~/import_results.txt
           
       - name: Upload Results of Round-Trip
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: import_log_original
           path: ~/input_files/output/jobLog.txt
@@ -279,13 +279,13 @@ jobs:
         run: mkdir -p ~/results && cd ~/results
 
       - name: Download Export Results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: export_results.txt
           path: ~/results
       
       - name: Download Import Results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: import_results.txt
           path: ~/results
