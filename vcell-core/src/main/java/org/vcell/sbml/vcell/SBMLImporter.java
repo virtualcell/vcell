@@ -83,7 +83,6 @@ import org.vcell.util.document.BioModelChildSummary;
 import javax.xml.stream.XMLStreamException;
 import java.beans.PropertyVetoException;
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.Map.Entry;
@@ -1931,7 +1930,7 @@ public class SBMLImporter {
         final String defaultErrorPrefix = "Unable to read SBML file";
         try {
             // Read SBML model into libSBML SBMLDocument and create an SBML model
-            List<String> readLines = FileUtils.readLines(sbmlFile, Charset.defaultCharset());
+            List<String> readLines = FileUtils.readLines(sbmlFile, StandardCharsets.UTF_8);
             StringBuilder sb = new StringBuilder();
             //Temporary fix for org.sbml.jsbml.xml.parsers.RenderParser.processEndDocument(SBMLDocument sbmlDocument)
             //throws NPE when "<sbml ... xmlns:render... " is defined in input document

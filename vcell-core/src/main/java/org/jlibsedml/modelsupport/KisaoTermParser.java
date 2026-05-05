@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,7 +35,7 @@ class KisaoTermParser {
     KisaoOntology parse() {
         InputStream is2 = KisaoTermParser.class.getClassLoader()
                 .getResourceAsStream(Kisao_OBO);
-        BufferedReader isr = new BufferedReader(new InputStreamReader(is2));
+        BufferedReader isr = new BufferedReader(new InputStreamReader(is2, StandardCharsets.UTF_8));
         String line = null;
         boolean inPreamble = true;
         boolean inState = false;

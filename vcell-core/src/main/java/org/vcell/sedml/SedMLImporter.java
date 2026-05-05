@@ -69,7 +69,7 @@ import org.vcell.util.RelationVisitor;
 
 import java.beans.PropertyVetoException;
 import java.io.*;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import java.nio.file.Files;
 import java.util.*;
@@ -1110,7 +1110,7 @@ public class SedMLImporter {
 					logger.error("failed to make BioPax objects", e);
 				}
 			} else {				// we assume it's sbml, if it's neither import will fail
-				InputStream sbmlSource = IOUtils.toInputStream(modelXML, Charset.defaultCharset());
+				InputStream sbmlSource = IOUtils.toInputStream(modelXML, StandardCharsets.UTF_8);
 				boolean bValidateSBML = false;
 				SBMLImporter sbmlImporter = new SBMLImporter(sbmlSource, this.transLogger, bValidateSBML);
 				bioModel = sbmlImporter.getBioModel();

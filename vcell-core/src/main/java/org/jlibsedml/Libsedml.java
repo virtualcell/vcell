@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
@@ -100,8 +100,8 @@ public class Libsedml {
      */
     public static SedMLDocument readDocument(InputStream is, String encoding) throws XMLException, IOException {
         if(encoding == null) {
-            encoding = Charset.defaultCharset().name();
-        }     
+            encoding = StandardCharsets.UTF_8.name();
+        }
         List<String> lines = IOUtils.readLines(is, encoding);
         String content =  StringUtils.join(lines, "\n");
         return readDocumentFromString(content);
