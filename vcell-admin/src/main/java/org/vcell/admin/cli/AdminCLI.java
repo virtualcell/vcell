@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.admin.cli.db.DatabaseCompareSchemaCommand;
 import org.vcell.admin.cli.db.DatabaseCreateScriptCommand;
 import org.vcell.admin.cli.db.DatabaseDestroyAndRecreateCommand;
+import org.vcell.admin.cli.db.XmlControlCharScanCommand;
 import org.vcell.admin.cli.mathverifier.ModeldbLoadTestCommand;
 import org.vcell.admin.cli.mathverifier.ModeldbMathGenTestCommand;
 import org.vcell.admin.cli.models.ModelCommands;
@@ -31,6 +32,7 @@ import picocli.CommandLine.Command;
         DatabaseCompareSchemaCommand.class,
         DatabaseDestroyAndRecreateCommand.class,
         DatabaseCreateScriptCommand.class,
+        XmlControlCharScanCommand.class,
         UsageCommand.class,
         UsersQueryCommand.class,
         ResultSetCrawlerCommand.class,
