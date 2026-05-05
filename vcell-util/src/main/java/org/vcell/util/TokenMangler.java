@@ -10,6 +10,8 @@
 
 package org.vcell.util;
 
+import org.vcell.util.xml.XmlChars;
+
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
 
@@ -453,12 +455,17 @@ public static void checkLoginID(String loginID) throws IllegalArgumentException 
  */
 public static void checkNameProperty(Object source, String owner, PropertyChangeEvent evt) throws PropertyVetoException {
 	if (evt.getSource() == source && evt.getPropertyName().equals("name") && evt.getNewValue()!=null){
-		if (evt.getNewValue() == null || ((String)evt.getNewValue()).trim().length()==0){
+		String newName = (String) evt.getNewValue();
+		if (newName.trim().length()==0){
 			throw new PropertyVetoException("A name must be given to save " + owner + "s", evt);
-		} 
-//		else if (((String)evt.getNewValue()).contains("'")){
-//			throw new PropertyVetoException("Apostrophe is not allowed in " + owner + " names",evt);
-//		}
+		}
+		try {
+			// allow whitespace (entity names like BioModel may contain spaces)
+			// but reject control characters and U+FFFD
+			XmlChars.requireValidAttributeContent(newName, owner + ".name");
+		} catch (IllegalArgumentException ex) {
+			throw new PropertyVetoException(ex.getMessage(), evt);
+		}
 	}
 }
 

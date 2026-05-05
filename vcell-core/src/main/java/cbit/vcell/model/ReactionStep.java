@@ -28,6 +28,7 @@ import org.vcell.util.Issue.Severity;
 import org.vcell.util.IssueContext.ContextType;
 import org.vcell.util.document.Identifiable;
 import org.vcell.util.document.KeyValue;
+import org.vcell.util.xml.XmlChars;
 
 import cbit.vcell.model.Kinetics.KineticsParameter;
 import cbit.vcell.model.Membrane.MembraneVoltage;
@@ -1065,7 +1066,7 @@ public abstract class ReactionStep implements ModelProcess, Model.ElectricalTopo
 
     public void setSbmlName(String newString) throws PropertyVetoException{
         String oldValue = this.sbmlName;
-        String newValue = SpeciesContext.fixSbmlName(newString);
+        String newValue = SpeciesContext.fixAndValidateSbmlName(newString, this);
 
         fireVetoableChange("sbmlName", oldValue, newValue);
         this.sbmlName = newValue;
@@ -1166,6 +1167,11 @@ public abstract class ReactionStep implements ModelProcess, Model.ElectricalTopo
             }
             if(((String) (e.getNewValue())).trim().length() > 255){
                 throw new PropertyVetoException("reactionStep name for reaction \'" + (String) (e.getNewValue()) + "\' cannot be longer than 255 characters", e);
+            }
+            try {
+                XmlChars.requireValidAttributeContent((String) e.getNewValue(), "Reaction.name");
+            } catch (IllegalArgumentException ex) {
+                throw new PropertyVetoException(ex.getMessage(), e);
             }
         }
         if(e.getSource() == this && e.getPropertyName().equals("chargeCarrierValence")){
