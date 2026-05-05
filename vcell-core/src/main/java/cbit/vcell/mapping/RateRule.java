@@ -112,8 +112,8 @@ public class RateRule implements Matchable, Serializable, IssueSource, Simulatio
 	}
 	public void setSbmlName(String newString) throws PropertyVetoException {
 		String oldValue = this.sbmlName;
-		String newValue = SpeciesContext.fixSbmlName(newString);
-		
+		String newValue = SpeciesContext.fixAndValidateSbmlName(newString, this);
+
 		fireVetoableChange("sbmlName", oldValue, newValue);
 		this.sbmlName = newValue;
 		firePropertyChange("sbmlName", oldValue, newValue);
