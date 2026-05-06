@@ -886,7 +886,6 @@ public class XMLTags {
 	public final static String ExtrapolationMethodTag = "ExtrapolationMethod";
 
 	// SpringSaLaD tags
-	public final static String SiteAttributesMapTag = "SiteAttributesMap";
     public final static String SiteAttributesSpecTag = "SiteAttributesSpec";
     public final static String StructuralSiteAttributesSpecTag = "StructuralSiteAttributesSpec";
 	public final static String SiteRefAttrTag = "SiteRef";

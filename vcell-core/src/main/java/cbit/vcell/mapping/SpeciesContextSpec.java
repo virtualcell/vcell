@@ -1853,54 +1853,6 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         return speciesContext;
     }
 
-
-    /**
-     * This method was created by a SmartGuide.
-     *
-     * @return java.lang.String
-     */
-    public String getVCML(){
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("\t" + VCMODL.SpeciesContextSpec + " " + getSpeciesContext().getName() + " {\n");
-        buffer.append("\t\t" + VCMODL.ForceConstant + " " + isConstant() + "\n");
-        buffer.append("\t\t" + VCMODL.EnableDiffusion + " " + isDiffusing() + "\n");
-        Expression init = getInitialConditionParameter().getExpression();
-        if(init != null){
-            buffer.append("\t\t" + VCMODL.InitialConcentration + " " + init.toString() + ";\n");
-        }
-        Expression diffRate = getDiffusionParameter().getExpression();
-        if(diffRate != null){
-            buffer.append("\t\t" + VCMODL.DiffusionRate + " " + diffRate.toString() + ";\n");
-        }
-        //
-        // write BoundaryConditions
-        //
-        for(int i = BoundaryLocation.FIRST; i <= BoundaryLocation.LAST; i++){
-            BoundaryLocation bl = BoundaryLocation.fromDirection(i);
-            Expression boundExp = getParameterFromRole(getRole(bl)).getExpression();
-            if(boundExp != null){
-                buffer.append("\t\t" + VCMODL.BoundaryCondition + " " + bl.toString() + " " + boundExp.toString() + "\n");
-            }
-        }
-        // write velocity x,y,z expressions
-        Expression vel_x = getVelocityXParameter().getExpression();
-        if(vel_x != null){
-            buffer.append("\t\t" + VCMODL.VelocityX + " " + vel_x.toString() + ";\n");
-        }
-        Expression vel_y = getVelocityYParameter().getExpression();
-        if(vel_y != null){
-            buffer.append("\t\t" + VCMODL.VelocityY + " " + vel_y.toString() + ";\n");
-        }
-        Expression vel_z = getVelocityZParameter().getExpression();
-        if(vel_z != null){
-            buffer.append("\t\t" + VCMODL.VelocityZ + " " + vel_z.toString() + ";\n");
-        }
-
-        buffer.append("\t}\n");
-        return buffer.toString();
-    }
-
-
     /**
      * Accessor for the vetoPropertyChange field.
      */
