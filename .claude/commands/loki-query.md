@@ -81,6 +81,82 @@ bash tools/loki/loki-query.sh --output=raw --limit=20000 --since=1h \
 
 For raw-output queries, log lines are JSON; useful fields include `["@timestamp"]`, `log_level`, `["log.logger"]`, `["process.thread.name"]`, `message`. Pipe through `jq -r '...'` to extract a clean digest.
 
+## Direct kubectl logs (when Loki isn't enough)
+
+Use `kubectl logs` directly when:
+- **A pod just crashed/restarted** — `--previous` shows the prior container's logs. Critical when a `JmsFailoverWatchdog` `System.exit` recycles a pod and you need to see why.
+- **Broker pods** — `activemqint` (ActiveMQ Classic, legacy daemon-to-daemon traffic — counterpart to client-side JMS errors in `data`/`db`/`sched`/`submit`) and `activemqsim` (sim/solver traffic). These may not be in Loki's collection set; check Loki first and fall back here.
+- **Real-time tail** of a single pod, or windows that have aged out of Loki retention.
+
+Setup (same kubeconfig as Loki):
+```bash
+KCFG="${LOKI_KUBECONFIG:-$HOME/.kube/kubeconfig_vxrails.yaml}"
+NS=prod   # or stage / dev
+```
+
+Discover the actual workload names — deployment vs statefulset, exact selectors:
+```bash
+kubectl --kubeconfig "$KCFG" -n "$NS" get deployments,statefulsets,pods \
+  | grep -iE "data|activemq|api|db|sched|submit"
+```
+
+Common log patterns:
+```bash
+# Last 200 lines from the data pod (the one that wedged on 2026-05-06)
+kubectl --kubeconfig "$KCFG" -n "$NS" logs deployment/data --tail=200
+
+# Real-time tail
+kubectl --kubeconfig "$KCFG" -n "$NS" logs -f deployment/data
+
+# Previous container instance — after a crash, OOM, or watchdog-driven exit
+kubectl --kubeconfig "$KCFG" -n "$NS" logs deployment/data --previous --tail=500
+
+# Time-bounded
+kubectl --kubeconfig "$KCFG" -n "$NS" logs deployment/data --since=10m
+kubectl --kubeconfig "$KCFG" -n "$NS" logs deployment/data --since-time="2026-05-06T06:30:00Z"
+
+```
+
+### Broker pods are special — supervisord hides the broker log
+
+`activemqint`, `activemqsim`, and `artemismq` all run as `Deployments` in `prod` (and the same naming applies in `stage`/`dev` if present), but their container PID 1 is **supervisord**. The actual broker logs to a file inside the pod, not stdout. Consequences:
+
+- `kubectl logs deployment/activemqint` returns ~10 lines of supervisord lifecycle, frozen at pod startup (44d old in prod). It does **not** show broker activity.
+- Loki's promtail isn't scraping these pods either (verified by `logcli series '{namespace="prod"}'` — no `activemq`/`artemis` containers appear).
+- The only path to broker events is `kubectl exec` against the in-pod log file.
+
+```bash
+# ActiveMQ Classic (activemqint, activemqsim) — log at /var/log/activemq/activemq.log
+kubectl --kubeconfig "$KCFG" -n "$NS" exec deployment/activemqint -- \
+  tail -200 /var/log/activemq/activemq.log
+
+# Around an incident window (in-pod awk filter — efficient on a multi-MB log)
+kubectl --kubeconfig "$KCFG" -n "$NS" exec deployment/activemqint -- \
+  bash -c 'awk "/2026-05-06 06:[34][0-9]/" /var/log/activemq/activemq.log'
+
+# Errors only
+kubectl --kubeconfig "$KCFG" -n "$NS" exec deployment/activemqint -- \
+  grep -E "WARN|ERROR" /var/log/activemq/activemq.log
+
+# Artemis (artemismq) — different layout; discover the log path
+kubectl --kubeconfig "$KCFG" -n "$NS" exec deployment/artemismq -- \
+  bash -c 'find / -name "*.log" -size +1k 2>/dev/null | head -10'
+```
+
+The in-pod ActiveMQ log file rotates after roughly 14h of activity. For older incidents, the broker side is not recoverable — a real operational gap when investigating wedges that took longer than that to manifest.
+
+If `deployment/<name>` doesn't resolve (e.g. a broker is later deployed as a StatefulSet), discover the pod by label or by listing pods.
+
+**Worth fixing**: reconfigure these brokers to log to stdout (or have supervisord forward child stdout/stderr). Once stdout flows, both `kubectl logs` and Loki's promtail pick them up automatically — no more `exec` archaeology and no more 14h horizon.
+
+### Putting it together for a JMS-wedge incident
+
+Pull both sides around the same window:
+- **Client side** (`data`/`db`/`sched`/`submit`) via Loki — the `IllegalStateException: Timer already cancelled.` WARNs surface here, but the *triggering* network event happened earlier and silently.
+- **Broker side** (`activemqint`/`activemqsim`) via `kubectl exec` — `Transport Connection to: tcp://<podIP>:<port> failed: java.io.EOFException` lines tell you which client connection actually dropped, and at what timestamp. Compare to client-side reconnect attempts to confirm the wedge was already latent before the trigger.
+
+When to switch back to Loki: multi-pod sweeps, time-range queries spanning multiple containers, structured filters (`|~ "ERROR"`, regex), and historical incidents older than the kubelet's local log retention.
+
 ## Workflow
 
 1. Read the user's request and identify: namespace (prod/stage/dev), time window, suspected container(s), keywords.
