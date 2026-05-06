@@ -1071,12 +1071,42 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             return false;
         }
         for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
-            if (!containsIsomorph(entry, siteAttributesMap)) {
+            if (!containsIsomorph(entry, scs.siteAttributesMap)) {
+                return false;
+            }
+        }
+
+        if(structuralSiteAttributesMap.size() != scs.structuralSiteAttributesMap.size()) {  // springsalad SiteAttributesSpec map
+            return false;
+        }
+        for(Map.Entry<StructuralSite, SiteAttributesSpec> entry : structuralSiteAttributesMap.entrySet()) {
+            if (!containsIsomorph1(entry, scs.structuralSiteAttributesMap)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private static boolean containsIsomorph1(Map.Entry<StructuralSite, SiteAttributesSpec> ourEntry, Map<StructuralSite, SiteAttributesSpec> theirSsaMap) {
+        StructuralSite ourSs = ourEntry.getKey();
+        SiteAttributesSpec ourSas = ourEntry.getValue();
+        for(Map.Entry<StructuralSite, SiteAttributesSpec> theirEntry : theirSsaMap.entrySet()) {
+            StructuralSite theirSs = theirEntry.getKey();
+            SiteAttributesSpec theirSas = theirEntry.getValue();
+            boolean foundss = false;
+            boolean foundSas = false;
+            if (ourSs.compareEqual(theirSs)) {
+                foundss = true;    // note that for the ss we only compare the name
+            }
+            if (ourSas.compareShallow(theirSas)) {
+                foundSas = true;
+            }
+            if(foundss && foundSas) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean containsIsomorph(MolecularInternalLinkSpec ourMils, Set<MolecularInternalLinkSpec> theirMilsSet) {
@@ -1087,15 +1117,24 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         }
         return false;
     }
-    private static boolean containsIsomorph(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> ourEntry, Map<MolecularComponentPattern, SiteAttributesSpec> theirSasMap) {
+    private static boolean containsIsomorph(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> ourEntry, Map<MolecularComponentPattern, SiteAttributesSpec> theirSaMap) {
         MolecularComponentPattern ourMcp = ourEntry.getKey();
         SiteAttributesSpec ourSas = ourEntry.getValue();
-        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> theirEntry : theirSasMap.entrySet()) {
+        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> theirEntry : theirSaMap.entrySet()) {
             MolecularComponentPattern theirMcp = theirEntry.getKey();
             SiteAttributesSpec theirSas = theirEntry.getValue();
-            // TODO: infinite loop if we compare the sas here, because that will compare the scs, which will again compare the sas, aso
+            boolean foundMcp = false;
+            boolean foundSas = false;
             if(ourMcp.compareEqual(theirMcp)/* && ourSas.compareEqual(theirSas)*/) {
                 // note that for the mcp we only compare the bond type, not the bond (which is mtp attribute)
+                foundMcp = true;
+            }
+            // infinite loop if we compare the sas here, because that will compare the scs, which will again compare the sas, aso
+            // use compareShallow instead
+            if(ourSas.compareShallow(theirSas)) {
+                foundSas = true;
+            }
+            if(foundMcp && foundSas) {
                 return true;
             }
         }

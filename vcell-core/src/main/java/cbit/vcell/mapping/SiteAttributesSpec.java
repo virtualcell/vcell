@@ -210,6 +210,38 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 		}
 		return true;
 	}
+	public boolean compareShallow(Matchable obj) {
+		if (obj == this) {
+			return true;
+		}
+		if (!(obj instanceof SiteAttributesSpec)) {
+			return false;
+		}
+		SiteAttributesSpec candidate = (SiteAttributesSpec) obj;
+
+		if(!fieldSpeciesContextSpec.getSpeciesContext().getName().contentEquals(candidate.getSpeciesContextSpec().getSpeciesContext().getName())) {
+			return false;
+		}
+		if(!fieldLinkNode.getName().contentEquals(candidate.getLinkNode().getName())) {
+			return false;
+		}
+		if(fieldRadius != candidate.getRadius()) {
+			return false;
+		}
+		if(fieldDiffusionRate != candidate.getDiffusionRate()) {
+			return false;
+		}
+		if(!fieldLocation.compareEqual(candidate.getLocation())) {
+			return false;
+		}
+		if(!fieldCoordinate.compareEqual(candidate.getCoordinate())) {
+			return false;
+		}
+		if(fieldColor != candidate.getColor()) {
+			return false;
+		}
+		return true;
+	}
 
 	public double computeReactionRadius() {		// in langevin solver notation is R
 		// assumes radius in nanometers
