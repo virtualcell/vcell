@@ -170,6 +170,15 @@ public class CLIDatabaseService implements AutoCloseable {
         return getDatabaseServer().getBioModelInfo(owner, biomodelId);
     }
 
+    public User resolveUser(String userid) throws DataAccessException, SQLException {
+        AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
+        User user = adminDbTopLevel.getUser(userid, true);
+        if (user == null) {
+            throw new DataAccessException("user '" + userid + "' not found");
+        }
+        return user;
+    }
+
     public MathModelInfo queryMathmodelInfo(User owner, KeyValue mathmodelId) throws DataAccessException {
         return getDatabaseServer().getMathModelInfo(owner, mathmodelId);
     }
