@@ -51,6 +51,7 @@ public class MessageProducerSessionJms implements VCMessageSession {
 //			Thread.dumpStack();
         this.vcMessagingServiceJms = vcMessagingServiceJms;
         this.connection = vcMessagingServiceJms.createConnectionFactory().createConnection();
+        vcMessagingServiceJms.getFailoverWatchdog().attach(this.connection);
         this.connection.setExceptionListener(new ExceptionListener() {
             public void onException(JMSException arg0){
                 MessageProducerSessionJms.this.onException(arg0);

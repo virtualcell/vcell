@@ -53,7 +53,16 @@ public class VCMessagingServiceActiveMQ extends VCMessagingServiceJms implements
 	 * @return static string
 	 */
 	private String jmsUrl(String jmshost, int jmsport) {
-		String jmsurl = "failover:(tcp://"+jmshost+":"+jmsport+")";
-		return jmsurl;
+		// Bound the failover reconnect loop so a wedged transport (e.g. ActiveMQ client
+		// "Timer already cancelled" race) eventually surfaces an IOException to the
+		// TransportListener, letting the JVM exit and K8s recycle the pod.
+		// startupMaxReconnectAttempts=-1 keeps initial connect unbounded so pod boot
+		// tolerates a slow broker.
+		return "failover:(tcp://" + jmshost + ":" + jmsport + ")"
+				+ "?maxReconnectAttempts=20"
+				+ "&startupMaxReconnectAttempts=-1"
+				+ "&useExponentialBackOff=true"
+				+ "&initialReconnectDelay=1000"
+				+ "&maxReconnectDelay=30000";
 	}
 }
