@@ -56,7 +56,7 @@ public class SpeciesContextSpecTableTest {
 	public void test_springsalad_application() throws IOException, XmlParseException, PropertyVetoException, ExpressionException, GeometryException,
 			ImageException, IllegalMappingException, MappingException, SolverException {
 
-		BioModel bioModel = getBioModelFromResource("Spring_application.vcml");
+		BioModel bioModel = getBioModelFromResource("Spring_application2.vcml");
 		SimulationContext simContext = bioModel.getSimulationContext(0);
 
 		// WARNING!! Debug configuration for this JUnit test required System property "vcell.installDir"
@@ -65,11 +65,14 @@ public class SpeciesContextSpecTableTest {
         assertTrue((mathDescription.getMathType() != null && mathDescription.getMathType() == SpringSaLaD) ? true : false, "expecting SpringSaLaD math type");
 
 		SpeciesContextSpec[] speciesContextSpecs = simContext.getReactionContext().getSpeciesContextSpecs();
-		SpeciesContextSpec scs = speciesContextSpecs[0];		// we test roundtrip for just one SpeciesContextSpec
+		SpeciesContextSpec scs = speciesContextSpecs[1];		// we test roundtrip for just one SpeciesContextSpec
 		String internalLinkSetSQL = SpeciesContextSpecTable.getInternalLinksSQL(scs);
 		String siteAttributesMapSQL = SpeciesContextSpecTable.getSiteAttributesSQL(scs);
-		Set<MolecularInternalLinkSpec> internalLinkSet = SpeciesContextSpecTable.readInternalLinksSQL(scs, internalLinkSetSQL);
+		String structuralSiteAttributesMapSQL = SpeciesContextSpecTable.getStructuralSiteAttributesSQL(scs);
+
 		Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = SpeciesContextSpecTable.readSiteAttributesSQL(scs, siteAttributesMapSQL);
+		Map<StructuralSite, SiteAttributesSpec> structuralSiteAttributesMap = SpeciesContextSpecTable.readStructuralSiteAttributesSQL(scs, structuralSiteAttributesMapSQL);
+		Set<MolecularInternalLinkSpec> internalLinkSet = SpeciesContextSpecTable.readInternalLinksSQL(scs, internalLinkSetSQL);
 
 		double bondLength = 1;
 		Map<ReactionRuleSpec.Subtype, Integer> subTypeMap = new LinkedHashMap<>();
@@ -111,8 +114,14 @@ public class SpeciesContextSpecTableTest {
 		SiteAttributesSpec sasThis = siteAttributesMap.get(mcpThis);
 		SiteAttributesSpec sasThat = scs.getSiteAttributesMap().get(mcpThis);
         assertTrue(sasThis.compareEqual(sasThat) ? true : false, "SiteAttributesSpec element not found in siteAttributesMap after roundtrip");
-	}
 
+		// verify roundtrip for structuralSiteAttributesMap (through sampling)
+		assertTrue(structuralSiteAttributesMap.size() == scs.getStructuralSiteAttributesMap().size() ? true : false, "structuralSiteAttributesMap size different after roundtrip");
+		StructuralSite ssThis = structuralSiteAttributesMap.keySet().iterator().next();
+		SiteAttributesSpec ssasThis = structuralSiteAttributesMap.get(ssThis);
+		SiteAttributesSpec ssasThat = scs.getStructuralSiteAttributesMap().get(ssThis);
+		assertTrue(ssasThis.compareEqual(ssasThat) ? true : false, "SiteAttributesSpec element not found in structuralSiteAttributesMap after roundtrip");
+	}
 
     // ==========================================================================================================================
 
