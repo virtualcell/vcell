@@ -80,6 +80,14 @@ public class VCellClientMain implements Callable<Integer> {
      * @param args an array of command-line arguments
      */
     public static void main(java.lang.String[] args) {
+        // Recover gracefully when DNS lookups fail transiently (e.g. laptop wake from sleep).
+        // Java's default 10s negative-result cache combined with our continuous polling loop
+        // wedges the client at "connecting…" until restart, because the polling interval is
+        // shorter than the cache TTL so the cached failure never expires. A short positive
+        // TTL still gives reasonable cache locality without holding stale entries indefinitely.
+        java.security.Security.setProperty("networkaddress.cache.ttl", "30");
+        java.security.Security.setProperty("networkaddress.cache.negative.ttl", "0");
+
         System.out.println("starting with arguments " + Arrays.asList(args));
         int exitCode = 1;
         try {
