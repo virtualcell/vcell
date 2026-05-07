@@ -37,6 +37,7 @@ public abstract class VCMessagingServiceJms implements VCMessagingService {
 	private VCMessagingDelegate delegate = new SimpleMessagingDelegate();
 	protected String jmshost = null;
 	protected Integer jmsport = null;
+	private JmsFailoverWatchdog failoverWatchdog = JmsFailoverWatchdog.logOnly();
 
 	private Timer garbageCollectorTimer = new Timer(true);
 	private final static long BlobGarbageCollector_initialDelayMS 	= 1000*3600;		// one hour
@@ -95,6 +96,19 @@ public abstract class VCMessagingServiceJms implements VCMessagingService {
 		this.delegate = delegate;
 		this.jmshost = jmshost;
 		this.jmsport = jmsport;
+	}
+
+	/**
+	 * Override the default {@link JmsFailoverWatchdog} (production default exits
+	 * the JVM on terminal transport failure). Call before any connections are
+	 * opened — typically at server startup, or from tests.
+	 */
+	public void setFailoverWatchdog(JmsFailoverWatchdog failoverWatchdog) {
+		this.failoverWatchdog = java.util.Objects.requireNonNull(failoverWatchdog, "failoverWatchdog");
+	}
+
+	JmsFailoverWatchdog getFailoverWatchdog() {
+		return failoverWatchdog;
 	}
 	
 	@Override

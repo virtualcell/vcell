@@ -113,6 +113,7 @@ public class ConsumerContextJms implements Runnable {
 		int acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
 		try {
 			this.jmsConnection = vcMessagingServiceJms.createConnectionFactory().createConnection();
+			vcMessagingServiceJms.getFailoverWatchdog().attach(this.jmsConnection);
 			this.jmsConnection.setExceptionListener(new ExceptionListener() {
 				public void onException(JMSException arg0) {
 					ConsumerContextJms.this.onException(arg0);
