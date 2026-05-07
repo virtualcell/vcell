@@ -70,7 +70,8 @@ public class SpeciesContextSpecTable extends cbit.sql.Table {
 											boundaryXmExp,boundaryXpExp,boundaryYmExp,boundaryYpExp,boundaryZmExp,boundaryZpExp,initCondCountExp,
 											velocityXExp, velocityYExp, velocityZExp, bWellMixed, bForceContinuous,
 											internalLinks, siteAttributesSpecs, structuralSiteAttributesSpecs};
-	
+	// ATTENTION: if adding fields, remember to also add the column to the table schema in the database
+	// ex: ALTER TABLE VC_SPECIESCONTEXTSPEC ADD (STRUCTURALSITEATTRIBUTESSPECS VARCHAR2(4000));
 	public static final SpeciesContextSpecTable table = new SpeciesContextSpecTable();
 /**
  * ModelTable constructor comment.
