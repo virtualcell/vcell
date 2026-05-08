@@ -119,7 +119,13 @@ public class SpeciesContextSpecTableTest {
 		assertTrue(structuralSiteAttributesMap.size() == scs.getStructuralSiteAttributesMap().size() ? true : false, "structuralSiteAttributesMap size different after roundtrip");
 		StructuralSite ssThis = structuralSiteAttributesMap.keySet().iterator().next();
 		SiteAttributesSpec ssasThis = structuralSiteAttributesMap.get(ssThis);
-		SiteAttributesSpec ssasThat = scs.getStructuralSiteAttributesMap().get(ssThis);
+		SiteAttributesSpec ssasThat = null;		// we can't use ssThis as key to get the value from scs because
+		// the instances are different after round tripping, so we have to loop through the keys and compare by name
+		for (StructuralSite ss : scs.getStructuralSiteAttributesMap().keySet()) {
+			if (ss.getName().equals(ssThis.getName())) {
+				ssasThat = scs.getStructuralSiteAttributesMap().get(ss);
+			}
+		}
 		assertTrue(ssasThis.compareEqual(ssasThat) ? true : false, "SiteAttributesSpec element not found in structuralSiteAttributesMap after roundtrip");
 	}
 
