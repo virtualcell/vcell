@@ -253,3 +253,12 @@ pythonData/test_data/zarr/
 pythonCopasiOpt/vcell-opt/.venv/
 
 pythonCopasiOpt/vcell-opt/test_data/optproblem.report
+
+tools/report/output/
+
+# User-PII artifacts from admincli reporting (emails, names, affiliations).
+# Never commit per-user lists; the CSV stays local.
+users_*.txt
+users_*.csv
+active_users*.csv
+/users.txt

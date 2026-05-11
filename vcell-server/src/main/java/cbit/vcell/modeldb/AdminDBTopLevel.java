@@ -11,6 +11,7 @@
 package cbit.vcell.modeldb;
 
 import cbit.vcell.messaging.db.SimulationJobDbDriver;
+import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.messaging.db.SimulationRequirements;
 import cbit.vcell.modeldb.ApiAccessToken.AccessTokenStatus;
 import cbit.vcell.mongodb.VCMongoMessage;
@@ -24,9 +25,11 @@ import org.vcell.util.UseridIDExistsException;
 import org.vcell.util.document.*;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.*;
 
 /**
@@ -1247,6 +1250,223 @@ public class AdminDBTopLevel extends AbstractDBTopLevel {
             }
         } finally {
             conFactory.release(con, lock);
+        }
+    }
+
+    // ========================================================================
+    // Period-bounded usage report primitives.
+    //
+    // These are used by the admincli `report` toolkit to produce NIH RPPR-style
+    // metrics. Unlike getBasicStatistics() above, these queries take explicit
+    // [start, end] / asof dates as PreparedStatement parameters and reference
+    // columns through Table-class Field objects rather than embedded literals.
+    //
+    // See .claude/commands/admin-report.md for the toolkit overview and the
+    // recipe for assembling an RPPR report.
+    // ========================================================================
+
+    /**
+     * Cumulative metrics evaluated as of a given date (inclusive).
+     * Naming maps to the corresponding picocli enum value via case-insensitive
+     * conversion (e.g. {@code --metric total-users} -> {@link #TOTAL_USERS}).
+     */
+    public enum AsOfMetric {
+        TOTAL_USERS,
+        USERS_WITH_SIMS,
+        BIOMODELS,
+        MATHMODELS,
+        TOTAL_MODELS,
+        SIMULATIONS,
+        PUBLIC_BIOMODELS,
+        PUBLIC_MATHMODELS,
+        PUBLIC_MODELS,
+        PUBLIC_BIOMODEL_SIMS,
+        PUBLIC_MATHMODEL_SIMS,
+        PUBLIC_SIMS
+    }
+
+    /** One row per active user; a {@code null} field means the user record had no value for it. */
+    public record ActiveUser(String userid, String email, String company, String country) {}
+
+    /** Count of {@code vc_userinfo} rows whose insertDate falls in {@code [start, end]} inclusive. */
+    public int countNewUsers(LocalDate start, LocalDate end) throws SQLException, DataAccessException {
+        Object lock = new Object();
+        Connection con = conFactory.getConnection(lock);
+        try {
+            String sql = "select count(*) from " + UserTable.table.getTableName()
+                    + " where " + UserTable.table.insertDate.getQualifiedColName() + " >= ?"
+                    + " and " + UserTable.table.insertDate.getQualifiedColName() + " <= ?";
+            return executeCountPrepared(con, sql,
+                    java.sql.Date.valueOf(start), java.sql.Date.valueOf(end));
+        } catch (Throwable e) {
+            lg.error("failure in countNewUsers()", e);
+            handle_DataAccessException_SQLException(e);
+            return 0;
+        } finally {
+            conFactory.release(con, lock);
+        }
+    }
+
+    /**
+     * Count of {@code vc_simulationjob} rows whose submitDate falls in {@code [start, end]} inclusive.
+     * <p>
+     * NOTE: this number undercounts the true historical number of jobs that ran. {@code vc_simulationjob}
+     * has ON DELETE CASCADE on its parent simulation, so jobs whose parent simulation was later
+     * deleted/replaced are gone from the table. For total jobs ever submitted to the compute cluster,
+     * use SLURM accounting (see {@code .claude/commands/admin-report.md}).
+     */
+    public int countSimJobsInDb(LocalDate start, LocalDate end) throws SQLException, DataAccessException {
+        Object lock = new Object();
+        Connection con = conFactory.getConnection(lock);
+        try {
+            String sql = "select count(*) from " + SimulationJobTable.table.getTableName()
+                    + " where " + SimulationJobTable.table.submitDate.getQualifiedColName() + " >= ?"
+                    + " and " + SimulationJobTable.table.submitDate.getQualifiedColName() + " <= ?";
+            return executeCountPrepared(con, sql,
+                    java.sql.Date.valueOf(start), java.sql.Date.valueOf(end));
+        } catch (Throwable e) {
+            lg.error("failure in countSimJobsInDb()", e);
+            handle_DataAccessException_SQLException(e);
+            return 0;
+        } finally {
+            conFactory.release(con, lock);
+        }
+    }
+
+    /** Count for the chosen as-of metric, evaluated at {@code asOf} (inclusive). */
+    public int countAsOf(AsOfMetric metric, LocalDate asOf) throws SQLException, DataAccessException {
+        Object lock = new Object();
+        Connection con = conFactory.getConnection(lock);
+        try {
+            return countAsOfImpl(con, metric, java.sql.Date.valueOf(asOf));
+        } catch (Throwable e) {
+            lg.error("failure in countAsOf(" + metric + ")", e);
+            handle_DataAccessException_SQLException(e);
+            return 0;
+        } finally {
+            conFactory.release(con, lock);
+        }
+    }
+
+    private int countAsOfImpl(Connection con, AsOfMetric metric, java.sql.Date asOf) throws SQLException {
+        return switch (metric) {
+            case TOTAL_USERS -> executeCountPrepared(con,
+                    "select count(*) from " + UserTable.table.getTableName()
+                            + " where " + UserTable.table.insertDate.getQualifiedColName() + " <= ?",
+                    asOf);
+            case USERS_WITH_SIMS -> executeCountPrepared(con,
+                    "select count(distinct " + SimulationTable.table.ownerRef.getQualifiedColName() + ")"
+                            + " from " + SimulationTable.table.getTableName()
+                            + " where " + SimulationTable.table.versionDate.getQualifiedColName() + " <= ?",
+                    asOf);
+            case BIOMODELS -> executeCountPrepared(con, countVersionLeqSql(BioModelTable.table), asOf);
+            case MATHMODELS -> executeCountPrepared(con, countVersionLeqSql(MathModelTable.table), asOf);
+            case SIMULATIONS -> executeCountPrepared(con, countVersionLeqSql(SimulationTable.table), asOf);
+            case TOTAL_MODELS -> countAsOfImpl(con, AsOfMetric.BIOMODELS, asOf)
+                    + countAsOfImpl(con, AsOfMetric.MATHMODELS, asOf);
+            case PUBLIC_BIOMODELS -> executeCountPrepared(con, countPublicVersionLeqSql(BioModelTable.table), asOf);
+            case PUBLIC_MATHMODELS -> executeCountPrepared(con, countPublicVersionLeqSql(MathModelTable.table), asOf);
+            case PUBLIC_MODELS -> countAsOfImpl(con, AsOfMetric.PUBLIC_BIOMODELS, asOf)
+                    + countAsOfImpl(con, AsOfMetric.PUBLIC_MATHMODELS, asOf);
+            case PUBLIC_BIOMODEL_SIMS -> executeCountPrepared(con, publicBmSimsSql(), asOf);
+            case PUBLIC_MATHMODEL_SIMS -> executeCountPrepared(con, publicMmSimsSql(), asOf);
+            case PUBLIC_SIMS -> countAsOfImpl(con, AsOfMetric.PUBLIC_BIOMODEL_SIMS, asOf)
+                    + countAsOfImpl(con, AsOfMetric.PUBLIC_MATHMODEL_SIMS, asOf);
+        };
+    }
+
+    /**
+     * One row per distinct user who has at least one {@code vc_simulationjob} row whose submitDate
+     * falls in {@code [start, end]} inclusive. Userid, email, company, and country are read directly
+     * from {@code vc_userinfo}; TLD extraction (if needed) is the caller's concern.
+     * <p>
+     * Same cascade-delete caveat as {@link #countSimJobsInDb}: a user who only ran jobs whose
+     * parent simulation has since been removed will not appear here.
+     */
+    public List<ActiveUser> listActiveUsersInPeriod(LocalDate start, LocalDate end)
+            throws SQLException, DataAccessException {
+        Object lock = new Object();
+        Connection con = conFactory.getConnection(lock);
+        try {
+            String sql = "select distinct "
+                    + UserTable.table.userid.getQualifiedColName() + ", "
+                    + UserTable.table.email.getQualifiedColName() + ", "
+                    + UserTable.table.companyName.getQualifiedColName() + ", "
+                    + UserTable.table.country.getQualifiedColName()
+                    + " from " + UserTable.table.getTableName()
+                    + ", " + SimulationTable.table.getTableName()
+                    + ", " + SimulationJobTable.table.getTableName()
+                    + " where " + UserTable.table.id.getQualifiedColName() + " = " + SimulationTable.table.ownerRef.getQualifiedColName()
+                    + " and " + SimulationJobTable.table.simRef.getQualifiedColName() + " = " + SimulationTable.table.id.getQualifiedColName()
+                    + " and " + SimulationJobTable.table.submitDate.getQualifiedColName() + " >= ?"
+                    + " and " + SimulationJobTable.table.submitDate.getQualifiedColName() + " <= ?"
+                    + " order by " + UserTable.table.userid.getQualifiedColName();
+            try (PreparedStatement pstmt = con.prepareStatement(sql)) {
+                pstmt.setDate(1, java.sql.Date.valueOf(start));
+                pstmt.setDate(2, java.sql.Date.valueOf(end));
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    List<ActiveUser> out = new ArrayList<>();
+                    while (rs.next()) {
+                        out.add(new ActiveUser(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4)));
+                    }
+                    return out;
+                }
+            }
+        } catch (Throwable e) {
+            lg.error("failure in listActiveUsersInPeriod()", e);
+            handle_DataAccessException_SQLException(e);
+            return null;
+        } finally {
+            conFactory.release(con, lock);
+        }
+    }
+
+    private static String countVersionLeqSql(VersionTable t) {
+        return "select count(*) from " + t.getTableName()
+                + " where " + t.versionDate.getQualifiedColName() + " <= ?";
+    }
+
+    private static String countPublicVersionLeqSql(VersionTable t) {
+        return "select count(*) from " + t.getTableName()
+                + " where " + t.privacy.getQualifiedColName() + " = 0"
+                + " and " + t.versionDate.getQualifiedColName() + " <= ?";
+    }
+
+    private static String publicBmSimsSql() {
+        return "select count(*) from " + SimulationTable.table.getTableName()
+                + " where " + SimulationTable.table.id.getQualifiedColName() + " in ("
+                + "select distinct " + SimulationTable.table.id.getQualifiedColName()
+                + " from " + BioModelTable.table.getTableName()
+                + ", " + SimulationTable.table.getTableName()
+                + ", " + BioModelSimulationLinkTable.table.getTableName()
+                + " where " + SimulationTable.table.id.getQualifiedColName() + " = " + BioModelSimulationLinkTable.table.simRef.getQualifiedColName()
+                + " and " + BioModelTable.table.id.getQualifiedColName() + " = " + BioModelSimulationLinkTable.table.bioModelRef.getQualifiedColName()
+                + " and " + BioModelTable.table.privacy.getQualifiedColName() + " = 0)"
+                + " and " + SimulationTable.table.versionDate.getQualifiedColName() + " <= ?";
+    }
+
+    private static String publicMmSimsSql() {
+        return "select count(*) from " + SimulationTable.table.getTableName()
+                + " where " + SimulationTable.table.id.getQualifiedColName() + " in ("
+                + "select distinct " + SimulationTable.table.id.getQualifiedColName()
+                + " from " + MathModelTable.table.getTableName()
+                + ", " + SimulationTable.table.getTableName()
+                + ", " + MathModelSimulationLinkTable.table.getTableName()
+                + " where " + SimulationTable.table.id.getQualifiedColName() + " = " + MathModelSimulationLinkTable.table.simRef.getQualifiedColName()
+                + " and " + MathModelTable.table.id.getQualifiedColName() + " = " + MathModelSimulationLinkTable.table.mathModelRef.getQualifiedColName()
+                + " and " + MathModelTable.table.privacy.getQualifiedColName() + " = 0)"
+                + " and " + SimulationTable.table.versionDate.getQualifiedColName() + " <= ?";
+    }
+
+    private static int executeCountPrepared(Connection con, String sql, java.sql.Date... dates) throws SQLException {
+        lg.info(sql);
+        try (PreparedStatement pstmt = con.prepareStatement(sql)) {
+            for (int i = 0; i < dates.length; i++) {
+                pstmt.setDate(i + 1, dates[i]);
+            }
+            try (ResultSet rs = pstmt.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
         }
     }
 

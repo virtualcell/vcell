@@ -16,6 +16,7 @@ import org.vcell.util.document.*;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -95,6 +96,25 @@ public class CLIDatabaseService implements AutoCloseable {
     public AdminDBTopLevel.DbUserSimCount[] getUserSimCount(int pastTime_days) throws SQLException, DataAccessException {
         AdminDBTopLevel adminDbTopLevel = new AdminDBTopLevel(conFactory);
         return adminDbTopLevel.getUserSimCounts(pastTime_days);
+    }
+
+    // Period-bounded report primitives. See .claude/commands/admin-report.md.
+
+    public int countNewUsers(LocalDate start, LocalDate end) throws SQLException, DataAccessException {
+        return new AdminDBTopLevel(conFactory).countNewUsers(start, end);
+    }
+
+    public int countSimJobsInDb(LocalDate start, LocalDate end) throws SQLException, DataAccessException {
+        return new AdminDBTopLevel(conFactory).countSimJobsInDb(start, end);
+    }
+
+    public int countAsOf(AdminDBTopLevel.AsOfMetric metric, LocalDate asOf) throws SQLException, DataAccessException {
+        return new AdminDBTopLevel(conFactory).countAsOf(metric, asOf);
+    }
+
+    public List<AdminDBTopLevel.ActiveUser> listActiveUsersInPeriod(LocalDate start, LocalDate end)
+            throws SQLException, DataAccessException {
+        return new AdminDBTopLevel(conFactory).listActiveUsersInPeriod(start, end);
     }
 
     public MathVerifier getMathVerifier() throws DataAccessException, SQLException {
