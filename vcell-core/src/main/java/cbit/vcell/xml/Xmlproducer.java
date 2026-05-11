@@ -1718,8 +1718,8 @@ private Element getXML(SpeciesContextSpec param, SimulationContext simContext) {
 			
 			Element milsElement = new Element(XMLTags.InternalLinkSpecTag);
 			milsElement.setAttribute(XMLTags.MoleculeRefAttrTag, mt.getName());
-			milsElement.setAttribute(XMLTags.SiteOneRefAttrTag, mils.getMolecularComponentPatternOne().getMolecularComponent().getName());
-			milsElement.setAttribute(XMLTags.SiteTwoRefAttrTag, mils.getMolecularComponentPatternTwo().getMolecularComponent().getName());
+			milsElement.setAttribute(XMLTags.SiteOneRefAttrTag, mils.getLinkNodeOne().getName());
+			milsElement.setAttribute(XMLTags.SiteTwoRefAttrTag, mils.getLinkNodeTwo().getName());
 			speciesContextSpecElement.addContent(milsElement);
 		}
 	}
@@ -1738,6 +1738,30 @@ private Element getXML(SpeciesContextSpec param, SimulationContext simContext) {
 			SiteAttributesSpec sas = entry.getValue();
 			Element sasElement = new Element(XMLTags.SiteAttributesSpecTag);
 			sasElement.setAttribute(XMLTags.SiteRefAttrTag, mcp.getMolecularComponent().getName());
+			sasElement.setAttribute(XMLTags.MoleculeRefAttrTag, mt.getName());
+			sasElement.setAttribute(XMLTags.SiteLocationRefAttrTag, sas.getLocation().getName());
+			sasElement.setAttribute(XMLTags.SiteCoordXAttrTag, Double.toString(sas.getCoordinate().getX()));
+			sasElement.setAttribute(XMLTags.SiteCoordYAttrTag, Double.toString(sas.getCoordinate().getY()));
+			sasElement.setAttribute(XMLTags.SiteCoordZAttrTag, Double.toString(sas.getCoordinate().getZ()));
+			sasElement.setAttribute(XMLTags.SiteRadiusAttrTag, Double.toString(sas.getRadius()));
+			sasElement.setAttribute(XMLTags.SiteDiffusionAttrTag, Double.toString(sas.getDiffusionRate()));
+			sasElement.setAttribute(XMLTags.SiteColorAttrTag, sas.getColor().getName());
+			speciesContextSpecElement.addContent(sasElement);
+		}
+		for (Entry<StructuralSite, SiteAttributesSpec> entry : param.getStructuralSiteAttributesMap().entrySet()) {
+			SpeciesContext sc = param.getSpeciesContext();
+			SpeciesPattern sp = sc.getSpeciesPattern();
+			if (sp == null || sp.getMolecularTypePatterns().size() != 1) {
+				break;    // the species pattern must refer to exactly one molecule, links are intramollecular only
+				// throw new IllegalArgumentException("The species pattern must contain exactly one molecule.");
+			}
+			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);    // the one and only
+			MolecularType mt = mtp.getMolecularType();
+
+			StructuralSite ss = entry.getKey();
+			SiteAttributesSpec sas = entry.getValue();
+			Element sasElement = new Element(XMLTags.StructuralSiteAttributesSpecTag);
+			sasElement.setAttribute(XMLTags.SiteRefAttrTag, ss.getName());
 			sasElement.setAttribute(XMLTags.MoleculeRefAttrTag, mt.getName());
 			sasElement.setAttribute(XMLTags.SiteLocationRefAttrTag, sas.getLocation().getName());
 			sasElement.setAttribute(XMLTags.SiteCoordXAttrTag, Double.toString(sas.getCoordinate().getX()));
@@ -3066,8 +3090,10 @@ private Element getXML(ParticleMolecularComponent param) {
 		e.setAttribute(XMLTags.ParticleMolecularComponentCoordZAttrTag, Double.toString(lParam.getCoordinate().getZ()));
 		e.setAttribute(XMLTags.ParticleMolecularComponentColorTag, lParam.getColor().getName());
 	}
-	for (ParticleComponentStateDefinition pp : param.getComponentStateDefinitions()){
-		e.addContent(getXML(pp));
+	if(param.getComponentStateDefinitions() != null) {
+		for (ParticleComponentStateDefinition pp : param.getComponentStateDefinitions()) {
+			e.addContent(getXML(pp));
+		}
 	}
 	return e;
 }

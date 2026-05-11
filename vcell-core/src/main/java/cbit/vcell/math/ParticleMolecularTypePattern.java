@@ -36,7 +36,7 @@ public class ParticleMolecularTypePattern implements Serializable, Matchable {
 				return mcp;
 			}
 		}
-		throw new RuntimeException("All components are added in the constructor, so here it can never be null");
+		return null;	// may be a structural site
 	}
 	
 	public void removeMolecularComponentPattern(ParticleMolecularComponentPattern molecularComponentPattern) {

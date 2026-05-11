@@ -146,7 +146,7 @@ public SimulationContext getSimContext(QueryHashtable dbc, Connection con, Datab
 	Double characteristicSize = null;
 	BigDecimal size = rset.getBigDecimal(charSize.toString());
 	if (!rset.wasNull() && size!=null){
-		characteristicSize = new Double(size.doubleValue());
+		characteristicSize = size.doubleValue();
 	}
 
 	//

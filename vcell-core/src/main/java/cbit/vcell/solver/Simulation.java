@@ -20,6 +20,7 @@ import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.MathException;
 import cbit.vcell.math.VCML;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
+import org.vcell.model.rbm.LinkNode;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
@@ -957,14 +958,15 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 				double timeStep = getSolverTaskDescription().getTimeStep().getDefaultTimeStep();
 				if(simContext.getReactionContext() != null && simContext.getReactionContext().getSpeciesContextSpecs() != null) {
 					for (SpeciesContextSpec scs : simContext.getReactionContext().getSpeciesContextSpecs()) {
-						for (Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : scs.getSiteAttributesMap().entrySet()) {
-							MolecularComponentPattern mcp = entry.getKey();
+						Map<LinkNode, SiteAttributesSpec> merged = scs.getAllSiteAttributes();
+						for (Map.Entry<LinkNode, SiteAttributesSpec> entry : merged.entrySet()) {
+							LinkNode ln = entry.getKey();
 							SiteAttributesSpec sas = entry.getValue();
 							double siteDiameter = 2.0 * sas.getRadius();
 							if (siteDiameter >= xPart || siteDiameter >= yPart || siteDiameter >= zPart) {
 								// diameter of each site must be smaller than partition size on x, y, z
 								String msg = "Molecule '" + scs.getSpeciesContext().getName() + "' site diameter must be smaller than partition size.";
-								String tip = "Increase partition size or reduce size of site '" + mcp.getMolecularComponent().getName() + "'";
+								String tip = "Increase partition size or reduce size of site '" + ln.getName() + "'";
 								issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 								break;
 							}
@@ -976,7 +978,7 @@ public void vetoableChange(java.beans.PropertyChangeEvent evt) throws java.beans
 								// diffusion speed * dt must be smaller than the partition size on x, y, z so that the particle
 								//  won't be able to jump outside the current partition or its neighboring partitions
 								String msg = "Molecule '" + scs.getSpeciesContext().getName() + "' must not diffuse farther than any adjacent partition within the time interval.";
-								String tip = "Reduce diffusion rate of site '" + mcp.getMolecularComponent().getName() + "' or reduce the time interval";
+								String tip = "Reduce diffusion rate of site '" + ln.getName() + "' or reduce the time interval";
 								issueList.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 								break;
 							}

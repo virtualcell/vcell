@@ -11,10 +11,11 @@
 package cbit.vcell.modeldb;
 
 import cbit.vcell.mapping.MolecularInternalLinkSpec;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SiteAttributesSpec;
+import cbit.vcell.mapping.StructuralSite;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
+import org.vcell.model.rbm.LinkNode;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
@@ -63,11 +64,14 @@ public class SpeciesContextSpecTable extends cbit.sql.Table {
 	public final Field bForceContinuous	= new Field("bForceContinuous",	SQLDataType.integer,	"");
 	public final Field internalLinks	= new Field("internalLinks",	SQLDataType.varchar_4000,		"");
 	public final Field siteAttributesSpecs	= new Field("siteAttributesSpecs",SQLDataType.varchar_4000,	"");
+	public final Field structuralSiteAttributesSpecs	= new Field("structuralSiteAttributesSpecs",SQLDataType.varchar_4000,	"");
 
 	private final Field fields[] = {specContextRef,simContextRef,bEnableDif,bForceConst,bForceIndep,initCondExp,diffRateExp,
 											boundaryXmExp,boundaryXpExp,boundaryYmExp,boundaryYpExp,boundaryZmExp,boundaryZpExp,initCondCountExp,
-											velocityXExp, velocityYExp, velocityZExp, bWellMixed, bForceContinuous, internalLinks, siteAttributesSpecs};
-	
+											velocityXExp, velocityYExp, velocityZExp, bWellMixed, bForceContinuous,
+											internalLinks, siteAttributesSpecs, structuralSiteAttributesSpecs};
+	// ATTENTION: if adding fields, remember to also add the column to the table schema in the database
+	// ex: ALTER TABLE VC_SPECIESCONTEXTSPEC ADD (STRUCTURALSITEATTRIBUTESSPECS VARCHAR2(4000));
 	public static final SpeciesContextSpecTable table = new SpeciesContextSpecTable();
 /**
  * ModelTable constructor comment.
@@ -177,9 +181,15 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 		buffer.append("'" + getInternalLinksSQL(speciesContextSpec) + "'" + ",");
 	}
 	if(speciesContextSpec.getSiteAttributesMap() == null || speciesContextSpec.getSiteAttributesMap().size() == 0) {
+		buffer.append(" NULL " + ",");
+	} else {
+		buffer.append("'" + getSiteAttributesSQL(speciesContextSpec) + "'" + ",");
+	}
+	// ATTENTION: the last entry ends with a ")" instead of a "," because it needs to close the parenthesis opened at the beginning of this method
+	if(speciesContextSpec.getStructuralSiteAttributesMap() == null || speciesContextSpec.getStructuralSiteAttributesMap().size() == 0) {
 		buffer.append(" NULL " + ")");
 	} else {
-		buffer.append("'" + getSiteAttributesSQL(speciesContextSpec) + "'" + ")");
+		buffer.append("'" + getStructuralSiteAttributesSQL(speciesContextSpec) + "'" + ")");
 	}
 	return buffer.toString();
 }
@@ -188,7 +198,23 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 		StringBuilder sb = new StringBuilder();
 		for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : scs.getSiteAttributesMap().entrySet()) {
 			SiteAttributesSpec sas = entry.getValue();
-			sb.append(sas.getMolecularComponentPattern().getMolecularComponent().getName() + ",");
+			sb.append(sas.getLinkNode().getName() + ",");
+			sb.append(sas.getLocation().getName() + ",");
+			sb.append(sas.getRadius() + ",");
+			sb.append(sas.getDiffusionRate() +",");
+			sb.append(sas.getCoordinate().getX() + ",");
+			sb.append(sas.getCoordinate().getY() + ",");
+			sb.append(sas.getCoordinate().getZ() + ",");
+			sb.append(sas.getColor().getName());
+			sb.append(";");
+		}
+		return sb.toString();
+	}
+	static String getStructuralSiteAttributesSQL(SpeciesContextSpec scs) {
+		StringBuilder sb = new StringBuilder();
+		for(Map.Entry<StructuralSite, SiteAttributesSpec> entry : scs.getStructuralSiteAttributesMap().entrySet()) {
+			SiteAttributesSpec sas = entry.getValue();
+			sb.append(sas.getLinkNode().getName() + ",");
 			sb.append(sas.getLocation().getName() + ",");
 			sb.append(sas.getRadius() + ",");
 			sb.append(sas.getDiffusionRate() +",");
@@ -249,13 +275,54 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 		}
 		return saMap;	// may be empty but not null
 	}
+	static Map<StructuralSite, SiteAttributesSpec> readStructuralSiteAttributesSQL(SpeciesContextSpec scs, String structuralSiteAttributesMapString) {
+		Map<StructuralSite, SiteAttributesSpec> ssaMap = new LinkedHashMap<>();
+		if (structuralSiteAttributesMapString.isEmpty()) {
+			return ssaMap;
+		}
+		StringTokenizer sat = new StringTokenizer(structuralSiteAttributesMapString, ";");
+		if (sat.countTokens() == 0) {
+			return ssaMap;
+		}
+
+		while(sat.hasMoreTokens()) {
+			String saString = sat.nextToken();
+			StringTokenizer tokenizer = new StringTokenizer(saString, ",");
+			if (tokenizer.countTokens() != 8) {
+				return ssaMap;
+			}
+			while(tokenizer.hasMoreTokens()) {
+				String attribute = tokenizer.nextToken();
+				StructuralSite ss = new StructuralSite(attribute);
+				attribute = tokenizer.nextToken();
+				Structure structure = scs.getSimulationContext().getModel().getStructure(attribute);
+				attribute = tokenizer.nextToken();
+				double radius = Double.parseDouble(attribute);
+				attribute = tokenizer.nextToken();
+				double diffRate = Double.parseDouble(attribute);
+				attribute = tokenizer.nextToken();
+				double x = Double.parseDouble(attribute);
+				attribute = tokenizer.nextToken();
+				double y = Double.parseDouble(attribute);
+				attribute = tokenizer.nextToken();
+				double z = Double.parseDouble(attribute);
+				Coordinate coordinate = new Coordinate(x,y,z);
+				attribute = tokenizer.nextToken();
+				NamedColor color = Colors.getColorByName(attribute);
+				SiteAttributesSpec sas = new SiteAttributesSpec(scs, ss, radius, diffRate, structure, coordinate, color);
+				ssaMap.put(ss, sas);
+			}
+		}
+		return ssaMap;	// may be empty but not null
+	}
+
 	static String getInternalLinksSQL(SpeciesContextSpec scs) {
 		StringBuffer sb = new StringBuffer();
 		for( MolecularInternalLinkSpec mils : scs.internalLinkSet) {
 			SiteAttributesSpec sas1 = mils.getSite1();
 			SiteAttributesSpec sas2 = mils.getSite2();
-			sb.append(sas1.getMolecularComponentPattern().getMolecularComponent().getName() + ",");
-			sb.append(sas2.getMolecularComponentPattern().getMolecularComponent().getName() + ";");
+			sb.append(sas1.getLinkNode().getName() + ",");
+			sb.append(sas2.getLinkNode().getName() + ";");
 		}
 		return sb.toString();
 	}
@@ -268,6 +335,10 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 		StringTokenizer sat = new StringTokenizer(internalLinkSetString, ";");
 		if(sat.countTokens() == 0) {
 			return ilSet;
+		}
+		Map<String, StructuralSite> nameToStructuralSiteMap = new LinkedHashMap<>();
+		for (Map.Entry<StructuralSite, SiteAttributesSpec> entry : scs.getStructuralSiteAttributesMap().entrySet()) {
+			nameToStructuralSiteMap.put(entry.getKey().getName(), entry.getKey());
 		}
 
 		SpeciesContext sc = scs.getSpeciesContext();
@@ -286,11 +357,25 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 			}
 			while (tokenizer.hasMoreTokens()) {
 				String attribute = tokenizer.nextToken();
-				MolecularComponentPattern mcp1 = mtp.getMolecularComponentPattern(attribute);
+				LinkNode ln1;
+				if(nameToStructuralSiteMap.containsKey(attribute)) {
+					ln1 = nameToStructuralSiteMap.get(attribute);
+				} else {
+					MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(attribute);
+					ln1 = mcp;
+				}
 				attribute = tokenizer.nextToken();
-				MolecularComponentPattern mcp2 = mtp.getMolecularComponentPattern(attribute);
-
-				MolecularInternalLinkSpec ils = new MolecularInternalLinkSpec(scs, mcp1, mcp2);
+				LinkNode ln2;
+				if(nameToStructuralSiteMap.containsKey(attribute)) {
+					// if the attribute name matches a structural site, then treat it as a structural site and recover
+					// the correct instance from the map
+					// otherwise treat it as a molecular component pattern and recover its instance from the physiology
+					ln2 = nameToStructuralSiteMap.get(attribute);
+				} else {
+					MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(attribute);
+					ln2 = mcp;
+				}
+				MolecularInternalLinkSpec ils = new MolecularInternalLinkSpec(scs, ln1, ln2);
 				ilSet.add(ils);
 			}
 		}

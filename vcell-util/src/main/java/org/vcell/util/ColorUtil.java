@@ -193,4 +193,28 @@ public class ColorUtil {
 			new Color(231,203,148)   // muted beige
 	};
 
+	public static final Color[] LIGHT20 = {
+			new Color(231,203,148),   // muted beige
+			new Color(181,207,107),   // muted olive green
+			new Color(174,199,232),   // light blue
+			new Color(255,187,120),   // light orange
+			new Color(152,223,138),   // light green
+			new Color(255,152,150),   // light red
+			new Color(197,176,213),   // light purple
+			new Color(219,219,141),   // light olive
+			new Color(196,156,148),   // light brown
+			new Color(247,182,210),   // light pink
+			new Color(199,199,199),   // light gray
+			new Color(158,218,229),   // light teal
+			new Color(240,210,170),   // pale sand
+			new Color(210,225,180),   // pale moss
+			new Color(200,220,245),   // pale sky blue
+			new Color(255,205,160),   // pale apricot
+			new Color(185,235,185),   // pale mint
+			new Color(255,180,175),   // pale rose
+			new Color(215,195,230),   // pale lavender
+			new Color(230,230,170)    // pale straw
+	};
+
+
 }

@@ -15,13 +15,7 @@ import java.beans.PropertyVetoException;
 import java.util.*;
 
 import cbit.vcell.geometry.surface.GeometricRegion;
-import org.vcell.model.rbm.ComponentStateDefinition;
-import org.vcell.model.rbm.ComponentStatePattern;
-import org.vcell.model.rbm.MolecularComponent;
-import org.vcell.model.rbm.MolecularComponentPattern;
-import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.*;
 import org.vcell.util.Pair;
 import org.vcell.util.TokenMangler;
 
@@ -1149,8 +1143,9 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 		Model model = getSimulationContext().getModel();
 		List<RbmObservable> observableList = model.getRbmModelContainer().getObservableList();
 		List<MolecularType> molecularTypeList = model.getRbmModelContainer().getMolecularTypeList();
+		int siteIndex = 1;
 		for (MolecularType molecularType : molecularTypeList) {
-			Map<MolecularComponentPattern, LangevinParticleMolecularComponent> mcpToLpmc = new LinkedHashMap<> ();
+			Map<LinkNode, LangevinParticleMolecularComponent> mcpToLpmc = new LinkedHashMap<> ();
 			LangevinParticleMolecularType particleMolecularType = new LangevinParticleMolecularType(molecularType.getName());
 			SpeciesContextSpec scs = molecularTypeToSpeciesContextSpecMap.get(molecularType);	// scs may be null for Sink and Source
 			if(scs != null) {
@@ -1176,7 +1171,6 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					// need to clean up and update the scs -> ils, scs -> siteAttributesMap at the point where the new
 					// pairs of mcp / sas are being added to the siteAttributesMap
 					SiteAttributesSpec sas = siteAttributesMap.get(mcp);
-					// TODO: perhaps move this to constructor so that object will be complete from the start
 					particleMolecularComponent.setColor(sas.getColor());
 					particleMolecularComponent.setLocation(sas.getLocation().getName());
 					particleMolecularComponent.setCoordinate(sas.getCoordinate());
@@ -1185,6 +1179,25 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					mcpToLpmc.put(mcp, particleMolecularComponent);
 				}
 				particleMolecularType.addMolecularComponent(particleMolecularComponent);
+				siteIndex++;
+			}
+			if(scs != null) {
+				Map<StructuralSite, SiteAttributesSpec> structuralSiteAttributesMap = scs.getStructuralSiteAttributesMap();
+				for(Map.Entry<StructuralSite, SiteAttributesSpec> entry : structuralSiteAttributesMap.entrySet()) {
+					StructuralSite structuralSite = entry.getKey();
+					SiteAttributesSpec sas = entry.getValue();
+					String pmcName = structuralSite.getName();
+					String pmcId = particleMolecularType.getName() + "_" + structuralSite.getName();
+					LangevinParticleMolecularComponent particleMolecularComponent = new LangevinParticleMolecularComponent(pmcId, pmcName);
+					particleMolecularComponent.setColor(sas.getColor());
+					particleMolecularComponent.setLocation(sas.getLocation().getName());
+					particleMolecularComponent.setCoordinate(sas.getCoordinate());
+					particleMolecularComponent.setRadius(sas.getRadius());
+					particleMolecularComponent.setDiffusionRate(sas.getDiffusionRate());
+					mcpToLpmc.put(structuralSite, particleMolecularComponent);
+					particleMolecularType.addMolecularComponent(particleMolecularComponent);
+					siteIndex++;
+				}
 			}
 			if(!molecularType.isAnchorAll()) {
 				List<String> anchorList = new ArrayList<>();
@@ -1199,7 +1212,7 @@ protected LangevinMathMapping(SimulationContext simContext, MathMappingCallback 
 					throw new RuntimeException("LangevinMathMapping: the internal link set cannot be null");
 				}
 				for(MolecularInternalLinkSpec mils : internalLinkSet) {
-					Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
+					Pair<LinkNode, LinkNode> link = mils.getLink();
 					LangevinParticleMolecularComponent one = mcpToLpmc.get(link.one);
 					LangevinParticleMolecularComponent two = mcpToLpmc.get(link.two);
 					// error: Cannot invoke "Object.equals(Object)" because "this.one" is null

@@ -16,16 +16,10 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.*;
 
-import cbit.vcell.math.MathUtilities;
 import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.vcell.model.rbm.ComponentStateDefinition;
-import org.vcell.model.rbm.MolecularComponent;
-import org.vcell.model.rbm.MolecularComponentPattern;
-import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.model.rbm.*;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.Issue.IssueSource;
@@ -78,7 +72,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     public static final String PROPERTY_NAME_SITE_SELECTED_IN_SHAPE = "SiteSelectedInShape";
     public static final String PROPERTY_NAME_LINK_SELECTED_IN_SHAPE = "LinkSelectedInShape";
 
-    private static final int INITIAL_YZ_SITE_OFFSET = 4;
+    public static final int INITIAL_YZ_SITE_OFFSET = 4;
 
     public static final boolean TrackClusters = true;            // SpringSaLaD specific
     public static final boolean InitialLocationRandom = true;
@@ -457,6 +451,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     // SpringSaLaD specific entities
     public Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<>();
     private Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = new LinkedHashMap<>();
+    private Map<StructuralSite, SiteAttributesSpec> structuralSiteAttributesMap = new LinkedHashMap<>();
     // is2D flag, used by the solver for collision / overlapping calculations, exact meaning uncertain
     // membrane species may have it set to true, for compartment species is always false
     // for now we have it hardcoded to false and non-editable
@@ -691,6 +686,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         }
     }
 
+    // TODO: add sanity checks for StructuralSites
     public void initializeForSpringSaLaD(MolecularType molecularType) {
         // we need to make sure that the mcp in the siteAttributesMap:
         // Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = scs.getSiteAttributesMap();
@@ -835,6 +831,19 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                 } else {    // if this is a new site added to an existing molecule, the existing sites already have
                     ;       // attributes (like coordinates, diffusion rates, colors) and links.
                             // We cannot guess how the user will want to deal with the new site.
+                    // Dan 4/24/2026 On the other hand, why not do an educated guess. If the new site is added to an
+                    // existing molecule, then we can assume that the user wants it to be similar to the existing sites.
+                    // So we can initialize the new site's attributes based on the existing sites. For example, we can
+                    // set the new site's coordinates to be offset from the existing sites, and we can set the new
+                    // site's color to be the next in the color array. This way, the user will have a reasonable
+                    // starting point for the new site, and they can then adjust it as needed.
+                    Map<LinkNode, SiteAttributesSpec> merged = getAllSiteAttributes();
+                    Coordinate minc = SiteAttributesSpec.getMinCoordinate(merged);
+                    Coordinate maxc = SiteAttributesSpec.getMaxCoordinate(merged);
+                    Coordinate coordinate = new Coordinate(minc.getX(), minc.getY(), maxc.getZ() + INITIAL_YZ_SITE_OFFSET);
+                    sas.setCoordinate(coordinate);
+                    NamedColor nextColor = Colors.COLORARRAY[merged.size() % Colors.COLORARRAY.length];
+                    sas.setColor(nextColor);
                 }
                 siteAttributesMap.put(mcp, sas);
             }
@@ -878,10 +887,13 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             // step 1.1: build the set of "old" mcp and mils from the siteAttributesMap
             oldMcpSet = new LinkedHashSet<> ();     // Set<MolecularComponentPattern>
             for(MolecularInternalLinkSpec oldMils : getInternalLinkSet()) {
-                MolecularComponentPattern mcpOne = oldMils.getMolecularComponentPatternOne();
-                MolecularComponentPattern mcpTwo = oldMils.getMolecularComponentPatternTwo();
-                oldMcpSet.add(mcpOne);
-                oldMcpSet.add(mcpTwo);
+                LinkNode lnOne = oldMils.getLinkNodeOne();
+                LinkNode lnTwo = oldMils.getLinkNodeTwo();
+                if(lnOne instanceof MolecularComponentPattern) {
+                    oldMcpSet.add((MolecularComponentPattern) lnOne);
+                }                if(lnTwo instanceof MolecularComponentPattern) {
+                    oldMcpSet.add((MolecularComponentPattern) lnTwo);
+                }
             }
             // step 1.2: we build set of authoritative MolecularComponentPattern from the SpeciesPattern
             Set<MolecularComponentPattern> authoritativeMcpSet = new LinkedHashSet<>();
@@ -928,17 +940,24 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 
             // step 3: we iterate through the internal link set, we replace all mcs with the new mcs in oldToNewMcp
             // any mcp not found there was deleted, we must delete the link containing it
+            // TODO: keep checking this code carefuly after introducing StructuralSites, it's easy to mess up the logic
             Set<MolecularInternalLinkSpec> linksToRemove = new LinkedHashSet<> ();
             for(MolecularInternalLinkSpec oldMils : getInternalLinkSet()) {
-                Pair<MolecularComponentPattern, MolecularComponentPattern> link = oldMils.getLink();
-                MolecularComponentPattern mcpOne = oldMils.getMolecularComponentPatternOne();
-                MolecularComponentPattern mcpTwo = oldMils.getMolecularComponentPatternTwo();
-                if(!oldToNewMcp.containsKey(mcpOne) || !oldToNewMcp.containsKey(mcpTwo)) {
+                Pair<LinkNode, LinkNode> link = oldMils.getLink();
+                LinkNode lnOne = oldMils.getLinkNodeOne();
+                LinkNode lnTwo = oldMils.getLinkNodeTwo();
+                if(lnOne instanceof MolecularComponentPattern mcpOne && !oldToNewMcp.containsKey(mcpOne)) {
                     linksToRemove.add(oldMils);
-                } else {
-                    Pair<MolecularComponentPattern, MolecularComponentPattern> newLink = new Pair(oldToNewMcp.get(mcpOne), oldToNewMcp.get(mcpTwo));
-                    oldMils.setLink(newLink);
+                    continue;
                 }
+                if(lnTwo instanceof MolecularComponentPattern mcpTwo && !oldToNewMcp.containsKey(mcpTwo)) {
+                    linksToRemove.add(oldMils);
+                    continue;
+                }
+                // lnOne and lnTwo are StructuralSites or MolecularComponentPattern with a match in oldToNewMcp,
+                // then we update the link
+                Pair<LinkNode, LinkNode> newLink = new Pair(oldToNewMcp.get(lnOne), oldToNewMcp.get(lnTwo));
+                oldMils.setLink(newLink);
             }
             getInternalLinkSet().removeAll(linksToRemove);
 
@@ -951,14 +970,14 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                 authoritativeMcpSet2.add(mcp);
             }
             // step 4.2: we can't assume how many links we have, even 0 is possible if we deleted them manually
-            // hoever, any mcp instance present in a link must be valid (present in the authoritativeMcpSet)
+            // however, any mcp instance present in a link must be valid (present in the authoritativeMcpSet)
             for(MolecularInternalLinkSpec link : getInternalLinkSet()) {
-                MolecularComponentPattern mcpOne = link.getMolecularComponentPatternOne();
-                MolecularComponentPattern mcpTwo = link.getMolecularComponentPatternTwo();
-                if(!authoritativeMcpSet2.contains(mcpOne)) {
+                LinkNode lnOne = link.getLinkNodeOne();
+                LinkNode lnTwo = link.getLinkNodeTwo();
+                if(lnOne instanceof MolecularComponentPattern mcpOne && !authoritativeMcpSet2.contains(mcpOne)) {
                     throw new RuntimeException(ilSetExceptionPrefix + "has invalid MolecularComponentPattern instance");
                 }
-                if(!authoritativeMcpSet2.contains(mcpTwo)) {
+                if(lnTwo instanceof MolecularComponentPattern mcpTwo && !authoritativeMcpSet2.contains(mcpTwo)) {
                     throw new RuntimeException(ilSetExceptionPrefix + "has invalid MolecularComponentPattern instance");
                 }
             }
@@ -969,14 +988,12 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         return speciesContext.getUnitDefinition().multiplyBy(getLengthPerTimeUnit());
     }
 
-
     /**
      * The addPropertyChangeListener method was generated to support the propertyChange field.
      */
     public synchronized void addPropertyChangeListener(java.beans.PropertyChangeListener listener){
         getPropertyChange().addPropertyChangeListener(listener);
     }
-
 
     /**
      * The addVetoableChangeListener method was generated to support the vetoPropertyChange field.
@@ -1054,12 +1071,42 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             return false;
         }
         for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()) {
-            if (!containsIsomorph(entry, siteAttributesMap)) {
+            if (!containsIsomorph(entry, scs.siteAttributesMap)) {
+                return false;
+            }
+        }
+
+        if(structuralSiteAttributesMap.size() != scs.structuralSiteAttributesMap.size()) {  // springsalad SiteAttributesSpec map
+            return false;
+        }
+        for(Map.Entry<StructuralSite, SiteAttributesSpec> entry : structuralSiteAttributesMap.entrySet()) {
+            if (!containsIsomorph1(entry, scs.structuralSiteAttributesMap)) {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private static boolean containsIsomorph1(Map.Entry<StructuralSite, SiteAttributesSpec> ourEntry, Map<StructuralSite, SiteAttributesSpec> theirSsaMap) {
+        StructuralSite ourSs = ourEntry.getKey();
+        SiteAttributesSpec ourSas = ourEntry.getValue();
+        for(Map.Entry<StructuralSite, SiteAttributesSpec> theirEntry : theirSsaMap.entrySet()) {
+            StructuralSite theirSs = theirEntry.getKey();
+            SiteAttributesSpec theirSas = theirEntry.getValue();
+            boolean foundss = false;
+            boolean foundSas = false;
+            if (ourSs.compareEqual(theirSs)) {
+                foundss = true;    // note that for the ss we only compare the name
+            }
+            if (ourSas.compareShallow(theirSas)) {
+                foundSas = true;
+            }
+            if(foundss && foundSas) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean containsIsomorph(MolecularInternalLinkSpec ourMils, Set<MolecularInternalLinkSpec> theirMilsSet) {
@@ -1070,15 +1117,24 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         }
         return false;
     }
-    private static boolean containsIsomorph(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> ourEntry, Map<MolecularComponentPattern, SiteAttributesSpec> theirSasMap) {
+    private static boolean containsIsomorph(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> ourEntry, Map<MolecularComponentPattern, SiteAttributesSpec> theirSaMap) {
         MolecularComponentPattern ourMcp = ourEntry.getKey();
         SiteAttributesSpec ourSas = ourEntry.getValue();
-        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> theirEntry : theirSasMap.entrySet()) {
+        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> theirEntry : theirSaMap.entrySet()) {
             MolecularComponentPattern theirMcp = theirEntry.getKey();
             SiteAttributesSpec theirSas = theirEntry.getValue();
-            // TODO: infinite loop if we compare the sas here, because that will compare the scs, which will again compare the sas, aso
+            boolean foundMcp = false;
+            boolean foundSas = false;
             if(ourMcp.compareEqual(theirMcp)/* && ourSas.compareEqual(theirSas)*/) {
                 // note that for the mcp we only compare the bond type, not the bond (which is mtp attribute)
+                foundMcp = true;
+            }
+            // infinite loop if we compare the sas here, because that will compare the scs, which will again compare the sas, aso
+            // use compareShallow instead
+            if(ourSas.compareShallow(theirSas)) {
+                foundSas = true;
+            }
+            if(foundMcp && foundSas) {
                 return true;
             }
         }
@@ -1290,7 +1346,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                     return;
                 }
                 for(MolecularInternalLinkSpec mils : getInternalLinkSet()){
-                    if(mils.getMolecularComponentPatternOne() == mils.getMolecularComponentPatternTwo()){
+                    if(mils.getLinkNodeOne() == mils.getLinkNodeTwo()){
                         String msg = "Both sites of the Link are identical. A site cannot be linked to itself.";
                         String tip = msg;
                         issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
@@ -1298,14 +1354,20 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                     }
                 }
                 if(mcpList.size() > 1 && getInternalLinkSet().size() > 0) {
-                    GraphContinuity.Graph graph = new GraphContinuity.Graph(mcpList.size());
-                    Map<MolecularComponentPattern, Integer> mcpMap = new LinkedHashMap<> ();
-                    for(int i=0; i<mcpList.size(); i++) {
-                        MolecularComponentPattern mcp = mcpList.get(i);
-                        mcpMap.put(mcp, i);
+                    Map<LinkNode, Integer> mcpMap = new LinkedHashMap<> ();
+                    int count = 0;  // total number of LinkNodes (MolecularComponentPattern and StructuralSite) in the molecule, used to build the graph
+                    for(MolecularComponentPattern mcp : mcpList) {
+                        mcpMap.put(mcp, count);
+                        count++;
                     }
+                    for (Map.Entry<StructuralSite, SiteAttributesSpec> e : getStructuralSiteAttributesMap().entrySet()) {
+                        StructuralSite ss = e.getKey();
+                        mcpMap.put(ss, count);
+                        count++;
+                    }
+                    GraphContinuity.Graph graph = new GraphContinuity.Graph(count);
                     for(MolecularInternalLinkSpec mils : getInternalLinkSet()) {
-                        Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
+                        Pair<LinkNode, LinkNode> link = mils.getLink();
                         int one = mcpMap.get(link.one);
                         int two = mcpMap.get(link.two);
                         graph.addEdge(one, two);
@@ -1323,8 +1385,8 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                             continue;
                         }
                         if(candidate.compareEqual(other)){
-                            String one = candidate.getMolecularComponentPatternOne().getMolecularComponent().getName();
-                            String two = candidate.getMolecularComponentPatternTwo().getMolecularComponent().getName();
+                            String one = candidate.getLinkNodeOne().getName();
+                            String two = candidate.getLinkNodeTwo().getName();
                             String msg = "Duplicate link: " + one + " :: " + two;
                             String tip = msg;
                             issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
@@ -1332,7 +1394,21 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                         }
                     }
                 }
-
+                // alternate way to check for duplicate links, we use the string representation of the links
+                Set<String> linkStringSet = new LinkedHashSet<> ();
+                for(MolecularInternalLinkSpec mils : getInternalLinkSet()) {
+                    String one = mils.getLinkNodeOne().getName();
+                    String two = mils.getLinkNodeTwo().getName();
+                    boolean ret0 = linkStringSet.add(one + "::" + two);     // returns false if already exists
+                    boolean ret1 = linkStringSet.add(two + "::" + one);
+                    if(ret0 == false || ret1 == false) {
+                        String msg = "Duplicate link: " + one + " :: " + two + ". Alternate method failed to detect the duplicate.";
+                        String tip = msg;
+                        // we escalate to error to also emphasize that previous method failed to detect the duplicate
+                        issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+                        return;
+                    }
+                }
                 // if the species context is on membrane it must have a site named Anchor on the membrane, the other sites must NOT be on membrane
                 Structure struct = sc.getStructure();
                 MolecularComponentPattern mcpAnchor = null;
@@ -1485,7 +1561,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                 if(!sc.getName().equals(mtp.getMolecularType().getName())){
                     String msg = "The Species and the Molecular Type must share the same name.";
                     String tip = msg;
-                    issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                    issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
                     return;
                 }
 
@@ -1815,54 +1891,6 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     public SpeciesContext getSpeciesContext(){
         return speciesContext;
     }
-
-
-    /**
-     * This method was created by a SmartGuide.
-     *
-     * @return java.lang.String
-     */
-    public String getVCML(){
-        StringBuffer buffer = new StringBuffer();
-        buffer.append("\t" + VCMODL.SpeciesContextSpec + " " + getSpeciesContext().getName() + " {\n");
-        buffer.append("\t\t" + VCMODL.ForceConstant + " " + isConstant() + "\n");
-        buffer.append("\t\t" + VCMODL.EnableDiffusion + " " + isDiffusing() + "\n");
-        Expression init = getInitialConditionParameter().getExpression();
-        if(init != null){
-            buffer.append("\t\t" + VCMODL.InitialConcentration + " " + init.toString() + ";\n");
-        }
-        Expression diffRate = getDiffusionParameter().getExpression();
-        if(diffRate != null){
-            buffer.append("\t\t" + VCMODL.DiffusionRate + " " + diffRate.toString() + ";\n");
-        }
-        //
-        // write BoundaryConditions
-        //
-        for(int i = BoundaryLocation.FIRST; i <= BoundaryLocation.LAST; i++){
-            BoundaryLocation bl = BoundaryLocation.fromDirection(i);
-            Expression boundExp = getParameterFromRole(getRole(bl)).getExpression();
-            if(boundExp != null){
-                buffer.append("\t\t" + VCMODL.BoundaryCondition + " " + bl.toString() + " " + boundExp.toString() + "\n");
-            }
-        }
-        // write velocity x,y,z expressions
-        Expression vel_x = getVelocityXParameter().getExpression();
-        if(vel_x != null){
-            buffer.append("\t\t" + VCMODL.VelocityX + " " + vel_x.toString() + ";\n");
-        }
-        Expression vel_y = getVelocityYParameter().getExpression();
-        if(vel_y != null){
-            buffer.append("\t\t" + VCMODL.VelocityY + " " + vel_y.toString() + ";\n");
-        }
-        Expression vel_z = getVelocityZParameter().getExpression();
-        if(vel_z != null){
-            buffer.append("\t\t" + VCMODL.VelocityZ + " " + vel_z.toString() + ";\n");
-        }
-
-        buffer.append("\t}\n");
-        return buffer.toString();
-    }
-
 
     /**
      * Accessor for the vetoPropertyChange field.
@@ -2453,21 +2481,36 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         return speciesContextSpecParameterList;
     }
 
+    // springsalad-related collections getter / setters
     public Set<MolecularInternalLinkSpec> getInternalLinkSet(){
         return internalLinkSet;
     }
-
     public void setInternalLinkSet(Set<MolecularInternalLinkSpec> internalLinkSet){
         this.internalLinkSet = internalLinkSet;
     }
-
-
     public Map<MolecularComponentPattern, SiteAttributesSpec> getSiteAttributesMap(){
         return siteAttributesMap;
     }
-
     public void setSiteAttributesMap(Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap){
         this.siteAttributesMap = siteAttributesMap;
+    }
+    public Map<StructuralSite, SiteAttributesSpec> getStructuralSiteAttributesMap(){
+        return structuralSiteAttributesMap;
+    }
+    public void setStructuralSiteAttributesMap(Map<StructuralSite, SiteAttributesSpec> structuralSiteAttributesMap){
+        this.structuralSiteAttributesMap = structuralSiteAttributesMap;
+    }
+    // -----------------------------------------------------------------------------
+    // utility for merging siteAttributesMap and structuralSiteAttributesMap
+    public Map<LinkNode, SiteAttributesSpec> getAllSiteAttributes() {
+        Map<LinkNode, SiteAttributesSpec> merged = new LinkedHashMap<>();
+        for (var e : siteAttributesMap.entrySet()) {
+            merged.put(e.getKey(), e.getValue());
+        }
+        for (var e : structuralSiteAttributesMap.entrySet()) {
+            merged.put(e.getKey(), e.getValue());
+        }
+        return merged;
     }
 
     public SpatialQuantity[] getVelocityQuantities(QuantityComponent component){
@@ -2533,21 +2576,24 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             throw new RuntimeException("Initial concentration must be a number");
         }
 
+        int siteTypes = componentList.size() + structuralSiteAttributesMap.size();
+        int totalSites = siteAttributesMap.size() + structuralSiteAttributesMap.size();
         sb.append("MOLECULE: \"" + getSpeciesContext().getName() + "\" " + getSpeciesContext().getStructure().getName() +
                 " Number " + scount +
-                " Site_Types " + componentList.size() + " Total" + "_Sites " + siteAttributesMap.size() +
+                " Site_Types " + siteTypes + " Total" + "_Sites " + totalSites +
                 " Total_Links " + internalLinkSet.size() + " is2D " + (dimension == 2 ? true : false));    // TODO: molecule is flat, unrelated to geometry
         sb.append("\n");
         sb.append("{");
         sb.append("\n");
 
-        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()){
+        Map<LinkNode, SiteAttributesSpec> map = getAllSiteAttributes();
+        for(Map.Entry<LinkNode, SiteAttributesSpec> entry : map.entrySet()){
             SiteAttributesSpec sas = entry.getValue();
             sb.append("     ");
             sas.writeType(sb);        // writeMolecularComponent
         }
         sb.append("\n");
-        for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMap.entrySet()){
+        for(Map.Entry<LinkNode, SiteAttributesSpec> entry : map.entrySet()){
             SiteAttributesSpec sas = entry.getValue();
             sb.append("     ");
             sas.writeSite(sb);
@@ -2576,7 +2622,6 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         sb.append("}");
         sb.append("\n");
         sb.append("\n");
-        return;
     }
 
     public String getFilename(){    // SpringSaLaD specific, external file with molecule information

@@ -19,7 +19,7 @@ import cbit.vcell.model.Structure;
 
 @SuppressWarnings("serial")
 public class LangevinParticleMolecularComponent extends ParticleMolecularComponent {
-	
+
 	private double fieldRadius = 1.0;
 	private double fieldDiffusionRate = 1.0;
 	private String fieldLocation = null;		// feature or membrane name, identical to subdomain name
@@ -185,5 +185,4 @@ public class LangevinParticleMolecularComponent extends ParticleMolecularCompone
 	public void setColor(NamedColor fieldColor) {
 		this.fieldColor = fieldColor;
 	}
-
 }

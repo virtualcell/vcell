@@ -20,7 +20,7 @@ import org.vcell.util.Matchable;
 
 
 @SuppressWarnings("serial")
-public class MolecularComponentPattern extends RbmElementAbstract implements Matchable, IssueSource, Displayable
+public class MolecularComponentPattern extends RbmElementAbstract implements LinkNode, Matchable, IssueSource, Displayable
 {
 	public static final String PROPERTY_NAME_COMPONENT_STATE = "componentStatePattern";
 	public static final String PROPERTY_NAME_BOND_TYPE = "bondType";
@@ -199,6 +199,15 @@ public class MolecularComponentPattern extends RbmElementAbstract implements Mat
 			return false;
 		}
 		return true;
+	}
+
+	@Override
+	public String getName() {	// implementation of LinkNode interface, we return the name of the molecular component
+		if(getMolecularComponent() != null) {
+			return getMolecularComponent().getName();
+		} else {
+			return null;
+		}
 	}
 
 	@Override

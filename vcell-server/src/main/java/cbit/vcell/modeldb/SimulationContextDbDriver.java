@@ -263,10 +263,13 @@ public class SimulationContextDbDriver extends DbDriver {
                 if (rset.wasNull()){
                     internalLinkSetString = null;
                 }
-
                 String siteAttributesMapString = rset.getString((speciesContextSpecTable.siteAttributesSpecs.toString()));
                 if (rset.wasNull()){
                     siteAttributesMapString = null;
+                }
+                String structuralSiteAttributesMapString = rset.getString((speciesContextSpecTable.structuralSiteAttributesSpecs.toString()));
+                if (rset.wasNull()){
+                    structuralSiteAttributesMapString = null;
                 }
 
                 //
@@ -346,13 +349,20 @@ public class SimulationContextDbDriver extends DbDriver {
                                 boolean bForceContinuous = (value == 1) ? true : false;
                                 scs.setForceContinuous(bForceContinuous);
                             }
-                            if(internalLinkSetString != null) {
-                                Set<MolecularInternalLinkSpec> ilSet = SpeciesContextSpecTable.readInternalLinksSQL(scs, internalLinkSetString);
-                                scs.setInternalLinkSet(ilSet);
-                            }
                             if(siteAttributesMapString != null) {
                                 Map<MolecularComponentPattern, SiteAttributesSpec> saMap = SpeciesContextSpecTable.readSiteAttributesSQL(scs, siteAttributesMapString);
                                 scs.setSiteAttributesMap(saMap);
+                            }
+                            if(structuralSiteAttributesMapString != null) {
+                                Map<StructuralSite, SiteAttributesSpec> ssaMap = SpeciesContextSpecTable.readStructuralSiteAttributesSQL(scs, structuralSiteAttributesMapString);
+                                scs.setStructuralSiteAttributesMap(ssaMap);
+                            }
+                            // WARNING: the order is critical here, the structural sites must be created first
+                            // because the internal link spec needs the structural sites instances to be already
+                            // created and set in the SpeciesContextSpec
+                            if(internalLinkSetString != null) {
+                                Set<MolecularInternalLinkSpec> ilSet = SpeciesContextSpecTable.readInternalLinksSQL(scs, internalLinkSetString);
+                                scs.setInternalLinkSet(ilSet);
                             }
                         } catch(Exception e){
                             throw new DataAccessException("Error setting SpeciesContextSpec info for SimulationContext:" + simContext.getVersion().getName() + " id=" + simContextKey);

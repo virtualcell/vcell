@@ -22,12 +22,8 @@ import javax.swing.*;
 import javax.swing.border.LineBorder;
 import javax.swing.table.TableCellRenderer;
 
-import org.vcell.model.rbm.ComponentStatePattern;
-import org.vcell.model.rbm.MolecularComponent;
-import org.vcell.model.rbm.MolecularComponentPattern;
-import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.SpeciesPattern;
+import cbit.vcell.mapping.*;
+import org.vcell.model.rbm.*;
 import org.vcell.util.Coordinate;
 import org.vcell.util.gui.ColorIcon;
 import org.vcell.util.gui.DialogUtils;
@@ -35,11 +31,6 @@ import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 
 import cbit.vcell.client.desktop.biomodel.VCellSortTableModel;
-import cbit.vcell.mapping.GeometryContext;
-import cbit.vcell.mapping.ReactionContext;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SiteAttributesSpec;
-import cbit.vcell.mapping.SpeciesContextSpec;
 import cbit.vcell.model.Parameter;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
@@ -53,7 +44,7 @@ import org.vcell.util.springsalad.NamedColor;
  * @author: 
  */
 @SuppressWarnings("serial")
-public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularComponentPattern> implements java.beans.PropertyChangeListener {
+public class MolecularTypeSpecsTableModel extends VCellSortTableModel<LinkNode> implements java.beans.PropertyChangeListener {
 
 	// TODO: the is2D flag here (a checkbox, var is SpeciesContextSpec) - membrane species may have it set to true, for compartment species is always false
 
@@ -89,7 +80,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		ColumnType columnType = columns.get(column);
 		switch (columnType) {
 		case COLUMN_SITE:
-			return MolecularComponentPattern.class;
+			return LinkNode.class;
 //		case COLUMN_MOLECULE:
 //				return MolecularType.class;
 		case COLUMN_STRUCTURE:
@@ -123,16 +114,21 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			if(getSpeciesContextSpec() == null) {
 				return null;
 			}
-			Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = getSpeciesContextSpec().getSiteAttributesMap();
-			MolecularComponentPattern mcp = getValueAt(row);
-			SiteAttributesSpec sas = siteAttributesMap.get(mcp);
+			LinkNode ln = getValueAt(row);
+			SpeciesContextSpec scs = getSpeciesContextSpec();
+			SiteAttributesSpec sas = null;
+			if(ln instanceof MolecularComponentPattern) {
+				sas = scs.getSiteAttributesMap().get(ln);
+			} else if(ln instanceof StructuralSite) {
+				sas = scs.getStructuralSiteAttributesMap().get(ln);
+			}
 			SpeciesContext sc = fieldSpeciesContextSpec.getSpeciesContext();
 			SpeciesPattern sp = sc.getSpeciesPattern();
 			MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
 			ColumnType columnType = columns.get(col);
 			switch (columnType) {
 			case COLUMN_SITE:
-				return mcp.getMolecularComponent().getName();
+				return ln.getName();
 //			case COLUMN_MOLECULE:
 //				return mtp.getMolecularType().getName();
 			case COLUMN_STRUCTURE:
@@ -190,22 +186,27 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 	}
 	
 	public void setValueAt(Object aValue, int row, int col) {
-		MolecularComponentPattern mcp = getValueAt(row);
+		LinkNode ln = getValueAt(row);
 		ColumnType columnType = columns.get(col);
 		SpeciesContextSpec scs = getSpeciesContextSpec();
 		if(scs == null) {
 			return;
 		}
-		SiteAttributesSpec sas = scs.getSiteAttributesMap().get(mcp);
+		SiteAttributesSpec sas = null;
+		if(ln instanceof MolecularComponentPattern) {
+			sas = scs.getSiteAttributesMap().get(ln);
+		} else if(ln instanceof StructuralSite) {
+			sas = scs.getStructuralSiteAttributesMap().get(ln);
+		}
 		switch (columnType) {
 		case COLUMN_SITE:
 //		case COLUMN_MOLECULE:
 //		case COLUMN_STATE:
-//			return;
+			return;
 		case COLUMN_STRUCTURE:
 			if(aValue instanceof Structure structure) {
 				if(sas == null) {
-					sas = new SiteAttributesSpec(scs, mcp, structure);
+					sas = new SiteAttributesSpec(scs, ln, structure);
 				} else {
 					sas.setLocation(structure);
 				}
@@ -215,7 +216,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		case COLUMN_X:
 			if (aValue instanceof String newExpressionString) {
 				if(sas == null) {
-					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
+					sas = new SiteAttributesSpec(scs, ln, scs.getSpeciesContext().getStructure());
 				}
 				double res = 0.0;
 				try {
@@ -236,7 +237,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			if (aValue instanceof String newExpressionString) {
 				if(sas == null) {
 					// TODO: is this necessary?
-					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
+					sas = new SiteAttributesSpec(scs, ln, scs.getSpeciesContext().getStructure());
 				}
 				double res = 0.0;
 				try {
@@ -256,7 +257,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		case COLUMN_Z:
 			if (aValue instanceof String newExpressionString) {
 				if(sas == null) {
-					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
+					sas = new SiteAttributesSpec(scs, ln, scs.getSpeciesContext().getStructure());
 				}
 				double res = 0.0;
 				try {
@@ -299,7 +300,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 					return;
 				}
 				if(sas == null) {
-					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
+					sas = new SiteAttributesSpec(scs, ln, scs.getSpeciesContext().getStructure());
 				}
 				sas.setRadius(res);
 				scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);
@@ -319,7 +320,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 					return;
 				}
 				if(sas == null) {
-					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
+					sas = new SiteAttributesSpec(scs, ln, scs.getSpeciesContext().getStructure());
 				}
 				sas.setDiffusionRate(res);
 				scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);
@@ -328,7 +329,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		case COLUMN_COLOR:
 			if (aValue instanceof NamedColor namedColor) {
 				if(sas == null) {
-					sas = new SiteAttributesSpec(scs, mcp, scs.getSpeciesContext().getStructure());
+					sas = new SiteAttributesSpec(scs, ln, scs.getSpeciesContext().getStructure());
 				}
 				sas.setColor(namedColor);
 				scs.firePropertyChange(SpeciesContextSpec.PROPERTY_NAME_SITE_ATTRIBUTE, null, sas);
@@ -353,7 +354,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		case COLUMN_SITE:
 //		case COLUMN_MOLECULE:
 //		case COLUMN_STATE:
-//			return false;
+			return false;
 		case COLUMN_STRUCTURE:
 		case COLUMN_X:
 		case COLUMN_Y:
@@ -368,14 +369,14 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 	}
 	
 	@Override
-	public Comparator<MolecularComponentPattern> getComparator(final int col, final boolean ascending) {
-		return new Comparator<MolecularComponentPattern>() {	
+	public Comparator<LinkNode> getComparator(final int col, final boolean ascending) {
+		return new Comparator<LinkNode>() {
 			/**
 			 * Compares its two arguments for order.  Returns a negative integer,
 			 * zero, or a positive integer as the first argument is less than, equal
 			 * to, or greater than the second.<p>
 			 */
-			public int compare(MolecularComponentPattern mcp1, MolecularComponentPattern mcp2){			
+			public int compare(LinkNode mcp1, LinkNode mcp2){
 				
 				ColumnType columnType = columns.get(col);
 				switch (columnType) {
@@ -513,9 +514,9 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 //		}
 //	}
 
-	private void refreshData() {
-		List<MolecularComponentPattern> molecularComponentPatternList = computeData();
-		setData(molecularComponentPatternList);
+	public void refreshData() {
+		List<LinkNode> linkNodeList = computeData();
+		setData(linkNodeList);
 		GuiUtils.flexResizeTableColumns(ownerTable);
 		
 		updateLocationComboBox();
@@ -576,8 +577,8 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 		ownerTable.getColumnModel().getColumn(ColumnType.COLUMN_STRUCTURE.ordinal()).setCellEditor(new DefaultCellEditor(locationComboBoxCellEditor));
 	}
 	
-	protected List<MolecularComponentPattern> computeData() {
-		ArrayList<MolecularComponentPattern> allParameterList = new ArrayList<MolecularComponentPattern>();
+	protected List<LinkNode> computeData() {
+		ArrayList<LinkNode> allParameterList = new ArrayList<LinkNode>();
 		if(fieldSpeciesContextSpec != null && fieldSpeciesContextSpec.getSpeciesContext() != null) {
 			SpeciesPattern sp = fieldSpeciesContextSpec.getSpeciesContext().getSpeciesPattern();
 			if(sp == null) {
@@ -589,6 +590,11 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<MolecularC
 			for(MolecularComponent mc : componentList) {
 				MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(mc);
 				allParameterList.add(mcp);
+			}
+			for (Map.Entry<StructuralSite, SiteAttributesSpec> entry : getSpeciesContextSpec().getStructuralSiteAttributesMap().entrySet()) {
+				StructuralSite key = entry.getKey();
+				SiteAttributesSpec value = entry.getValue();
+				allParameterList.add(key);
 			}
 		} else {
 			return null;

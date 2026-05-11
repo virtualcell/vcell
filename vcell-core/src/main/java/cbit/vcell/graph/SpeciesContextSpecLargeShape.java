@@ -3,6 +3,7 @@ package cbit.vcell.graph;
 import cbit.vcell.mapping.MolecularInternalLinkSpec;
 import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.SpeciesContextSpec;
+import cbit.vcell.mapping.StructuralSite;
 import cbit.vcell.model.SpeciesContext;
 import cbit.vcell.model.Structure;
 import org.vcell.model.rbm.*;
@@ -33,8 +34,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     }
 
     private static final double NmToPixelRatio = 18;
-    private static final double DEFAULT_UPPER_CORNER = 5.3;     // default screen coordinates where we want to display the first site
-    private static final double DEFAULT_LEFT_CORNER = 13;       // in nm
+    private static final double DEFAULT_UPPER_CORNER = 3;     // default screen coordinates where we want to display the first site
+    private static final double DEFAULT_LEFT_CORNER = 8;       // in nm
 
     // x, y positions where we want to begin drawing the shape (nm from top and left of painting area)
     private double x_offset = DEFAULT_LEFT_CORNER;
@@ -54,7 +55,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     private Structure structure = null;
 
     private boolean hasAnchor = false;
-    private MolecularComponentPattern mcpAnchor = null;
+    private LinkNode mcpAnchor = null;
     private double membraneX = 0;
     private double membraneY = 0;
     private double membraneRadius = 0;
@@ -64,9 +65,9 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
 
     // we use these to compute some offset from top and left, so that the molecule will look nicely centered on screen
     private double minX = 0;            // coordinate of the leftmost site
-    private MolecularComponentPattern leftmostSite = null;
+    private LinkNode leftmostSite = null;
     private double minY = 0;            // coordinate of the topmost site
-    private MolecularComponentPattern topmostSite = null;   // if more sites qualify we just keep the first we find
+    private LinkNode topmostSite = null;   // if more sites qualify we just keep the first we find
     private double maxX = 0;            // coordinate of the rightmost site
     private double maxY = 0;            // coordinate of the bottommost site
 
@@ -76,12 +77,17 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
     Map<SiteAttributesSpec, Ellipse2D> sasToEllipseMap = new LinkedHashMap<>();
     Map<MolecularInternalLinkSpec, CustomLine2D> milsToLineMap = new LinkedHashMap<>();
 
-    private MolecularComponentPattern mcpSelected = null;   // any or both of these may be selected in their tables, they are highlighted on the shape
+    private LinkNode lnSelected = null;   // any or both of these may be selected in their tables, they are highlighted on the shape
     private MolecularInternalLinkSpec milsSelected = null;
     private Object lastSelectedObject = null;    // this is the last selected object, we show it on top of everything else
 
+    boolean mouseInsidePanel = false;   // we track whether the mouse is inside the panel, to decide whether to show the coordinates (we hide them if the mouse is outside the panel)
+    private Integer mousePixelX = null; // we also track the mouse in pixel coordinates, to decide whether to show the coordinates (we hide them if the mouse is outside the panel)
+    private Integer mousePixelY = null;
+    private Rectangle visibleViewport = null;   // we track the visible viewport of the scroll pane, to decide where to show the coordinates
+
     public SpeciesContextSpecLargeShape(SpeciesContextSpec scs, LargeShapeCanvas shapePanel, Displayable owner,
-                                        MolecularComponentPattern mcpSelected, MolecularInternalLinkSpec milsSelected,
+                                        LinkNode lnSelected, MolecularInternalLinkSpec milsSelected,
                                         Object lastSelectedObject, IssueListProvider issueListProvider) {
         super(issueListProvider);
 
@@ -89,7 +95,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         this.scs = scs;
         this.shapePanel = shapePanel;
 
-        this.mcpSelected = mcpSelected;
+        this.lnSelected = lnSelected;
         this.milsSelected = milsSelected;
         this.lastSelectedObject = lastSelectedObject;
 
@@ -109,26 +115,27 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             return;
         }
 
-        Map<MolecularComponentPattern, SiteAttributesSpec> sasMap = scs.getSiteAttributesMap();
+        Map<LinkNode, SiteAttributesSpec> merged = scs.getAllSiteAttributes();
         Set<MolecularInternalLinkSpec> ilSet = scs.getInternalLinkSet();
         MolecularType mt = mtp.getMolecularType();
         int counter = 0;    // site counter
-        for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
-            MolecularComponent mc = mcp.getMolecularComponent();
-            SiteAttributesSpec sas = sasMap.get(mcp);
+
+        for(Map.Entry<LinkNode, SiteAttributesSpec> e : merged.entrySet()) {
+            LinkNode ln = e.getKey();
+            SiteAttributesSpec sas = e.getValue();
             Structure structure = sas.getLocation();
             if(structure.getName().equals(Structure.SpringStructureEnum.Extracellular.columnName)) {
                 hasExtracellularSite = true;
             } else if(structure.getName().equals(Structure.SpringStructureEnum.Intracellular.columnName)) {
                 hasIntracellularSite = true;
             }
-            if(mc.getName().equals(SpeciesContextSpec.AnchorSiteString)) {
+            if(ln.getName().equals(SpeciesContextSpec.AnchorSiteString)) {
                 hasAnchor = true;
-                mcpAnchor = mcp;
+                mcpAnchor = ln;
                 hasMembraneSite = true;
-                membraneX = sasMap.get(mcp).getZ();
-                membraneY = sasMap.get(mcp).getY();
-                membraneRadius = sasMap.get(mcp).getRadius();
+                membraneX = merged.get(ln).getZ();
+                membraneY = merged.get(ln).getY();
+                membraneRadius = merged.get(ln).getRadius();
             }
             Coordinate coordinate = sas.getCoordinate();
             double x = coordinate.getZ();
@@ -136,18 +143,18 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             if(counter == 0) {
                 minX = x;
                 minY = y;
-                leftmostSite = mcp;
-                topmostSite = mcp;
+                leftmostSite = ln;
+                topmostSite = ln;
                 maxX = x;
                 maxY = y;
             } else {
                 if(x < minX) {
                     minX = x;
-                    leftmostSite = mcp;
+                    leftmostSite = ln;
                 }
                 if(y < minY) {
                     minY = y;
-                    topmostSite = mcp;
+                    topmostSite = ln;
                 }
                 if(x > maxX) {
                     maxX = x;
@@ -160,20 +167,17 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         }
         // now compute the offsets, we want the sites nicely centered on screen
         // UPPER_CORNER, LEFT_CORNER
-        x_offset = DEFAULT_LEFT_CORNER - minX;
-        y_offset = DEFAULT_UPPER_CORNER - minY;
+//        x_offset = DEFAULT_LEFT_CORNER - minX;
+//        y_offset = DEFAULT_UPPER_CORNER - minY;
     }
 
     private boolean isPlanarYZ() {    // we only show entities that are 2D in the YZ plane
-        Map<MolecularComponentPattern, SiteAttributesSpec> sasMap = scs.getSiteAttributesMap();
-        // here we could either iterate through the sasMap, or through the components of the mtp
-        // we use the second method because it provides a sanity check between the components in the sasMap (application level)
-        // and the physiology (which is authoritative)
+        Map<LinkNode, SiteAttributesSpec> merged = scs.getAllSiteAttributes();
         double oldX = 0;    // dummy value to indulge the compiler
-        for(int i=0; i< mtp.getComponentPatternList().size(); i++) {
-            MolecularComponentPattern mcp = mtp.getComponentPatternList().get(i);
-            SiteAttributesSpec sas = sasMap.get(mcp);
-            Structure structure = sas.getLocation();
+        int i=0;
+        for(Map.Entry<LinkNode, SiteAttributesSpec> e : merged.entrySet()) {
+            LinkNode ln = e.getKey();
+            SiteAttributesSpec sas = e.getValue();
             Coordinate coordinate = sas.getCoordinate();
             // to be planar in YZ, the X coordinates of all sites must be equal
             double x = coordinate.getX();   // here x means x
@@ -183,6 +187,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             if(oldX != x) {
                 return false;
             }
+            i++;
         }
         return true;
     }
@@ -224,7 +229,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         g.setColor(Color.black);
         double VerticalTextOffset = 1.0;    // vertical means y coord
         if(!hasMembraneSite) {
-            double x = minX+x_offset;
+//            double x = minX+x_offset;
+            double x = x_offset;
             double y = VerticalTextOffset;
             g2.drawString(name, (int)(nmToPixelRatio * x), (int)(NmToPixelRatio * y));
         } else {
@@ -257,18 +263,7 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         RenderingHints hintsOld = g2.getRenderingHints();
         Stroke strokeOld = g2.getStroke();
 
-        Font font;
-        int z = shapePanel.getZoomFactor();
-        nmToPixelRatio = NmToPixelRatio + z;
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-        if(z > -3) {
-            font = fontOld.deriveFont(Font.BOLD);
-            g.setFont(font);
-        } else {
-            font = fontOld;
-            g.setFont(font);
-        }
+        setFontForZoom(g);
 
         int startX = 15;                            // coordinates for the arrow line (z-axis)
         int startY = 15;
@@ -318,10 +313,61 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             String regularText = "The molecule is ";
             g2.drawString(regularText, startX, startY);
             int regularTextWidth = fm.stringWidth(regularText);
-            font = fontOld.deriveFont(Font.BOLD);
+            Font font = fontOld.deriveFont(Font.BOLD);
             g2.setFont(font);
             g2.drawString("3D", startX + regularTextWidth, startY);
         }
+        g2.setStroke(strokeOld);
+        g2.setRenderingHints(hintsOld);
+        g2.setFont(fontOld);
+        g2.setPaint(paintOld);
+        g2.setColor(colorOld);
+    }
+
+    private void paintCoordinates(Graphics g) {
+
+        int locationX = 15;             // default location where to paint the mouse coordinates
+        int locationY = 160;
+        if (mousePixelX == null || mousePixelY == null) {
+            return; // no pixel position yet
+        }
+        if (mousePixelX < 0 || mousePixelY < 0 || mouseInsidePanel == false) {
+            return; // do not show if outside panel bounds
+        }
+        if(visibleViewport != null) {       // this should always be the case
+            locationX = visibleViewport.x + 15;
+            locationY = visibleViewport.y + visibleViewport.height - 20;
+        }
+        double mouseY_nm = screenToNmY(mousePixelY);
+        double mouseX_nm = screenToNmX(mousePixelX);
+        if(mouseY_nm <= 0 || mouseX_nm <= 0) {
+            return; // do not show if the mouse would be outside shape area bounds
+        }
+
+        Graphics2D g2 = (Graphics2D) g;
+        Color colorOld = g2.getColor();
+        Paint paintOld = g2.getPaint();
+        Font fontOld = g2.getFont();
+        RenderingHints hintsOld = g2.getRenderingHints();
+        Stroke strokeOld = g2.getStroke();
+
+        double y_snapped = snapToTenth(mouseY_nm);  // snap to nearest 0.1 nm
+        double z_snapped = snapToTenth(mouseX_nm);
+        // note that screen x coordinate corresponds to z coordinate in the model,
+        // and screen y coordinate corresponds to y coordinate in the model
+        g2.setColor(Color.darkGray);
+        setFontForZoom(g);
+        String text = String.format("Y = %.1f nm, Z = %.1f nm", y_snapped, z_snapped);
+        g2.drawString(text, locationX, locationY);
+
+        // draw crosshair at snapped location
+        int snapPixelY = nmToScreenY(y_snapped);
+        int snapPixelX = nmToScreenX(z_snapped);
+        g2.setColor(Color.black);
+        g2.setStroke(new BasicStroke(1f));
+        int arm = 8;        // length of the crosshair arms in pixels
+        g2.drawLine(snapPixelX - arm, snapPixelY, snapPixelX + arm, snapPixelY);
+        g2.drawLine(snapPixelX, snapPixelY - arm, snapPixelX, snapPixelY + arm);
 
         g2.setStroke(strokeOld);
         g2.setRenderingHints(hintsOld);
@@ -410,17 +456,18 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         paintAxes(g);
         if(mtp == null || mtp.getComponentPatternList().size() == 0) {		// paint empty dummy
             paintDummy(g);
+            paintCoordinates(g);
             return;
         }
-        Map<MolecularComponentPattern, SiteAttributesSpec> sasMap = scs.getSiteAttributesMap();
+        Map<LinkNode, SiteAttributesSpec> merged = scs.getAllSiteAttributes();
         Set<MolecularInternalLinkSpec> internalLinkSet = scs.getInternalLinkSet();
 
         // we draw all objects as unselected first, and then we redraw the selected objects on top of everything else,
         // so that they look highlighted and are not hidden behind other objects
-        for(MolecularInternalLinkSpec mils : internalLinkSet) {
-            Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
-            SiteAttributesSpec sas1 = sasMap.get(link.one);
-            SiteAttributesSpec sas2 = sasMap.get(link.two);
+        for(MolecularInternalLinkSpec mils : internalLinkSet) {     // draw links first, so that they are under the sites
+            Pair<LinkNode, LinkNode> link = mils.getLink();
+            SiteAttributesSpec sas1 = merged.get(link.one);
+            SiteAttributesSpec sas2 = merged.get(link.two);
             double x1 = x_offset + sas1.getCoordinate().getZ();
             double x2 = x_offset + sas2.getCoordinate().getZ();
             double y1 = y_offset + sas1.getCoordinate().getY();
@@ -429,8 +476,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             lineToMilsMap.put(line, mils);
             milsToLineMap.put(mils, line);
         }
-        for(MolecularComponentPattern mcp : mtp.getComponentPatternList()) {
-            SiteAttributesSpec sas = sasMap.get(mcp);
+        for (Map.Entry<LinkNode, SiteAttributesSpec> entry : merged.entrySet()) {    // draw the sites now
+            SiteAttributesSpec sas = entry.getValue();
             Coordinate coord = sas.getCoordinate();
             double radius = sas.getRadius();
             NamedColor color = sas.getColor();
@@ -442,8 +489,8 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         }
 
         // we redraw the selected objects on top of all unselected objects
-        if(mcpSelected != null) {
-            SiteAttributesSpec sas = sasMap.get(mcpSelected);
+        if(lnSelected != null) {
+            SiteAttributesSpec sas = merged.get(lnSelected);
             Coordinate coord = sas.getCoordinate();
             double radius = sas.getRadius();
             NamedColor color = sas.getColor();
@@ -456,9 +503,9 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
             ellipseToSasMap.put(newOval, sas);
         }
         if(milsSelected != null) {
-            Pair<MolecularComponentPattern, MolecularComponentPattern> link = milsSelected.getLink();
-            SiteAttributesSpec sas1 = sasMap.get(link.one);
-            SiteAttributesSpec sas2 = sasMap.get(link.two);
+            Pair<LinkNode, LinkNode> link = milsSelected.getLink();
+            SiteAttributesSpec sas1 = merged.get(link.one);
+            SiteAttributesSpec sas2 = merged.get(link.two);
             double x1 = x_offset + sas1.getCoordinate().getZ();
             double x2 = x_offset + sas2.getCoordinate().getZ();
             double y1 = y_offset + sas1.getCoordinate().getY();
@@ -474,9 +521,12 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
 
         // we now redraw the last selected object on top of everything else
         if(lastSelectedObject != null) {
-            if(lastSelectedObject instanceof MolecularComponentPattern) {
-                MolecularComponentPattern mcp = (MolecularComponentPattern)lastSelectedObject;
-                SiteAttributesSpec sas = sasMap.get(mcp);
+            if(lastSelectedObject instanceof LinkNode) {
+                LinkNode ln = (LinkNode)lastSelectedObject;
+                SiteAttributesSpec sas = merged.get(ln);
+                if(sas == null) {
+                    throw new RuntimeException("Stale last selected site: " + ln.getName());
+                }
                 Coordinate coord = sas.getCoordinate();
                 double radius = sas.getRadius();
                 NamedColor color = sas.getColor();
@@ -489,9 +539,9 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
                 ellipseToSasMap.put(newOval, sas);
             } else if(lastSelectedObject instanceof MolecularInternalLinkSpec) {
                 MolecularInternalLinkSpec mils = (MolecularInternalLinkSpec)lastSelectedObject;
-                Pair<MolecularComponentPattern, MolecularComponentPattern> link = mils.getLink();
-                SiteAttributesSpec sas1 = sasMap.get(link.one);
-                SiteAttributesSpec sas2 = sasMap.get(link.two);
+                Pair<LinkNode, LinkNode> link = mils.getLink();
+                SiteAttributesSpec sas1 = merged.get(link.one);
+                SiteAttributesSpec sas2 = merged.get(link.two);
                 double x1 = x_offset + sas1.getCoordinate().getZ();
                 double x2 = x_offset + sas2.getCoordinate().getZ();
                 double y1 = y_offset + sas1.getCoordinate().getY();
@@ -503,12 +553,12 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
                 lineToMilsMap.put(newLine, mils);
             }
         }
+        paintCoordinates(g);
     }
 
 
 
     public Object contains(Point point) {
-
         for (Map.Entry<Ellipse2D, SiteAttributesSpec> entry : ellipseToSasMap.entrySet()) {
             Ellipse2D oval = entry.getKey();
             SiteAttributesSpec sas = entry.getValue();
@@ -526,10 +576,49 @@ public class SpeciesContextSpecLargeShape extends AbstractComponentShape impleme
         return null;
     }
 
+    private Font setFontForZoom(Graphics g) {
+        Graphics2D g2 = (Graphics2D)g;
+        Font fontOld = g2.getFont();
+        Font font;
+        int z = shapePanel.getZoomFactor();
+        if(z > -3) {
+            font = fontOld.deriveFont(Font.BOLD);
+            g.setFont(font);
+        } else {
+            font = fontOld;
+            g.setFont(font);
+        }
+        return font;
+    }
+    public double screenToNmX(int pixelX) {
+        return (pixelX / nmToPixelRatio) - x_offset;
+    }
+    public double screenToNmY(int pixelY) {
+        return (pixelY / nmToPixelRatio) - y_offset;
+    }
+    public int nmToScreenX(double nmX) {
+        return (int) Math.round((nmX + x_offset) * nmToPixelRatio);
+    }
+    public int nmToScreenY(double nmY) {
+        return (int) Math.round((nmY + y_offset) * nmToPixelRatio);
+    }
+    private static double snapToTenth(double v) {
+        return Math.round(v * 10.0) / 10.0;
+    }
+
     @Override
     public void paintSelf(Graphics g) {
         paintSelf(g, true);
     }
+    public void paintSelf(Graphics g, Integer mousePixelX, Integer mousePixelY, boolean mouseInsidePanel,
+                          Rectangle visibleViewport) {
+        this.mousePixelX = mousePixelX;
+        this.mousePixelY = mousePixelY;
+        this.mouseInsidePanel = mouseInsidePanel;
+        this.visibleViewport = visibleViewport;
+        paintSelf(g);
+    }
+
     @Override
     public boolean isHighlighted() {
         return false;

@@ -30,6 +30,18 @@ public class SsldUtils {
 
     private static final Logger lg = LogManager.getLogger(SsldUtils.class);
 
+    public static <K, V> int indexOfKey(Map<K, V> map, K key) {
+        // we know it's a LinkedHashMap, so the order is deterministic; we want the index of the key in the order of insertion
+        int index = 0;
+        for (K k : map.keySet()) {
+            if (k.equals(key)) {
+                return index;
+            }
+            index++;
+        }
+        return -1; // not found
+    }
+
     public enum Qualifier {
         FREE, BOUND, TOTAL, NONE;
         public static Qualifier fromPrefix(String s) {
@@ -128,6 +140,10 @@ public class SsldUtils {
         Map<Molecule, ReactantPattern> conditionToReactantPattern = new LinkedHashMap<>();
         Map<Molecule, ProductPattern> conditionToProductPattern = new LinkedHashMap<>();
 
+        // we need lists with all the active sites (that participate in a reaction)
+        // all the other sites will be considered StructuralSites
+        Map<SiteType, Molecule> activeSites = new LinkedHashMap<>();
+        Map<SiteType, Molecule> structuralSites = new LinkedHashMap<>();
 
         public Mapping(SsldModel ssldModel, BioModel bioModel) {
             this.ssldModel = ssldModel;
@@ -316,7 +332,7 @@ public class SsldUtils {
             return conditionToProductPattern.get(ssldMolecule);
         }
 
-        // creation / decay reactions have special needs
+        // --------------------------------- creation / decay reactions have special needs
         Map<Molecule, DecayReaction> ssldMoleculeToCreationReactions = new LinkedHashMap<>();   // creation only
         Map<Molecule, DecayReaction> ssldMoleculeToDecayReactions = new LinkedHashMap<>();      // destruction only
         Map<Molecule, MolecularType> moleculeToSourceMap = new LinkedHashMap<>();  // molecules being created need a source
@@ -560,6 +576,7 @@ public class SsldUtils {
     private void importSpeciesContextSpecForSsld(SpeciesContextSpec scs, Mapping m) throws Exception {
 
         Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = new LinkedHashMap<>();
+        Map<StructuralSite, SiteAttributesSpec> structuralSiteAttributesMap = new LinkedHashMap<>();
         Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<>();
 
         SpeciesPattern sp = scs.getSpeciesContext().getSpeciesPattern();
@@ -575,37 +592,67 @@ public class SsldUtils {
             MolecularComponent mc = mcp.getMolecularComponent();
             SiteType ssldType = m.get(mc);
             Site ssldSite = m.getSite(ssldType);
-
             String ssldStructure = ssldSite.getLocation();  // structure of site, may differ from molecule structure
             Structure structure = m.getBioModel().getModel().getStructure(ssldStructure);
             String colorName = ssldType.getColorName();
             NamedColor namedColor = Colors.getColorByName(colorName);
             Coordinate coordinate = new Coordinate(ssldSite.x, ssldSite.y, ssldSite.z);
-
             SiteAttributesSpec sas = new SiteAttributesSpec(scs, mcp, structure);
             sas.setCoordinate(coordinate);
             sas.setColor(namedColor);
             sas.setRadius(ssldType.getRadius());
             sas.setDiffusionRate(ssldType.getD());
-
             siteAttributesMap.put(mcp, sas);
         }
+        Map<SiteType, StructuralSite> ssldTypeToStructuralSiteMap = new LinkedHashMap<>();
+        for(Map.Entry<SiteType, Molecule> structuralSitesEntry : m.structuralSites.entrySet()) {
+            SiteType ssldType = structuralSitesEntry.getKey();
+            Molecule ssldMoleculeCandidate = structuralSitesEntry.getValue();
+            if(ssldMoleculeCandidate != ssldMolecule) {
+                continue;   // this structural site belongs to a different molecule, skip
+            }
+            StructuralSite ss = new StructuralSite(ssldType.getName());
+            ssldTypeToStructuralSiteMap.put(ssldType, ss);
+            Site ssldSite = m.getSite(ssldType);
+            String ssldStructure = ssldSite.getLocation();  // structure of site, may differ from molecule structure
+            Structure structure = m.getBioModel().getModel().getStructure(ssldStructure);
+            String colorName = ssldType.getColorName();
+            NamedColor namedColor = Colors.getColorByName(colorName);
+            Coordinate coordinate = new Coordinate(ssldSite.x, ssldSite.y, ssldSite.z);
+            SiteAttributesSpec sas = new SiteAttributesSpec(scs, ss, structure);   // no component pattern for structural sites
+            sas.setCoordinate(coordinate);
+            sas.setColor(namedColor);
+            sas.setRadius(ssldType.getRadius());
+            sas.setDiffusionRate(ssldType.getD());
+            structuralSiteAttributesMap.put(ss, sas);    // we use null as the key for structural sites
+        }
+
         for(Link ssldLink : ssldMolecule.getLinkArray()) {
             // ssldLink -> ssldSite1 -> ssldType1 -> mc1 -> mcp1 -> mils
             //          -> ssldSite2 -> ssldType2 -> mc2 -> mcp2 ->
             Site ssldSite1 = ssldLink.getSite1();
             Site ssldSite2 = ssldLink.getSite2();
             SiteType ssldType1 = m.getType(ssldSite1);
+            LinkNode ln1;
+            if(m.structuralSites.containsKey(ssldType1)) {
+                ln1 = ssldTypeToStructuralSiteMap.get(ssldType1);
+            } else {
+                MolecularComponent mc1 = m.get(ssldType1);
+                ln1 = mtp.getMolecularComponentPattern(mc1);
+            }
             SiteType ssldType2 = m.getType(ssldSite2);
-            MolecularComponent mc1 = m.get(ssldType1);
-            MolecularComponent mc2 = m.get(ssldType2);
-            MolecularComponentPattern mcp1 = mtp.getMolecularComponentPattern(mc1);
-            MolecularComponentPattern mcp2 = mtp.getMolecularComponentPattern(mc2);
-
-            MolecularInternalLinkSpec mils = new MolecularInternalLinkSpec(scs, mcp1, mcp2);
+            LinkNode ln2;
+            if(m.structuralSites.containsKey(ssldType2)) {
+                ln2 = ssldTypeToStructuralSiteMap.get(ssldType2);
+            } else {
+                MolecularComponent mc2 = m.get(ssldType2);
+                ln2 = mtp.getMolecularComponentPattern(mc2);
+            }
+            MolecularInternalLinkSpec mils = new MolecularInternalLinkSpec(scs, ln1, ln2);
             internalLinkSet.add(mils);
         }
         scs.setSiteAttributesMap(siteAttributesMap);
+        scs.setStructuralSiteAttributesMap(structuralSiteAttributesMap);
         scs.setInternalLinkSet(internalLinkSet);
 
         SpeciesContextSpec.SpeciesContextSpecParameter countParam = scs.getInitialCountParameter();
@@ -645,25 +692,72 @@ public class SsldUtils {
         newstructures.toArray(structarray);
         model.setStructures(structarray);
 
+        // ----------- Active sites (that participate in some reaction) - any other site will become a StructureSite
+        for(AllostericReaction ssldAllostericReaction : ssldModel.getAllostericReactions()) {
+            Molecule ssldTransitionMolecule = ssldAllostericReaction.getMolecule();
+            Site ssldAllostericSite = ssldAllostericReaction.getAllostericSite();   // allosteric condition
+            Site ssldTransitionSite = ssldAllostericReaction.getSite();             // transitioning site
+            m.activeSites.put(ssldAllostericSite.getType(), ssldTransitionMolecule);
+            m.activeSites.put(ssldTransitionSite.getType(), ssldTransitionMolecule);
+        }
+        for(BindingReaction ssldBindingReaction : ssldModel.getBindingReactions()) {
+            Molecule[] ssldMolecules = ssldBindingReaction.getMolecules();
+            SiteType[] siteTypes = ssldBindingReaction.getTypes();
+            for(int i=0; i<ssldMolecules.length; i++) {
+                m.activeSites.put(siteTypes[i], ssldMolecules[i]);
+            }
+        }
+        for(TransitionReaction ssldTransitionReaction : ssldModel.getTransitionReactions()) {
+            Molecule ssldMolecule = ssldTransitionReaction.getMolecule();
+            SiteType ssldTransitionSite = ssldTransitionReaction.getType();
+            m.activeSites.put(ssldTransitionSite, ssldMolecule);
+            Molecule ssldConditionMolecule = ssldTransitionReaction.getConditionalMolecule();
+            SiteType ssldConditionSite = ssldTransitionReaction.getConditionalType();
+            if(ssldConditionMolecule != null && ssldConditionSite != null) {
+                m.activeSites.put(ssldConditionSite, ssldConditionMolecule);
+            }
+        }
+        for(Molecule ssldMolecule : ssldModel.getMolecules()) {     // we keep the Anchors as active sites even if they don't participate in any reaction
+            for (SiteType ssldType : ssldMolecule.getTypeArray()) {
+                if (ssldType.getName().equals(SiteType.ANCHOR)) {
+                    m.activeSites.put(ssldType, ssldMolecule);
+                }
+            }
+        }
+        for(Molecule ssldMolecule : ssldModel.getMolecules()) {
+            for(SiteType ssldType : ssldMolecule.getTypeArray()) {
+                if(!m.activeSites.containsKey(ssldType)) {
+                    m.structuralSites.put(ssldType, ssldMolecule);
+                }
+            }
+        }
+
         // ---------- Molecular Types
         for(Molecule ssldMolecule : ssldModel.getMolecules()) {
             MolecularType mt = new MolecularType(ssldMolecule.getName(), model);
+            int index = 1;
             for(Site ssldSite : ssldMolecule.getSiteArray()) {
                 SiteType ssldType = ssldSite.getType();
                 // in vcell we only accept a 1 to 1 relationship between type and site
                 m.put(ssldSite, ssldType);
-
+                if(m.structuralSites.containsKey(ssldType)) {
+                    continue;   // this is a structural site, we won't make a component for it
+                }
                 MolecularComponent mc = new MolecularComponent(ssldType.getName());
                 // site index starts at 1 in vcell, while it starts at 0 in ssld
                 // see also LangevinLngvWriter.writeSpeciesInfo()
                 // see also MolecularInternalLinkSpec.writeLink()
-                mc.setIndex(ssldSite.getIndex()+1);
+                // dan 9/16/2024: since we added the structural sites we cannot anymore use the site index from ssld
+                // because we may end up with gaps in the component list, so we just use an incrementing index
+                // mc.setIndex(ssldSite.getIndex()+1);
+                mc.setIndex(index);
                 for(State ssldState : ssldType.getStates()) {
                     ComponentStateDefinition csd = new ComponentStateDefinition(ssldState.getName());
                     mc.addComponentStateDefinition(csd);
                 }
                 m.put(ssldType, mc);
                 mt.addMolecularComponent(mc);
+                index++;
             }
             if(ssldMolecule.hasAnchorType()) {  // if membrane molecule, anchor it to membrane
                 mt.addAnchor(membr);
@@ -751,6 +845,9 @@ public class SsldUtils {
             ArrayList<Site> ssldSiteList = ssldMolecule.getSiteArray();
             for(Site ssldSite : ssldSiteList) {
                 SiteType ssldType = ssldSite.getType();
+                if(m.structuralSites.containsKey(ssldType)) {
+                    continue;   // this is a structural site, we won't make a component for it
+                }
                 MolecularComponent mc = m.get(ssldType);
                 State ssldState = ssldSite.getInitialState();
                 ComponentStateDefinition csd = mc.getComponentStateDefinition(ssldState.getName());

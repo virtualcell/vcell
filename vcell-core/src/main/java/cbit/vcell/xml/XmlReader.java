@@ -16,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Consumer;
 
+import cbit.vcell.mapping.*;
 import cbit.vcell.model.*;
 import cbit.vcell.solver.*;
 import org.jdom2.Attribute;
@@ -26,15 +27,8 @@ import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.chombo.RefinementRoi;
 import org.vcell.chombo.RefinementRoi.RoiType;
 import org.vcell.chombo.TimeInterval;
-import org.vcell.model.rbm.ComponentStateDefinition;
-import org.vcell.model.rbm.ComponentStatePattern;
-import org.vcell.model.rbm.MolecularComponent;
-import org.vcell.model.rbm.MolecularComponentPattern;
+import org.vcell.model.rbm.*;
 import org.vcell.model.rbm.MolecularComponentPattern.BondType;
-import org.vcell.model.rbm.MolecularType;
-import org.vcell.model.rbm.MolecularTypePattern;
-import org.vcell.model.rbm.NetworkConstraints;
-import org.vcell.model.rbm.SpeciesPattern;
 import org.vcell.model.rbm.SpeciesPattern.Bond;
 import org.vcell.pathway.PathwayModel;
 import org.vcell.pathway.persistence.PathwayReaderBiopax3;
@@ -116,39 +110,18 @@ import cbit.vcell.geometry.surface.GeometricRegion;
 import cbit.vcell.geometry.surface.GeometrySurfaceDescription;
 import cbit.vcell.geometry.surface.SurfaceGeometricRegion;
 import cbit.vcell.geometry.surface.VolumeGeometricRegion;
-import cbit.vcell.mapping.AssignmentRule;
-import cbit.vcell.mapping.BioEvent;
 import cbit.vcell.mapping.BioEvent.BioEventParameterType;
 import cbit.vcell.mapping.BioEvent.TriggerType;
-import cbit.vcell.mapping.CurrentDensityClampStimulus;
-import cbit.vcell.mapping.ElectricalStimulus;
-import cbit.vcell.mapping.Electrode;
-import cbit.vcell.mapping.FeatureMapping;
-import cbit.vcell.mapping.MappingException;
-import cbit.vcell.mapping.MembraneMapping;
-import cbit.vcell.mapping.MicroscopeMeasurement;
 import cbit.vcell.mapping.MicroscopeMeasurement.ConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.GaussianConvolutionKernel;
 import cbit.vcell.mapping.MicroscopeMeasurement.ProjectionZKernel;
-import cbit.vcell.mapping.MolecularInternalLinkSpec;
-import cbit.vcell.mapping.ParameterContext;
 import cbit.vcell.mapping.ParameterContext.LocalParameter;
 import cbit.vcell.mapping.ParameterContext.ParameterRoleEnum;
-import cbit.vcell.mapping.RateRule;
-import cbit.vcell.mapping.ReactionContext;
-import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionRuleSpec.ReactionRuleMappingType;
 import cbit.vcell.mapping.ReactionRuleSpec.Subtype;
 import cbit.vcell.mapping.ReactionRuleSpec.TransitionCondition;
-import cbit.vcell.mapping.ReactionSpec;
-import cbit.vcell.mapping.SimulationContext;
-import cbit.vcell.mapping.SiteAttributesSpec;
 import cbit.vcell.mapping.SimulationContext.Application;
 import cbit.vcell.mapping.SimulationContext.SimulationContextParameter;
-import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.StructureMapping;
-import cbit.vcell.mapping.TotalCurrentClampStimulus;
-import cbit.vcell.mapping.VoltageClampStimulus;
 import cbit.vcell.mapping.spatial.PointObject;
 import cbit.vcell.mapping.spatial.SpatialObject;
 import cbit.vcell.mapping.spatial.SpatialObject.QuantityCategory;
@@ -7178,25 +7151,18 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
             }
             MolecularTypePattern mtp = sp.getMolecularTypePatterns().get(0);
 
-            // all SpeciesContextSpec objects now have an internalLinkSet, if the app is not Springsalad it will be empty
-            Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<>();
-            List<Element> linkSpecs = scsElement.getChildren(XMLTags.InternalLinkSpecTag, vcNamespace);
-            for(Element linkSpec : linkSpecs){    // should map to Math's ParticleMolecularType (n -> 1)
-                String oneName = unMangle(linkSpec.getAttributeValue(XMLTags.SiteOneRefAttrTag));
-                String twoName = unMangle(linkSpec.getAttributeValue(XMLTags.SiteTwoRefAttrTag));
-                MolecularComponentPattern one = mtp.getMolecularComponentPattern(oneName);
-                MolecularComponentPattern two = mtp.getMolecularComponentPattern(twoName);
-                MolecularInternalLinkSpec internalLink = new MolecularInternalLinkSpec(specspec, one, two);
-                internalLinkSet.add(internalLink);
-            }
-            specspec.setInternalLinkSet(internalLinkSet);
-
+            // we maintain a map between the names of the LinkNodes (siteRef) which may be MolecularComponentPatterns or
+            // StructuralSites, so that we could get the right instances once we'll start parsing the InternalLinkSpecs.
+            Map<String, LinkNode> refToLinkNodeMap = new LinkedHashMap<>();
             // all SpeciesContextSpec objects now have a siteAttributesMap, if the app is not Springsalad it will be empty
             Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = new LinkedHashMap<>();
-            List<Element> attributeSpecs = scsElement.getChildren(XMLTags.SiteAttributesSpecTag, vcNamespace);
-            for(Element attributeSpec : attributeSpecs){    // should map to Math's ParticleJumpProcess (1 -> 1)
-                String siteRef = attributeSpec.getAttributeValue(XMLTags.SiteRefAttrTag);
+            List<Element> saSpecs = scsElement.getChildren(XMLTags.SiteAttributesSpecTag, vcNamespace);
+            for(Element attributeSpec : saSpecs){    // should map to Math's ParticleJumpProcess (1 -> 1)
                 String moleculeRef = attributeSpec.getAttributeValue(XMLTags.MoleculeRefAttrTag);
+                if(!mtp.getMolecularType().getName().equals(moleculeRef)) {     // sanity check, we need the right mtp for the mcp instance
+                    throw new XmlParseException("Bad SiteAttributeSpec molecular type for " + specspec.getDisplayName());
+                }
+                String siteRef = attributeSpec.getAttributeValue(XMLTags.SiteRefAttrTag);
                 double radius = Double.parseDouble(attributeSpec.getAttributeValue(XMLTags.SiteRadiusAttrTag));
                 double diff = Double.parseDouble(attributeSpec.getAttributeValue(XMLTags.SiteDiffusionAttrTag));
                 String locationName = attributeSpec.getAttributeValue(XMLTags.SiteLocationRefAttrTag);
@@ -7206,14 +7172,50 @@ public RateRuleVariable[] getRateRuleVariables(Element rateRuleVarsElement, Mode
                 double z = Double.parseDouble(attributeSpec.getAttributeValue(XMLTags.SiteCoordZAttrTag));
                 Coordinate coordinate = new Coordinate(x, y, z);
                 MolecularComponentPattern mcp = mtp.getMolecularComponentPattern(siteRef);
-                if(!mtp.getMolecularType().getName().equals(moleculeRef)){
-                    throw new XmlParseException("Bad SiteAttributeSpec molecular type for " + specspec.getDisplayName());
-                }
+                refToLinkNodeMap.put(siteRef, mcp);
                 Structure structure = model.getStructure(locationName);
                 SiteAttributesSpec sas = new SiteAttributesSpec(specspec, mcp, radius, diff, structure, coordinate, color);
                 siteAttributesMap.put(mcp, sas);
             }
             specspec.setSiteAttributesMap(siteAttributesMap);
+
+            // all SpeciesContextSpec objects now have a structuralSiteAttributesMap, if the app is not Springsalad it will be empty
+            Map<StructuralSite, SiteAttributesSpec> structuralSiteAttributesMap = new LinkedHashMap<>();
+            List<Element> ssaSpecs = scsElement.getChildren(XMLTags.StructuralSiteAttributesSpecTag, vcNamespace);
+            for(Element attributeSpec : ssaSpecs){    // should map to Math's ParticleJumpProcess (1 -> 1)
+                String moleculeRef = attributeSpec.getAttributeValue(XMLTags.MoleculeRefAttrTag);
+                if(!mtp.getMolecularType().getName().equals(moleculeRef)) {     // sanity check, we don't need it for StructuralSites
+                    throw new XmlParseException("Bad SiteAttributeSpec molecular type for " + specspec.getDisplayName());
+                }
+                String siteRef = attributeSpec.getAttributeValue(XMLTags.SiteRefAttrTag);
+                double radius = Double.parseDouble(attributeSpec.getAttributeValue(XMLTags.SiteRadiusAttrTag));
+                double diff = Double.parseDouble(attributeSpec.getAttributeValue(XMLTags.SiteDiffusionAttrTag));
+                String locationName = attributeSpec.getAttributeValue(XMLTags.SiteLocationRefAttrTag);
+                NamedColor color = Colors.getColorByName(attributeSpec.getAttributeValue(XMLTags.SiteColorAttrTag));
+                double x = Double.parseDouble(attributeSpec.getAttributeValue(XMLTags.SiteCoordXAttrTag));
+                double y = Double.parseDouble(attributeSpec.getAttributeValue(XMLTags.SiteCoordYAttrTag));
+                double z = Double.parseDouble(attributeSpec.getAttributeValue(XMLTags.SiteCoordZAttrTag));
+                Coordinate coordinate = new Coordinate(x, y, z);
+                StructuralSite mcp = new StructuralSite(siteRef);
+                refToLinkNodeMap.put(siteRef, mcp);
+                Structure structure = model.getStructure(locationName);
+                SiteAttributesSpec sas = new SiteAttributesSpec(specspec, mcp, radius, diff, structure, coordinate, color);
+                structuralSiteAttributesMap.put(mcp, sas);
+            }
+            specspec.setStructuralSiteAttributesMap(structuralSiteAttributesMap);
+
+            // all SpeciesContextSpec objects now have an internalLinkSet, if the app is not Springsalad it will be empty
+            Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<>();
+            List<Element> linkSpecs = scsElement.getChildren(XMLTags.InternalLinkSpecTag, vcNamespace);
+            for(Element linkSpec : linkSpecs){    // should map to Math's ParticleMolecularType (n -> 1)
+                String oneName = unMangle(linkSpec.getAttributeValue(XMLTags.SiteOneRefAttrTag));
+                String twoName = unMangle(linkSpec.getAttributeValue(XMLTags.SiteTwoRefAttrTag));
+                LinkNode one = refToLinkNodeMap.get(oneName);
+                LinkNode two = refToLinkNodeMap.get(twoName);
+                MolecularInternalLinkSpec internalLink = new MolecularInternalLinkSpec(specspec, one, two);
+                internalLinkSet.add(internalLink);
+            }
+            specspec.setInternalLinkSet(internalLinkSet);
         }
     }
 

@@ -11,6 +11,7 @@
 package org.vcell.util.springsalad;
 
 import cbit.vcell.graph.GraphConstants;
+import org.vcell.util.Matchable;
 
 import java.awt.Color;
 import java.io.Serializable;
@@ -21,7 +22,7 @@ import java.io.Serializable;
  * For vcell-style colors see GraphConstants
  */
 @SuppressWarnings("serial")
-public class NamedColor implements Serializable {
+public class NamedColor implements Serializable, Matchable {
 
 	private final Color color;
 	private final String name;
@@ -64,6 +65,31 @@ public class NamedColor implements Serializable {
 	public static String getHex(Color c) {
 		String hex = String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
 		return hex;
+	}
+
+	public boolean compareEqual(Matchable obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!(obj instanceof NamedColor)) {
+			return false;
+		}
+		NamedColor other = (NamedColor) obj;
+		if (name == null) {
+			if (other.name != null) {
+				return false;
+			}
+		} else if (!name.equals(other.name)) {
+			return false;
+		}
+		if (color == null) {
+			if (other.color != null) {
+				return false;
+			}
+		} else if (!color.equals(other.color)) {
+			return false;
+		}
+		return true;
 	}
 
 	public static void main(String[] args) {

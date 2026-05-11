@@ -34,12 +34,7 @@ public Coordinate(double x, double y, double z) {
 	this.y = y;
 	this.z = z;
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/10/00 5:50:50 PM)
- * @return cbit.vcell.geometry.Coordinate
- * @param coord cbit.vcell.geometry.Coordinate
- */
+
 private static final double axisConversion(double origX, double origY, double origZ, int axisElement, int normalAxis, boolean bToStandardXYZ) {
 	double result = 0;
 	switch (normalAxis) {
@@ -117,11 +112,7 @@ private static final double axisConversion(double origX, double origY, double or
 	}
 	return result;
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/8/00 4:03:38 PM)
- * @return java.lang.Object
- */
+
 public Object clone() {
 	try{
 	Coordinate c = (Coordinate)super.clone();
@@ -134,9 +125,7 @@ public Object clone() {
 		throw new InternalError(e.toString());
 	}
 }
-/**
- * compareEqual method comment.
- */
+
 public boolean compareEqual(org.vcell.util.Matchable obj) {
 	if (obj == null) {
 		return false;
@@ -150,12 +139,7 @@ public boolean compareEqual(org.vcell.util.Matchable obj) {
 	}
 	return true;
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/10/00 5:50:50 PM)
- * @return cbit.vcell.geometry.Coordinate
- * @param coord cbit.vcell.geometry.Coordinate
- */
+
 public static final Coordinate convertAxisFromStandardXYZToNormal(double origX, double origY, double origZ,int normalAxis) {
 	Coordinate newCoord = new Coordinate(
 		axisConversion(origX, origY, origZ, X_AXIS, normalAxis,false),
@@ -177,30 +161,15 @@ public static final Extent convertAxisFromStandardXYZToNormal(Extent extent,int 
 		(int)axisConversion(extent.getX(), extent.getY(), extent.getZ(), Z_AXIS, normalAxis,false));
 	return newExtent;
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/10/00 5:50:50 PM)
- * @return cbit.vcell.geometry.Coordinate
- * @param coord cbit.vcell.geometry.Coordinate
- */
+
 public static final double convertAxisFromStandardXYZToNormal(double origX, double origY, double origZ, int axisElement, int normalAxis) {
 	return axisConversion(origX,origY,origZ,axisElement,normalAxis, false);
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/10/00 5:50:50 PM)
- * @return cbit.vcell.geometry.Coordinate
- * @param coord cbit.vcell.geometry.Coordinate
- */
+
 public static final double convertAxisFromStandardXYZToNormal(Coordinate coord, int axisElement, int normalAxis) {
 	return axisConversion(coord.getX(),coord.getY(),coord.getZ(),axisElement,normalAxis, false);
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/10/00 5:50:50 PM)
- * @return cbit.vcell.geometry.Coordinate
- * @param coord cbit.vcell.geometry.Coordinate
- */
+
 public static final Coordinate convertCoordinateFromNormalToStandardXYZ(double origX,double origY,double origZ, int normalAxis) {
 	Coordinate newCoord = new Coordinate(
 		axisConversion(origX, origY, origZ, X_AXIS, normalAxis,true),
@@ -208,12 +177,7 @@ public static final Coordinate convertCoordinateFromNormalToStandardXYZ(double o
 		axisConversion(origX, origY, origZ, Z_AXIS, normalAxis,true));
 	return newCoord;
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/10/00 5:50:50 PM)
- * @return cbit.vcell.geometry.Coordinate
- * @param coord cbit.vcell.geometry.Coordinate
- */
+
 public static final void convertCoordinateIndexFromNormalToStandardXYZ(org.vcell.util.CoordinateIndex coordIndex, int normalAxis) {
 	//Re-uses CoordinateIndex
 	double origX = coordIndex.x;
@@ -223,29 +187,16 @@ public static final void convertCoordinateIndexFromNormalToStandardXYZ(org.vcell
 	coordIndex.y = (int)axisConversion(origX, origY, origZ, Y_AXIS, normalAxis,true);
 	coordIndex.z = (int)axisConversion(origX, origY, origZ, Z_AXIS, normalAxis,true);
 }
-/**
- * This method was created in VisualAge.
- * @return double
- * @param coord cbit.vcell.geometry.Coordinate
- */
+
 public double distanceTo(double cx, double cy, double cz) {
 	cx -= x; cy -= y; cz -= z;
     return Math.sqrt(cx*cx + cy*cy + cz*cz);
 }
-/**
- * This method was created in VisualAge.
- * @return double
- * @param coord cbit.vcell.geometry.Coordinate
- */
+
 public double distanceTo(Coordinate coord) {
 	return distanceTo(coord.x,coord.y,coord.z);
 }
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2002 11:20:36 PM)
- * @return boolean
- * @param obj java.lang.Object
- */
+
 public boolean equals(Object obj) {
 	if (obj instanceof Coordinate){
 		Coordinate c = (Coordinate) obj;
@@ -253,20 +204,13 @@ public boolean equals(Object obj) {
 	}
 	return(false);
 }
-/**
- * Insert the method's description here.
- * Creation date: (10/18/00 1:03:52 PM)
- */
+
 public static final java.awt.geom.Point2D.Double get2DProjection(Coordinate coord,int normalAxis) {
 	double newX = Coordinate.convertAxisFromStandardXYZToNormal(coord,Coordinate.X_AXIS,normalAxis);
 	double newY = Coordinate.convertAxisFromStandardXYZToNormal(coord,Coordinate.Y_AXIS,normalAxis);
 	return new java.awt.geom.Point2D.Double(newX,newY);
 }
-/**
- * Insert the method's description here.
- * Creation date: (10/10/00 6:18:10 PM)
- * @param axis int
- */
+
 public double getAxisElement(int axis) {
 	switch (axis) {
 		case X_AXIS :
@@ -279,60 +223,31 @@ public double getAxisElement(int axis) {
 			throw new RuntimeException("Unknow axis");
 	}
 }
-/**
- * Insert the method's description here.
- * Creation date: (12/17/2003 4:22:40 PM)
- * @return java.lang.String
- * @param normalAxis int
- */
+
 public final static String getNormalAxisPlaneName(int normalAxis) {
 	if(normalAxis < 0 || normalAxis >= PLANENAMES.length){
 		throw new IllegalArgumentException("Unknwon Normal Axis = "+normalAxis);
 	}
 	return PLANENAMES[normalAxis];
 }
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param coord cbit.vcell.geometry2.Coordinate
- */
+
 public double getX () {
 	return (x);
 }
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param coord cbit.vcell.geometry2.Coordinate
- */
+
 public double getY () {
 	return (y);
 }
-/**
- * This method was created in VisualAge.
- * @return boolean
- * @param coord cbit.vcell.geometry2.Coordinate
- */
+
 public double getZ () {
 	return (z);
 }
-/**
- * Insert the method's description here.
- * Creation date: (2/10/2002 11:21:50 PM)
- * @return int
- */
+
 public int hashCode() {
 	long bits = Double.doubleToLongBits(x + y + z);
 	return ((int)(bits ^ (bits >> 32)));
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/13/00 12:57:30 PM)
- * @return boolean
- * @param coord cbit.vcell.geometry.Coordinate
- * @param origin cbit.util.Origin
- * @param extent cbit.util.Extent
- * @param delta cbit.vcell.geometry.Coordinate
- */
+
 public static final boolean isCoordinateInBounds(Coordinate coord, org.vcell.util.Origin origin, org.vcell.util.Extent extent, Coordinate deltaCoord) {
 	Coordinate w0 = new Coordinate(origin.getX(), origin.getY(), origin.getZ());
 	Coordinate w1 = new Coordinate(w0.getX() + extent.getX(), w0.getY() + extent.getY(), w0.getZ() + extent.getZ());
@@ -369,22 +284,11 @@ public static final boolean isCoordinateInBounds(Coordinate coord, org.vcell.uti
 	//
 	return true; 
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/10/00 6:27:27 PM)
- * @return java.lang.String
- */
+
 public String toString() {
 	return "X="+x+" Y="+y+" Z="+z;
 }
-/**
- * Insert the method's description here.
- * Creation date: (8/12/2005 1:06:21 PM)
- * @return cbit.vcell.geometry.Coordinate
- * @param orig cbit.util.Origin
- * @param ext cbit.util.Extent
- * @param dimensionFlag int
- */
+
 public static double coordComponentFromSinglePlanePolicy(Origin argOrigin, Extent argExtent, int argAxisFlag) {
 	
 	if(argAxisFlag == X_AXIS){
@@ -394,7 +298,6 @@ public static double coordComponentFromSinglePlanePolicy(Origin argOrigin, Exten
 	}else if(argAxisFlag == Z_AXIS){
 		return argExtent.getZ()/2.0 + argOrigin.getZ();
 	}
-
 	throw new IllegalArgumentException("Unknown Axis Flag="+argAxisFlag);
 }
 }
