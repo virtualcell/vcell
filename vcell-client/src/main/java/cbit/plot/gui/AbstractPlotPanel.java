@@ -14,7 +14,7 @@ import javax.swing.*;
 
 public abstract class AbstractPlotPanel extends JPanel {
 
-    public static class RendererOptions {
+    public class RendererOptions {
         // Renderer options list
         private boolean showNodes = true;      // whether to draw small circles at the data points (nodes) (only applies to avg renderer, not bands)
         private int nodeDiameter = 4;        // diameter of the circles drawn at data points (nodes), if enabled
