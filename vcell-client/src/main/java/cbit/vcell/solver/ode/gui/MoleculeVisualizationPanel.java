@@ -63,14 +63,6 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
                     getPlotButton().setSelected(cmd.equals("PlotPanelContainer"));   // update button selection state
                     getDataButton().setSelected(cmd.equals("DataPanelContainer"));
                     getLegendPanel().setVisible(cmd.equals("PlotPanelContainer"));   // show legend only in plot mode
-                    getCrosshairCheckBox().setVisible(cmd.equals("PlotPanelContainer"));    // show/hide crosshair checkbox only in plot mode
-                    setCrosshairEnabled(cmd.equals("PlotPanelContainer") && getCrosshairCheckBox().isSelected());   // enable/disable crosshair logic
-                    return;
-                }
-                // --- Crosshair checkbox toggled ---
-                if (e.getSource() == getCrosshairCheckBox()) {
-                    boolean enabled = getCrosshairCheckBox().isSelected();
-                    setCrosshairEnabled(enabled);
                     return;
                 }
             }
@@ -115,11 +107,6 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
     @Override
     protected JPanel createDataPanel() {
         return getMoleculeDataPanel();
-    }
-
-    @Override
-    protected void setCrosshairEnabled(boolean enabled) {
-        getMoleculePlotPanel().setCrosshairEnabled(enabled);
     }
 
     public void setVisualizationBackground(Color color) {
@@ -181,9 +168,6 @@ public class MoleculeVisualizationPanel extends AbstractVisualizationPanel {
         // add the shared handler
         getPlotButton().addActionListener(ivjEventHandler);
         getDataButton().addActionListener(ivjEventHandler);
-
-        // crosshair checkbox is plot-specific, so subclass handles it
-        getCrosshairCheckBox().addActionListener(ivjEventHandler);
 
         // listen to the left panel
         owner.getMoleculeSpecificationPanel().addPropertyChangeListener(ivjEventHandler);

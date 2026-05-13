@@ -6,14 +6,11 @@ import org.apache.logging.log4j.Logger;
 
 import cbit.plot.gui.ClusterPlotPanel;
 import cbit.vcell.client.data.ODEDataViewer;
-import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.util.ColumnDescription;
 import org.vcell.util.ColorUtil;
-import org.vcell.util.gui.JToolBarToggleButton;
 import org.vcell.util.gui.SpecialtyTableRenderer;
-import org.vcell.util.gui.VCellIcons;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -26,11 +23,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.geom.Path2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.*;
 import java.util.List;
 
@@ -63,14 +57,6 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                     getPlotButton().setSelected(cmd.equals("PlotPanelContainer"));   // update button selection state
                     getDataButton().setSelected(cmd.equals("DataPanelContainer"));
                     getLegendPanel().setVisible(cmd.equals("PlotPanelContainer"));   // show legend only in plot mode
-                    getCrosshairCheckBox().setVisible(cmd.equals("PlotPanelContainer"));    // show/hide crosshair checkbox only in plot mode
-                    setCrosshairEnabled(cmd.equals("PlotPanelContainer") && getCrosshairCheckBox().isSelected());   // enable/disable crosshair logic
-                    return;
-                }
-                // --- Crosshair checkbox toggled ---
-                if (e.getSource() == getCrosshairCheckBox()) {
-                    boolean enabled = getCrosshairCheckBox().isSelected();
-                    setCrosshairEnabled(enabled);
                     return;
                 }
             }
@@ -85,9 +71,9 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                     redrawPlot(sel);        // redraw plot (one plot, multiple curves)
                     redrawDataTable(sel);   // redraw data table
                     if(sel.mode == ClusterSpecificationPanel.DisplayMode.COUNTS) {
-                        getClusterPlotPanel().setStepAvg(true);
+                        getClusterPlotPanel().setShowAvgAsStep(true);
                     } else {
-                        getClusterPlotPanel().setStepAvg(false);
+                        getClusterPlotPanel().setShowAvgAsStep(false);
                     }
                 } catch (ExpressionException e) {
                     throw new RuntimeException(e);
@@ -125,10 +111,6 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
     @Override
     protected JPanel createDataPanel() {
         return getClusterDataPanel();
-    }
-    @Override
-    protected void setCrosshairEnabled(boolean enabled) {
-        getClusterPlotPanel().setCrosshairEnabled(enabled);
     }
 
     private ClusterPlotPanel getClusterPlotPanel() {      // actual plotting is shown here
@@ -189,9 +171,6 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
         // add the shared handler
         getPlotButton().addActionListener(ivjEventHandler);
         getDataButton().addActionListener(ivjEventHandler);
-
-        // crosshair checkbox is plot-specific, so subclass handles it
-        getCrosshairCheckBox().addActionListener(ivjEventHandler);
 
         // listen to the left panel
         owner.getClusterSpecificationPanel().addPropertyChangeListener(ivjEventHandler);
