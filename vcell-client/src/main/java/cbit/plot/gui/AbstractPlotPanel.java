@@ -6,14 +6,26 @@ import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 
 public abstract class AbstractPlotPanel extends JPanel {
+
+    public static class RendererOptions {
+        // Renderer options list
+        private boolean showNodes = true;      // whether to draw small circles at the data points (nodes) (only applies to avg renderer, not bands)
+        private int nodeDiameter = 4;        // diameter of the circles drawn at data points (nodes), if enabled
+        private boolean snapToNodes = true;    // whether the crosshair snaps to the nearest node (if false, it shows exact mouse coordinates)
+        private boolean showLines = true;      // whether to draw lines connecting the data points (only applies to avg renderer, not bands)
+        private boolean showBarForSD = true; // whether to use bar renderer (instead of band renderer) for SD; only applies to SD renderers, not min-max bands
+        private boolean showAvgAsStep = false;     // whether to draw the average as a step function (instead of linear interpolation) meaning the value is constant between time[i] and time[i+1], then jumps at time[i+1]
+        private boolean showBandAsStep = true;     // whether to draw bands with steps (instead of linear interpolation);
+        private boolean showCosshair = true;  // whether to show the crosshair at all (if false, mouse coordinates are still tracked and sent to the callback, but no crosshair is drawn)
+        private boolean showLogScale = false;  // whether to use logarithmic scale on the y-axis (not implemented yet)
+    }
 
     private static final Logger lg = LogManager.getLogger(AbstractPlotPanel.class);
 
@@ -28,16 +40,9 @@ public abstract class AbstractPlotPanel extends JPanel {
     protected static final int DIMMED_LINE_ALPHA = 20;   // for dimming non-hovered series (0–255)
     protected static final int DIMMED_BAND_ALPHA = 0;    // for dimming non-hovered bands (0–255)
 
-
-    // Renderer options list
-    private boolean useBarRendererForSD = true; // whether to use bar renderer (instead of band renderer) for SD; only applies to SD renderers, not min-max bands
-    private boolean showLines = true;      // whether to draw lines connecting the data points (only applies to avg renderer, not bands)
-    private boolean showNodes = true;      // whether to draw small circles at the data points (nodes) (only applies to avg renderer, not bands)
-    private boolean snapToNodes = true;    // whether the crosshair snaps to the nearest node (if false, it shows exact mouse coordinates)
-    private boolean showCrosshair = true;  // whether to show the crosshair at all (if false, mouse coordinates are still tracked and sent to the callback, but no crosshair is drawn)
-    protected boolean stepAvg = false;     // whether to draw the average as a step function (instead of linear interpolation) meaning the value is constant between time[i] and time[i+1], then jumps at time[i+1]
-    protected boolean stepBand = true;     // whether to draw bands with steps (instead of linear interpolation);
-    protected int nodeDiameter = 4;        // diameter of the circles drawn at data points (nodes), if enabled
+    // Renderer options
+    private final RendererOptions options = new RendererOptions();
+    private JDialog optionsDialog = null;
 
     // Renderers list
     protected final List<SeriesRenderer> renderers = new ArrayList<>();
@@ -52,7 +57,6 @@ public abstract class AbstractPlotPanel extends JPanel {
     protected Integer mouseY = null;
     protected Integer snappedX = null;  // we are snapped here (or null)
     protected Integer snappedY = null;
-    protected boolean crosshairEnabled = true;
     protected Consumer<double[]> coordCallback;
 
     // Cached plot area
@@ -80,10 +84,10 @@ public abstract class AbstractPlotPanel extends JPanel {
                     mouseY = null;
                 }
 
-                if (crosshairEnabled && mouseX != null && mouseY != null) {
+                if (/*isShowCosshair() && */ mouseX != null && mouseY != null) {    // we always show coordinates
                     mx = mouseX;
                     my = mouseY;
-                    if (snapToNodes) {
+                    if (isSnapToNodes()) {
                         Point snapped = findClosestNode(mx, my);
                         if (snapped != null) {
                             mx = snapped.x;  // mx and my are now snapped to the nearest node's pixel coordinates
@@ -127,14 +131,55 @@ public abstract class AbstractPlotPanel extends JPanel {
                 repaint();
             }
         });
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    showOptionsDialog();
+                }
+            }
+        });
+    }
+    private void showOptionsDialog() {
+        if (optionsDialog != null) {
+            optionsDialog.toFront();
+            return;
+        }
+        PlotOptionsPanel panel = new PlotOptionsPanel(this);
+        optionsDialog = new JDialog(
+                SwingUtilities.getWindowAncestor(this),
+                "Plot Options",
+                Dialog.ModalityType.APPLICATION_MODAL   // ← modal again
+        );
+
+        // padding around entire dialog
+        optionsDialog.getRootPane().setBorder(
+                BorderFactory.createEmptyBorder(12, 12, 10, 10)
+        );
+        optionsDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        optionsDialog.getContentPane().add(panel, BorderLayout.CENTER);
+
+        JButton exitButton = new JButton("Exit");
+        exitButton.addActionListener(e -> optionsDialog.dispose());
+
+        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottom.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0)); // top padding
+        bottom.add(exitButton);
+
+        optionsDialog.getContentPane().add(bottom, BorderLayout.SOUTH);
+        optionsDialog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                optionsDialog = null;   // allow reopening
+            }
+        });
+        optionsDialog.pack();
+        optionsDialog.setLocationRelativeTo(this);
+        optionsDialog.setVisible(true);
     }
 
     // Public API
-
-    public void setCrosshairEnabled(boolean enabled) {
-        this.crosshairEnabled = enabled;
-        repaint();
-    }
 
     public void setCoordinateCallback(Consumer<double[]> cb) {
         this.coordCallback = cb;
@@ -162,7 +207,7 @@ public abstract class AbstractPlotPanel extends JPanel {
         renderers.add(new BandRenderer(name, time, max, min, color, this));
     }
     public void addSDRenderer(double[] time, double[] low, double[] high, Color color, String name, Object statTag) {
-        if(useBarRendererForSD) {
+        if(isShowBarForSD()) {
             renderers.add(new BarRenderer(name, time, low, high, color, this));
         } else {
             renderers.add(new BandRenderer(name, time, low, high, color, this));
@@ -201,13 +246,25 @@ public abstract class AbstractPlotPanel extends JPanel {
         return s;
     }
 
-    public void setStepAvg(boolean b) { this.stepAvg = b; repaint(); }
-    public void setStepBand(boolean b) { this.stepBand = b; repaint(); }
-    public boolean getStepAvg() { return stepAvg; }
-    public boolean getStepBand() { return stepBand; }
-    public boolean getShowLines() { return showLines; }
-    public boolean getShowNodes() { return showNodes; }
-    public boolean getSnapToNodes() { return snapToNodes; }
+    public void setShowAvgAsStep(boolean b) { this.options.showAvgAsStep = b; repaint(); }
+    public void setShowBandAsStep(boolean b) { this.options.showBandAsStep = b; repaint(); }
+    public void setShowLines(boolean b) { this.options.showLines = b; repaint(); }
+    public void setShowNodes(boolean b) { this.options.showNodes = b; repaint(); }
+    public void setSnapToNodes(boolean b) { this.options.snapToNodes = b; repaint(); }
+    public void setShowBarForSD(boolean b) { this.options.showBarForSD = b; repaint(); }
+    public void setNodeDiameter(int d) { this.options.nodeDiameter = d; repaint(); }
+    public void setShowCosshair(boolean b) { this.options.showCosshair = b; repaint(); }
+    public void setShowLogScale(boolean b) { this.options.showLogScale = b; repaint(); }
+
+    public boolean isShowAvgAsStep() { return options.showAvgAsStep; }
+    public boolean isShowBandAsStep() { return options.showBandAsStep; }
+    public boolean getShowLines() { return options.showLines; }
+    public boolean getShowNodes() { return options.showNodes; }
+    public boolean isSnapToNodes() { return options.snapToNodes; }
+    public boolean isShowBarForSD() { return options.showBarForSD; }
+    public int getNodeDiameter() { return options.nodeDiameter; }
+    public boolean isShowCosshair() { return options.showCosshair; }
+    public boolean isShowLogScale() { return options.showLogScale; }
 
     private Point findClosestNode(int mouseX, int mouseY) {     // use for SnapToNodes feature
         Point best = null;
@@ -386,7 +443,7 @@ public abstract class AbstractPlotPanel extends JPanel {
         }
 
         // Crosshair
-        if (crosshairEnabled && mouseX != null && mouseY != null) {
+        if (isShowCosshair() && mouseX != null && mouseY != null) {
             g2.setColor(new Color(180, 180, 180));
             g2.setStroke(new BasicStroke(1f));
             g2.drawLine(mouseX, y1, mouseX, y0);

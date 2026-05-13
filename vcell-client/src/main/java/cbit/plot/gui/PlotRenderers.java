@@ -81,7 +81,7 @@ public final class PlotRenderers {
 
             // Unite the poins as a polyline or as steps, depending on the setting
             if(parent.getShowLines()) {
-                if (!parent.stepAvg) {      // draw the polyline (unite the data points directly)
+                if (!parent.isShowAvgAsStep()) {      // draw the polyline (unite the data points directly)
                     g2.setColor(c);
                     g2.setStroke(new BasicStroke(CURVE_STROKE, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
                     g2.drawPolyline(xs, ys, n);
@@ -104,7 +104,7 @@ public final class PlotRenderers {
             // Draw nodes if enabled
             if (parent.getShowNodes()) {          // parent is the AbstractPlotPanel
                 g2.setColor(c);
-                int diameter = parent.nodeDiameter;                 // small, unobtrusive
+                int diameter = parent.getNodeDiameter();                 // small, unobtrusive
                 if(!parent.getShowLines()) {
                     diameter += 2;                // if no lines, make nodes bigger to be more visible
                 }
@@ -204,7 +204,7 @@ public final class PlotRenderers {
                     c = new Color(c.getRed(), c.getGreen(), c.getBlue(), DIMMED_BAND_ALPHA);
                 }
             }
-            if (!parent.stepBand) {
+            if (!parent.isShowBandAsStep()) {
                 // your existing Path2D polygon
                 g2.setColor(c);
                 g2.fill(path);

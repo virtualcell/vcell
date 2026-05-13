@@ -48,7 +48,6 @@ public abstract class AbstractVisualizationPanel extends DocumentEditorSubPanel 
 
     protected JLabel bottomLabel;           // info about the current simulation and # of jobs
     private JLabel timeLabelBottom;         // "time" under the X-axis in the plot
-    protected JCheckBox crosshairCheckBox;
     protected JLabel crosshairCoordLabel;
 
     protected JToolBarToggleButton plotButton;
@@ -82,8 +81,6 @@ public abstract class AbstractVisualizationPanel extends DocumentEditorSubPanel 
     protected abstract JPanel createPlotPanel();
     // Subclass must provide the data panel (MoleculeDataPanel or ClusterDataPanel)
     protected abstract JPanel createDataPanel();
-    // Subclass must implement crosshair enabling logic
-    protected abstract void setCrosshairEnabled(boolean enabled);
 
     // -------------------------
     // Card panel
@@ -190,23 +187,17 @@ public abstract class AbstractVisualizationPanel extends DocumentEditorSubPanel 
             gbc = new GridBagConstraints();
             gbc.gridx = 2;
             gbc.gridy = 0;
-            gbc.insets = new Insets(4, 4, 4, 2);
-            bottomRightPanel.add(getCrosshairCheckBox(), gbc);
-
-            gbc = new GridBagConstraints();
-            gbc.gridx = 3;
-            gbc.gridy = 0;
             gbc.insets = new Insets(4, 2, 4, 2);
             bottomRightPanel.add(getCrosshairCoordLabel(), gbc);
 
             gbc = new GridBagConstraints();
-            gbc.gridx = 4;
+            gbc.gridx = 3;
             gbc.gridy = 0;
             gbc.insets = new Insets(4, 4, 4, 4);
             bottomRightPanel.add(getPlotButton(), gbc);
 
             gbc = new GridBagConstraints();
-            gbc.gridx = 5;
+            gbc.gridx = 4;
             gbc.gridy = 0;
             gbc.insets = new Insets(4, 4, 4, 4);
             bottomRightPanel.add(getDataButton(), gbc);
@@ -227,14 +218,14 @@ public abstract class AbstractVisualizationPanel extends DocumentEditorSubPanel 
         return bottomLabel;
     }
 
-    protected JCheckBox getCrosshairCheckBox() {
-        if (crosshairCheckBox == null) {
-            crosshairCheckBox = new JCheckBox("Show Crosshair");
-            crosshairCheckBox.setName("CrosshairCheckBox");
-            crosshairCheckBox.setSelected(true); // default ON
-        }
-        return crosshairCheckBox;
-    }
+//    protected JCheckBox getCrosshairCheckBox() {
+//        if (crosshairCheckBox == null) {
+//            crosshairCheckBox = new JCheckBox("Show Crosshair");
+//            crosshairCheckBox.setName("CrosshairCheckBox");
+//            crosshairCheckBox.setSelected(true); // default ON
+//        }
+//        return crosshairCheckBox;
+//    }
 
     protected JLabel getCrosshairCoordLabel() {
         if (crosshairCoordLabel == null) {
@@ -285,7 +276,6 @@ public abstract class AbstractVisualizationPanel extends DocumentEditorSubPanel 
         super.setBackground(color);
         getBottomRightPanel().setBackground(color);
         getBottomLabel().setBackground(color);
-        getCrosshairCheckBox().setBackground(color);
         getCrosshairCoordLabel().setBackground(color);
         getLegendPanel().setBackground(color);
         getLegendContentPanel().setBackground(color);
