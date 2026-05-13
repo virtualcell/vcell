@@ -302,14 +302,20 @@ public abstract class AbstractVisualizationPanel extends DocumentEditorSubPanel 
     }
     private int lastCoordCharCount = emptyCoordText.length();
     private static final String emptyCoordText = "        ";   // enough spaces to reduce jitter when switching between no coord and coord
-    private static final DecimalFormat sci = new DecimalFormat("0.000E0", DecimalFormatSymbols.getInstance(Locale.US));
-    private static final DecimalFormat fix = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.US));
+    private static final DecimalFormat fix3 = new DecimalFormat("0.000", DecimalFormatSymbols.getInstance(Locale.US));
+    private static final DecimalFormat fix4 = new DecimalFormat("0.0000", DecimalFormatSymbols.getInstance(Locale.US));
+    private static final DecimalFormat sci = new DecimalFormat("0.###E0", DecimalFormatSymbols.getInstance(Locale.US));
     private static String formatCoord(double v) {
         double av = Math.abs(v);
-        return (av >= 0.001)
-                ? fix.format(v)
-                : sci.format(v);
+        if (av >= 0.01) {
+            return fix3.format(v);   // 0.062, 4.274
+        } else if (av >= 0.001) {
+            return fix4.format(v);   // 0.0015, 0.0098
+        } else {
+            return sci.format(v);    // 4.358E-12
+        }
     }
+
     private void adjustCoordLabelWidth(String text) {
         int charCount = text.length();
         // Only resize if the number of characters changed
