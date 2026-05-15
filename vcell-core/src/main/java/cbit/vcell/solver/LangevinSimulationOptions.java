@@ -28,7 +28,9 @@ import cbit.vcell.math.VCML;
 public class LangevinSimulationOptions implements Serializable, Matchable, VetoableChangeListener {
 
 	public final static int DefaultNumberOfConcurrentJobs = 20;	// used for multiple runs on the cluster
-	public final static int DefaultTotalNumberOfJobs = 100;
+	public final static int DefaultTotalNumberOfJobs = 20;
+	public final static int MaxNumberOfConcurrentJobs = 20;
+	public final static int MaxTotalNumberOfJobs = 200;			// arbitrary limit to prevent excessive use of cluster resources
 
 	public final static String Partition_Nx = "Partition Nx: ";
 	public final static String Partition_Ny = "Partition Ny: ";
