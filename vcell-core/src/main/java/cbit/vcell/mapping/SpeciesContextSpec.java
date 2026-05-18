@@ -449,7 +449,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
     private Boolean bForceContinuous = DEFAULT_FORCECONTINUOUS;
 
     // SpringSaLaD specific entities
-    public Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<>();
+    private Set<MolecularInternalLinkSpec> internalLinkSet = new LinkedHashSet<>();
     private Map<MolecularComponentPattern, SiteAttributesSpec> siteAttributesMap = new LinkedHashMap<>();
     private Map<StructuralSite, SiteAttributesSpec> structuralSiteAttributesMap = new LinkedHashMap<>();
     // is2D flag, used by the solver for collision / overlapping calculations, exact meaning uncertain
@@ -879,7 +879,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                     MolecularInternalLinkSpec link = new MolecularInternalLinkSpec(this, mcpOne, mcpTwo);
                     // TODO: set x,y,z instead, link will be computed
 //				link.setLinkLength(2.0);
-                    internalLinkSet.add(link);
+                    getInternalLinkSet().add(link);
                 }
                 return;     // initial initialization done, nothing else to do
             }
@@ -945,18 +945,41 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             for(MolecularInternalLinkSpec oldMils : getInternalLinkSet()) {
                 Pair<LinkNode, LinkNode> link = oldMils.getLink();
                 LinkNode lnOne = oldMils.getLinkNodeOne();
-                LinkNode lnTwo = oldMils.getLinkNodeTwo();
                 if(lnOne instanceof MolecularComponentPattern mcpOne && !oldToNewMcp.containsKey(mcpOne)) {
                     linksToRemove.add(oldMils);
                     continue;
-                }
-                if(lnTwo instanceof MolecularComponentPattern mcpTwo && !oldToNewMcp.containsKey(mcpTwo)) {
+                } else if(lnOne instanceof StructuralSite ssOne && !structuralSiteAttributesMap.containsKey(ssOne)) {
                     linksToRemove.add(oldMils);
                     continue;
                 }
+
+                LinkNode lnTwo = oldMils.getLinkNodeTwo();
+                if(lnTwo instanceof MolecularComponentPattern mcpTwo && !oldToNewMcp.containsKey(mcpTwo)) {
+                    linksToRemove.add(oldMils);
+                    continue;
+                } else if(lnTwo instanceof StructuralSite ssTwo && !structuralSiteAttributesMap.containsKey(ssTwo)) {
+                    linksToRemove.add(oldMils);
+                    continue;
+                }
+
                 // lnOne and lnTwo are StructuralSites or MolecularComponentPattern with a match in oldToNewMcp,
                 // then we update the link
-                Pair<LinkNode, LinkNode> newLink = new Pair(oldToNewMcp.get(lnOne), oldToNewMcp.get(lnTwo));
+                LinkNode newLnOne = null;
+                if(lnOne instanceof MolecularComponentPattern) {
+                    newLnOne = oldToNewMcp.get(lnOne);
+                } else if(lnOne instanceof StructuralSite) {
+                    newLnOne = lnOne;
+                }
+                LinkNode newLnTwo = null;
+                if(lnTwo instanceof MolecularComponentPattern) {
+                    newLnTwo = oldToNewMcp.get(lnTwo);
+                } else if(lnTwo instanceof StructuralSite) {
+                    newLnTwo = lnTwo;
+                }
+                if(newLnOne == null || newLnTwo == null) {
+                    throw new RuntimeException("Error while updating links, new link nodes can't be null");
+                }
+                Pair<LinkNode, LinkNode> newLink = new Pair(newLnOne, newLnTwo);
                 oldMils.setLink(newLink);
             }
             getInternalLinkSet().removeAll(linksToRemove);
@@ -1058,11 +1081,11 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             return false;
         }
 
-        if(internalLinkSet.size() != scs.internalLinkSet.size()) {      // springsalad MolecularInternalLinkSpec set
+        if(getInternalLinkSet().size() != scs.getInternalLinkSet().size()) {      // springsalad MolecularInternalLinkSpec set
             return false;
         }
-        for(MolecularInternalLinkSpec ourMils : internalLinkSet) {
-            if (!containsIsomorph(ourMils, scs.internalLinkSet)) {
+        for(MolecularInternalLinkSpec ourMils : getInternalLinkSet()) {
+            if (!containsIsomorph(ourMils, scs.getInternalLinkSet())) {
                 return false;
             }
         }
@@ -1353,6 +1376,22 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                         return;
                     }
                 }
+                for( MolecularInternalLinkSpec mils : getInternalLinkSet()) {
+                    SiteAttributesSpec sas1 = mils.getSite1();
+                    SiteAttributesSpec sas2 = mils.getSite2();
+                    if (sas1 == null || sas2 == null) {
+                        String msg = "Link with null SiteAttributesSpec found. Both sites of a link must have attributes specified.";
+                        String tip = msg;
+                        issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                        return;
+                    }
+                    if(sas1.getLinkNode() == null || sas2.getLinkNode() == null) {
+                        String msg = "null LinkNode within SiteAttributesSpec. Both sites of a link must have a valid SiteAttributesSpec.";
+                        String tip = msg;
+                        issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                        return;
+                    }
+                }
                 if(mcpList.size() > 1 && getInternalLinkSet().size() > 0) {
                     Map<LinkNode, Integer> mcpMap = new LinkedHashMap<> ();
                     int count = 0;  // total number of LinkNodes (MolecularComponentPattern and StructuralSite) in the molecule, used to build the graph
@@ -1368,6 +1407,12 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
                     GraphContinuity.Graph graph = new GraphContinuity.Graph(count);
                     for(MolecularInternalLinkSpec mils : getInternalLinkSet()) {
                         Pair<LinkNode, LinkNode> link = mils.getLink();
+                        if(link.one == null || link.two == null) {
+                            String msg = "Link with null node found. Both nodes of a link must be specified.";
+                            String tip = msg;
+                            issueVector.add(new Issue(this, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+                            return;
+                        }
                         int one = mcpMap.get(link.one);
                         int two = mcpMap.get(link.two);
                         graph.addEdge(one, two);
@@ -2581,7 +2626,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
         sb.append("MOLECULE: \"" + getSpeciesContext().getName() + "\" " + getSpeciesContext().getStructure().getName() +
                 " Number " + scount +
                 " Site_Types " + siteTypes + " Total" + "_Sites " + totalSites +
-                " Total_Links " + internalLinkSet.size() + " is2D " + (dimension == 2 ? true : false));    // TODO: molecule is flat, unrelated to geometry
+                " Total_Links " + getInternalLinkSet().size() + " is2D " + (dimension == 2 ? true : false));    // TODO: molecule is flat, unrelated to geometry
         sb.append("\n");
         sb.append("{");
         sb.append("\n");
@@ -2599,7 +2644,7 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             sas.writeSite(sb);
         }
         sb.append("\n");
-        for(MolecularInternalLinkSpec mils : internalLinkSet){
+        for(MolecularInternalLinkSpec mils : getInternalLinkSet()){
             sb.append("     ");
             mils.writeLink(sb);
         }
