@@ -125,14 +125,17 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				int totalNumberOfJobs;
 				try {
 					totalNumberOfJobs = Integer.parseInt(getTotalNumberOfJobsJTextField().getText());
-					if(totalNumberOfJobs < 2) {
-						totalNumberOfJobs = LangevinSimulationOptions.DefaultTotalNumberOfJobs;
-					}
 				} catch(NumberFormatException ex) {
 					totalNumberOfJobs = solverTaskDescription.getLangevinSimulationOptions().getTotalNumberOfJobs();
-					if(totalNumberOfJobs < 2) {
-						totalNumberOfJobs = LangevinSimulationOptions.DefaultTotalNumberOfJobs;
-					}
+				}
+				if(totalNumberOfJobs < 2) {
+					totalNumberOfJobs = LangevinSimulationOptions.DefaultTotalNumberOfJobs;
+				}
+				if(totalNumberOfJobs < solverTaskDescription.getLangevinSimulationOptions().getNumberOfConcurrentJobs()) {
+					totalNumberOfJobs = solverTaskDescription.getLangevinSimulationOptions().getNumberOfConcurrentJobs();
+				}
+				if(totalNumberOfJobs > LangevinSimulationOptions.MaxTotalNumberOfJobs) {
+					totalNumberOfJobs = LangevinSimulationOptions.MaxTotalNumberOfJobs;
 				}
 				solverTaskDescription.getLangevinSimulationOptions().setTotalNumberOfJobs(totalNumberOfJobs);
 				getTotalNumberOfJobsJTextField().setText(totalNumberOfJobs+"");
@@ -140,14 +143,17 @@ public class LangevinOptionsPanel  extends CollapsiblePanel {
 				int numberOfConcurrentJobs;
 				try {
 					numberOfConcurrentJobs = Integer.parseInt(getNumberOfConcurrentJobsJTextField().getText());
-					if(numberOfConcurrentJobs < 2) {
-						numberOfConcurrentJobs = LangevinSimulationOptions.DefaultNumberOfConcurrentJobs;
-					}
 				} catch(NumberFormatException ex) {
 					numberOfConcurrentJobs = solverTaskDescription.getLangevinSimulationOptions().getNumberOfConcurrentJobs();
-					if(numberOfConcurrentJobs < 2) {
-						numberOfConcurrentJobs = LangevinSimulationOptions.DefaultNumberOfConcurrentJobs;
-					}
+				}
+				if(numberOfConcurrentJobs < 2) {
+					numberOfConcurrentJobs = LangevinSimulationOptions.DefaultNumberOfConcurrentJobs;
+				}
+				if(numberOfConcurrentJobs > solverTaskDescription.getLangevinSimulationOptions().getTotalNumberOfJobs()) {
+					numberOfConcurrentJobs = solverTaskDescription.getLangevinSimulationOptions().getTotalNumberOfJobs();
+				}
+				if(numberOfConcurrentJobs > LangevinSimulationOptions.MaxNumberOfConcurrentJobs) {
+					numberOfConcurrentJobs = LangevinSimulationOptions.MaxNumberOfConcurrentJobs;
 				}
 				solverTaskDescription.getLangevinSimulationOptions().setNumberOfConcurrentJobs(numberOfConcurrentJobs);
 				getNumberOfConcurrentJobsJTextField().setText(numberOfConcurrentJobs+"");

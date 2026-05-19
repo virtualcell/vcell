@@ -46,6 +46,7 @@ import javax.swing.border.Border;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.TableCellEditor;
 
+import cbit.vcell.solver.*;
 import org.vcell.util.NumberUtils;
 import org.vcell.util.document.User;
 import org.vcell.util.gui.DefaultScrollTableActionManager;
@@ -76,14 +77,9 @@ import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.math.MathDescription;
 import cbit.vcell.model.common.VCellErrorMessages;
 import cbit.vcell.server.SimulationStatus;
-import cbit.vcell.solver.OutputTimeSpec;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SimulationOwner;
 import cbit.vcell.solver.SimulationOwner.UnitInfo;
-import cbit.vcell.solver.SolverDescription;
 import cbit.vcell.solver.SolverDescription.SolverFeature;
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.SolverUtilities;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/7/2004 3:41:07 PM)
@@ -1396,6 +1392,13 @@ private void stopSimulations() {
 				} catch (PropertyVetoException e) {
 					e.printStackTrace();
 				}
+			}
+		}
+		if (solverDescription.equals(SolverDescription.Langevin)) {
+			LangevinSimulationOptions lso = selectedSim.getSolverTaskDescription().getLangevinSimulationOptions();
+			if(lso == null || lso.getNumberOfConcurrentJobs() > 1 || lso.getTotalNumberOfJobs() > 1) {
+				DialogUtils.showErrorDialog(SimulationListPanel.this, "Concurrent Jobs not supported for Quick Run. ");
+				return;
 			}
 		}
 		getSimulationWorkspace().getClientSimManager().runQuickSimulation(selectedSim, viewerType);

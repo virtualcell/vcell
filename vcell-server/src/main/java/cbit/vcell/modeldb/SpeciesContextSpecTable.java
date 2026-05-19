@@ -318,9 +318,15 @@ public String getSQLValueList(KeyValue Key, KeyValue simContextKey, SpeciesConte
 
 	static String getInternalLinksSQL(SpeciesContextSpec scs) {
 		StringBuffer sb = new StringBuffer();
-		for( MolecularInternalLinkSpec mils : scs.internalLinkSet) {
+		for( MolecularInternalLinkSpec mils : scs.getInternalLinkSet()) {
 			SiteAttributesSpec sas1 = mils.getSite1();
 			SiteAttributesSpec sas2 = mils.getSite2();
+			if(sas1 == null || sas2 == null) {
+				throw new RuntimeException("null SiteAttributesSpec in MolecularInternalLinkSpec");
+			}
+			if(sas1.getLinkNode() == null || sas2.getLinkNode() == null) {
+				throw new RuntimeException("null LinkNode in SiteAttributesSpec in MolecularInternalLinkSpec");
+			}
 			sb.append(sas1.getLinkNode().getName() + ",");
 			sb.append(sas2.getLinkNode().getName() + ";");
 		}
