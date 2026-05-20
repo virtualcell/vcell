@@ -1261,6 +1261,9 @@ public class RbmUtils {
 		if( (line.startsWith("begin reaction_rules") ) || (line.startsWith("end reaction_rules")) ) {
 			line = line.replace("reaction_rules", "reaction rules");
 		}
+		// replace ~<digit>   with   ~s<digit>
+		// ex: A(site2~0) -> A(site2~1)   becomes:    A(site2~s0) -> A(site2~s1)
+		line = line.replaceAll("~(?=\\d)", "~s");
 		return line;
 	}
 	
