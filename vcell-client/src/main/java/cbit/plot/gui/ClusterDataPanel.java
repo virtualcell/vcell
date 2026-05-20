@@ -5,6 +5,7 @@ import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.simdata.LangevinSolverResultSet;
 import cbit.vcell.simdata.UiTableExporterToHDF5;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ClusterSpecificationPanel;
@@ -254,7 +255,8 @@ public class ClusterDataPanel extends AbstractDataPanel {
             return;
         }
 
-        ODESolverResultSet srs = sel.resultSet;
+        LangevinSolverResultSet lsrs = sel.resultSet;
+        ODESolverResultSet srs = ClusterSpecificationPanel.getResultSetForMode(lsrs, sel.mode);
         java.util.List<ColumnDescription> columns = sel.columns;
 
         int timeIndex = srs.findColumn(ReservedVariable.TIME.getName());

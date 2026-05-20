@@ -116,8 +116,8 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
     public static class ClusterSelection {  // used to communicate y-list selection to the ClusterVisualizationPanel
         public final DisplayMode mode;
         public final java.util.List<ColumnDescription> columns;
-        public final ODESolverResultSet resultSet;
-        public ClusterSelection(DisplayMode mode, java.util.List<ColumnDescription> columns, ODESolverResultSet resultSet) {
+        public final LangevinSolverResultSet resultSet;
+        public ClusterSelection(DisplayMode mode, java.util.List<ColumnDescription> columns, LangevinSolverResultSet resultSet) {
             this.mode = mode;
             this.columns = columns;
             this.resultSet = resultSet;
@@ -199,12 +199,12 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
                 // extract selected ColumnDescriptions
                 java.util.List<ColumnDescription> selected = getYAxisChoice().getSelectedValuesList();
                 DisplayMode mode = getCurrentDisplayMode();
-                ODESolverResultSet srs = getResultSetForMode(mode);
+//                ODESolverResultSet srs = getResultSetForMode(mode);
                 // moved this to actionPerformed() where it belongs, it was being called too late here
 //                // set property to inform the list about current mode (needed for renderer)
 //                yAxisChoiceList.putClientProperty("ClusterDisplayMode", mode);
                 // fire the event upward
-                firePropertyChange("ClusterSelection", null, new ClusterSelection(mode, selected, srs));
+                firePropertyChange("ClusterSelection", null, new ClusterSelection(mode, selected, langevinSolverResultSet));
             }
         }
     };
@@ -443,19 +443,20 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
         if (cds == null) return 0;
         return cds.length > 1 ? cds.length-1 : 0; // subtract one for time column, but don't return negative if no column at all
     }
-    private ODESolverResultSet getResultSetForMode(DisplayMode mode) {
-        if (langevinSolverResultSet == null) {
+
+    public static ODESolverResultSet getResultSetForMode(LangevinSolverResultSet lsrs, DisplayMode mode) {
+        if (lsrs == null) {
             return null;
         }
         return switch (mode) {
-            case COUNTS -> langevinSolverResultSet.getClusterCounts();
-            case MEAN   -> langevinSolverResultSet.getClusterMean();
-            case OVERALL-> langevinSolverResultSet.getClusterOverall();
+            case COUNTS -> lsrs.getClusterCounts();
+            case MEAN   -> lsrs.getClusterMean();
+            case OVERALL-> lsrs.getClusterOverall();
         };
     }
 
     private ColumnDescription[] getColumnDescriptionsForMode(DisplayMode mode) {
-        ODESolverResultSet srs = getResultSetForMode(mode);
+        ODESolverResultSet srs = getResultSetForMode(langevinSolverResultSet, mode);
         return (srs == null ? null : srs.getColumnDescriptions());
     }
     private DisplayMode getCurrentDisplayMode() {

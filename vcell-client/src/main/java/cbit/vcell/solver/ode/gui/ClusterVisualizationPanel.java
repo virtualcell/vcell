@@ -1,6 +1,7 @@
 package cbit.vcell.solver.ode.gui;
 
 import cbit.plot.gui.ClusterDataPanel;
+import cbit.vcell.simdata.LangevinSolverResultSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -317,7 +318,8 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
             return;
         }
         List<ColumnDescription> columns = sel.columns;
-        ODESolverResultSet srs = sel.resultSet;
+        LangevinSolverResultSet lsrs = sel.resultSet;
+        ODESolverResultSet srs = ClusterSpecificationPanel.getResultSetForMode(lsrs, sel.mode);
         int indexTime = srs.findColumn("t");
         double[] times = srs.extractColumn(indexTime);
 
