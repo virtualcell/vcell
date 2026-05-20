@@ -35,6 +35,11 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
                 "Cluster Counts",
                 "Show the number of clusters of each size"
         ),
+        MASS(   // molecule-weighted cluster count (cluster mass distribution)
+                "MASS",
+                "Cluster Mass",
+                "Show the number of molecules contained in clusters of each size (count × size)"
+        ),
         MEAN(
                 "MEAN",
                 "Cluster Mean",
@@ -153,6 +158,9 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
             return switch (mode) {
                 case COUNTS ->
                         "<html>Number of clusters of size <b>" + name +
+                                "</b> <font color=\"#8B0000\">[molecules]</font></html>";
+                case MASS ->
+                        "<html>Number of molecules in the clusters of size <b>" + name +
                                 "</b> <font color=\"#8B0000\">[molecules]</font></html>";
                 case MEAN, OVERALL -> {
                     ClusterStatistic stat = ClusterStatistic.fromString(name);
@@ -450,6 +458,7 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
         }
         return switch (mode) {
             case COUNTS -> lsrs.getClusterCounts();
+            case MASS -> lsrs.getClusterMass();
             case MEAN   -> lsrs.getClusterMean();
             case OVERALL-> lsrs.getClusterOverall();
         };
