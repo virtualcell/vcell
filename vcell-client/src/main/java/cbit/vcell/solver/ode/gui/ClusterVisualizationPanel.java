@@ -71,11 +71,11 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                     redrawLegend(sel);      // redraw legend (one plot, multiple curves)
                     redrawPlot(sel);        // redraw plot (one plot, multiple curves)
                     redrawDataTable(sel);   // redraw data table
-                    if(sel.mode == ClusterSpecificationPanel.DisplayMode.COUNTS) {
-                        getClusterPlotPanel().setShowAvgAsStep(true);
-                    } else {
-                        getClusterPlotPanel().setShowAvgAsStep(false);
-                    }
+//                    if(sel.mode == ClusterSpecificationPanel.DisplayMode.COUNTS) {
+//                        getClusterPlotPanel().setShowAvgAsStep(true);
+//                    } else {
+//                        getClusterPlotPanel().setShowAvgAsStep(false);
+//                    }
                 } catch (ExpressionException e) {
                     throw new RuntimeException(e);
                 }
@@ -281,6 +281,12 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                 unitSymbol = "molecules";
                 tooltip = "<html>cluster size <b>" + name + "</b> molecules</html>";
                 break;
+            case MASS:
+                // name is the cluster size (e.g., "3")
+                unitSymbol = "molecules";
+                tooltip = "<html>cluster size <b>" + name + "</b><br>" +
+                        "total molecules = " + name + " × (cluster count)</html>";
+                break;
             case MEAN:
             case OVERALL:
                 // name is ACS / SD / ACO
@@ -431,7 +437,7 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                 Color cACS = persistentColorMap.get("ACS");
                 c = new Color(cACS.getRed(), cACS.getGreen(), cACS.getBlue(), SD_ALPHA);   // alpha 0–255
             } else {
-                // ACS, ACO, COUNTS all use their assigned colors
+                // ACS, ACO, COUNTS, MASS all use their assigned colors
                 c = persistentColorMap.get(name);
             }
             getLegendContentPanel().add(createLegendEntry(name, c, sel.mode));

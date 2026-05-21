@@ -84,7 +84,12 @@ public class ClusterDataPanel extends AbstractDataPanel {
                         text = "<html>" + name + "<font color=\"#8B0000\"> [" + unit + "]</font></html>";
                         tooltip = "<html>Number of clusters made of <b>" + name + "</b> " + unit + "</html>";
                         break;
-
+                    case MASS:
+                        unit = "molecules";
+                        text = "<html>" + name + "<font color=\"#8B0000\"> [" + unit + "]</font></html>";
+                        tooltip = "<html>Cluster size <b>" + name + "</b><br>" +
+                                "Total molecules = " + name + " × (cluster count)</html>";
+                        break;
                     case MEAN:
                     case OVERALL:
                         if (stat != null) {

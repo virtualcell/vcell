@@ -115,6 +115,8 @@ public class LangevinSolverResultSet implements Serializable {
             co = getClusterCounts();
             checkTrivial(co);
             computeClusterMass();
+            co = getClusterMass();
+            checkTrivial(co);
         }
         if(isAverageDataAvailable()) {
             ODESimData co = getAvg();

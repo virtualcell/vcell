@@ -332,18 +332,22 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
             ButtonGroup group = new ButtonGroup();
 
             JRadioButton rbCounts = new JRadioButton(DisplayMode.COUNTS.uiLabel());
+            JRadioButton rbMass = new JRadioButton(DisplayMode.MASS.uiLabel());
             JRadioButton rbMean = new JRadioButton(DisplayMode.MEAN.uiLabel());
             JRadioButton rbOverall = new JRadioButton(DisplayMode.OVERALL.uiLabel());
 
             rbCounts.setActionCommand(DisplayMode.COUNTS.actionCommand());
+            rbMass.setActionCommand(DisplayMode.MASS.actionCommand());
             rbMean.setActionCommand(DisplayMode.MEAN.actionCommand());
             rbOverall.setActionCommand(DisplayMode.OVERALL.actionCommand());
 
             rbCounts.setToolTipText(DisplayMode.COUNTS.tooltip());
+            rbMass.setToolTipText(DisplayMode.MASS.tooltip());
             rbMean.setToolTipText(DisplayMode.MEAN.tooltip());
             rbOverall.setToolTipText(DisplayMode.OVERALL.tooltip());
 
             group.add(rbCounts);
+            group.add(rbMass);
             group.add(rbMean);
             group.add(rbOverall);
 
@@ -356,8 +360,10 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
             gbc.gridy = 0;
             content.add(rbCounts, gbc);
             gbc.gridy = 1;
-            content.add(rbMean, gbc);
+            content.add(rbMass, gbc);
             gbc.gridy = 2;
+            content.add(rbMean, gbc);
+            gbc.gridy = 3;
             content.add(rbOverall, gbc);
         }
         return cp;
@@ -429,6 +435,7 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
         yAxisCounts.clear();
         if (langevinSolverResultSet != null) {
             yAxisCounts.put(DisplayMode.COUNTS, countColumns(langevinSolverResultSet.getClusterCounts()));
+            yAxisCounts.put(DisplayMode.MASS, countColumns(langevinSolverResultSet.getClusterMass()));
             yAxisCounts.put(DisplayMode.MEAN, countColumns(langevinSolverResultSet.getClusterMean()));
             yAxisCounts.put(DisplayMode.OVERALL, countColumns(langevinSolverResultSet.getClusterOverall()));
         }
