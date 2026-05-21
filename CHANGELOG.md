@@ -5,7 +5,7 @@ All notable changes to VCell are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 VCell uses a 4-part version `MAJOR.MINOR.PATCH.BUILD`; see
 [`docs/RELEASING.md`](docs/RELEASING.md) for what each part means, the
-release-cut procedure, and how this file relates to the marketing-grade
+release-cut procedure, and how this file relates to the user-facing
 narratives under `release-notes/major/`.
 
 Each section opens with a `Highlights.` paragraph (the user-facing story)
@@ -19,7 +19,7 @@ _(Release-manager scratchpad. Populated at release-cut time.)_
 ## [8.0.0.03] - 2026-05-21
 
 **Highlights.** Patch release on the 8.0.0 line accompanying the
-SpringSaLaD GA marketing event. BioNetGen BNGL imports now
+SpringSaLaD GA public release event. BioNetGen BNGL imports now
 preprocess tilde-prefixed bare digits into the `~s<digit>` form,
 resolving a parser ambiguity with state labels.
 
@@ -76,7 +76,7 @@ transitions from an opt-in property to a first-class VCell modality.
 This release also introduces a new Plot Options dialog and adds an
 `admincli report` subcommand kit for period-bounded NIH-RPPR-style
 usage reports. The MAJOR bump from 7.7 → 8.0 marks the SpringSaLaD GA
-marketing event; the underlying Structural Sites work that preceded
+public release event; the underlying Structural Sites work that preceded
 this build shipped in 7.7.0.78.
 
 ### Added
@@ -105,7 +105,7 @@ _Consolidated backfill section covering builds 7.7.0.0 through 7.7.0.78
 notable changes since 7.6, not an exhaustive enumeration. See the
 GitHub releases page for the per-build PR list._
 
-**Marketing-epoch breakdown** (see `release-notes/major/` for the
+**Public-release epoch breakdown** (see `release-notes/major/` for the
 user-facing accordion entries):
 
 | Epoch | Prod-rolled | Approx. build range |
@@ -115,7 +115,7 @@ user-facing accordion entries):
 | VCell 7.7 — Stability Update | 2026-04-20 → 2026-05-07 | 7.7.0.73 / .77 in prod (7.7.0.78 tagged but not prod-rolled) |
 
 **Highlights.** The 7.7 line laid the foundation for the SpringSaLaD GA
-marketing event that follows in 8.0.0. Major themes:
+public release event that follows in 8.0.0. Major themes:
 (a) substantial SpringSaLaD evolution — UI redesign, multi-run support
 with random seed and SLURM array submission, batch results
 visualization, Structural Sites, integration with the upgraded
@@ -398,13 +398,13 @@ _Client and desktop._
 
 _Consolidated backfill section covering bug-fix and incremental
 patches to the 7.6 line that were rolled to prod after the
-"VCell 7.6" marketing release (2024-07-12, build 7.6.0.19) and
+"VCell 7.6" public release (2024-07-12, build 7.6.0.19) and
 before the 7.7 line opened in prod (2024-09-27, build 7.7.0.0).
 This is a curated summary, not a per-build enumeration; see the
 GitHub releases page for the 7.6.0.20 through 7.6.0.50 detail._
 
 **Highlights.** Patch releases on the 7.6 line after its July 2024
-marketing release. Notable themes:
+public release. Notable themes:
 (a) significant progress on SpringSaLaD imports / partitions /
 bound-transitions / help content (laying groundwork for the 7.7
 line and ultimately 8.0.0 GA);

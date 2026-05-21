@@ -12,9 +12,9 @@ but all artifacts derive from one canonical source in this repository.
 | Artifact | Audience | Granularity | Location | Source of truth? |
 |---|---|---|---|---|
 | `CHANGELOG.md` | Developers, API integrators | One section per **tagged build** | repo root | Yes — canonical engineer-track log |
-| `release-notes/major/<version>.md` | End users / scientists | One file per **marketing release** (e.g. `7.7.md`, `8.0.0.md`) | this repo | Yes — canonical user-facing narrative |
+| `release-notes/major/<version>.md` | End users / scientists | One file per **public release** (e.g. `7.7.md`, `8.0.0.md`) | this repo | Yes — canonical user-facing narrative |
 | GitHub release body | Developers (existing channel) | Per tag | github.com | No — copy-pasted from `CHANGELOG.md` at release-cut |
-| vcell.org accordion (`/run-vcell-software`) | End users | One entry per marketing release | external website | No — transcribed from `release-notes/major/<version>.md` when prod rolls |
+| vcell.org accordion (`/run-vcell-software`) | End users | One entry per public release | external website | No — transcribed from `release-notes/major/<version>.md` when prod rolls |
 
 If the website ever drifts from the repo, the repo wins and the website is
 corrected. Never edit the website without also updating the repo doc.
@@ -25,7 +25,7 @@ VCell uses a 4-part version: `MAJOR.MINOR.PATCH.BUILD`.
 
 | Part | Meaning | Triggered by |
 |---|---|---|
-| `MAJOR` | User-facing breaking change **or** marketing event | Release-engineering decision. Examples: 8.0.0 = SpringSaLaD GA. |
+| `MAJOR` | User-facing breaking change **or** public release event | Release-engineering decision. Examples: 8.0.0 = SpringSaLaD GA. |
 | `MINOR` | Significant new feature, backwards-compatible | Release-engineering decision. |
 | `PATCH` | Bugfix-only release | Release-engineering decision. |
 | `BUILD` | CI auto-incrementing build counter | Automatic. Each push that produces a release artifact increments this. |
@@ -39,7 +39,7 @@ mechanical. `7.7.0.77` and `7.7.0.78` are the 77th and 78th builds of the
 - Behavior change that silently produces different simulation results
 - Removal or rename of a UI feature users depend on
 
-**What counts as a "marketing event":**
+**What counts as a "public release event":**
 - A new modeling modality with its own identity (e.g. SpringSaLaD GA → 8.0.0)
 - A major UI or workflow overhaul worth highlighting on vcell.org
 
@@ -105,13 +105,13 @@ not required to — the formal write-up happens at release-cut time.
 
 ## Major-release documents
 
-Each marketing release gets a file at `release-notes/major/<version>.md`.
+Each public release gets a file at `release-notes/major/<version>.md`.
 By default, one file per `MAJOR.MINOR` line, not per build.
 
 - `release-notes/major/8.0.0.md` — covers the entire 8.0.0 line
 
 When a long-running `MAJOR.MINOR` line accumulates multiple distinct
-production rollouts that each warrant their own marketing event,
+production rollouts that each warrant their own public release event,
 split the file into named epoch files and keep a short index file at
 the canonical `<MAJOR.MINOR>.md` path:
 
@@ -126,7 +126,7 @@ entry; the index file is repo-only navigation.
 
 These are curated narratives written for end users. They are the source
 of truth for the vcell.org `/run-vcell-software` accordion. When prod
-rolls to a new marketing version, the matching file is transcribed to
+rolls to a new publicly-released version, the matching file is transcribed to
 the website.
 
 ### File template
@@ -155,7 +155,7 @@ tutorials.>
 ## Improvements
 
 <Bulleted list of smaller user-visible improvements rolled up across
-the marketing release.>
+the public release.>
 
 ## Bug fixes
 
@@ -176,7 +176,7 @@ explicitly with migration guidance.>
 <Optional: contributors, funding citations, PI credits for major features.>
 ```
 
-The file may be drafted while the marketing release is still in
+The file may be drafted while the public release is still in
 development (e.g., partially complete on a `stage`-deployed build). It
 is not transcribed to the website until prod rolls.
 
@@ -212,11 +212,11 @@ repo unless otherwise noted.
 ## vcell.org transcription
 
 The vcell.org accordion is updated **only when prod is rolled** to a
-new marketing version (a new `MAJOR.MINOR` line). Patch and build
+new publicly-released version (a new `MAJOR.MINOR` line). Patch and build
 increments within an already-deployed line do not produce new accordion
 entries — they are visible only via `CHANGELOG.md` and GitHub releases.
 
-When prod is rolled to a new marketing version, the release manager:
+When prod is rolled to a new publicly-released version, the release manager:
 
 1. Confirms `release-notes/major/<MAJOR.MINOR>.md` is final and reflects
    the build that just went to prod.
