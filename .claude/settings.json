@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(kubectl kustomize *)",
+      "Bash(aws cloudformation describe-stacks *)",
+      "Bash(aws ssm get-command-invocation *)",
+      "Bash(aws ec2 describe-instances *)",
+      "Bash(docker manifest inspect *)",
+      "Bash(docker compose logs *)",
+      "Bash(gh pr view *)"
+    ]
+  }
+}
