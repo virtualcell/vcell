@@ -904,7 +904,7 @@ public SpeciesContext getDestroyedSpecies(SpeciesContextSpec[] speciesContextSpe
  */
 private final static String GenericTip = "Please edit the reaction so that it matches a SpringSaLaD subtype or disable it in this table";
 private final static String SpringSaLaDMsgAtLeastOne = "At least one reactant and one product are required.";
-// private final static String SpringSaLaDMsgAnchorReactionMustMembrane = "SpringSaLaD reactions must be located on the Membrane if one reactant is on Membrane.";
+private final static String SpringSaLaDMsgAnchorReactionMustMembrane = "SpringSaLaD reactions must be located on the Membrane if one reactant is on Membrane.";
 private final static String SpringSaLaDMsgEachReactionMust = "SpringSaLaD requires that each compartmental reaction and all its participants must be in the same compartment";
 private final static String SpringSaLaDMsgAnchorCannotBePart = "The reserved site 'Anchor' can only be part of a membrane reactant pattern.";
 private final static String SpringSaLaDMsgAnchorCannotBeTarget = "The reserved site 'Anchor' cannot be the target of any SpringSaLaD reaction.";
@@ -981,16 +981,16 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 		}
 
 		// if at least one reactant is on a membrane, the reaction must be on a membrane
-//		for(ReactantPattern rp : rpList) {
-//			if(SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
-//				if(!(SpringStructureEnum.Membrane.columnName.equals(reactionRule.getStructure().getName()))) {
-//					String msg = SpringSaLaDMsgAnchorReactionMustMembrane;
-//					String tip = msg;
-//					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
-//					return;
-//				}
-//			}
-//		}
+		for(ReactantPattern rp : rpList) {
+			if(SpringStructureEnum.Membrane.columnName.equals(rp.getStructure().getName())) {
+				if(!(SpringStructureEnum.Membrane.columnName.equals(reactionRule.getStructure().getName()))) {
+					String msg = SpringSaLaDMsgAnchorReactionMustMembrane;
+					String tip = msg;
+					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					return;
+				}
+			}
+		}
 
 		// all compartmental reactions must have all reactants, all products and the reaction located in the same compartment
 		// things are different with membrane participants when reaction must be on membrane too, we deal with that elsewhere
