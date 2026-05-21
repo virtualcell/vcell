@@ -16,6 +16,13 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.0.03] - 2026-05-21
+
+**Highlights.** Patch release on the 8.0.0 line accompanying the
+SpringSaLaD GA marketing event. BioNetGen BNGL imports now
+preprocess tilde-prefixed bare digits into the `~s<digit>` form,
+resolving a parser ambiguity with state labels.
+
 ### Changed
 - BioNetGen BNGL import: rewrite tilde-prefixed bare digits to the
   `~s<digit>` form during parser preprocessing, e.g. `~0` → `~s0`.
