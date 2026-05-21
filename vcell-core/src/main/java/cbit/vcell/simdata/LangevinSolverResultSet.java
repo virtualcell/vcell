@@ -1,15 +1,20 @@
 package cbit.vcell.simdata;
 
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
+import cbit.vcell.math.RowColumnResultSet;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.solver.DataSymbolMetadata;
 import cbit.vcell.solver.SimulationModelInfo;
 import cbit.vcell.solver.ode.ODESimData;
+import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.units.VCUnitDefinition;
 import cbit.vcell.util.ColumnDescription;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.vcell.model.ssld.SsldUtils;
+import org.vcell.util.document.KeyValue;
+import org.vcell.util.document.User;
+import org.vcell.util.document.VCDataIdentifier;
 
 import java.io.*;
 import java.util.HashMap;
@@ -25,6 +30,9 @@ public class LangevinSolverResultSet implements Serializable {
         this.raw = raw;
     }
     public final Map<String, SsldUtils.LangevinResult> metadataMap = new LinkedHashMap<>();
+
+    // derived data, based on raw, populated in postProcess()
+    private ODESimData clusterMass = null;
 
 
 //    // safe getter that returns a deep copy, but I don't think we need it
@@ -47,6 +55,9 @@ public class LangevinSolverResultSet implements Serializable {
     }
     public ODESimData getClusterCounts() {
         return raw == null ? null : raw.getOdeSimDataClusterCounts();
+    }
+    public ODESimData getClusterMass() {
+        return clusterMass;
     }
     public ODESimData getClusterMean() {
         return raw == null ? null : raw.getOdeSimDataClusterMean();
@@ -103,6 +114,9 @@ public class LangevinSolverResultSet implements Serializable {
             checkTrivial(co);
             co = getClusterCounts();
             checkTrivial(co);
+            computeClusterMass();
+            co = getClusterMass();
+            checkTrivial(co);
         }
         if(isAverageDataAvailable()) {
             ODESimData co = getAvg();
@@ -131,6 +145,44 @@ public class LangevinSolverResultSet implements Serializable {
             metadataMap.put(columnName, lr);
         }
     }
+
+    private void computeClusterMass() {
+        ODESimData counts = getClusterCounts();
+        if (counts == null) {
+            clusterMass = null;
+            return;
+        }
+        try {
+            // 1. Deep copy counts via serialization
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream out = new ObjectOutputStream(bos);
+            out.writeObject(counts);
+            out.flush();
+            ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bos.toByteArray()));
+            clusterMass = (ODESimData) in.readObject();
+
+            // 2. Modify numeric values in-place
+            ColumnDescription[] cds = clusterMass.getColumnDescriptions();
+            int nCols = cds.length;
+            for (int c = 0; c < nCols; c++) {
+                ColumnDescription cd = cds[c];
+                String name = cd.getName();
+                if (name.equals("t")) {
+                    continue; // time column unchanged
+                }
+                int clusterSize = Integer.parseInt(name);
+                double[] series = clusterMass.extractColumn(c); // reference to internal array
+                for (int i = 0; i < series.length; i++) {
+                    double value = series[i] * clusterSize;
+                    clusterMass.setValue(i, c, value);
+                }
+            }
+        } catch (Exception e) {
+            lg.error("Failed to compute cluster mass", e);
+            clusterMass = null;
+        }
+    }
+
     private static void checkTrivial(ODESimData co) {
         ColumnDescription[] cds = co.getColumnDescriptions();
         for(ColumnDescription columnDescription : cds) {

@@ -35,6 +35,11 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
                 "Cluster Counts",
                 "Show the number of clusters of each size"
         ),
+        MASS(   // molecule-weighted cluster count (cluster mass distribution)
+                "MASS",
+                "Cluster Mass",
+                "Show the number of molecules contained in clusters of each size (count × size)"
+        ),
         MEAN(
                 "MEAN",
                 "Cluster Mean",
@@ -116,8 +121,8 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
     public static class ClusterSelection {  // used to communicate y-list selection to the ClusterVisualizationPanel
         public final DisplayMode mode;
         public final java.util.List<ColumnDescription> columns;
-        public final ODESolverResultSet resultSet;
-        public ClusterSelection(DisplayMode mode, java.util.List<ColumnDescription> columns, ODESolverResultSet resultSet) {
+        public final LangevinSolverResultSet resultSet;
+        public ClusterSelection(DisplayMode mode, java.util.List<ColumnDescription> columns, LangevinSolverResultSet resultSet) {
             this.mode = mode;
             this.columns = columns;
             this.resultSet = resultSet;
@@ -153,6 +158,9 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
             return switch (mode) {
                 case COUNTS ->
                         "<html>Number of clusters of size <b>" + name +
+                                "</b> <font color=\"#8B0000\">[molecules]</font></html>";
+                case MASS ->
+                        "<html>Number of molecules in the clusters of size <b>" + name +
                                 "</b> <font color=\"#8B0000\">[molecules]</font></html>";
                 case MEAN, OVERALL -> {
                     ClusterStatistic stat = ClusterStatistic.fromString(name);
@@ -199,12 +207,12 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
                 // extract selected ColumnDescriptions
                 java.util.List<ColumnDescription> selected = getYAxisChoice().getSelectedValuesList();
                 DisplayMode mode = getCurrentDisplayMode();
-                ODESolverResultSet srs = getResultSetForMode(mode);
+//                ODESolverResultSet srs = getResultSetForMode(mode);
                 // moved this to actionPerformed() where it belongs, it was being called too late here
 //                // set property to inform the list about current mode (needed for renderer)
 //                yAxisChoiceList.putClientProperty("ClusterDisplayMode", mode);
                 // fire the event upward
-                firePropertyChange("ClusterSelection", null, new ClusterSelection(mode, selected, srs));
+                firePropertyChange("ClusterSelection", null, new ClusterSelection(mode, selected, langevinSolverResultSet));
             }
         }
     };
@@ -324,18 +332,22 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
             ButtonGroup group = new ButtonGroup();
 
             JRadioButton rbCounts = new JRadioButton(DisplayMode.COUNTS.uiLabel());
+            JRadioButton rbMass = new JRadioButton(DisplayMode.MASS.uiLabel());
             JRadioButton rbMean = new JRadioButton(DisplayMode.MEAN.uiLabel());
             JRadioButton rbOverall = new JRadioButton(DisplayMode.OVERALL.uiLabel());
 
             rbCounts.setActionCommand(DisplayMode.COUNTS.actionCommand());
+            rbMass.setActionCommand(DisplayMode.MASS.actionCommand());
             rbMean.setActionCommand(DisplayMode.MEAN.actionCommand());
             rbOverall.setActionCommand(DisplayMode.OVERALL.actionCommand());
 
             rbCounts.setToolTipText(DisplayMode.COUNTS.tooltip());
+            rbMass.setToolTipText(DisplayMode.MASS.tooltip());
             rbMean.setToolTipText(DisplayMode.MEAN.tooltip());
             rbOverall.setToolTipText(DisplayMode.OVERALL.tooltip());
 
             group.add(rbCounts);
+            group.add(rbMass);
             group.add(rbMean);
             group.add(rbOverall);
 
@@ -348,8 +360,10 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
             gbc.gridy = 0;
             content.add(rbCounts, gbc);
             gbc.gridy = 1;
-            content.add(rbMean, gbc);
+            content.add(rbMass, gbc);
             gbc.gridy = 2;
+            content.add(rbMean, gbc);
+            gbc.gridy = 3;
             content.add(rbOverall, gbc);
         }
         return cp;
@@ -421,6 +435,7 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
         yAxisCounts.clear();
         if (langevinSolverResultSet != null) {
             yAxisCounts.put(DisplayMode.COUNTS, countColumns(langevinSolverResultSet.getClusterCounts()));
+            yAxisCounts.put(DisplayMode.MASS, countColumns(langevinSolverResultSet.getClusterMass()));
             yAxisCounts.put(DisplayMode.MEAN, countColumns(langevinSolverResultSet.getClusterMean()));
             yAxisCounts.put(DisplayMode.OVERALL, countColumns(langevinSolverResultSet.getClusterOverall()));
         }
@@ -443,19 +458,21 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
         if (cds == null) return 0;
         return cds.length > 1 ? cds.length-1 : 0; // subtract one for time column, but don't return negative if no column at all
     }
-    private ODESolverResultSet getResultSetForMode(DisplayMode mode) {
-        if (langevinSolverResultSet == null) {
+
+    public static ODESolverResultSet getResultSetForMode(LangevinSolverResultSet lsrs, DisplayMode mode) {
+        if (lsrs == null) {
             return null;
         }
         return switch (mode) {
-            case COUNTS -> langevinSolverResultSet.getClusterCounts();
-            case MEAN   -> langevinSolverResultSet.getClusterMean();
-            case OVERALL-> langevinSolverResultSet.getClusterOverall();
+            case COUNTS -> lsrs.getClusterCounts();
+            case MASS -> lsrs.getClusterMass();
+            case MEAN   -> lsrs.getClusterMean();
+            case OVERALL-> lsrs.getClusterOverall();
         };
     }
 
     private ColumnDescription[] getColumnDescriptionsForMode(DisplayMode mode) {
-        ODESolverResultSet srs = getResultSetForMode(mode);
+        ODESolverResultSet srs = getResultSetForMode(langevinSolverResultSet, mode);
         return (srs == null ? null : srs.getColumnDescriptions());
     }
     private DisplayMode getCurrentDisplayMode() {

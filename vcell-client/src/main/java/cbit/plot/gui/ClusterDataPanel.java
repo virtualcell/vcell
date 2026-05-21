@@ -5,6 +5,7 @@ import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
+import cbit.vcell.simdata.LangevinSolverResultSet;
 import cbit.vcell.simdata.UiTableExporterToHDF5;
 import cbit.vcell.solver.ode.ODESolverResultSet;
 import cbit.vcell.solver.ode.gui.ClusterSpecificationPanel;
@@ -83,7 +84,12 @@ public class ClusterDataPanel extends AbstractDataPanel {
                         text = "<html>" + name + "<font color=\"#8B0000\"> [" + unit + "]</font></html>";
                         tooltip = "<html>Number of clusters made of <b>" + name + "</b> " + unit + "</html>";
                         break;
-
+                    case MASS:
+                        unit = "molecules";
+                        text = "<html>" + name + "<font color=\"#8B0000\"> [" + unit + "]</font></html>";
+                        tooltip = "<html>Cluster size <b>" + name + "</b><br>" +
+                                "Total molecules = " + name + " × (cluster count)</html>";
+                        break;
                     case MEAN:
                     case OVERALL:
                         if (stat != null) {
@@ -254,7 +260,8 @@ public class ClusterDataPanel extends AbstractDataPanel {
             return;
         }
 
-        ODESolverResultSet srs = sel.resultSet;
+        LangevinSolverResultSet lsrs = sel.resultSet;
+        ODESolverResultSet srs = ClusterSpecificationPanel.getResultSetForMode(lsrs, sel.mode);
         java.util.List<ColumnDescription> columns = sel.columns;
 
         int timeIndex = srs.findColumn(ReservedVariable.TIME.getName());

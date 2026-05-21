@@ -986,7 +986,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 				if(!(SpringStructureEnum.Membrane.columnName.equals(reactionRule.getStructure().getName()))) {
 					String msg = SpringSaLaDMsgAnchorReactionMustMembrane;
 					String tip = msg;
-					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
+					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
 					return;
 				}
 			}

@@ -53,7 +53,7 @@ public class LangevinClustersResultsPanel extends DocumentEditorSubPanel {
     private JToolBarToggleButton ivjDataButton = null;
 
 
-    private enum DisplayMode { COUNTS, MEAN, OVERALL }
+    private enum DisplayMode { COUNTS, MASS, MEAN, OVERALL }
     LangevinSolverResultSet langevinSolverResultSet = null;
     SimulationModelInfo simulationModelInfo = null;
 
@@ -81,6 +81,9 @@ public class LangevinClustersResultsPanel extends DocumentEditorSubPanel {
                 switch (cmd) {
                     case "COUNTS":
                         populateYAxisChoices(DisplayMode.COUNTS);
+                        break;
+                    case "MASS":
+                        populateYAxisChoices(DisplayMode.MASS);
                         break;
                     case "MEAN":
                         populateYAxisChoices(DisplayMode.MEAN);
@@ -127,6 +130,10 @@ public class LangevinClustersResultsPanel extends DocumentEditorSubPanel {
             case COUNTS:
                 // we may never get non-trivial clusters if there's no binding reaction
                 srs = langevinSolverResultSet.getClusterCounts();
+                cd = srs.getColumnDescriptions();
+                break;
+            case MASS:
+                srs = langevinSolverResultSet.getClusterMass();
                 cd = srs.getColumnDescriptions();
                 break;
             case MEAN:
@@ -226,18 +233,22 @@ public class LangevinClustersResultsPanel extends DocumentEditorSubPanel {
 
             ButtonGroup group = new ButtonGroup();
             JRadioButton rbCounts = new JRadioButton("Cluster Counts");
+            JRadioButton rbMass = new JRadioButton("Cluster Mass");
             JRadioButton rbMean = new JRadioButton("Cluster Mean");
             JRadioButton rbOverall = new JRadioButton("Cluster Overall");
 
             rbCounts.setActionCommand("COUNTS");
+            rbMass.setActionCommand("MASS");
             rbMean.setActionCommand("MEAN");
             rbOverall.setActionCommand("OVERALL");
 
             rbCounts.addActionListener(ivjEventHandler);
+            rbMass.addActionListener(ivjEventHandler);
             rbMean.addActionListener(ivjEventHandler);
             rbOverall.addActionListener(ivjEventHandler);
 
             group.add(rbCounts);
+            group.add(rbMass);
             group.add(rbMean);
             group.add(rbOverall);
 
@@ -250,8 +261,10 @@ public class LangevinClustersResultsPanel extends DocumentEditorSubPanel {
             gbc.gridy = 0;
             content.add(rbCounts, gbc);
             gbc.gridy = 1;
-            content.add(rbMean, gbc);
+            content.add(rbMass, gbc);
             gbc.gridy = 2;
+            content.add(rbMean, gbc);
+            gbc.gridy = 3;
             content.add(rbOverall, gbc);
         }
         return displayOptionsCollapsiblePanel;
