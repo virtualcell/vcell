@@ -209,7 +209,7 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
     private void initializeGlobalPalette() {
         // Use a curated palette from ColorUtil
         globalPalette.clear();
-        globalPalette.addAll(Arrays.asList(ColorUtil.TABLEAU20));
+        globalPalette.addAll(Arrays.asList(ColorUtil.DARK20));
 
         // Reserve ACS and ACO immediately
         ensureColorsAssigned("ACS");
@@ -395,7 +395,13 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
             if (y == null) continue;
             Color c = persistentColorMap.get(name);
             // Cluster curves are AVG curves in the new API
-            plot.addAvgRenderer(times, y, c, name, /*statTag*/ "AVG");
+            if (sel.plotStyle == ClusterSpecificationPanel.PlotStyle.LINE) {
+                lg.debug("Adding avg renderer for " + name + ", color = " + c);
+                plot.addAvgRenderer(times, y, c, name, "AVG");
+            } else {
+                lg.debug("Adding bubble renderer for " + name + ", color = " + c);
+                plot.addBubbleRenderer(times, y, c, name);
+            }
         }
 
         // --- SD -------------------------------------------------
@@ -408,7 +414,8 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                 lower[i] = acs[i] - sd[i];
             }
             Color sdColor = persistentColorMap.get("SD");
-            // SD is a band renderer in the new API
+            // SD is a bar or a band renderer
+            lg.debug("Adding SD renderer, color = " + sdColor);
             plot.addSDRenderer(times, lower, upper, sdColor, "SD", /*statTag*/ "SD");
         }
 
@@ -420,6 +427,7 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
         if (times.length > 1) {
             plot.setDt(times[1]);   // times[0] == 0
         }
+        plot.setClusterSelection(sel);
         plot.repaint();
     }
 

@@ -1,7 +1,6 @@
 package cbit.vcell.solver.ode.gui;
 
 import cbit.vcell.client.data.ODEDataViewer;
-import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.math.ODESolverResultSetColumnDescription;
 import cbit.vcell.simdata.LangevinSolverResultSet;
 import cbit.vcell.solver.SimulationModelInfo;
@@ -12,9 +11,6 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.util.gui.CollapsiblePanel;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
@@ -69,6 +65,52 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
             }
             throw new IllegalArgumentException("Unknown DisplayMode: " + cmd);
         }
+        public static DisplayMode fromActionCommandOrNull(String cmd) {
+            try {
+                return fromActionCommand(cmd);
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+    }
+    public enum PlotStyle {
+        LINE(
+                "LINE",
+                "Line Plot",
+                "Show each cluster size as a line over time"
+        ),
+        BUBBLE(
+                "BUBBLE",
+                "Bubble Plot",
+                "Show a bubble at each timepoint; bubble size ∝ cluster count or mass"
+        );
+        private final String actionCommand;
+        private final String uiLabel;
+        private final String tooltip;
+        PlotStyle(String actionCommand, String uiLabel, String tooltip) {
+            this.actionCommand = actionCommand;
+            this.uiLabel = uiLabel;
+            this.tooltip = tooltip;
+        }
+        public String actionCommand() { return actionCommand; }
+        public String uiLabel()       { return uiLabel; }
+        public String tooltip()       { return tooltip; }
+        public static PlotStyle fromActionCommand(String cmd) {
+            for (PlotStyle v : values()) {
+                if (v.actionCommand.equals(cmd)) {
+                    return v;
+                }
+            }
+            throw new IllegalArgumentException("Unknown DistributionView: " + cmd);
+        }
+        public static PlotStyle fromActionCommandOrNull(String cmd) {
+            try {
+                return fromActionCommand(cmd);
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+
     }
 
     public enum ClusterStatistic {
@@ -120,10 +162,12 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
 
     public static class ClusterSelection {  // used to communicate y-list selection to the ClusterVisualizationPanel
         public final DisplayMode mode;
+        public final PlotStyle plotStyle;
         public final java.util.List<ColumnDescription> columns;
         public final LangevinSolverResultSet resultSet;
-        public ClusterSelection(DisplayMode mode, java.util.List<ColumnDescription> columns, LangevinSolverResultSet resultSet) {
+        public ClusterSelection(DisplayMode mode, PlotStyle plotStyle, java.util.List<ColumnDescription> columns, LangevinSolverResultSet resultSet) {
             this.mode = mode;
+            this.plotStyle = plotStyle;
             this.columns = columns;
             this.resultSet = resultSet;
         }
@@ -181,12 +225,34 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
             String cmd = e.getActionCommand();
             if (e.getSource() instanceof JRadioButton rb && SwingUtilities.isDescendingFrom(rb, ClusterSpecificationPanel.this)) {
                 lg.debug("actionPerformed() called. Source is JRadioButton: {}", rb.getText());
-                DisplayMode mode = DisplayMode.fromActionCommand(cmd);
-                // set property to inform the list about current mode (needed for renderer)
-                // moved here from valueChanged() because the tooltip of the y-axis choices needs to be updated
-                // immediately when the mode changes, even before any selection is made in the list
-                yAxisChoiceList.putClientProperty("ClusterDisplayMode", mode);
-                populateYAxisChoices(mode);
+                // DysplayMode radio buttons
+                DisplayMode maybeMode = DisplayMode.fromActionCommandOrNull(cmd);
+                if(maybeMode != null) {
+                    DisplayMode mode = maybeMode;
+                    boolean enable = (mode == DisplayMode.COUNTS || mode == DisplayMode.MASS);
+                    rbLinePlot.setEnabled(enable);
+                    rbBubblePlot.setEnabled(enable);
+                    if (!enable) {
+                        rbLinePlot.setSelected(true);   // force line plot
+                        rbBubblePlot.setSelected(false);
+                    }
+                    // set property to inform the list about current mode (needed for renderer)
+                    // moved here from valueChanged() because the tooltip of the y-axis choices needs to be updated
+                    // immediately when the mode changes, even before any selection is made in the list
+                    yAxisChoiceList.putClientProperty("ClusterDisplayMode", mode);
+                    populateYAxisChoices(mode);
+                    return;
+                }
+                // PlotStyle radio buttons
+                PlotStyle maybePlot = PlotStyle.fromActionCommandOrNull(cmd);
+                if(maybePlot != null) {
+                    // plot style changed; mode and selection stay the same
+                    DisplayMode mode = getCurrentDisplayMode();
+                    PlotStyle plotStyle = maybePlot;
+                    java.util.List<ColumnDescription> selected = getYAxisChoice().getSelectedValuesList();
+                    firePropertyChange("ClusterSelection", null, new ClusterSelection(mode, plotStyle, selected, langevinSolverResultSet));
+                    return;
+                }
             }
         }
         @Override
@@ -207,12 +273,13 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
                 // extract selected ColumnDescriptions
                 java.util.List<ColumnDescription> selected = getYAxisChoice().getSelectedValuesList();
                 DisplayMode mode = getCurrentDisplayMode();
+                PlotStyle plotStyle = getCurrentPlotStyle();
 //                ODESolverResultSet srs = getResultSetForMode(mode);
                 // moved this to actionPerformed() where it belongs, it was being called too late here
 //                // set property to inform the list about current mode (needed for renderer)
 //                yAxisChoiceList.putClientProperty("ClusterDisplayMode", mode);
                 // fire the event upward
-                firePropertyChange("ClusterSelection", null, new ClusterSelection(mode, selected, langevinSolverResultSet));
+                firePropertyChange("ClusterSelection", null, new ClusterSelection(mode, plotStyle, selected, langevinSolverResultSet));
             }
         }
     };
@@ -225,6 +292,10 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
     ClusterSpecificationPanel.IvjEventHandler ivjEventHandler = new ClusterSpecificationPanel.IvjEventHandler();
 
     private boolean suppressEvents = false;   // to prevent event firing during programmatic changes to the UI
+//    private JCheckBox cbLinePlot;
+//    private JCheckBox cbBubblePlot;
+    private JRadioButton rbLinePlot;
+    private JRadioButton rbBubblePlot;
 
     public ClusterSpecificationPanel(ODEDataViewer odeDataViewer) {
         super();
@@ -330,28 +401,38 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
 
         if (content.getComponentCount() == 0) {     // Only populate once
             ButtonGroup group = new ButtonGroup();
+            ButtonGroup plotStyleGroup = new ButtonGroup();
 
             JRadioButton rbCounts = new JRadioButton(DisplayMode.COUNTS.uiLabel());
             JRadioButton rbMass = new JRadioButton(DisplayMode.MASS.uiLabel());
             JRadioButton rbMean = new JRadioButton(DisplayMode.MEAN.uiLabel());
             JRadioButton rbOverall = new JRadioButton(DisplayMode.OVERALL.uiLabel());
+            rbLinePlot = new JRadioButton(PlotStyle.LINE.uiLabel());
+            rbBubblePlot = new JRadioButton(PlotStyle.BUBBLE.uiLabel());
 
             rbCounts.setActionCommand(DisplayMode.COUNTS.actionCommand());
             rbMass.setActionCommand(DisplayMode.MASS.actionCommand());
             rbMean.setActionCommand(DisplayMode.MEAN.actionCommand());
             rbOverall.setActionCommand(DisplayMode.OVERALL.actionCommand());
+            rbLinePlot.setActionCommand(PlotStyle.LINE.actionCommand());
+            rbBubblePlot.setActionCommand(PlotStyle.BUBBLE.actionCommand());
 
             rbCounts.setToolTipText(DisplayMode.COUNTS.tooltip());
             rbMass.setToolTipText(DisplayMode.MASS.tooltip());
             rbMean.setToolTipText(DisplayMode.MEAN.tooltip());
             rbOverall.setToolTipText(DisplayMode.OVERALL.tooltip());
+            rbLinePlot.setToolTipText(PlotStyle.LINE.tooltip());
+            rbBubblePlot.setToolTipText(PlotStyle.BUBBLE.tooltip());
 
             group.add(rbCounts);
             group.add(rbMass);
             group.add(rbMean);
             group.add(rbOverall);
+            plotStyleGroup.add(rbLinePlot);
+            plotStyleGroup.add(rbBubblePlot);
 
             rbCounts.setSelected(true);     // select the first option by default, which will populate the y-axis choices
+            rbLinePlot.setSelected(true);
 
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.gridx = 0;
@@ -365,64 +446,20 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
             content.add(rbMean, gbc);
             gbc.gridy = 3;
             content.add(rbOverall, gbc);
+
+            gbc.gridy++;
+            gbc.insets = new Insets(8, 4, 2, 4);    // spacer + label
+            JLabel viewLabel = new JLabel("<html><b>Visualization:</b></html>");
+            content.add(viewLabel, gbc);
+
+            gbc.gridy++;
+            gbc.insets = new Insets(2, 16, 2, 4);
+            content.add(rbLinePlot, gbc);
+            gbc.gridy++;
+            content.add(rbBubblePlot, gbc);
         }
         return cp;
     }
-
-//    @Override
-//    protected JList getYAxisChoice() {
-//        if ((yAxisChoiceList == null)) {
-//            yAxisChoiceList = new JList();
-//            yAxisChoiceList.setName("YAxisChoice");
-//            yAxisChoiceList.setBounds(0, 0, 160, 120);
-//            yAxisChoiceList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-//            yAxisChoiceList.setCellRenderer(new DefaultListCellRenderer() {
-//                @Override
-//                public Component getListCellRendererComponent(JList<?> list, Object value, int index,
-//                                    boolean isSelected, boolean cellHasFocus) {
-//                    JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-//
-//                    if (value instanceof ODESolverResultSetColumnDescription cd) {
-//                        String name = cd.getName();
-//                        label.setText(name);
-//
-//                        if (cd.isTrivial()) {   // gray out trivial entries
-//                            label.setForeground(Color.GRAY);
-//                        } else {
-//                            label.setForeground(isSelected
-//                                    ? list.getSelectionForeground()
-//                                    : list.getForeground());
-//                        }
-//
-//                        DisplayMode mode = (DisplayMode)        // determine tooltip based on DisplayMode
-//                                ((JComponent) list).getClientProperty("ClusterDisplayMode");
-//                        if (mode == null) {
-//                            label.setToolTipText(null);
-//                            return label;
-//                        }
-//                        switch (mode) {
-//                            case COUNTS:
-//                                // cluster size <b>X</b> molecules
-//                                label.setText(name);
-//                                label.setToolTipText(
-//                                        "<html>Number of Clusters of size: <b>" + name + "</b> " + "<font color=\"#8B0000\">" + "[molecules] </font></html>"
-//                                );
-//                                break;
-//                            case MEAN:
-//                            case OVERALL:
-//                                ClusterStatistic stat = ClusterStatistic.valueOf(name);
-//                                label.setText(stat.fullName);
-//                                String tooltip = "<html>" + stat.description + "<font color=\"#8B0000\">" + " [" + stat.unit + "] </font></html>";
-//                                label.setToolTipText(tooltip);
-//                                break;
-//                        }
-//                    }
-//                    return label;
-//                }
-//            });
-//        }
-//        return yAxisChoiceList;
-//    }
 
     @Override
     protected void onSelectedObjectsChange(Object[] selectedObjects) {
@@ -483,5 +520,14 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
             }
         }
         return DisplayMode.COUNTS; // default fallback
+    }
+    private PlotStyle getCurrentPlotStyle() {
+        if (rbLinePlot.isSelected()) {
+            return PlotStyle.LINE;
+        } else if (rbBubblePlot.isSelected()) {
+            return PlotStyle.BUBBLE;
+        } else {
+            return PlotStyle.LINE; // default fallback
+        }
     }
 }

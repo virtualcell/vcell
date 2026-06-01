@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
 import java.awt.geom.Path2D;
+import java.awt.geom.Point2D;
 
 import static cbit.plot.gui.AbstractPlotPanel.*;
 
@@ -353,6 +354,239 @@ public final class PlotRenderers {
         }
     }
 
+    // -------------------------------------------------------------------------------------------------
+// BUBBLE renderer: y-position = cluster size, bubble diameter = count
+// -------------------------------------------------------------------------------------------------
+    protected static class BubbleRenderer implements SeriesRenderer {
+        final String seriesName;      // e.g. "C3" or "Cluster_3"
+        final double[] time;          // timepoints
+        final double[] values;        // counts or mass
+        final int clusterSize;        // extracted from seriesName, used for Y-position
+        final Color color;
+        final AbstractPlotPanel parent;
 
+        private int[] xs;             // pixel x positions
+        private int[] ys;             // pixel y positions
+        private int[] diameters;      // bubble diameters in pixels
+
+        BubbleRenderer(String seriesName, double[] time, double[] values,
+                       Color color, AbstractPlotPanel parent) {
+            this.seriesName = seriesName;
+            this.time = time;
+            this.values = values;
+            this.color = color;
+            this.clusterSize = extractClusterSize(seriesName);
+            this.parent = parent;
+        }
+
+        @Override
+        public String getSeriesName() {
+            return seriesName;
+        }
+
+        int getClusterSize() {
+            return clusterSize;
+        }
+
+        // extract cluster size from series name (e.g. "C3", "Cluster_3", "Size 3")
+        // right now the name is numeric-only, but this is more flexible in case we want to add prefixes later
+        private int extractClusterSize(String name) {
+            String digits = name.replaceAll("\\D+", "");
+            if (digits.isEmpty()) {
+                return 0;   // fallback, shouldn't happen
+            }
+            return Integer.parseInt(digits);
+        }
+
+        @Override
+        public void draw(Graphics2D g2,
+                         int x0, int x1, int y0, int y1,
+                         int plotWidth, int plotHeight,
+                         double xMaxRounded, double yMaxRounded, double yMinRounded,
+                         double dt) {
+
+            int n = values.length;
+            if (n == 0) return;
+
+            xs = new int[n];
+            ys = new int[n];
+            diameters = new int[n];
+
+            // 1. Determine the vertical pixel position for this cluster size
+            //    In bubble mode, Y-axis = cluster size (a discrete category).
+            //    All bubbles for this series lie on one horizontal line.
+            double yNorm = (clusterSize - yMinRounded) / (yMaxRounded - yMinRounded);
+            int yPix = y0 - (int) Math.round(yNorm * plotHeight);
+
+            // 2. Bubble size scaling
+            //    Diameter encodes the count (or mass).
+            //    Scaling is GLOBAL across all cluster sizes, not per-series.
+            //    This ensures correct proportionality (e.g., 15.4 vs 0.05).
+            final double minDiam = 4.0;     // smallest visible bubble
+            final double maxDiam = 30.0;    // largest bubble
+            double globalMax;
+            if (parent instanceof ClusterPlotPanel) {
+                globalMax = ((ClusterPlotPanel) parent).getMaxClusterOverall();
+            } else {
+                lg.warn("Unexpected plot panel type for bubble renderer: " + parent.getClass().getName());
+                globalMax = 1.0;   // fallback, shouldn't happen
+            }
+            if (globalMax <= 0) return;     // nothing to draw
+
+            // 3. Compute pixel coordinates for each timepoint
+            for (int i = 0; i < n; i++) {
+
+                double count = values[i];
+
+                // Skip zero counts entirely — no bubble should be drawn
+                if (count <= 0) {
+                    xs[i] = ys[i] = diameters[i] = 0;
+                    continue;
+                }
+
+                // X-position from time
+                double t = (time != null ? time[i] : i * dt);
+                xs[i] = x0 + (int) Math.round((t / xMaxRounded) * plotWidth);
+
+                // Y-position is constant for this cluster size
+                ys[i] = yPix;
+
+                // Perceptual bubble scaling: diameter ∝ sqrt(count)
+                double d;
+                if (parent.isShowBubbleSizeByCount()) {
+                    // normal perceptual scaling
+                    double frac = Math.sqrt(count / globalMax);
+                    d = minDiam + frac * (maxDiam - minDiam);
+                } else {
+                    // all bubbles same size
+                    d = (minDiam + maxDiam) * 0.5;
+                }
+                diameters[i] = (int) Math.round(d);
+            }
+
+            Color c;
+            // 4. single-color mode overrides series color
+            if (parent.isShowBubbleSingleColor()) {
+                c = new Color(220, 30, 30);   // a strong red for maximum visibility of bubbles
+            } else {
+                c = color;
+            }
+
+            // 5. Hover dimming
+            //    If another series is hovered, dim this one.
+//            if (parent.hoveredSeriesName != null &&
+//                    !parent.hoveredSeriesName.equals(seriesName)) {
+//                c = new Color(c.getRed(), c.getGreen(), c.getBlue(), DIMMED_LINE_ALPHA);
+//            }
+
+            g2.setColor(c);
+
+            // ---------------------------------------------------------------------
+            // 6. Draw bubbles (mutually exclusive modes)
+            // ---------------------------------------------------------------------
+            if (parent.isShowBubbleAsEmptyCircles()) {  // --- Contour Bubble ---
+                for (int i = 0; i < n; i++) {
+                    int d = diameters[i];
+                    if (d <= 0) continue;
+                    drawEmptyCircle(g2, xs[i], ys[i], d, c);
+                }
+            } else if (parent.isShowBubbleFading()) {   // --- Fading Bubble ---
+                for (int i = 0; i < n; i++) {
+                    int d = diameters[i];
+                    if (d <= 0) continue;
+                    drawFadingBubble(g2, xs[i], ys[i], d, c);
+                }
+            } else if(parent.isShowBubbleSolid()) {   // --- Solid Bubble (default) ---
+                for (int i = 0; i < n; i++) {
+                    int d = diameters[i];
+                    if (d <= 0) continue;
+                    drawSolidBubble(g2, xs[i], ys[i], d, c);
+                }
+            } else {
+                lg.warn("Inconsistent bubble style setting. Defaulting to solid bubbles.");
+                for (int i = 0; i < n; i++) {
+                    int d = diameters[i];
+                    if (d <= 0) continue;
+                    drawSolidBubble(g2, xs[i], ys[i], d, c);
+                }
+            }
+        }
+
+        private void drawFadingBubble(Graphics2D g2, int xCenter, int yCenter, int d, Color base) {
+            int r = d / 2;
+            int cx = xCenter - r;
+            int cy = yCenter - r;
+
+            float centerX = xCenter;
+            float centerY = yCenter;
+            float radius  = r;
+
+            // fading colors
+            Color edge = new Color(base.getRed(), base.getGreen(), base.getBlue(), 60);
+            Color mid  = new Color(base.getRed(), base.getGreen(), base.getBlue(), 128);
+
+            // abrupt drop near center, slow fade to edge
+            float[] dist = {0.0f, 0.55f, 1.0f};
+            Color[] cols = {base, mid, edge};
+
+            RadialGradientPaint paint = new RadialGradientPaint(
+                    new Point2D.Float(centerX, centerY),
+                    radius,
+                    dist,
+                    cols
+            );
+
+            Paint old = g2.getPaint();
+            Composite oldComp = g2.getComposite();
+
+            // normalize opacity so overlapping bubbles don't saturate
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.35f));
+            g2.setPaint(paint);
+            g2.fillOval(cx, cy, d, d);
+
+            g2.setComposite(oldComp);
+            g2.setPaint(old);
+        }
+        private void drawEmptyCircle(Graphics2D g2, int xCenter, int yCenter, int d, Color c) {
+            int r = d / 2;
+            int cx = xCenter - r;
+            int cy = yCenter - r;
+
+            // center dot
+            int dot = Math.max(2, d / 6);
+            int dotR = dot / 2;
+
+            g2.setColor(c);
+            g2.fillOval(xCenter - dotR, yCenter - dotR, dot, dot);
+
+            // contour
+            g2.setStroke(new BasicStroke(1.5f));
+            g2.drawOval(cx, cy, d, d);
+        }
+
+
+
+        private void drawSolidBubble(Graphics2D g2, int xCenter, int yCenter, int d, Color base) {
+            int r = d / 2;
+            int cx = xCenter - r;
+            int cy = yCenter - r;
+
+            // Save old state
+            Paint oldPaint = g2.getPaint();
+            Composite oldComp = g2.getComposite();
+
+            // Slight transparency so overlapping bubbles show through
+            // 0.55f is a good balance: mostly solid, but not opaque
+            g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.55f));
+            g2.setPaint(base);
+
+            g2.fillOval(cx, cy, d, d);
+
+            // Restore state
+            g2.setComposite(oldComp);
+            g2.setPaint(oldPaint);
+        }
+
+    }
 
 }
