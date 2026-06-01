@@ -27,6 +27,9 @@ public final class PlotRenderers {
         default Point getClosestPoint(int mouseX, int mouseY) {
             return null;    // default: no snapping
         }
+        default BubbleHit getClosestBubble(int mouseX, int mouseY) {
+            return null;    // default: not a bubble renderer
+        }
         String getSeriesName();
     }
 
@@ -516,34 +519,27 @@ public final class PlotRenderers {
             int r = d / 2;
             int cx = xCenter - r;
             int cy = yCenter - r;
-
             float centerX = xCenter;
             float centerY = yCenter;
             float radius  = r;
-
             // fading colors
             Color edge = new Color(base.getRed(), base.getGreen(), base.getBlue(), 60);
             Color mid  = new Color(base.getRed(), base.getGreen(), base.getBlue(), 128);
-
             // abrupt drop near center, slow fade to edge
             float[] dist = {0.0f, 0.55f, 1.0f};
             Color[] cols = {base, mid, edge};
-
             RadialGradientPaint paint = new RadialGradientPaint(
                     new Point2D.Float(centerX, centerY),
                     radius,
                     dist,
                     cols
             );
-
             Paint old = g2.getPaint();
             Composite oldComp = g2.getComposite();
-
             // normalize opacity so overlapping bubbles don't saturate
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.35f));
             g2.setPaint(paint);
             g2.fillOval(cx, cy, d, d);
-
             g2.setComposite(oldComp);
             g2.setPaint(old);
         }
@@ -551,42 +547,58 @@ public final class PlotRenderers {
             int r = d / 2;
             int cx = xCenter - r;
             int cy = yCenter - r;
-
             // center dot
             int dot = Math.max(2, d / 6);
             int dotR = dot / 2;
-
             g2.setColor(c);
             g2.fillOval(xCenter - dotR, yCenter - dotR, dot, dot);
-
             // contour
             g2.setStroke(new BasicStroke(1.5f));
             g2.drawOval(cx, cy, d, d);
         }
 
-
-
         private void drawSolidBubble(Graphics2D g2, int xCenter, int yCenter, int d, Color base) {
             int r = d / 2;
             int cx = xCenter - r;
             int cy = yCenter - r;
-
-            // Save old state
             Paint oldPaint = g2.getPaint();
             Composite oldComp = g2.getComposite();
-
             // Slight transparency so overlapping bubbles show through
             // 0.55f is a good balance: mostly solid, but not opaque
             g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.55f));
             g2.setPaint(base);
-
             g2.fillOval(cx, cy, d, d);
-
-            // Restore state
             g2.setComposite(oldComp);
             g2.setPaint(oldPaint);
         }
 
+        @Override
+        public BubbleHit getClosestBubble(int mouseX, int mouseY) {
+            if (xs == null || ys == null) return null;
+            int bestIndex = -1;
+            double bestDist2 = Double.POSITIVE_INFINITY;
+            for (int i = 0; i < xs.length; i++) {
+                int bx = xs[i];
+                int by = ys[i];
+                double dx = bx - mouseX;
+                double dy = by - mouseY;
+                double d2 = dx*dx + dy*dy;
+                if (d2 < bestDist2) {
+                    bestDist2 = d2;
+                    bestIndex = i;
+                }
+            }
+            if (bestIndex < 0) return null;
+            double maxDist = diameters[bestIndex] / 2.0 + 6.0;  // threshold: bubble radius + some padding
+            if (bestDist2 > maxDist * maxDist) return null;
+            return new BubbleHit(
+                    time[bestIndex],
+                    clusterSize,          // or ColumnDescription label later
+                    values[bestIndex],
+                    xs[bestIndex],
+                    ys[bestIndex]
+            );
+        }
     }
 
 }

@@ -12,13 +12,13 @@ public class BubbleOptionsPanel extends JPanel {
 
         int row = 0;
 
-        // --- Show nodes ---
-        JCheckBox showNodes = new JCheckBox("Show nodes", plot.getShowNodes());
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        gbc.insets = new Insets(4, 6, 2, 0);
-        add(showNodes, gbc);
-        showNodes.addActionListener(e -> plot.setShowNodes(showNodes.isSelected()));
+//        // --- Show nodes ---
+//        JCheckBox showNodes = new JCheckBox("Show nodes", plot.getShowNodes());
+//        gbc.gridx = 0;
+//        gbc.gridy = row;
+//        gbc.insets = new Insets(4, 6, 2, 0);
+//        add(showNodes, gbc);
+//        showNodes.addActionListener(e -> plot.setShowNodes(showNodes.isSelected()));
 
         // --- Snap to nodes ---
         JCheckBox snapToNodes = new JCheckBox("Snap to nodes", plot.isSnapToNodes());

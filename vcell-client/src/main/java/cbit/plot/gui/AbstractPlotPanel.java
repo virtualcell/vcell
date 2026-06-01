@@ -18,17 +18,16 @@ public abstract class AbstractPlotPanel extends JPanel {
 
     private static final Logger lg = LogManager.getLogger(AbstractPlotPanel.class);
 
-    private static final class BubbleHit {
+    static final class BubbleHit {
         final double time;          // x value in seconds
         final int clusterSize;      // y category (2, 3, 4, ...)
-        final int count;            // cluster count at that time (optional for now)
+        final double value;            // cluster count at that time (optional for now)
         final int px;               // pixel x (for highlight)
         final int py;               // pixel y (for highlight)
-
-        BubbleHit(double time, int clusterSize, int count, int px, int py) {
+        BubbleHit(double time, int clusterSize, double value, int px, int py) {
             this.time = time;
             this.clusterSize = clusterSize;
-            this.count = count;
+            this.value = value;
             this.px = px;
             this.py = py;
         }
@@ -51,8 +50,8 @@ public abstract class AbstractPlotPanel extends JPanel {
         private boolean showBubbleSizeByCount = true;  // whether to size bubbles by cluster count (if false, all bubbles have the same size)
         // these 3 bubble options below are mutually exclusive
         private boolean showBubbleSolid = false;    // whether to draw bubbles as solid circles (instead of empty circles)
-        private boolean showBubbleFading = false;      // whether to fade bubbles (with alpha) based on their size
-        private boolean showBubbleAsEmptyCircles = true;    // whether to draw bubbles as empty circles
+        private boolean showBubbleFading = true;      // whether to fade bubbles (with alpha) based on their size
+        private boolean showBubbleAsEmptyCircles = false;    // whether to draw bubbles as empty circles
     }
     // Renderer options
     private final RendererOptions options = new RendererOptions();
@@ -99,30 +98,38 @@ public abstract class AbstractPlotPanel extends JPanel {
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                int mx = e.getX();      // in pixels, relative to the panel
+                int mx = e.getX();
                 int my = e.getY();
-
-                if (mx >= lastX0 && mx <= lastX1 && my >= lastY1 && my <= lastY0) {
-                    mouseX = mx;
-                    mouseY = my;
-                } else {
+                // inside plot area?
+                boolean inside = mx >= lastX0 && mx <= lastX1 && my >= lastY1 && my <= lastY0;
+                if (!inside) {
                     mouseX = null;
                     mouseY = null;
+                    snappedX = null;
+                    snappedY = null;
+                    lastBubbleHit = null;
+                    if (coordCallback != null) {
+                        coordCallback.accept(null);
+                    }
+                    repaint();
+                    return;
                 }
-
-                if (/*isShowCosshair() && */ mouseX != null && mouseY != null) {    // we always show coordinates
-                    mx = mouseX;
-                    my = mouseY;
+                // -----------------------------
+                // LINE PLOT MODE
+                // -----------------------------
+                if (!isBubblePlotMode()) {
+                    mouseX = mx;
+                    mouseY = my;
                     if (isSnapToNodes()) {
                         Point snapped = findClosestNode(mx, my);
                         if (snapped != null) {
-                            mx = snapped.x;  // mx and my are now snapped to the nearest node's pixel coordinates
+                            mx = snapped.x;
                             my = snapped.y;
-                            mouseX = mx;     // update mouseX and mouseY to the snapped coordinates for crosshair drawing
+                            mouseX = mx;
                             mouseY = my;
-                            snappedX = mx;   // store snapped coordinates for highlight the point we snapped to
+                            snappedX = mx;
                             snappedY = my;
-                        } else {             // clear highlight if no snap occurred
+                        } else {
                             snappedX = null;
                             snappedY = null;
                         }
@@ -130,20 +137,46 @@ public abstract class AbstractPlotPanel extends JPanel {
                         snappedX = null;
                         snappedY = null;
                     }
-                    double fracX = (mx - lastX0) / (double)(lastX1 - lastX0);
-                    double xVal = fracX * lastXMaxRounded;      // mouse coord on x-axis in seconds
-                    double fracY = (lastY0 - my) / (double)(lastY0 - lastY1);
-                    double yVal = lastYMinRounded + fracY * (lastYMaxRounded - lastYMinRounded); // mouse coord on y-axis in molecules
-
+                    double fracX = (mx - lastX0) / (double) (lastX1 - lastX0);
+                    double xVal = fracX * lastXMaxRounded;
+                    double fracY = (lastY0 - my) / (double) (lastY0 - lastY1);
+                    double yVal = lastYMinRounded + fracY * (lastYMaxRounded - lastYMinRounded);
                     if (coordCallback != null) {
                         coordCallback.accept(new double[]{xVal, yVal});
                     }
-                } else {
-                    if (coordCallback != null) {
-                        coordCallback.accept(null);
-                    }
+                    repaint();
+                    return;
                 }
-                repaint();
+                // -----------------------------
+                // BUBBLE PLOT MODE
+                // -----------------------------
+                if (isBubblePlotMode()) {
+                    // no crosshair in bubble mode
+                    mouseX = null;
+                    mouseY = null;
+                    BubbleHit hit = null;
+                    if (isSnapToNodes()) {
+                        hit = findClosestBubble(mx, my);
+                    }
+                    lastBubbleHit = hit;
+                    if (hit != null) {
+                        // highlight bubble
+                        snappedX = hit.px;
+                        snappedY = hit.py;
+
+                        // time + integer cluster size
+                        if (coordCallback != null) {
+                            coordCallback.accept(new double[]{hit.time, hit.clusterSize});
+                        }
+                    } else {
+                        snappedX = null;
+                        snappedY = null;
+                        if (coordCallback != null) {
+                            coordCallback.accept(null);
+                        }
+                    }
+                    repaint();
+                }
             }
         });
 
@@ -154,6 +187,10 @@ public abstract class AbstractPlotPanel extends JPanel {
                 mouseY = null;
                 snappedX = null;
                 snappedY = null;
+                lastBubbleHit = null;
+                if (coordCallback != null) {
+                    coordCallback.accept(null);
+                }
                 repaint();
             }
         });
@@ -168,8 +205,8 @@ public abstract class AbstractPlotPanel extends JPanel {
         });
     }
 
-
-     abstract void showOptionsDialog();
+    abstract void showOptionsDialog();
+    abstract boolean isBubblePlotMode();
 
     // Public API
     protected void createAndShowDialog(JPanel panel) {
@@ -247,7 +284,6 @@ public abstract class AbstractPlotPanel extends JPanel {
         else if (absStep >= 0.001)s = String.format("%.3f", value);
         else if (absStep >= 0.0001)s = String.format("%.4f", value);
         else return String.format("%.2E", value);
-
         while (s.contains(".") && s.endsWith("0")) {
             s = s.substring(0, s.length() - 1);
         }
@@ -381,6 +417,29 @@ public abstract class AbstractPlotPanel extends JPanel {
         return null;
     }
 
+    private BubbleHit findClosestBubble(int mouseX, int mouseY) {
+        BubbleHit best = null;
+        double bestDist2 = Double.POSITIVE_INFINITY;
+
+        for (SeriesRenderer r : renderers) {
+            if (r instanceof BubbleRenderer br) {
+                BubbleHit hit = br.getClosestBubble(mouseX, mouseY);
+                if (hit != null) {
+                    double dx = hit.px - mouseX;
+                    double dy = hit.py - mouseY;
+                    double d2 = dx*dx + dy*dy;
+
+                    if (d2 < bestDist2) {
+                        bestDist2 = d2;
+                        best = hit;
+                    }
+                }
+            }
+        }
+        return best;
+    }
+
+
     public void setHoveredSeriesName(String name) {
         this.hoveredSeriesName = name;
         repaint();
@@ -418,6 +477,9 @@ public abstract class AbstractPlotPanel extends JPanel {
 
         // --- determine max length from all renderers that use arrays -----
         int maxLength = 0;      // number of timepoints
+        // we could replace hasBubble logic with isBubblePlotMode(), but we keep it this way because we can detect
+        // more subtle renderers inconsistencies, e.g. if we have bubble renderer(s) but also avg/band/bar renderers,
+        // which is not supported and likely reveals a bug in the caller code
         boolean hasBubble = false;
         boolean hasBand = false;
         boolean hasAvg = false;

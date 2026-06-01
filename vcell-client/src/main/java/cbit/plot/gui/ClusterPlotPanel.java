@@ -71,4 +71,12 @@ public class ClusterPlotPanel extends AbstractPlotPanel {
         createAndShowDialog(panel);
     }
 
+    @Override
+    boolean isBubblePlotMode() {
+        if(clusterSelection != null && clusterSelection.plotStyle == ClusterSpecificationPanel.PlotStyle.BUBBLE) {
+            return true;
+        }
+        return false;
+    }
+
 }

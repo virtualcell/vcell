@@ -33,5 +33,10 @@ public class MoleculePlotPanel extends AbstractPlotPanel {
         createAndShowDialog(panel);
     }
 
+    @Override
+    boolean isBubblePlotMode() {
+        return false;  // MoleculePlotPanel does not support bubble plot mode.
+    }
+
 
 }
