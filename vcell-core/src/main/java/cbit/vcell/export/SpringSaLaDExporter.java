@@ -24,6 +24,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import cbit.vcell.mapping.*;
+import cbit.vcell.solver.SimulationJob;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
@@ -100,7 +101,8 @@ public class SpringSaLaDExporter {
 		}
 		// make a fake simulation, when exporting we just need some default simulation properties 
 		Simulation simulation = new Simulation(simContext.getMathDescription(), simContext);
-		
+		SimulationJob simulationJob = new SimulationJob(simulation, 0, null);
+		LangevinLngvWriter lgvWriter = new LangevinLngvWriter(simulationJob);
 		
 		Geometry geometry = simContext.getGeometry();
 		GeometryContext geometryContext = simContext.getGeometryContext();
@@ -191,13 +193,13 @@ public class SpringSaLaDExporter {
 			/* ********* BEGIN BY WRITING THE TIMES *********/
 			sb.append("*** " + TIME_INFORMATION + " ***");
 			sb.append("\n");
-			LangevinLngvWriter.writeTimeInformation(sb, simulation);
+			lgvWriter.writeTimeInformation(sb);
 			sb.append("\n");
 
 			/* ********* WRITE THE SPATIAL INFORMATION **********/
 			sb.append("*** " + SPATIAL_INFORMATION + " ***");
 			sb.append("\n");
-			LangevinLngvWriter.writeSpatialInformation(geometrySpec, simulation, sb);
+			lgvWriter.writeSpatialInformation(geometrySpec, sb);
 			sb.append("\n");
 
 			/* ******* WRITE THE SPECIES INFORMATION ***********/
