@@ -25,7 +25,7 @@ import org.jlibsedml.execution.IXPathToVariableIDResolver;
 public class SBMLSupport implements IXPathToVariableIDResolver {
 
     public static final Pattern XPATH_ID_RESOLVER = Pattern
-            .compile("@\\S+='(\\S+)'");
+            .compile("@\\S+=['\"](\\S+)['\"]");
 
     public enum CompartmentAttribute {
         size, spatialDimensions, unitSize;
