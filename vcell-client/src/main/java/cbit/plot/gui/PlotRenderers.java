@@ -418,15 +418,24 @@ public final class PlotRenderers {
             // 1. Determine the vertical pixel position for this cluster size
             //    In bubble mode, Y-axis = cluster size (a discrete category).
             //    All bubbles for this series lie on one horizontal line.
-            double yNorm = (clusterSize - yMinRounded) / (yMaxRounded - yMinRounded);
-            int yPix = y0 - (int) Math.round(yNorm * plotHeight);
+            double yNorm;
+            if (!parent.options.showOnlySelectedSeries) {
+                // original behavior
+                yNorm = (clusterSize - yMinRounded) / (yMaxRounded - yMinRounded);
+            } else {
+                // compressed mode: map clusterSize → ordinal index
+                int index = parent.getOrdinalIndexForClusterSize(clusterSize);
+                int row = index + 1;    // shift up, keep 0 empty
+                yNorm = (row - yMinRounded) / (yMaxRounded - yMinRounded);
+            }
+            int yPix = y0 - (int)Math.round(yNorm * plotHeight);
 
             // 2. Bubble size scaling
             //    Diameter encodes the count (or mass).
             //    Scaling is GLOBAL across all cluster sizes, not per-series.
             //    This ensures correct proportionality (e.g., 15.4 vs 0.05).
             final double minDiam = 4.0;     // smallest visible bubble
-            final double maxDiam = 30.0;    // largest bubble
+            final double maxDiam = 36.0;    // largest bubble
             double globalMax;
             if (parent instanceof ClusterPlotPanel) {
                 globalMax = ((ClusterPlotPanel) parent).getMaxClusterOverall();
@@ -475,18 +484,16 @@ public final class PlotRenderers {
                 c = color;
             }
 
-            // 5. Hover dimming
-            //    If another series is hovered, dim this one.
-//            if (parent.hoveredSeriesName != null &&
-//                    !parent.hoveredSeriesName.equals(seriesName)) {
-//                c = new Color(c.getRed(), c.getGreen(), c.getBlue(), DIMMED_LINE_ALPHA);
-//            }
-
+            // 5. Hover dimming - if another series is hovered, dim this one.
+            if (parent.hoveredSeriesName != null && !parent.hoveredSeriesName.equals(seriesName)) {
+                c = new Color(c.getRed(), c.getGreen(), c.getBlue(), DIMMED_SOLID_BUBBLE_ALPHA);
+                if(parent.isShowBubbleFading()) {
+                    c = new Color(c.getRed(), c.getGreen(), c.getBlue(), DIMMED_FADING_BUBBLE_ALPHA);
+                }
+            }
             g2.setColor(c);
 
-            // ---------------------------------------------------------------------
             // 6. Draw bubbles (mutually exclusive modes)
-            // ---------------------------------------------------------------------
             if (parent.isShowBubbleAsEmptyCircles()) {  // --- Contour Bubble ---
                 for (int i = 0; i < n; i++) {
                     int d = diameters[i];
@@ -523,10 +530,14 @@ public final class PlotRenderers {
             float centerY = yCenter;
             float radius  = r;
             // fading colors
-            Color edge = new Color(base.getRed(), base.getGreen(), base.getBlue(), 60);
-            Color mid  = new Color(base.getRed(), base.getGreen(), base.getBlue(), 128);
+            Color edge = new Color(base.getRed(), base.getGreen(), base.getBlue(), 40);     // 60
+            Color mid  = new Color(base.getRed(), base.getGreen(), base.getBlue(), 160);    // 128
+            if (parent.hoveredSeriesName != null && !parent.hoveredSeriesName.equals(seriesName)) {
+                edge = new Color(base.getRed(), base.getGreen(), base.getBlue(), 10);
+                mid  = new Color(base.getRed(), base.getGreen(), base.getBlue(), 40);
+            }
             // abrupt drop near center, slow fade to edge
-            float[] dist = {0.0f, 0.55f, 1.0f};
+            float[] dist = {0.0f, 0.35f, 1.0f};         // 0.0f, 0.55f, 1.0f
             Color[] cols = {base, mid, edge};
             RadialGradientPaint paint = new RadialGradientPaint(
                     new Point2D.Float(centerX, centerY),

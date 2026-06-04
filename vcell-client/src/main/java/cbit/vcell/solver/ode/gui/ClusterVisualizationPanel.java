@@ -20,10 +20,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
@@ -310,6 +307,22 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
         p.setToolTipText(tooltip);
         p.add(line);
         p.add(text);
+
+        // hover behavior - install the same listener on p, line, and text so that hovering anywhere on the legend entry triggers it
+        MouseAdapter hover = new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                getClusterPlotPanel().setHoveredSeriesName(name);
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                // As soon as we leave line/text, we are no longer "over an entity"
+                getClusterPlotPanel().setHoveredSeriesName(null);
+            }
+        };
+        line.addMouseListener(hover);
+        text.addMouseListener(hover);
+
         return p;
     }
 

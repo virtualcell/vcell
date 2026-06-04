@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -45,9 +46,11 @@ public abstract class AbstractPlotPanel extends JPanel {
         private boolean showBubbleSolid = false;    // whether to draw bubbles as solid circles (instead of empty circles)
         private boolean showBubbleFading = true;      // whether to fade bubbles (with alpha) based on their size
         private boolean showBubbleAsEmptyCircles = false;    // whether to draw bubbles as empty circles
+        boolean showOnlySelectedSeries = true;   // whether to hide the gaps in the multi-selection entities
     }
+
     // Renderer options
-    private final RendererOptions options = new RendererOptions();
+    final RendererOptions options = new RendererOptions();
     protected JDialog optionsDialog = null;
 
     // Insets and strokes
@@ -60,6 +63,8 @@ public abstract class AbstractPlotPanel extends JPanel {
     protected static final float CURVE_STROKE = 1.5f;   // stroke for the main curve (avg line); bands will be filled, not stroked
     protected static final int DIMMED_LINE_ALPHA = 20;   // for dimming non-hovered series (0–255)
     protected static final int DIMMED_BAND_ALPHA = 0;    // for dimming non-hovered bands (0–255)
+    protected static final int DIMMED_SOLID_BUBBLE_ALPHA = 30;    // for dimming bubble histograms
+    protected static final int DIMMED_FADING_BUBBLE_ALPHA = 2;
 
     // Renderers list
     protected final List<SeriesRenderer> renderers = new ArrayList<>();
@@ -67,14 +72,14 @@ public abstract class AbstractPlotPanel extends JPanel {
     // Scaling state
     protected double globalMin = 0;         // on the-y axis; x-axis is always 0 to dt*(N-1)
     protected double globalMax = 1;
-    protected double dt = 1;
+    protected double dt = 1;                // time step between consecutive points in seconds
 
     // Crosshair state
     protected Integer mouseX = null;    // mouse coordinates in pixels, relative to the panel; null if mouse is outside the plot area
     protected Integer mouseY = null;
     protected Integer snappedX = null;  // we are snapped here (or null)
     protected Integer snappedY = null;
-    private BubbleHit lastBubbleHit;    // used for snapping to bubbles and showing tooltip info about the bubble we snapped to
+//    private BubbleHit lastBubbleHit;    // used for snapping to bubbles and showing tooltip info about the bubble we snapped to
     protected Consumer<double[]> coordCallback;
 
     // Cached plot area
@@ -100,7 +105,7 @@ public abstract class AbstractPlotPanel extends JPanel {
                     mouseY = null;
                     snappedX = null;
                     snappedY = null;
-                    lastBubbleHit = null;
+//                    lastBubbleHit = null;         // don't seem to need it
                     if (coordCallback != null) {
                         coordCallback.accept(null);
                     }
@@ -151,7 +156,7 @@ public abstract class AbstractPlotPanel extends JPanel {
                     if (isSnapToNodes()) {
                         hit = findClosestBubble(mx, my);
                     }
-                    lastBubbleHit = hit;
+//                    lastBubbleHit = hit;
                     if (hit != null) {
                         // highlight bubble
                         snappedX = hit.px;
@@ -180,7 +185,7 @@ public abstract class AbstractPlotPanel extends JPanel {
                 mouseY = null;
                 snappedX = null;
                 snappedY = null;
-                lastBubbleHit = null;
+//                lastBubbleHit = null;
                 if (coordCallback != null) {
                     coordCallback.accept(null);
                 }
@@ -362,6 +367,10 @@ public abstract class AbstractPlotPanel extends JPanel {
         }
         repaint();
     }
+    public void setShowOnlySelectedSeries(boolean v) {
+        this.options.showOnlySelectedSeries = v;
+        repaint();
+    }
 
     public boolean isShowAvgAsStep() { return options.showAvgAsStep; }
     public boolean isShowBandAsStep() { return options.showBandAsStep; }
@@ -386,6 +395,9 @@ public abstract class AbstractPlotPanel extends JPanel {
     }
     public boolean isShowBubbleAsEmptyCircles() {
         return options.showBubbleAsEmptyCircles;
+    }
+    public boolean isShowOnlySelectedSeries() {
+        return options.showOnlySelectedSeries;
     }
 
     private Point findClosestNode(int mouseX, int mouseY) {     // use for SnapToNodes feature
@@ -432,6 +444,16 @@ public abstract class AbstractPlotPanel extends JPanel {
         return best;
     }
 
+    int getOrdinalIndexForClusterSize(int cs) {
+        int idx = 0;
+        for (SeriesRenderer r : renderers) {
+            if (r instanceof BubbleRenderer bub) {
+                if (bub.getClusterSize() == cs) return idx;
+                idx++;
+            }
+        }
+        return 0; // fallback
+    }
 
     public void setHoveredSeriesName(String name) {
         this.hoveredSeriesName = name;
@@ -504,6 +526,18 @@ public abstract class AbstractPlotPanel extends JPanel {
             return;
         }
 
+        // --- collect selected cluster sizes (needed for bubble mode only)
+        List<Integer> selectedSizes = null;
+        if (hasBubble && options.showOnlySelectedSeries) {
+            selectedSizes = new ArrayList<>();
+            for (SeriesRenderer r : renderers) {
+                if (r instanceof BubbleRenderer bub) {
+                    selectedSizes.add(bub.getClusterSize());
+                }
+            }
+            Collections.sort(selectedSizes);
+        }
+
         // --- compute axis scaling -----------------------------------------
         double yMaxRounded;
         double yMinRounded;
@@ -511,15 +545,23 @@ public abstract class AbstractPlotPanel extends JPanel {
             yMaxRounded = roundUpNice(globalMax);    // in molecules
             yMinRounded = (globalMin < 0) ? -roundUpNice(-globalMin) : 0;    // may be negative if avg-sd<0
         } else {
-            // bubble mode: Y-axis = cluster size (0,1,2,...)
-            int maxCluster = Integer.MIN_VALUE;
-            for (SeriesRenderer r : renderers) {
-                if (r instanceof BubbleRenderer bub) {
-                    maxCluster = Math.max(maxCluster, bub.getClusterSize());
+            if (!options.showOnlySelectedSeries) {
+                // bubble mode showing all between 0 and max selected cluster size
+                // Y-axis = cluster size (0,1,2,...)
+                int maxCluster = Integer.MIN_VALUE;
+                for (SeriesRenderer r : renderers) {
+                    if (r instanceof BubbleRenderer bub) {
+                        maxCluster = Math.max(maxCluster, bub.getClusterSize());
+                    }
                 }
+                yMinRounded = 0;                // Y-axis always starts at 0
+                yMaxRounded = maxCluster + 0.5; // top padding: +0.5 so the top cluster size is centered
+            } else {
+                // compressed mode: only selected sizes
+                int count = selectedSizes.size();
+                yMinRounded = 0;
+                yMaxRounded = count + 0.5;      // 0 baseline + count rows above
             }
-            yMinRounded = 0;                // Y-axis always starts at 0
-            yMaxRounded = maxCluster + 0.5; // top padding: +0.5 so the top cluster size is centered
         }
         double xMax = dt * (maxLength - 1);             // in seconds
         double xMaxRounded = roundUpNice(xMax);
@@ -563,12 +605,22 @@ public abstract class AbstractPlotPanel extends JPanel {
                 }
             }
         } else {
-            // bubble mode: grid at every integer cluster size
-            int maxCluster = (int)Math.floor(yMaxRounded - 0.5);
-            for (int cs = 0; cs <= maxCluster; cs++) {
-                double norm = (cs - yMinRounded) / (yMaxRounded - yMinRounded);
-                int yPix = y0 - (int)Math.round(norm * plotHeight);
-                g2.drawLine(x0, yPix, x1, yPix);
+            if (!options.showOnlySelectedSeries) {
+                // bubble all mode: grid at every integer cluster size
+                int maxCluster = (int)Math.floor(yMaxRounded - 0.5);
+                for (int cs = 0; cs <= maxCluster; cs++) {
+                    double norm = (cs - yMinRounded) / (yMaxRounded - yMinRounded);
+                    int yPix = y0 - (int)Math.round(norm * plotHeight);
+                    g2.drawLine(x0, yPix, x1, yPix);
+                }
+            } else {
+                // bubble compressed mode: only selected cluster sizes
+                for (int i = 0; i < selectedSizes.size(); i++) {
+                    int row = i+1;   // row 0 is for baseline (horizontal axis), then row 1 for first selected size, etc.
+                    double norm = (row - yMinRounded) / (yMaxRounded - yMinRounded);
+                    int yPix = y0 - (int)Math.round(norm * plotHeight);
+                    g2.drawLine(x0, yPix, x1, yPix);
+                }
             }
         }
 
@@ -626,14 +678,29 @@ public abstract class AbstractPlotPanel extends JPanel {
                 }
             }
         } else {
-            int maxCluster = (int)Math.floor(yMaxRounded - 0.5);
-            for (int cs = 0; cs <= maxCluster; cs++) {
-                double norm = (cs - yMinRounded) / (yMaxRounded - yMinRounded);
-                int yPix = y0 - (int)Math.round(norm * plotHeight);
-                g2.drawLine(x0 - 5, yPix, x0, yPix);    // major tick
-                String label = Integer.toString(cs);        // label
-                int sw = fm.stringWidth(label);
-                g2.drawString(label, x0 - 10 - sw, yPix + fm.getAscent() / 2);
+            if (!options.showOnlySelectedSeries) {
+                // show all cluster sizes on the y-axis, from 0 to the max one selected
+                int maxCluster = (int)Math.floor(yMaxRounded - 0.5);
+                for (int cs = 0; cs <= maxCluster; cs++) {
+                    double norm = (cs - yMinRounded) / (yMaxRounded - yMinRounded);
+                    int yPix = y0 - (int)Math.round(norm * plotHeight);
+                    g2.drawLine(x0 - 5, yPix, x0, yPix);
+                    String label = Integer.toString(cs);
+                    int sw = fm.stringWidth(label);
+                    g2.drawString(label, x0 - 10 - sw, yPix + fm.getAscent() / 2);
+                }
+            } else {
+                // compressed mode
+                for (int i = 0; i < selectedSizes.size(); i++) {
+                    int cs = selectedSizes.get(i);
+                    int row = i+1;   // row 0 is for baseline (horizontal axis), then row 1 for first selected size, etc.
+                    double norm = (row - yMinRounded) / (yMaxRounded - yMinRounded);
+                    int yPix = y0 - (int)Math.round(norm * plotHeight);
+                    g2.drawLine(x0 - 5, yPix, x0, yPix);
+                    String label = Integer.toString(cs);
+                    int sw = fm.stringWidth(label);
+                    g2.drawString(label, x0 - 10 - sw, yPix + fm.getAscent() / 2);
+                }
             }
         }
         double xStep = xMajor[1] - xMajor[0];       // x-axis ticks (on the horizontal axis)
@@ -661,15 +728,6 @@ public abstract class AbstractPlotPanel extends JPanel {
             g2.drawLine(x0, mouseY, x1, mouseY);
         }
 
-        // Highlight snapped point (if any)
-        if (snappedX != null && snappedY != null) {
-            Graphics2D g3 = (Graphics2D) g2.create();
-            g3.setColor(new Color(255, 80, 0));   // bright red-ish
-            int r = 4;                           // radius of highlight
-            g3.fillOval(snappedX - r, snappedY - r, 2*r, 2*r);
-            g3.dispose();
-        }
-
         // Renderers (bands first, then bubbles, then lines)
         for (SeriesRenderer r : renderers) {
             if (r instanceof BandRenderer || r instanceof BarRenderer) {
@@ -686,5 +744,15 @@ public abstract class AbstractPlotPanel extends JPanel {
                 r.draw(g2, x0, x1, y0, y1, plotWidth, plotHeight, xMaxRounded, yMaxRounded, yMinRounded, dt);
             }
         }
+
+        // Highlight snapped point (if any)
+        if (snappedX != null && snappedY != null) {
+            Graphics2D g3 = (Graphics2D) g2.create();
+            g3.setColor(new Color(255, 80, 0));   // bright red-ish
+            int r = 3;                           // radius of highlight
+            g3.fillOval(snappedX - r, snappedY - r, 2*r, 2*r);
+            g3.dispose();
+        }
+
     }
 }

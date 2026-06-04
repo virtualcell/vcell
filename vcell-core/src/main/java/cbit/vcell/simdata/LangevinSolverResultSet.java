@@ -33,8 +33,9 @@ public class LangevinSolverResultSet implements Serializable {
 
     // derived data, based on raw, populated in postProcess()
     private ODESimData clusterMass = null;
-    private double maxClusterMassOverall;      // max mass across all sizes & times
-    private double maxClusterCountOverall;     // max count across all sizes & times
+    private double maxClusterMassOverall;      // max mass across all cluster sizes & times
+    private double maxClusterCountOverall;     // max count across all cluster sizes & times
+    // TODO: add maxAbsoluteCountOverall and maxAbsoluteMassOverall, that will include monomers to be used for scaling in the UI
 
 //    // safe getter that returns a deep copy, but I don't think we need it
 //    public LangevinBatchResultSet getLangevinBatchResultSetSafe() {
@@ -65,6 +66,9 @@ public class LangevinSolverResultSet implements Serializable {
     }
     public ODESimData getClusterOverall() {
         return raw == null ? null : raw.getOdeSimDataClusterOverall();
+    }
+    public ODEDataInfo getDataInfo() {
+        return raw == null ? null : raw.getOdeDataInfo();
     }
 
     public double getMaxClusterMassOverall() {
