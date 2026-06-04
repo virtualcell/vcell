@@ -15,6 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import cbit.vcell.mapping.stoch.StochasticTransformer;
+import cbit.vcell.parser.ExpressionException;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.ComponentStatePattern;
 import org.vcell.model.rbm.MolecularComponent;
@@ -46,6 +50,10 @@ import cbit.vcell.model.Structure.SpringStructureEnum;
 import cbit.vcell.parser.Expression;
 
 public class ReactionRuleSpec implements ModelProcessSpec, IssueSource {
+
+	private static final Logger lg = LogManager.getLogger(ReactionRuleSpec.class);
+
+
 	private ReactionRule reactionRule = null;
 
 	public enum ReactionRuleMappingType {
@@ -703,16 +711,29 @@ public void writeData(StringBuilder sb, Subtype subtype) {			// SpringSaLaD expo
 	}
 }
 
-public static void writeDecayData(StringBuilder sb, Map<SpeciesContext, Pair<String, String>> moleculeCreationDecayRates) {
-	for (Map.Entry<SpeciesContext, Pair<String, String>> entry : moleculeCreationDecayRates.entrySet()) {
+public static void writeDecayData(StringBuilder sb, Map<SpeciesContext, Pair<Expression, Expression>> moleculeCreationDecayRates) {
+	for (Map.Entry<SpeciesContext, Pair<Expression, Expression>> entry : moleculeCreationDecayRates.entrySet()) {
 		SpeciesContext sc = entry.getKey();
-		Pair<String, String> pair = entry.getValue();
+		Pair<Expression, Expression> pair = entry.getValue();
+		double kOn;
+		double kOff;
+		Expression kon_new = new Expression(pair.one);
+		Expression koff_new = new Expression(pair.two);
+		try {
+			kon_new = kon_new.flatten();
+			koff_new = koff_new.flatten();
+			kOn = StochasticTransformer.substituteParameters(kon_new, true).evaluateConstant();
+			kOff = StochasticTransformer.substituteParameters(koff_new, true).evaluateConstant();
+		} catch (ExpressionException e) {
+			throw new RuntimeException("writeDecayData(): kon or koff is not a constant expression: " + e.getMessage());
+		}
 		sb.append("'").append(sc.getName()).append("' : ")
-			.append("kcreate  ").append(pair.one).append("  ")
-			.append("kdecay  ").append(pair.two);
+			.append("kcreate  ").append(kOn).append("  ")
+			.append("kdecay  ").append(kOff);
 		sb.append("\n");
 	}
 }
+
 private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
 	if(subtype != ReactionRuleSpec.Subtype.TRANSITION) {
 		return;
@@ -760,17 +781,23 @@ private void writeTransitionData(StringBuilder sb, Subtype subtype, Map<String, 
 	} else {
 		throw new RuntimeException("writeTransitionData() error: something is wrong");
 	}
-	
 	RbmKineticLaw kineticLaw = reactionRule.getKineticLaw();
 	Expression kon = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
-	
+	Expression kon_new = new Expression(kon);
+	double kOn = 0;
+	try {
+		kon_new = kon_new.flatten();
+		kOn = StochasticTransformer.substituteParameters(kon_new, true).evaluateConstant();
+	} catch (ExpressionException e) {
+		throw new RuntimeException("writeTransitionData(): kon is not a constant expression: " + e.getMessage());
+	}
 	sb.append("'").append(reactionRule.getName()).append("' ::     ");
 	sb.append("'").append(mtpTransitionReactant.getMolecularType().getName()).append("' : '")
 		.append(mcpTransitionReactant.getMolecularComponent().getName()).append("' : '")
 		.append(cspTransitionReactant.getComponentStateDefinition().getName());
 	sb.append("' --> '");
 	sb.append(cspTransitionProduct.getComponentStateDefinition().getName());
-	sb.append("'  Rate ").append(kon.infix());
+	sb.append("'  Rate ").append(kOn);
 	sb.append("  Condition ").append(transitionCondition.lngvName);
 	if(TransitionCondition.BOUND == transitionCondition) {
 		sb.append(" '").append(mtpConditionReactant.getMolecularType().getName()).append("' : '")
@@ -809,6 +836,14 @@ private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, 
 	
 	RbmKineticLaw kineticLaw = reactionRule.getKineticLaw();
 	Expression kon = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
+	Expression kon_new = new Expression(kon);
+	double kOn = 0;
+	try {
+		kon_new = kon_new.flatten();
+		kOn = StochasticTransformer.substituteParameters(kon_new, true).evaluateConstant();
+	} catch (ExpressionException e) {
+		throw new RuntimeException("writeAllostericData(): kon is not a constant expression: " + e.getMessage());
+	}
 	int transitionIndex = mtpTransitionReactant.getMolecularType().getComponentList().indexOf(mcpTransitionReactant.getMolecularComponent());
 
 	sb.append("'").append(reactionRule.getName()).append("' ::     ");
@@ -817,11 +852,12 @@ private void writeAllostericData(StringBuilder sb, Subtype subtype, Map<String, 
 		.append(cspTransitionReactant.getComponentStateDefinition().getName());
 	sb.append("' --> '");
 	sb.append(cspTransitionProduct.getComponentStateDefinition().getName());
-	sb.append("'  Rate ").append(kon.infix());
+	sb.append("'  Rate ").append(kOn);
 	sb.append(" Allosteric_Site ").append(conditionIndex);
 	sb.append(" State '").append(cspAllostericReactant.getComponentStateDefinition().getName()).append("'");
 	sb.append("\n");
 }
+
 private void writeBindingData(StringBuilder sb, Subtype subtype, Map<String, Object> analysisResults) {
 	if(subtype != ReactionRuleSpec.Subtype.BINDING) {
 		return;
@@ -855,8 +891,20 @@ private void writeBindingData(StringBuilder sb, Subtype subtype, Map<String, Obj
 	RbmKineticLaw kineticLaw = reactionRule.getKineticLaw();
 	Expression kon = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
 	Expression koff = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionReverseRate);
-	sb.append("'  kon  ").append(kon.infix());
-	sb.append("  koff ").append(koff.infix());
+	Expression kon_new = new Expression(kon);
+	Expression koff_new = new Expression(koff);
+	double kOn = 0;
+	double kOff = 0;
+	try {
+		kon_new = kon_new.flatten();
+		koff_new = koff_new.flatten();
+		kOn = StochasticTransformer.substituteParameters(kon_new, true).evaluateConstant();
+		kOff = StochasticTransformer.substituteParameters(koff_new, true).evaluateConstant();
+	} catch (ExpressionException e) {
+		throw new RuntimeException("writeBindingData(): kon or koff is not a constant expression: " + e.getMessage());
+	}
+	sb.append("'  kon  ").append(kOn);
+	sb.append("  koff ").append(kOff);
 	sb.append("  Bond_Length ").append(Double.toString(getFieldBondLength()));
 	sb.append("\n");
 }

@@ -527,6 +527,7 @@ public class ClusterSpecificationPanel extends AbstractSpecificationPanel {
         } else if (rbBubblePlot.isSelected()) {
             return PlotStyle.BUBBLE;
         } else {
+            lg.warn("getCurrentPlotStyle() could not determine selected plot style, defaulting to LINE");
             return PlotStyle.LINE; // default fallback
         }
     }

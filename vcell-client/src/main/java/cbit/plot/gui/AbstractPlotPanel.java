@@ -18,20 +18,13 @@ public abstract class AbstractPlotPanel extends JPanel {
 
     private static final Logger lg = LogManager.getLogger(AbstractPlotPanel.class);
 
-    static final class BubbleHit {
-        final double time;          // x value in seconds
-        final int clusterSize;      // y category (2, 3, 4, ...)
-        final double value;            // cluster count at that time (optional for now)
-        final int px;               // pixel x (for highlight)
-        final int py;               // pixel y (for highlight)
-        BubbleHit(double time, int clusterSize, double value, int px, int py) {
-            this.time = time;
-            this.clusterSize = clusterSize;
-            this.value = value;
-            this.px = px;
-            this.py = py;
-        }
-    }
+    public record BubbleHit (
+        double time,          // x value in seconds
+        int clusterSize,      // y category (2, 3, 4, ...)
+        double value,            // cluster count at that time (optional for now)
+        int px,               // pixel x (for highlight)
+        int py               // pixel y (for highlight)
+        ) {}
 
     public class RendererOptions {
         // Renderer options list
