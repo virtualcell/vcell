@@ -982,7 +982,7 @@ public class SedMLImporter {
 
 		// Order which type of models to process first based on least-to-greatest priority
 		Map<SId, BioModel> idToBiomodelMap = new HashMap<>();
-		List<Model> basicModels = new LinkedList<>(); // No overrides, no references. These come first!
+		List<Model> basicModels = new ArrayList<>(); // No overrides, no references. These come first!
 		LinkedList<Queue<Model>> advancedModelsList = new LinkedList<>(); // works as both queue and list!
 
 		// Initialize the advanced models list (effectively a "2D-Array")
@@ -1077,7 +1077,7 @@ public class SedMLImporter {
 		for (Change change : changes) {
 			if (change.isAddXML() || change.isChangeXML() || change.isRemoveXML()) return false;			
 		}
-		// check whether all targets have addressable Constants on the Math side
+		// Check whether all targets have addressable Constants on the Math side
 		for (Change change : changes) {
 			String sbmlID = this.sbmlSupport.getIdFromXPathIdentifer(change.getTargetXPath().toString());
 			SimulationContext simulationContext = refBM.getSimulationContext(0);

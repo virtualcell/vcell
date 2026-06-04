@@ -1,4 +1,7 @@
-FROM eclipse-temurin:17-jammy as jre-build
+#  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #
+#   MAKE SURE TO RUN: `mvn clean install dependency:copy-dependencies -DskipTests=true` BEFOREHAND!
+#  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #  #
+FROM eclipse-temurin:17-jammy AS jre-build
 
 # Create a custom Java runtime
 RUN $JAVA_HOME/bin/jlink \
@@ -11,8 +14,13 @@ RUN $JAVA_HOME/bin/jlink \
 
 # Define base image and copy in jlink created minimal Java 17 environment
 FROM ubuntu:jammy
+RUN apt-get update && apt-get install -y locales && localedef -i en_US -c -f UTF-8 -A /usr/share/locale/locale.alias en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
 ENV JAVA_HOME=/opt/java/openjdk
-ENV PATH "${JAVA_HOME}/bin:${PATH}"
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
 COPY --from=jre-build /javaruntime $JAVA_HOME
 
 # now we have Java 17 and Python 3.9
@@ -46,7 +54,7 @@ LABEL \
     about.tags="rule-based modeling,kinetic modeling,dynamical simulation,systems biology,BNGL,SED-ML,COMBINE,OMEX" \
     maintainer="BioSimulators Team <info@biosimulators.org>"
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt -y update && apt install -y software-properties-common
 RUN apt install -y --no-install-recommends curl python3.10 python3-pip build-essential dnsutils \
     apt-utils libfreetype6 fontconfig fonts-dejavu

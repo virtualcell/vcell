@@ -1840,22 +1840,25 @@ public class SBMLImporter {
         ModelUnitSystem modelUnitSystem;
         try {
             modelUnitSystem = createSBMLUnitSystemForVCModel(sbmlModel, sbmlUnitIdentifierHash, localIssueList, issueContext);
-
             vcBioModel = new BioModel(null, modelUnitSystem);
-
-            String biomodelName = sbmlModel.getName();
-            if((biomodelName == null) || biomodelName.trim().equals("")){
-                biomodelName = sbmlModel.getId();
-            }
-            if((biomodelName == null) || biomodelName.trim().equals("")){
-                biomodelName = "newBioModel";
-            }
-            vcBioModel.setName(biomodelName);
         } catch(Exception e){
-            String msg = "Inconsistent unit system in SBML model, cannot import into VCell.";
-            vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnitError, msg);
-            logger.error(msg, e);
-            throw new SBMLImportException("Inconsistent unit system. Cannot import SBML model into VCell.", Category.INCONSISTENT_UNIT, e);
+            String msg = "Inconsistent unit system. Cannot import SBML model into VCell.";
+            SBMLImporter.logger.error(msg, e);
+	        this.vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnitError, msg);
+            throw new SBMLImportException(msg, Category.INCONSISTENT_UNIT, e);
+        }
+
+        try {
+            String biomodelName = this.sbmlModel.getName();
+            if ((biomodelName == null) || biomodelName.trim().isEmpty()) biomodelName = this.sbmlModel.getId();
+            if ((biomodelName == null) || biomodelName.trim().isEmpty()) biomodelName = "newBioModel";
+            if (logger.isDebugEnabled()) logger.info("Setting BioModel name to {}", biomodelName);
+            vcBioModel.setName(biomodelName);
+        } catch (Exception e){
+            String msg = "Error in setting BioModel name from SBML data.";
+            SBMLImporter.logger.error(msg, e);
+	        this.vcLogger.sendMessage(VCLogger.Priority.HighPriority, VCLogger.ErrorType.UnitError, msg);
+            throw new SBMLImportException(msg, Category.INCONSISTENT_UNIT, e);
         }
 
         //
@@ -1961,6 +1964,7 @@ public class SBMLImporter {
 
     private SBMLDocument readSbmlDocument(InputStream sbmlInputStream){
         final String defaultErrorPrefix = "Unable to read SBML stream";
+
         try {
             SBMLReader reader = new SBMLReader();
             SBMLDocument document = reader.readSBMLFromStream(new BufferedInputStream(sbmlInputStream));
@@ -1969,7 +1973,7 @@ public class SBMLImporter {
             return document;
 
         } catch(XMLStreamException e){
-            throw new SBMLImportException("Unable to read SBML stream", e);
+            throw new SBMLImportException(defaultErrorPrefix, e);
         } finally {
             try {
                 sbmlInputStream.close();
