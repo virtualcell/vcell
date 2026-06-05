@@ -246,6 +246,7 @@ public class SpringSaLaDGoodReactionsTest {
 
 		SimulationJob simJob = new SimulationJob(simulation, 0, null);
 		SimulationTask simTask = new SimulationTask(simJob, 0);
+		LangevinLngvWriter langevinLngvWriter = new LangevinLngvWriter(simJob);
 		
 		
 		SolverDescription solverDescription = simTask.getSimulation().getSolverTaskDescription().getSolverDescription();
@@ -253,9 +254,8 @@ public class SpringSaLaDGoodReactionsTest {
         assertTrue(("Langevin".equals(solverDescription.getDatabaseName())) ? true : false, "expecting databese name 'Langevin'");
 
 		// generate the input file for the solver and validate it
-		int randomSeed = 0;
 		String langevinLngvString = null;
-		langevinLngvString = LangevinLngvWriter.writeLangevinLngv(simTask.getSimulation(), randomSeed);
+		langevinLngvString = langevinLngvWriter.writeLangevinLngv();
         assertTrue((langevinLngvString != null) ? true : false, "expecting non-null solver input string");
         assertTrue((langevinLngvString.contains(reactionTestString)) ? true : false, "expecting properly formatted transition reaction");
 		
@@ -282,13 +282,14 @@ public class SpringSaLaDGoodReactionsTest {
 
 
 		Simulation simulation = mathModel.getSimulations()[0];
+		SimulationJob simJob = new SimulationJob(simulation, 0, null);
+		LangevinLngvWriter langevinLngvWriter = new LangevinLngvWriter(simJob);
 		Geometry geometry = simulation.getMathDescription().getGeometry();
 		GeometrySpec geometrySpec = geometry.getGeometrySpec();
         assertTrue(geometrySpec.getDimension() == 3 ? true : false, "GeometrySpec must be 3D");
 
 		//		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
-		int randomSeed = 0;
-		String lngvString = LangevinLngvWriter.writeLangevinLngv(simulation, randomSeed);
+		String lngvString = langevinLngvWriter.writeLangevinLngv();
         assertTrue(lngvString.contains(L_x) ? true : false, "Default Lx must be 100 nm");
         assertTrue(lngvString.contains(molecule) ? true : false, "Molecule must match the saved string pattern");
 

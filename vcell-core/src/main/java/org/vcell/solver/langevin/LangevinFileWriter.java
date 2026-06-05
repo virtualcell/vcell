@@ -12,6 +12,7 @@ package org.vcell.solver.langevin;
 
 import java.io.PrintWriter;
 
+import cbit.vcell.solver.SimulationJob;
 import org.apache.commons.io.output.WriterOutputStream;
 import org.jdom2.Element;
 
@@ -54,8 +55,9 @@ public LangevinFileWriter(PrintWriter pw, SimulationTask simTask, boolean bMessa
 }
 
 @Override
-public void write(String[] parameterNames) throws Exception {	
-	String langevinLngvString = LangevinLngvWriter.writeLangevinLngv(simTask.getSimulation(), randomSeed);
+public void write(String[] parameterNames) throws Exception {
+	LangevinLngvWriter langevinLngvWriter = new LangevinLngvWriter(simTask.getSimulationJob());
+	String langevinLngvString = langevinLngvWriter.writeLangevinLngv();
 	
 	printWriter.write(langevinLngvString);
 	printWriter.flush();

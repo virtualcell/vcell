@@ -170,29 +170,6 @@ public class ColorUtil {
 			new Color(136,34,85)      // plum
 	};
 
-	public static final Color[] DARK20 = {
-			new Color(31,119,180),   // dark blue
-			new Color(214,39,40),    // dark red
-			new Color(44,160,44),    // dark green
-			new Color(148,103,189),  // dark purple
-			new Color(140,86,75),    // brown
-			new Color(23,190,207),   // dark cyan
-			new Color(188,189,34),   // olive
-			new Color(127,127,127),  // gray
-			new Color(57,59,121),    // indigo
-			new Color(82,84,163),    // muted violet
-			new Color(107,110,207),  // periwinkle
-			new Color(156,158,222),  // muted lavender
-			new Color(99,121,57),    // moss green
-			new Color(140,162,82),   // muted lime
-			new Color(181,207,107),  // muted olive green
-			new Color(206,109,189),  // muted magenta
-			new Color(140,109,49),   // dark gold/brown
-			new Color(189,158,57),   // mustard
-			new Color(231,186,82),   // muted amber
-			new Color(231,203,148)   // muted beige
-	};
-
 	public static final Color[] LIGHT20 = {
 			new Color(231,203,148),   // muted beige
 			new Color(181,207,107),   // muted olive green
@@ -216,5 +193,51 @@ public class ColorUtil {
 			new Color(230,230,170)    // pale straw
 	};
 
+	public static final Color[] DARK20 = {
+			new Color(31,119,180),   // dark blue
+			new Color(214,39,40),    // dark red
+			new Color(44,160,44),    // dark green
+			new Color(255,127,14),    // orange
+			new Color(148,103,189),  // dark purple
+			new Color(200,55,0),      // brick red
+			new Color(140,86,75),    // brown
+			new Color(23,190,207),   // dark cyan
+			new Color(213,94,0),      // dark orange
+			new Color(110, 112, 22),   // dark olive
+			new Color(127,127,127),  // gray
+			new Color(57,59,121),    // indigo
+			new Color(165, 35, 50),	// saturated dark red
+			new Color(82,84,163),    // muted violet
+			new Color(107,110,207),  // periwinkle
+			new Color(99,121,57),    // moss green
+			new Color(5, 130, 140),    // deeper mid‑dark teal
+			new Color(153,102,204),   // lavender
+			new Color(140,162,82),   // muted lime
+			new Color(140,109,49),   // dark gold/brown
+			new Color(136,34,85)      // plum
+	};
+
+	public static final Color[] OTHERS20 = {
+			new Color(188,189,34),   // olive
+			new Color(181,207,107),  // muted olive green
+			new Color(110, 112, 22),   // dark olive
+			new Color(85, 87, 18), // deeper dark olive
+			new Color(97, 102, 25),    // military olive
+			new Color(156,158,222),  // muted lavender
+			new Color(189,158,57),   // mustard
+			new Color(10, 150, 160),   // mid‑dark teal
+			new Color(5, 130, 140),    // deeper mid‑dark teal
+			new Color(0, 102, 102),   // dark teal
+			new Color(0, 85, 90),     // deep dark teal
+			new Color(0, 95, 80),     // green‑leaning dark teal
+			new Color(206,109,189),  // muted magenta
+			new Color(150, 30, 45),   // deep mid‑dark red
+			new Color(165, 35, 50),	// saturated dark red
+			new Color(130, 20, 35),	// dramatic dark red
+			new Color(140, 28, 40),	// scientific dark red
+			new Color(231,186,82),   // muted amber
+			new Color(231,203,148)   // muted beige
+
+	};
 
 }

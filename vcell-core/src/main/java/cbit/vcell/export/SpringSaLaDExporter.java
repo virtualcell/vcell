@@ -24,6 +24,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import cbit.vcell.mapping.*;
+import cbit.vcell.solver.SimulationJob;
 import org.vcell.model.rbm.ComponentStateDefinition;
 import org.vcell.model.rbm.MolecularComponent;
 import org.vcell.model.rbm.MolecularType;
@@ -100,7 +101,8 @@ public class SpringSaLaDExporter {
 		}
 		// make a fake simulation, when exporting we just need some default simulation properties 
 		Simulation simulation = new Simulation(simContext.getMathDescription(), simContext);
-		
+		SimulationJob simulationJob = new SimulationJob(simulation, 0, null);
+		LangevinLngvWriter lgvWriter = new LangevinLngvWriter(simulationJob);
 		
 		Geometry geometry = simContext.getGeometry();
 		GeometryContext geometryContext = simContext.getGeometryContext();
@@ -115,7 +117,7 @@ public class SpringSaLaDExporter {
 		Map<ReactionRuleSpec, Map<String, Object>> transitionMap = new LinkedHashMap<> ();
 		Map<ReactionRuleSpec, Map<String, Object>> allostericMap = new LinkedHashMap<> ();
 		Map<ReactionRuleSpec, Map<String, Object>> bindingMap = new LinkedHashMap<> ();
-		Map<SpeciesContext, Pair<String, String>> moleculeCreationDecayRates = new LinkedHashMap<> ();
+		Map<SpeciesContext, Pair<Expression, Expression>> moleculeCreationDecayRates = new LinkedHashMap<> ();
 		try {
 			for(ReactionRuleSpec rrs : reactionRuleSpecs) {
 				if(rrs.isExcluded()) {
@@ -154,30 +156,30 @@ public class SpringSaLaDExporter {
 				if(SpeciesContextSpec.SourceMoleculeString.equals(sc.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(sc.getName())) {
 					continue;
 				}
-				moleculeCreationDecayRates.put(sc, new Pair("0.0", "0.0"));	// initialize all species with zero
+				moleculeCreationDecayRates.put(sc, new Pair(new Expression(0.0), new Expression(0.0)));	// initialize all species with zero
 			}
 			for (Map.Entry<ReactionRuleSpec, SpeciesContext> entry : creationMap.entrySet()) {
 				ReactionRuleSpec rrs = entry.getKey();
 				SpeciesContext sc = entry.getValue();
-				Pair<String, String> oldPair = moleculeCreationDecayRates.get(sc);
+				Pair<Expression, Expression> oldPair = moleculeCreationDecayRates.get(sc);
 				if(oldPair == null) {
 					throw new RuntimeException("Molecule being created not found in the list of Species");
 				}
 				RbmKineticLaw kineticLaw = rrs.getReactionRule().getKineticLaw();
 				Expression creationRate = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
-				Pair<String, String> newPair = new Pair<> (creationRate.infix(), oldPair.two);
+				Pair<Expression, Expression> newPair = new Pair<> (creationRate, oldPair.two);
 				moleculeCreationDecayRates.put(sc, newPair);
 			}
 			for (Map.Entry<ReactionRuleSpec, SpeciesContext> entry : decayMap.entrySet()) {
 				ReactionRuleSpec rrs = entry.getKey();
 				SpeciesContext sc = entry.getValue();
-				Pair<String, String> oldPair = moleculeCreationDecayRates.get(sc);
+				Pair<Expression, Expression> oldPair = moleculeCreationDecayRates.get(sc);
 				if(oldPair == null) {
 					throw new RuntimeException("Molecule being destroyed not found in the list of Species");
 				}
 				RbmKineticLaw kineticLaw = rrs.getReactionRule().getKineticLaw();
 				Expression decayRate = kineticLaw.getLocalParameterValue(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
-				Pair<String, String> newPair = new Pair<> (oldPair.one, decayRate.infix());
+				Pair<Expression, Expression> newPair = new Pair<> (oldPair.one, decayRate);
 				moleculeCreationDecayRates.put(sc, newPair);
 			}
 		} catch(Exception ex) {
@@ -191,13 +193,13 @@ public class SpringSaLaDExporter {
 			/* ********* BEGIN BY WRITING THE TIMES *********/
 			sb.append("*** " + TIME_INFORMATION + " ***");
 			sb.append("\n");
-			LangevinLngvWriter.writeTimeInformation(sb, simulation);
+			lgvWriter.writeTimeInformation(sb);
 			sb.append("\n");
 
 			/* ********* WRITE THE SPATIAL INFORMATION **********/
 			sb.append("*** " + SPATIAL_INFORMATION + " ***");
 			sb.append("\n");
-			LangevinLngvWriter.writeSpatialInformation(geometrySpec, simulation, sb);
+			lgvWriter.writeSpatialInformation(geometrySpec, sb);
 			sb.append("\n");
 
 			/* ******* WRITE THE SPECIES INFORMATION ***********/

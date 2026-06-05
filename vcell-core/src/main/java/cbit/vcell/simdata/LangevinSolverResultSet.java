@@ -33,7 +33,9 @@ public class LangevinSolverResultSet implements Serializable {
 
     // derived data, based on raw, populated in postProcess()
     private ODESimData clusterMass = null;
-
+    private double maxClusterMassOverall;      // max mass across all cluster sizes & times
+    private double maxClusterCountOverall;     // max count across all cluster sizes & times
+    // TODO: add maxAbsoluteCountOverall and maxAbsoluteMassOverall, that will include monomers to be used for scaling in the UI
 
 //    // safe getter that returns a deep copy, but I don't think we need it
 //    public LangevinBatchResultSet getLangevinBatchResultSetSafe() {
@@ -64,6 +66,16 @@ public class LangevinSolverResultSet implements Serializable {
     }
     public ODESimData getClusterOverall() {
         return raw == null ? null : raw.getOdeSimDataClusterOverall();
+    }
+    public ODEDataInfo getDataInfo() {
+        return raw == null ? null : raw.getOdeDataInfo();
+    }
+
+    public double getMaxClusterMassOverall() {
+        return maxClusterMassOverall;
+    }
+    public double getMaxClusterCountOverall() {
+        return maxClusterCountOverall;
     }
 
     public ColumnDescription getColumnDescriptionByName(String columnName) {
@@ -161,6 +173,11 @@ public class LangevinSolverResultSet implements Serializable {
             ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(bos.toByteArray()));
             clusterMass = (ODESimData) in.readObject();
 
+            // take advantage of the fact that we iterate here through all the columns and rows,
+            // to compute max mass and count across all sizes and times
+            maxClusterMassOverall = 0;
+            maxClusterCountOverall = 0;
+
             // 2. Modify numeric values in-place
             ColumnDescription[] cds = clusterMass.getColumnDescriptions();
             int nCols = cds.length;
@@ -173,8 +190,15 @@ public class LangevinSolverResultSet implements Serializable {
                 int clusterSize = Integer.parseInt(name);
                 double[] series = clusterMass.extractColumn(c); // reference to internal array
                 for (int i = 0; i < series.length; i++) {
-                    double value = series[i] * clusterSize;
-                    clusterMass.setValue(i, c, value);
+                    double count = series[i];
+                    double mass = count * clusterSize;
+                    clusterMass.setValue(i, c, mass);
+                    if (count > maxClusterCountOverall) {   // compute global maxima
+                        maxClusterCountOverall = count;
+                    }
+                    if (mass > maxClusterMassOverall) {
+                        maxClusterMassOverall = mass;
+                    }
                 }
             }
         } catch (Exception e) {

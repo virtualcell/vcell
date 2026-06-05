@@ -1,18 +1,31 @@
 package cbit.plot.gui;
 
 import static cbit.plot.gui.PlotRenderers.*;
+
+import cbit.vcell.solver.ode.gui.ClusterSpecificationPanel;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
 import javax.swing.*;
 
 public abstract class AbstractPlotPanel extends JPanel {
+
+    private static final Logger lg = LogManager.getLogger(AbstractPlotPanel.class);
+
+    public record BubbleHit (
+        double time,          // x value in seconds
+        int clusterSize,      // y category (2, 3, 4, ...)
+        double value,            // cluster count at that time (optional for now)
+        int px,               // pixel x (for highlight)
+        int py               // pixel y (for highlight)
+        ) {}
 
     public class RendererOptions {
         // Renderer options list
@@ -25,9 +38,20 @@ public abstract class AbstractPlotPanel extends JPanel {
         private boolean showBandAsStep = true;     // whether to draw bands with steps (instead of linear interpolation);
         private boolean showCosshair = true;  // whether to show the crosshair at all (if false, mouse coordinates are still tracked and sent to the callback, but no crosshair is drawn)
         private boolean showLogScale = false;  // whether to use logarithmic scale on the y-axis (not implemented yet)
+
+        // bubble specific options
+        private boolean showBubbleSingleColor = false; // whether to show all bubbles in the same color (instead of coloring by series)
+        private boolean showBubbleSizeByCount = true;  // whether to size bubbles by cluster count (if false, all bubbles have the same size)
+        // these 3 bubble options below are mutually exclusive
+        private boolean showBubbleSolid = false;    // whether to draw bubbles as solid circles (instead of empty circles)
+        private boolean showBubbleFading = true;      // whether to fade bubbles (with alpha) based on their size
+        private boolean showBubbleAsEmptyCircles = false;    // whether to draw bubbles as empty circles
+        boolean showOnlySelectedSeries = true;   // whether to hide the gaps in the multi-selection entities
     }
 
-    private static final Logger lg = LogManager.getLogger(AbstractPlotPanel.class);
+    // Renderer options
+    final RendererOptions options = new RendererOptions();
+    protected JDialog optionsDialog = null;
 
     // Insets and strokes
     protected static final int LEFT_INSET   = 50;
@@ -39,10 +63,8 @@ public abstract class AbstractPlotPanel extends JPanel {
     protected static final float CURVE_STROKE = 1.5f;   // stroke for the main curve (avg line); bands will be filled, not stroked
     protected static final int DIMMED_LINE_ALPHA = 20;   // for dimming non-hovered series (0–255)
     protected static final int DIMMED_BAND_ALPHA = 0;    // for dimming non-hovered bands (0–255)
-
-    // Renderer options
-    private final RendererOptions options = new RendererOptions();
-    private JDialog optionsDialog = null;
+    protected static final int DIMMED_SOLID_BUBBLE_ALPHA = 30;    // for dimming bubble histograms
+    protected static final int DIMMED_FADING_BUBBLE_ALPHA = 2;
 
     // Renderers list
     protected final List<SeriesRenderer> renderers = new ArrayList<>();
@@ -50,13 +72,14 @@ public abstract class AbstractPlotPanel extends JPanel {
     // Scaling state
     protected double globalMin = 0;         // on the-y axis; x-axis is always 0 to dt*(N-1)
     protected double globalMax = 1;
-    protected double dt = 1;
+    protected double dt = 1;                // time step between consecutive points in seconds
 
     // Crosshair state
     protected Integer mouseX = null;    // mouse coordinates in pixels, relative to the panel; null if mouse is outside the plot area
     protected Integer mouseY = null;
     protected Integer snappedX = null;  // we are snapped here (or null)
     protected Integer snappedY = null;
+//    private BubbleHit lastBubbleHit;    // used for snapping to bubbles and showing tooltip info about the bubble we snapped to
     protected Consumer<double[]> coordCallback;
 
     // Cached plot area
@@ -73,30 +96,38 @@ public abstract class AbstractPlotPanel extends JPanel {
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                int mx = e.getX();      // in pixels, relative to the panel
+                int mx = e.getX();
                 int my = e.getY();
-
-                if (mx >= lastX0 && mx <= lastX1 && my >= lastY1 && my <= lastY0) {
-                    mouseX = mx;
-                    mouseY = my;
-                } else {
+                // inside plot area?
+                boolean inside = mx >= lastX0 && mx <= lastX1 && my >= lastY1 && my <= lastY0;
+                if (!inside) {
                     mouseX = null;
                     mouseY = null;
+                    snappedX = null;
+                    snappedY = null;
+//                    lastBubbleHit = null;         // don't seem to need it
+                    if (coordCallback != null) {
+                        coordCallback.accept(null);
+                    }
+                    repaint();
+                    return;
                 }
-
-                if (/*isShowCosshair() && */ mouseX != null && mouseY != null) {    // we always show coordinates
-                    mx = mouseX;
-                    my = mouseY;
+                // -----------------------------
+                // LINE PLOT MODE
+                // -----------------------------
+                if (!isBubblePlotMode()) {
+                    mouseX = mx;
+                    mouseY = my;
                     if (isSnapToNodes()) {
                         Point snapped = findClosestNode(mx, my);
                         if (snapped != null) {
-                            mx = snapped.x;  // mx and my are now snapped to the nearest node's pixel coordinates
+                            mx = snapped.x;
                             my = snapped.y;
-                            mouseX = mx;     // update mouseX and mouseY to the snapped coordinates for crosshair drawing
+                            mouseX = mx;
                             mouseY = my;
-                            snappedX = mx;   // store snapped coordinates for highlight the point we snapped to
+                            snappedX = mx;
                             snappedY = my;
-                        } else {             // clear highlight if no snap occurred
+                        } else {
                             snappedX = null;
                             snappedY = null;
                         }
@@ -104,20 +135,46 @@ public abstract class AbstractPlotPanel extends JPanel {
                         snappedX = null;
                         snappedY = null;
                     }
-                    double fracX = (mx - lastX0) / (double)(lastX1 - lastX0);
-                    double xVal = fracX * lastXMaxRounded;      // mouse coord on x-axis in seconds
-                    double fracY = (lastY0 - my) / (double)(lastY0 - lastY1);
-                    double yVal = lastYMinRounded + fracY * (lastYMaxRounded - lastYMinRounded); // mouse coord on y-axis in molecules
-
+                    double fracX = (mx - lastX0) / (double) (lastX1 - lastX0);
+                    double xVal = fracX * lastXMaxRounded;
+                    double fracY = (lastY0 - my) / (double) (lastY0 - lastY1);
+                    double yVal = lastYMinRounded + fracY * (lastYMaxRounded - lastYMinRounded);
                     if (coordCallback != null) {
                         coordCallback.accept(new double[]{xVal, yVal});
                     }
-                } else {
-                    if (coordCallback != null) {
-                        coordCallback.accept(null);
-                    }
+                    repaint();
+                    return;
                 }
-                repaint();
+                // -----------------------------
+                // BUBBLE PLOT MODE
+                // -----------------------------
+                if (isBubblePlotMode()) {
+                    // no crosshair in bubble mode
+                    mouseX = null;
+                    mouseY = null;
+                    BubbleHit hit = null;
+                    if (isSnapToNodes()) {
+                        hit = findClosestBubble(mx, my);
+                    }
+//                    lastBubbleHit = hit;
+                    if (hit != null) {
+                        // highlight bubble
+                        snappedX = hit.px;
+                        snappedY = hit.py;
+
+                        // time + integer cluster size
+                        if (coordCallback != null) {
+                            coordCallback.accept(new double[]{hit.time, hit.clusterSize});
+                        }
+                    } else {
+                        snappedX = null;
+                        snappedY = null;
+                        if (coordCallback != null) {
+                            coordCallback.accept(null);
+                        }
+                    }
+                    repaint();
+                }
             }
         });
 
@@ -128,6 +185,10 @@ public abstract class AbstractPlotPanel extends JPanel {
                 mouseY = null;
                 snappedX = null;
                 snappedY = null;
+//                lastBubbleHit = null;
+                if (coordCallback != null) {
+                    coordCallback.accept(null);
+                }
                 repaint();
             }
         });
@@ -141,37 +202,26 @@ public abstract class AbstractPlotPanel extends JPanel {
             }
         });
     }
-    private void showOptionsDialog() {
-        if (optionsDialog != null) {
-            optionsDialog.toFront();
-            return;
-        }
-        PlotOptionsPanel panel = new PlotOptionsPanel(this);
-        optionsDialog = new JDialog(
-                SwingUtilities.getWindowAncestor(this),
-                "Plot Options",
-                Dialog.ModalityType.APPLICATION_MODAL   // ← modal again
-        );
 
-        // padding around entire dialog
-        optionsDialog.getRootPane().setBorder(
-                BorderFactory.createEmptyBorder(12, 12, 10, 10)
-        );
+    abstract void showOptionsDialog();
+    abstract boolean isBubblePlotMode();
+
+    // Public API
+    protected void createAndShowDialog(JPanel panel) {
+        optionsDialog = new JDialog(SwingUtilities.getWindowAncestor(this), "Plot Options", Dialog.ModalityType.APPLICATION_MODAL);
+        optionsDialog.getRootPane().setBorder(BorderFactory.createEmptyBorder(12, 12, 10, 10));
         optionsDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         optionsDialog.getContentPane().add(panel, BorderLayout.CENTER);
-
         JButton exitButton = new JButton("Exit");
         exitButton.addActionListener(e -> optionsDialog.dispose());
-
         JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        bottom.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0)); // top padding
+        bottom.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 0));
         bottom.add(exitButton);
-
         optionsDialog.getContentPane().add(bottom, BorderLayout.SOUTH);
         optionsDialog.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
-                optionsDialog = null;   // allow reopening
+                optionsDialog = null;
             }
         });
         optionsDialog.pack();
@@ -179,27 +229,21 @@ public abstract class AbstractPlotPanel extends JPanel {
         optionsDialog.setVisible(true);
     }
 
-    // Public API
-
     public void setCoordinateCallback(Consumer<double[]> cb) {
         this.coordCallback = cb;
     }
-
     public void clearAllRenderers() {
         renderers.clear();
     }
-
     public void setGlobalMinMax(double min, double max) {
         this.globalMin = min;
         this.globalMax = max;
     }
-
     public void setDt(double dt) {
         this.dt = dt;
     }
 
     // High-level, stat-aware renderers
-
     public void addAvgRenderer(double[] time, double[] avg, Color color, String name, Object statTag) {
         renderers.add(new AvgRenderer(name, time, avg, color, this));
     }
@@ -213,9 +257,11 @@ public abstract class AbstractPlotPanel extends JPanel {
             renderers.add(new BandRenderer(name, time, low, high, color, this));
         }
     }
+    public void addBubbleRenderer(double[] time, double[] values, Color color, String name) {
+        renderers.add(new PlotRenderers.BubbleRenderer(name, time, values, color, this));
+    }
 
     // Utilities
-
     protected double roundUpNice(double value) {
         if (value <= 0) return 1;
         double exp = Math.pow(10, Math.floor(Math.log10(value)));
@@ -236,7 +282,6 @@ public abstract class AbstractPlotPanel extends JPanel {
         else if (absStep >= 0.001)s = String.format("%.3f", value);
         else if (absStep >= 0.0001)s = String.format("%.4f", value);
         else return String.format("%.2E", value);
-
         while (s.contains(".") && s.endsWith("0")) {
             s = s.substring(0, s.length() - 1);
         }
@@ -246,15 +291,86 @@ public abstract class AbstractPlotPanel extends JPanel {
         return s;
     }
 
-    public void setShowAvgAsStep(boolean b) { this.options.showAvgAsStep = b; repaint(); }
-    public void setShowBandAsStep(boolean b) { this.options.showBandAsStep = b; repaint(); }
-    public void setShowLines(boolean b) { this.options.showLines = b; repaint(); }
-    public void setShowNodes(boolean b) { this.options.showNodes = b; repaint(); }
-    public void setSnapToNodes(boolean b) { this.options.snapToNodes = b; repaint(); }
-    public void setShowBarForSD(boolean b) { this.options.showBarForSD = b; repaint(); }
-    public void setNodeDiameter(int d) { this.options.nodeDiameter = d; repaint(); }
-    public void setShowCosshair(boolean b) { this.options.showCosshair = b; repaint(); }
-    public void setShowLogScale(boolean b) { this.options.showLogScale = b; repaint(); }
+    public void setShowAvgAsStep(boolean b) {
+        this.options.showAvgAsStep = b;
+        repaint();
+    }
+    public void setShowBandAsStep(boolean b) {
+        this.options.showBandAsStep = b;
+        repaint();
+    }
+    public void setShowLines(boolean b) {
+        this.options.showLines = b;
+        repaint();
+    }
+    public void setShowNodes(boolean b) {
+        this.options.showNodes = b;
+        repaint();
+    }
+    public void setSnapToNodes(boolean b) {
+        this.options.snapToNodes = b;
+        repaint();
+    }
+    public void setShowBarForSD(boolean b) {
+        this.options.showBarForSD = b;
+        repaint();
+    }
+    public void setNodeDiameter(int d) {
+        this.options.nodeDiameter = d;
+        repaint();
+    }
+    public void setShowCosshair(boolean b) {
+        this.options.showCosshair = b;
+        repaint(); }
+    public void setShowLogScale(boolean b) {
+        this.options.showLogScale = b;
+        repaint();
+    }
+    public void setShowBubbleSingleColor(boolean v) {
+        this.options.showBubbleSingleColor = v;
+        repaint();
+    }
+    public void setShowBubbleSizeByCount(boolean v) {
+        this.options.showBubbleSizeByCount = v;
+        repaint();
+    }
+    public void setShowBubbleFading(boolean v) {
+        this.options.showBubbleFading = v;
+        if(v == true) {
+            this.options.showBubbleSolid = false;
+            this.options.showBubbleAsEmptyCircles = false;
+        } else {    // we default to empty circles
+            this.options.showBubbleAsEmptyCircles = true;
+            this.options.showBubbleSolid = false;
+        }
+        repaint();
+    }
+    public void setShowBubbleAsEmptyCircles(boolean v) {
+        this.options.showBubbleAsEmptyCircles = v;
+        if(v == true) {
+            this.options.showBubbleSolid = false;
+            this.options.showBubbleFading = false;
+        } else {    // we default to empty circles
+            this.options.showBubbleSolid = true;
+            this.options.showBubbleFading = false;
+        }
+        repaint();
+    }
+    public void setShowBubbleSolid(boolean v) {
+        this.options.showBubbleSolid = v;
+        if(v == true) {
+            this.options.showBubbleAsEmptyCircles = false;
+            this.options.showBubbleFading = false;
+        } else {    // we default to empty circles
+            this.options.showBubbleAsEmptyCircles = true;
+            this.options.showBubbleFading = false;
+        }
+        repaint();
+    }
+    public void setShowOnlySelectedSeries(boolean v) {
+        this.options.showOnlySelectedSeries = v;
+        repaint();
+    }
 
     public boolean isShowAvgAsStep() { return options.showAvgAsStep; }
     public boolean isShowBandAsStep() { return options.showBandAsStep; }
@@ -265,6 +381,24 @@ public abstract class AbstractPlotPanel extends JPanel {
     public int getNodeDiameter() { return options.nodeDiameter; }
     public boolean isShowCosshair() { return options.showCosshair; }
     public boolean isShowLogScale() { return options.showLogScale; }
+    public boolean isShowBubbleSingleColor() {
+        return options.showBubbleSingleColor;
+    }
+    public boolean isShowBubbleSizeByCount() {
+        return options.showBubbleSizeByCount;
+    }
+    public boolean isShowBubbleSolid() {
+        return options.showBubbleSolid;
+    }
+    public boolean isShowBubbleFading() {
+        return options.showBubbleFading;
+    }
+    public boolean isShowBubbleAsEmptyCircles() {
+        return options.showBubbleAsEmptyCircles;
+    }
+    public boolean isShowOnlySelectedSeries() {
+        return options.showOnlySelectedSeries;
+    }
 
     private Point findClosestNode(int mouseX, int mouseY) {     // use for SnapToNodes feature
         Point best = null;
@@ -286,6 +420,39 @@ public abstract class AbstractPlotPanel extends JPanel {
             return best;
         }
         return null;
+    }
+
+    private BubbleHit findClosestBubble(int mouseX, int mouseY) {
+        BubbleHit best = null;
+        double bestDist2 = Double.POSITIVE_INFINITY;
+
+        for (SeriesRenderer r : renderers) {
+            if (r instanceof BubbleRenderer br) {
+                BubbleHit hit = br.getClosestBubble(mouseX, mouseY);
+                if (hit != null) {
+                    double dx = hit.px - mouseX;
+                    double dy = hit.py - mouseY;
+                    double d2 = dx*dx + dy*dy;
+
+                    if (d2 < bestDist2) {
+                        bestDist2 = d2;
+                        best = hit;
+                    }
+                }
+            }
+        }
+        return best;
+    }
+
+    int getOrdinalIndexForClusterSize(int cs) {
+        int idx = 0;
+        for (SeriesRenderer r : renderers) {
+            if (r instanceof BubbleRenderer bub) {
+                if (bub.getClusterSize() == cs) return idx;
+                idx++;
+            }
+        }
+        return 0; // fallback
     }
 
     public void setHoveredSeriesName(String name) {
@@ -325,20 +492,77 @@ public abstract class AbstractPlotPanel extends JPanel {
 
         // --- determine max length from all renderers that use arrays -----
         int maxLength = 0;      // number of timepoints
+        // we could replace hasBubble logic with isBubblePlotMode(), but we keep it this way because we can detect
+        // more subtle renderers inconsistencies, e.g. if we have bubble renderer(s) but also avg/band/bar renderers,
+        // which is not supported and likely reveals a bug in the caller code
+        boolean hasBubble = false;
+        boolean hasBand = false;
+        boolean hasAvg = false;
+        boolean hasBar = false;
         for (SeriesRenderer r : renderers) {
             if (r instanceof AvgRenderer ar) {
                 maxLength = Math.max(maxLength, ar.values.length);
+                hasAvg = true;
             } else if (r instanceof BandRenderer br) {
                 maxLength = Math.max(maxLength, br.upper.length);
+                hasBand = true;
             } else if (r instanceof BarRenderer br) {
                 maxLength = Math.max(maxLength, br.upper.length);
+                hasBar = true;
+            } else if(r instanceof PlotRenderers.BubbleRenderer bub) {
+                maxLength = Math.max(maxLength, bub.values.length);
+                hasBubble = true;
             }
         }
-        if (maxLength < 2) return;
+        if (maxLength < 2) {
+            return;
+        }
+        if(hasBubble && globalMax <= 0) {     // we have bubble renderer(s) but all values are zero
+            lg.warn("Nothing to draw for bubble renderer: all values are zero");
+            return;
+        }
+        if((hasBubble && (hasAvg || hasBand || hasBar))) {  // bubble is not promiscuos, doesn't mix with any other renderer
+            lg.warn("Inconsistent renderers: bubble renderer cannot be combined with avg/band/bar renderers");
+            return;
+        }
+
+        // --- collect selected cluster sizes (needed for bubble mode only)
+        List<Integer> selectedSizes = null;
+        if (hasBubble && options.showOnlySelectedSeries) {
+            selectedSizes = new ArrayList<>();
+            for (SeriesRenderer r : renderers) {
+                if (r instanceof BubbleRenderer bub) {
+                    selectedSizes.add(bub.getClusterSize());
+                }
+            }
+            Collections.sort(selectedSizes);
+        }
 
         // --- compute axis scaling -----------------------------------------
-        double yMaxRounded = roundUpNice(globalMax);    // in molecules
-        double yMinRounded = (globalMin < 0) ? -roundUpNice(-globalMin) : 0;    // may be negative if avg-sd<0
+        double yMaxRounded;
+        double yMinRounded;
+        if(!hasBubble) {
+            yMaxRounded = roundUpNice(globalMax);    // in molecules
+            yMinRounded = (globalMin < 0) ? -roundUpNice(-globalMin) : 0;    // may be negative if avg-sd<0
+        } else {
+            if (!options.showOnlySelectedSeries) {
+                // bubble mode showing all between 0 and max selected cluster size
+                // Y-axis = cluster size (0,1,2,...)
+                int maxCluster = Integer.MIN_VALUE;
+                for (SeriesRenderer r : renderers) {
+                    if (r instanceof BubbleRenderer bub) {
+                        maxCluster = Math.max(maxCluster, bub.getClusterSize());
+                    }
+                }
+                yMinRounded = 0;                // Y-axis always starts at 0
+                yMaxRounded = maxCluster + 0.5; // top padding: +0.5 so the top cluster size is centered
+            } else {
+                // compressed mode: only selected sizes
+                int count = selectedSizes.size();
+                yMinRounded = 0;
+                yMaxRounded = count + 0.5;      // 0 baseline + count rows above
+            }
+        }
         double xMax = dt * (maxLength - 1);             // in seconds
         double xMaxRounded = roundUpNice(xMax);
         lastXMaxRounded = xMaxRounded;  // seconds
@@ -346,32 +570,57 @@ public abstract class AbstractPlotPanel extends JPanel {
         lastYMinRounded = yMinRounded;  // molecules
 
         // --- compute pixel location of value zero on the y-axis, to draw the horizontal axis there
-        double normZero = (0 - yMinRounded) / (yMaxRounded - yMinRounded);
-        int yZeroPix = y0 - (int)Math.round(normZero * plotHeight);
-
+        int yZeroPix;
+        if (!hasBubble) {
+            double normZero = (0 - yMinRounded) / (yMaxRounded - yMinRounded);
+            yZeroPix = y0 - (int)Math.round(normZero * plotHeight);
+        } else {
+            // in bubble mode, x-axis is simply at the bottom
+            yZeroPix = y0;
+        }
         FontMetrics fm = g2.getFontMetrics();
 
         // --- grid lines ----------------------------------------------
         g2.setColor(new Color(220, 220, 220));
         g2.setStroke(new BasicStroke(1f));
 
-        int yTicks = 5;     // number of major horizontal ticks (above 0)
-        double yStep = yMaxRounded / yTicks;
-        // k runs over all integer multiples of yStep that fall inside the range
-        int kMin = (int)Math.floor(yMinRounded / yStep);
-        int kMax = (int)Math.ceil(yMaxRounded / yStep);
-        for (int k = kMin; k <= kMax; k++) {
-            double valueMajor = k * yStep;                  // ----- major gridline -----
-            if (valueMajor >= yMinRounded - 1e-9 && valueMajor <= yMaxRounded + 1e-9) {
-                double normMajor = (valueMajor - yMinRounded) / (yMaxRounded - yMinRounded);
-                int yPixMajor = y0 - (int)Math.round(normMajor * plotHeight);
-                g2.drawLine(x0, yPixMajor, x1, yPixMajor);
+        if(!hasBubble) {
+            int yTicks = 5;     // number of major horizontal ticks (above 0)
+            double yStep = yMaxRounded / yTicks;
+            // k runs over all integer multiples of yStep that fall inside the range
+            int kMin = (int) Math.floor(yMinRounded / yStep);
+            int kMax = (int) Math.ceil(yMaxRounded / yStep);
+            for (int k = kMin; k <= kMax; k++) {
+                double valueMajor = k * yStep;                  // ----- major gridline -----
+                if (valueMajor >= yMinRounded - 1e-9 && valueMajor <= yMaxRounded + 1e-9) {
+                    double normMajor = (valueMajor - yMinRounded) / (yMaxRounded - yMinRounded);
+                    int yPixMajor = y0 - (int) Math.round(normMajor * plotHeight);
+                    g2.drawLine(x0, yPixMajor, x1, yPixMajor);
+                }
+                double valueMid = valueMajor + yStep / 2.0;     // ----- mid gridline -----
+                if (valueMid >= yMinRounded && valueMid <= yMaxRounded) {
+                    double normMid = (valueMid - yMinRounded) / (yMaxRounded - yMinRounded);
+                    int yPixMid = y0 - (int) Math.round(normMid * plotHeight);
+                    g2.drawLine(x0, yPixMid, x1, yPixMid);
+                }
             }
-            double valueMid = valueMajor + yStep / 2.0;     // ----- mid gridline -----
-            if (valueMid >= yMinRounded && valueMid <= yMaxRounded) {
-                double normMid = (valueMid - yMinRounded) / (yMaxRounded - yMinRounded);
-                int yPixMid = y0 - (int)Math.round(normMid * plotHeight);
-                g2.drawLine(x0, yPixMid, x1, yPixMid);
+        } else {
+            if (!options.showOnlySelectedSeries) {
+                // bubble all mode: grid at every integer cluster size
+                int maxCluster = (int)Math.floor(yMaxRounded - 0.5);
+                for (int cs = 0; cs <= maxCluster; cs++) {
+                    double norm = (cs - yMinRounded) / (yMaxRounded - yMinRounded);
+                    int yPix = y0 - (int)Math.round(norm * plotHeight);
+                    g2.drawLine(x0, yPix, x1, yPix);
+                }
+            } else {
+                // bubble compressed mode: only selected cluster sizes
+                for (int i = 0; i < selectedSizes.size(); i++) {
+                    int row = i+1;   // row 0 is for baseline (horizontal axis), then row 1 for first selected size, etc.
+                    double norm = (row - yMinRounded) / (yMaxRounded - yMinRounded);
+                    int yPix = y0 - (int)Math.round(norm * plotHeight);
+                    g2.drawLine(x0, yPix, x1, yPix);
+                }
             }
         }
 
@@ -399,29 +648,58 @@ public abstract class AbstractPlotPanel extends JPanel {
         g2.setColor(Color.black);
         g2.setStroke(new BasicStroke(AXIS_STROKE));
 
-        // yStep was computed as: yStep = yMaxRounded / yTicks;
-        // and gridlines were drawn at k * yStep for k in [floor(min/step), ceil(max/step)]
-        kMin = (int)Math.floor(yMinRounded / yStep);        // y-axis ticks (on the vertical axis)
-        kMax = (int)Math.ceil(yMaxRounded / yStep);
-        for (int k = kMin; k <= kMax; k++) {
-            double value = k * yStep;
-            if (value < yMinRounded - 1e-9 || value > yMaxRounded + 1e-9) {
-                continue;   // skip values outside the rounded range (floating‑point guard)
-            }
-            // convert to pixel using the SAME normalization as gridlines and renderer
-            double norm = (value - yMinRounded) / (yMaxRounded - yMinRounded);
-            int yPix = y0 - (int)Math.round(norm * plotHeight);
-            g2.drawLine(x0 - 5, yPix, x0, yPix);     // major tick (little horizontal line on the vertical axis)
-            String label = formatTick(value, yStep);    // label
-            int sw = fm.stringWidth(label);
-            g2.drawString(label, x0 - 10 - sw, yPix + fm.getAscent() / 2);
+        if(!hasBubble) {
+            // yStep was computed as: yStep = yMaxRounded / yTicks;
+            // and gridlines were drawn at k * yStep for k in [floor(min/step), ceil(max/step)]
+            int yTicks = 5;
+            double yStep = yMaxRounded / yTicks;
+            int kMin = (int) Math.floor(yMinRounded / yStep);        // y-axis ticks (on the vertical axis)
+            int kMax = (int) Math.ceil(yMaxRounded / yStep);
+            for (int k = kMin; k <= kMax; k++) {
+                double value = k * yStep;
+                if (value < yMinRounded - 1e-9 || value > yMaxRounded + 1e-9) {
+                    continue;   // skip values outside the rounded range (floating‑point guard)
+                }
+                // convert to pixel using the SAME normalization as gridlines and renderer
+                double norm = (value - yMinRounded) / (yMaxRounded - yMinRounded);
+                int yPix = y0 - (int) Math.round(norm * plotHeight);
+                g2.drawLine(x0 - 5, yPix, x0, yPix);     // major tick (little horizontal line on the vertical axis)
+                String label = formatTick(value, yStep);    // label
+                int sw = fm.stringWidth(label);
+                g2.drawString(label, x0 - 10 - sw, yPix + fm.getAscent() / 2);
 
-            if (k < kMax) {     // mid tick (between this and next)
-                double midValue = value + yStep / 2.0;
-                if (midValue >= yMinRounded && midValue <= yMaxRounded) {
-                    double normMid = (midValue - yMinRounded) / (yMaxRounded - yMinRounded);
-                    int yPixMid = y0 - (int)Math.round(normMid * plotHeight);
-                    g2.drawLine(x0 - 3, yPixMid, x0, yPixMid);
+                if (k < kMax) {     // mid tick (between this and next)
+                    double midValue = value + yStep / 2.0;
+                    if (midValue >= yMinRounded && midValue <= yMaxRounded) {
+                        double normMid = (midValue - yMinRounded) / (yMaxRounded - yMinRounded);
+                        int yPixMid = y0 - (int) Math.round(normMid * plotHeight);
+                        g2.drawLine(x0 - 3, yPixMid, x0, yPixMid);
+                    }
+                }
+            }
+        } else {
+            if (!options.showOnlySelectedSeries) {
+                // show all cluster sizes on the y-axis, from 0 to the max one selected
+                int maxCluster = (int)Math.floor(yMaxRounded - 0.5);
+                for (int cs = 0; cs <= maxCluster; cs++) {
+                    double norm = (cs - yMinRounded) / (yMaxRounded - yMinRounded);
+                    int yPix = y0 - (int)Math.round(norm * plotHeight);
+                    g2.drawLine(x0 - 5, yPix, x0, yPix);
+                    String label = Integer.toString(cs);
+                    int sw = fm.stringWidth(label);
+                    g2.drawString(label, x0 - 10 - sw, yPix + fm.getAscent() / 2);
+                }
+            } else {
+                // compressed mode
+                for (int i = 0; i < selectedSizes.size(); i++) {
+                    int cs = selectedSizes.get(i);
+                    int row = i+1;   // row 0 is for baseline (horizontal axis), then row 1 for first selected size, etc.
+                    double norm = (row - yMinRounded) / (yMaxRounded - yMinRounded);
+                    int yPix = y0 - (int)Math.round(norm * plotHeight);
+                    g2.drawLine(x0 - 5, yPix, x0, yPix);
+                    String label = Integer.toString(cs);
+                    int sw = fm.stringWidth(label);
+                    g2.drawString(label, x0 - 10 - sw, yPix + fm.getAscent() / 2);
                 }
             }
         }
@@ -443,25 +721,21 @@ public abstract class AbstractPlotPanel extends JPanel {
         }
 
         // Crosshair
-        if (isShowCosshair() && mouseX != null && mouseY != null) {
+        if (!hasBubble && isShowCosshair() && mouseX != null && mouseY != null) {
             g2.setColor(new Color(180, 180, 180));
             g2.setStroke(new BasicStroke(1f));
             g2.drawLine(mouseX, y1, mouseX, y0);
             g2.drawLine(x0, mouseY, x1, mouseY);
         }
 
-        // Highlight snapped point (if any)
-        if (snappedX != null && snappedY != null) {
-            Graphics2D g3 = (Graphics2D) g2.create();
-            g3.setColor(new Color(255, 80, 0));   // bright red-ish
-            int r = 5;                           // radius of highlight
-            g3.fillOval(snappedX - r, snappedY - r, 2*r, 2*r);
-            g3.dispose();
-        }
-
-        // Renderers (bands first, then lines)
+        // Renderers (bands first, then bubbles, then lines)
         for (SeriesRenderer r : renderers) {
             if (r instanceof BandRenderer || r instanceof BarRenderer) {
+                r.draw(g2, x0, x1, y0, y1, plotWidth, plotHeight, xMaxRounded, yMaxRounded, yMinRounded, dt);
+            }
+        }
+        for (SeriesRenderer r : renderers) {
+            if (r instanceof BubbleRenderer) {
                 r.draw(g2, x0, x1, y0, y1, plotWidth, plotHeight, xMaxRounded, yMaxRounded, yMinRounded, dt);
             }
         }
@@ -470,5 +744,15 @@ public abstract class AbstractPlotPanel extends JPanel {
                 r.draw(g2, x0, x1, y0, y1, plotWidth, plotHeight, xMaxRounded, yMaxRounded, yMinRounded, dt);
             }
         }
+
+        // Highlight snapped point (if any)
+        if (snappedX != null && snappedY != null) {
+            Graphics2D g3 = (Graphics2D) g2.create();
+            g3.setColor(new Color(255, 80, 0));   // bright red-ish
+            int r = 3;                           // radius of highlight
+            g3.fillOval(snappedX - r, snappedY - r, 2*r, 2*r);
+            g3.dispose();
+        }
+
     }
 }

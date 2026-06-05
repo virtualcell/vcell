@@ -20,10 +20,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
@@ -209,7 +206,7 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
     private void initializeGlobalPalette() {
         // Use a curated palette from ColorUtil
         globalPalette.clear();
-        globalPalette.addAll(Arrays.asList(ColorUtil.TABLEAU20));
+        globalPalette.addAll(Arrays.asList(ColorUtil.DARK20));
 
         // Reserve ACS and ACO immediately
         ensureColorsAssigned("ACS");
@@ -310,6 +307,22 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
         p.setToolTipText(tooltip);
         p.add(line);
         p.add(text);
+
+        // hover behavior - install the same listener on p, line, and text so that hovering anywhere on the legend entry triggers it
+        MouseAdapter hover = new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                getClusterPlotPanel().setHoveredSeriesName(name);
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                // As soon as we leave line/text, we are no longer "over an entity"
+                getClusterPlotPanel().setHoveredSeriesName(null);
+            }
+        };
+        line.addMouseListener(hover);
+        text.addMouseListener(hover);
+
         return p;
     }
 
@@ -395,7 +408,13 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
             if (y == null) continue;
             Color c = persistentColorMap.get(name);
             // Cluster curves are AVG curves in the new API
-            plot.addAvgRenderer(times, y, c, name, /*statTag*/ "AVG");
+            if (sel.plotStyle == ClusterSpecificationPanel.PlotStyle.LINE) {
+                lg.debug("Adding avg renderer for " + name + ", color = " + c);
+                plot.addAvgRenderer(times, y, c, name, "AVG");
+            } else {
+                lg.debug("Adding bubble renderer for " + name + ", color = " + c);
+                plot.addBubbleRenderer(times, y, c, name);
+            }
         }
 
         // --- SD -------------------------------------------------
@@ -408,7 +427,8 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
                 lower[i] = acs[i] - sd[i];
             }
             Color sdColor = persistentColorMap.get("SD");
-            // SD is a band renderer in the new API
+            // SD is a bar or a band renderer
+            lg.debug("Adding SD renderer, color = " + sdColor);
             plot.addSDRenderer(times, lower, upper, sdColor, "SD", /*statTag*/ "SD");
         }
 
@@ -420,6 +440,7 @@ public class ClusterVisualizationPanel extends AbstractVisualizationPanel {
         if (times.length > 1) {
             plot.setDt(times[1]);   // times[0] == 0
         }
+        plot.setClusterSelection(sel);
         plot.repaint();
     }
 

@@ -1,32 +1,25 @@
 package org.vcell.solver.langevin;
 
-import java.math.BigInteger;
-import java.util.*;
-
 import cbit.vcell.geometry.AnalyticSubVolume;
-import cbit.vcell.geometry.SubVolume;
-import cbit.vcell.math.*;
-import cbit.vcell.model.Structure;
-import cbit.vcell.solver.*;
-import org.vcell.model.rbm.MolecularComponent;
-import org.vcell.util.Pair;
-
 import cbit.vcell.geometry.Geometry;
 import cbit.vcell.geometry.GeometrySpec;
-import cbit.vcell.mapping.GeometryContext;
 import cbit.vcell.mapping.ReactionRuleSpec;
 import cbit.vcell.mapping.ReactionRuleSpec.Subtype;
 import cbit.vcell.mapping.ReactionRuleSpec.TransitionCondition;
-import cbit.vcell.mapping.SimulationContext;
 import cbit.vcell.mapping.SpeciesContextSpec;
-import cbit.vcell.mapping.SimulationContext.Application;
+import cbit.vcell.math.*;
 import cbit.vcell.math.ParticleProperties.ParticleInitialCondition;
 import cbit.vcell.math.ParticleProperties.ParticleInitialConditionCount;
-import cbit.vcell.mathmodel.MathModel;
-import cbit.vcell.messaging.server.SimulationTask;
+import cbit.vcell.model.Structure;
 import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
+import cbit.vcell.parser.ExpressionBindingException;
 import cbit.vcell.parser.ExpressionException;
+import cbit.vcell.solver.*;
+import org.vcell.util.Pair;
+
+import java.math.BigInteger;
+import java.util.*;
 //import org.jdom2.output.Format;
 
 public class LangevinLngvWriter {
@@ -64,36 +57,39 @@ public class LangevinLngvWriter {
 	public static String StateZero = "State0";	// default name to be used when no state is specified for a site
 
 	// various collections here for the intermediate stuff as we build the lngv file from math
-	private static Map<ParticleProperties, SubDomain> particlePropertiesMap = new LinkedHashMap<> ();			// initial conditions for seed species
-	private static Map<LangevinParticleJumpProcess, SubDomain> particleJumpProcessMap = new LinkedHashMap<> ();	// list of reactions
-	private static Set<LangevinParticleMolecularType> particleMolecularTytpeSet = new LinkedHashSet<> ();		// molecular types
-	private static Set<ParticleMolecularComponent> structuralSiteSet = new LinkedHashSet<> ();	// the components that are structural sites
-	private static MathDescription mathDescription = null;
+	private Map<ParticleProperties, SubDomain> particlePropertiesMap = new LinkedHashMap<> ();			// initial conditions for seed species
+	private Map<LangevinParticleJumpProcess, SubDomain> particleJumpProcessMap = new LinkedHashMap<> ();	// list of reactions
+	private Set<LangevinParticleMolecularType> particleMolecularTytpeSet = new LinkedHashSet<> ();		// molecular types
+	private Set<ParticleMolecularComponent> structuralSiteSet = new LinkedHashSet<> ();	// the components that are structural sites
+	private SimulationJob simulationJob = null;
 	
 //	static ArrayList<MappingOfReactionParticipants> currentMappingOfReactionParticipants = new ArrayList<MappingOfReactionParticipants>();
 //	static HashSet<BondSites> reactionReactantBondSites = new HashSet<BondSites>();
 
+	public LangevinLngvWriter(SimulationJob simulationJob) {
+		this.systemName = DEFAULT_SYSTEM_NAME;
+		this.simulationJob = simulationJob;
+	}
+
 	// main work being done here
-	public static String writeLangevinLngv(Simulation simulation, long randomSeed) throws SolverException, DivideByZeroException, ExpressionException {
+	public String writeLangevinLngv() throws SolverException, DivideByZeroException, ExpressionException {
 //		try {
 //			System.out.println("VCML ORIGINAL .... START\n"+simulation.getMathDescription().getVCML_database()+"\nVCML ORIGINAL .... END\n====================\n");
 //		} catch (MathException e1) {
 //			e1.printStackTrace();
 //		}
-		
-		Geometry geometry = simulation.getMathDescription().getGeometry();
+		Geometry geometry = simulationJob.getSimulation().getMathDescription().getGeometry();
 		GeometrySpec geometrySpec = geometry.getGeometrySpec();
 
-		if(!simulation.getMathDescription().isLangevin()) {
+		if(!simulationJob.getSimulation().getMathDescription().isLangevin()) {
 			throw new RuntimeException("Math description must be langevin");
 		}
 
-		mathDescription = simulation.getMathDescription();
 		particlePropertiesMap.clear();
 		particleJumpProcessMap.clear();
 		particleMolecularTytpeSet.clear();
 		
-		Enumeration<SubDomain> subDomainEnum = mathDescription.getSubDomains();
+		Enumeration<SubDomain> subDomainEnum = simulationJob.getSimulation().getMathDescription().getSubDomains();
 		while (subDomainEnum.hasMoreElements()) {
 			SubDomain subDomain = subDomainEnum.nextElement();
 			for(ParticleProperties pp : subDomain.getParticleProperties()) {
@@ -109,7 +105,7 @@ public class LangevinLngvWriter {
 			}
 		}
 			
-		for(ParticleMolecularType pmt : mathDescription.getParticleMolecularTypes()) {
+		for(ParticleMolecularType pmt : simulationJob.getSimulation().getMathDescription().getParticleMolecularTypes()) {
 			if(!(pmt instanceof LangevinParticleMolecularType)) {
 				throw new RuntimeException("LangevinParticleMolecularType expected.");
 			}
@@ -121,13 +117,13 @@ public class LangevinLngvWriter {
 		/* ********* BEGIN BY WRITING THE TIMES *********/
 		sb.append("*** " + TIME_INFORMATION + " ***");
 		sb.append("\n");
-		writeTimeInformation(sb, simulation);
+		writeTimeInformation(sb);
 		sb.append("\n");
 
 		/* ********* WRITE THE SPATIAL INFORMATION **********/
 		sb.append("*** " + SPATIAL_INFORMATION + " ***");
 		sb.append("\n");
-		writeSpatialInformation(geometrySpec, simulation, sb);
+		writeSpatialInformation(geometrySpec, sb);
 		sb.append("\n");
 
 		/* ******* WRITE THE SPECIES INFORMATION ***********/
@@ -235,7 +231,7 @@ public class LangevinLngvWriter {
 		sb.append("*** " + SIMULATION_OPTIONS + " ***");
 		sb.append("\n");
 		sb.append("\n");
-		writeSimulationOptions(simulation, sb);
+		writeSimulationOptions(sb);
 		sb.append("\n");
 
 /*
@@ -281,18 +277,18 @@ public class LangevinLngvWriter {
 		return ret;
 	}
 	
-	public static void writeTimeInformation(StringBuilder sb, Simulation simulation) {
-		if(!simulation.getMathDescription().isLangevin()) {
+	public void writeTimeInformation(StringBuilder sb) {
+		if(!simulationJob.getSimulation().getMathDescription().isLangevin()) {
 			throw new RuntimeException("Langevin Math expected.");
 		}
 		// general stuff is in solver task description
-		simulation.getSolverTaskDescription().writeTimeInformation(sb);
+		simulationJob.getSimulation().getSolverTaskDescription().writeTimeInformation(sb);
 		
 		// for fast simulation for a simple transition state model, select the following time simulation options: 
 		// - ending:				0.01	(langevin: total time)
 		// - time step (default):	1E-9 	(langevin: dt)
 		// - output interval:		1E-4	(langevin: dt_data)
-		LangevinSimulationOptions lso = simulation.getSolverTaskDescription().getLangevinSimulationOptions();
+		LangevinSimulationOptions lso = simulationJob.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions();
 		sb.append("dt_spring: " + lso.getIntervalSpring());		// 1.00E-9 default
 		sb.append("\n");
 		sb.append("dt_image: " + lso.getIntervalImage());		// 1.00E-4 default
@@ -300,7 +296,7 @@ public class LangevinLngvWriter {
 
 	}
 	
-	private static void writeBindingReactions(StringBuilder sb) {
+	private void writeBindingReactions(StringBuilder sb) {
 		Map<String, LangevinParticleJumpProcess> nameToProcessDirect = new LinkedHashMap<> ();
 		Map<String, LangevinParticleJumpProcess> nameToProcessReverse = new LinkedHashMap<> ();		// need this only for reverse rate
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
@@ -363,6 +359,7 @@ public class LangevinLngvWriter {
 			}
 			
 			// calculate onRate as string, from lpjpDirect
+			// TODO: deal here with mathOverrides (kOn is one possible override)
 			String onRate = null;
 			Expression kOn = null;
 			MacroscopicRateConstant mrc = null;
@@ -373,13 +370,14 @@ public class LangevinLngvWriter {
 				throw new RuntimeException("Rate definition must be MacroscopicRateConstant");
 			}
 			try {
-				kOn = mrc.getExpression();
+				kOn = new Expression(mrc.getExpression());
+				kOn.bindExpression(simulationJob.getSimulationSymbolTable());
 			} catch(Exception e) {
 				throw new RuntimeException("Reaction Rate expression is wrong");
 			}
 			Expression exp = null;
 			try {
-				exp = MathUtilities.substituteFunctions(kOn, mathDescription, false);
+				exp = MathUtilities.substituteFunctions(kOn, simulationJob.getSimulationSymbolTable(), false);
 			} catch (ExpressionException e) {
 				throw new RuntimeException("kOn substitution failed, " + e.getMessage());
 			}
@@ -391,6 +389,7 @@ public class LangevinLngvWriter {
 			}
 			
 			// calculate offRate as string, from lpjpReverse
+			// TODO: deal here with mathOverrides (kOff is one possible override)
 			String offRate = null;
 			LangevinParticleJumpProcess lpjpReverse = nameToProcessReverse.get(name);
 			Expression kOff = null;
@@ -402,13 +401,14 @@ public class LangevinLngvWriter {
 				throw new RuntimeException("Rate definition must be MacroscopicRateConstant");
 			}
 			try {
-				kOff = mrc.getExpression();
+				kOff = new Expression(mrc.getExpression());
+				kOff.bindExpression(simulationJob.getSimulationSymbolTable());
 			} catch(Exception e) {
 				throw new RuntimeException("Reaction Rate expression is wrong");
 			}
 			exp = null;
 			try {
-				exp = MathUtilities.substituteFunctions(kOff, mathDescription, false);
+				exp = MathUtilities.substituteFunctions(kOff, simulationJob.getSimulationSymbolTable(), false);
 			} catch (ExpressionException e) {
 				throw new RuntimeException("kOff substitution failed, " + e.getMessage());
 			}
@@ -453,7 +453,7 @@ public class LangevinLngvWriter {
 		return;
 	}
 	
-	private static void writeAllostericReactions(StringBuilder sb) {
+	private void writeAllostericReactions(StringBuilder sb) {
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
 			Subtype subtype = lpjp.getSubtype();
@@ -476,7 +476,8 @@ public class LangevinLngvWriter {
 						pspReactant = (ParticleSpeciesPattern)var;
 					}
 				}
-				
+
+				// TODO: deal here with mathOverrides (kOn is one possible override)
 				// calculate onRate as string
 				Expression kOn = null;
 				MacroscopicRateConstant mrc = null;
@@ -487,14 +488,15 @@ public class LangevinLngvWriter {
 					throw new RuntimeException("Rate definition must be MacroscopicRateConstant");
 				}
 				try {
-					kOn = mrc.getExpression();
+					kOn = new Expression(mrc.getExpression());
+					kOn.bindExpression(simulationJob.getSimulationSymbolTable());
 				} catch(Exception e) {
 					throw new RuntimeException("Reaction Rate expression is wrong");
 				}
 				Expression exp = null;
 				String onRate = null;
 				try {
-					exp = MathUtilities.substituteFunctions(kOn, mathDescription, false);
+					exp = MathUtilities.substituteFunctions(kOn, simulationJob.getSimulationSymbolTable(), false);
 				} catch (ExpressionException e) {
 					throw new RuntimeException("kOn substitution failed, " + e.getMessage());
 				}
@@ -561,7 +563,7 @@ public class LangevinLngvWriter {
 	}
 	
 	
-	private static void writeTransitionReactions(StringBuilder sb) {
+	private void writeTransitionReactions(StringBuilder sb) {
 		for(Map.Entry<LangevinParticleJumpProcess, SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
 //			SubDomain subDomain = entry.getValue();
@@ -585,7 +587,8 @@ public class LangevinLngvWriter {
 						pspReactant = (ParticleSpeciesPattern)var;
 					}
 				}
-				
+
+				// TODO: deal here with mathOverrides (kOn is one possible override)
 				Expression kOn = null;
 				MacroscopicRateConstant mrc = null;
 				JumpProcessRateDefinition particleRateDefinition = lpjp.getParticleRateDefinition();
@@ -595,14 +598,15 @@ public class LangevinLngvWriter {
 					throw new RuntimeException("Rate definition must be MacroscopicRateConstant");
 				}
 				try {
-					kOn = mrc.getExpression();
+					kOn = new Expression(mrc.getExpression());
+					kOn.bindExpression(simulationJob.getSimulationSymbolTable());
 				} catch(Exception e) {
 					throw new RuntimeException("Reaction Rate expression is wrong");
 				}
 				Expression exp = null;
 				String onRate = null;
 				try {
-					exp = MathUtilities.substituteFunctions(kOn, mathDescription, false);
+					exp = MathUtilities.substituteFunctions(kOn, simulationJob.getSimulationSymbolTable(), false);
 				} catch (ExpressionException e) {
 					throw new RuntimeException("kOn substitution failed, " + e.getMessage());
 				}
@@ -716,7 +720,7 @@ public class LangevinLngvWriter {
 		return;
 	}
 	
-	private static void writeCreationDecayReactions(StringBuilder sb) {
+	private void writeCreationDecayReactions(StringBuilder sb) {
 		Map<Variable, Pair<String, String>> creationDecayVariableMap = new LinkedHashMap<> ();
 		for( Map.Entry<ParticleProperties, SubDomain> entry : particlePropertiesMap.entrySet()) {
 			ParticleProperties pp = entry.getKey();
@@ -739,9 +743,11 @@ public class LangevinLngvWriter {
 						} else {
 							throw new RuntimeException("Rate definition must be MacroscopicRateConstant");
 						}
+						// TODO: deal here with mathOverrides (kOn is one possible override)
 						Expression kCreate = null;
 						try {
-							kCreate = mrc.getExpression();
+							kCreate = new Expression(mrc.getExpression());
+							kCreate.bindExpression(simulationJob.getSimulationSymbolTable());
 						} catch(Exception e) {
 							throw new RuntimeException("Reaction Rate expression is wrong");
 						}
@@ -753,7 +759,7 @@ public class LangevinLngvWriter {
 							Expression exp = null;
 							String creationRate = null;
 							try {
-								exp = MathUtilities.substituteFunctions(kCreate, mathDescription, false);
+								exp = MathUtilities.substituteFunctions(kCreate, simulationJob.getSimulationSymbolTable(), false);
 							} catch (ExpressionException e) {
 								throw new RuntimeException("kCreate substitution failed, " + e.getMessage());
 							}
@@ -782,9 +788,11 @@ public class LangevinLngvWriter {
 						} else {
 							throw new RuntimeException("Rate definition must be MacroscopicRateConstant");
 						}
+						// TODO: deal here with mathOverrides (kOff is one possible override)
 						Expression kDecay = null;
 						try {
-							kDecay = mrc.getExpression();
+							kDecay = new Expression(mrc.getExpression());
+							kDecay.bindExpression(simulationJob.getSimulationSymbolTable());
 						} catch(Exception e) {
 							throw new RuntimeException("Reaction Rate expression is wrong");
 						}
@@ -796,7 +804,7 @@ public class LangevinLngvWriter {
 							Expression exp = null;
 							String decayRate = null;
 							try {
-								exp = MathUtilities.substituteFunctions(kDecay, mathDescription, false);
+								exp = MathUtilities.substituteFunctions(kDecay, simulationJob.getSimulationSymbolTable(), false);
 							} catch (ExpressionException e) {
 								throw new RuntimeException("kDecay substitution failed, " + e.getMessage());
 							}
@@ -836,7 +844,7 @@ public class LangevinLngvWriter {
 		return;
 	}
 	
-	private static void writeSpeciesFileInfo(StringBuilder sb) {
+	private void writeSpeciesFileInfo(StringBuilder sb) {
 		for( Map.Entry<ParticleProperties, SubDomain> entry : particlePropertiesMap.entrySet()) {
 			ParticleProperties pp = entry.getKey();
 			Variable var = pp.getVariable();
@@ -854,7 +862,7 @@ public class LangevinLngvWriter {
 		}
 	}
 	
-	private static void writeSpeciesInfo(StringBuilder sb) {
+	private void writeSpeciesInfo(StringBuilder sb) {
 		structuralSiteSet.clear();		// we will populate this map as we write the species info, and then use it
 										// to exclude them from tracking
 		for( Map.Entry<ParticleProperties, SubDomain> entry : particlePropertiesMap.entrySet()) {
@@ -884,11 +892,13 @@ public class LangevinLngvWriter {
 			if(!(particleInitialConditions.get(0) instanceof ParticleInitialConditionCount)) {
 				throw new RuntimeException("Count initial condition is required");
 			}
+			// TODO: deal here with mathOverrides (initialCount is one possible override)
 			ParticleInitialConditionCount pic = (ParticleInitialConditionCount)particleInitialConditions.get(0);
-			Expression count = pic.getCount();
 			String scount;
 			try {
-				Expression exp = MathUtilities.substituteFunctions(count, mathDescription, true);
+				Expression count = new Expression(pic.getCount());
+				count.bindExpression(simulationJob.getSimulationSymbolTable());
+				Expression exp = MathUtilities.substituteFunctions(count, simulationJob.getSimulationSymbolTable(), true);
 				exp = exp.flatten();
 				double ddd = exp.evaluateConstant();
 				scount = Integer.toString((int)ddd);
@@ -999,8 +1009,8 @@ public class LangevinLngvWriter {
 	 * for analyzing the results (of one or multiple runs). We'll probably do something similar server-side in
 	 * the postprocessing module
 	 */
-	public static void writeSimulationOptions(Simulation simulation, StringBuilder sb) {
-		SolverTaskDescription std = simulation.getSolverTaskDescription();
+	public void writeSimulationOptions(StringBuilder sb) {
+		SolverTaskDescription std = simulationJob.getSimulation().getSolverTaskDescription();
 		LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
 
 		int numTrials = std.getNumTrials();
@@ -1024,7 +1034,7 @@ public class LangevinLngvWriter {
 
 	}
 
-	public static void writeSpatialInformation(GeometrySpec geometrySpec, Simulation simulation, StringBuilder sb) {    // SpringSaLaD exporting the time information
+	public void writeSpatialInformation(GeometrySpec geometrySpec, StringBuilder sb) {    // SpringSaLaD exporting the time information
         if (geometrySpec.getDimension() != 3) {
             throw new RuntimeException("SpringSaLaD requires 3D geometry");
         }
@@ -1043,7 +1053,12 @@ public class LangevinLngvWriter {
 
         // test Intracellular for expression of the form "z < number"
 		{
-			var expression = intracellularSubVolume.getExpression();
+			var expression = new Expression(intracellularSubVolume.getExpression());
+			try {
+				expression.bindExpression(simulationJob.getSimulationSymbolTable());
+			} catch (ExpressionBindingException e) {
+				throw new RuntimeException(e);
+			}
 			boolean bValidExpression = expression.isRelational()
 					&& expression.extractTopLevelTerm().getOperator().equals("<")
 					&& expression.extractTopLevelTerm().getOperands()[0].isIdentifier()
@@ -1088,7 +1103,7 @@ public class LangevinLngvWriter {
         sb.append("L_z_in: " + Lz_intra);		// 0.09
         sb.append("\n");
 
-		SolverTaskDescription lstd = simulation.getSolverTaskDescription();
+		SolverTaskDescription lstd = simulationJob.getSimulation().getSolverTaskDescription();
 		LangevinSimulationOptions lso = lstd.getLangevinSimulationOptions();
 		sb.append(LangevinSimulationOptions.Partition_Nx + lso.getNPart(0));
 		sb.append("\n");
@@ -1098,7 +1113,7 @@ public class LangevinLngvWriter {
 		sb.append("\n");
     }
 
-	public static void writeMoleculeCounters(StringBuilder sb) {
+	public void writeMoleculeCounters(StringBuilder sb) {
 		for(ParticleMolecularType pmt : particleMolecularTytpeSet) {
 			if(SpeciesContextSpec.SourceMoleculeString.equals(pmt.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(pmt.getName())) {
 				continue;	// skip the Source and the Sink molecules
@@ -1108,7 +1123,7 @@ public class LangevinLngvWriter {
 			sb.append("\n");
 		}
 	}
-	public static void writeStateCounters(StringBuilder sb) {
+	public void writeStateCounters(StringBuilder sb) {
 		for(ParticleMolecularType pmt : particleMolecularTytpeSet) {
 			if(SpeciesContextSpec.SourceMoleculeString.equals(pmt.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(pmt.getName())) {
 				continue;
@@ -1140,7 +1155,7 @@ public class LangevinLngvWriter {
 			}
 		}
 	}
-	public static void writeBondCounters(StringBuilder sb) {
+	public void writeBondCounters(StringBuilder sb) {
 		for (Map.Entry<LangevinParticleJumpProcess,SubDomain> entry : particleJumpProcessMap.entrySet()) {
 			LangevinParticleJumpProcess lpjp = entry.getKey();
 			if(lpjp.getSubtype() == ReactionRuleSpec.Subtype.BINDING) {
@@ -1153,7 +1168,7 @@ public class LangevinLngvWriter {
 			}
 		}
 	}
-	public static void writeSitePropertyCounters(StringBuilder sb) {
+	public void writeSitePropertyCounters(StringBuilder sb) {
 		for(ParticleMolecularType pmt : particleMolecularTytpeSet) {
 			if (SpeciesContextSpec.SourceMoleculeString.equals(pmt.getName()) || SpeciesContextSpec.SinkMoleculeString.equals(pmt.getName())) {
 				continue;
@@ -1170,12 +1185,14 @@ public class LangevinLngvWriter {
 	}
 
 
-	private static String getFilename() {	// SpringSaLaD specific, external file with molecule information
+	private String getFilename() {	// SpringSaLaD specific, external file with molecule information
 		return null;	// not implemented
 	}
 	
-	private static double evaluateConstant(Expression expression, SimulationSymbolTable simulationSymbolTable) throws MathException, ExpressionException{
-		Expression subExp = simulationSymbolTable.substituteFunctions(expression);
+	private double evaluateConstant(Expression expression, SimulationSymbolTable simulationSymbolTable) throws MathException, ExpressionException{
+		Expression newExp = new Expression(expression);
+		newExp.bindExpression(simulationSymbolTable);
+		Expression subExp = simulationSymbolTable.substituteFunctions(newExp);
 		double value = subExp.evaluateConstant();
 		return value;
 	}
