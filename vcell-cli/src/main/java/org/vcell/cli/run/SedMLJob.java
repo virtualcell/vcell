@@ -113,7 +113,7 @@ public class SedMLJob {
      *
      * @throws IOException if there are system I/O issues
      */
-    public SedmlStatistics preProcessDoc() throws IOException, PreProcessingException {
+    public SedmlStatistics preProcessDocumentMetadata() throws IOException, PreProcessingException {
         BiosimulationLog biosimLog = BiosimulationLog.instance();
 
         Span span = null;

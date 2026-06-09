@@ -123,12 +123,15 @@ public class ExecutionJob {
 
         try {
             for (String sedmlLocation : this.sedmlLocations) {
+                String subString = sedmlLocation.lastIndexOf(File.separator) == sedmlLocation.length() ? "" : sedmlLocation.substring(sedmlLocation.lastIndexOf(File.separator) + 1);
                 try {
+                    logger.info("Executing SedML instructions (@{}) for archive `{}`", subString, this.inputFile.getAbsolutePath());
                     this.executeSedmlDocument(sedmlLocation, cumulativeHdf5Results);
+                    logger.info("SedML instructions (@{})", subString);
                 } catch (PreProcessingException | ExecutionException e) {
                     this.anySedmlDocumentHasFailed = true;
-                    String subString = sedmlLocation.lastIndexOf(File.separator) == sedmlLocation.length() ? "" : sedmlLocation.substring(sedmlLocation.lastIndexOf(File.separator) + 1);
-                    logger.error("SedML (@" + subString + ") processing failed:", e);
+                    String errorMsg = "SedML (@" + subString + ") processing failed:";
+                    logger.error(errorMsg, e);
                 }
             }
             if (this.anySedmlDocumentHasSucceeded) BiosimulationsHdf5Writer.writeHdf5(cumulativeHdf5Results, new File(this.outputDir));
@@ -143,8 +146,12 @@ public class ExecutionJob {
         BiosimulationLog.instance().updateSedmlDocStatusYml(sedmlLocation, BiosimulationLog.Status.QUEUED);
         SedMLJob job = new SedMLJob(sedmlLocation, this.omexHandler, this.inputFile, this.outputDir, this.sedmlPath2d3d.toString(), this.cliRecorder, this.bKeepTempFiles, this.bExactMatchOnly, this.bSmallMeshOverride);
         this.logOmexMessage.append("Processing ").append(job.SEDML_NAME).append(". ");
-        SedmlStatistics stats = job.preProcessDoc();
+        logger.info("Processing `{}`.", job.SEDML_NAME);
+        logger.info("Collecting Model Metadata for `{}`.", job.SEDML_NAME);
+        SedmlStatistics stats = job.preProcessDocumentMetadata();
+        logger.info("Creating and Deploying Solution for `{}`.", job.SEDML_NAME);
         boolean hasSucceeded = job.simulateSedml(cumulativeHdf5Results);
+        logger.info("Finished Calculations for `{}`.", job.SEDML_NAME);
         this.anySedmlDocumentHasSucceeded |= hasSucceeded;
         this.anySedmlDocumentHasFailed &= hasSucceeded;
         logger.log(hasSucceeded ? Level.INFO : Level.ERROR, "Processing of SedML ({}) {}", stats.getSedmlName(), hasSucceeded ? "succeeded." : "failed!");
