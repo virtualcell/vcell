@@ -34,7 +34,7 @@ export class PublicationNewComponent {
       wittid: 0,
       biomodelRefs: [],
       mathmodelRefs: [],
-      date: "2023-12-28"
+      date: new Date().toISOString().slice(0, 10)
     };
   }
 
