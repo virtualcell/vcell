@@ -285,9 +285,10 @@ public abstract class AbstractCompiledSolver extends AbstractSolver implements j
 //
 ////		System.out.println("-----Setting executable "+LD_LIB_PATH+" to "+newLD_LIB_PATH);
 //            getMathExecutable().addEnvironmentVariable(LD_LIB_PATH, newLD_LIB_PATH);
-            getMathExecutable().addEnvironmentVariable("LD_LIBRARY_PATH", ResourceUtil.getLocalSolversDirectory().getCanonicalPath());
+            // something similar seems to be done in ResourceUtil::setEnvForOperatingSystem; why is it done here?
+	        this.getMathExecutable().addEnvironmentVariable("LD_LIBRARY_PATH", ResourceUtil.getLocalSolversDirectory().getCanonicalPath());
         }else if (OperatingSystemInfo.getInstance().isMac()) {
-    		getMathExecutable().addEnvironmentVariable("HDF5_DISABLE_VERSION_CHECK", "1");
+	        this.getMathExecutable().addEnvironmentVariable("HDF5_DISABLE_VERSION_CHECK", "1");
     	}
     }
 
