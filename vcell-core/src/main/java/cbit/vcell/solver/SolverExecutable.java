@@ -1,11 +1,19 @@
 package cbit.vcell.solver;
 
+import cbit.vcell.resource.OperatingSystemInfo;
+import cbit.vcell.resource.ResourceUtil;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * enum that maps Solvers to property names to executable file stubs
  * @author gweatherby
  *
  */
 public enum SolverExecutable {
+
 	VCellChombo("VCellChombo2D","VCellChombo3D"),
 	FiniteVolume("FiniteVolume" ),
 	FiniteVolume_PETSc("FiniteVolume_PETSc" ),
@@ -19,45 +27,57 @@ public enum SolverExecutable {
 	LANGEVIN("langevin"),
 	MOVING_B("MovingBoundary")
 	;
-	
+
+	private final NameInfo[] nameInfo;
+
 	public static class NameInfo {
 		/**
 		 * executable name without OS specific extensions
 		 */
-		public final String exeName;
-		
+		private final String exeName;
+
+		public String getExecutableName() {
+			return this.exeName;
+		}
+
 		private NameInfo(String exeName) {
 			this.exeName = exeName;
 		}
-		
 	}
-	private final NameInfo ni[]; 
 
 	/**
 	 * supports one executable solver
-	 * @param prop
 	 * @param exe
 	 */
 	SolverExecutable(String exe) {
-		ni = new NameInfo[1];
-		ni[0] = new NameInfo(exe);
+		this.nameInfo = new NameInfo[1];
+		this.nameInfo[0] = new NameInfo(exe);
 	}
 	
 	/**
 	 * supports two executable solver
-	 * @param prop
-	 * @param exe
-	 * @param prop1
-	 * @param exe1
+	 * @param exeName0
+	 * @param exeName1
 	 */
-	SolverExecutable(String exe, String exe1) {
-		ni = new NameInfo[2];
-		ni[0] = new NameInfo(exe);
-		ni[1] = new NameInfo(exe1);
+	SolverExecutable(String exeName0, String exeName1) {
+		nameInfo = new NameInfo[2];
+		nameInfo[0] = new NameInfo(exeName0);
+		nameInfo[1] = new NameInfo(exeName1);
 	}
 	
 	public NameInfo[] getNameInfo() {
-		return ni;
+		return nameInfo;
+	}
+
+	public List<File> getFullyQualifiedExecutables(){
+		NameInfo[] nameInfoArr = this.getNameInfo();
+		List<File> qualifiedExes = new ArrayList<>();
+		for (NameInfo nameInfo : nameInfoArr) {
+			String exeName = nameInfo.getExecutableName() + OperatingSystemInfo.getInstance().getExeBitSuffix();
+			File parentDirectory = new File(ResourceUtil.getLocalSolversDirectory(), SolverFamily.getSolverFamilyFromSolver(this).getName());
+			qualifiedExes.add(new File(parentDirectory, exeName));
+		}
+		return qualifiedExes;
 	}
 	
 }
