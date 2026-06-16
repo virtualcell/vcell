@@ -136,14 +136,14 @@ public class GeneralConfigurationPanel extends JPanel {
 		gbc.insets = new Insets(4,4,2,4);
 		jpanel.add(l9, gbc);
 
-		String lsap = ResourceUtil.getLocalSolversDirectory().getAbsolutePath();	// C:\Program Files\VCell_Alpha\localsolvers\win64
+		String localSolversAbsPath = ResourceUtil.getLocalSolversDirectory().getAbsolutePath();	// C:\Program Files\VCell_Alpha\localsolvers\win64
 		location = ResourceUtil.getVCellInstall().getAbsolutePath();
 		where = location.length();
 		if(where > 0) {
-			lsap = lsap.substring(where);
-			lsap = redinstall + lsap;
+			localSolversAbsPath = localSolversAbsPath.substring(where);
+			localSolversAbsPath = redinstall + localSolversAbsPath;
 		}
-		JLabel l10 = new JLabel("<html>" + lsap + "</html>");
+		JLabel l10 = new JLabel("<html>" + localSolversAbsPath + "</html>");
 		gbc.gridx = 1;
 		gbc.gridy = gridy;
 		gbc.insets = new Insets(4,4,2,4);

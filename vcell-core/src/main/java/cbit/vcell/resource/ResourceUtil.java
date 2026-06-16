@@ -18,23 +18,28 @@ import org.vcell.util.document.VCellSoftwareVersion;
 import org.vcell.util.logging.NoLogging;
 
 import java.io.*;
-import java.util.Collection;
-import java.util.HashSet;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.Map;
-import java.util.Set;
+import java.util.Collection;
 import java.util.prefs.BackingStoreException;
+import java.util.stream.Stream;
 
 public class ResourceUtil {
 	private static final Logger logger = LogManager.getLogger(ResourceUtil.class);
 
 	public static final String LOCAL_SOLVER_LIB_LINK_SUFFIX = "_link";
+	public static final String batchResultsDirName = "batchResults";
+	public static final String VCELL_HOME_DIR_NAME = ".vcell";
+	public static final String VCELL_DOWNLOAD_DIR_NAME = "download";
+	public static final String VCELL_PROXY_VMOPTIONS = "proxy.vmoptions";
 	private static final String LOCALSOLVERS_DIR = "localsolvers";
 
 	public enum JavaVersion  {
 		SEVENTEEN("17");
 		final String versionIdentifier;
 
-		private JavaVersion(String versionIdentifier) {
+		JavaVersion(String versionIdentifier) {
 			this.versionIdentifier = versionIdentifier;
 		}
 
@@ -42,10 +47,6 @@ public class ResourceUtil {
 
 	// temporary : until a more permanent, robust solution is thought out for running vcell locally.
 	private static String lastUserLocalDir = null;
-
-
-	//public final static String EXE_SUFFIX = bMacPpc ? "_ppc" : (b64bit ? "_x64" : "") + (bWindows ? ".exe" : "");
-	//public final static String NATIVELIB_SUFFIX = b64bit ? "_x64" : (bMacPpc ? "_ppc" : "");
 
 	private static File userHome = null;
 	private static File vcellHome = null;
@@ -82,23 +83,15 @@ public class ResourceUtil {
 		File find(String executableName) throws UserCancelException;
 	}
 
-	public static String getExecutableName(String baseName,boolean useBitSuffix,OperatingSystemInfo osi){
-		if (useBitSuffix) {
-			return baseName + osi.getExeBitSuffix();
-		}else {
-			return baseName + osi.getExeSuffix();
-		}
+	public static String getExecutableName(String baseName, boolean useBitSuffix, OperatingSystemInfo osi){
+		return baseName + (useBitSuffix? osi.getExeBitSuffix() : osi.getExeSuffix());
 	}
 	
 	public static File getPerlExe() throws IOException {
 		try {
-			File perlExe = null;
-			
-			perlExe = ResourceUtil.getExecutable("perl", false);
-			if (perlExe == null || !perlExe.exists()){
-				throw new RuntimeException("failed to find installed perl - please install perl (see https://www.perl.org/)");
-			}
-			return perlExe;
+			File perlExe = ResourceUtil.getExecutable("perl", false);
+			if (perlExe != null && perlExe.exists()) return perlExe;
+			throw new RuntimeException("failed to find installed perl - please install perl (see https://www.perl.org/)");
 		} catch (InterruptedException | FileNotFoundException e) {
 			throw new IOException("failed to find perl executable: "+e.getMessage()+"\n\n please install perl (see https://www.perl.org/)", e);
 		}
@@ -112,44 +105,27 @@ public class ResourceUtil {
 	 * @throws BackingStoreException
 	 * @throws InterruptedException
 	 */
-	public static File getExecutable(String name, boolean useBitSuffix/*, ExecutableFinder efinder*/) throws FileNotFoundException, InterruptedException
-	{
-		String executableName = null;
-//		try{
+	public static File getExecutable(String name, boolean useBitSuffix) throws FileNotFoundException, InterruptedException {
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
-		executableName = getExecutableName(name, useBitSuffix, osi);
+		String executableName = getExecutableName(name, useBitSuffix, osi);
 		File executable = VCellConfiguration.getFileProperty(executableName);
-		if (executable!=null){
-			return executable;
-		}
-		//
+
+		if (executable != null) return executable;
+
 		// check the system path first
-		//
 		Collection<File> exes = FileUtils.findFileByName(executableName, getSystemPath());
-		if (exes != null && !exes.isEmpty()) {
-			return VCellConfiguration.setFileProperty(executableName, exes.iterator().next());
-		}
-		//
-		// not in path, look in common places
-		//
+		if (!exes.isEmpty()) return VCellConfiguration.setFileProperty(executableName, exes.iterator().next());
+
+		// not in path, but if it's in windows, look in common places
 		if (osi.isWindows()){
 			//use set to eliminate duplicates
-			Set<String> searchDirs = new HashSet<String>( );
-			String envs[] = {"ProgramFiles", "ProgramFiles(x86)", "ProgramW6432"};
-			for (String e : envs) {
-				String d = System.getenv(e);
-				if (d != null) {
-					searchDirs.add(d);
-				}
-			}
-			for (String pf :searchDirs) {
-				File programFiles = new File(pf);
-				if (programFiles.isDirectory()){
-					exes = FileUtils.findFileByName(executableName,FileUtils.getAllDirectoriesCollection(programFiles));
-					if (!exes.isEmpty()) {
-						return VCellConfiguration.setFileProperty(executableName, exes.iterator().next());
-					}
-				}
+			Iterable<File> programFilesDirsToSearch = Stream.of("ProgramFiles", "ProgramFiles(x86)", "ProgramW6432")
+													.map(System::getenv).filter(Objects::nonNull)
+													.map(File::new).filter(File::isDirectory)::iterator;
+			for (File programFilesDir : programFilesDirsToSearch) {
+				exes = FileUtils.findFileByName(executableName, FileUtils.getAllDirectoriesCollection(programFilesDir));
+				if (exes.isEmpty()) continue;
+				return VCellConfiguration.setFileProperty(executableName, exes.iterator().next());
 			}
 		}
 		throw new FileNotFoundException("cannot find " + name + " executable file " + executableName);
@@ -160,11 +136,9 @@ public class ResourceUtil {
 	 * @throws RuntimeException if PATH environmental not set
 	 */
 	public static Collection<File>  getSystemPath( ) {
-		final String PATH = System.getenv("PATH");
-		if (PATH==null || PATH.length() == 0){
-			throw new RuntimeException("PATH environment variable not set");
-		}
-		return FileUtils.toFiles(FileUtils.splitPathString(PATH), true);
+		final String pathEnvVar = System.getenv("PATH");
+		if (pathEnvVar != null && !pathEnvVar.isEmpty()) return FileUtils.toFiles(FileUtils.splitPathString(pathEnvVar), true);
+		throw new RuntimeException("PATH environment variable not set");
 	}
 
 	/**
@@ -173,27 +147,16 @@ public class ResourceUtil {
 	 */
 	public static void setEnvForOperatingSystem(Map<String,String> env) {
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
-		switch (osi.getOsType()) {
-		case LINUX:
-			final String LIBPATH="LD_LIBRARY_PATH";
-			String existing = env.get(LIBPATH);
-			if (existing == null) {
-				env.put(LIBPATH,getLocalSolversDirectory().getAbsolutePath());
+		switch (osi.getOsType()){
+			case LINUX -> {
+				final String LIBPATH="LD_LIBRARY_PATH";
+				String existing = env.get(LIBPATH);
+				if (existing == null) env.put(LIBPATH, ResourceUtil.getLocalSolversDirectory().getAbsolutePath());
 			}
-			break;
-
-		case WINDOWS:
-			break;
-		case MAC:
-			break;
+			case WINDOWS, MAC-> {}
 		}
 	}
 
-	public static File findSolverExecutable(String basename) throws IOException {
-		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
-		String name = basename + osi.getExeBitSuffix();
-		return new File(getLocalSolversDirectory(),name);
-	}
 	/**
 	 * determine java version from system property
 	 * @return current version, or default to first enum value
@@ -201,26 +164,24 @@ public class ResourceUtil {
 	public static JavaVersion getJavaVersion() {
 		final String vers = System.getProperty("java.version");
 		for (JavaVersion jv: JavaVersion.values()) {
-			if (vers.contains(jv.versionIdentifier) ) {
-				return jv;
-			}
+			if (!vers.contains(jv.versionIdentifier)) continue;
+			return jv;
 		}
-		String errorStr = "";
-		JavaVersion dflt = JavaVersion.values( )[0];
-		errorStr += "Whoa... VCell only runs on JVM versions: ";
+		StringBuilder errorStr = new StringBuilder();
+		JavaVersion defaultVersion = JavaVersion.values()[0];
+		errorStr.append("Whoa... VCell only runs on JVM versions: ");
 		for (JavaVersion jv: JavaVersion.values()) {
-			errorStr += jv.versionIdentifier + " ";
+			errorStr.append(jv.versionIdentifier).append(" ");
 		}
-
-		errorStr += "and can't determine that its running on one of these. We found version: " + vers + " in the system. "; 
-		errorStr += "Assuming " + dflt.versionIdentifier + " as a default for safety\n";
-		logger.error(errorStr);
-		return dflt;
+		errorStr.append("and can't determine that its running on one of these. We found version: ").append(vers).append(" in the system. ");
+		errorStr.append("Assuming ").append(defaultVersion.versionIdentifier).append(" as a default for safety\n");
+		logger.error(errorStr.toString());
+		return defaultVersion;
 	}
 
 	// getter and setter for lastUserLocalDir - temporary : until a more permanent, robust solution is thought out for running vcell locally.
 	public static String getLastUserLocalDir() {
-		return lastUserLocalDir;
+		return ResourceUtil.lastUserLocalDir;
 	}
 
 	public static void setLastUserLocalDir(String lastUserLocalDir) {
@@ -228,129 +189,100 @@ public class ResourceUtil {
 	}
 
 	@NoLogging
-	public static File getUserHomeDir()
-	{
-		if(userHome == null)
-		{
-			userHome = new File(System.getProperty("user.home"));
-			if (!userHome.exists()) {
-				userHome = new File(".");
-			}
-		}
-
-		return userHome;
+	public static File getUserHomeDir() {
+		if (ResourceUtil.userHome != null) return ResourceUtil.userHome;
+		ResourceUtil.userHome = new File(System.getProperty("user.home"));
+		if (ResourceUtil.userHome.exists()) return ResourceUtil.userHome;
+		return ResourceUtil.userHome = new File(".");
 	}
 
-	public static File getLocalRootDir()
-	{
-		if(localRootDir == null)
-		{
-			localRootDir = new File(getVcellHome(), "simdata");
-			if (!localRootDir.exists()) {
-				localRootDir.mkdirs();
-			}
-		}
-		return localRootDir;
+	public static File getLocalRootDir() {
+		if (ResourceUtil.localRootDir != null) return ResourceUtil.localRootDir;
+		ResourceUtil.localRootDir = new File(ResourceUtil.getVcellHome(), "simdata");
+		if (!ResourceUtil.localRootDir.exists() && ResourceUtil.localRootDir.mkdirs()) logger.warn("could not create local root dir {}", ResourceUtil.localRootDir.getAbsolutePath());
+		return ResourceUtil.localRootDir;
 	}
 	
 	private static void deleteRecursively(File f) throws IOException {
-		if (f.isDirectory()) {
-			for (File c : f.listFiles()) {
-				deleteRecursively(c);
-			}
-		}
-		String fName = f.getName();
-		if(batchResultsDirName.contentEquals(fName)) {
-			return;			// don't delete the batch results directory
-		}
-		if (!f.delete()) {
-			throw new FileNotFoundException("Failed to delete file: " + f);
-		}
+		// Note: `f.listFiles()` does **not** have a chance of throwing NPE, because `f.isDirectory()` is the proper guard
+		if (f.isDirectory()) for (File c : f.listFiles()) ResourceUtil.deleteRecursively(c);
+		if (ResourceUtil.batchResultsDirName.contentEquals(f.getName())) return; // don't delete the batch results directory
+		if (!f.delete()) throw new FileNotFoundException("Failed to delete file: " + f);
 	}
-	public static final String batchResultsDirName = "batchResults";
-	public static File getLocalBatchDir()
-	{
-		File adir = new File(getVcellHome(), batchResultsDirName);
-		if(adir.exists()) {
+
+
+	public static File getLocalBatchDir() {
+		File batchResultsDir = new File(ResourceUtil.getVcellHome(), ResourceUtil.batchResultsDirName);
+		if(batchResultsDir.exists()) {
 			try {
-				deleteRecursively(adir);	// delete the output directory and all its content recursively
+				ResourceUtil.deleteRecursively(batchResultsDir);	// delete the output directory and all its content recursively
 			} catch (IOException e) {
 				throw new RuntimeException("Failed to empty the output batch directory '" + batchResultsDirName + "'");
 			}
 		}
-		boolean ret = false;
-		if(!adir.exists()) {
-			ret = adir.mkdirs();
-		}
-		localBatchDir = adir;
-		if(localBatchDir == null || !localBatchDir.isDirectory() || (localBatchDir.list().length != 0) || !localBatchDir.toString().endsWith(batchResultsDirName)) {
-			throw new RuntimeException("Error initializing the output batch directory '" + batchResultsDirName + "'");
-		}
-		return localBatchDir;
+
+		if(!batchResultsDir.exists() && !batchResultsDir.mkdirs()) throw new RuntimeException("Error initializing the output results batch directory '" + batchResultsDir + "'");
+		ResourceUtil.localBatchDir = batchResultsDir;
+		if (!ResourceUtil.localBatchDir.isDirectory()) throw new RuntimeException("The output batch file '" + batchResultsDir + "' exists, but is not a directory");
+		String[] batchDirectoryContents = ResourceUtil.localBatchDir.list();
+		if (batchDirectoryContents == null)
+			throw new IOError(new IllegalStateException("OS declares `" + ResourceUtil.localBatchDir + "` is a directory, but java.io cannot list said directory!"));
+		if (batchDirectoryContents.length != 0)
+			throw new RuntimeException("The output batch directory '" + batchResultsDir + "' contains contents despite attempt to clean! Are multiple VCells running?");
+		if (!ResourceUtil.localBatchDir.toString().endsWith(ResourceUtil.batchResultsDirName))
+			throw new RuntimeException("Error initializing the output batch directory '" + ResourceUtil.batchResultsDirName + "'");
+		return ResourceUtil.localBatchDir;
 	}
 	
 	public static File getLocalVisDataDir(){
-		if(localVisDataDir == null)
-		{
-			localVisDataDir = new File(getVcellHome(), "visdata");
-			if (!localVisDataDir.exists()) {
-				localVisDataDir.mkdirs();
-			}
-		}
+		if (ResourceUtil.localVisDataDir != null) return ResourceUtil.localVisDataDir;
+		ResourceUtil.localVisDataDir = new File(ResourceUtil.getVcellHome(), "visdata");
+		if (!ResourceUtil.localVisDataDir.exists() && !ResourceUtil.localVisDataDir.mkdirs()) logger.warn("could not create local vis data dir {}", ResourceUtil.localVisDataDir.getAbsolutePath());
 		return localVisDataDir;
 	}
 
 	@NoLogging
-	public static File getLogDir()
-	{
-		if(logDir == null)
-		{
-			logDir = new File(getVcellHome(), "logs");
-			if (!logDir.exists()) {
-				logDir.mkdirs();
-			}
-		}
-
-		return logDir;
+	public static File getLogDir(){
+		if (ResourceUtil.logDir != null) return ResourceUtil.logDir;
+		ResourceUtil.logDir = new File(ResourceUtil.getVcellHome(), "logs");
+		if (!ResourceUtil.logDir.exists() && !ResourceUtil.logDir.mkdirs()) logger.warn("could not create log dir {}", ResourceUtil.logDir.getAbsolutePath());
+		return ResourceUtil.logDir;
 	}
 
-	public static File getLocalSimDir(String userSubDirName)
-	{
-		if(localSimDir == null)
-		{
-			localSimDir = new File(getLocalRootDir(), userSubDirName);
-			if (localSimDir.exists()) {
-				for (File file : localSimDir.listFiles()) {
-					if(file.isDirectory() && file.getName().endsWith(LOCAL_SOLVER_LIB_LINK_SUFFIX)) {
-						File[] links = file.listFiles();
-						for (int i = 0; i < links.length; i++) {
-							links[i].delete();
-						}
-					}
-					file.delete();
+	public static File getLocalSimDir(String userSubDirName){
+		if (ResourceUtil.localSimDir != null) return ResourceUtil.localSimDir;
+
+		ResourceUtil.localSimDir = new File(ResourceUtil.getLocalRootDir(), userSubDirName);
+		if (!ResourceUtil.localSimDir.exists() && localSimDir.mkdirs()) throw new RuntimeException("Error initializing the sim directory '" + localSimDir + "'");
+
+		File[] localFiles = localSimDir.listFiles();
+		if (localFiles == null) throw new IOError(new IllegalStateException("OS declares `" + ResourceUtil.localSimDir + "` is a directory, but java.io cannot list said directory!"));
+
+		for (File file : localFiles) {
+			if(file.isDirectory() && file.getName().endsWith(LOCAL_SOLVER_LIB_LINK_SUFFIX)) {
+				File[] links = file.listFiles();
+				if (links == null) throw new IOError(new IllegalStateException("OS declares `" + file + "` is a directory, but java.io cannot list said directory!"));
+				for (File link : links) {
+					if (link.delete()) continue;
+					logger.warn("Unable to delete `{}` in directory: `{}`", link.getName(), file.getAbsolutePath());
 				}
-			} else {
-				localSimDir.mkdirs();
 			}
+			if (!file.delete()) logger.warn("Unable to delete `{}`", file.getAbsolutePath());
 		}
 
-		return localSimDir;
+		return ResourceUtil.localSimDir;
 	}
 
 	public static void writeResourceToFile(String resname, File file) throws IOException{
 		java.net.URL url = ResourceUtil.class.getResource(resname);
-		if (url == null) {
-			throw new RuntimeException("ResourceUtil::writeFileFromResource() : Can't get resource for " + resname);
-		}
+		if (url == null) throw new RuntimeException("ResourceUtil::writeFileFromResource() : Can't get resource for " + resname);
+
 		try (BufferedInputStream bis = new BufferedInputStream(url.openConnection().getInputStream());
 			BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(file));) {
-			byte byteArray[] = new byte[10000];
+			byte[] byteArray = new byte[10000];
 			while (true) {
 				int numRead = bis.read(byteArray, 0, byteArray.length);
-				if (numRead == -1) {
-					break;
-				}
-
+				if (numRead == -1) break;
 				bos.write(byteArray, 0, numRead);
 			}
 		}
@@ -364,59 +296,45 @@ public class ResourceUtil {
 	 */
 	public static String resourceToString(String resname) {
 		java.net.URL url = ResourceUtil.class.getResource(resname);
-		if (url == null) {
-			throw new RuntimeException("ResourceUtil::resourceToString() : Can't get resource for " + resname);
-		}
+		if (url == null) throw new RuntimeException("ResourceUtil::resourceToString() : Can't get resource for " + resname);
+
 		try (BufferedInputStream bis = new BufferedInputStream(url.openConnection().getInputStream()) ) {
-		if (bis != null) {
-			try (Reader r = new InputStreamReader(bis,"UTF-8")) {
+			try (Reader r = new InputStreamReader(bis, StandardCharsets.UTF_8)) {
 				StringBuilder sb = new StringBuilder();
-				final int BSIZE = 1024;
-				char buffer[] = new char[BSIZE];
-				int bytes = r.read(buffer,0,buffer.length);
+				char[] buffer = new char[1024];
+				int bytes = r.read(buffer, 0, buffer.length);
 				while (bytes > 0) {
-					sb.append(buffer,0,bytes);
-					bytes = r.read(buffer,0,buffer.length);
+					sb.append(buffer, 0, bytes);
+					bytes = r.read(buffer, 0, buffer.length);
 				}
 				return sb.toString();
 			} catch (IOException e) {
 				logger.warn("Can't extract " + resname, e);
 			}
-		}
 		} catch (IOException e1) {
 			logger.warn("Can't get " + resname, e1);
 		}
 		return "not found";
 	}
 
-	public static final String VCELL_HOME_DIR_NAME = ".vcell";
-	public static final String VCELL_PROXY_VMOPTIONS = "proxy.vmoptions";
 	@NoLogging
-	public static File getVcellHome()
-	{
-		if(vcellHome == null)
-		{
-			vcellHome = new File(getUserHomeDir(), VCELL_HOME_DIR_NAME);
-			if (!vcellHome.exists()) {
-				vcellHome.mkdirs();
-			}
-		}
+	public static File getVcellHome() {
+		if (ResourceUtil.vcellHome != null) return ResourceUtil.vcellHome;
+		ResourceUtil.vcellHome = new File(getUserHomeDir(), VCELL_HOME_DIR_NAME);
+		if (!ResourceUtil.vcellHome.exists() && !ResourceUtil.vcellHome.mkdirs())
+			throw new RuntimeException("Error initializing the VCell home directory: " + VCELL_HOME_DIR_NAME);
 		return vcellHome;
 	}
 
 	/**
 	 * directory to cache licensed files download from vcell.org
 	 */
-	public static File getDownloadDirectory()
-	{
-		if(downloadDirectory == null)
-		{
-			downloadDirectory = new File(getVcellHome(), "download");
-			if (!downloadDirectory.exists()) {
-				downloadDirectory.mkdirs();
-			}
-		}
-		return downloadDirectory;
+	public static File getDownloadDirectory(){
+		if(ResourceUtil.downloadDirectory != null) return ResourceUtil.downloadDirectory;
+		ResourceUtil.downloadDirectory = new File(getVcellHome(), VCELL_DOWNLOAD_DIR_NAME);
+		if (!ResourceUtil.downloadDirectory.exists() && !ResourceUtil.downloadDirectory.mkdirs())
+			throw new RuntimeException("Error initializing the download directory: " + VCELL_DOWNLOAD_DIR_NAME);
+		return ResourceUtil.downloadDirectory;
 	}
 
 	/**
@@ -424,11 +342,10 @@ public class ResourceUtil {
 	 * check last version of software which used directory, delete contents of directory if different
 	 * @return directory of locally run solvers
 	 */
-	public static File getLocalSolversDirectory()
-	{
+	public static File getLocalSolversDirectory() {
 		OperatingSystemInfo osi = OperatingSystemInfo.getInstance( );
-		final File localSolversRootDir = new File(getVCellInstall(),LOCALSOLVERS_DIR);
-		final File localSolversOSDir = new File(localSolversRootDir,osi.getNativeLibDirectory());
+		final File localSolversRootDir = new File(getVCellInstall(), LOCALSOLVERS_DIR);
+		final File localSolversOSDir = new File(localSolversRootDir, osi.getNativeLibDirectory());
 		return localSolversOSDir;
 	}
 
@@ -452,8 +369,7 @@ public class ResourceUtil {
 		return new File(getBNGRoot(),"win32Standalone/BNG2_32bit.exe").getAbsolutePath();
 	}
 	
-	public static File getVCellInstall()
-	{
+	public static File getVCellInstall() {
 		return PropertyLoader.getRequiredDirectory(PropertyLoader.installationRoot);
 	}
 	
@@ -465,22 +381,16 @@ public class ResourceUtil {
 			File searchThis = getVCellInstall();
 			while(!(searchThis.getName().startsWith("VCell") && searchThis.getName().endsWith(".app"))) {
 				searchThis = searchThis.getParentFile();
-				if(searchThis == null) {
-					break;
-				}
+				if (searchThis == null) break;
 			}
-			if(searchThis != null) {
+			if (searchThis != null) {
 				File vcellJava = new File(searchThis,"Contents/PlugIns/jre.bundle/Contents/Home/jre/bin/java"+osi.getExeSuffix());
-				if(vcellJava.exists()) {
-					javaCmd = vcellJava.getAbsolutePath();
-				}
+				if (vcellJava.exists()) javaCmd = vcellJava.getAbsolutePath();
 			}
 			// /Applications/VCell_Rel.app/Contents/PlugIns/jre.bundle/Contents/Home/jre/bin/java
 		}else if(osi.isWindows() || osi.isLinux()) {
 			File vcellJava = new File(ResourceUtil.getVCellInstall(),"jre/bin/java"+osi.getExeSuffix());
-			if(vcellJava.exists()) {
-				javaCmd = vcellJava.getAbsolutePath();
-			}
+			if(vcellJava.exists()) javaCmd = vcellJava.getAbsolutePath();
 		}
 		if(javaCmd.equals(defaultJavaCmd)) {
 			Exception e = new Exception("Failed to find java executable in installation dir '"+ResourceUtil.getVCellInstall()+"'");

@@ -2,13 +2,9 @@ package cbit.vcell.solver;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
+import cbit.vcell.resource.OperatingSystemInfo;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -66,17 +62,12 @@ public class SolverUtilities {
 			
 			@Override
 			public boolean accept(String functionName, FunctionType functionType) {
-				if (functionName.equals(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())
-						|| functionName.equals(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName())) {
-					return true;
-				}
-				return false;
+				return functionName.equals(MathFunctionDefinitions.Function_regionArea_current.getFunctionName())
+						|| functionName.equals(MathFunctionDefinitions.Function_regionVolume_current.getFunctionName());
 			}
 		});
 		Set<FunctionInvocation> fiSet = new HashSet<FunctionInvocation>();
-		for (FunctionInvocation fi : functionInvocations){
-			fiSet.add(fi);			
-		}
+		Collections.addAll(fiSet, functionInvocations);
 		return fiSet;
 	}
 	
@@ -91,18 +82,9 @@ public class SolverUtilities {
 	 * @throws IOException, {@link UnsupportedOperationException} if no exe for this solver
 	 */
 	public static File[] getExes(SolverDescription sd) throws IOException {
-		SolverExecutable se = sd.getSolverExecutable(); 
-		if (se != null) {
-			SolverExecutable.NameInfo[] nameInfos = se.getNameInfo();
-			File files[] = new File[nameInfos.length];
-			for (int i = 0; i < nameInfos.length; ++i) {
-				SolverExecutable.NameInfo ni = nameInfos[i];
-				File exe = ResourceUtil.findSolverExecutable(ni.exeName);
-				files[i] = exe; 
-			}
-			return files;
-		}
-		throw new UnsupportedOperationException("SolverDescription " + sd + " has no executable");
+		SolverExecutable se = sd.getSolverExecutable();
+		if (se == null) throw new UnsupportedOperationException("SolverDescription " + sd + " has no executable");
+		return se.getFullyQualifiedExecutables().toArray(File[]::new);
 	}
 
 	/**
@@ -111,12 +93,13 @@ public class SolverUtilities {
 	 */
 	public static void prepareSolverExecutable(SolverDescription solverDescription) throws IOException {
 		if (solverDescription.getSolverExecutable() != null) {
-			getExes(solverDescription);
+			SolverUtilities.getExes(solverDescription);
+			//TODO: What does this do?!?!
+			// Neither `SolverDescription::getSolverExecutable`, nor `SolverUtilities::getExes` have side effects?!
 		}
 	}
 	
 	public static SolverDescription matchSolverWithKisaoId(String originalId, boolean exactMatchOnly) {
-		
 		// if originating from SED-ML it will likely come in a wrong format using colon
 		
 		String fixedId = originalId.replace(":","_");
