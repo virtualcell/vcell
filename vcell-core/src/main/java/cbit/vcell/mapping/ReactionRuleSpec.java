@@ -1302,29 +1302,33 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 				issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 				return;
 			}
-			if(sasOne != null && sasTwo != null) {
-				for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMapTwo.entrySet()) {
-					MolecularComponentPattern mcpCandidate = entry.getKey();
-					if(MolecularComponentPattern.BondType.None != mcpCandidate.getBondType()) {
-						continue;
-					}
-					MolecularComponent mcCandidate = mcpCandidate.getMolecularComponent();
-					if(mcOursOne == mcCandidate) {
-						sasOne = entry.getValue();
-					} else if(mcOursTwo == mcCandidate) {
-						sasTwo = entry.getValue();
-					}
+			for(Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : siteAttributesMapTwo.entrySet()) {
+				MolecularComponentPattern mcpCandidate = entry.getKey();
+				if(MolecularComponentPattern.BondType.None != mcpCandidate.getBondType()) {
+					continue;
 				}
+				MolecularComponent mcCandidate = mcpCandidate.getMolecularComponent();
+				if(mcOursOne == mcCandidate) {
+					sasOne = entry.getValue();
+				} else if(mcOursTwo == mcCandidate) {
+					sasTwo = entry.getValue();
+				}
+			}
+			if(sasOne != null && sasTwo != null) {
 				if(sasOne.getLocation() != sasTwo.getLocation()) {
 					String msg = SpringSaLaDMsgTransmembraneBinding;
 					String tip = "Both binding reactant Sites need to be in the same compartment.";
 					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 					return;
 				}
-				if(checkOnRate(sasOne, sasTwo) == false) {	// rate doesn't check as acceptable
+				double factor = 1.0;
+				if(mtOursOne == mtOursTwo) {
+					factor = 2.0;	// A + A -> A.A
+				}
+				if(checkOnRate(sasOne, sasTwo, factor) == false) {	// Kon is too large, leading to non-physical negative intrinsic on-rate
 					String msg = "The forward rate Kf is too large (i.e. exceeds the diffusion limited rate) for this reaction rule.";
 					String tip = "Please consider reducing Kon or increasing the Radius or D of the participating Site Types.";
-					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.WARNING));
+					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 					return;
 				}
 			}
@@ -1390,7 +1394,7 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 	 * The maximum possible on-rate is given by kon_max = 4*pi*R*D, so we'd
 	 * better have kon < 4*pi*R*D . If that isn't satisfied then nothing else will work.
 	 */
-	public boolean checkOnRate(SiteAttributesSpec sasOne, SiteAttributesSpec sasTwo) {
+	public boolean checkOnRate(SiteAttributesSpec sasOne, SiteAttributesSpec sasTwo, double factor) {
 
 		// set of acceptable numbers (marginally) for A + A -> A.A are:
 		// Kon = 40 s-1uM-1
@@ -1398,18 +1402,23 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 		// site diffusion rate 1 um2s-1
 
 		double R = sasOne.computeReactionRadius() + sasTwo.computeReactionRadius();	// nm
-		double D = sasOne.getDiffusionRate() + sasTwo.getDiffusionRate();
+		double D = sasOne.getDiffusionRate() + sasTwo.getDiffusionRate();			// um^2/s
 
-		LocalParameter lp = getModelProcess().getKineticLaw().getLocalParameter(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
-		String doubleRegex = "[-+]?[0-9]*\\.?[0-9]+([eE][-+]?[0-9]+)?";
-		if(!lp.getExpression().infix().matches(doubleRegex)) {
-			return false;
+		RbmKineticLaw kineticLaw = reactionRule.getKineticLaw();
+		RbmKineticLaw kineticLaw2 = getModelProcess().getKineticLaw();
+
+		LocalParameter lp = kineticLaw.getLocalParameter(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
+		Expression konExpr = lp.getExpression();
+		Expression kon_new = new Expression(konExpr);
+		double kon = 0;
+		try {
+			kon_new = kon_new.flatten();
+			kon = StochasticTransformer.substituteParameters(kon_new, true).evaluateConstant();
+		} catch (ExpressionException e) {
+			throw new RuntimeException("writeBindingData(): kon or koff is not a constant expression: " + e.getMessage());
 		}
-		double kon = Double.parseDouble(lp.getExpression().infix());
-// TODO: check all scaling
-		double kon_scale = 1660000.0 * kon;			// Kon also needs some conversion (micromolar -> particles)
-		double D_scale = D * 1000000.0;				// D is in um^2/s, convert to nm^2/s
-
+		double kon_scale = 1660000.0 * kon * factor;	// Kon also needs some conversion (micromolar -> particles)
+		double D_scale = D * 1000000.0;					// D is in um^2/s, convert to nm^2/s
 		double kD = 4.0*Math.PI*R*D_scale;
 
 		// double kOnIntrinsic = (rescalekon * kD) / (kD - rescalekon); cannot be negative,
