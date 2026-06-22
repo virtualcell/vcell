@@ -1315,16 +1315,22 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 				}
 			}
 			if(sasOne != null && sasTwo != null) {
-				if(sasOne.getLocation() != sasTwo.getLocation()) {
+				if (sasOne.getLocation() != sasTwo.getLocation()) {
 					String msg = SpringSaLaDMsgTransmembraneBinding;
 					String tip = "Both binding reactant Sites need to be in the same compartment.";
 					issueList.add(new Issue(r, issueContext, IssueCategory.Identifiers, msg, tip, Issue.Severity.ERROR));
 					return;
 				}
-				double factor = 1.0;
-				if(mtOursOne == mtOursTwo) {
-					factor = 2.0;	// A + A -> A.A
+			}
+			// check for rate validity - we need to do this for binding reactions only
+			double factor = 1.0;
+			if(mtOursOne == mtOursTwo) {	// both reactants have the same molecular type
+				factor = 2.0;				// A + A -> A.A
+				if(sasTwo == null) {    	// this may happen if the same site is being bound
+					sasTwo = sasOne;
 				}
+			}
+			if(sasOne != null && sasTwo != null) {
 				if(checkOnRate(sasOne, sasTwo, factor) == false) {	// Kon is too large, leading to non-physical negative intrinsic on-rate
 					String msg = "The forward rate Kf is too large (i.e. exceeds the diffusion limited rate) for this reaction rule.";
 					String tip = "Please consider reducing Kon or increasing the Radius or D of the participating Site Types.";
