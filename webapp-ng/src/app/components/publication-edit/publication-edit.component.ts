@@ -4,7 +4,7 @@ import {FormsModule} from "@angular/forms";
 import {CommonModule} from "@angular/common";
 import {MatInputModule} from "@angular/material/input";
 import {MatButtonModule} from "@angular/material/button";
-import {BioModel, BiomodelRef, BioModelResourceService, PublicationResourceService} from "../../core/modules/openapi";
+import {BioModel, BiomodelRef, BioModelResourceService, MathModelResourceService, MathModelSummary, MathmodelRef, PublicationResourceService} from "../../core/modules/openapi";
 import {HttpResponse} from "@angular/common/http";
 import {MatCardModule} from "@angular/material/card";
 import {MatIconModule} from "@angular/material/icon";
@@ -32,6 +32,7 @@ export class PublicationEditComponent implements OnInit {
 
   constructor(
     private bioModelService: BioModelResourceService,
+    private mathModelService: MathModelResourceService,
     private publicationResourceService: PublicationResourceService,
     private authorizationService: AuthorizationService,
     private snackBar: MatSnackBar
@@ -174,17 +175,36 @@ export class PublicationEditComponent implements OnInit {
   }
 
   addMathmodelRef(key: number | undefined) {
+    console.log("addMathmodelRef, key: " + key);
     if (!key) {
       return;
     }
-    if (!this.publication.mathmodelRefs) {
-      this.publication.mathmodelRefs = [];
-    }
-    this.snackBar.open("adding MathModels not yet implemented - requires API changes", "Dismiss", {duration: 5000});
-    console.error("add MathmodelRef not yet implemented");
-    // this.publicationService.getMathmodelRef(key).subscribe((mathmodelRef: MathmodelRef) => {
-    //   this.publication.mathmodelRefs.push(mathmodelRef);
-    // });
+    this.mathModelService.getSummary(key.toString(), "response").subscribe({
+      next: (summaryResponse: HttpResponse<MathModelSummary>) => {
+        if (summaryResponse.status !== 200) {
+          this.snackBar.open("Error fetching mathmodel", "Dismiss", {duration: 5000});
+          console.error("Error fetching mathmodel", summaryResponse);
+          return;
+        }
+        if (!this.publication.mathmodelRefs) {
+          this.publication.mathmodelRefs = [];
+        }
+        const version = (summaryResponse.body as MathModelSummary).version;
+        const mathmodelRef : MathmodelRef = {
+          mmKey: key,
+          name: version?.name,
+          ownerName: version?.owner?.userName,
+          ownerKey: version?.owner?.key != null ? Number.parseInt(version.owner.key) : -1,
+          versionFlag: version?.flag?.versionFlag
+        };
+        this.publication.mathmodelRefs.push(mathmodelRef);
+        this.newMathmodelKey = undefined;
+      },
+      error: (err: any) => {
+        this.snackBar.open("Error fetching mathmodel", "Dismiss", {duration: 5000});
+        console.error("Error fetching mathmodel", err);
+      }
+    });
   }
 
   removeMathmodelRef(index: number) {
