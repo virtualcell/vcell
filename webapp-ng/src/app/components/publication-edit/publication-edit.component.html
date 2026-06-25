@@ -85,10 +85,10 @@
       <button mat-raised-button color="primary" (click)="addMathmodelRef(newMathmodelKey)">Add Mathmodel +</button>
     </div>
 
-    <!--    <mat-form-field class="full-width">-->
-    <!--      <mat-label>Date</mat-label>-->
-    <!--      <input matInput type="date" [(ngModel)]="publication.date" name="date">-->
-    <!--    </mat-form-field>-->
+    <mat-form-field class="full-width">
+      <mat-label>Date</mat-label>
+      <input matInput type="date" [(ngModel)]="publication.date" name="date">
+    </mat-form-field>
 
     <div *ngIf="showPublishControls" class="publish-row">
       <button mat-raised-button color="accent" type="button" (click)="publishModels()" [disabled]="selectedBiomodelKeys.size === 0 && selectedMathmodelKeys.size === 0">
