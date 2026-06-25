@@ -56,10 +56,16 @@ repo is the GitHub-era home of essentially all of it.
 ## 2. Numerical solvers
 
 The simulation engines VCell drives. Historically these lived in one C/C++/Fortran
-monorepo (`vcell-solvers`); in 2024–2025 they were **extracted into per-solver
-repositories**, each gaining a standalone CMake build, a pybind11 Python binding,
-and independent release/wheel pipelines (so `pyvcell` can call them directly).
-Early history for every extracted solver lives in `vcell-solvers`, not the new repo.
+monorepo (`vcell-solvers`); over a **staggered ~2-year effort** (not a single
+event) they were **extracted into per-solver repositories**, each gaining a
+standalone CMake build, a pybind11 Python binding, and independent release/wheel
+pipelines (so `pyvcell` can call them directly). The split ran repo-by-repo —
+`vcell-fvsolver` (2024-05), `vcell-ode` (2025-06), then
+`vcell-nfsim`/`vcell-stochastic`/`vcell-mbsolver`/`vcell-messaging`/`vcell-expressionparser`
+through 2026 — while the monorepo itself froze at v0.8.2 (Nov 2024). Early history
+for every extracted solver lives in `vcell-solvers`, not the new repo. (The shared-libs
+submodule split is only partly adopted: `vcell-ode` and `vcell-stochastic` still carry
+ExpressionParser/messaging sources inline as of 2026-06.)
 
 ### `vcell-solvers` — legacy solver monorepo
 The original collection of all VCell numerical codes (FiniteVolume, stochastic,
@@ -118,12 +124,15 @@ submodule). **0 PRs — direct-commit, stub README; confirm scope via diffs.**
 
 `Group: Solvers · PRs: 0 · Releases: 0 · Direct-commit repo · Top: bontempiuchc`
 
-### `vcell-fenics` — FEniCS-based solver (experimental, new)
-A very recent (June 2026) Python effort built around the FEniCS finite-element
-platform — appears to be an experimental/next-generation solver direction. Stub
-README; **summary to be confirmed from diffs/commits.**
+### `vcell-fenics` — FEniCS-based solver (experimental, agent-driven)
+A very recent **experimental** Python effort built around the FEniCSx (DOLFINx
+0.10.x) finite-element platform — a next-generation backend for cell-mechanics /
+cell-migration modeling. It genuinely ingests VCML and cross-validates against
+VCell's FV/FronTier solvers. The 104 PRs are a single ~11-day sprint (Jun 14–25,
+2026), single-author (jcschaff) and **overwhelmingly Claude-Code agent-driven**
+(218/314 commits Claude-co-authored). No releases; stub README, real docs in `docs/`.
 
-`Group: Solvers · PRs: 104 · Releases: 0 · PR span: 2026-06 only · Top: jcschaff`
+`Group: Solvers · PRs: 104 · Releases: 0 · PR span: 2026-06 only (~11 days) · Top: jcschaff`
 
 ---
 
@@ -155,7 +164,7 @@ Loads/saves VCML and SBML (and Antimony), edits models programmatically, runs
 local spatial simulations, and analyzes results as NumPy/Zarr/VTK with Matplotlib
 & PyVista. The modern, scriptable front door to VCell technology.
 
-`Group: Python · PRs: 49 · Releases: 35 · PR span: 2025-01→2026-06 · Top: jcschaff, AlexPatrie, CodeByDrescher`
+`Group: Python · PRs: 49 · Releases: 35 · Active span: 2024-08→2026-06 (PR workflow + REST client from 2025-01) · Top: jcschaff, AlexPatrie, CodeByDrescher`
 
 ### `libvcell` — VCell core algorithms as a library
 A subset of VCell's (Java) algorithms packaged as a library to back `pyvcell` —
@@ -240,11 +249,13 @@ DevOps tooling/config. Stub README; **scope to be confirmed from diffs.**
 
 `Group: Infra · PRs: 1 · Releases: 0 · PR span: 2023-10 · Top: Ezequiel-Valencia, mpw6`
 
-### `vcdb` — database tooling
-Database (Shell) tooling for VCell — likely schema/migration/backup utilities.
-Empty README; **scope to be confirmed from diffs.** **0 PRs — direct-commit.**
+### `vcdb` — published-BioModels export data
+**Not** schema/migration tooling (despite the name and "Shell" tag): a **data
+repository of exported published BioModels** (OMEX/SBML/VCML, ~2700 files) used to
+regression-test SED-ML/OMEX export and to seed biosimulations.org. The Shell bytes
+are export/helper scripts. **0 PRs — direct-commit.**
 
-`Group: Infra · PRs: 0 · Releases: 0 · Direct-commit repo · Top: danv61, CodeByDrescher, jcschaff`
+`Group: Infra · PRs: 0 · Releases: 0 · Data repo (direct-commit) · Top: danv61, CodeByDrescher, jcschaff`
 
 ### `biomodelsdb_mirror` — regression-test data mirror
 A local mirror of BioModels database content used by VCell regression testing to
