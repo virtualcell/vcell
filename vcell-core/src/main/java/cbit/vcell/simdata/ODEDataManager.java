@@ -179,17 +179,24 @@ private void setVcDataManager(VCDataManager newVcDataManager) {
 	vcDataManager = newVcDataManager;
 }
 
+// some profiling info, to get an idea of how long it takes to get the data from the server
+//   RPC: getODEData + NFSimConfig    ~ 328 ms      single run, single result set
+//   RPC: getLangevinBatchResultSet   ~ 1016 ms     bath run, multiple result sets (avg, min, max, std, cluster count, cluster statistics)
+//   postProcess()                    ~ 25 ms		duplicating cluster count result set, multiple checks for triviality, etc
 private void connect() throws DataAccessException {
-	// clone, so we can operate safely on it (adding/removing user-defined functions) - real remote data is being cached...
-	odeSolverResultSet = new ODESimData(getVCDataIdentifier(),getVCDataManager().getODEData(getVCDataIdentifier()));
-	nFSimMolecularConfigurations = getVCDataManager().getNFSimMolecularConfigurations(getVCDataIdentifier());
 	LangevinBatchResultSet raw = getVCDataManager().getLangevinBatchResultSet(getVCDataIdentifier());
 	langevinSolverResultSet = new LangevinSolverResultSet(raw);		// may be null
-	if(langevinSolverResultSet != null) {
-		langevinSolverResultSet.postProcess();
-	}
-	if( langevinSolverResultSet != null && langevinSolverResultSet.isAverageDataAvailable()) {
+	if(raw != null && langevinSolverResultSet.isAverageDataAvailable() && langevinSolverResultSet.isClusterDataAvailable()) {
+		// it's langevin batch run, we have all that we need
 		odeSolverResultSet = langevinSolverResultSet.getAvg();
+		langevinSolverResultSet.postProcess();
+		lg.debug("ODEDataManager: Langevin batch run detected, using average data for odeSolverResultSet");
+	} else {
+		// it's some single run (langevin, nfsim, something else), get single run results the old way
+		// clone, so we can operate safely on it (adding/removing user-defined functions) - real remote data is being cached...
+		odeSolverResultSet = new ODESimData(getVCDataIdentifier(),getVCDataManager().getODEData(getVCDataIdentifier()));
+		nFSimMolecularConfigurations = getVCDataManager().getNFSimMolecularConfigurations(getVCDataIdentifier());
+		lg.debug("ODEDataManager: Single run detected, using ODEDataManager.getVCDataManager().getODEData() for odeSolverResultSet");
 	}
 }
 
