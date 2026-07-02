@@ -1,0 +1,21 @@
+name: Archive release to Zenodo
+
+# On each published GitHub Release, archive it as a new version of the VCell
+# Zenodo concept (10.5281/zenodo.7796386) via the zenodo-maint reusable workflow.
+# Replaces the old native Zenodo<->GitHub integration (now disabled). Concept and
+# deposit metadata come from CITATION.cff (doi:) and .zenodo.json at the repo root.
+#
+# Requires an org/repo secret ZENODO_TOKEN belonging to the account that OWNS the
+# concept record (creating new versions requires ownership).
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  archive:
+    uses: virtualcell/zenodo-maint/.github/workflows/archive.reusable.yml@v1
+    with:
+      tag: ${{ github.event.release.tag_name }}
+    secrets:
+      ZENODO_TOKEN: ${{ secrets.ZENODO_TOKEN }}

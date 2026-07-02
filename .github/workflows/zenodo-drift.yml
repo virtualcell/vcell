@@ -1,0 +1,19 @@
+name: Zenodo drift check
+
+# Weekly no-secret safety net: opens a tracking issue if the latest GitHub release
+# is not the latest version on the Zenodo concept — i.e. if release archiving has
+# silently stopped. Uses public APIs only. Concept comes from CITATION.cff (doi:).
+#
+# NOTE: this compares the latest release to the concept's newest-by-creation
+# version. While curated "Virtual Cell X.Y" major records sit on top (until the
+# next release is archived), this may report drift; it self-resolves once the next
+# release is archived and becomes the newest version.
+
+on:
+  schedule:
+    - cron: '0 12 * * 1'
+  workflow_dispatch: {}
+
+jobs:
+  drift:
+    uses: virtualcell/zenodo-maint/.github/workflows/drift.reusable.yml@v1
