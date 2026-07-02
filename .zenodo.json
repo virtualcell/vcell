@@ -1,0 +1,62 @@
+{
+  "upload_type": "software",
+  "title": "Virtual Cell (VCell)",
+  "description": "The Virtual Cell (VCell) is a comprehensive platform for modeling and simulation in cell biology, developed since 1997 at the Center for Cell Analysis and Modeling (CCAM) at UConn Health.",
+  "license": "cc-by-4.0",
+  "creators": [
+    {
+      "name": "Schaff, James C.",
+      "affiliation": "University of Connecticut School of Medicine",
+      "orcid": "0000-0003-3286-7736"
+    },
+    {
+      "name": "Vasilescu, Dan",
+      "affiliation": "University of Connecticut School of Medicine"
+    },
+    {
+      "name": "Morgan, Frank",
+      "affiliation": "University of Connecticut School of Medicine"
+    },
+    {
+      "name": "Gao, Fei",
+      "affiliation": "University of Connecticut School of Medicine"
+    },
+    {
+      "name": "Weatherby, Gerard",
+      "affiliation": "University of Connecticut School of Medicine",
+      "orcid": "0000-0002-0462-4633"
+    },
+    {
+      "name": "Ye, Li",
+      "affiliation": "University of Connecticut School of Medicine"
+    },
+    {
+      "name": "Drescher, Logan",
+      "affiliation": "University of Connecticut School of Medicine"
+    },
+    {
+      "name": "Valencia, Ezequiel",
+      "affiliation": "University of Connecticut School of Medicine"
+    },
+    {
+      "name": "Lakshminarayana, Anuradha",
+      "affiliation": "University of Connecticut School of Medicine"
+    },
+    {
+      "name": "Blinov, Michael L.",
+      "affiliation": "University of Connecticut School of Medicine",
+      "orcid": "0000-0002-9363-9705"
+    },
+    {
+      "name": "Cowan, Ann",
+      "affiliation": "University of Connecticut School of Medicine",
+      "orcid": "0000-0002-3215-9951"
+    },
+    {
+      "name": "Moraru, Ion I.",
+      "affiliation": "University of Connecticut School of Medicine",
+      "orcid": "0000-0002-3746-9676"
+    }
+  ],
+  "related_identifiers": []
+}
