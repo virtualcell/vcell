@@ -18,12 +18,16 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyVetoException;
 
+import org.apache.commons.lang3.time.DurationFormatUtils;
+
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 
+import cbit.vcell.resource.PropertyLoader;
+import cbit.vcell.solver.*;
 import org.vcell.chombo.ChomboSolverSpec;
 import org.vcell.model.rbm.MolecularType;
 import org.vcell.util.Compare;
@@ -35,17 +39,7 @@ import org.vcell.util.gui.GuiUtils;
 import cbit.vcell.client.constants.GuiConstants;
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
 import cbit.vcell.math.Constant;
-import cbit.vcell.solver.DefaultOutputTimeSpec;
-import cbit.vcell.solver.ErrorTolerance;
-import cbit.vcell.solver.MeshSpecification;
-import cbit.vcell.solver.NFsimSimulationOptions;
-import cbit.vcell.solver.NonspatialStochSimOptions;
-import cbit.vcell.solver.Simulation;
-import cbit.vcell.solver.SolverDescription;
-import cbit.vcell.solver.SolverTaskDescription;
-import cbit.vcell.solver.TimeBounds;
-import cbit.vcell.solver.TimeStep;
-import cbit.vcell.solver.UniformOutputTimeSpec;
+
 /**
  * Insert the type's description here.
  * Creation date: (5/2/2001 12:17:49 PM)
@@ -53,6 +47,9 @@ import cbit.vcell.solver.UniformOutputTimeSpec;
  */
 @SuppressWarnings("serial")
 public class SimulationSummaryPanel extends DocumentEditorSubPanel {
+	private final static String MeshLabel = "Mesh:";
+	private final static String PartitionsNumberLabel = "Partitions:";
+
 	private Simulation fieldSimulation = null;
 	private IvjEventHandler ivjEventHandler = new IvjEventHandler();
 //	private JLabel labelSimKey = null;
@@ -82,6 +79,8 @@ public class SimulationSummaryPanel extends DocumentEditorSubPanel {
 	private JLabel labelViewLevelMesh;
 	private JLabel jlabelNumProcessors;
 	private JLabel jlabelTitleNumProcessors;
+	private JLabel ivjJLabel20 = null;
+	private JLabel ivjJLabel21 = null;
 	
 	private class IvjEventHandler implements java.beans.PropertyChangeListener, FocusListener {
 		public void propertyChange(java.beans.PropertyChangeEvent event) {
@@ -167,6 +166,7 @@ private void displayMesh() {
 			
       if (getSimulation()!=null && getSimulation().getMeshSpecification() != null) {
 				ISize samplingSize = getSimulation().getMeshSpecification().getSamplingSize();
+				String labelName = MeshLabel;
 				String labelText = "";
 				int dimension = getSimulation().getMeshSpecification().getGeometry().getDimension();
 				switch (dimension) {
@@ -177,10 +177,19 @@ private void displayMesh() {
 					}
 					default :
 					{
-				    labelText = GuiUtils.getMeshSizeText(dimension, samplingSize, true) + " elements";
+						// for Langevin we don't use the mesh (although it exists), instead we have "Partitions"
+						if(getSimulation().getSolverTaskDescription().getSolverDescription().isLangevinSolver()) {
+							SolverTaskDescription std = getSimulation().getSolverTaskDescription();
+							LangevinSimulationOptions lso = std.getLangevinSimulationOptions();
+							int [] nPart = lso.getNPart();
+							labelText = nPart[0] + "," + nPart[1] + "," + nPart[2];
+							labelName = PartitionsNumberLabel;
+						} else {
+							labelText = GuiUtils.getMeshSizeText(dimension, samplingSize, true) + " elements";
+						}
 				    break;
 					}
-				}
+				}getJLabel11().setText(labelName);
 				getJLabelMesh().setText(labelText);
 
         ChomboSolverSpec chomboSolverSpec = getSimulation().getSolverTaskDescription().getChomboSolverSpec();
@@ -330,9 +339,47 @@ private void displayTask() {
 		getJLabel12().setEnabled(false);
 		getJLabel10().setText("Sensitivity Analysis");
 		getJLabel10().setEnabled(true);
+		getJLabel20().setEnabled(false);
+		getJLabel21().setEnabled(false);
+		getJLabel20().setVisible(false);
+		getJLabel21().setVisible(false);
 		if (solverDescription.equals(SolverDescription.StochGibson)) {
 			getJLabel12().setEnabled(false);
 			getJLabelTimestep().setText("");
+		} else if(solverDescription.equals(SolverDescription.Langevin)) {
+			LangevinSimulationOptions lso = solverTaskDescription.getLangevinSimulationOptions();
+			getJLabel12().setEnabled(true);
+			getJLabel12().setText("Timestep");
+			getJLabelTimestep().setText(timeStep.getDefaultTimeStep() + "s");
+			getJLabelRelTol().setText("Spring Interval");
+			getJLabelRelTol().setEnabled(true);
+			getJLabelRelTolValue().setText(lso.getIntervalSpring() + "s");
+			getJLabelAbsTol().setText("Image Interval");
+			getJLabelAbsTol().setEnabled(true);
+			getJLabelAbsTolValue().setText(lso.getIntervalImage() + "s");
+			// default task timeout to 7 days, old default was 86400 s (1 day), but that is too short for some of the larger models
+			String sTimeoutPerTaskSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_timeoutPerTaskSeconds, "604800");
+			long value = Long.parseLong(sTimeoutPerTaskSeconds);
+			String str = DurationFormatUtils.formatDuration(value * 1000, "d'd' H'h' m'm' s's'");
+			getJLabel10().setText("Timeout per task ");
+			getJLabel10().setEnabled(true);
+			getJLabelSensitivity().setText(str);
+			int tot = lso.getTotalNumberOfJobs();
+			int conc = lso.getNumberOfConcurrentJobs();
+			if(tot == 1) {
+				getJLabel20().setText("Single run.");
+				getJLabel21().setText("");
+				getJLabel21().setEnabled(false);
+				getJLabel21().setVisible(false);
+			} else {
+				getJLabel20().setText("Batch run:");
+				getJLabel21().setText(conc + " concurrent runs / " + tot + " total runs");
+				getJLabel21().setEnabled(true);
+				getJLabel21().setVisible(true);
+			}
+			getJLabel20().setEnabled(true);
+			getJLabel20().setVisible(true);
+
 		} else if (solverDescription.equals(SolverDescription.NFSim)) {
 			TimeBounds tb = solverTaskDescription.getTimeBounds();
 			double dtime = tb.getEndingTime() - tb.getStartingTime();
@@ -424,7 +471,10 @@ private void displayTask() {
 		if (bChomboSolver) {
 			getJLabelNumProcessors().setText(String.valueOf(solverTaskDescription.getNumProcessors()));
 		}
-		if (getSimulation().isSpatial() || solverDescription.isNonSpatialStochasticSolver()) {
+		if(solverDescription.equals(SolverDescription.Langevin)) {
+			getJLabelSensitivity().setVisible(true);		// for Langevin is Timeout per task
+			getJLabel10().setVisible(true);
+		} else if (getSimulation().isSpatial() || solverDescription.isNonSpatialStochasticSolver()) {
 			getJLabelSensitivity().setVisible(false);
 			getJLabel10().setVisible(false);
 		} else if(solverDescription.equals(SolverDescription.NFSim)) {
@@ -563,7 +613,7 @@ private javax.swing.JLabel getJLabelAbsTol() {
 private javax.swing.JLabel getJLabel11() {
 	if (ivjJLabel11 == null) {
 		try {
-			ivjJLabel11 = new javax.swing.JLabel("Mesh:");
+			ivjJLabel11 = new javax.swing.JLabel(MeshLabel);
 			ivjJLabel11.setName("JLabel11");
 			ivjJLabel11.setVisible(false);
 		} catch (java.lang.Throwable ivjExc) {
@@ -725,6 +775,33 @@ private javax.swing.JLabel getJLabelTimestep() {
 	}
 	return ivjJLabelTimestep;
 }
+
+	private javax.swing.JLabel getJLabel20() {		// Single Run / Batch Run
+		if (ivjJLabel20 == null) {
+			try {
+				ivjJLabel20 = new javax.swing.JLabel("");
+				ivjJLabel20.setName("JLabel20");
+				ivjJLabel20.setVisible(false);
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return ivjJLabel20;
+	}
+	private javax.swing.JLabel getJLabel21() {		// concurrent runs / total runs
+		if (ivjJLabel21 == null) {
+			try {
+				ivjJLabel21 = new javax.swing.JLabel("");
+				ivjJLabel21.setName("JLabel21");
+				ivjJLabel21.setForeground(java.awt.Color.blue);
+				ivjJLabel21.setVisible(false);
+			} catch (java.lang.Throwable ivjExc) {
+				handleException(ivjExc);
+			}
+		}
+		return ivjJLabel21;
+	}
+
 
 /**
  * Return the JTextArea1 property value.
@@ -972,11 +1049,28 @@ private void initialize() {
 		gbc.gridy = gridy;
 		gbc.fill = GridBagConstraints.HORIZONTAL;
 		gbc.weightx = 1.0;
-		gbc.gridwidth = 3;
+		gbc.gridwidth = 2;
 		gbc.anchor = GridBagConstraints.LINE_START;
 		gbc.insets = new Insets(4, 4, 4, 4);
-		add(getSettingsPanel(), gbc); 	
-		
+		add(getSettingsPanel(), gbc);
+
+		GridBagConstraints constraintsJLabel20 = new GridBagConstraints();
+		constraintsJLabel20.gridx = 3;
+		constraintsJLabel20.gridy = gridy;
+		constraintsJLabel20.anchor = GridBagConstraints.EAST;
+		constraintsJLabel20.insets = new Insets(4, 4, 4, 4);
+		add(getJLabel20(), constraintsJLabel20); // Geometry Size
+
+		GridBagConstraints constraintsJLabel21 = new GridBagConstraints();
+		constraintsJLabel21.gridx = 4;
+		constraintsJLabel21.gridy = gridy;
+		constraintsJLabel21.weightx = 1.0;
+		constraintsJLabel21.fill = GridBagConstraints.HORIZONTAL;
+		constraintsJLabel21.insets = new Insets(4, 4, 4, 4);
+		add(getJLabel21(), constraintsJLabel21);
+
+// ---------------------------------------------------------------------------------------------------------------
+
 		gridy ++;
 		GridBagConstraints constraintsJLabel11 = new GridBagConstraints();
 		constraintsJLabel11.gridx = 0; 
@@ -995,19 +1089,20 @@ private void initialize() {
 		add(getJLabelMesh(), constraintsJLabelMesh);
 
 		GridBagConstraints constraintsJLabel8 = new GridBagConstraints();
-		constraintsJLabel8.gridx = 3; 
+		constraintsJLabel8.gridx = 3;
 		constraintsJLabel8.gridy = gridy;
 		constraintsJLabel8.anchor = GridBagConstraints.EAST;
 		constraintsJLabel8.insets = new Insets(4, 4, 4, 4);
 		add(getJLabel8(), constraintsJLabel8); // Geometry Size
 
 		GridBagConstraints constraintsJLabelGeometrySize = new GridBagConstraints();
-		constraintsJLabelGeometrySize.gridx = 4; 
+		constraintsJLabelGeometrySize.gridx = 4;
 		constraintsJLabelGeometrySize.gridy = gridy;
 		constraintsJLabelGeometrySize.weightx = 1.0;
 		constraintsJLabelGeometrySize.fill = GridBagConstraints.HORIZONTAL;
 		constraintsJLabelGeometrySize.insets = new Insets(4, 4, 4, 4);
 		add(getJLabelGeometrySize(), constraintsJLabelGeometrySize);
+
 
 		gridy ++;
 		GridBagConstraints constraints = new GridBagConstraints();
