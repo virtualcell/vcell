@@ -2,7 +2,7 @@
   "upload_type": "software",
   "title": "Virtual Cell (VCell)",
   "description": "The Virtual Cell (VCell) is a comprehensive platform for modeling and simulation in cell biology, developed since 1997 at the Center for Cell Analysis and Modeling (CCAM) at UConn Health.",
-  "license": "cc-by-4.0",
+  "license": "mit",
   "creators": [
     {
       "name": "Schaff, James C.",
