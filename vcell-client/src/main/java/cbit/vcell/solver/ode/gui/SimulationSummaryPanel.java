@@ -358,7 +358,7 @@ private void displayTask() {
 			getJLabelAbsTol().setEnabled(true);
 			getJLabelAbsTolValue().setText(lso.getIntervalImage() + "s");
 			// default task timeout to 7 days, old default was 86400 s (1 day), but that is too short for some of the larger models
-			String sTimeoutPerTaskSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_timeoutPerTaskSeconds, "604800");
+			String sTimeoutPerTaskSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_timeoutPerTaskSeconds, "345600");
 			long value = Long.parseLong(sTimeoutPerTaskSeconds);
 			String str = DurationFormatUtils.formatDuration(value * 1000, "d'd' H'h' m'm' s's'");
 			getJLabel10().setText("Timeout per task ");

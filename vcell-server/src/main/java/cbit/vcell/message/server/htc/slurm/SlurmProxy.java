@@ -489,9 +489,7 @@ public class SlurmProxy extends HtcProxy {
 		int perTaskMinutes = (timeoutSeconds + 59) / 60; // ceiling(timeoutSeconds/60)
 		int batches = (totalNumberOfJobs + numberOfConcurrentTasks - 1) / numberOfConcurrentTasks;
 		long workMinutes = (long) batches * perTaskMinutes;
-		long extraMinutes = 3L * perTaskMinutes;
-		long totalMinutes = workMinutes + extraMinutes;
-		long cushionedMinutes = (long) Math.ceil(totalMinutes * 1.10);
+		long cushionedMinutes = (long) Math.ceil(workMinutes * 1.20);
 
 		long totalHours = cushionedMinutes / 60;
 		long minutes = cushionedMinutes % 60;
@@ -500,6 +498,9 @@ public class SlurmProxy extends HtcProxy {
 			return String.format("%02d:%02d:00", totalHours, minutes);
 		} else {
 			long days = totalHours / 24;
+			if(days >= 21) {
+				return("20-23:59:00");	// maxwall for vcell is 21-00:00:00
+			}
 			long hours = totalHours % 24;
 			return String.format("%d-%02d:%02d:00", days, hours, minutes);
 		}
@@ -665,9 +666,10 @@ public class SlurmProxy extends HtcProxy {
 		SolverDescription solverDescription = std.getSolverDescription();
 		MemLimitResults memoryMBAllowed = HtcProxy.getMemoryLimit(vcellUserid, simID, solverDescription, memSizeMB, simTask.isPowerUser());
 
-		String sTimeoutPerTaskSeconds = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_timeoutPerTaskSeconds, "604800");	// seconds. 7 days
-		String sHardbBtchMemoryLimitPerTask = PropertyLoader.getProperty(PropertyLoader.slurm_langevin_batchMemoryLimitPerTaskMB, "1024");
-		String sBlockSizeMB =  PropertyLoader.getProperty(PropertyLoader.slurm_langevin_memoryBlockSizeMB, "256");
+		// next 3 will fire exception if prop not set
+		String sTimeoutPerTaskSeconds = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_timeoutPerTaskSeconds);	// seconds. 7 days
+		String sHardbBtchMemoryLimitPerTask = PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_batchMemoryLimitPerTaskMB);
+		String sBlockSizeMB =  PropertyLoader.getRequiredProperty(PropertyLoader.slurm_langevin_memoryBlockSizeMB);
 		int timeoutPerTaskSeconds = Integer.parseInt(sTimeoutPerTaskSeconds);				// seconds. 24 hours
 		long hardbBtchMemoryLimitPerTask = Long.parseLong(sHardbBtchMemoryLimitPerTask);	// MB. we hard limit mem to 2G for langevin batch jobs
 		int blockSizeMB = Integer.parseInt(sBlockSizeMB); 						// MB. SLURM memory allocation granularity
