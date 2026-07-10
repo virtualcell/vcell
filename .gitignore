@@ -235,6 +235,9 @@ docker/swarm/zeke_env.txt
 webapp-ng/.nx/
 
 localsolvers/mac64/GNUSparseFile.0/
+localsolvers/*/*/*.tgz
+localsolvers/*/*/*.zip
+localsolvers/*/*/*.tar.gz
 
 webapp-ng/.nvmrc
 

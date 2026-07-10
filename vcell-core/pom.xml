@@ -846,6 +846,42 @@
 								</configuration>
 							</execution>
 							<execution>
+								<id>download-cvodes-solver-linux64</id>
+								<phase>generate-test-resources</phase>
+								<goals>
+									<goal>wget</goal>
+								</goals>
+								<configuration>
+									<url>https://github.com/virtualcell/vcell-ode/releases/download/${solvers-cvodes-linux.version}/linux64.tgz</url>
+									<outputDirectory>${project.build.directory}/../../localsolvers/linux64/${solvers-cvodes-subdirectory.name}</outputDirectory>
+								</configuration>
+							</execution>
+							<execution>
+								<id>install-cvodes-solver-win64</id>
+								<phase>generate-test-resources</phase>
+								<goals>
+									<goal>wget</goal>
+								</goals>
+								<configuration>
+									<url>https://github.com/virtualcell/vcell-ode/releases/download/${solvers-cvodes-windows.version}/win64.zip</url>
+									<unpack>true</unpack>
+									<outputDirectory>${project.build.directory}/../../localsolvers/win64/${solvers-cvodes-subdirectory.name}</outputDirectory>
+									<skipCache>true</skipCache>
+								</configuration>
+							</execution>
+							<execution>
+								<id>install-cvodes-solver-mac64</id>
+								<phase>generate-test-resources</phase>
+								<goals>
+									<goal>wget</goal>
+								</goals>
+								<configuration>
+									<url>https://github.com/virtualcell/vcell-ode/releases/download/${solvers-cvodes-mac.version}/mac64.tgz</url>
+									<unpack>true</unpack>
+									<outputDirectory>${project.build.directory}/../../localsolvers/mac64/${solvers-cvodes-subdirectory.name}</outputDirectory>
+								</configuration>
+							</execution>
+							<execution>
 								<id>install-langevin-win64</id>
 								<phase>generate-test-resources</phase>
 								<goals>
@@ -1046,6 +1082,42 @@
 										<url>https://github.com/virtualcell/vcell-fvsolver/releases/download/${solvers-fvsolver-mac.version}/mac64.tgz</url>
 										<unpack>true</unpack>
 										<outputDirectory>${project.build.directory}/../../localsolvers/mac64/${solvers-fvsolver-subdirectory.name}</outputDirectory>
+									</configuration>
+								</execution>
+								<execution>
+									<id>download-cvodes-solver-linux64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/virtualcell/vcell-ode/releases/download/${solvers-cvodes-linux.version}/linux64.tgz</url>
+										<outputDirectory>${project.build.directory}/../../localsolvers/linux64/${solvers-cvodes-subdirectory.name}</outputDirectory>
+									</configuration>
+								</execution>
+								<execution>
+									<id>install-cvodes-solver-win64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/virtualcell/vcell-ode/releases/download/${solvers-cvodes-windows.version}/win64.zip</url>
+										<unpack>true</unpack>
+										<outputDirectory>${project.build.directory}/../../localsolvers/win64/${solvers-cvodes-subdirectory.name}</outputDirectory>
+										<skipCache>true</skipCache>
+									</configuration>
+								</execution>
+								<execution>
+									<id>install-cvodes-solver-mac64</id>
+									<phase>generate-test-resources</phase>
+									<goals>
+										<goal>wget</goal>
+									</goals>
+									<configuration>
+										<url>https://github.com/virtualcell/vcell-ode/releases/download/${solvers-cvodes-mac.version}/mac64.tgz</url>
+										<unpack>true</unpack>
+										<outputDirectory>${project.build.directory}/../../localsolvers/mac64/${solvers-cvodes-subdirectory.name}</outputDirectory>
 									</configuration>
 								</execution>
 								<execution>

@@ -195,14 +195,18 @@
 		<solvers-other-mac.version>v0.0.44-dev4</solvers-other-mac.version>
 		<solvers-other-windows.version>v0.0.40</solvers-other-windows.version>
 		<solvers-other-linux.version>v0.0.44-dev4</solvers-other-linux.version>
-		<solvers-fvsolver-mac.version>0.10.4</solvers-fvsolver-mac.version>
-		<solvers-fvsolver-windows.version>0.10.4</solvers-fvsolver-windows.version>
-		<solvers-fvsolver-linux.version>0.10.4</solvers-fvsolver-linux.version>
+		<solvers-fvsolver-mac.version>0.10.5</solvers-fvsolver-mac.version>
+		<solvers-fvsolver-windows.version>0.10.5</solvers-fvsolver-windows.version>
+		<solvers-fvsolver-linux.version>0.10.5</solvers-fvsolver-linux.version>
+		<solvers-cvodes-mac.version>0.9.4</solvers-cvodes-mac.version>
+		<solvers-cvodes-windows.version>0.9.4</solvers-cvodes-windows.version>
+		<solvers-cvodes-linux.version>0.9.4</solvers-cvodes-linux.version>
 		<solvers-langevin-mac.version>1.4.7</solvers-langevin-mac.version>
 		<solvers-langevin-windows.version>1.4.7</solvers-langevin-windows.version>
 		<solvers-langevin-linux.version>1.4.7</solvers-langevin-linux.version>
 		<solvers-other-subdirectory.name>other</solvers-other-subdirectory.name>
 		<solvers-fvsolver-subdirectory.name>fvsolver</solvers-fvsolver-subdirectory.name>
+		<solvers-cvodes-subdirectory.name>cvodes</solvers-cvodes-subdirectory.name>
 		<solvers-langevin-subdirectory.name>langevin</solvers-langevin-subdirectory.name>
 	</properties>
 
