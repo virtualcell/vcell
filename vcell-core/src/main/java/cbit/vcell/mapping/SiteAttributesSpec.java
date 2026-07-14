@@ -53,8 +53,26 @@ public class SiteAttributesSpec implements Serializable, Identifiable, Displayab
 		this(scs, ln, structure);
 		setRadius(radius);
 		setDiffusionRate(diffusion);
-		setCoordinate(coordinate);
 		setColor(color);
+		setCoordinate(coordinate);
+	}
+	public SiteAttributesSpec(SpeciesContextSpec thisScs, SiteAttributesSpec thatSas) {
+		fieldSpeciesContextSpec = thisScs;
+		if(thatSas.getLinkNode() instanceof MolecularComponentPattern) {
+			// MolecularComponentPattern is physiology defined, we use the same instance
+			setLinkNode(thatSas.getLinkNode());
+		} else if(thatSas.getLinkNode() instanceof StructuralSite) {
+			// StructuralSite is application dependent, so we create a new instance with the same name
+			setLinkNode(new StructuralSite(thatSas.getLinkNode().getName()));
+		} else {
+			throw new RuntimeException("SiteAttributesSpec copy constructor: unknown LinkNode type");
+		}
+		setLocation(thatSas.getLocation());
+		setRadius(thatSas.getRadius());
+		setDiffusionRate(thatSas.getDiffusionRate());
+		setColor(thatSas.getColor());
+		Coordinate c = new Coordinate(thatSas.getCoordinate().getX(), thatSas.getCoordinate().getY(), thatSas.getCoordinate().getZ());
+		setCoordinate(c);	// we make a new instance for coordinates
 	}
 
 	public SpeciesContextSpec getSpeciesContextSpec() {

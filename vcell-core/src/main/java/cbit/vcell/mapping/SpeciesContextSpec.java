@@ -568,6 +568,34 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             Expression otherParmExp = (otherParm.getExpression() == null) ? (null) : (new Expression(otherParm.getExpression()));
             fieldParameters[i] = new SpeciesContextSpecParameter(otherParm.getName(), otherParmExp, otherParm.getRole(), otherParm.getUnitDefinition(), otherParm.getDescription());
         }
+        // if the source application type is springsalad, then we copy the site attributes and internal links, if any
+        // regardless of the destination application type, which we do not know at this time
+        // later on, once we know the destination application type, we will decide whether to keep or discard the
+        // site attributes and internal links
+        SimulationContext thatSimulationContext = speciesContextSpec.getSimulationContext();
+        boolean isThatSpringSaLaDApp = (thatSimulationContext != null && thatSimulationContext.getApplicationType() == Application.SPRINGSALAD);
+        if(isThatSpringSaLaDApp && speciesContextSpec.siteAttributesMap != null){
+            for (Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : speciesContextSpec.siteAttributesMap.entrySet()) {
+                MolecularComponentPattern mcp = entry.getKey();
+                SiteAttributesSpec thatSas = entry.getValue();
+                SiteAttributesSpec newSiteAttributesSpec = new SiteAttributesSpec(this, thatSas);
+                siteAttributesMap.put(mcp, newSiteAttributesSpec);
+            }
+        }
+        if(isThatSpringSaLaDApp && speciesContextSpec.structuralSiteAttributesMap != null){
+            for (Map.Entry<StructuralSite, SiteAttributesSpec> entry : speciesContextSpec.structuralSiteAttributesMap.entrySet()) {
+                StructuralSite ss = entry.getKey();
+                SiteAttributesSpec thatSas = entry.getValue();
+                SiteAttributesSpec newSiteAttributesSpec = new SiteAttributesSpec(this, thatSas);
+                structuralSiteAttributesMap.put(ss, newSiteAttributesSpec);
+            }
+        }
+        if(isThatSpringSaLaDApp && speciesContextSpec.internalLinkSet != null){
+            for (MolecularInternalLinkSpec mils : speciesContextSpec.internalLinkSet) {
+                MolecularInternalLinkSpec newMils = new MolecularInternalLinkSpec(this, mils);
+                internalLinkSet.add(newMils);
+            }
+        }
         refreshDependencies();
     }
 

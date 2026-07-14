@@ -758,6 +758,14 @@ public class SimulationContext implements SimulationOwner, Versionable, Matchabl
             initializeForSpatial();
         }
 
+        if(applicationType != Application.SPRINGSALAD) {
+            for(SpeciesContextSpec scs : reactionContext.getSpeciesContextSpecs()) {
+                scs.getInternalLinkSet().clear();
+                scs.getStructuralSiteAttributesMap().clear();
+                scs.getSiteAttributesMap().clear();
+            }
+        }
+
         boolean isAllowedMicroscopeMeasurements = this.getGeometry().getDimension() > 0 && this.getApplicationType() == Application.NETWORK_DETERMINISTIC;
         if(isAllowedMicroscopeMeasurements){
             MicroscopeMeasurement oldMM = oldSimulationContext.getMicroscopeMeasurement();

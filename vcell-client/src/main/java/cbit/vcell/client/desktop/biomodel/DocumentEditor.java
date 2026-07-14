@@ -162,7 +162,8 @@ public abstract class DocumentEditor extends JPanel {
 	private JMenuItem menuItemSpatialCopyAsSpatialDeterministic = null;
 	private ProblemSignalling problemSignalling = null;
 	private JMenuItem menuItemSpatialCopyAsSpatialRulebased = null;
-	
+	private JMenuItem menuItemSpatialCopyAsSpatialSpringSaLaD = null;
+
 	private class ProblemSignalling {
 		private javax.swing.Timer timer = null;
 		private int counter = 0;
@@ -270,8 +271,9 @@ public abstract class DocumentEditor extends JPanel {
 						|| e.getSource() == menuItemSpatialCopyAsNonSpatialRulebased
 						|| e.getSource() == menuItemSpatialCopyAsSpatialDeterministic
 						|| e.getSource() == menuItemSpatialCopyAsSpatialStochastic
-						|| e.getSource() == menuItemSpatialCopyAsSpatialRulebased ) {
-				popupMenuActionPerformed(DocumentEditorPopupMenuAction.copy_app, e.getActionCommand());	
+						|| e.getSource() == menuItemSpatialCopyAsSpatialRulebased
+						|| e.getSource() == menuItemSpatialCopyAsSpatialSpringSaLaD ) {
+				popupMenuActionPerformed(DocumentEditorPopupMenuAction.copy_app, e.getActionCommand());
 			} else if (e.getSource() == menuItemNewBiomodelFromApp){
 				popupMenuActionPerformed(DocumentEditorPopupMenuAction.app_new_biomodel, e.getActionCommand());
 			} else if((problemSignalling != null) && (e.getSource() == problemSignalling.getTimer())) {
@@ -833,9 +835,14 @@ private void construcutPopupMenu() {
 					menuItemSpatialCopyAsSpatialRulebased = new JMenuItem(GuiConstants.MENU_TEXT_RULEBASED_APPLICATION);
 					menuItemSpatialCopyAsSpatialRulebased.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_RULEBASED_APPLICATION);
 					menuItemSpatialCopyAsSpatialRulebased.addActionListener(eventHandler);
+					menuItemSpatialCopyAsSpatialSpringSaLaD = new JMenuItem(GuiConstants.MENU_TEXT_SPRINGSALAD_APPLICATION);
+					menuItemSpatialCopyAsSpatialSpringSaLaD.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_SPRINGSALAD_APPLICATION);
+					menuItemSpatialCopyAsSpatialSpringSaLaD.addActionListener(eventHandler);
+
 					menuSpatialCopyAsSpatial.add(menuItemSpatialCopyAsSpatialDeterministic);
 					menuSpatialCopyAsSpatial.add(menuItemSpatialCopyAsSpatialStochastic);
 					//menuSpatialCopyAsSpatial.add(menuItemSpatialCopyAsSpatialRulebased);		// not supported yet, uncomment when time comes
+					//menuSpatialCopyAsSpatial.add(menuItemSpatialCopyAsSpatialSpringSaLaD);
 				}
 				menuAppCopyAs.add(menuSpatialCopyAsNonSpatial);
 				menuAppCopyAs.add(menuSpatialCopyAsSpatial);

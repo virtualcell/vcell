@@ -100,9 +100,11 @@ public class GuiConstants {
 			new ApplicationActionCommand.CopyChange("Spatial Copy To Spatial Deterministic Application",true,true,Application.NETWORK_DETERMINISTIC).getLabel();
 	public static final String ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION = 
 			new ApplicationActionCommand.CopyChange("Spatial Copy To Spatial Stochastic Application",true,true,Application.NETWORK_STOCHASTIC).getLabel();
-	public static final String ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_RULEBASED_APPLICATION = 
+	public static final String ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_RULEBASED_APPLICATION =
 			new ApplicationActionCommand.CopyChange("Spatial Copy To Spatial Rulebased Application",true,true,Application.RULE_BASED_STOCHASTIC).getLabel();
-	
+	public static final String ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_SPRINGSALAD_APPLICATION =
+			new ApplicationActionCommand.CopyChange("Spatial Copy To Spatial SpringSalaD Application",true,true,Application.SPRINGSALAD).getLabel();
+
 	public static final String ACTIONCMD_CHANGE_GEOMETRY = "Change Geometry...";
 //	public static final String ACTIONCMD_VIEW_CHANGE_GEOMETRY = "View / Change Geometry";
 	public static final String ACTIONCMD_CREATE_MATH_MODEL = "Create Math Model";
