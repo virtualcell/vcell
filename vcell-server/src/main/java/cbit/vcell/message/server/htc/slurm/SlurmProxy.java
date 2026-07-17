@@ -499,7 +499,7 @@ public class SlurmProxy extends HtcProxy {
 		} else {
 			long days = totalHours / 24;
 			if(days >= 21) {
-				return("20-23:59:00");	// maxwall for vcell is 21-00:00:00
+				return String.format("%d-%02d:%02d:00", 20, 23, 59); // maxwall for vcell is 21-00:00:00
 			}
 			long hours = totalHours % 24;
 			return String.format("%d-%02d:%02d:00", days, hours, minutes);

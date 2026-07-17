@@ -1411,7 +1411,6 @@ public void gatherIssues(IssueContext issueContext, List<Issue> issueList, React
 		double D = sasOne.getDiffusionRate() + sasTwo.getDiffusionRate();			// um^2/s
 
 		RbmKineticLaw kineticLaw = reactionRule.getKineticLaw();
-		RbmKineticLaw kineticLaw2 = getModelProcess().getKineticLaw();
 
 		LocalParameter lp = kineticLaw.getLocalParameter(RbmKineticLaw.RbmKineticLawParameterType.MassActionForwardRate);
 		Expression konExpr = lp.getExpression();
