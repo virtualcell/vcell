@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.*;
 
+import cbit.vcell.mapping.stoch.StochasticTransformer;
 import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -2640,19 +2641,21 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 
         // compare the next few lines with LangevinLngvWriter.writeSpeciesInfo() where we have a math
         // here we must assume that the expression is numeric
-        Expression count = initialCountParameter.getExpression();
-        String scount;
+        Expression count = new Expression(initialCountParameter.getExpression());
+        double dcount;
+        int icount;
         try {
-            double ddd = count.evaluateConstant();
-            scount = Integer.toString((int)ddd);
-        } catch (Exception e) {
-            throw new RuntimeException("Initial concentration must be a number");
+            count = count.flatten();
+            dcount = StochasticTransformer.substituteParameters(count, true).evaluateConstant();
+            icount = (int) Math.round(dcount);
+        } catch (ExpressionException e) {
+            throw new RuntimeException("Initial concentration is not a constant expression");
         }
 
         int siteTypes = componentList.size() + structuralSiteAttributesMap.size();
         int totalSites = siteAttributesMap.size() + structuralSiteAttributesMap.size();
         sb.append("MOLECULE: \"" + getSpeciesContext().getName() + "\" " + getSpeciesContext().getStructure().getName() +
-                " Number " + scount +
+                " Number " + icount +
                 " Site_Types " + siteTypes + " Total" + "_Sites " + totalSites +
                 " Total_Links " + getInternalLinkSet().size() + " is2D " + (dimension == 2 ? true : false));    // TODO: molecule is flat, unrelated to geometry
         sb.append("\n");
