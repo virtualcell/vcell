@@ -31,6 +31,25 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 	private LinkNode fieldLinkNodeTwo = null;
 //	private double linkLength = 0;		// it's a derived value which we don't store, we just compute it at need
 
+	public MolecularInternalLinkSpec(SpeciesContextSpec ourScs, MolecularInternalLinkSpec thatMils) {
+		fieldSpeciesContextSpec = ourScs;
+		LinkNode thatLinkNodeOne = thatMils.fieldLinkNodeOne;
+		LinkNode thatLinkNodeTwo = thatMils.fieldLinkNodeTwo;
+		if(thatLinkNodeOne instanceof MolecularComponentPattern) {
+			fieldLinkNodeOne = thatLinkNodeOne;
+		} else if(thatLinkNodeOne instanceof StructuralSite) {
+			fieldLinkNodeOne = findStructuralSiteByName(ourScs, thatLinkNodeOne.getName());
+		} else {
+			throw new IllegalArgumentException("Unknown LinkNode type for linkNodeOne");
+		}
+		if(thatLinkNodeTwo instanceof MolecularComponentPattern) {
+			fieldLinkNodeTwo = thatLinkNodeTwo;
+		} else if(thatLinkNodeTwo instanceof StructuralSite) {
+			fieldLinkNodeTwo = findStructuralSiteByName(ourScs, thatLinkNodeTwo.getName());
+		} else {
+			throw new IllegalArgumentException("Unknown LinkNode type for linkNodeTwo");
+		}
+	}
 	public MolecularInternalLinkSpec(SpeciesContextSpec scs, LinkNode linkOne, LinkNode linkTwo) throws IllegalArgumentException {
 		fieldSpeciesContextSpec = scs;
 		SpeciesContext sc = scs.getSpeciesContext();
@@ -203,7 +222,6 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 		return in;
 	}
 
-	
 	public Pair<LinkNode, LinkNode> getLink() {
 		return new Pair<LinkNode, LinkNode>(fieldLinkNodeOne, fieldLinkNodeTwo);
 	}
@@ -221,6 +239,16 @@ public class MolecularInternalLinkSpec implements Identifiable, IssueSource, Mat
 			fieldLinkNodeTwo = link.one;
 		}
 	}
+
+	public static StructuralSite findStructuralSiteByName(SpeciesContextSpec scs, String ssName) {
+		for (StructuralSite ss : scs.getStructuralSiteAttributesMap().keySet()) {
+			if (ss.getName().equals(ssName)) {
+				return ss;
+			}
+		}
+		throw new IllegalArgumentException("Unknown StructuralSite name: " + ssName);
+	}
+
 
 	@Override
 	public boolean compareEqual(Matchable obj) {

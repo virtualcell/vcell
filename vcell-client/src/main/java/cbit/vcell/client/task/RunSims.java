@@ -164,7 +164,7 @@ public void run(Hashtable<String, Object> hashTable) throws java.lang.Exception 
 					DialogUtils.showErrorDialog(documentWindowManager.getComponent(), "Problem found in simulation '" + sim.getName() + "':\n" + ex.getMessage());
 					continue;
 				}
-				if (dimension > 0) {
+				if (dimension > 0 && !sim.getSolverTaskDescription().getSolverDescription().isLangevinSolver()) {
 					MeshSpecification meshSpecification = sim.getMeshSpecification();
 					boolean bCellCentered = sim.hasCellCenteredMesh();
 					if (meshSpecification != null && !meshSpecification.isAspectRatioOK(bCellCentered)) {

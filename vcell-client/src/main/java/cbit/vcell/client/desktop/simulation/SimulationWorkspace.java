@@ -321,7 +321,7 @@ private static boolean checkSimulationParameters(Simulation simulation, Componen
 		
 		MeshSpecification meshSpecification = simulation.getMeshSpecification();
 		boolean bCellCentered = simulation.hasCellCenteredMesh();
-		if (meshSpecification != null && !meshSpecification.isAspectRatioOK(bCellCentered)) {
+		if (meshSpecification != null && !meshSpecification.isAspectRatioOK(bCellCentered) && !solverDescription.isLangevinSolver()) {
 			warningMessage =  (warningMessage == null? "" : warningMessage + "\n\n") 
 				+ "Non uniform spatial step is detected. This might affect the accuracy of the solution.\n\n"
 				+ "\u0394x=" + meshSpecification.getDx(bCellCentered) + "\n" 

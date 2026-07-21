@@ -342,6 +342,7 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
                 throw new IllegalArgumentException("Invalid qualifier NONE for column: " + columnName);
             }
             boolean include = false;
+                                                        // TODO: add reactions !!!!!!!
             switch (mode) {
                 case MOLECULES:
                     include = (lr.site == null || lr.site.isEmpty());   // Molecules = entries with no site
@@ -357,7 +358,12 @@ public class MoleculeSpecificationPanel extends AbstractSpecificationPanel {
                     break;
             }
             if (include) {
-                ColumnDescription cd = langevinSolverResultSet.getColumnDescriptionByName(columnName);
+                if(langevinSolverResultSet.getAvg() == null) {
+                    lg.warn("langevinSolverResultSet.getAvg() is null for column: {}", columnName);
+                    continue;
+                }
+                int index = langevinSolverResultSet.getAvg().findColumn(columnName);
+                ColumnDescription cd = langevinSolverResultSet.getAvg().getColumnDescriptions(index);
                 if (cd != null) {
                     list.add(cd);
                 }

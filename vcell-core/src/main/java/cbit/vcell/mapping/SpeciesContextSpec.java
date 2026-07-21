@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.*;
 
+import cbit.vcell.mapping.stoch.StochasticTransformer;
 import cbit.vcell.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -567,6 +568,34 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
             SpeciesContextSpecParameter otherParm = speciesContextSpec.fieldParameters[i];
             Expression otherParmExp = (otherParm.getExpression() == null) ? (null) : (new Expression(otherParm.getExpression()));
             fieldParameters[i] = new SpeciesContextSpecParameter(otherParm.getName(), otherParmExp, otherParm.getRole(), otherParm.getUnitDefinition(), otherParm.getDescription());
+        }
+        // if the source application type is springsalad, then we copy the site attributes and internal links, if any
+        // regardless of the destination application type, which we do not know at this time
+        // later on, once we know the destination application type, we will decide whether to keep or discard the
+        // site attributes and internal links
+        SimulationContext thatSimulationContext = speciesContextSpec.getSimulationContext();
+        boolean isThatSpringSaLaDApp = (thatSimulationContext != null && thatSimulationContext.getApplicationType() == Application.SPRINGSALAD);
+        if(isThatSpringSaLaDApp && speciesContextSpec.siteAttributesMap != null){
+            for (Map.Entry<MolecularComponentPattern, SiteAttributesSpec> entry : speciesContextSpec.siteAttributesMap.entrySet()) {
+                MolecularComponentPattern mcp = entry.getKey();
+                SiteAttributesSpec thatSas = entry.getValue();
+                SiteAttributesSpec newSiteAttributesSpec = new SiteAttributesSpec(this, thatSas);
+                siteAttributesMap.put(mcp, newSiteAttributesSpec);
+            }
+        }
+        if(isThatSpringSaLaDApp && speciesContextSpec.structuralSiteAttributesMap != null){
+            for (Map.Entry<StructuralSite, SiteAttributesSpec> entry : speciesContextSpec.structuralSiteAttributesMap.entrySet()) {
+                StructuralSite ss = entry.getKey();
+                SiteAttributesSpec thatSas = entry.getValue();
+                SiteAttributesSpec newSiteAttributesSpec = new SiteAttributesSpec(this, thatSas);
+                structuralSiteAttributesMap.put(ss, newSiteAttributesSpec);
+            }
+        }
+        if(isThatSpringSaLaDApp && speciesContextSpec.internalLinkSet != null){
+            for (MolecularInternalLinkSpec mils : speciesContextSpec.internalLinkSet) {
+                MolecularInternalLinkSpec newMils = new MolecularInternalLinkSpec(this, mils);
+                internalLinkSet.add(newMils);
+            }
         }
         refreshDependencies();
     }
@@ -2612,19 +2641,21 @@ public class SpeciesContextSpec implements Matchable, ScopedSymbolTable, Seriali
 
         // compare the next few lines with LangevinLngvWriter.writeSpeciesInfo() where we have a math
         // here we must assume that the expression is numeric
-        Expression count = initialCountParameter.getExpression();
-        String scount;
+        Expression count = new Expression(initialCountParameter.getExpression());
+        double dcount;
+        int icount;
         try {
-            double ddd = count.evaluateConstant();
-            scount = Integer.toString((int)ddd);
-        } catch (Exception e) {
-            throw new RuntimeException("Initial concentration must be a number");
+            count = count.flatten();
+            dcount = StochasticTransformer.substituteParameters(count, true).evaluateConstant();
+            icount = (int) Math.round(dcount);
+        } catch (ExpressionException e) {
+            throw new RuntimeException("Initial concentration is not a constant expression");
         }
 
         int siteTypes = componentList.size() + structuralSiteAttributesMap.size();
         int totalSites = siteAttributesMap.size() + structuralSiteAttributesMap.size();
         sb.append("MOLECULE: \"" + getSpeciesContext().getName() + "\" " + getSpeciesContext().getStructure().getName() +
-                " Number " + scount +
+                " Number " + icount +
                 " Site_Types " + siteTypes + " Total" + "_Sites " + totalSites +
                 " Total_Links " + getInternalLinkSet().size() + " is2D " + (dimension == 2 ? true : false));    // TODO: molecule is flat, unrelated to geometry
         sb.append("\n");

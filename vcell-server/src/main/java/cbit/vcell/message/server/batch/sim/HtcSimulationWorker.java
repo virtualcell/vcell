@@ -724,7 +724,10 @@ private static final String REQUIRED_SERVICE_PROPERTIES[] = {
 		PropertyLoader.htcMinMemoryMB,
 		PropertyLoader.htcMaxMemoryMB,
 		PropertyLoader.htcPowerUserMemoryFloorMB,
-		PropertyLoader.htcPowerUserMemoryMaxMB
+		PropertyLoader.htcPowerUserMemoryMaxMB,
+		PropertyLoader.slurm_langevin_timeoutPerTaskSeconds,
+		PropertyLoader.slurm_langevin_batchMemoryLimitPerTaskMB,
+		PropertyLoader.slurm_langevin_memoryBlockSizeMB
 	};
 
 

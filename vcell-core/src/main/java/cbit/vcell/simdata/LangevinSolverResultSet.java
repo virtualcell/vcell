@@ -78,15 +78,6 @@ public class LangevinSolverResultSet implements Serializable {
         return maxClusterCountOverall;
     }
 
-    public ColumnDescription getColumnDescriptionByName(String columnName) {
-        if(raw == null || raw.getOdeSimDataAvg() == null) {
-            return null;
-        }
-        int index = raw.getOdeSimDataAvg().findColumn(columnName);
-        ColumnDescription cd = raw.getOdeSimDataAvg().getColumnDescriptions(index);
-        return cd;
-    }
-
     // helper functions
     public boolean isAverageDataAvailable() {
         return getAvg() != null &&
@@ -134,15 +125,10 @@ public class LangevinSolverResultSet implements Serializable {
             ODESimData co = getAvg();
             populateMetadata(co);
             checkTrivial(co);
-            // if avg is trivial, then min, max and std will be trivial too
-//            co = getMin();
-//            checkTrivial(co);
-//            co = getMax();
-//            checkTrivial(co);
-//            co = getStd();
-//            checkTrivial(co);
+            // we don't care if min, max and std are trivial or not
         }
     }
+                                                                            // TODO: add reactions   !!!!!!!!!
     private void populateMetadata(ODESimData co) {
         // from solver-generated observable (ColumnDescription.name) extract molecule, site and state names
         ColumnDescription[] cds = co.getColumnDescriptions();

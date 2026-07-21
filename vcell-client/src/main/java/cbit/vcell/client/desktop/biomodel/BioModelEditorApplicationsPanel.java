@@ -73,7 +73,8 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 	private JMenu menuAppSpatialCopyAsSpatial = null;
 	private JMenuItem menuItemAppSpatialCopyAsSpatialStochastic = null;
 	private JMenuItem menuItemAppSpatialCopyAsSpatialDeterministic = null;
-	
+	private JMenuItem menuItemAppSpatialCopyAsSpatialSpringSaLaD = null;
+
 	private JMenuItem appNewStochApp = null;
 	private JMenuItem appNewDeterministicApp = null;
 	private JMenuItem appNewRulebasedApp = null;
@@ -99,8 +100,9 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 					|| e.getSource() == menuItemAppSpatialCopyAsNonSpatialDeterministic
 					|| e.getSource() == menuItemAppSpatialCopyAsNonSpatialStochastic
 					|| e.getSource() == menuItemAppSpatialCopyAsSpatialDeterministic
-					|| e.getSource() == menuItemAppSpatialCopyAsSpatialStochastic) {
-				applicationMenuItem_ActionPerformed(e)	;	
+					|| e.getSource() == menuItemAppSpatialCopyAsSpatialStochastic
+					|| e.getSource() == menuItemAppSpatialCopyAsSpatialSpringSaLaD) {
+				applicationMenuItem_ActionPerformed(e)	;
 			} 
 		}
 	}
@@ -410,9 +412,12 @@ public class BioModelEditorApplicationsPanel extends BioModelEditorRightSidePane
 				menuItemAppSpatialCopyAsSpatialStochastic = new JMenuItem(GuiConstants.MENU_TEXT_STOCHASTIC_APPLICATION);
 				menuItemAppSpatialCopyAsSpatialStochastic.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_STOCHASTIC_APPLICATION);
 				menuItemAppSpatialCopyAsSpatialStochastic.addActionListener(eventHandler);
+				menuItemAppSpatialCopyAsSpatialSpringSaLaD = new JMenuItem(GuiConstants.MENU_TEXT_SPRINGSALAD_APPLICATION);
+				menuItemAppSpatialCopyAsSpatialSpringSaLaD.setActionCommand(GuiConstants.ACTIONCMD_SPATIAL_COPY_TO_SPATIAL_SPRINGSALAD_APPLICATION);
+				menuItemAppSpatialCopyAsSpatialSpringSaLaD.addActionListener(eventHandler);
 				menuAppSpatialCopyAsSpatial.add(menuItemAppSpatialCopyAsSpatialDeterministic);
 				menuAppSpatialCopyAsSpatial.add(menuItemAppSpatialCopyAsSpatialStochastic);
-	
+//				menuAppSpatialCopyAsSpatial.add(menuItemAppSpatialCopyAsSpatialSpringSaLaD);
 			} catch (java.lang.Throwable ivjExc) {
 				handleException(ivjExc);
 			}

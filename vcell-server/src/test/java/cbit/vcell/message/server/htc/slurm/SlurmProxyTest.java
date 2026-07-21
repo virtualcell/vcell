@@ -90,6 +90,10 @@ public class SlurmProxyTest {
 		setProperty(PropertyLoader.htcPowerUserMemoryFloorMB, "51200");
 		setProperty(PropertyLoader.htcMinMemoryMB, "4096");
 		setProperty(PropertyLoader.htcMaxMemoryMB, "81920");
+
+		setProperty(PropertyLoader.slurm_langevin_timeoutPerTaskSeconds, "345600");
+		setProperty(PropertyLoader.slurm_langevin_batchMemoryLimitPerTaskMB, "1024");
+		setProperty(PropertyLoader.slurm_langevin_memoryBlockSizeMB, "256");
 	}
 
 	@AfterEach

@@ -13,6 +13,8 @@ import java.util.Arrays;
 
 import javax.swing.JTable;
 
+import cbit.vcell.math.MathDescription;
+import cbit.vcell.solver.*;
 import org.vcell.util.gui.DialogUtils;
 
 import cbit.gui.ScopedExpression;
@@ -26,11 +28,7 @@ import cbit.vcell.parser.DivideByZeroException;
 import cbit.vcell.parser.Expression;
 import cbit.vcell.parser.ExpressionException;
 import cbit.vcell.parser.SymbolTableEntry;
-import cbit.vcell.solver.ConstantArraySpec;
-import cbit.vcell.solver.MathOverrides;
-import cbit.vcell.solver.MathOverridesEvent;
-import cbit.vcell.solver.MathOverridesListener;
-import cbit.vcell.solver.SimulationSymbolTable;
+
 /**
  * Insert the type's description here.
  * Creation date: (10/22/2000 11:46:26 AM)
@@ -260,7 +258,7 @@ public Object getValueAt(int row, int column) {
 				}
 			}
 			case COLUMN_SCAN: {
-				return new Boolean(getMathOverrides().isScan(fieldKeys[row]));
+				return getMathOverrides().isScan(fieldKeys[row]);
 			}
 			default: {
 				throw new Exception();
@@ -309,6 +307,13 @@ public boolean isCellEditable(int r, int c) {
 			return true;
 		}
 	} else if (c == COLUMN_SCAN) {
+		MathOverrides mo = getMathOverrides();
+		Simulation sim = mo.getSimulation();
+		MathDescription md = sim.getMathDescription();
+		boolean isLangevin = md.isLangevin();
+		if(isLangevin) {
+			return false;
+		}
 		return true;
 	} else {
 		return false;
@@ -348,7 +353,7 @@ public synchronized void removePropertyChangeListener(java.beans.PropertyChangeL
 public void setEditable(boolean editable) {
 	boolean oldValue = fieldEditable;
 	fieldEditable = editable;
-	firePropertyChange("editable", new Boolean(oldValue), new Boolean(editable));
+	firePropertyChange("editable", oldValue, editable);
 }
 
 
@@ -395,12 +400,11 @@ private void updateKeys(MathOverrides mathOverrides) {
 /**
  * Sets the modified property (boolean) value.
  * @param modified The new value for the property.
- * @see #getModified
  */
 public void setModified(boolean modified) {
 	boolean oldValue = fieldModified;
 	fieldModified = modified;
-	firePropertyChange("modified", new Boolean(oldValue), new Boolean(modified));
+	firePropertyChange("modified", oldValue, modified);
 }
 
 
