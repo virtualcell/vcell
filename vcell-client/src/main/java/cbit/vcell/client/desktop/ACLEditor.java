@@ -18,8 +18,14 @@ import com.sun.mail.imap.ACL;
 import org.vcell.util.gui.GeneralGuiUtils;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.text.Document;
 import java.awt.*;
 import java.awt.event.ItemEvent;
+import java.awt.event.TextEvent;
+import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -55,13 +61,20 @@ public class ACLEditor extends javax.swing.JPanel {
 
 	private final IvjEventHandler ivjEventHandler = new IvjEventHandler();
 
-	private class IvjEventHandler implements java.awt.event.ActionListener, java.awt.event.ItemListener, java.beans.PropertyChangeListener {
+	private class IvjEventHandler
+			implements  java.awt.event.ActionListener,
+						java.awt.event.ItemListener,
+						java.beans.PropertyChangeListener,
+						javax.swing.event.DocumentListener,
+						javax.swing.event.ListSelectionListener {
+		@Override
 		public void actionPerformed(java.awt.event.ActionEvent e) {
 			if (e.getSource() == ACLEditor.this.getAddUserJButton()) ACLEditor.this.userRequestedToAddNewUserToShareWith(e);
 			if (e.getSource() == ACLEditor.this.getRemoveUserJButton()) ACLEditor.this.userRequestedToRemoveExistingSharedUser(e);
 			ACLEditor.this.setParentConfirmChangesButtonToCorrectState();
 		}
 
+		@Override
 		public void itemStateChanged(ItemEvent e) {
 			if (    e.getSource() == ACLEditor.this.getPublicRadioButton() ||
 					e.getSource() == ACLEditor.this.getPrivateRadioButton() ||
@@ -71,9 +84,35 @@ public class ACLEditor extends javax.swing.JPanel {
 			ACLEditor.this.setParentConfirmChangesButtonToCorrectState();
 		}
 
+		@Override
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
-			if (evt.getSource() == ACLEditor.this && (evt.getPropertyName().equals("ACLState")))
-				ACLEditor.this.updateUserInterface(evt);
+			if (evt.getSource() != ACLEditor.this) return;
+			if (evt.getPropertyName().equals("ACLState")) ACLEditor.this.updateUserInterface(evt);
+		}
+
+		@Override
+		public void insertUpdate(DocumentEvent e) {
+			this.processDocumentUpdate(e);
+		}
+
+		@Override
+		public void removeUpdate(DocumentEvent e) {
+			this.processDocumentUpdate(e);
+		}
+
+		@Override
+		public void changedUpdate(DocumentEvent e) {
+			this.processDocumentUpdate(e);
+		}
+
+		private void processDocumentUpdate(DocumentEvent e) {
+			if (e.getDocument().getProperty("owningSource") == ACLEditor.this.getAddUserJTextField())
+				ACLEditor.this.updateButtons();
+		}
+
+		@Override
+		public void valueChanged(ListSelectionEvent ignored) {
+			ACLEditor.this.updateButtons();
 		}
 	}
 
@@ -112,6 +151,7 @@ public class ACLEditor extends javax.swing.JPanel {
 	private void regenerateOriginalState() {
 		this.originalACLType = this.getACLState().getAclType();
 		this.originalValidUsersList = this.getACLState().getAccessList();
+		this.updateInterface();
 	}
 
 	/**
@@ -166,9 +206,9 @@ public class ACLEditor extends javax.swing.JPanel {
 
 	/**
 	 * connEtoC2:  (ACLEditor.ACLState --> ACLEditor.updateInterface()V)
-	 * @param arg1 java.beans.PropertyChangeEvent
+	 * @param ignored java.beans.PropertyChangeEvent
 	 */
-	private void updateUserInterface(java.beans.PropertyChangeEvent arg1) {
+	private void updateUserInterface(java.beans.PropertyChangeEvent ignored) {
 		try {
 			this.updateInterface();
 		} catch (java.lang.Throwable throwable) {
@@ -198,6 +238,7 @@ public class ACLEditor extends javax.swing.JPanel {
 				return;
 			}
 			this.setACLState(this.getACLState().addUserToACL(this.getAddUserJTextField().getText()));
+			this.getAddUserJTextField().setText("");
 		} catch (java.lang.Throwable throwable) {
 			this.handleException(throwable);
 		}
@@ -376,6 +417,7 @@ public class ACLEditor extends javax.swing.JPanel {
 			this.validUsersJList = new JList<>();
 			this.validUsersJList.setName("JListACL");
 			this.validUsersJList.setBounds(0, 0, 160, 120);
+			this.validUsersJList.addListSelectionListener(this.ivjEventHandler);
 		} catch (Throwable throwable) {
 			this.handleException(throwable);
 		}
@@ -407,6 +449,9 @@ public class ACLEditor extends javax.swing.JPanel {
 		try {
 			this.addUserJTextField = new JTextField();
 			this.addUserJTextField.setName("JTextFieldACLUser");
+			Document textDoc = this.addUserJTextField.getDocument();
+			textDoc.putProperty("owningSource", this.addUserJTextField);
+			textDoc.addDocumentListener(this.ivjEventHandler);
 		} catch (Throwable throwable) {
 			this.handleException(throwable);
 		}
@@ -583,52 +628,42 @@ public class ACLEditor extends javax.swing.JPanel {
 	 */
 	private void updateInterface() {
 		ACLState currentState = this.getACLState();
+		this.updateProposedACLList(currentState);
+		this.updateRadioButtonsAndACLSubPanel(currentState);
+		this.updateButtons();
+	}
+
+	private void updateProposedACLList(ACLState currentState){
 		Vector<String> newList = new Vector<>();
 		for (String u : currentState.getAccessList()) {
-			if (u.equals(PropertyLoader.VCELL_SUPPORT_USERID)) {
-				if (!this.getVCellSupportCheckBox().isSelected()) {
-					this.getVCellSupportCheckBox().setSelected(true);
-				}
-			} else {
+			if (!u.equals(PropertyLoader.VCELL_SUPPORT_USERID)){
 				newList.add(u);
+			} else if (!this.getVCellSupportCheckBox().isSelected()){
+				this.getVCellSupportCheckBox().setSelected(true);
 			}
 		}
 		this.getValidUsersJList().setListData(newList);
+	}
 
+	private void updateRadioButtonsAndACLSubPanel(ACLState currentState){
 		boolean enableSubPanel = false;
 		switch (currentState.getAclType()){
 			case PRIVATE -> this.getPrivateRadioButton().setSelected(true);
 			case PUBLIC -> this.getPublicRadioButton().setSelected(true);
 			case ACL -> {
-				this.getAddUserJTextField().setText(null);
+				//this.getAddUserJTextField().setText(null);
 				this.getSpecificAccessRadioButton().setSelected(true);
 				enableSubPanel = true;
 			}
 		}
-
 		GeneralGuiUtils.enableComponents(this.existingAccessSubPane(), enableSubPanel);
+	}
 
-//		if(currentState.getAclType().equals(ACLState.ACLType.PRIVATE)){
-//			if(!this.getPrivateRadioButton().isSelected()){
-//				this.getPrivateRadioButton().setSelected(true);
-//			}
-//			if(this.existingAccessSubPane().isEnabled()){
-//				GeneralGuiUtils.enableComponents(this.existingAccessSubPane(),false);
-//			}
-//		}else if(currentState.getAclType().equals(ACLState.ACLType.PUBLIC)){
-//			if(!this.getPublicRadioButton().isSelected()){
-//				this.getPublicRadioButton().setSelected(true);
-//			}
-//			if(this.existingAccessSubPane().isEnabled()){
-//				GeneralGuiUtils.enableComponents(this.existingAccessSubPane(),false);
-//			}
-//		} else { // aclType is ACL
-//			this.getAddUserJTextField().setText(null);
-//			if(!this.getSpecificAccessRadioButton().isSelected()){
-//				this.getSpecificAccessRadioButton().setSelected(true);
-//			}
-//			GeneralGuiUtils.enableComponents(this.existingAccessSubPane(),true);
-//		}
+	private void updateButtons(){
+		if (!this.existingAccessSubPane().isEnabled()) return;
+		String text = this.getAddUserJTextField().getText();
+		this.getAddUserJButton().setEnabled(text != null && !text.isEmpty());
+		this.getRemoveUserJButton().setEnabled(!this.getValidUsersJList().getSelectedValuesList().isEmpty());
 	}
 
 }

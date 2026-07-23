@@ -21,7 +21,6 @@ public class AccessPermissionDialogProxy {
 		parentConfirmChangesJButton.addActionListener(e -> this.mainPane.setValue(parentConfirmChangesJButton));
 		parentCancelChangesJButton.addActionListener(e -> this.mainPane.setValue(parentCancelChangesJButton));
 		aclEditor.setPreferredSize(new java.awt.Dimension(300, 400));
-		this.mainPane.setMessage("");
 		this.mainPane.setMessage(aclEditor);
 		this.mainPane.setValue(null);
 		this.dialog = this.mainPane.createDialog(requester, title);
