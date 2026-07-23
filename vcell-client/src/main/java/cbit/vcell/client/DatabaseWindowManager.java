@@ -60,6 +60,9 @@ import java.util.*;
 public class DatabaseWindowManager extends TopLevelWindowManager {
     private static Logger lg = LogManager.getLogger(DatabaseWindowManager.class);
 
+    public final static String acceptButtonName = "Confirm Changes";
+    public final static String rejectButtonName = "Cancel";
+
     class DoubleClickListener implements java.awt.event.ActionListener {
         private JDialog theJDialog = null;
         private boolean bWasDoubleClicked = false;
@@ -131,10 +134,10 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
 
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
-                getAclEditor().clearACLList();
+                getAclEditor().performFullReset();
                 getAclEditor().setACLState(ACLState.fromGroupAccess(groupAccess));
                 if (bGrantSupportPermissions) {
-                    getAclEditor().grantVCellSupportPermissions();
+                    getAclEditor().resetAndGrantVCellSupportPermissions();
                 }
                 Object choice = showAccessPermissionDialog(getAclEditor(), requester);
                 if (choice != null) {
@@ -147,8 +150,12 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
             @Override
             public void run(Hashtable<String, Object> hashTable) throws Exception {
                 Object choice = hashTable.get("choice");
-                if (choice == null || !choice.equals("OK")) return;
-                ACLState aclState = getAclEditor().getACLState();
+                if (choice instanceof JButton button){
+                    if (!acceptButtonName.equals(button.getText())) return; // Keep two `if` statements separate otherwise it will cause `else` to trigger!
+                } else if (choice instanceof String choiceStr) {
+                    if (!acceptButtonName.equals(choiceStr)) return; // Keep two `if` statements separate otherwise it will cause `else` to trigger!
+                } else return;
+                ACLState aclState = DatabaseWindowManager.this.getAclEditor().getACLState();
                 if (aclState == null) return;
                 if (aclState.getAclType() == ACLState.ACLType.PRIVATE) {
                     VersionInfo vInfo;
@@ -1391,16 +1398,10 @@ public class DatabaseWindowManager extends TopLevelWindowManager {
      * Insert the method's description here.
      * Creation date: (5/14/2004 6:11:35 PM)
      */
-    private Object showAccessPermissionDialog(final JComponent aclEditor, final Component requester) {
-        JOptionPane accessPermissionDialog = new JOptionPane(null, JOptionPane.PLAIN_MESSAGE, 0, null, new Object[]{"OK", "Cancel"});
-        aclEditor.setPreferredSize(new java.awt.Dimension(300, 350));
-        accessPermissionDialog.setMessage("");
-        accessPermissionDialog.setMessage(aclEditor);
-        accessPermissionDialog.setValue(null);
-        JDialog d = accessPermissionDialog.createDialog(requester, "Changing Permissions");
-        d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        DialogUtils.showModalJDialogOnTop(d, requester);
-        return accessPermissionDialog.getValue();
+    private Object showAccessPermissionDialog(final ACLEditor aclEditor, final Component requester) {
+        AccessPermissionDialogProxy accessPermissionDialogProxy = new AccessPermissionDialogProxy("Changing Permissions", aclEditor, requester);
+        DialogUtils.showModalJDialogOnTop(accessPermissionDialogProxy.dialog, requester);
+        return accessPermissionDialogProxy.getUserResult();
     }
 
 

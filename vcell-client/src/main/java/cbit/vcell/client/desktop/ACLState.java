@@ -52,11 +52,7 @@ public class ACLState {
         }
         ArrayList<String> argList = new ArrayList<>(aclList);
         argList.remove(user);
-        if (argList.isEmpty()) {
-            return PRIVATE_TYPE;
-        } else {
-            return new ACLState(argList);
-        }
+        return new ACLState(argList);
     }
 
     ACLState(List<String> argACLList) {
