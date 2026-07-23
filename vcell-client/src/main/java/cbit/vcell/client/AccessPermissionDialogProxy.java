@@ -1,6 +1,7 @@
 package cbit.vcell.client;
 
 import cbit.vcell.client.desktop.ACLEditor;
+import org.vcell.util.gui.DialogUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -21,10 +22,9 @@ public class AccessPermissionDialogProxy {
 		parentConfirmChangesJButton.addActionListener(e -> this.mainPane.setValue(parentConfirmChangesJButton));
 		parentCancelChangesJButton.addActionListener(e -> this.mainPane.setValue(parentCancelChangesJButton));
 		aclEditor.setPreferredSize(new java.awt.Dimension(300, 400));
-		this.mainPane.setMessage("");
 		this.mainPane.setMessage(aclEditor);
 		this.mainPane.setValue(null);
-		this.dialog = this.mainPane.createDialog(requester, title);
+		this.dialog = DialogUtils.createDialog(requester, this.mainPane, title);
 		this.dialog.setResizable(true);
 		this.dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 	}
