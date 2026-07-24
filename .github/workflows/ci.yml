@@ -1,0 +1,189 @@
+name: CI
+
+# Fast lane: runs on every push and in the merge queue. Compile check + Docker
+# image build + Python package tests, plus the Fast unit tests and Quarkus
+# tests. The heavy regression suites live in regression.yml; the release image
+# build lives in cd.yml.
+#
+# Triggers are disjoint from regression.yml/cd.yml so the checks list stays
+# readable - a push shows exactly these three jobs, with nothing skipped.
+#
+# Each job compiles independently (mvn install ...) rather than sharing a
+# prebuilt workspace: reusing compiled output across jobs proved unreliable for
+# inter-module test-runtime classpaths, and this matches the long-proven build.
+
+on:
+  push:
+    branches:
+      - '**'
+  merge_group:
+
+# Supersede in-flight runs for the same ref instead of piling them up.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  python-version: "3.10"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # BUILD: compile the monorepo (no tests), run the Python package tests, and
+  # verify the Docker image builds.
+  # ---------------------------------------------------------------------------
+  build:
+    name: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.python-version }}
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: build vcell-cli-utils package
+        run: |
+          cd vcell-cli-utils
+          poetry install
+          poetry run python -m pytest
+
+      - name: build vcell-admin package
+        run: |
+          cd docker/swarm/vcell-admin
+          poetry install
+          poetry run python -m pytest
+
+      - name: build pythonCopasiOpt package
+        run: |
+          cd pythonCopasiOpt/vcell-opt
+          poetry install
+          poetry run python -m pytest
+
+      - name: build pythonVtk package
+        run: |
+          cd pythonVtk
+          poetry install
+          poetry run python -m pytest
+
+      - name: build vcutils package
+        run: |
+          cd python-utils
+          poetry install
+          poetry run python -m pytest
+
+      - name: build python-restclient package
+        run: |
+          cd python-restclient
+          poetry install
+          poetry run python -m pytest
+
+      - name: build vcelldata package
+        run: |
+          cd pythonData
+          poetry install
+          poetry run python -m pytest
+
+      - name: setup java 17 with maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Maven build (compile, no tests)
+        shell: bash
+        run: |
+          mvn -version
+          java -version
+          mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
+
+      - name: Test building of docker image
+        run: |
+          docker build \
+            --file Dockerfile \
+            .
+
+  # ---------------------------------------------------------------------------
+  # Fast unit tests (self-compiling). Some Fast tests shell out to the poetry
+  # Python envs (OMEX validation, VTK, CoPaSi opt) and the HDF5 CLI, so those
+  # must be set up here just as the long-proven combined job did.
+  # ---------------------------------------------------------------------------
+  fast-tests:
+    name: CI-Test-group-Fast
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set Docker API version workaround
+        run: echo "api.version=1.44" >> ~/.docker-java.properties
+
+      - name: Install hdf5 tools needed for testing
+        run: sudo apt -y update && sudo apt -y install hdf5-tools
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.python-version }}
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      # poetry envs invoked by Fast tests at runtime (via `poetry run ...`).
+      - name: Install python package envs
+        run: |
+          (cd vcell-cli-utils && poetry install)
+          (cd pythonCopasiOpt/vcell-opt && poetry install)
+          (cd pythonVtk && poetry install)
+          (cd python-utils && poetry install)
+          (cd python-restclient && poetry install)
+          (cd pythonData && poetry install)
+          (cd docker/swarm/vcell-admin && poetry install)
+
+      - name: setup java 17 with maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Maven build and run Fast tests
+        shell: bash
+        run: |
+          mvn -version
+          java -version
+          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="Fast"
+
+  # ---------------------------------------------------------------------------
+  # Quarkus / vcell-rest tests + OpenAPI spec validation (self-compiling).
+  # ---------------------------------------------------------------------------
+  quarkus-tests:
+    name: CI-Test-group-Quarkus
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set Docker API version workaround
+        run: echo "api.version=1.44" >> ~/.docker-java.properties
+
+      - name: setup java 17 with maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Maven build, validate OpenAPI spec, run Quarkus tests
+        shell: bash
+        run: |
+          mvn -version
+          java -version
+          mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
+          ./tools/validate-openapi-spec.sh
+          cd vcell-rest
+          mvn test

@@ -1,0 +1,121 @@
+name: Regression
+
+# Heavy integration suites (MathGen/SBML/SEDML_*/BSTS). Deliberately NOT run on
+# ordinary pushes - that is what keeps the fast lane (ci.yml) fast.
+#
+# Runs when:
+#   * a PR is marked ready-for-review (early signal that the full suite passes),
+#   * in the merge queue (the authoritative gate before landing on master),
+#   * nightly on master (drift backstop),
+#   * on demand via "Run workflow" (all groups or a single one).
+#
+# Note: pushing new commits to an already-ready PR does NOT re-run this (only
+# the ready_for_review transition does). The merge queue re-runs the full suite
+# on the actual merge commit, so that is the real gate; use "Run workflow" or
+# re-open-as-draft/ready if you want an interim run. This keeps ready PRs from
+# paying 20-40 min on every commit.
+#
+# These jobs compile the monorepo themselves (mvn install -Dgroups=...) rather
+# than reusing ci.yml's build artifact: the suites are dominated by test time,
+# not compile time, and a self-contained job avoids a second "build" check that
+# would collide with ci.yml's in the merge queue.
+
+on:
+  pull_request:
+    types: [ready_for_review]
+    branches: [master]
+  merge_group:
+  schedule:
+    # nightly full regression on master (07:00 UTC)
+    - cron: '0 7 * * *'
+  # Manual on-demand run: all groups (default) or a single one.
+  workflow_dispatch:
+    inputs:
+      test-group:
+        description: 'Regression group to run'
+        type: choice
+        default: all
+        options:
+          - all
+          - MathGen_IT
+          - SBML_IT
+          - SEDML_SBML_IT
+          - SEDML_VCML_IT
+          - BSTS_IT
+
+concurrency:
+  group: regression-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  python-version: "3.10"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Compute the matrix: the full 5-group list, or a single group when a manual
+  # dispatch selects one.
+  # ---------------------------------------------------------------------------
+  prepare-regression:
+    name: prepare regression matrix
+    runs-on: ubuntu-22.04
+    outputs:
+      groups: ${{ steps.compute.outputs.groups }}
+    steps:
+      - name: Compute regression group matrix
+        id: compute
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.test-group }}" != "all" ]; then
+            echo 'groups=["${{ inputs.test-group }}"]' >> "$GITHUB_OUTPUT"
+          else
+            echo 'groups=["MathGen_IT","SBML_IT","SEDML_SBML_IT","SEDML_VCML_IT","BSTS_IT"]' >> "$GITHUB_OUTPUT"
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Heavy integration suites, one job per group. Each compiles + runs its group.
+  # ---------------------------------------------------------------------------
+  regression-tests:
+    name: CI-Test-group-${{ matrix.test-group }}
+    runs-on: ubuntu-22.04
+    needs: prepare-regression
+    strategy:
+      matrix:
+        test-group: ${{ fromJSON(needs.prepare-regression.outputs.groups) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set Docker API version workaround
+        run: echo "api.version=1.44" >> ~/.docker-java.properties
+
+      - name: Install hdf5 tools needed for testing
+        run: sudo apt -y update && sudo apt -y install hdf5-tools
+
+      # Several IT groups (SED-ML, BSTS) shell out to the Python CLI utils.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.python-version }}
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: build vcell-cli-utils package
+        run: |
+          cd vcell-cli-utils
+          poetry install
+
+      - name: setup java 17 with maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Maven build and run regression group ${{ matrix.test-group }}
+        shell: bash
+        run: |
+          mvn -version
+          java -version
+          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="${{ matrix.test-group }}"
