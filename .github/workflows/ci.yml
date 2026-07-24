@@ -172,12 +172,20 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
+      # Run the Fast tests with JUnit class-level parallelism (methods within a
+      # class stay on one thread - safest). Enabled via -D system properties so
+      # it applies ONLY to this Fast run; the regression suites run a separate
+      # command and stay sequential.
       - name: Maven build and run Fast tests
         shell: bash
         run: |
           mvn -version
           java -version
-          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="Fast"
+          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="Fast" \
+            -Djunit.jupiter.execution.parallel.enabled=true \
+            -Djunit.jupiter.execution.parallel.mode.default=same_thread \
+            -Djunit.jupiter.execution.parallel.mode.classes.default=concurrent \
+            -Djunit.jupiter.execution.parallel.config.strategy=dynamic
 
   # ---------------------------------------------------------------------------
   # Quarkus / vcell-rest tests + OpenAPI spec validation (self-compiling).
