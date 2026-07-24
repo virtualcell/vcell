@@ -46,6 +46,14 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
+      # Cache the poetry virtualenvs so the per-package `poetry install` calls
+      # below are near-instant no-ops on a hit (keyed on the lockfiles).
+      - name: Cache poetry virtualenvs
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: poetry-venvs-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
       - name: build vcell-cli-utils package
         run: |
           cd vcell-cli-utils
@@ -112,32 +120,24 @@ jobs:
   # Fast unit tests (self-compiling). Some Fast tests shell out to the poetry
   # Python envs (OMEX validation, VTK, CoPaSi opt) and the HDF5 CLI, so those
   # must be set up here just as the long-proven combined job did.
+  #
+  # (A per-module split was tried and reverted: `-pl <modules> -am` re-runs the
+  # dependency modules' tests, so every shard still ran vcell-core's tests, and
+  # vcell-core dominates the Fast time regardless - the split made it slower.)
   # ---------------------------------------------------------------------------
-  # Fast unit tests, split across two runners by module so the fast lane stays
-  # under ~5-6 min. Scoped with -pl <modules> -am so each shard compiles only
-  # what it needs; test time (not compile) is the bulk, and the split halves it.
-  # The fast-gate job below aggregates both shards under the stable required
-  # check name "CI-Test-group-Fast".
   fast-tests:
-    name: CI-Test-group-Fast-${{ matrix.name }}
+    name: CI-Test-group-Fast
     runs-on: ubuntu-22.04
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          # vcell-core holds ~60% of the Fast tests; give it its own shard.
-          - name: core
-            modules: vcell-core
-          - name: other
-            modules: vcell-util,vcell-math,vcell-server,vcell-cli,vcell-client,vcell-admin,vcell-apiclient
     steps:
       - uses: actions/checkout@v4
 
       - name: Set Docker API version workaround
         run: echo "api.version=1.44" >> ~/.docker-java.properties
 
+      # No `apt update` - the runner's package lists are fresh enough for this,
+      # and the update refresh is the slow part.
       - name: Install hdf5 tools needed for testing
-        run: sudo apt -y update && sudo apt -y install hdf5-tools
+        run: sudo apt-get -y install hdf5-tools
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -147,6 +147,12 @@ jobs:
 
       - name: Install Dependencies
         run: pip install -r requirements.txt
+
+      - name: Cache poetry virtualenvs
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: poetry-venvs-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
 
       # poetry envs invoked by Fast tests at runtime (via `poetry run ...`).
       - name: Install python package envs
@@ -166,34 +172,12 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
-      - name: Maven build and run Fast tests (${{ matrix.name }})
+      - name: Maven build and run Fast tests
         shell: bash
         run: |
           mvn -version
           java -version
-          mvn --batch-mode clean install dependency:copy-dependencies \
-            -pl ${{ matrix.modules }} -am -Dmaven.dependency.analyze.skip=true \
-            -Dgroups="Fast"
-
-  # Aggregate gate: one stable required check ("CI-Test-group-Fast") that passes
-  # only if both Fast shards passed, so the shard split can change without
-  # touching branch-protection rules.
-  fast-gate:
-    name: CI-Test-group-Fast
-    runs-on: ubuntu-22.04
-    needs: fast-tests
-    if: ${{ always() }}
-    steps:
-      - name: Verify all Fast shards passed
-        shell: bash
-        run: |
-          result="${{ needs.fast-tests.result }}"
-          echo "fast-tests result: $result"
-          if [ "$result" != "success" ]; then
-            echo "One or more Fast shards did not succeed."
-            exit 1
-          fi
-          echo "All Fast shards passed."
+          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="Fast"
 
   # ---------------------------------------------------------------------------
   # Quarkus / vcell-rest tests + OpenAPI spec validation (self-compiling).
