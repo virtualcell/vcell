@@ -1,4 +1,5 @@
 package cbit.vcell.message.server.htc;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import cbit.vcell.messaging.db.SimulationJobTable;
 import cbit.vcell.server.HtcJobID;
@@ -17,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
  * {@link HtcJobID#equals(Object)} and {@link HtcJobID#hashCode()}
  */
 @Tag("Fast")
+@ResourceLock("vcellGlobalConfig")
 public class JobIdTest {
 
 	Random r = new Random( );

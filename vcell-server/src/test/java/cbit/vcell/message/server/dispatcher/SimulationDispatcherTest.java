@@ -1,4 +1,5 @@
 package cbit.vcell.message.server.dispatcher;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import cbit.vcell.math.MathException;
 import cbit.vcell.message.VCMessagingConstants;
@@ -27,6 +28,7 @@ import java.io.StringWriter;
 import java.sql.SQLException;
 
 @Tag("Fast")
+@ResourceLock("vcellGlobalConfig")
 public class SimulationDispatcherTest {
     public static ExtendedLogger lg = LoggerContext.getContext().getLogger(SimulationDispatcher.class);
     private final static User testUser = DispatcherTestUtils.alice;

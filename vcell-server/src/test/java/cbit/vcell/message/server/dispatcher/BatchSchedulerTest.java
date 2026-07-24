@@ -1,4 +1,5 @@
 package cbit.vcell.message.server.dispatcher;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import cbit.vcell.message.server.dispatcher.BatchScheduler.ActiveJob;
 import cbit.vcell.message.server.dispatcher.BatchScheduler.SchedulerDecisions;
@@ -24,6 +25,7 @@ import static cbit.vcell.message.server.dispatcher.BatchScheduler.SchedulerDecis
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @Tag("Fast")
+@ResourceLock("vcellGlobalConfig")
 public class BatchSchedulerTest {
 
 	VCellServerID relSite = VCellServerID.getServerID("REL");

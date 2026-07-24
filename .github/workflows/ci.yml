@@ -173,9 +173,11 @@ jobs:
           cache: 'maven'
 
       # Run the Fast tests with JUnit class-level parallelism (methods within a
-      # class stay on one thread - safest). Enabled via -D system properties so
-      # it applies ONLY to this Fast run; the regression suites run a separate
-      # command and stay sequential.
+      # class stay on one thread). Enabled via -D system properties so it applies
+      # ONLY to this Fast run; the regression suites run a separate command and
+      # stay sequential. Tests that mutate global config (PropertyLoader / system
+      # properties) carry @ResourceLock("vcellGlobalConfig") so they serialize
+      # among themselves while everything else parallelizes.
       - name: Maven build and run Fast tests
         shell: bash
         run: |
@@ -186,6 +188,17 @@ jobs:
             -Djunit.jupiter.execution.parallel.mode.default=same_thread \
             -Djunit.jupiter.execution.parallel.mode.classes.default=concurrent \
             -Djunit.jupiter.execution.parallel.config.strategy=dynamic
+
+      # Record per-test timing so the slowest Fast tests can be identified if a
+      # further speedup is wanted. Uploaded even on failure.
+      - name: Upload surefire timing reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-fast
+          path: '**/target/surefire-reports/*.xml'
+          retention-days: 14
+          if-no-files-found: warn
 
   # ---------------------------------------------------------------------------
   # Quarkus / vcell-rest tests + OpenAPI spec validation (self-compiling).

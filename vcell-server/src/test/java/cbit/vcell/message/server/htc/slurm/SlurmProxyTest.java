@@ -1,4 +1,5 @@
 package cbit.vcell.message.server.htc.slurm;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import cbit.vcell.messaging.server.SimulationTask;
 import cbit.vcell.parser.ExpressionException;
@@ -25,6 +26,7 @@ import static cbit.vcell.message.server.htc.HtcProxy.toUnixStyleText;
 
 
 @Tag("Fast")
+@ResourceLock("vcellGlobalConfig")
 public class SlurmProxyTest {
 
 	private final HashMap<String,String> originalProperties = new LinkedHashMap<>();
