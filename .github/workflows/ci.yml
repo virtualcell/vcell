@@ -109,13 +109,41 @@ jobs:
             .
 
   # ---------------------------------------------------------------------------
-  # Fast unit tests (self-compiling).
+  # Fast unit tests (self-compiling). Some Fast tests shell out to the poetry
+  # Python envs (OMEX validation, VTK, CoPaSi opt) and the HDF5 CLI, so those
+  # must be set up here just as the long-proven combined job did.
   # ---------------------------------------------------------------------------
   fast-tests:
     name: CI-Test-group-Fast
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set Docker API version workaround
+        run: echo "api.version=1.44" >> ~/.docker-java.properties
+
+      - name: Install hdf5 tools needed for testing
+        run: sudo apt -y update && sudo apt -y install hdf5-tools
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.python-version }}
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      # poetry envs invoked by Fast tests at runtime (via `poetry run ...`).
+      - name: Install python package envs
+        run: |
+          (cd vcell-cli-utils && poetry install)
+          (cd pythonCopasiOpt/vcell-opt && poetry install)
+          (cd pythonVtk && poetry install)
+          (cd python-utils && poetry install)
+          (cd python-restclient && poetry install)
+          (cd pythonData && poetry install)
+          (cd docker/swarm/vcell-admin && poetry install)
 
       - name: setup java 17 with maven cache
         uses: actions/setup-java@v4
