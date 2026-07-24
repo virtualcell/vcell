@@ -37,6 +37,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTree;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
@@ -61,6 +62,7 @@ public final class SwingInspector {
 	private static final int MAX_TABLE_ROWS = 25;
 	private static final int MAX_TABLE_COLS = 15;
 	private static final int MAX_LIST_ITEMS = 50;
+	private static final int MAX_TREE_ROWS = 100;
 
 	private SwingInspector() {
 	}
@@ -239,7 +241,34 @@ public final class SwingInspector {
 			sb.append("],\"truncated\":").append(size > shown).append('}');
 		} else if (c instanceof JTable) {
 			appendTable(sb, (JTable) c);
+		} else if (c instanceof JTree) {
+			appendTree(sb, (JTree) c);
 		}
+	}
+
+	private static void appendTree(StringBuilder sb, JTree t) {
+		int rows = t.getRowCount();
+		int maxR = Math.min(rows, MAX_TREE_ROWS);
+		sb.append(",\"tree\":{\"rowCount\":").append(rows);
+		sb.append(",\"selectedRow\":").append(t.getMinSelectionRow());
+		sb.append(",\"rows\":[");
+		for (int r = 0; r < maxR; r++) {
+			if (r > 0) {
+				sb.append(',');
+			}
+			javax.swing.tree.TreePath path = t.getPathForRow(r);
+			String text;
+			try {
+				text = String.valueOf(path.getLastPathComponent());
+			} catch (Exception e) {
+				text = "?";
+			}
+			sb.append("{\"row\":").append(r);
+			sb.append(",\"depth\":").append(path.getPathCount() - 1);
+			sb.append(",\"expanded\":").append(t.isExpanded(r));
+			sb.append(",\"text\":\"").append(escape(truncate(text))).append("\"}");
+		}
+		sb.append("],\"truncated\":").append(rows > maxR).append('}');
 	}
 
 	private static void appendTable(StringBuilder sb, JTable t) {
@@ -476,7 +505,10 @@ public final class SwingInspector {
 	// ---------------------------------------------------------------------
 
 	/**
-	 * Capture the on-screen pixels of a window to a PNG.
+	 * Render a window to a PNG by asking Swing to paint it into an off-screen
+	 * buffer ({@link Component#printAll}). Unlike a Robot screen grab this shows
+	 * the window's own content even when other applications overlap it, and it
+	 * does not require the window to be front-most.
 	 *
 	 * @param windowIndex index into {@link #showingWindows()}, or -1 for the
 	 *                    active/focused window
@@ -487,7 +519,7 @@ public final class SwingInspector {
 		if (GraphicsEnvironment.isHeadless()) {
 			throw new IllegalStateException("cannot screenshot in a headless environment");
 		}
-		final Rectangle bounds = onEdt(() -> {
+		final BufferedImage img = onEdt(() -> {
 			List<Window> windows = new ArrayList<>();
 			for (Window w : Window.getWindows()) {
 				if (w.isShowing()) {
@@ -508,13 +540,22 @@ public final class SwingInspector {
 					target = windows.get(windows.size() - 1);
 				}
 			}
-			return target == null ? null : target.getBounds();
+			if (target == null || target.getWidth() <= 0 || target.getHeight() <= 0) {
+				return null;
+			}
+			BufferedImage buf = new BufferedImage(target.getWidth(), target.getHeight(), BufferedImage.TYPE_INT_ARGB);
+			java.awt.Graphics2D g = buf.createGraphics();
+			try {
+				target.printAll(g);
+			} finally {
+				g.dispose();
+			}
+			return buf;
 		});
-		if (bounds == null) {
+		if (img == null) {
 			throw new IllegalStateException("no showing window to capture (index=" + windowIndex + ")");
 		}
 		outDir.mkdirs();
-		BufferedImage img = new Robot().createScreenCapture(bounds);
 		File out = new File(outDir, "vcell-window-" + (windowIndex < 0 ? "active" : windowIndex) + ".png");
 		ImageIO.write(img, "png", out);
 		return out;

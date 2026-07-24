@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.logging.ConsoleCapture;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
@@ -47,6 +48,7 @@ import com.sun.net.httpserver.HttpServer;
  *   GET /setText?path=..&amp;text=..[&amp;enter=true]  -&gt; JSON {"set": true|false}
  *   GET /selectTab?path=..&amp;index=N            -&gt; JSON {"selected": true|false}
  *   GET /listeners?path=0/3/2   -&gt; JSON, registered listeners of the component
+ *   GET /log[?lines=N]          -&gt; text/plain tail of the client's real log
  * </pre>
  *
  * Example: {@code curl -s localhost:9123/tree?maxDepth=6 | jq}
@@ -106,6 +108,14 @@ public final class SwingDebugBridge {
 			s.createContext("/setText", wrap(SwingDebugBridge::handleSetText));
 			s.createContext("/selectTab", wrap(SwingDebugBridge::handleSelectTab));
 			s.createContext("/listeners", wrap(SwingDebugBridge::handleListeners));
+			s.createContext("/log", ex -> {
+				try {
+					respond(ex, 200, "text/plain; charset=utf-8", handleLog(ex).getBytes(StandardCharsets.UTF_8));
+				} catch (Exception e) {
+					LG.error("debug bridge /log error", e);
+					respond(ex, 500, "text/plain", String.valueOf(e.getMessage()).getBytes(StandardCharsets.UTF_8));
+				}
+			});
 			// small pool: a request that blocks on a modal dialog must not wedge /health and /screenshot
 			s.setExecutor(java.util.concurrent.Executors.newFixedThreadPool(4, r -> {
 				Thread t = new Thread(r, "swing-debug-bridge");
@@ -186,6 +196,24 @@ public final class SwingDebugBridge {
 		boolean commit = Boolean.parseBoolean(q.getOrDefault("enter", "false"));
 		boolean ok = SwingInspector.setText(path, text, commit);
 		return "{\"set\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	/**
+	 * Tail of the client's real log. VCellClientMain redirects System.out/err
+	 * to {@code <vcellHome>/logs/vcellrun_<site>.log} via {@link ConsoleCapture},
+	 * so a launcher that captures the process's stdout only sees pre-redirect
+	 * lines — exceptions, login-flow progress, and UNCAUGHT EXCEPTION dumps all
+	 * land in the redirected file this endpoint serves.
+	 */
+	private static String handleLog(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		int lines = q.containsKey("lines") ? Integer.parseInt(q.get("lines")) : 200;
+		ConsoleCapture cc = ConsoleCapture.getInstance();
+		if (!cc.isRedirectedStandardOutErr()) {
+			return "(stdout/stderr not redirected; nothing captured)";
+		}
+		ConsoleCapture.CurrentContent content = cc.getLastLines(lines);
+		return content.isAvailable ? content.content : "(log content unavailable)";
 	}
 
 	private static String handleListeners(HttpExchange ex) {
