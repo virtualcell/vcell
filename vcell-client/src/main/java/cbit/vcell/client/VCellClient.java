@@ -201,7 +201,9 @@ public void startClient(final VCDocument startupDoc, final ClientServerInfo clie
 		    if (currWindowManager != null) {
 		    	hashTable.put("currWindowManager", currWindowManager);
 		    }
-		    
+
+		    // dev-only introspection surface; no-op unless -Dvcell.debugBridge=true
+		    org.vcell.client.debug.SwingDebugBridge.startIfEnabled();
 		}
 	};
 	
