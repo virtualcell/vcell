@@ -13,12 +13,20 @@ name: Regression
 # the ready_for_review transition does). The merge queue re-runs the full suite
 # on the actual merge commit, so that is the real gate; use "Run workflow" or
 # re-open-as-draft/ready if you want an interim run. This keeps ready PRs from
-# paying 20-40 min on every commit.
+# paying the full time on every commit.
 #
-# These jobs compile the monorepo themselves (mvn install -Dgroups=...) rather
-# than reusing ci.yml's build artifact: the suites are dominated by test time,
-# not compile time, and a self-contained job avoids a second "build" check that
-# would collide with ci.yml's in the merge queue.
+# The slow groups are single parameterized tests iterating over the whole VCML
+# model suite, so they are SHARDED across parallel runners: each shard runs a
+# stride-partitioned slice of the cases (org.vcell.test.TestShard reads
+# -Dtest.shard.count / -Dtest.shard.index). This brings the wall-clock of the
+# slowest group from ~30 min down under ~10 min. A single "regression-gate" job
+# aggregates all shards so the required-status-check name stays stable
+# regardless of how the shard counts change.
+#
+# Each job compiles the monorepo itself (mvn install -Dgroups=...) rather than
+# reusing ci.yml's build artifact: the suites are dominated by test time, and a
+# self-contained job avoids a second "build" check colliding with ci.yml's in
+# the merge queue.
 
 on:
   pull_request:
@@ -52,35 +60,60 @@ env:
 
 jobs:
   # ---------------------------------------------------------------------------
-  # Compute the matrix: the full 5-group list, or a single group when a manual
-  # dispatch selects one.
+  # Compute the shard matrix. Slow groups are split into multiple shards; fast
+  # groups run as a single shard. A manual dispatch may narrow to one group.
+  # Each entry: {group, shard_index, shard_count, name}. Shard counts are sized
+  # so no shard exceeds ~10 min (compile ~4 min + tests): the slowest groups
+  # (SEDML_SBML ~31 min, MathGen ~27 min) get 5 shards, SEDML_VCML ~16 min gets
+  # 3, and SBML/BSTS run whole.
   # ---------------------------------------------------------------------------
   prepare-regression:
     name: prepare regression matrix
     runs-on: ubuntu-22.04
     outputs:
-      groups: ${{ steps.compute.outputs.groups }}
+      matrix: ${{ steps.compute.outputs.matrix }}
     steps:
-      - name: Compute regression group matrix
+      - name: Compute regression shard matrix
         id: compute
         shell: bash
+        env:
+          SELECTED: ${{ github.event_name == 'workflow_dispatch' && inputs.test-group || 'all' }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.test-group }}" != "all" ]; then
-            echo 'groups=["${{ inputs.test-group }}"]' >> "$GITHUB_OUTPUT"
-          else
-            echo 'groups=["MathGen_IT","SBML_IT","SEDML_SBML_IT","SEDML_VCML_IT","BSTS_IT"]' >> "$GITHUB_OUTPUT"
-          fi
+          python3 - "$SELECTED" <<'PY' >> "$GITHUB_OUTPUT"
+          import json, sys
+          selected = sys.argv[1]
+          shard_counts = {
+              "MathGen_IT": 5,
+              "SEDML_SBML_IT": 5,
+              "SEDML_VCML_IT": 3,
+              "SBML_IT": 1,
+              "BSTS_IT": 1,
+          }
+          include = []
+          for group, count in shard_counts.items():
+              if selected != "all" and group != selected:
+                  continue
+              for i in range(count):
+                  name = group if count == 1 else f"{group}-{i+1}of{count}"
+                  include.append({
+                      "group": group,
+                      "shard_index": i,
+                      "shard_count": count,
+                      "name": name,
+                  })
+          print("matrix=" + json.dumps({"include": include}))
+          PY
 
   # ---------------------------------------------------------------------------
-  # Heavy integration suites, one job per group. Each compiles + runs its group.
+  # Heavy integration suites, one job per (group, shard). Each compiles + runs
+  # its shard's slice of the group.
   # ---------------------------------------------------------------------------
   regression-tests:
-    name: CI-Test-group-${{ matrix.test-group }}
+    name: CI-Test-group-${{ matrix.name }}
     runs-on: ubuntu-22.04
     needs: prepare-regression
     strategy:
-      matrix:
-        test-group: ${{ fromJSON(needs.prepare-regression.outputs.groups) }}
+      matrix: ${{ fromJSON(needs.prepare-regression.outputs.matrix) }}
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
@@ -113,9 +146,34 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
-      - name: Maven build and run regression group ${{ matrix.test-group }}
+      - name: Maven build and run ${{ matrix.name }}
         shell: bash
         run: |
           mvn -version
           java -version
-          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="${{ matrix.test-group }}"
+          mvn --batch-mode clean install dependency:copy-dependencies \
+            -Dgroups="${{ matrix.group }}" \
+            -Dtest.shard.count=${{ matrix.shard_count }} \
+            -Dtest.shard.index=${{ matrix.shard_index }}
+
+  # ---------------------------------------------------------------------------
+  # Aggregate gate: succeeds only if every shard succeeded. This is the single
+  # required status check for regression, so shard counts can change without
+  # touching branch-protection rules.
+  # ---------------------------------------------------------------------------
+  regression-gate:
+    name: regression-gate
+    runs-on: ubuntu-22.04
+    needs: regression-tests
+    if: ${{ always() }}
+    steps:
+      - name: Verify all regression shards passed
+        shell: bash
+        run: |
+          result="${{ needs.regression-tests.result }}"
+          echo "regression-tests result: $result"
+          if [ "$result" != "success" ]; then
+            echo "One or more regression shards did not succeed."
+            exit 1
+          fi
+          echo "All regression shards passed."

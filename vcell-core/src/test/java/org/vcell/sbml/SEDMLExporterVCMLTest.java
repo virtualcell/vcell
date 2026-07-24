@@ -66,7 +66,7 @@ public class SEDMLExporterVCMLTest extends SEDMLExporterCommon {
 				!t.equals("biomodel_165181964.vcml"); // skip this test because it causes exception in SEDML processing
 		Stream<TestCase> vcml_test_cases = Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_VCML).map(fname -> new TestCase(fname, ModelFormat.VCML));
 		List<TestCase> testCases = vcml_test_cases.collect(Collectors.toList());
-		return testCases;
+		return org.vcell.test.TestShard.shard(testCases);
 //		return Arrays.asList(
 //				new TestCase("biomodel_123269393.vcml", ModelFormat.VCML),
 //				new TestCase("biomodel_188880263.vcml", ModelFormat.VCML),

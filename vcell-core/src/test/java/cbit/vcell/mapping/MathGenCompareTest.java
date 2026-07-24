@@ -323,7 +323,7 @@ public class MathGenCompareTest {
 				appTestCases.add(test_case_name);
 			}
 		}
-		return appTestCases;
+		return org.vcell.test.TestShard.shard(appTestCases);
 //		return Arrays.asList("biomodel_12522025.vcml:purkinje9");
 	}
 

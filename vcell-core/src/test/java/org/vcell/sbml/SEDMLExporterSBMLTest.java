@@ -326,7 +326,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 				!largeFileSet().contains(t) &&
 				!slowTestSet().contains(t);
 		Stream<TestCase> sbml_test_cases = Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_SBML).map(fName -> new TestCase(fName, ModelFormat.SBML));
-		return sbml_test_cases.collect(Collectors.toList());
+		return org.vcell.test.TestShard.shard(sbml_test_cases.collect(Collectors.toList()));
 	}
 
 	@ParameterizedTest

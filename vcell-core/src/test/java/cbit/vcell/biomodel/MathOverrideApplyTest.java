@@ -137,7 +137,7 @@ public class MathOverrideApplyTest {
 				}
 			}
 		}
-		return appTestCases;
+		return org.vcell.test.TestShard.shard(appTestCases);
 //		return Arrays.asList("biomodel_34826524.vcml:NWasp Activation Cap=2");
 	}
 
