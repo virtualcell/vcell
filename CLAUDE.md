@@ -116,11 +116,22 @@ npm run build_prod # Production build
 
 ## CI/CD
 
-GitHub Actions (`.github/workflows/ci_cd.yml`):
+GitHub Actions, split by concern:
 
-1. **CI-Build** — Maven build + Docker image test
-2. **CI-Test** — Parallel test groups: Fast, MathGen_IT, SBML_IT, SEDML_SBML_IT, SEDML_VCML_IT, BSTS_IT, Quarkus
-3. **CD** — Docker push to `ghcr.io` on release
+- **`ci.yml`** (fast lane, ~4 min) — every push + merge queue: `build` (compile + Docker image test + Python package tests), `CI-Test-group-Fast` (JUnit class-level parallel, sharded core/other), `CI-Test-group-Quarkus`.
+- **`regression.yml`** (~9 min) — heavy integration suites (MathGen/SBML/SEDML_*/BSTS), sharded, gated by `regression-gate`. Runs on: a PR marked **ready-for-review**, the **merge queue** (`merge_group`), the **nightly** schedule, and manual **`workflow_dispatch`** (with an `include-slow` option for the slow cases the merge gate skips). NOT on ordinary pushes.
+- **`cd.yml`** — Docker push to `ghcr.io` on release.
+- **`codeql-analysis.yml`** — security scan on push/PR to `master`.
+
+**`master` protection** (a ruleset): 1 required review; required checks `build` / `CI-Test-group-Fast` / `CI-Test-group-Quarkus` / `regression-gate`; a merge queue that runs the full suite before landing; force-pushes blocked.
+
+**After an admin-merge to `master`** (`gh pr merge --admin`, used to bypass the 1-review requirement when no reviewer is available): the merge queue is skipped, so `regression.yml` does **not** run automatically (only `CI` + `CodeQL` do). **Manually kick it off:**
+
+```bash
+gh workflow run regression.yml --ref master
+```
+
+Normal team merges go through the queue and gate on regression automatically — this manual step is only needed after an admin (queue-bypassing) merge.
 
 ## Validation Checklist
 
