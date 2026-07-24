@@ -165,6 +165,20 @@ jobs:
             -Dtest.shard.count=${{ matrix.shard_count }} \
             -Dtest.shard.index=${{ matrix.shard_index }}
 
+      # Surefire writes per-test-case timing (one row per parameterized model)
+      # to these XMLs. Uploading them every run gives a full, current record of
+      # every test's cost, so shards can be rebalanced from real data and new
+      # slow tests spotted - without ever reproducing a shard by hand. Uploaded
+      # even on failure so a timed-out/failed shard is still analyzable.
+      - name: Upload surefire timing reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-${{ matrix.name }}
+          path: '**/target/surefire-reports/*.xml'
+          retention-days: 14
+          if-no-files-found: warn
+
   # ---------------------------------------------------------------------------
   # Aggregate gate: succeeds only if every shard succeeded. This is the single
   # required status check for regression, so shard counts can change without
