@@ -117,6 +117,9 @@ public interface LWNamespace {
      * @return or null
      */
     public static <T> T findOwnerOfType(Class<? extends T> clzz, Component swingParent) {
+        if (swingParent == null) {
+            return null;
+        }
         final Logger lg = LGHolder.LG;
         T t = CastingUtils.downcast(clzz, swingParent);
         if (t != null) {

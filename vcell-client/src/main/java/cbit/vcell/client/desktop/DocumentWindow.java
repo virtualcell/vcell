@@ -1612,7 +1612,10 @@ public class DocumentWindow extends LWTopFrame implements TopLevelWindow, Reconn
                 ClientServerInfo.createRemoteServerInfo(host, Integer.parseInt(port), pathPrefix, null));
 
         AsynchClientTask[] taskArray = new AsynchClientTask[]{task1a, task1b, task2};
-        ClientTaskDispatcher.dispatch(null, hash, taskArray);
+        // pass this window as the requester so a login failure (e.g. server
+        // unreachable) surfaces an error dialog parented to it, instead of a
+        // silent no-op with an unparented dialog
+        ClientTaskDispatcher.dispatch(this, hash, taskArray);
     }
 
 
