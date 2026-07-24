@@ -1,0 +1,122 @@
+name: CD
+
+# Release: build and push the biosimulators Docker image. Split into its own
+# file so it never appears as a skipped check on ordinary CI runs.
+
+on:
+  release:
+    types: [published, edited]
+
+env:
+  python-version: "3.10"
+
+jobs:
+  CD:
+    name: CD
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.python-version }}
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: build vcell-cli-utils package
+        run: |
+          cd vcell-cli-utils
+          poetry install
+          poetry run python -m pytest
+
+      - name: build vcell-admin package
+        run: |
+          cd docker/swarm/vcell-admin
+          poetry install
+          poetry run python -m pytest
+
+      - name: build pythonCopasiOpt package
+        run: |
+          cd pythonCopasiOpt/vcell-opt
+          poetry install
+          poetry run python -m pytest
+
+      - name: build pythonVtk package
+        run: |
+          cd pythonVtk
+          poetry install
+          poetry run python -m pytest
+
+      - name: build vcutils package
+        run: |
+          cd python-utils
+          poetry install
+          poetry run python -m pytest
+
+      - name: build python-restclient package
+        run: |
+          cd python-restclient
+          poetry install
+          poetry run python -m pytest
+
+      - name: build vcelldata package
+        run: |
+          cd pythonData
+          poetry install
+          poetry run python -m pytest
+
+      - name: setup java 17 with maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Get the VCell version from tags
+        id: version
+        run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
+
+      - name: Add Linux dependencies
+        shell: bash
+        run: |
+          mvn -version
+          java -version
+          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="Fast"
+
+      - name: Build Docker image and push with latest tag
+        run: |
+          set -ux
+          REVISION=$(git rev-parse HEAD)
+          CREATED=$(date --rfc-3339=seconds | sed 's/ /T/')
+          sed -i 's/_VC_VERSION_TAG_/${{steps.version.outputs.tag}}/g' biosimulators.json
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          docker build \
+            --no-cache \
+            --file Dockerfile \
+            --build-arg SIMULATOR_VERSION=${{steps.version.outputs.tag}} \
+            --tag ghcr.io/virtualcell/biosimulators_vcell:latest \
+            --label org.opencontainers.image.revision=${REVISION} \
+            --label org.opencontainers.image.created=${CREATED} \
+            --label org.opencontainers.image.version=${{steps.version.outputs.tag}} \
+            --label org.opencontainers.image.license=MIT \
+            .
+          docker tag ghcr.io/virtualcell/biosimulators_vcell:latest ghcr.io/virtualcell/biosimulators_vcell:${{steps.version.outputs.tag}}
+          docker push --all-tags ghcr.io/virtualcell/biosimulators_vcell
+      - name: Get release upload URL
+        id: get_url
+        uses: pdamianik/release-tag-to-upload-url-action@v1.0.1
+        with:
+          tag: ${{ steps.version.outputs.tag }}
+          token: ${{ github.token }}
+      - name: Upload edited specifications file
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.get_url.outputs.uploadUrl }}
+          asset_path: biosimulators.json
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}

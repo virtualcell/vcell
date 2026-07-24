@@ -1,0 +1,201 @@
+name: CI
+
+# Fast lane: runs on every push and in the merge queue. Build the monorepo
+# ONCE, then run the fast unit tests + Quarkus tests against the compiled
+# workspace (no recompile). The heavy regression suites live in regression.yml;
+# the release image build lives in cd.yml.
+#
+# Triggers are disjoint from regression.yml/cd.yml so the checks list stays
+# readable - a push shows exactly these three jobs, with nothing skipped.
+
+on:
+  push:
+    branches:
+      - '**'
+  merge_group:
+
+# Supersede in-flight runs for the same ref instead of piling them up.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  python-version: "3.10"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # BUILD (once): compile everything, run the Python package tests, verify the
+  # Docker image builds, and publish the compiled workspace for the test jobs.
+  # ---------------------------------------------------------------------------
+  build:
+    name: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.python-version }}
+          cache: "pip"
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      # Python package tests run here ONCE (previously duplicated in all 8 jobs).
+      - name: build vcell-cli-utils package
+        run: |
+          cd vcell-cli-utils
+          poetry install
+          poetry run python -m pytest
+
+      - name: build vcell-admin package
+        run: |
+          cd docker/swarm/vcell-admin
+          poetry install
+          poetry run python -m pytest
+
+      - name: build pythonCopasiOpt package
+        run: |
+          cd pythonCopasiOpt/vcell-opt
+          poetry install
+          poetry run python -m pytest
+
+      - name: build pythonVtk package
+        run: |
+          cd pythonVtk
+          poetry install
+          poetry run python -m pytest
+
+      - name: build vcutils package
+        run: |
+          cd python-utils
+          poetry install
+          poetry run python -m pytest
+
+      - name: build python-restclient package
+        run: |
+          cd python-restclient
+          poetry install
+          poetry run python -m pytest
+
+      - name: build vcelldata package
+        run: |
+          cd pythonData
+          poetry install
+          poetry run python -m pytest
+
+      - name: setup java 17 with maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      # -DskipTests compiles main AND test classes (and processes test resources)
+      # but does not RUN tests. Installs module jars into ~/.m2 so downstream
+      # surefire runs can resolve inter-module dependencies.
+      - name: Maven build (compile + install, no tests)
+        shell: bash
+        run: |
+          mvn -version
+          java -version
+          mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
+
+      - name: Test building of docker image
+        run: |
+          docker build \
+            --file Dockerfile \
+            .
+
+      # Package the compiled workspace for the test jobs. Timestamps are kept so
+      # Maven treats the classes as up-to-date and surefire:test won't recompile.
+      - name: Package compiled workspace
+        run: find . -type d -name target -prune -print0 | tar --posix --null -czf workspace-target.tar.gz --files-from -
+
+      - name: Upload compiled workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-target
+          path: workspace-target.tar.gz
+          retention-days: 1
+          if-no-files-found: error
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
+
+  # ---------------------------------------------------------------------------
+  # Fast unit tests. Reuses the compiled workspace; runs surefire directly so
+  # there is no recompile. Not --offline: the build job used -DskipTests, so
+  # surefire's JUnit-platform provider jar was never fetched into the cache and
+  # must be resolved here. Compiled classes + module jars come from the artifact.
+  # ---------------------------------------------------------------------------
+  fast-tests:
+    name: CI-Test-group-Fast
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup java 17 with maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Restore compiled workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace-target
+
+      - name: Unpack compiled workspace
+        run: tar -xzf workspace-target.tar.gz
+
+      - name: Run Fast tests
+        shell: bash
+        run: mvn --batch-mode surefire:test -Dgroups="Fast"
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
+
+  # ---------------------------------------------------------------------------
+  # Quarkus / vcell-rest tests + OpenAPI spec validation.
+  # ---------------------------------------------------------------------------
+  quarkus-tests:
+    name: CI-Test-group-Quarkus
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set Docker API version workaround
+        run: echo "api.version=1.44" >> ~/.docker-java.properties
+
+      - name: setup java 17 with maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Restore compiled workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace-target
+
+      - name: Unpack compiled workspace
+        run: tar -xzf workspace-target.tar.gz
+
+      - name: Validate OpenAPI spec
+        run: ./tools/validate-openapi-spec.sh
+
+      - name: Run Quarkus (vcell-rest) tests
+        shell: bash
+        run: mvn --batch-mode -pl vcell-rest surefire:test
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
