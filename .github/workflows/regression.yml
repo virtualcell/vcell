@@ -89,7 +89,7 @@ jobs:
           CORE = "vcell-core"
           groups = {
               "MathGen_IT":    {"count": 4, "module": CORE},
-              "SEDML_SBML_IT": {"count": 6, "module": CORE},
+              "SEDML_SBML_IT": {"count": 8, "module": CORE},
               "SEDML_VCML_IT": {"count": 2, "module": CORE},
               "SBML_IT":       {"count": 1, "module": CORE},
               "BSTS_IT":       {"count": 1, "module": "vcell-cli"},
