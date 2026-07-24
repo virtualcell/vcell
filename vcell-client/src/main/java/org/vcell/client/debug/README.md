@@ -26,7 +26,14 @@ tooling gets for free.
 
 ## Enable
 
-Add JVM args to your launch (IDE run config, or install4j vmoptions):
+Easiest, from a source build:
+
+```bash
+./vcell.sh --debug-bridge            # bridge on :9123
+./vcell.sh --debug-bridge=9200       # bridge on a custom port
+```
+
+Or add JVM args to any launch (IDE run config, or install4j vmoptions):
 
 ```
 -Dvcell.debugBridge=true
