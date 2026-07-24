@@ -133,8 +133,10 @@ jobs:
       - name: Set Docker API version workaround
         run: echo "api.version=1.44" >> ~/.docker-java.properties
 
+      # No `apt update` - the runner's package lists are fresh enough for this,
+      # and the update refresh is the slow part.
       - name: Install hdf5 tools needed for testing
-        run: sudo apt -y update && sudo apt -y install hdf5-tools
+        run: sudo apt-get -y install hdf5-tools
 
       # Several IT groups (SED-ML, BSTS) shell out to the Python CLI utils.
       - name: Set up Python
@@ -145,6 +147,12 @@ jobs:
 
       - name: Install Dependencies
         run: pip install -r requirements.txt
+
+      - name: Cache poetry virtualenvs
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: poetry-venvs-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
 
       - name: build vcell-cli-utils package
         run: |

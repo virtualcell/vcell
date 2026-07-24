@@ -46,6 +46,14 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
+      # Cache the poetry virtualenvs so the per-package `poetry install` calls
+      # below are near-instant no-ops on a hit (keyed on the lockfiles).
+      - name: Cache poetry virtualenvs
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: poetry-venvs-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+
       - name: build vcell-cli-utils package
         run: |
           cd vcell-cli-utils
@@ -109,21 +117,38 @@ jobs:
             .
 
   # ---------------------------------------------------------------------------
-  # Fast unit tests (self-compiling). Some Fast tests shell out to the poetry
-  # Python envs (OMEX validation, VTK, CoPaSi opt) and the HDF5 CLI, so those
-  # must be set up here just as the long-proven combined job did.
+  # Fast unit tests, split across two runners (vcell-core, which dominates, on
+  # its own; every other module on the second) and run with JUnit class-level
+  # parallelism. Some Fast tests shell out to the poetry Python envs (OMEX/VTK/
+  # CoPaSi) and the HDF5 CLI, so those are set up here.
+  #
+  # The split uses a TWO-STEP Maven invocation to avoid the earlier trap where
+  # `-pl <modules> -am` re-ran the dependency modules' tests: first compile the
+  # whole reactor once (install -DskipTests), then run ONLY this shard's
+  # modules' tests (test -pl <modules>, no -am). The fast-gate job aggregates
+  # both shards under the stable required check name "CI-Test-group-Fast".
   # ---------------------------------------------------------------------------
   fast-tests:
-    name: CI-Test-group-Fast
+    name: CI-Test-group-Fast-${{ matrix.name }}
     runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: core
+            modules: vcell-core
+          - name: other
+            modules: vcell-util,vcell-math,vcell-server,vcell-cli,vcell-client,vcell-admin,vcell-apiclient
     steps:
       - uses: actions/checkout@v4
 
       - name: Set Docker API version workaround
         run: echo "api.version=1.44" >> ~/.docker-java.properties
 
+      # No `apt update` - the runner's package lists are fresh enough for this,
+      # and the update refresh is the slow part.
       - name: Install hdf5 tools needed for testing
-        run: sudo apt -y update && sudo apt -y install hdf5-tools
+        run: sudo apt-get -y install hdf5-tools
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -133,6 +158,12 @@ jobs:
 
       - name: Install Dependencies
         run: pip install -r requirements.txt
+
+      - name: Cache poetry virtualenvs
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry/virtualenvs
+          key: poetry-venvs-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
 
       # poetry envs invoked by Fast tests at runtime (via `poetry run ...`).
       - name: Install python package envs
@@ -152,12 +183,53 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
-      - name: Maven build and run Fast tests
+      # Step 1: compile the whole reactor once (no tests). Step 2: run ONLY this
+      # shard's modules' Fast tests, with JUnit class-level parallelism (enabled
+      # via -D so it applies to the Fast run only; regression stays sequential).
+      # Tests that mutate global config carry @ResourceLock("vcellGlobalConfig")
+      # so they serialize among themselves while everything else parallelizes.
+      - name: Maven build and run Fast tests (${{ matrix.name }})
         shell: bash
         run: |
           mvn -version
           java -version
-          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="Fast"
+          mvn --batch-mode clean install -DskipTests dependency:copy-dependencies
+          mvn --batch-mode test -pl ${{ matrix.modules }} -Dgroups="Fast" \
+            -Djunit.jupiter.execution.parallel.enabled=true \
+            -Djunit.jupiter.execution.parallel.mode.default=same_thread \
+            -Djunit.jupiter.execution.parallel.mode.classes.default=concurrent \
+            -Djunit.jupiter.execution.parallel.config.strategy=dynamic
+
+      # Record per-test timing so the slowest Fast tests can be identified if a
+      # further speedup is wanted. Uploaded even on failure.
+      - name: Upload surefire timing reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports-fast-${{ matrix.name }}
+          path: '**/target/surefire-reports/*.xml'
+          retention-days: 14
+          if-no-files-found: warn
+
+  # Aggregate gate: one stable required check ("CI-Test-group-Fast") that passes
+  # only if both Fast shards passed, so the split can change without touching
+  # branch-protection rules.
+  fast-gate:
+    name: CI-Test-group-Fast
+    runs-on: ubuntu-22.04
+    needs: fast-tests
+    if: ${{ always() }}
+    steps:
+      - name: Verify all Fast shards passed
+        shell: bash
+        run: |
+          result="${{ needs.fast-tests.result }}"
+          echo "fast-tests result: $result"
+          if [ "$result" != "success" ]; then
+            echo "One or more Fast shards did not succeed."
+            exit 1
+          fi
+          echo "All Fast shards passed."
 
   # ---------------------------------------------------------------------------
   # Quarkus / vcell-rest tests + OpenAPI spec validation (self-compiling).

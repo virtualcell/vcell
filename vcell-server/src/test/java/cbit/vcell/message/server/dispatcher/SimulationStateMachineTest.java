@@ -1,4 +1,5 @@
 package cbit.vcell.message.server.dispatcher;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import cbit.rmi.event.WorkerEvent;
 import cbit.vcell.math.MathException;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.NoSuchElementException;
 
 @Tag("Fast")
+@ResourceLock("vcellGlobalConfig")
 public class SimulationStateMachineTest {
     private static final User testUser = DispatcherTestUtils.alice;
     private static final MockVCMessageSession testMessageSession = new MockVCMessageSession();

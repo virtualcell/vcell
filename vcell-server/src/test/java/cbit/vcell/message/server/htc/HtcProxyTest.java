@@ -1,4 +1,5 @@
 package cbit.vcell.message.server.htc;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import cbit.vcell.message.server.htc.HtcProxy.HtcJobInfo;
 import cbit.vcell.message.server.htc.HtcProxy.SimTaskInfo;
@@ -15,6 +16,7 @@ import static cbit.vcell.server.HtcJobID.BatchSystemType.SLURM;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("Fast")
+@ResourceLock("vcellGlobalConfig")
 public class HtcProxyTest {
 
 	@Test

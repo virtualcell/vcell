@@ -1,4 +1,5 @@
 package cbit.vcell.modeldb;
+import org.junit.jupiter.api.parallel.ResourceLock;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -6,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 @Tag("Fast")
+@ResourceLock("vcellGlobalConfig")
 public class PublicationTableTest {
 
     @Test
