@@ -319,6 +319,41 @@ public final class SwingInspector {
 		});
 	}
 
+	/**
+	 * Dump the listeners registered on the component at the given path as JSON:
+	 * action listeners (with their class names) plus counts of the generic
+	 * component/mouse listeners. Answers "is this control actually wired up?".
+	 */
+	public static String dumpListenersJson(final String path) {
+		return onEdt(() -> {
+			Component c = findByPath(path);
+			if (c == null) {
+				return "{\"error\":\"path did not resolve\"}";
+			}
+			StringBuilder sb = new StringBuilder(256);
+			sb.append('{');
+			kv(sb, "class", c.getClass().getName());
+			sb.append(',');
+			kv(sb, "name", String.valueOf(c.getName()));
+			if (c instanceof AbstractButton) {
+				sb.append(",\"actionListeners\":[");
+				java.awt.event.ActionListener[] als = ((AbstractButton) c).getActionListeners();
+				for (int i = 0; i < als.length; i++) {
+					if (i > 0) {
+						sb.append(',');
+					}
+					sb.append('"').append(escape(als[i].getClass().getName())).append('"');
+				}
+				sb.append(']');
+				sb.append(",\"actionCommand\":\"")
+						.append(escape(String.valueOf(((AbstractButton) c).getActionCommand()))).append('"');
+			}
+			sb.append(",\"mouseListeners\":").append(c.getMouseListeners().length);
+			sb.append('}');
+			return sb.toString();
+		});
+	}
+
 	/** Depth-first search for the first component whose {@link Component#getName()} matches. */
 	public static Component findByName(final String targetName) {
 		return onEdt(() -> {
@@ -362,10 +397,9 @@ public final class SwingInspector {
 			return false;
 		}
 		if (c instanceof AbstractButton) {
-			onEdt(() -> {
-				((AbstractButton) c).doClick();
-				return null;
-			});
+			// fire-and-forget: the action may open a modal dialog, which would
+			// block invokeAndWait (and with it the whole bridge) until dismissed
+			SwingUtilities.invokeLater(((AbstractButton) c)::doClick);
 			return true;
 		}
 		// non-button: synthesize a real mouse click at the component center

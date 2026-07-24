@@ -46,6 +46,7 @@ import com.sun.net.httpserver.HttpServer;
  *   GET /click?path=0/3/2       -&gt; JSON {"clicked": true|false}
  *   GET /setText?path=..&amp;text=..[&amp;enter=true]  -&gt; JSON {"set": true|false}
  *   GET /selectTab?path=..&amp;index=N            -&gt; JSON {"selected": true|false}
+ *   GET /listeners?path=0/3/2   -&gt; JSON, registered listeners of the component
  * </pre>
  *
  * Example: {@code curl -s localhost:9123/tree?maxDepth=6 | jq}
@@ -104,7 +105,13 @@ public final class SwingDebugBridge {
 			s.createContext("/click", wrap(SwingDebugBridge::handleClick));
 			s.createContext("/setText", wrap(SwingDebugBridge::handleSetText));
 			s.createContext("/selectTab", wrap(SwingDebugBridge::handleSelectTab));
-			s.setExecutor(null); // default single-threaded executor is fine for a debug surface
+			s.createContext("/listeners", wrap(SwingDebugBridge::handleListeners));
+			// small pool: a request that blocks on a modal dialog must not wedge /health and /screenshot
+			s.setExecutor(java.util.concurrent.Executors.newFixedThreadPool(4, r -> {
+				Thread t = new Thread(r, "swing-debug-bridge");
+				t.setDaemon(true);
+				return t;
+			}));
 			s.start();
 			server = s;
 			LG.warn("Swing debug bridge listening on http://127.0.0.1:{} (screenshots -> {})", port, outputDir());
@@ -179,6 +186,15 @@ public final class SwingDebugBridge {
 		boolean commit = Boolean.parseBoolean(q.getOrDefault("enter", "false"));
 		boolean ok = SwingInspector.setText(path, text, commit);
 		return "{\"set\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleListeners(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty()) {
+			return "{\"error\":\"missing 'path' query parameter\"}";
+		}
+		return SwingInspector.dumpListenersJson(path);
 	}
 
 	private static String handleSelectTab(HttpExchange ex) {

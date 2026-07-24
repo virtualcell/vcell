@@ -52,9 +52,13 @@ On startup you'll see a `WARN` log line: `Swing debug bridge listening on http:/
 | `GET /tree[?maxDepth=N]` | JSON: full component tree of every showing window |
 | `GET /screenshot[?window=N]` | JSON `{"path": "...png"}`; omit `window` for the active window |
 | `GET /click?path=0/3/2` | JSON `{"clicked": true\|false}` |
+| `GET /setText?path=&text=&enter=` | JSON `{"set": true\|false}` |
+| `GET /selectTab?path=&index=` | JSON `{"selected": true\|false}` |
+| `GET /listeners?path=0/3/2` | JSON: registered `ActionListener` classes, action command, mouse-listener count — "is this control actually wired up?" |
 
-Buttons/checkboxes are clicked via `doClick()` (no cursor movement); other
-components get a synthetic `Robot` click at their center.
+Buttons/checkboxes are clicked via `doClick()` posted with `invokeLater` (no
+cursor movement, and the request returns immediately even if the action opens a
+modal dialog); other components get a synthetic `Robot` click at their center.
 
 ## Typical loop
 
