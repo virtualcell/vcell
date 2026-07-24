@@ -142,7 +142,7 @@ public class MathOverrideApplyTest {
 	}
 
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{0}")
 	@MethodSource("testCases")
 	public void test_mathOverrideApply(String filename_colon_appname) throws Exception {
 		String[] tokens = filename_colon_appname.split(":");

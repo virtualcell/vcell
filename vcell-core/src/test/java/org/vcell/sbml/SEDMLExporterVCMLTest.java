@@ -79,7 +79,7 @@ public class SEDMLExporterVCMLTest extends SEDMLExporterCommon {
 //		);
 	}
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{0}")
 	@MethodSource("testCases")
 	public void test_sedml_roundtrip(TestCase testCase) throws Exception {
 		if (knownFaults().containsKey(testCase.filename)) {

@@ -329,7 +329,7 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		return org.vcell.test.TestShard.shard(sbml_test_cases.collect(Collectors.toList()));
 	}
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{0}")
 	@MethodSource("testCases")
 	public void test_sedml_roundtrip_SBML(TestCase testCase) throws Exception {
 		if (knownFaults().containsKey(testCase.filename)) {
