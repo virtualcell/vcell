@@ -1,22 +1,65 @@
 name: CI/CD
 
+# Two-tier CI to keep the common case fast while preserving regression coverage.
+#
+#   Tier 1 (every push, fast lane):   build  ->  fast-tests + quarkus-tests
+#   Tier 2 (regression, heavy):       build  ->  regression-tests
+#                                     runs only on non-draft PRs to master,
+#                                     nightly on master, and in the merge queue.
+#
+# Key mechanics:
+#   * "build" compiles the whole monorepo ONCE and runs the Python package tests
+#     ONCE, then hands the compiled workspace (**/target) to downstream jobs as
+#     an artifact. Test jobs run surefire directly (mvn ... surefire:test) and do
+#     NOT recompile, so Fast drops from ~6 min (compile+test) to ~2-3 min (test).
+#   * The slow integration suites (MathGen/SBML/SEDML_*/BSTS) no longer run on
+#     every push. Open a PR as a *draft* to iterate in the fast lane; mark it
+#     ready-for-review (or let the nightly run) to exercise the full regression.
+#
+# Tradeoff worth knowing: because draft-state is only visible on `pull_request`
+# events, a ready PR that receives a new commit runs `build` twice for that SHA
+# (once from the push-triggered fast lane, once from the pull_request-triggered
+# regression run). Each build is ~5 min. A merge queue (merge_group) is the
+# cleaner long-term answer and is already wired below.
+
 on:
   push:
     branches:
-      - '*'
-      - '*/*'
       - '**'
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [master]
+  merge_group:
+  schedule:
+    # nightly full regression on master (07:00 UTC)
+    - cron: '0 7 * * *'
   release:
     types: [published, edited]
+
+# Supersede in-flight runs for the same ref instead of piling them up.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   python-version: "3.10"
 
 jobs:
-  CI-Build:
-    name: CI-build
+  # ---------------------------------------------------------------------------
+  # BUILD (once): compile everything, run the Python package tests, verify the
+  # Docker image builds, and publish the compiled workspace for the test jobs.
+  # ---------------------------------------------------------------------------
+  build:
+    name: build
     runs-on: ubuntu-22.04
-    if: ${{ github.event_name == 'push' }}
+    # Build whenever something downstream needs it: the push fast lane, the
+    # merge queue, the nightly regression, or a non-draft PR. Draft-PR pushes
+    # are covered by their own `push` event, so the pull_request event skips.
+    if: >-
+      github.event_name == 'push'
+      || github.event_name == 'merge_group'
+      || github.event_name == 'schedule'
+      || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
     steps:
       - uses: actions/checkout@v4
 
@@ -29,6 +72,7 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
+      # Python package tests run here ONCE (previously duplicated in all 8 jobs).
       - name: build vcell-cli-utils package
         run: |
           cd vcell-cli-utils
@@ -78,7 +122,10 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
-      - name: Add Linux dependencies
+      # -DskipTests compiles main AND test classes (and processes test resources)
+      # but does not RUN tests. Installs module jars into ~/.m2 so downstream
+      # surefire runs can resolve inter-module dependencies offline.
+      - name: Maven build (compile + install, no tests)
         shell: bash
         run: |
           mvn -version
@@ -91,18 +138,120 @@ jobs:
             --file Dockerfile \
             .
 
+      # Package the compiled workspace for the test jobs. Timestamps are kept so
+      # Maven treats the classes as up-to-date and surefire:test won't recompile.
+      - name: Package compiled workspace
+        run: find . -type d -name target -prune -print0 | tar --posix --null -czf workspace-target.tar.gz --files-from -
+
+      - name: Upload compiled workspace
+        uses: actions/upload-artifact@v4
+        with:
+          name: workspace-target
+          path: workspace-target.tar.gz
+          retention-days: 1
+          if-no-files-found: error
+
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
 
-  CI-Test:
+  # ---------------------------------------------------------------------------
+  # TIER 1 - fast unit tests (every push). Reuses the compiled workspace; runs
+  # surefire directly so there is no recompile.
+  # ---------------------------------------------------------------------------
+  fast-tests:
+    name: CI-Test-group-Fast
     runs-on: ubuntu-22.04
+    needs: build
+    # Fast lane runs on ordinary pushes and in the merge queue. On a PR it is
+    # already satisfied by the push-triggered run (checks attach by head SHA),
+    # so it does not re-run on the pull_request event.
+    if: ${{ github.event_name == 'push' || github.event_name == 'merge_group' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup java 17 with maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Restore compiled workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace-target
+
+      - name: Unpack compiled workspace
+        run: tar -xzf workspace-target.tar.gz
+
+      # surefire:test runs ONLY the test goal - no compile, no clean.
+      - name: Run Fast tests
+        shell: bash
+        run: mvn --batch-mode --offline surefire:test -Dgroups="Fast"
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
+
+  # ---------------------------------------------------------------------------
+  # TIER 1 - Quarkus / vcell-rest tests + OpenAPI spec validation (every push).
+  # ---------------------------------------------------------------------------
+  quarkus-tests:
+    name: CI-Test-group-Quarkus
+    runs-on: ubuntu-22.04
+    needs: build
+    # Same fast-lane gating as fast-tests.
+    if: ${{ github.event_name == 'push' || github.event_name == 'merge_group' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set Docker API version workaround
+        run: echo "api.version=1.44" >> ~/.docker-java.properties
+
+      - name: setup java 17 with maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Restore compiled workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace-target
+
+      - name: Unpack compiled workspace
+        run: tar -xzf workspace-target.tar.gz
+
+      - name: Validate OpenAPI spec
+        run: ./tools/validate-openapi-spec.sh
+
+      - name: Run Quarkus (vcell-rest) tests
+        shell: bash
+        run: mvn --batch-mode --offline -pl vcell-rest surefire:test
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
+        if: ${{ failure() }}
+
+  # ---------------------------------------------------------------------------
+  # TIER 2 - heavy regression integration suites. NOT run on ordinary pushes.
+  # Runs on: non-draft PRs to master, the nightly schedule, and the merge queue.
+  # Keep a PR in *draft* to stay in the fast lane while iterating.
+  # ---------------------------------------------------------------------------
+  regression-tests:
+    name: CI-Test-group-${{ matrix.test-group }}
+    runs-on: ubuntu-22.04
+    needs: build
+    if: >-
+      github.event_name == 'schedule'
+      || github.event_name == 'merge_group'
+      || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
     strategy:
       matrix:
-        test-group: [Fast, MathGen_IT, SBML_IT, SEDML_SBML_IT, SEDML_VCML_IT, BSTS_IT, Quarkus]
+        test-group: [MathGen_IT, SBML_IT, SEDML_SBML_IT, SEDML_VCML_IT, BSTS_IT]
       fail-fast: false
-    if: ${{ github.event_name == 'push' }}
-    name: CI-Test-group-${{ matrix.test-group }}
     steps:
       - uses: actions/checkout@v4
 
@@ -112,6 +261,8 @@ jobs:
       - name: Install hdf5 tools needed for testing
         run: sudo apt -y update && sudo apt -y install hdf5-tools
 
+      # Several IT groups (SED-ML, BSTS) shell out to the Python CLI utils, so
+      # the Python runtime + packages are required here (unlike the fast lane).
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -125,43 +276,6 @@ jobs:
         run: |
           cd vcell-cli-utils
           poetry install
-          poetry run python -m pytest
-
-      - name: build vcell-admin package
-        run: |
-          cd docker/swarm/vcell-admin
-          poetry install
-          poetry run python -m pytest
-
-      - name: build pythonCopasiOpt package
-        run: |
-          cd pythonCopasiOpt/vcell-opt
-          poetry install
-          poetry run python -m pytest
-
-      - name: build pythonVtk package
-        run: |
-          cd pythonVtk
-          poetry install
-          poetry run python -m pytest
-
-      - name: build vcutils package
-        run: |
-          cd python-utils
-          poetry install
-          poetry run python -m pytest
-
-      - name: build python-restclient package
-        run: |
-          cd python-restclient
-          poetry install
-          poetry run python -m pytest
-
-      - name: build vcelldata package
-        run: |
-          cd pythonData
-          poetry install
-          poetry run python -m pytest
 
       - name: setup java 17 with maven cache
         uses: actions/setup-java@v4
@@ -170,24 +284,25 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
-      - name: Maven Build and run Test group ${{ matrix.test-group }}
+      - name: Restore compiled workspace
+        uses: actions/download-artifact@v4
+        with:
+          name: workspace-target
+
+      - name: Unpack compiled workspace
+        run: tar -xzf workspace-target.tar.gz
+
+      - name: Run regression group ${{ matrix.test-group }}
         shell: bash
-        run: |
-          mvn -version
-          java -version
-          if [ "${{ matrix.test-group }}" == "Quarkus" ]; then
-            mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
-            ./tools/validate-openapi-spec.sh
-            cd vcell-rest
-            mvn test
-          else
-            mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="${{ matrix.test-group }}"
-          fi
+        run: mvn --batch-mode --offline surefire:test -Dgroups="${{ matrix.test-group }}"
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
         if: ${{ failure() }}
 
+  # ---------------------------------------------------------------------------
+  # CD - unchanged: build + push the biosimulators Docker image on release.
+  # ---------------------------------------------------------------------------
   CD:
     name: CD
     runs-on: ubuntu-22.04
@@ -201,7 +316,7 @@ jobs:
         with:
           python-version: ${{ env.python-version }}
           cache: "pip"
-      
+
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
