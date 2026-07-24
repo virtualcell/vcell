@@ -113,9 +113,23 @@ jobs:
   # Python envs (OMEX validation, VTK, CoPaSi opt) and the HDF5 CLI, so those
   # must be set up here just as the long-proven combined job did.
   # ---------------------------------------------------------------------------
+  # Fast unit tests, split across two runners by module so the fast lane stays
+  # under ~5-6 min. Scoped with -pl <modules> -am so each shard compiles only
+  # what it needs; test time (not compile) is the bulk, and the split halves it.
+  # The fast-gate job below aggregates both shards under the stable required
+  # check name "CI-Test-group-Fast".
   fast-tests:
-    name: CI-Test-group-Fast
+    name: CI-Test-group-Fast-${{ matrix.name }}
     runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # vcell-core holds ~60% of the Fast tests; give it its own shard.
+          - name: core
+            modules: vcell-core
+          - name: other
+            modules: vcell-util,vcell-math,vcell-server,vcell-cli,vcell-client,vcell-admin,vcell-apiclient
     steps:
       - uses: actions/checkout@v4
 
@@ -152,12 +166,34 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
-      - name: Maven build and run Fast tests
+      - name: Maven build and run Fast tests (${{ matrix.name }})
         shell: bash
         run: |
           mvn -version
           java -version
-          mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="Fast"
+          mvn --batch-mode clean install dependency:copy-dependencies \
+            -pl ${{ matrix.modules }} -am -Dmaven.dependency.analyze.skip=true \
+            -Dgroups="Fast"
+
+  # Aggregate gate: one stable required check ("CI-Test-group-Fast") that passes
+  # only if both Fast shards passed, so the shard split can change without
+  # touching branch-protection rules.
+  fast-gate:
+    name: CI-Test-group-Fast
+    runs-on: ubuntu-22.04
+    needs: fast-tests
+    if: ${{ always() }}
+    steps:
+      - name: Verify all Fast shards passed
+        shell: bash
+        run: |
+          result="${{ needs.fast-tests.result }}"
+          echo "fast-tests result: $result"
+          if [ "$result" != "success" ]; then
+            echo "One or more Fast shards did not succeed."
+            exit 1
+          fi
+          echo "All Fast shards passed."
 
   # ---------------------------------------------------------------------------
   # Quarkus / vcell-rest tests + OpenAPI spec validation (self-compiling).
