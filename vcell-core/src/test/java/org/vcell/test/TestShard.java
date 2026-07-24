@@ -24,6 +24,14 @@ public final class TestShard {
 	public static final String SHARD_COUNT_PROPERTY = "test.shard.count";
 	public static final String SHARD_INDEX_PROPERTY = "test.shard.index";
 
+	/**
+	 * When {@code -Dtest.include.slow=true}, tests that normally exclude a
+	 * "slow" set of cases (to keep the sharded regression fast) run the full
+	 * set instead. Used by the nightly / on-demand regression to keep covering
+	 * the slow cases that the merge-gate skips.
+	 */
+	public static final String INCLUDE_SLOW_PROPERTY = "test.include.slow";
+
 	private TestShard() {
 	}
 
