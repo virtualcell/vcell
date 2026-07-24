@@ -204,10 +204,13 @@ jobs:
       - name: Unpack compiled workspace
         run: tar -xzf workspace-target.tar.gz
 
-      # surefire:test runs ONLY the test goal - no compile, no clean.
+      # surefire:test runs ONLY the test goal - no compile, no clean. Not run
+      # with --offline: the build job used -DskipTests so surefire never fetched
+      # its JUnit-platform provider jar, which must be resolved here. Compiled
+      # classes and module jars still come from the restored workspace + cache.
       - name: Run Fast tests
         shell: bash
-        run: mvn --batch-mode --offline surefire:test -Dgroups="Fast"
+        run: mvn --batch-mode surefire:test -Dgroups="Fast"
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
@@ -248,7 +251,7 @@ jobs:
 
       - name: Run Quarkus (vcell-rest) tests
         shell: bash
-        run: mvn --batch-mode --offline -pl vcell-rest surefire:test
+        run: mvn --batch-mode -pl vcell-rest surefire:test
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
@@ -340,7 +343,7 @@ jobs:
 
       - name: Run regression group ${{ matrix.test-group }}
         shell: bash
-        run: mvn --batch-mode --offline surefire:test -Dgroups="${{ matrix.test-group }}"
+        run: mvn --batch-mode surefire:test -Dgroups="${{ matrix.test-group }}"
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
