@@ -82,17 +82,24 @@ jobs:
           python3 - "$SELECTED" <<'PY' >> "$GITHUB_OUTPUT"
           import json, sys
           selected = sys.argv[1]
-          shard_counts = {
-              "MathGen_IT": 5,
-              "SEDML_SBML_IT": 5,
-              "SEDML_VCML_IT": 3,
-              "SBML_IT": 1,
-              "BSTS_IT": 1,
+          # Per group: shard count and the Maven module the tests live in. Scoping
+          # the build to that module (-pl <module> -am) compiles a few modules
+          # instead of all 14, roughly halving each shard's compile floor so more
+          # shards fit under the ~20-job concurrency ceiling.
+          CORE = "vcell-core"
+          groups = {
+              "MathGen_IT":    {"count": 4, "module": CORE},
+              "SEDML_SBML_IT": {"count": 6, "module": CORE},
+              "SEDML_VCML_IT": {"count": 2, "module": CORE},
+              "SBML_IT":       {"count": 1, "module": CORE},
+              "BSTS_IT":       {"count": 1, "module": "vcell-cli"},
           }
           include = []
-          for group, count in shard_counts.items():
+          for group, cfg in groups.items():
               if selected != "all" and group != selected:
                   continue
+              count = cfg["count"]
+              scope = f"-pl {cfg['module']} -am -Dmaven.dependency.analyze.skip=true"
               for i in range(count):
                   name = group if count == 1 else f"{group}-{i+1}of{count}"
                   include.append({
@@ -100,6 +107,7 @@ jobs:
                       "shard_index": i,
                       "shard_count": count,
                       "name": name,
+                      "scope": scope,
                   })
           print("matrix=" + json.dumps({"include": include}))
           PY
@@ -152,6 +160,7 @@ jobs:
           mvn -version
           java -version
           mvn --batch-mode clean install dependency:copy-dependencies \
+            ${{ matrix.scope }} \
             -Dgroups="${{ matrix.group }}" \
             -Dtest.shard.count=${{ matrix.shard_count }} \
             -Dtest.shard.index=${{ matrix.shard_index }}
