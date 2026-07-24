@@ -323,12 +323,12 @@ public class MathGenCompareTest {
 				appTestCases.add(test_case_name);
 			}
 		}
-		return appTestCases;
+		return org.vcell.test.TestShard.shard(appTestCases);
 //		return Arrays.asList("biomodel_12522025.vcml:purkinje9");
 	}
 
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{0}")
 	@MethodSource("testCases")
 	public void test_legacy_math_compare(String filename_colon_appname) throws Exception {
 		String[] tokens = filename_colon_appname.split(":");
@@ -447,7 +447,7 @@ public class MathGenCompareTest {
 	}
 
 	@Disabled
-	@ParameterizedTest
+	@ParameterizedTest(name = "{0}")
 	@MethodSource("testCases")
 	public void test_identity_math_compare(String filename_colon_appname) throws Exception {
 		String[] tokens = filename_colon_appname.split(":");
@@ -486,7 +486,7 @@ public class MathGenCompareTest {
 	}
 
 	@Disabled
-	@ParameterizedTest
+	@ParameterizedTest(name = "{0}")
 	@MethodSource("testCases")
 	public void test_model_reduction_math_compare(String filename_colon_appname) throws Exception {
 		String[] tokens = filename_colon_appname.split(":");

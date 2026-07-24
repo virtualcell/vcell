@@ -36,6 +36,8 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 		slowModels.add("biomodel_66264206.vcml");     // 45s
 		slowModels.add("biomodel_93313420.vcml");     // 137s
 		slowModels.add("biomodel_9590643.vcml");      // 40s
+		slowModels.add("biomodel_172076998.vcml");    // 264s on CI 2-core (dominated one shard)
+		slowModels.add("biomodel_60647264.vcml");     // 192s on CI 2-core
 		return slowModels;
 	}
 
@@ -321,15 +323,19 @@ public class SEDMLExporterSBMLTest extends SEDMLExporterCommon {
 	}
 
 	public static Collection<TestCase> testCases() {
+		// slowTestSet is excluded by default to keep the sharded regression under
+		// ~10 min; -Dtest.include.slow=true (nightly / on-demand) runs them too.
+		// outOfMemory/largeFile stay excluded always (they fail, not just slow).
+		boolean includeSlow = Boolean.getBoolean(org.vcell.test.TestShard.INCLUDE_SLOW_PROPERTY);
 		Predicate<String> skipFilter_SBML = (t) ->
 				!outOfMemorySet().contains(t) &&
 				!largeFileSet().contains(t) &&
-				!slowTestSet().contains(t);
+				(includeSlow || !slowTestSet().contains(t));
 		Stream<TestCase> sbml_test_cases = Arrays.stream(VcmlTestSuiteFiles.getVcmlTestCases()).filter(skipFilter_SBML).map(fName -> new TestCase(fName, ModelFormat.SBML));
-		return sbml_test_cases.collect(Collectors.toList());
+		return org.vcell.test.TestShard.shard(sbml_test_cases.collect(Collectors.toList()));
 	}
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{0}")
 	@MethodSource("testCases")
 	public void test_sedml_roundtrip_SBML(TestCase testCase) throws Exception {
 		if (knownFaults().containsKey(testCase.filename)) {

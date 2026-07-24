@@ -137,12 +137,12 @@ public class MathOverrideApplyTest {
 				}
 			}
 		}
-		return appTestCases;
+		return org.vcell.test.TestShard.shard(appTestCases);
 //		return Arrays.asList("biomodel_34826524.vcml:NWasp Activation Cap=2");
 	}
 
 
-	@ParameterizedTest
+	@ParameterizedTest(name = "{0}")
 	@MethodSource("testCases")
 	public void test_mathOverrideApply(String filename_colon_appname) throws Exception {
 		String[] tokens = filename_colon_appname.split(":");
