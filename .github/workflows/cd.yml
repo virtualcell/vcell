@@ -116,7 +116,3 @@ jobs:
         with:
           upload_url: ${{ steps.get_url.outputs.uploadUrl }}
           asset_path: biosimulators.json
-
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ failure() }}

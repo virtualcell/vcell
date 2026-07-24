@@ -119,7 +119,3 @@ jobs:
           mvn -version
           java -version
           mvn --batch-mode clean install dependency:copy-dependencies -Dgroups="${{ matrix.test-group }}"
-
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-        if: ${{ failure() }}
