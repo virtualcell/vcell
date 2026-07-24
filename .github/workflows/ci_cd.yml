@@ -15,6 +15,8 @@ name: CI/CD
 #   * The slow integration suites (MathGen/SBML/SEDML_*/BSTS) no longer run on
 #     every push. Open a PR as a *draft* to iterate in the fast lane; mark it
 #     ready-for-review (or let the nightly run) to exercise the full regression.
+#     They can also be launched on demand via the "Run workflow" button
+#     (workflow_dispatch), for all groups or a single one.
 #
 # Tradeoff worth knowing: because draft-state is only visible on `pull_request`
 # events, a ready PR that receives a new commit runs `build` twice for that SHA
@@ -33,6 +35,21 @@ on:
   schedule:
     # nightly full regression on master (07:00 UTC)
     - cron: '0 7 * * *'
+  # Manual on-demand run of the expensive regression suite (any branch),
+  # for all groups or a single one.
+  workflow_dispatch:
+    inputs:
+      test-group:
+        description: 'Regression group to run'
+        type: choice
+        default: all
+        options:
+          - all
+          - MathGen_IT
+          - SBML_IT
+          - SEDML_SBML_IT
+          - SEDML_VCML_IT
+          - BSTS_IT
   release:
     types: [published, edited]
 
@@ -53,12 +70,14 @@ jobs:
     name: build
     runs-on: ubuntu-22.04
     # Build whenever something downstream needs it: the push fast lane, the
-    # merge queue, the nightly regression, or a non-draft PR. Draft-PR pushes
-    # are covered by their own `push` event, so the pull_request event skips.
+    # merge queue, the nightly regression, a manual dispatch, or a non-draft PR.
+    # Draft-PR pushes are covered by their own `push` event, so the
+    # pull_request event skips.
     if: >-
       github.event_name == 'push'
       || github.event_name == 'merge_group'
       || github.event_name == 'schedule'
+      || github.event_name == 'workflow_dispatch'
       || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
     steps:
       - uses: actions/checkout@v4
@@ -236,21 +255,48 @@ jobs:
         if: ${{ failure() }}
 
   # ---------------------------------------------------------------------------
+  # Compute the regression matrix. Normally the full 5-group list; a manual
+  # workflow_dispatch may narrow it to a single group. Runs whenever regression
+  # will run so regression-tests can consume its output via fromJSON.
+  # ---------------------------------------------------------------------------
+  prepare-regression:
+    name: prepare regression matrix
+    runs-on: ubuntu-22.04
+    if: >-
+      github.event_name == 'schedule'
+      || github.event_name == 'merge_group'
+      || github.event_name == 'workflow_dispatch'
+      || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
+    outputs:
+      groups: ${{ steps.compute.outputs.groups }}
+    steps:
+      - name: Compute regression group matrix
+        id: compute
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.test-group }}" != "all" ]; then
+            echo 'groups=["${{ inputs.test-group }}"]' >> "$GITHUB_OUTPUT"
+          else
+            echo 'groups=["MathGen_IT","SBML_IT","SEDML_SBML_IT","SEDML_VCML_IT","BSTS_IT"]' >> "$GITHUB_OUTPUT"
+          fi
+
+  # ---------------------------------------------------------------------------
   # TIER 2 - heavy regression integration suites. NOT run on ordinary pushes.
-  # Runs on: non-draft PRs to master, the nightly schedule, and the merge queue.
-  # Keep a PR in *draft* to stay in the fast lane while iterating.
+  # Runs on: non-draft PRs to master, the nightly schedule, the merge queue, and
+  # manual workflow_dispatch. Keep a PR in *draft* to stay in the fast lane.
   # ---------------------------------------------------------------------------
   regression-tests:
     name: CI-Test-group-${{ matrix.test-group }}
     runs-on: ubuntu-22.04
-    needs: build
+    needs: [build, prepare-regression]
     if: >-
       github.event_name == 'schedule'
       || github.event_name == 'merge_group'
+      || github.event_name == 'workflow_dispatch'
       || (github.event_name == 'pull_request' && github.event.pull_request.draft == false)
     strategy:
       matrix:
-        test-group: [MathGen_IT, SBML_IT, SEDML_SBML_IT, SEDML_VCML_IT, BSTS_IT]
+        test-group: ${{ fromJSON(needs.prepare-regression.outputs.groups) }}
       fail-fast: false
     steps:
       - uses: actions/checkout@v4
