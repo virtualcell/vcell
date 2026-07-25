@@ -64,6 +64,38 @@ public final class SwingInspector {
 	private static final int MAX_LIST_ITEMS = 50;
 	private static final int MAX_TREE_ROWS = 100;
 
+	// ---------------------------------------------------------------------
+	// Stable component registry: each component seen in a tree/window dump is
+	// assigned a stable id ("c0", "c1", ...) so callers can reference it in
+	// later requests without re-resolving a fragile path selector. Non-invasive
+	// (does not touch Component.getName(), which VCell uses itself). Ids persist
+	// for the session; a stale id whose component is gone just fails the action.
+	// ---------------------------------------------------------------------
+	private static final Object REGISTRY_LOCK = new Object();
+	private static final java.util.Map<Component, String> idByComponent = new java.util.IdentityHashMap<>();
+	private static final java.util.Map<String, Component> componentById = new java.util.HashMap<>();
+	private static int idSeq = 0;
+
+	/** @return a stable id for the component, assigning one on first sighting. */
+	static String idFor(Component c) {
+		synchronized (REGISTRY_LOCK) {
+			String id = idByComponent.get(c);
+			if (id == null) {
+				id = "c" + (idSeq++);
+				idByComponent.put(c, id);
+				componentById.put(id, c);
+			}
+			return id;
+		}
+	}
+
+	/** @return the component previously registered under this id, or null. */
+	public static Component findById(String id) {
+		synchronized (REGISTRY_LOCK) {
+			return componentById.get(id);
+		}
+	}
+
 	private SwingInspector() {
 	}
 
@@ -124,6 +156,8 @@ public final class SwingInspector {
 	private static void appendNode(StringBuilder sb, Component c, String path, int depth, int maxDepth) {
 		sb.append('{');
 		kv(sb, "path", path);
+		comma(sb);
+		kv(sb, "id", idFor(c));
 		comma(sb);
 		kv(sb, "class", c.getClass().getName());
 
@@ -313,13 +347,19 @@ public final class SwingInspector {
 	// ---------------------------------------------------------------------
 
 	/**
-	 * Resolve a node path (as emitted by {@link #dumpWindowsJson()}) to a live
-	 * component. First segment indexes {@link #showingWindows()}; remaining
-	 * segments index {@link Container#getComponents()}.
+	 * Resolve a selector to a live component. A selector is either a registry id
+	 * ("c42", as emitted in each node's {@code id}) or a node path ("0/3/2", as
+	 * emitted in {@code path}); ids and paths are syntactically distinct, so a
+	 * single method resolves both and every endpoint accepts either. First path
+	 * segment indexes {@link #showingWindows()}; remaining segments index
+	 * {@link Container#getComponents()}.
 	 *
-	 * @return the component, or {@code null} if the path does not resolve
+	 * @return the component, or {@code null} if the selector does not resolve
 	 */
 	public static Component findByPath(final String path) {
+		if (path != null && path.matches("c\\d+")) {
+			return findById(path);
+		}
 		return onEdt(() -> {
 			String[] segs = path.split("/");
 			List<Window> windows = new ArrayList<>();

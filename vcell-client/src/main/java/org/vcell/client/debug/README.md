@@ -45,6 +45,8 @@ On startup you'll see a `WARN` log line: `Swing debug bridge listening on http:/
 
 ## Endpoints
 
+Every node in `/tree` and `/windows` carries a stable **`id`** (`c0`, `c1`, …) in addition to its `path`. Any endpoint's `path=` parameter accepts either form — prefer the `id`, which stays valid across dumps and doesn't break when the component tree shifts. (Registry is non-invasive; it never touches `Component.getName()`.)
+
 | Endpoint | Returns |
 |---|---|
 | `GET /health` | `ok` |
