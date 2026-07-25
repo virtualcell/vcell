@@ -24,9 +24,13 @@ import cbit.vcell.client.server.UserPreferences;
 import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.AsynchClientTaskFunction;
 import cbit.vcell.client.task.ClientTaskDispatcher;
+import cbit.vcell.biomodel.BioModel;
+import cbit.vcell.clientdb.DocumentManager;
 import cbit.vcell.export.server.ExportServiceImpl;
 import cbit.vcell.field.FieldDataIdentifierSpec;
 import cbit.vcell.mapping.SimulationContext;
+import cbit.vcell.xml.XMLSource;
+import cbit.vcell.xml.XmlHelper;
 import cbit.vcell.mapping.SimulationContext.NetworkGenerationRequirements;
 import cbit.vcell.message.server.bootstrap.client.RemoteProxyException;
 import cbit.vcell.messaging.server.SimulationTask;
@@ -91,6 +95,11 @@ public static class LocalVCSimulationDataIdentifier extends VCSimulationDataIden
 	private final static String H_FAILURES = "failures";
 	private final static String H_LOCAL_SIM = "showingLocal";
 	private final static String H_VIEWER_TYPE = "viewerType";
+	// issue #1746: an immutable snapshot of the run's BioModel (XML), stashed at run-submit for
+	// local quick runs, and the pristine submit-time SimulationOwner resolved from it (or reloaded
+	// from the database for saved runs) that the results viewer's model-info is bound to.
+	private final static String H_STASHED_BIOMODEL_XML = "stashedBioModelXml";
+	private final static String H_PRISTINE_METADATA_OWNER = "pristineMetadataOwner";
 
 public ClientSimManager(DocumentWindowManager documentWindowManager, SimulationWorkspace simWorkspace) {
 	this.documentWindowManager = documentWindowManager;
@@ -429,6 +438,40 @@ private ODESimData importBatchSimulation(OutputContext outputContext, Simulation
 	return osd;
 }
 
+/**
+ * issue #1746: resolve a pristine, submit-time {@link SimulationOwner} for the results viewer's
+ * metadata, so it stays consistent with the result columns even after the live model is edited
+ * (renamed/deleted species). Resolution order:
+ *   1. local quick runs: re-parse the immutable BioModel snapshot stashed at run-submit;
+ *   2. saved runs: reload a pristine BioModel copy from the database by version key;
+ *   3. otherwise (unsaved model, no snapshot): {@code null} - caller falls back to the live owner.
+ * Never throws: any failure logs and returns {@code null} so the results view still opens.
+ */
+private SimulationOwner resolvePristineMetadataOwner(Hashtable<String, Object> hashTable) {
+	SimulationOwner liveOwner = getSimWorkspace().getSimulationOwner();
+	if (!(liveOwner instanceof SimulationContext)) {
+		return null;
+	}
+	String simContextName = ((SimulationContext)liveOwner).getName();
+	try {
+		String stashedXml = (String)hashTable.get(H_STASHED_BIOMODEL_XML);
+		if (stashedXml != null) {
+			BioModel pristine = XmlHelper.XMLToBioModel(new XMLSource(stashedXml));
+			return pristine.getSimulationContext(simContextName);
+		}
+		BioModel liveBioModel = ((SimulationContext)liveOwner).getBioModel();
+		if (liveBioModel != null && liveBioModel.getVersion() != null && liveBioModel.getVersion().getVersionKey() != null) {
+			DocumentManager documentManager = getDocumentWindowManager().getRequestManager().getDocumentManager();
+			BioModel pristine = documentManager.getBioModel(liveBioModel.getVersion().getVersionKey());
+			return pristine.getSimulationContext(simContextName);
+		}
+	} catch (Exception e) {
+		// non-fatal: fall back to the live model (previous behavior) rather than failing the results view
+		System.out.println("issue #1746: could not resolve pristine metadata owner (" + e.getMessage() + "), using live model");
+	}
+	return null;
+}
+
 private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final ViewerType viewerType) {
 
 	// Create the AsynchClientTasks 
@@ -439,9 +482,15 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 	final DocumentWindowManager documentWindowManager = getDocumentWindowManager();
 	AsynchClientTask retrieveResultsTask = new AsynchClientTask("Retrieving results", AsynchClientTask.TASKTYPE_NONSWING_BLOCKING)  {
 		@SuppressWarnings("unchecked")
-		public void run(Hashtable<String, Object> hashTable) throws Exception {						
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
 			Simulation[] simsToShow = (Simulation[])hashTable.get("simsArray");
-			for (int i = 0; i < simsToShow.length; i++){		
+			// issue #1746: resolve the pristine, submit-time owner once (all sims share the owner);
+			// done on this non-swing task since it may re-parse XML or reload a BioModel from the DB.
+			SimulationOwner pristineMetadataOwner = resolvePristineMetadataOwner(hashTable);
+			if (pristineMetadataOwner != null) {
+				hashTable.put(H_PRISTINE_METADATA_OWNER, pristineMetadataOwner);
+			}
+			for (int i = 0; i < simsToShow.length; i++){
 				final Simulation sim  = simsToShow[i];
 				final VCSimulationIdentifier vcSimulationIdentifier = sim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier();
 				final SimulationWindow simWindow = documentWindowManager.haveSimulationWindow(vcSimulationIdentifier);
@@ -527,7 +576,14 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 						documentWindowManager.addExportListener(viewer);
 						documentWindowManager.addDataJobListener(viewer);//For data related activities such as calculating statistics
 						
-						viewer.setSimulationModelInfo(new SimulationWorkspaceModelInfo(getSimWorkspace().getSimulationOwner(),sim.getName()));
+						// issue #1746: bind the results model-info to the pristine submit-time owner when
+						// available (falls back to the live owner). The output-function listener above and
+						// the SimulationWindow below stay on the live owner for interactive control.
+						SimulationOwner metadataOwner = (SimulationOwner)hashTable.get(H_PRISTINE_METADATA_OWNER);
+						if (metadataOwner == null) {
+							metadataOwner = getSimWorkspace().getSimulationOwner();
+						}
+						viewer.setSimulationModelInfo(new SimulationWorkspaceModelInfo(metadataOwner,sim.getName()));
 						viewer.setDataViewerManager(documentWindowManager);
 						
 						SimulationWindow newWindow = new SimulationWindow(vcSimulationIdentifier, sim, getSimWorkspace().getSimulationOwner(), viewer);						
@@ -824,8 +880,24 @@ public void runQuickSimulation(final Simulation originalSimulation, ViewerType v
 			hashTable.put("simsArray", simsArray);
 		}
 	};
+	// issue #1746: snapshot the run's model to an immutable XML string on the EDT, atomically
+	// w.r.t. concurrent edits (quick run doesn't block input and the results window can lag before
+	// it appears). The results viewer resolves metadata against this pristine copy, not the
+	// since-edited live model, so renamed/deleted species can't corrupt or crash metadata.
+	AsynchClientTask stashBioModelTask = new AsynchClientTask("snapshotting model", AsynchClientTask.TASKTYPE_SWING_BLOCKING) {
+		@Override
+		public void run(Hashtable<String, Object> hashTable) throws Exception {
+			if (simulationOwner instanceof SimulationContext) {
+				BioModel bioModel = ((SimulationContext)simulationOwner).getBioModel();
+				if (bioModel != null) {
+					hashTable.put(H_STASHED_BIOMODEL_XML, XmlHelper.bioModelToXML(bioModel));
+				}
+			}
+		}
+	};
+	taskList.add(stashBioModelTask);
 	taskList.add(runSimTask);
-	
+
 	// --------- add tasks from showSimResults : retrieve data, display results
 	AsynchClientTask[] showResultsTask = showSimulationResults0(true, viewerType);
 	for (AsynchClientTask task : showResultsTask) {
