@@ -51,7 +51,7 @@ public class RemoteProxyVCellConnectionFactory implements VCellConnectionFactory
 	//MUST keep sycnhronized with org.vcell.rest.rpc.RpcRestlet
 	static {
 		String[] temp =  new String[] {
-				"getVCInfoContainer",
+				// "getVCInfoContainer" retired: now served by REST GET /api/v1/vcInfoContainer
 				"getBioModelXML",
 				"getMathModelXML",
 				"getSimulationStatus",

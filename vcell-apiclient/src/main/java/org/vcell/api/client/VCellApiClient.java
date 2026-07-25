@@ -270,6 +270,10 @@ public class VCellApiClient implements AutoCloseable {
 		return new BioModelResourceApi(apiClient);
 	}
 
+	public VcInfoContainerResourceApi getVcInfoContainerApi(){
+		return new VcInfoContainerResourceApi(apiClient);
+	}
+
 	public MathModelResourceApi getMathModelApi(){
 		return new MathModelResourceApi(apiClient);
 	}

@@ -223,6 +223,8 @@ Class | Method | HTTP request | Description
 *VcImageResourceApi* | [**getImageVCMLWithHttpInfo**](docs/VcImageResourceApi.md#getImageVCMLWithHttpInfo) | **GET** /api/v1/image/{id} | 
 *VcImageResourceApi* | [**saveImageVCML**](docs/VcImageResourceApi.md#saveImageVCML) | **POST** /api/v1/image | 
 *VcImageResourceApi* | [**saveImageVCMLWithHttpInfo**](docs/VcImageResourceApi.md#saveImageVCMLWithHttpInfo) | **POST** /api/v1/image | 
+*VcInfoContainerResourceApi* | [**getVCInfoContainer**](docs/VcInfoContainerResourceApi.md#getVCInfoContainer) | **GET** /api/v1/vcInfoContainer | Return a single bulk collection of metadata summaries (BioModels, MathModels, Geometries, Images) visible to the requester. Anonymous requests return public records only; an authenticated request additionally includes the requester&#39;s own and shared records.
+*VcInfoContainerResourceApi* | [**getVCInfoContainerWithHttpInfo**](docs/VcInfoContainerResourceApi.md#getVCInfoContainerWithHttpInfo) | **GET** /api/v1/vcInfoContainer | Return a single bulk collection of metadata summaries (BioModels, MathModels, Geometries, Images) visible to the requester. Anonymous requests return public records only; an authenticated request additionally includes the requester&#39;s own and shared records.
 
 
 ## Documentation for Models
@@ -317,6 +319,7 @@ Class | Method | HTTP request | Description
  - [UserRegistrationInfo](docs/UserRegistrationInfo.md)
  - [VCDocumentType](docs/VCDocumentType.md)
  - [VCImageSummary](docs/VCImageSummary.md)
+ - [VCInfoContainerSummary](docs/VCInfoContainerSummary.md)
  - [VCSimulationIdentifier](docs/VCSimulationIdentifier.md)
  - [VCellHTTPError](docs/VCellHTTPError.md)
  - [VCellSite](docs/VCellSite.md)
