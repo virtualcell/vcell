@@ -54,6 +54,9 @@ On startup you'll see a `WARN` log line: `Swing debug bridge listening on http:/
 | `GET /click?path=0/3/2` | JSON `{"clicked": true\|false}` |
 | `GET /setText?path=&text=&enter=` | JSON `{"set": true\|false}` |
 | `GET /selectTab?path=&index=` | JSON `{"selected": true\|false}` |
+| `GET /selectTreeRow?path=&row=N` | select row N of the JTree; JSON `{"selected": bool}` |
+| `GET /rightClickTreeRow?path=&row=N` | right-click row N (opens its context menu); JSON `{"rightClicked": bool}` |
+| `GET /rightClick?path=` | right-click a component's center; JSON `{"rightClicked": bool}` |
 | `GET /listeners?path=0/3/2` | JSON: registered `ActionListener` classes, action command, mouse-listener count — "is this control actually wired up?" |
 | `GET /log[?lines=N]` | text/plain tail (default 200 lines) of the client's real log — VCell redirects System.out/err to `<vcellHome>/logs/vcellrun_<site>.log`, so exceptions never appear on the launcher's stdout |
 

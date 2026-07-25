@@ -107,6 +107,9 @@ public final class SwingDebugBridge {
 			s.createContext("/click", wrap(SwingDebugBridge::handleClick));
 			s.createContext("/setText", wrap(SwingDebugBridge::handleSetText));
 			s.createContext("/selectTab", wrap(SwingDebugBridge::handleSelectTab));
+			s.createContext("/selectTreeRow", wrap(SwingDebugBridge::handleSelectTreeRow));
+			s.createContext("/rightClickTreeRow", wrap(SwingDebugBridge::handleRightClickTreeRow));
+			s.createContext("/rightClick", wrap(SwingDebugBridge::handleRightClick));
 			s.createContext("/listeners", wrap(SwingDebugBridge::handleListeners));
 			s.createContext("/log", ex -> {
 				try {
@@ -233,6 +236,36 @@ public final class SwingDebugBridge {
 		}
 		boolean ok = SwingInspector.selectTab(path, Integer.parseInt(q.get("index")));
 		return "{\"selected\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleSelectTreeRow(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty() || !q.containsKey("row")) {
+			return "{\"error\":\"require 'path' and 'row' query parameters\"}";
+		}
+		boolean ok = SwingInspector.selectTreeRow(path, Integer.parseInt(q.get("row")));
+		return "{\"selected\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleRightClickTreeRow(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty() || !q.containsKey("row")) {
+			return "{\"error\":\"require 'path' and 'row' query parameters\"}";
+		}
+		boolean ok = SwingInspector.rightClickTreeRow(path, Integer.parseInt(q.get("row")));
+		return "{\"rightClicked\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
+	}
+
+	private static String handleRightClick(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty()) {
+			return "{\"error\":\"missing 'path' query parameter\"}";
+		}
+		boolean ok = SwingInspector.rightClick(path);
+		return "{\"rightClicked\":" + ok + ",\"path\":\"" + jsonEscape(path) + "\"}";
 	}
 
 	// ---------------------------------------------------------------------
