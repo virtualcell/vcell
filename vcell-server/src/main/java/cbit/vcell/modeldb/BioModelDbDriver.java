@@ -418,6 +418,48 @@ KeyValue[] getSimulationEntriesFromBioModel(Connection con,KeyValue bioModelKey)
 }
 
 
+/**
+ * issue #1746 Phase 2: bulk-fetch the simulation database keys owned by each of the given BioModel
+ * versions from vc_biomodelsim, in batched IN-list queries (Oracle IN limit is 1000) rather than one
+ * query per BioModel. Returns a map from BioModel key -> its simulation keys (BioModels with no
+ * simulations are simply absent from the map).
+ */
+java.util.Map<KeyValue, KeyValue[]> getSimulationKeysForBioModels(Connection con, KeyValue[] bioModelKeys) throws SQLException {
+	java.util.Map<KeyValue, java.util.List<KeyValue>> grouped = new java.util.LinkedHashMap<KeyValue, java.util.List<KeyValue>>();
+	if (bioModelKeys == null || bioModelKeys.length == 0) {
+		return new java.util.LinkedHashMap<KeyValue, KeyValue[]>();
+	}
+	final int BATCH = 1000; // Oracle IN-list limit
+	for (int start = 0; start < bioModelKeys.length; start += BATCH) {
+		int end = Math.min(start + BATCH, bioModelKeys.length);
+		StringBuilder inList = new StringBuilder();
+		for (int i = start; i < end; i++) {
+			if (i > start) { inList.append(","); }
+			inList.append(bioModelKeys[i]);
+		}
+		String sql = " SELECT " + bioModelSimLinkTable.bioModelRef + ", " + bioModelSimLinkTable.simRef +
+				" FROM " + bioModelSimLinkTable.getTableName() +
+				" WHERE " + bioModelSimLinkTable.bioModelRef + " IN (" + inList + ")";
+		Statement stmt = con.createStatement();
+		try {
+			ResultSet rset = stmt.executeQuery(sql);
+			while (rset.next()) {
+				KeyValue bmKey = new KeyValue(rset.getBigDecimal(bioModelSimLinkTable.bioModelRef.getUnqualifiedColName()));
+				KeyValue simKey = new KeyValue(rset.getBigDecimal(bioModelSimLinkTable.simRef.getUnqualifiedColName()));
+				grouped.computeIfAbsent(bmKey, k -> new java.util.ArrayList<KeyValue>()).add(simKey);
+			}
+		} finally {
+			stmt.close();
+		}
+	}
+	java.util.Map<KeyValue, KeyValue[]> result = new java.util.LinkedHashMap<KeyValue, KeyValue[]>();
+	for (java.util.Map.Entry<KeyValue, java.util.List<KeyValue>> e : grouped.entrySet()) {
+		result.put(e.getKey(), e.getValue().toArray(new KeyValue[0]));
+	}
+	return result;
+}
+
+
 public Versionable getVersionable(QueryHashtable dbc, Connection con, User user, VersionableType vType, KeyValue vKey)
 			throws ObjectNotFoundException, SQLException, DataAccessException {
 				

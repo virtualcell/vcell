@@ -2588,9 +2588,6 @@ components:
         scAnnots:
         - scAnnots
         - scAnnots
-        simulationContextNames:
-        - simulationContextNames
-        - simulationContextNames
         geoNames:
         - geoNames
         - geoNames
@@ -2608,12 +2605,18 @@ components:
         geoDims:
         - 5
         - 5
-        appTypes:
-        - null
-        - null
         scNames:
         - scNames
         - scNames
+        simulationContextNames:
+        - simulationContextNames
+        - simulationContextNames
+        simKeys:
+        - simKeys
+        - simKeys
+        appTypes:
+        - null
+        - null
         applicationInfo:
         - geometryName: geometryName
           name: name
@@ -2662,6 +2665,10 @@ components:
               type: string
             type: array
           type: array
+        simKeys:
+          items:
+            type: string
+          type: array
         geometryDimensions:
           items:
             format: int32
@@ -2693,9 +2700,6 @@ components:
           scAnnots:
           - scAnnots
           - scAnnots
-          simulationContextNames:
-          - simulationContextNames
-          - simulationContextNames
           geoNames:
           - geoNames
           - geoNames
@@ -2713,12 +2717,18 @@ components:
           geoDims:
           - 5
           - 5
-          appTypes:
-          - null
-          - null
           scNames:
           - scNames
           - scNames
+          simulationContextNames:
+          - simulationContextNames
+          - simulationContextNames
+          simKeys:
+          - simKeys
+          - simKeys
+          appTypes:
+          - null
+          - null
           applicationInfo:
           - geometryName: geometryName
             name: name
@@ -5696,9 +5706,6 @@ components:
             scAnnots:
             - scAnnots
             - scAnnots
-            simulationContextNames:
-            - simulationContextNames
-            - simulationContextNames
             geoNames:
             - geoNames
             - geoNames
@@ -5716,12 +5723,18 @@ components:
             geoDims:
             - 5
             - 5
-            appTypes:
-            - null
-            - null
             scNames:
             - scNames
             - scNames
+            simulationContextNames:
+            - simulationContextNames
+            - simulationContextNames
+            simKeys:
+            - simKeys
+            - simKeys
+            appTypes:
+            - null
+            - null
             applicationInfo:
             - geometryName: geometryName
               name: name
@@ -5814,9 +5827,6 @@ components:
             scAnnots:
             - scAnnots
             - scAnnots
-            simulationContextNames:
-            - simulationContextNames
-            - simulationContextNames
             geoNames:
             - geoNames
             - geoNames
@@ -5834,12 +5844,18 @@ components:
             geoDims:
             - 5
             - 5
-            appTypes:
-            - null
-            - null
             scNames:
             - scNames
             - scNames
+            simulationContextNames:
+            - simulationContextNames
+            - simulationContextNames
+            simKeys:
+            - simKeys
+            - simKeys
+            appTypes:
+            - null
+            - null
             applicationInfo:
             - geometryName: geometryName
               name: name

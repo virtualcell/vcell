@@ -1019,6 +1019,26 @@ VCInfoContainer getVCInfoContainer(User user, boolean bEnableRetry,boolean bIncl
 	}
 }
 
+java.util.Map<KeyValue, KeyValue[]> getSimulationKeysForBioModels(KeyValue[] bioModelKeys, boolean bEnableRetry) throws DataAccessException, java.sql.SQLException{
+
+	Object lock = new Object();
+	Connection con = conFactory.getConnection(lock);
+	try {
+		return bioModelDB.getSimulationKeysForBioModels(con, bioModelKeys);
+	} catch (Throwable e) {
+		lg.error(e.getMessage(),e);
+		if (bEnableRetry && isBadConnection(con)) {
+			conFactory.failed(con,lock);
+			return getSimulationKeysForBioModels(bioModelKeys,false);
+		}else{
+			handle_DataAccessException_SQLException(e);
+			return null; // never gets here;
+		}
+	}finally{
+		conFactory.release(con,lock);
+	}
+}
+
 
 /**
  * This method was created in VisualAge.

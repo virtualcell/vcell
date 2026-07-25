@@ -35,6 +35,13 @@ public class BioModelChildSummary implements java.io.Serializable {
 	private String simNames[][] = new String[0][];
 	private String simAnnots[][] = new String[0][];
 
+	// issue #1746 Phase 2: all simulation database keys owned by this BioModel version, sourced from
+	// vc_biomodelsim at read time (NOT part of the DB serialization). Populated only on the
+	// /api/v1/vcInfoContainer endpoint; @JsonInclude(NON_NULL) keeps it absent from the other summary
+	// endpoints' responses so their existing (strict) clients are unaffected without an opt-in flag.
+	@com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+	private String simKeys[] = null;
+
 	private final static String NOCHILDREN = "NOCHILDREN";
 	public final static String COMPARTMENTAL_GEO_STR = "Compartmental";
 	public final static String TYPE_TOKEN = "__TYPE__:";
@@ -244,6 +251,16 @@ public String[] getSimulationNames(String simulationContextName) {
 		}
 	}
 	throw new RuntimeException("application '"+simulationContextName+"' not found");
+}
+
+/** issue #1746 Phase 2: the simulation database keys owned by this BioModel version (read-time only,
+ *  populated from vc_biomodelsim; null when not populated). */
+public String[] getSimKeys() {
+	return simKeys;
+}
+
+public void setSimKeys(String[] simKeys) {
+	this.simKeys = simKeys;
 }
 
 

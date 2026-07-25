@@ -247,9 +247,14 @@ public class DtoModelTransforms {
         String[] scAnnotations = dto.getScAnnots() == null ? null : dto.getScAnnots().toArray(new String[0]);
         String[] geoNames = dto.getGeoNames() == null ? null : dto.getGeoNames().toArray(new String[0]);
         int[] geoDims = dto.getGeoDims() == null ? null : dto.getGeoDims().stream().mapToInt(Integer::intValue).toArray();
-        return new BioModelChildSummary(dto.getSimulationContextNames().toArray(new String[0]),
+        BioModelChildSummary result = new BioModelChildSummary(dto.getSimulationContextNames().toArray(new String[0]),
                 mathTypes, scAnnotations, simNames, simAnnots, geoNames,
                 geoDims);
+        // issue #1746 Phase 2: simulation keys are populated only by the /vcInfoContainer endpoint
+        if (dto.getSimKeys() != null) {
+            result.setSimKeys(dto.getSimKeys().toArray(new String[0]));
+        }
+        return result;
     }
 
     public static VCellSoftwareVersion dtoToVCellSoftwareVersion(org.vcell.restclient.model.VCellSoftwareVersion dto){

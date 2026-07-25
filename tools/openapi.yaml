@@ -2453,6 +2453,10 @@ components:
             type: array
             items:
               type: string
+        simKeys:
+          type: array
+          items:
+            type: string
         geometryDimensions:
           type: array
           items:

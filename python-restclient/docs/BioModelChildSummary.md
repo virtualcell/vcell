@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **app_types** | [**List[MathType]**](MathType.md) |  | [optional] 
 **sim_names** | **List[List[str]]** |  | [optional] 
 **sim_annots** | **List[List[str]]** |  | [optional] 
+**sim_keys** | **List[str]** |  | [optional] 
 **geometry_dimensions** | **List[int]** |  | [optional] 
 **geometry_names** | **List[str]** |  | [optional] 
 **simulation_context_annotations** | **List[str]** |  | [optional] 

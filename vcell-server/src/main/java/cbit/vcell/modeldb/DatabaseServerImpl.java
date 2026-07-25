@@ -930,6 +930,22 @@ public VCInfoContainer getVCInfoContainer(User user) throws DataAccessException 
 
 }
 
+/**
+ * issue #1746 Phase 2: bulk-fetch the simulation database keys owned by each of the given BioModel
+ * versions (from vc_biomodelsim), in one batched query rather than one per BioModel.
+ */
+public java.util.Map<KeyValue, KeyValue[]> getSimulationKeysForBioModels(KeyValue[] bioModelKeys) throws DataAccessException {
+	try {
+		return dbTop.getSimulationKeysForBioModels(bioModelKeys, true);
+	} catch (SQLException e) {
+		lg.error(e.getMessage(),e);
+		throw new DataAccessException(e.getMessage(),e);
+	} catch (Throwable e) {
+		lg.error(e.getMessage(),e);
+		throw new DataAccessException(e.getMessage(),e);
+	}
+}
+
 
 /**
  * This method was created in VisualAge.

@@ -246,5 +246,3 @@ src/main/java/org/vcell/restclient/model/Vcellopt.java
 src/main/java/org/vcell/restclient/model/VcelloptStatus.java
 src/main/java/org/vcell/restclient/model/Version.java
 src/main/java/org/vcell/restclient/model/VersionFlag.java
-src/test/java/org/vcell/restclient/api/VcInfoContainerResourceApiTest.java
-src/test/java/org/vcell/restclient/model/VCInfoContainerSummaryTest.java
