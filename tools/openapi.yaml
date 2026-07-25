@@ -2277,6 +2277,28 @@ paths:
       security:
       - openId:
         - user
+  /api/v1/vcInfoContainer:
+    get:
+      tags:
+      - VC Info Container Resource
+      summary: "Return a single bulk collection of metadata summaries (BioModels,\
+        \ MathModels, Geometries, Images) visible to the requester. Anonymous requests\
+        \ return public records only; an authenticated request additionally includes\
+        \ the requester's own and shared records."
+      operationId: getVCInfoContainer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCInfoContainerSummary'
+        "500":
+          description: Data Access Exception
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
 components:
   schemas:
     AccesTokenRepresentationRecord:
@@ -3766,6 +3788,25 @@ components:
           $ref: '#/components/schemas/GIFImage'
         softwareVersion:
           $ref: '#/components/schemas/VCellSoftwareVersion'
+    VCInfoContainerSummary:
+      type: object
+      properties:
+        bioModelSummaries:
+          type: array
+          items:
+            $ref: '#/components/schemas/BioModelSummary'
+        mathModelSummaries:
+          type: array
+          items:
+            $ref: '#/components/schemas/MathModelSummary'
+        geometrySummaries:
+          type: array
+          items:
+            $ref: '#/components/schemas/GeometrySummary'
+        vcImageSummaries:
+          type: array
+          items:
+            $ref: '#/components/schemas/VCImageSummary'
     VCSimulationIdentifier:
       type: object
       properties:

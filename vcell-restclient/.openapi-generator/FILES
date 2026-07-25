@@ -103,6 +103,7 @@ docs/UserRegistrationInfo.md
 docs/UsersResourceApi.md
 docs/VCDocumentType.md
 docs/VCImageSummary.md
+docs/VCInfoContainerSummary.md
 docs/VCSimulationIdentifier.md
 docs/VCellHTTPError.md
 docs/VCellSite.md
@@ -112,6 +113,7 @@ docs/VariableMode.md
 docs/VariableSpecs.md
 docs/VariableType.md
 docs/VcImageResourceApi.md
+docs/VcInfoContainerResourceApi.md
 docs/Vcellopt.md
 docs/VcelloptStatus.md
 docs/Version.md
@@ -139,6 +141,7 @@ src/main/java/org/vcell/restclient/api/SimulationResourceApi.java
 src/main/java/org/vcell/restclient/api/SolverResourceApi.java
 src/main/java/org/vcell/restclient/api/UsersResourceApi.java
 src/main/java/org/vcell/restclient/api/VcImageResourceApi.java
+src/main/java/org/vcell/restclient/api/VcInfoContainerResourceApi.java
 src/main/java/org/vcell/restclient/model/AbstractOpenApiSchema.java
 src/main/java/org/vcell/restclient/model/AccesTokenRepresentationRecord.java
 src/main/java/org/vcell/restclient/model/AnalyticCurve.java
@@ -230,6 +233,7 @@ src/main/java/org/vcell/restclient/model/UserLoginInfoForMapping.java
 src/main/java/org/vcell/restclient/model/UserRegistrationInfo.java
 src/main/java/org/vcell/restclient/model/VCDocumentType.java
 src/main/java/org/vcell/restclient/model/VCImageSummary.java
+src/main/java/org/vcell/restclient/model/VCInfoContainerSummary.java
 src/main/java/org/vcell/restclient/model/VCSimulationIdentifier.java
 src/main/java/org/vcell/restclient/model/VCellHTTPError.java
 src/main/java/org/vcell/restclient/model/VCellSite.java
@@ -242,20 +246,5 @@ src/main/java/org/vcell/restclient/model/Vcellopt.java
 src/main/java/org/vcell/restclient/model/VcelloptStatus.java
 src/main/java/org/vcell/restclient/model/Version.java
 src/main/java/org/vcell/restclient/model/VersionFlag.java
-src/test/java/org/vcell/restclient/api/OptimizationResourceApiTest.java
-src/test/java/org/vcell/restclient/model/CopasiOptimizationMethodOptimizationMethodTypeTest.java
-src/test/java/org/vcell/restclient/model/CopasiOptimizationMethodTest.java
-src/test/java/org/vcell/restclient/model/CopasiOptimizationParameterDataTypeTest.java
-src/test/java/org/vcell/restclient/model/CopasiOptimizationParameterParamTypeTest.java
-src/test/java/org/vcell/restclient/model/CopasiOptimizationParameterTest.java
-src/test/java/org/vcell/restclient/model/OptJobStatusTest.java
-src/test/java/org/vcell/restclient/model/OptProblemTest.java
-src/test/java/org/vcell/restclient/model/OptProgressItemTest.java
-src/test/java/org/vcell/restclient/model/OptProgressReportTest.java
-src/test/java/org/vcell/restclient/model/OptResultSetTest.java
-src/test/java/org/vcell/restclient/model/OptimizationJobStatusTest.java
-src/test/java/org/vcell/restclient/model/ParameterDescriptionTest.java
-src/test/java/org/vcell/restclient/model/ReferenceVariableReferenceVariableTypeTest.java
-src/test/java/org/vcell/restclient/model/ReferenceVariableTest.java
-src/test/java/org/vcell/restclient/model/VcelloptStatusTest.java
-src/test/java/org/vcell/restclient/model/VcelloptTest.java
+src/test/java/org/vcell/restclient/api/VcInfoContainerResourceApiTest.java
+src/test/java/org/vcell/restclient/model/VCInfoContainerSummaryTest.java
