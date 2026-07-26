@@ -64,6 +64,38 @@ public final class SwingInspector {
 	private static final int MAX_LIST_ITEMS = 50;
 	private static final int MAX_TREE_ROWS = 100;
 
+	// ---------------------------------------------------------------------
+	// Stable component registry: each component seen in a tree/window dump is
+	// assigned a stable id ("c0", "c1", ...) so callers can reference it in
+	// later requests without re-resolving a fragile path selector. Non-invasive
+	// (does not touch Component.getName(), which VCell uses itself). Ids persist
+	// for the session; a stale id whose component is gone just fails the action.
+	// ---------------------------------------------------------------------
+	private static final Object REGISTRY_LOCK = new Object();
+	private static final java.util.Map<Component, String> idByComponent = new java.util.IdentityHashMap<>();
+	private static final java.util.Map<String, Component> componentById = new java.util.HashMap<>();
+	private static int idSeq = 0;
+
+	/** @return a stable id for the component, assigning one on first sighting. */
+	static String idFor(Component c) {
+		synchronized (REGISTRY_LOCK) {
+			String id = idByComponent.get(c);
+			if (id == null) {
+				id = "c" + (idSeq++);
+				idByComponent.put(c, id);
+				componentById.put(id, c);
+			}
+			return id;
+		}
+	}
+
+	/** @return the component previously registered under this id, or null. */
+	public static Component findById(String id) {
+		synchronized (REGISTRY_LOCK) {
+			return componentById.get(id);
+		}
+	}
+
 	private SwingInspector() {
 	}
 
@@ -124,6 +156,8 @@ public final class SwingInspector {
 	private static void appendNode(StringBuilder sb, Component c, String path, int depth, int maxDepth) {
 		sb.append('{');
 		kv(sb, "path", path);
+		comma(sb);
+		kv(sb, "id", idFor(c));
 		comma(sb);
 		kv(sb, "class", c.getClass().getName());
 
@@ -313,13 +347,19 @@ public final class SwingInspector {
 	// ---------------------------------------------------------------------
 
 	/**
-	 * Resolve a node path (as emitted by {@link #dumpWindowsJson()}) to a live
-	 * component. First segment indexes {@link #showingWindows()}; remaining
-	 * segments index {@link Container#getComponents()}.
+	 * Resolve a selector to a live component. A selector is either a registry id
+	 * ("c42", as emitted in each node's {@code id}) or a node path ("0/3/2", as
+	 * emitted in {@code path}); ids and paths are syntactically distinct, so a
+	 * single method resolves both and every endpoint accepts either. First path
+	 * segment indexes {@link #showingWindows()}; remaining segments index
+	 * {@link Container#getComponents()}.
 	 *
-	 * @return the component, or {@code null} if the path does not resolve
+	 * @return the component, or {@code null} if the selector does not resolve
 	 */
 	public static Component findByPath(final String path) {
+		if (path != null && path.matches("c\\d+")) {
+			return findById(path);
+		}
 		return onEdt(() -> {
 			String[] segs = path.split("/");
 			List<Window> windows = new ArrayList<>();
@@ -451,6 +491,94 @@ public final class SwingInspector {
 			return true;
 		} catch (Exception e) {
 			throw new RuntimeException("robot click failed at " + screenPt, e);
+		}
+	}
+
+	/**
+	 * Select (and scroll to) a specific row of the {@link JTree} at the given
+	 * path. Rows are as reported by the {@code tree} block in the JSON dump.
+	 *
+	 * @return true if the tree resolved and the row was in range
+	 */
+	public static boolean selectTreeRow(final String path, final int row) {
+		return onEdt(() -> {
+			Component c = findByPath(path);
+			if (!(c instanceof JTree)) {
+				return false;
+			}
+			JTree tree = (JTree) c;
+			if (row < 0 || row >= tree.getRowCount()) {
+				return false;
+			}
+			tree.setSelectionRow(row);
+			tree.scrollRowToVisible(row);
+			return true;
+		});
+	}
+
+	/**
+	 * Right-click a specific row of the {@link JTree} at the given path, which is
+	 * how VCell's tree explorer opens a node's context menu (e.g. right-clicking
+	 * the "Applications" node to create a new Application). The row is selected
+	 * first, then a synthetic {@link Robot} right-click (button 3) is issued at
+	 * the row's on-screen location so the resulting {@link javax.swing.JPopupMenu}
+	 * can be driven with {@link #click(String)}.
+	 *
+	 * @return true if the tree/row resolved and the right-click was issued
+	 */
+	public static boolean rightClickTreeRow(final String path, final int row) {
+		Point screenPt = onEdt(() -> {
+			Component c = findByPath(path);
+			if (!(c instanceof JTree)) {
+				return null;
+			}
+			JTree tree = (JTree) c;
+			if (row < 0 || row >= tree.getRowCount() || !tree.isShowing()) {
+				return null;
+			}
+			tree.setSelectionRow(row);
+			tree.scrollRowToVisible(row);
+			Rectangle rb = tree.getRowBounds(row);
+			if (rb == null) {
+				return null;
+			}
+			Point loc = tree.getLocationOnScreen();
+			return new Point(loc.x + rb.x + Math.min(rb.width / 2, 24), loc.y + rb.y + rb.height / 2);
+		});
+		return rightClickAt(screenPt);
+	}
+
+	/**
+	 * Right-click the center of the (non-tree) component at the given path, to
+	 * open its context menu.
+	 *
+	 * @return true if a showing component resolved and the right-click was issued
+	 */
+	public static boolean rightClick(final String path) {
+		Point screenPt = onEdt(() -> {
+			Component c = findByPath(path);
+			if (c == null || !c.isShowing()) {
+				return null;
+			}
+			Point loc = c.getLocationOnScreen();
+			Dimension d = c.getSize();
+			return new Point(loc.x + d.width / 2, loc.y + d.height / 2);
+		});
+		return rightClickAt(screenPt);
+	}
+
+	private static boolean rightClickAt(Point screenPt) {
+		if (screenPt == null) {
+			return false;
+		}
+		try {
+			Robot robot = new Robot();
+			robot.mouseMove(screenPt.x, screenPt.y);
+			robot.mousePress(InputEvent.BUTTON3_DOWN_MASK);
+			robot.mouseRelease(InputEvent.BUTTON3_DOWN_MASK);
+			return true;
+		} catch (Exception e) {
+			throw new RuntimeException("robot right-click failed at " + screenPt, e);
 		}
 	}
 

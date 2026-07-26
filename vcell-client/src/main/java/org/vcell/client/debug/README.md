@@ -45,6 +45,8 @@ On startup you'll see a `WARN` log line: `Swing debug bridge listening on http:/
 
 ## Endpoints
 
+Every node in `/tree` and `/windows` carries a stable **`id`** (`c0`, `c1`, …) in addition to its `path`. Any endpoint's `path=` parameter accepts either form — prefer the `id`, which stays valid across dumps and doesn't break when the component tree shifts. (Registry is non-invasive; it never touches `Component.getName()`.)
+
 | Endpoint | Returns |
 |---|---|
 | `GET /health` | `ok` |
@@ -54,6 +56,9 @@ On startup you'll see a `WARN` log line: `Swing debug bridge listening on http:/
 | `GET /click?path=0/3/2` | JSON `{"clicked": true\|false}` |
 | `GET /setText?path=&text=&enter=` | JSON `{"set": true\|false}` |
 | `GET /selectTab?path=&index=` | JSON `{"selected": true\|false}` |
+| `GET /selectTreeRow?path=&row=N` | select row N of the JTree; JSON `{"selected": bool}` |
+| `GET /rightClickTreeRow?path=&row=N` | right-click row N (opens its context menu); JSON `{"rightClicked": bool}` |
+| `GET /rightClick?path=` | right-click a component's center; JSON `{"rightClicked": bool}` |
 | `GET /listeners?path=0/3/2` | JSON: registered `ActionListener` classes, action command, mouse-listener count — "is this control actually wired up?" |
 | `GET /log[?lines=N]` | text/plain tail (default 200 lines) of the client's real log — VCell redirects System.out/err to `<vcellHome>/logs/vcellrun_<site>.log`, so exceptions never appear on the launcher's stdout |
 
