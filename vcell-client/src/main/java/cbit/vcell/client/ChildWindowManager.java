@@ -19,6 +19,7 @@ import javax.swing.JMenuBar;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.client.logicalwindow.LWChildDialog;
 import org.vcell.client.logicalwindow.LWChildFrame;
 import org.vcell.client.logicalwindow.LWContainerHandle;
 import org.vcell.client.logicalwindow.LWFrameOrDialog;
@@ -51,14 +52,24 @@ public class ChildWindowManager {
 		ChildWindowManager getChildWindowManager(); 
 	}
 	
+	/**
+	 * issue: window z-order. Modeless child windows are now OWNED windows ({@link LWChildDialog},
+	 * an owned modeless JDialog) rather than un-owned {@link LWChildFrame}s. An un-owned JFrame could
+	 * only be kept above its parent by a best-effort {@code Window.toFront()}, which modern macOS
+	 * (13.3+/Sonoma cooperative activation) and Windows (foreground lock) refuse for a non-foreground
+	 * app — the "child window hides behind the document window" bug. A natively-owned window is kept
+	 * above its owner by the OS itself. Trade-off (accepted): no independent taskbar button; the child
+	 * travels with its owner. Mirrors the already-owned {@link ParentModalChild} (modal) sibling.
+	 * See {@code docs/windowing-design-patterns.md} §7.
+	 */
 	@SuppressWarnings("serial")
-	private static class ModelessChild extends LWChildFrame implements ManagedChild {
+	private static class ModelessChild extends LWChildDialog implements ManagedChild {
 		private final ChildWindowManager childWindowManager;
 		private ModelessChild(ChildWindowManager cwm,LWContainerHandle parent, String title, LWTraits tr) throws HeadlessException {
 			super(parent, title);
 			Objects.requireNonNull(cwm);
 			childWindowManager = cwm;
-			traits = tr; 
+			traits = tr;
 		}
 
 		@Override
