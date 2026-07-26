@@ -48,7 +48,10 @@ import org.apache.logging.log4j.Logger;
 import org.vcell.solver.smoldyn.SmoldynFileWriter;
 import org.vcell.solver.smoldyn.SmoldynSolver;
 import org.vcell.util.*;
+import org.vcell.util.document.BioModelChildSummary;
+import org.vcell.util.document.BioModelInfo;
 import org.vcell.util.document.DocumentValidUtil;
+import org.vcell.util.document.KeyValue;
 import org.vcell.util.document.LocalVCDataIdentifier;
 import org.vcell.util.document.User;
 import org.vcell.util.gui.DialogUtils;
@@ -441,13 +444,16 @@ private ODESimData importBatchSimulation(OutputContext outputContext, Simulation
 /**
  * issue #1746: resolve a pristine, submit-time {@link SimulationOwner} for the results viewer's
  * metadata, so it stays consistent with the result columns even after the live model is edited
- * (renamed/deleted species). Resolution order:
+ * (renamed/deleted species) or re-saved to a new version. Resolution order:
  *   1. local quick runs: re-parse the immutable BioModel snapshot stashed at run-submit;
- *   2. saved runs: reload a pristine BioModel copy from the database by version key;
- *   3. otherwise (unsaved model, no snapshot): {@code null} - caller falls back to the live owner.
+ *   2. cross-version (Phase 2): find the accessible BioModel version whose child-summary simKeys
+ *      contain the viewed simulation's key and reload that pristine version - covers the case where
+ *      the live model has since been re-saved (so its current version no longer owns this run);
+ *   3. saved runs: reload a pristine BioModel copy by the live model's version key;
+ *   4. otherwise (unsaved model, no snapshot): {@code null} - caller falls back to the live owner.
  * Never throws: any failure logs and returns {@code null} so the results view still opens.
  */
-private SimulationOwner resolvePristineMetadataOwner(Hashtable<String, Object> hashTable) {
+private SimulationOwner resolvePristineMetadataOwner(Hashtable<String, Object> hashTable, Simulation viewedSim) {
 	SimulationOwner liveOwner = getSimWorkspace().getSimulationOwner();
 	if (!(liveOwner instanceof SimulationContext)) {
 		return null;
@@ -459,6 +465,11 @@ private SimulationOwner resolvePristineMetadataOwner(Hashtable<String, Object> h
 			BioModel pristine = XmlHelper.XMLToBioModel(new XMLSource(stashedXml));
 			return pristine.getSimulationContext(simContextName);
 		}
+		// issue #1746 Phase 2: authoritative cross-version resolution by the viewed simulation's key
+		SimulationOwner ownerBySimKey = resolveOwnerBySimKey(viewedSim);
+		if (ownerBySimKey != null) {
+			return ownerBySimKey;
+		}
 		BioModel liveBioModel = ((SimulationContext)liveOwner).getBioModel();
 		if (liveBioModel != null && liveBioModel.getVersion() != null && liveBioModel.getVersion().getVersionKey() != null) {
 			DocumentManager documentManager = getDocumentWindowManager().getRequestManager().getDocumentManager();
@@ -468,6 +479,64 @@ private SimulationOwner resolvePristineMetadataOwner(Hashtable<String, Object> h
 	} catch (Exception e) {
 		// non-fatal: fall back to the live model (previous behavior) rather than failing the results view
 		System.out.println("issue #1746: could not resolve pristine metadata owner (" + e.getMessage() + "), using live model");
+	}
+	return null;
+}
+
+/**
+ * issue #1746 Phase 2: cross-version resolution. Given the viewed simulation's key, scan the cached
+ * accessible {@link BioModelInfo}s for the version whose child-summary {@code simKeys} (populated at
+ * read time from vc_biomodelsim) contain it, reload that pristine version, and return the
+ * {@link SimulationContext} that actually owns that key. This is authoritative across versions - it
+ * finds the model version the run belongs to rather than trusting the live (possibly re-saved) model.
+ * Returns {@code null} when the viewed simulation has no key (unsaved quick-run) or no accessible
+ * model claims it, so the caller continues with the remaining resolution steps.
+ */
+private SimulationOwner resolveOwnerBySimKey(Simulation viewedSim) throws DataAccessException {
+	if (viewedSim == null || viewedSim.getSimulationInfo() == null) {
+		return null;
+	}
+	KeyValue simKey = viewedSim.getSimulationInfo().getAuthoritativeVCSimulationIdentifier().getSimulationKey();
+	if (simKey == null) {
+		return null;
+	}
+	String simKeyStr = simKey.toString();
+	DocumentManager documentManager = getDocumentWindowManager().getRequestManager().getDocumentManager();
+	BioModelInfo[] bioModelInfos = documentManager.getBioModelInfos();
+	if (bioModelInfos == null) {
+		return null;
+	}
+	for (BioModelInfo bioModelInfo : bioModelInfos) {
+		if (bioModelInfo == null) {
+			continue;
+		}
+		BioModelChildSummary summary = bioModelInfo.getBioModelChildSummary();
+		if (summary == null || summary.getSimKeys() == null) {
+			continue;
+		}
+		boolean claimsKey = false;
+		for (String candidate : summary.getSimKeys()) {
+			if (simKeyStr.equals(candidate)) {
+				claimsKey = true;
+				break;
+			}
+		}
+		if (!claimsKey) {
+			continue;
+		}
+		// this version claims the viewed simulation - reload it pristine and locate the owning app by key
+		BioModel pristine = documentManager.getBioModel(bioModelInfo.getVersion().getVersionKey());
+		if (pristine == null) {
+			return null;
+		}
+		for (SimulationContext simContext : pristine.getSimulationContexts()) {
+			for (Simulation sim : simContext.getSimulations()) {
+				if (sim.getKey() != null && simKeyStr.equals(sim.getKey().toString())) {
+					return simContext;
+				}
+			}
+		}
+		return null;
 	}
 	return null;
 }
@@ -486,7 +555,9 @@ private AsynchClientTask[] showSimulationResults0(final boolean isLocal, final V
 			Simulation[] simsToShow = (Simulation[])hashTable.get("simsArray");
 			// issue #1746: resolve the pristine, submit-time owner once (all sims share the owner);
 			// done on this non-swing task since it may re-parse XML or reload a BioModel from the DB.
-			SimulationOwner pristineMetadataOwner = resolvePristineMetadataOwner(hashTable);
+			// The representative sim carries the submit-time key used for the cross-version scan.
+			Simulation representativeSim = (simsToShow != null && simsToShow.length > 0) ? simsToShow[0] : null;
+			SimulationOwner pristineMetadataOwner = resolvePristineMetadataOwner(hashTable, representativeSim);
 			if (pristineMetadataOwner != null) {
 				hashTable.put(H_PRISTINE_METADATA_OWNER, pristineMetadataOwner);
 			}
