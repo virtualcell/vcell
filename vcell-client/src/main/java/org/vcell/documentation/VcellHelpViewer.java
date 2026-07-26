@@ -23,9 +23,9 @@ import javax.help.HelpSet;
 import javax.help.JHelp;
 import javax.help.Map.ID;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.vcell.client.logicalwindow.LWTopFrame;
 import org.vcell.util.gui.GeneralGuiUtils;
 import org.vcell.util.document.VCellSoftwareVersion;
 
@@ -54,7 +54,26 @@ public class VcellHelpViewer extends JPanel {
     /**
      * reusable reference to viewer; allows garbage (if not visible)
      */
-    private static WeakReference<JFrame> standaloneRef = null;
+    private static WeakReference<LWTopFrame> standaloneRef = null;
+
+    /**
+     * issue: window z-order. The standalone Help window is a top-level, document-independent window,
+     * so it is an {@link LWTopFrame} (a tracked LW root that appears in the "Window" menu and is
+     * brought to front on open) rather than a raw, un-owned {@code JFrame} that could hide behind the
+     * desktop. It is intentionally NOT an owned child window — global Help must outlive any single
+     * document window. See {@code docs/windowing-design-patterns.md}.
+     */
+    @SuppressWarnings("serial")
+    private static class VcellHelpWindow extends LWTopFrame {
+        private VcellHelpWindow(String title) {
+            super();
+            setTitle(title);
+        }
+        @Override
+        public String menuDescription() {
+            return getTitle();
+        }
+    }
 
     public void setCloseMyParent(ChildWindow closeableWindow) {
         this.closeableWindow = closeableWindow;
@@ -112,10 +131,10 @@ public class VcellHelpViewer extends JPanel {
     }
 
     public static void showStandaloneViewer() {
-        JFrame frame = standaloneRef != null ? standaloneRef.get() : null;
+        LWTopFrame frame = standaloneRef != null ? standaloneRef.get() : null;
         if (frame == null) {
             VcellHelpViewer helpViewer = new VcellHelpViewer(VcellHelpViewer.VCELL_DOC_URL);
-            frame = new JFrame("Virtual Cell Help");
+            frame = new VcellHelpWindow("Virtual Cell Help");
             String title = "Virtual Cell Help" + " -- VCell " + VCellSoftwareVersion.fromSystemProperty().getSoftwareVersionString();
             frame.setTitle(title);
             frame.setPreferredSize(new Dimension(VcellHelpViewer.DEFAULT_HELP_DIALOG_WIDTH, VcellHelpViewer.DEFAULT_HELP_DIALOG_HEIGHT));
