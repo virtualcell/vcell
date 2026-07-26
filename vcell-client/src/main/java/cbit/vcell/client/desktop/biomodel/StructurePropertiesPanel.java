@@ -518,6 +518,10 @@ private void changeName() {
 		structure.setName(newName,true);
 	} catch (PropertyVetoException e1) {
 		e1.printStackTrace();
+		// the rename was rejected (e.g. duplicate name): revert the field to the
+		// structure's actual name so the panel does not keep displaying the
+		// rejected value and re-fire the failed rename on the next commit.
+		nameTextField.setText(structure.getName());
 		DialogUtils.showErrorDialog(StructurePropertiesPanel.this, e1.getMessage());
 	}
 }
