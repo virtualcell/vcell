@@ -222,7 +222,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<LinkNode> 
 				try {
 					res = Double.parseDouble(newExpressionString);
 				} catch(NumberFormatException e) {
-					JOptionPane.showMessageDialog(null, "Number expected", "Error", JOptionPane.ERROR_MESSAGE);
+					DialogUtils.showErrorDialog(ownerTable, "Number expected");
 					return;
 				}
 				Coordinate c = sas.getCoordinate();
@@ -243,7 +243,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<LinkNode> 
 				try {
 					res = Double.parseDouble(newExpressionString);
 				} catch(NumberFormatException e) {
-					JOptionPane.showMessageDialog(null, "Number expected", "Error", JOptionPane.ERROR_MESSAGE);
+					DialogUtils.showErrorDialog(ownerTable, "Number expected");
 					return;
 				}
 				Coordinate c = sas.getCoordinate();
@@ -263,7 +263,7 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<LinkNode> 
 				try {
 					res = Double.parseDouble(newExpressionString);
 				} catch(NumberFormatException ex) {
-					JOptionPane.showMessageDialog(null, "Number expected", "Error", JOptionPane.ERROR_MESSAGE);
+					DialogUtils.showErrorDialog(ownerTable, "Number expected");
 //					DialogUtils.showErrorDialog(ownerTable.getParent(), "Number expected");
 //					SwingUtilities.invokeLater(new Runnable() {
 //						public void run() {
@@ -292,11 +292,11 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<LinkNode> 
 				try {
 					res = Double.parseDouble(newExpressionString);
 				} catch(NumberFormatException ex) {
-					JOptionPane.showMessageDialog(null, "Number expected", "Error", JOptionPane.ERROR_MESSAGE);
+					DialogUtils.showErrorDialog(ownerTable, "Number expected");
 					return;
 				}
 				if(res <= 0.0) {
-					JOptionPane.showMessageDialog(null, "Site radius must be a positive number", "Error", JOptionPane.ERROR_MESSAGE);
+					DialogUtils.showErrorDialog(ownerTable, "Site radius must be a positive number");
 					return;
 				}
 				if(sas == null) {
@@ -312,11 +312,11 @@ public class MolecularTypeSpecsTableModel extends VCellSortTableModel<LinkNode> 
 				try {
 					res = Double.parseDouble(newExpressionString);
 				} catch(NumberFormatException ex) {
-					JOptionPane.showMessageDialog(null, "Number expected", "Error", JOptionPane.ERROR_MESSAGE);
+					DialogUtils.showErrorDialog(ownerTable, "Number expected");
 					return;
 				}
 				if(res <= 0.0) {
-					JOptionPane.showMessageDialog(null, "Site diffusion coefficient must be a positive number", "Error", JOptionPane.ERROR_MESSAGE);
+					DialogUtils.showErrorDialog(ownerTable, "Site diffusion coefficient must be a positive number");
 					return;
 				}
 				if(sas == null) {

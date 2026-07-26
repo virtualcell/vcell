@@ -1,6 +1,7 @@
 package cbit.vcell.client.desktop;
 
 import java.awt.Window;
+import java.lang.ref.WeakReference;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,6 +13,9 @@ import java.util.Set;
 import org.vcell.util.*;
 import org.vcell.util.Issue.IssueCategory;
 import org.vcell.util.document.VCDocument;
+import org.vcell.client.logicalwindow.LWContainerHandle;
+import org.vcell.client.logicalwindow.LWNamespace;
+import org.vcell.client.logicalwindow.LWTopFrame;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.client.desktop.QuickFixSimulation.CloseAction;
@@ -283,7 +287,14 @@ public abstract class VCDocumentDecorator {
 			}
 			if (goodSolvers.size() > 0) {
 				final boolean useFixAll = siblings.size() > 1;
-				QuickFixSimulation qfs = new QuickFixSimulation(activated,useFixAll,
+				// resolve a non-null logical owner so the modal dialog is never orphaned; activated may be
+				// null (e.g. a MathModel simulation), in which case fall back to the current top-level window.
+				LWContainerHandle lwParent = LWNamespace.findLWOwner(activated);
+				if (lwParent == null) {
+					lwParent = LWTopFrame.liveWindows().map(WeakReference::get)
+							.filter(Objects::nonNull).findFirst().orElse(null);
+				}
+				QuickFixSimulation qfs = new QuickFixSimulation(lwParent,useFixAll,
 						currentSolver + " does not support current model. Please select one of the following solvers:",
 						goodSolvers);
 				qfs.setVisible(true);
