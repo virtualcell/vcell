@@ -16,8 +16,13 @@
 #                          vcell-client/src/main/java/org/vcell/client/debug/README.md
 #
 # Environment overrides:
-#   VCELL_API_HOST          api server host[:port]  (default vcellapi.cam.uchc.edu:443)
+#   VCELL_API_HOST          api server host[:port]  (default vcell.cam.uchc.edu:443)
 #   VCELL_SOFTWARE_VERSION  version string          (default Rel_Version_8.0.0_build_00)
+#
+# Server hosts:
+#   production  vcell.cam.uchc.edu:443       (default)
+#   dev         vcell-dev.cam.uchc.edu:443
+#   (vcellapi.cam.uchc.edu is defunct)
 #
 # Examples:
 #   ./vcell.sh                                            # connect to production
@@ -27,7 +32,7 @@
 
 set -eo pipefail
 
-VCELL_API_HOST="${VCELL_API_HOST:-vcellapi.cam.uchc.edu:443}"
+VCELL_API_HOST="${VCELL_API_HOST:-vcell.cam.uchc.edu:443}"
 VCELL_SOFTWARE_VERSION="${VCELL_SOFTWARE_VERSION:-Rel_Version_8.0.0_build_00}"
 
 MAIN_CLASS=cbit.vcell.client.VCellClientMain
