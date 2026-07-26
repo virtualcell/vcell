@@ -28,6 +28,8 @@ api/users-resource.service.ts
 api/users-resource.serviceInterface.ts
 api/vc-image-resource.service.ts
 api/vc-image-resource.serviceInterface.ts
+api/vc-info-container-resource.service.ts
+api/vc-info-container-resource.serviceInterface.ts
 configuration.ts
 encoder.ts
 git_push.sh
@@ -130,6 +132,7 @@ model/variable-specs.ts
 model/variable-type.ts
 model/vc-document-type.ts
 model/vc-image-summary.ts
+model/vc-info-container-summary.ts
 model/vc-simulation-identifier.ts
 model/vcellopt-status.ts
 model/vcellopt.ts

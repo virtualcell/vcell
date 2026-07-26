@@ -88,6 +88,7 @@ export * from './user-login-info-for-mapping';
 export * from './user-registration-info';
 export * from './vc-document-type';
 export * from './vc-image-summary';
+export * from './vc-info-container-summary';
 export * from './vc-simulation-identifier';
 export * from './v-cell-http-error';
 export * from './v-cell-site';

@@ -37,4 +37,7 @@ export * from './users-resource.serviceInterface';
 export * from './vc-image-resource.service';
 import { VCImageResourceService } from './vc-image-resource.service';
 export * from './vc-image-resource.serviceInterface';
-export const APIS = [AdminResourceService, BioModelResourceService, ExportResourceService, FieldDataResourceService, GeometryResourceService, HelloWorldService, MathModelResourceService, OptimizationResourceService, PublicationResourceService, SimulationResourceService, SolverResourceService, UsersResourceService, VCImageResourceService];
+export * from './vc-info-container-resource.service';
+import { VCInfoContainerResourceService } from './vc-info-container-resource.service';
+export * from './vc-info-container-resource.serviceInterface';
+export const APIS = [AdminResourceService, BioModelResourceService, ExportResourceService, FieldDataResourceService, GeometryResourceService, HelloWorldService, MathModelResourceService, OptimizationResourceService, PublicationResourceService, SimulationResourceService, SolverResourceService, UsersResourceService, VCImageResourceService, VCInfoContainerResourceService];

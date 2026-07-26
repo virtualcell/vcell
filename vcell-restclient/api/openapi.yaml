@@ -2391,6 +2391,29 @@ paths:
       tags:
       - Users Resource
       x-accepts: application/json
+  /api/v1/vcInfoContainer:
+    get:
+      operationId: getVCInfoContainer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCInfoContainerSummary'
+          description: OK
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCellHTTPError'
+          description: Data Access Exception
+      summary: "Return a single bulk collection of metadata summaries (BioModels,\
+        \ MathModels, Geometries, Images) visible to the requester. Anonymous requests\
+        \ return public records only; an authenticated request additionally includes\
+        \ the requester's own and shared records."
+      tags:
+      - VC Info Container Resource
+      x-accepts: application/json
 components:
   schemas:
     AccesTokenRepresentationRecord:
@@ -2565,9 +2588,6 @@ components:
         scAnnots:
         - scAnnots
         - scAnnots
-        simulationContextNames:
-        - simulationContextNames
-        - simulationContextNames
         geoNames:
         - geoNames
         - geoNames
@@ -2585,12 +2605,18 @@ components:
         geoDims:
         - 5
         - 5
-        appTypes:
-        - null
-        - null
         scNames:
         - scNames
         - scNames
+        simulationContextNames:
+        - simulationContextNames
+        - simulationContextNames
+        simKeys:
+        - simKeys
+        - simKeys
+        appTypes:
+        - null
+        - null
         applicationInfo:
         - geometryName: geometryName
           name: name
@@ -2639,6 +2665,10 @@ components:
               type: string
             type: array
           type: array
+        simKeys:
+          items:
+            type: string
+          type: array
         geometryDimensions:
           items:
             format: int32
@@ -2670,9 +2700,6 @@ components:
           scAnnots:
           - scAnnots
           - scAnnots
-          simulationContextNames:
-          - simulationContextNames
-          - simulationContextNames
           geoNames:
           - geoNames
           - geoNames
@@ -2690,12 +2717,18 @@ components:
           geoDims:
           - 5
           - 5
-          appTypes:
-          - null
-          - null
           scNames:
           - scNames
           - scNames
+          simulationContextNames:
+          - simulationContextNames
+          - simulationContextNames
+          simKeys:
+          - simKeys
+          - simKeys
+          appTypes:
+          - null
+          - null
           applicationInfo:
           - geometryName: geometryName
             name: name
@@ -3893,9 +3926,16 @@ components:
         - simulationNames
         - simulationNames
         geometryName: geometryName
+        simKeys:
+        - simKeys
+        - simKeys
         geometryDimension: 0
         modelType: null
       properties:
+        simKeys:
+          items:
+            type: string
+          type: array
         modelType:
           $ref: '#/components/schemas/MathType'
         geometryDimension:
@@ -3922,6 +3962,9 @@ components:
           - simulationNames
           - simulationNames
           geometryName: geometryName
+          simKeys:
+          - simKeys
+          - simKeys
           geometryDimension: 0
           modelType: null
         keyValue: keyValue
@@ -5410,6 +5453,620 @@ components:
           $ref: '#/components/schemas/GIFImage'
         softwareVersion:
           $ref: '#/components/schemas/VCellSoftwareVersion'
+      type: object
+    VCInfoContainerSummary:
+      example:
+        mathModelSummaries:
+        - modelInfo:
+            simulationAnnotations:
+            - simulationAnnotations
+            - simulationAnnotations
+            simulationNames:
+            - simulationNames
+            - simulationNames
+            geometryName: geometryName
+            simKeys:
+            - simKeys
+            - simKeys
+            geometryDimension: 0
+            modelType: null
+          keyValue: keyValue
+          annotatedFunctions: annotatedFunctions
+          version:
+            date: 2000-01-23T04:56:07.000+00:00
+            owner:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            branchID: 0.8008281904610115
+            flag:
+              archived: true
+              current: true
+              intValue: 1
+              versionFlag: 6
+              published: true
+            groupAccess:
+              groupid: 5.962133916683182
+              description: description
+            name: name
+            annot: annot
+            branchPointRefKey: branchPointRefKey
+            versionKey: versionKey
+          softwareVersion:
+            vcellSite: null
+            patchVersion: 4
+            buildInt: 7
+            description: description
+            majorVersion: 3
+            minorVersion: 2
+            buildNumber: buildNumber
+            softwareVersionString: softwareVersionString
+            versionNumber: versionNumber
+          publicationInfos:
+          - vcDocumentType: null
+            theHashCode: 9
+            citation: citation
+            title: title
+            publicationKey: publicationKey
+            pubmedid: pubmedid
+            user:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            url: url
+            versionKey: versionKey
+            authors:
+            - authors
+            - authors
+            doi: doi
+            pubdate: 2022-03-10T00:00:00.000+00:00
+          - vcDocumentType: null
+            theHashCode: 9
+            citation: citation
+            title: title
+            publicationKey: publicationKey
+            pubmedid: pubmedid
+            user:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            url: url
+            versionKey: versionKey
+            authors:
+            - authors
+            - authors
+            doi: doi
+            pubdate: 2022-03-10T00:00:00.000+00:00
+        - modelInfo:
+            simulationAnnotations:
+            - simulationAnnotations
+            - simulationAnnotations
+            simulationNames:
+            - simulationNames
+            - simulationNames
+            geometryName: geometryName
+            simKeys:
+            - simKeys
+            - simKeys
+            geometryDimension: 0
+            modelType: null
+          keyValue: keyValue
+          annotatedFunctions: annotatedFunctions
+          version:
+            date: 2000-01-23T04:56:07.000+00:00
+            owner:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            branchID: 0.8008281904610115
+            flag:
+              archived: true
+              current: true
+              intValue: 1
+              versionFlag: 6
+              published: true
+            groupAccess:
+              groupid: 5.962133916683182
+              description: description
+            name: name
+            annot: annot
+            branchPointRefKey: branchPointRefKey
+            versionKey: versionKey
+          softwareVersion:
+            vcellSite: null
+            patchVersion: 4
+            buildInt: 7
+            description: description
+            majorVersion: 3
+            minorVersion: 2
+            buildNumber: buildNumber
+            softwareVersionString: softwareVersionString
+            versionNumber: versionNumber
+          publicationInfos:
+          - vcDocumentType: null
+            theHashCode: 9
+            citation: citation
+            title: title
+            publicationKey: publicationKey
+            pubmedid: pubmedid
+            user:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            url: url
+            versionKey: versionKey
+            authors:
+            - authors
+            - authors
+            doi: doi
+            pubdate: 2022-03-10T00:00:00.000+00:00
+          - vcDocumentType: null
+            theHashCode: 9
+            citation: citation
+            title: title
+            publicationKey: publicationKey
+            pubmedid: pubmedid
+            user:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            url: url
+            versionKey: versionKey
+            authors:
+            - authors
+            - authors
+            doi: doi
+            pubdate: 2022-03-10T00:00:00.000+00:00
+        geometrySummaries:
+        - extent:
+            x: 7.061401241503109
+            "y": 9.301444243932576
+            z: 3.616076749251911
+          origin:
+            x: 5.962133916683182
+            "y": 5.637376656633329
+            z: 2.3021358869347655
+          imageRef: imageRef
+          dimension: 0
+          version:
+            date: 2000-01-23T04:56:07.000+00:00
+            owner:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            branchID: 0.8008281904610115
+            flag:
+              archived: true
+              current: true
+              intValue: 1
+              versionFlag: 6
+              published: true
+            groupAccess:
+              groupid: 5.962133916683182
+              description: description
+            name: name
+            annot: annot
+            branchPointRefKey: branchPointRefKey
+            versionKey: versionKey
+          softwareVersion:
+            vcellSite: null
+            patchVersion: 4
+            buildInt: 7
+            description: description
+            majorVersion: 3
+            minorVersion: 2
+            buildNumber: buildNumber
+            softwareVersionString: softwareVersionString
+            versionNumber: versionNumber
+        - extent:
+            x: 7.061401241503109
+            "y": 9.301444243932576
+            z: 3.616076749251911
+          origin:
+            x: 5.962133916683182
+            "y": 5.637376656633329
+            z: 2.3021358869347655
+          imageRef: imageRef
+          dimension: 0
+          version:
+            date: 2000-01-23T04:56:07.000+00:00
+            owner:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            branchID: 0.8008281904610115
+            flag:
+              archived: true
+              current: true
+              intValue: 1
+              versionFlag: 6
+              published: true
+            groupAccess:
+              groupid: 5.962133916683182
+              description: description
+            name: name
+            annot: annot
+            branchPointRefKey: branchPointRefKey
+            versionKey: versionKey
+          softwareVersion:
+            vcellSite: null
+            patchVersion: 4
+            buildInt: 7
+            description: description
+            majorVersion: 3
+            minorVersion: 2
+            buildNumber: buildNumber
+            softwareVersionString: softwareVersionString
+            versionNumber: versionNumber
+        bioModelSummaries:
+        - summary:
+            simulationContextAnnotations:
+            - simulationContextAnnotations
+            - simulationContextAnnotations
+            scAnnots:
+            - scAnnots
+            - scAnnots
+            geoNames:
+            - geoNames
+            - geoNames
+            geometryDimensions:
+            - 2
+            - 2
+            geometryNames:
+            - geometryNames
+            - geometryNames
+            simAnnots:
+            - - simAnnots
+              - simAnnots
+            - - simAnnots
+              - simAnnots
+            geoDims:
+            - 5
+            - 5
+            scNames:
+            - scNames
+            - scNames
+            simulationContextNames:
+            - simulationContextNames
+            - simulationContextNames
+            simKeys:
+            - simKeys
+            - simKeys
+            appTypes:
+            - null
+            - null
+            applicationInfo:
+            - geometryName: geometryName
+              name: name
+              type: null
+              dimensions: 7
+            - geometryName: geometryName
+              name: name
+              type: null
+              dimensions: 7
+            simNames:
+            - - simNames
+              - simNames
+            - - simNames
+              - simNames
+          publicationInformation:
+          - vcDocumentType: null
+            theHashCode: 9
+            citation: citation
+            title: title
+            publicationKey: publicationKey
+            pubmedid: pubmedid
+            user:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            url: url
+            versionKey: versionKey
+            authors:
+            - authors
+            - authors
+            doi: doi
+            pubdate: 2022-03-10T00:00:00.000+00:00
+          - vcDocumentType: null
+            theHashCode: 9
+            citation: citation
+            title: title
+            publicationKey: publicationKey
+            pubmedid: pubmedid
+            user:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            url: url
+            versionKey: versionKey
+            authors:
+            - authors
+            - authors
+            doi: doi
+            pubdate: 2022-03-10T00:00:00.000+00:00
+          version:
+            date: 2000-01-23T04:56:07.000+00:00
+            owner:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            branchID: 0.8008281904610115
+            flag:
+              archived: true
+              current: true
+              intValue: 1
+              versionFlag: 6
+              published: true
+            groupAccess:
+              groupid: 5.962133916683182
+              description: description
+            name: name
+            annot: annot
+            branchPointRefKey: branchPointRefKey
+            versionKey: versionKey
+          vCellSoftwareVersion:
+            vcellSite: null
+            patchVersion: 4
+            buildInt: 7
+            description: description
+            majorVersion: 3
+            minorVersion: 2
+            buildNumber: buildNumber
+            softwareVersionString: softwareVersionString
+            versionNumber: versionNumber
+        - summary:
+            simulationContextAnnotations:
+            - simulationContextAnnotations
+            - simulationContextAnnotations
+            scAnnots:
+            - scAnnots
+            - scAnnots
+            geoNames:
+            - geoNames
+            - geoNames
+            geometryDimensions:
+            - 2
+            - 2
+            geometryNames:
+            - geometryNames
+            - geometryNames
+            simAnnots:
+            - - simAnnots
+              - simAnnots
+            - - simAnnots
+              - simAnnots
+            geoDims:
+            - 5
+            - 5
+            scNames:
+            - scNames
+            - scNames
+            simulationContextNames:
+            - simulationContextNames
+            - simulationContextNames
+            simKeys:
+            - simKeys
+            - simKeys
+            appTypes:
+            - null
+            - null
+            applicationInfo:
+            - geometryName: geometryName
+              name: name
+              type: null
+              dimensions: 7
+            - geometryName: geometryName
+              name: name
+              type: null
+              dimensions: 7
+            simNames:
+            - - simNames
+              - simNames
+            - - simNames
+              - simNames
+          publicationInformation:
+          - vcDocumentType: null
+            theHashCode: 9
+            citation: citation
+            title: title
+            publicationKey: publicationKey
+            pubmedid: pubmedid
+            user:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            url: url
+            versionKey: versionKey
+            authors:
+            - authors
+            - authors
+            doi: doi
+            pubdate: 2022-03-10T00:00:00.000+00:00
+          - vcDocumentType: null
+            theHashCode: 9
+            citation: citation
+            title: title
+            publicationKey: publicationKey
+            pubmedid: pubmedid
+            user:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            url: url
+            versionKey: versionKey
+            authors:
+            - authors
+            - authors
+            doi: doi
+            pubdate: 2022-03-10T00:00:00.000+00:00
+          version:
+            date: 2000-01-23T04:56:07.000+00:00
+            owner:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            branchID: 0.8008281904610115
+            flag:
+              archived: true
+              current: true
+              intValue: 1
+              versionFlag: 6
+              published: true
+            groupAccess:
+              groupid: 5.962133916683182
+              description: description
+            name: name
+            annot: annot
+            branchPointRefKey: branchPointRefKey
+            versionKey: versionKey
+          vCellSoftwareVersion:
+            vcellSite: null
+            patchVersion: 4
+            buildInt: 7
+            description: description
+            majorVersion: 3
+            minorVersion: 2
+            buildNumber: buildNumber
+            softwareVersionString: softwareVersionString
+            versionNumber: versionNumber
+        vcImageSummaries:
+        - extent:
+            x: 7.061401241503109
+            "y": 9.301444243932576
+            z: 3.616076749251911
+          preview:
+            size:
+              x: 2
+              "y": 4
+              z: 7
+            gifEncodedData: ""
+          size:
+            x: 2
+            "y": 4
+            z: 7
+          version:
+            date: 2000-01-23T04:56:07.000+00:00
+            owner:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            branchID: 0.8008281904610115
+            flag:
+              archived: true
+              current: true
+              intValue: 1
+              versionFlag: 6
+              published: true
+            groupAccess:
+              groupid: 5.962133916683182
+              description: description
+            name: name
+            annot: annot
+            branchPointRefKey: branchPointRefKey
+            versionKey: versionKey
+          softwareVersion:
+            vcellSite: null
+            patchVersion: 4
+            buildInt: 7
+            description: description
+            majorVersion: 3
+            minorVersion: 2
+            buildNumber: buildNumber
+            softwareVersionString: softwareVersionString
+            versionNumber: versionNumber
+        - extent:
+            x: 7.061401241503109
+            "y": 9.301444243932576
+            z: 3.616076749251911
+          preview:
+            size:
+              x: 2
+              "y": 4
+              z: 7
+            gifEncodedData: ""
+          size:
+            x: 2
+            "y": 4
+            z: 7
+          version:
+            date: 2000-01-23T04:56:07.000+00:00
+            owner:
+              mySpecials:
+              - null
+              - null
+              userName: userName
+              key: key
+            branchID: 0.8008281904610115
+            flag:
+              archived: true
+              current: true
+              intValue: 1
+              versionFlag: 6
+              published: true
+            groupAccess:
+              groupid: 5.962133916683182
+              description: description
+            name: name
+            annot: annot
+            branchPointRefKey: branchPointRefKey
+            versionKey: versionKey
+          softwareVersion:
+            vcellSite: null
+            patchVersion: 4
+            buildInt: 7
+            description: description
+            majorVersion: 3
+            minorVersion: 2
+            buildNumber: buildNumber
+            softwareVersionString: softwareVersionString
+            versionNumber: versionNumber
+      properties:
+        bioModelSummaries:
+          items:
+            $ref: '#/components/schemas/BioModelSummary'
+          type: array
+        mathModelSummaries:
+          items:
+            $ref: '#/components/schemas/MathModelSummary'
+          type: array
+        geometrySummaries:
+          items:
+            $ref: '#/components/schemas/GeometrySummary'
+          type: array
+        vcImageSummaries:
+          items:
+            $ref: '#/components/schemas/VCImageSummary'
+          type: array
       type: object
     VCSimulationIdentifier:
       example:

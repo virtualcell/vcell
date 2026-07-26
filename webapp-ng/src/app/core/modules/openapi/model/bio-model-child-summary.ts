@@ -21,6 +21,7 @@ export interface BioModelChildSummary {
     appTypes?: Array<MathType>;
     simNames?: Array<Array<string>>;
     simAnnots?: Array<Array<string>>;
+    simKeys?: Array<string>;
     geometryDimensions?: Array<number>;
     geometryNames?: Array<string>;
     simulationContextAnnotations?: Array<string>;

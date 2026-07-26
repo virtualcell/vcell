@@ -14,6 +14,7 @@
 |**appTypes** | **List&lt;MathType&gt;** |  |  [optional] |
 |**simNames** | **List&lt;List&lt;String&gt;&gt;** |  |  [optional] |
 |**simAnnots** | **List&lt;List&lt;String&gt;&gt;** |  |  [optional] |
+|**simKeys** | **List&lt;String&gt;** |  |  [optional] |
 |**geometryDimensions** | **List&lt;Integer&gt;** |  |  [optional] |
 |**geometryNames** | **List&lt;String&gt;** |  |  [optional] |
 |**simulationContextAnnotations** | **List&lt;String&gt;** |  |  [optional] |

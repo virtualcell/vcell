@@ -26,6 +26,7 @@ public class BioModelInfo implements org.vcell.util.document.VCDocumentInfo {
 	private Version version = null;
 	private BioModelChildSummary bioModelChildSummary = null; // Used for caching on server side
 	private BigString bioModelChildSummaryString = null; // String Required
+	private String[] simKeys = null; // issue #1746 Phase 2: sim keys joined from vc_biomodelsim, injected into the child summary on parse
 
 	private VCellSoftwareVersion softwareVersion = null;
 	private final ArrayList<PublicationInfo> publicationInfos = new ArrayList<>();
@@ -77,7 +78,15 @@ public BioModelChildSummary getBioModelChildSummary() {
 		bioModelChildSummary = BioModelChildSummary.fromDatabaseSerialization(bioModelChildSummaryString.toString());
 		bioModelChildSummaryString = null;
 	}
+	if (bioModelChildSummary != null && simKeys != null) {
+		bioModelChildSummary.setSimKeys(simKeys); // issue #1746 Phase 2: inject DB-joined sim keys
+	}
 	return bioModelChildSummary;
+}
+
+/** issue #1746 Phase 2: sim keys joined from vc_biomodelsim (set by BioModelTable.getInfo). */
+public void setSimKeys(String[] simKeys) {
+	this.simKeys = simKeys;
 }
 /**
  * This method was created in VisualAge.

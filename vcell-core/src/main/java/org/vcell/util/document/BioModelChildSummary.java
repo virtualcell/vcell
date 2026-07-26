@@ -34,6 +34,9 @@ public class BioModelChildSummary implements java.io.Serializable {
 
 	private String simNames[][] = new String[0][];
 	private String simAnnots[][] = new String[0][];
+	// issue #1746 Phase 2: flat list of this BioModel version's simulation database keys, sourced at
+	// read time from vc_biomodelsim in the DB layer (NOT part of the DB serialization).
+	private String simKeys[] = new String[0];
 
 	private final static String NOCHILDREN = "NOCHILDREN";
 	public final static String COMPARTMENTAL_GEO_STR = "Compartmental";
@@ -61,7 +64,7 @@ public class BioModelChildSummary implements java.io.Serializable {
  */
 private BioModelChildSummary() {}
 
-public BioModelChildSummary(String[] arg_scNames, MathType[] arg_appType, String[] arg_scAnnots, String[][] arg_simNames, String[][] arg_simAnnots, String[] arg_geoNames, int[] arg_geoDims){
+public BioModelChildSummary(String[] arg_scNames, MathType[] arg_appType, String[] arg_scAnnots, String[][] arg_simNames, String[][] arg_simAnnots, String[] arg_simKeys, String[] arg_geoNames, int[] arg_geoDims){
 	this.scNames = arg_scNames;
 	this.appTypes = arg_appType;
 	this.scAnnots = arg_scAnnots;
@@ -69,6 +72,17 @@ public BioModelChildSummary(String[] arg_scNames, MathType[] arg_appType, String
 	this.geoDims = arg_geoDims;
 	this.simNames = arg_simNames;
 	this.simAnnots = arg_simAnnots;
+	this.simKeys = arg_simKeys;
+}
+
+/** issue #1746 Phase 2: flat list of this BioModel version's simulation database keys (read-time,
+ *  from vc_biomodelsim; empty when none). */
+public String[] getSimKeys() {
+	return simKeys;
+}
+
+public void setSimKeys(String[] simKeys) {
+	this.simKeys = simKeys;
 }
 
 /**
