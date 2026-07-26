@@ -228,3 +228,112 @@ Not z-order bugs today, but they skip the LW/DialogUtils path; migrate gradually
 4. **P2** — thread requesters into the table models; `N5SettingsPanel:63` first.
 5. **P3** — retire `JDiagAdapter` after verifying host frames are `LWTopFrame`.
 6. **P4** — opportunistic `DialogUtils` migration; not urgent.
+
+## 7. Operating-system requirements & platform support (2026 research)
+
+The framework does **not** use a single mechanism to keep windows in order — it
+relies on **two OS contracts with very different durability**. Understanding which
+path a window takes explains why "windows behind windows" trouble is concentrated
+where it is, and whether the cause is OS regression or our own compliance drift.
+
+### 7.1 The two OS contracts
+
+| Path | Windows in this path | Mechanism | OS contract | Durability |
+|------|----------------------|-----------|-------------|------------|
+| **A — Native owned window** | `LWDialog`/`LWTitledDialog` (all `DialogUtils` dialogs), and any `JDialog` created with a real owner | `super(ownerWindow, …, DOCUMENT_MODAL)` → a genuine Win32 owned window / Cocoa child `NSWindow` | The **OS itself** keeps an owned window above its owner, regardless of which app is active. No app action needed. | **Strong.** Survives background/foreground changes. |
+| **B — Un-owned frame + `toFront()`** | `LWChildFrame` (and `LWTopFrame`) — these extend `JFrame`, which **cannot have an owner** in AWT | one `java.awt.Window.toFront()` at `windowOpened` (also from the "Window" menu / `positionChildren`). No `alwaysOnTop`, no continuous enforcement | `toFront()` maps to `SetForegroundWindow`/`BringWindowToTop` (Windows) and `orderFront:`/activation (macOS) — **best-effort, and refused for a non-foreground app**. | **Weak.** Fails whenever VCell is not the active app. |
+
+`Window.toFront()`'s own Javadoc warns it *"may not permit the Java VM to place
+its windows above native applications … depending on whether a window in the VM is
+already focused."* Path B leans entirely on that unguaranteed behavior.
+
+### 7.2 macOS — cause is **OS tightening** (that exposed a fragile pattern)
+
+- **macOS 13.3 (Ventura)** began *enforcing* "a window ordered front from a
+  non-active application may order **beneath** the active app's windows." Previously
+  lenient.
+- **macOS 14 (Sonoma)** introduced **cooperative activation**: self-activation is
+  now "a request, not a command" the system can deny (`activateIgnoringOtherApps:`
+  deprecated). A background app cannot pull its own windows forward unless the
+  active app yields.
+- JDK evidence: **JDK-8315657** (window not activated on Sonoma; the old
+  reactivation hack now deadlocks, disabled on macOS 14+), **JDK-8283590**,
+  **JDK-6640082** (`toFront()` not working). **Compose #4231**: on Sonoma 14.2.1 /
+  OpenJDK 17.0.10, `toFront()` **and** `requestFocus()` have **no effect** for a
+  background app (open, unfixed).
+- Path A (owned modal dialogs) stays intact — the OS enforces owner-above-owner
+  regardless of activation — **except** full-screen / Spaces / multi-monitor edge
+  cases: **JDK-8005011** (modal behind full-screen owner), **JDK-8236162**,
+  **JDK-8040659** (modal behind a *non-owner* frame — our mixed model is exposed),
+  **JDK-8198684**.
+- Aggravator: **Stage Manager** (Ventura+) groups windows per app and can park
+  un-owned frames (low-confidence — no JDK bug pins it, treat as secondary).
+- Stability aside: **macOS 14.4** turned a JVM JIT `SIGBUS` into an untrappable
+  `SIGKILL`, intermittently killing Java on Apple silicon (Oracle advised delaying
+  the update). Not z-order, but compounds "macOS broke Java" if on 14.4+.
+
+**macOS verdict:** primarily **OS tightening**. macOS used to tolerate Path B; from
+13.3/Sonoma it no longer does. The pattern was never guaranteed, so "OS tightening
+exposed a fragile design" is the precise framing.
+
+### 7.3 Windows — cause is **long-standing fragility**, amplified by Win11
+
+- The blocker is not new. `SetForegroundWindow` has **since Windows 2000** refused
+  to raise a window for a process that doesn't own the foreground — *"An
+  application cannot force a window to the foreground while the user is working with
+  another window. Instead, Windows flashes the taskbar button."* The
+  `SPI_SETFOREGROUNDLOCKTIMEOUT` foreground-lock (large default) governs this. Doc
+  reaffirmed 2025 — **unchanged** API contract.
+- So Path B's `toFront()` has **always** been unreliable on Windows for a background
+  app: **JDK-6640082**, **JDK-8124521** (after a window has been focused, `toFront()`
+  stops even flashing), **JDK-8128222**. These are treated as works-as-designed
+  against the OS, not AWT defects.
+- What Windows 11 changed is the *surrounding volatility*, making the symptom more
+  frequent: **22H2** spontaneous Explorer-to-front restacking; **24H2** a TSF/
+  `explorer.exe` focus-stealing regression (VCell loses foreground more often → its
+  later `toFront()` calls are demoted more often); **Snap Layouts** and **virtual
+  desktops** restack/relocate windows and do **not** bind an un-owned child frame to
+  its logical parent (only true owner relationships travel together); **Focus assist/
+  DND** can swallow even the taskbar-flash fallback, so the user gets no cue the
+  window opened behind.
+- Path A holds: Win32 still guarantees an owned window stays above its owner
+  (independent of the foreground-lock rules, which govern *activation* not
+  *stacking*). Edge cases: **JDK-8005011** (full-screen owner), **JDK-8258600** /
+  **JDK-8273918** (HiDPI / dual-screen placement), **JDK-8040659** (modal behind a
+  non-owner frame).
+
+**Windows verdict:** primarily **app-design fragility** (Path B was never safe),
+amplified by Win11's busier window management. Not a new OS clampdown.
+
+### 7.4 Combined verdict & remediation
+
+The trouble is **both** — and the two causes reinforce each other:
+1. **OS tightening** (macOS 13.3/Sonoma) and **amplified volatility** (Win11) have
+   made Path B (`toFront()` on un-owned frames) go from "usually works" to
+   "frequently fails."
+2. **Compliance drift** (§6) makes it worse: every P1 violation (raw un-owned
+   `JFrame`, `JOptionPane(null,…)`, orphan-`JDialog` + `alwaysOnTop`) pushes a window
+   that *should* be on the strong Path A down onto the weak Path B — and the
+   `setAlwaysOnTop(true)` sprinkled around is precisely the field-standard hack for
+   "toFront won't raise it," i.e. direct evidence the team already hit this.
+
+**The durable fix is to move non-modal children off Path B onto Path A** — give them
+a **real native owner** so the OS enforces stacking instead of the app fighting the
+foreground lock:
+- Reparent modeless children as **owned** windows (owned modeless `JDialog`, or an
+  owned `JWindow`/`Window(owner)`), not bare `JFrame`s. Trade-off: an owned window
+  loses its independent taskbar button / independent minimize — which is exactly why
+  the original design chose `JFrame`. That design choice is what modern macOS/Win11
+  invalidated; it needs revisiting.
+- Where a frame must stay a top-level (taskbar presence), the only OS-honored raise
+  from a possibly-background app is the `setAlwaysOnTop(true)` → `toFront()` →
+  `setAlwaysOnTop(false)` toggle (macOS still honors `orderFrontRegardless`-style
+  raises; Windows honors a bounded always-on-top). Centralize this in `LWManager`
+  rather than scattering ad-hoc `setAlwaysOnTop` calls.
+- First, close the §6 compliance gaps so every dialog is at least on Path A; that
+  alone removes a large share of the reports without an architectural change.
+
+**Assumptions to retire:** (a) that `toFront()` reliably raises a window — it does
+not for a background app on any current OS; (b) that an un-owned `JFrame` will stay
+with its logical parent under Spaces/Stage Manager/Snap/virtual-desktops — only true
+owner relationships travel together.
