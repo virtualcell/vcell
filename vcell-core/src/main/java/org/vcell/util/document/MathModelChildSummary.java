@@ -35,6 +35,10 @@ public class MathModelChildSummary implements java.io.Serializable {
 	private String simNames[] = null;
 	@JsonIgnore
 	private String simAnnots[] = null;
+	// issue #1746 Phase 2: flat list of this MathModel version's simulation database keys, sourced at
+	// read time from vc_mathmodelsim (NOT part of the DB serialization). NOT @JsonIgnore — it is
+	// serialized via getSimKeys() (same property name as the field, so @JsonIgnore would suppress it).
+	private String simKeys[] = new String[0];
 	//math model type deterministic or stochastic
 	private MathType modelType = null;
 /**
@@ -43,12 +47,23 @@ public class MathModelChildSummary implements java.io.Serializable {
  */
 private MathModelChildSummary() {}
 
-public MathModelChildSummary(MathType arg_modelType, String arg_geoName, int arg_geoDim, String[] arg_simNames, String[] arg_simAnnots){
+public MathModelChildSummary(MathType arg_modelType, String arg_geoName, int arg_geoDim, String[] arg_simNames, String[] arg_simAnnots, String[] arg_simKeys){
 	this.modelType = arg_modelType;
 	this.geoName = arg_geoName;
 	this.geoDim = arg_geoDim;
 	this.simNames = arg_simNames;
 	this.simAnnots = arg_simAnnots;
+	this.simKeys = arg_simKeys;
+}
+
+/** issue #1746 Phase 2: flat list of this MathModel version's simulation database keys (read-time,
+ *  from vc_mathmodelsim; empty when none). */
+public String[] getSimKeys() {
+	return simKeys;
+}
+
+public void setSimKeys(String[] simKeys) {
+	this.simKeys = simKeys;
 }
 /**
  * Insert the method's description here.
