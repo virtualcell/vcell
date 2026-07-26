@@ -23,6 +23,7 @@ import cbit.vcell.client.PopupGenerator;
 import cbit.vcell.model.Membrane;
 import cbit.vcell.model.ReactionCanvas;
 import cbit.vcell.model.SimpleReaction;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GeneralGuiUtils;
 
 /**
@@ -552,9 +553,9 @@ public static void main(java.lang.String[] args) {
  */
 public void setChargeCarrierValence_Exception(java.lang.Throwable e) {
 	if (e instanceof NumberFormatException){
-		javax.swing.JOptionPane.showMessageDialog(this, "Number format error '"+e.getMessage()+"'", "Error changing charge valence", javax.swing.JOptionPane.ERROR_MESSAGE);
+		DialogUtils.showErrorDialog(this, "Number format error '"+e.getMessage()+"'");
 	}else{
-		javax.swing.JOptionPane.showMessageDialog(this, e.getMessage(), "Error changing charge valence", javax.swing.JOptionPane.ERROR_MESSAGE);
+		DialogUtils.showErrorDialog(this, e.getMessage());
 	}
 }
 

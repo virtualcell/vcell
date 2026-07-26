@@ -30,6 +30,7 @@ import cbit.vcell.data.DataSymbol;
 import cbit.vcell.data.DataSymbol.DataSymbolType;
 import cbit.vcell.export.gui.ExportMonitorPanel;
 import cbit.vcell.parser.ExpressionException;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GeneralGuiUtils;
 
 @SuppressWarnings("serial")
@@ -111,7 +112,7 @@ private ImagePlaneManagerPanel getImagePlaneManagerPanel() {
 private void handleException(Throwable exception) {
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
 	if (exception instanceof ExpressionException){
-		javax.swing.JOptionPane.showMessageDialog(this, exception.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+		DialogUtils.showErrorDialog(this, exception.getMessage());
 	}
 	System.out.println("--------- UNCAUGHT EXCEPTION --------- in DataSymbolsSpecPanel");
 	exception.printStackTrace(System.out);

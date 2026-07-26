@@ -239,7 +239,7 @@ private void addVFrapOriginalImages() {		// add dataset (normal images) from vFr
 			
 			String initialFieldDataName = (String)hashTable.get("initialFieldDataName");
 			if(initialFieldDataName.equals("")) {
-				JOptionPane.showMessageDialog(DataSymbolsPanel.this, "Field Data name " + initialFieldDataName + " already in use."); 					
+				DialogUtils.showInfoDialog(DataSymbolsPanel.this, "Field Data name " + initialFieldDataName + " already in use."); 					
 				// prevents the rest of tasks below from running
 				throw UserCancelException.CANCEL_GENERIC;
 			}
@@ -446,7 +446,7 @@ private void addVFrapDerivedImages() {		// add special (computed) images from vF
 			
 			String mixedFieldDataName = (String)hashTable.get("mixedFieldDataName");
 			if(mixedFieldDataName.equals("")) {
-				JOptionPane.showMessageDialog(DataSymbolsPanel.this, "Field Data name " + mixedFieldDataName + " already in use."); 					
+				DialogUtils.showInfoDialog(DataSymbolsPanel.this, "Field Data name " + mixedFieldDataName + " already in use."); 					
 				// prevents the rest of tasks below from running
 				throw UserCancelException.CANCEL_GENERIC;
 			}

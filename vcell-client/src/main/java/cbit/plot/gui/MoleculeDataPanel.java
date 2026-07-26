@@ -17,6 +17,7 @@ import cbit.vcell.solver.ode.gui.MoleculeVisualizationPanel;
 import cbit.vcell.util.ColumnDescription;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.NonEditableDefaultTableModel;
 import org.vcell.util.gui.ScrollTable;
 
@@ -359,12 +360,7 @@ public class MoleculeDataPanel extends AbstractDataPanel {
 
         } catch (Exception ex) {
             lg.error("Error copying cluster data", ex);
-            JOptionPane.showMessageDialog(
-                    this,
-                    "Error copying cluster data: " + ex.getMessage(),
-                    "Copy Error",
-                    JOptionPane.ERROR_MESSAGE
-            );
+            DialogUtils.showErrorDialog(this, "Error copying cluster data: " + ex.getMessage());
         }
     }
 

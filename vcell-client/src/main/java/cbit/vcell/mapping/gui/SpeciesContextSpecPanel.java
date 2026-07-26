@@ -32,6 +32,7 @@ import cbit.vcell.mapping.SimulationContext;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
 import org.vcell.model.rbm.SpeciesPattern;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.biomodel.BioModel;
@@ -115,7 +116,7 @@ private void handleException(Throwable exception) {
 
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
 	if (exception instanceof ExpressionException){
-		javax.swing.JOptionPane.showMessageDialog(this, exception.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+		DialogUtils.showErrorDialog(this, exception.getMessage());
 	}
 	System.out.println("--------- UNCAUGHT EXCEPTION --------- in SpeciesContextSpecPanel");
 	exception.printStackTrace(System.out);

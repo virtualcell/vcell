@@ -145,7 +145,7 @@ public class EstParams_ReacBindingPanel extends JPanel {
 					getROIPanel().setCheckboxesForDisplay(frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation());
 					getROIPanel().refreshROIImageForDisplay();
 				}
-				JOptionPane.showMessageDialog(EstParams_ReacBindingPanel.this, getROIPanel());
+				DialogUtils.showInfoDialog(EstParams_ReacBindingPanel.this, getROIPanel(), "");
 			}
 		});
 		showRoisButton.setText("Show ROIs");

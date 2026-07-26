@@ -148,7 +148,7 @@ public class EstParams_OneDiffComponentPanel extends JPanel {
 					getROIPanel().setCheckboxesForDisplay(frapWorkspace.getWorkingFrapStudy().getSelectedROIsForErrorCalculation());
 					getROIPanel().refreshROIImageForDisplay();
 				}
-				JOptionPane.showMessageDialog(EstParams_OneDiffComponentPanel.this, getROIPanel());
+				DialogUtils.showInfoDialog(EstParams_OneDiffComponentPanel.this, getROIPanel(), "");
 			}
 		});
 		showRoisButton.setFont(new Font("", Font.PLAIN, 11));

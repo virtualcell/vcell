@@ -16,6 +16,7 @@ import cbit.vcell.parser.ExpressionException;
 import org.vcell.model.rbm.LinkNode;
 import org.vcell.model.rbm.MolecularComponentPattern;
 import org.vcell.model.rbm.MolecularTypePattern;
+import org.vcell.util.gui.DialogUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -118,7 +119,7 @@ public class MolecularStructuresPropertiesPanel extends DocumentEditorSubPanel {
     private void handleException(Throwable exception) {
         /* Uncomment the following lines to print uncaught exceptions to stdout */
         if (exception instanceof ExpressionException){
-            javax.swing.JOptionPane.showMessageDialog(this, exception.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            DialogUtils.showErrorDialog(this, exception.getMessage());
         }
         System.out.println("--------- UNCAUGHT EXCEPTION --------- in SpeciesContextSpecPanel");
         exception.printStackTrace(System.out);

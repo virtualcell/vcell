@@ -15,6 +15,7 @@ import java.util.Objects;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import org.vcell.util.gui.DialogUtils;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 
@@ -291,7 +292,7 @@ public void prepareToEdit(Simulation simulation, Component parent) throws Chombo
 		throw exc;
 	} catch (Throwable exc) {
 		exc.printStackTrace(System.out);
-		JOptionPane.showMessageDialog(this, "Could not initialize simulation editor\n"+exc.getMessage(), "Error:", JOptionPane.ERROR_MESSAGE);
+		DialogUtils.showErrorDialog(this, "Could not initialize simulation editor\n"+exc.getMessage());
 	}
 }
 

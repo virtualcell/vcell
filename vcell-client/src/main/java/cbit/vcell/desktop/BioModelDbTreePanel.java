@@ -19,6 +19,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import org.vcell.util.gui.DialogUtils;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTree;
@@ -368,7 +369,7 @@ private BioModelInfo[] getBioModelVersionDates(BioModelInfo thisBioModelInfo) th
  	}
 
  	if (bioModelBranchList.size() == 0) {
-		JOptionPane.showMessageDialog(this,"No Versions in biomodel","Error comparing BioModels",JOptionPane.ERROR_MESSAGE);
+		DialogUtils.showErrorDialog(this,"No Versions in biomodel");
 	 	throw new NullPointerException("No Versions in biomodel!");
  	}
 
