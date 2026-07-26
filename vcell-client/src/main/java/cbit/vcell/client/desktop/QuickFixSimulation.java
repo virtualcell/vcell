@@ -2,7 +2,6 @@ package cbit.vcell.client.desktop;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -11,11 +10,12 @@ import java.util.Collection;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
+import org.vcell.client.logicalwindow.LWContainerHandle;
+import org.vcell.client.logicalwindow.LWTitledDialog;
 import org.vcell.util.VCAssert;
 import org.vcell.util.gui.MomentoButton;
 import org.vcell.util.gui.MomentoRadioButton;
@@ -28,7 +28,7 @@ import cbit.vcell.solver.SolverDescription;
  *
  */
 @SuppressWarnings("serial")
-public class QuickFixSimulation extends JDialog {
+public class QuickFixSimulation extends LWTitledDialog {
 
 	public enum CloseAction {
 		FIX_ALL("Fix All"),
@@ -64,14 +64,14 @@ public class QuickFixSimulation extends JDialog {
 
 	/**
 	 * Create the dialog.
-	 * @param activated parent 
+	 * @param lwParent logical owner (must be non-null so the modal dialog is never orphaned)
 	 * @param useFixAll should "fix all" button appear?
 	 * @param message what to say about the situation
 	 * @param goodSolvers  options to list / select
 	 */
-	public QuickFixSimulation(Window activated, boolean useFixAll, String message, Collection<SolverDescription> goodSolvers) {
-		super(activated);
-		setModalityType(ModalityType.DOCUMENT_MODAL);
+	public QuickFixSimulation(LWContainerHandle lwParent, boolean useFixAll, String message, Collection<SolverDescription> goodSolvers) {
+		// LWTitledDialog is DOCUMENT_MODAL and owned by lwParent; no more super((Window)null) orphan path.
+		super(lwParent, "Unsupported Solver");
 		selectedSolver = null;
 		closeAction = CloseAction.CANCEL; 
 		

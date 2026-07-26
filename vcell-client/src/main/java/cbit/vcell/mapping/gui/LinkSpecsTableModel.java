@@ -8,6 +8,7 @@ import cbit.vcell.model.Structure;
 import cbit.vcell.parser.Expression;
 import org.vcell.model.rbm.*;
 import org.vcell.util.Coordinate;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 import org.vcell.util.gui.ScrollTable;
 import org.vcell.util.springsalad.NamedColor;
@@ -106,7 +107,7 @@ public class LinkSpecsTableModel extends VCellSortTableModel<MolecularInternalLi
                     try {
                         res = Double.parseDouble(newExpressionString);
                     } catch(NumberFormatException ex) {
-                        JOptionPane.showMessageDialog(null, "Number expected", "Error", JOptionPane.ERROR_MESSAGE);
+                        DialogUtils.showErrorDialog(ownerTable, "Number expected");
                         return;
                     }
                     // the link is a derived value, we don't store it - we just show it in the table

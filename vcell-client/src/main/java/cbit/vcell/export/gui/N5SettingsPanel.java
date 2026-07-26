@@ -1,6 +1,7 @@
 package cbit.vcell.export.gui;
 
 import cbit.vcell.export.server.*;
+import org.vcell.util.gui.DialogUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -60,7 +61,7 @@ public class N5SettingsPanel extends javax.swing.JPanel implements java.awt.even
         boolean onlySpaces = dataSetName.matches("^\\s*$");
         boolean notAllowedName = dataSetName.isEmpty() || onlySpaces || !allowedCharacters || dataSetName.length() > 100;
         if (fieldASCIISettingsPanelListenerEventMulticaster == null || notAllowedName) {
-            JOptionPane.showMessageDialog(null, "N5 File Name contains characters not allowed. A-Z, 0-9, [] , () , : , _ ,- are allowed.", "Naming Error", JOptionPane.INFORMATION_MESSAGE);
+            DialogUtils.showInfoDialog(this, "Naming Error", "N5 File Name contains characters not allowed. A-Z, 0-9, [] , () , : , _ ,- are allowed.");
             return;
         };
         fieldASCIISettingsPanelListenerEventMulticaster.JButtonOKAction_actionPerformed(newEvent);
