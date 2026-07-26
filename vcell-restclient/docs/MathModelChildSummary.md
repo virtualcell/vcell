@@ -7,6 +7,7 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
+|**simKeys** | **List&lt;String&gt;** |  |  [optional] |
 |**modelType** | **MathType** |  |  [optional] |
 |**geometryDimension** | **Integer** |  |  [optional] |
 |**geometryName** | **String** |  |  [optional] |

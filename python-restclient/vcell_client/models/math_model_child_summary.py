@@ -32,12 +32,13 @@ class MathModelChildSummary(BaseModel):
     """
     MathModelChildSummary
     """ # noqa: E501
+    sim_keys: Optional[List[StrictStr]] = Field(default=None, alias="simKeys")
     model_type: Optional[MathType] = Field(default=None, alias="modelType")
     geometry_dimension: Optional[StrictInt] = Field(default=None, alias="geometryDimension")
     geometry_name: Optional[StrictStr] = Field(default=None, alias="geometryName")
     simulation_annotations: Optional[List[StrictStr]] = Field(default=None, alias="simulationAnnotations")
     simulation_names: Optional[List[StrictStr]] = Field(default=None, alias="simulationNames")
-    __properties: ClassVar[List[str]] = ["modelType", "geometryDimension", "geometryName", "simulationAnnotations", "simulationNames"]
+    __properties: ClassVar[List[str]] = ["simKeys", "modelType", "geometryDimension", "geometryName", "simulationAnnotations", "simulationNames"]
 
     model_config = {
         "populate_by_name": True,
@@ -92,6 +93,7 @@ class MathModelChildSummary(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in MathModelChildSummary) in the input: " + _key)
 
         _obj = cls.model_validate({
+            "simKeys": obj.get("simKeys"),
             "modelType": obj.get("modelType"),
             "geometryDimension": obj.get("geometryDimension"),
             "geometryName": obj.get("geometryName"),

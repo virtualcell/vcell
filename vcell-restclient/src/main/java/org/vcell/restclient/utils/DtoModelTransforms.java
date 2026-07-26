@@ -247,8 +247,9 @@ public class DtoModelTransforms {
         String[] scAnnotations = dto.getScAnnots() == null ? null : dto.getScAnnots().toArray(new String[0]);
         String[] geoNames = dto.getGeoNames() == null ? null : dto.getGeoNames().toArray(new String[0]);
         int[] geoDims = dto.getGeoDims() == null ? null : dto.getGeoDims().stream().mapToInt(Integer::intValue).toArray();
+        String[] simKeys = dto.getSimKeys() == null ? new String[0] : dto.getSimKeys().toArray(new String[0]);
         return new BioModelChildSummary(dto.getSimulationContextNames().toArray(new String[0]),
-                mathTypes, scAnnotations, simNames, simAnnots, geoNames,
+                mathTypes, scAnnotations, simNames, simAnnots, simKeys, geoNames,
                 geoDims);
     }
 
@@ -279,9 +280,10 @@ public class DtoModelTransforms {
     }
 
     public static MathModelChildSummary mathModelChildSummary(org.vcell.restclient.model.MathModelChildSummary dto){
+        String[] simKeys = dto.getSimKeys() == null ? new String[0] : dto.getSimKeys().toArray(new String[0]);
         return new MathModelChildSummary(BioModelChildSummary.MathType.valueOf(dto.getModelType().getValue()),
                 dto.getGeometryName(), dto.getGeometryDimension(), dto.getSimulationNames().toArray(new String[0]),
-                dto.getSimulationAnnotations().toArray(new String[0]));
+                dto.getSimulationAnnotations().toArray(new String[0]), simKeys);
     }
 
     public static MathModelInfo mathModelContextToMathModel(MathModelSummary summary){

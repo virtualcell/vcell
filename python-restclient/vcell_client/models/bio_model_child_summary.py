@@ -40,12 +40,13 @@ class BioModelChildSummary(BaseModel):
     app_types: Optional[List[MathType]] = Field(default=None, alias="appTypes")
     sim_names: Optional[List[List[StrictStr]]] = Field(default=None, alias="simNames")
     sim_annots: Optional[List[List[StrictStr]]] = Field(default=None, alias="simAnnots")
+    sim_keys: Optional[List[StrictStr]] = Field(default=None, alias="simKeys")
     geometry_dimensions: Optional[List[StrictInt]] = Field(default=None, alias="geometryDimensions")
     geometry_names: Optional[List[StrictStr]] = Field(default=None, alias="geometryNames")
     simulation_context_annotations: Optional[List[StrictStr]] = Field(default=None, alias="simulationContextAnnotations")
     simulation_context_names: Optional[List[StrictStr]] = Field(default=None, alias="simulationContextNames")
     application_info: Optional[List[ApplicationInfo]] = Field(default=None, alias="applicationInfo")
-    __properties: ClassVar[List[str]] = ["scNames", "scAnnots", "geoNames", "geoDims", "appTypes", "simNames", "simAnnots", "geometryDimensions", "geometryNames", "simulationContextAnnotations", "simulationContextNames", "applicationInfo"]
+    __properties: ClassVar[List[str]] = ["scNames", "scAnnots", "geoNames", "geoDims", "appTypes", "simNames", "simAnnots", "simKeys", "geometryDimensions", "geometryNames", "simulationContextAnnotations", "simulationContextNames", "applicationInfo"]
 
     model_config = {
         "populate_by_name": True,
@@ -114,6 +115,7 @@ class BioModelChildSummary(BaseModel):
             "appTypes": obj.get("appTypes"),
             "simNames": obj.get("simNames"),
             "simAnnots": obj.get("simAnnots"),
+            "simKeys": obj.get("simKeys"),
             "geometryDimensions": obj.get("geometryDimensions"),
             "geometryNames": obj.get("geometryNames"),
             "simulationContextAnnotations": obj.get("simulationContextAnnotations"),

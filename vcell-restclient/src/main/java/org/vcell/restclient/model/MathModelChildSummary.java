@@ -35,6 +35,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * MathModelChildSummary
  */
 @JsonPropertyOrder({
+  MathModelChildSummary.JSON_PROPERTY_SIM_KEYS,
   MathModelChildSummary.JSON_PROPERTY_MODEL_TYPE,
   MathModelChildSummary.JSON_PROPERTY_GEOMETRY_DIMENSION,
   MathModelChildSummary.JSON_PROPERTY_GEOMETRY_NAME,
@@ -43,6 +44,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 })
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class MathModelChildSummary {
+  public static final String JSON_PROPERTY_SIM_KEYS = "simKeys";
+  private List<String> simKeys;
+
   public static final String JSON_PROPERTY_MODEL_TYPE = "modelType";
   private MathType modelType;
 
@@ -60,6 +64,39 @@ public class MathModelChildSummary {
 
   public MathModelChildSummary() { 
   }
+
+  public MathModelChildSummary simKeys(List<String> simKeys) {
+    this.simKeys = simKeys;
+    return this;
+  }
+
+  public MathModelChildSummary addSimKeysItem(String simKeysItem) {
+    if (this.simKeys == null) {
+      this.simKeys = new ArrayList<>();
+    }
+    this.simKeys.add(simKeysItem);
+    return this;
+  }
+
+   /**
+   * Get simKeys
+   * @return simKeys
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_SIM_KEYS)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public List<String> getSimKeys() {
+    return simKeys;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_SIM_KEYS)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setSimKeys(List<String> simKeys) {
+    this.simKeys = simKeys;
+  }
+
 
   public MathModelChildSummary modelType(MathType modelType) {
     this.modelType = modelType;
@@ -214,7 +251,8 @@ public class MathModelChildSummary {
       return false;
     }
     MathModelChildSummary mathModelChildSummary = (MathModelChildSummary) o;
-    return Objects.equals(this.modelType, mathModelChildSummary.modelType) &&
+    return Objects.equals(this.simKeys, mathModelChildSummary.simKeys) &&
+        Objects.equals(this.modelType, mathModelChildSummary.modelType) &&
         Objects.equals(this.geometryDimension, mathModelChildSummary.geometryDimension) &&
         Objects.equals(this.geometryName, mathModelChildSummary.geometryName) &&
         Objects.equals(this.simulationAnnotations, mathModelChildSummary.simulationAnnotations) &&
@@ -223,13 +261,14 @@ public class MathModelChildSummary {
 
   @Override
   public int hashCode() {
-    return Objects.hash(modelType, geometryDimension, geometryName, simulationAnnotations, simulationNames);
+    return Objects.hash(simKeys, modelType, geometryDimension, geometryName, simulationAnnotations, simulationNames);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class MathModelChildSummary {\n");
+    sb.append("    simKeys: ").append(toIndentedString(simKeys)).append("\n");
     sb.append("    modelType: ").append(toIndentedString(modelType)).append("\n");
     sb.append("    geometryDimension: ").append(toIndentedString(geometryDimension)).append("\n");
     sb.append("    geometryName: ").append(toIndentedString(geometryName)).append("\n");
@@ -281,6 +320,15 @@ public class MathModelChildSummary {
     }
 
     StringJoiner joiner = new StringJoiner("&");
+
+    // add `simKeys` to the URL query string
+    if (getSimKeys() != null) {
+      for (int i = 0; i < getSimKeys().size(); i++) {
+        joiner.add(String.format("%ssimKeys%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+            URLEncoder.encode(String.valueOf(getSimKeys().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      }
+    }
 
     // add `modelType` to the URL query string
     if (getModelType() != null) {

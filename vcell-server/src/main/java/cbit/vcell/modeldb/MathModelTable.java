@@ -63,7 +63,22 @@ public VersionInfo getInfo(ResultSet rset,Connection con,DatabaseSyntax dbSyntax
 
 	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	
-	return new MathModelInfo(version, mathRef, serialDbChildSummary, VCellSoftwareVersion.fromString(softwareVersion));
+	MathModelInfo mathModelInfo = new MathModelInfo(version, mathRef, serialDbChildSummary, VCellSoftwareVersion.fromString(softwareVersion));
+	// issue #1746 Phase 2: attach the flat sim keys aggregated by the "simKeys" subquery column
+	mathModelInfo.setSimKeys(parseSimKeysCsv(rset.getString("simKeys")));
+	return mathModelInfo;
+}
+
+/** issue #1746 Phase 2: parse a '[k1,k2,...]' aggregated simKeys column into a flat String[] (empty when none). */
+private static String[] parseSimKeysCsv(String csv){
+	if (csv == null){
+		return new String[0];
+	}
+	String stripped = csv.replace("[","").replace("]","").trim();
+	if (stripped.isEmpty()){
+		return new String[0];
+	}
+	return stripped.split(",");
 }
 
 
@@ -77,7 +92,19 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
 	MathModelTable vTable = MathModelTable.table;
 	SoftwareVersionTable swvTable = SoftwareVersionTable.table;
 	String sql;
-	Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),swvTable.softwareVersion};
+	// issue #1746 Phase 2: correlated subquery aggregating this MathModel's simulation keys from
+	// vc_mathmodelsim into a '[k1,k2,...]' string aliased "simKeys" (same pattern as BioModelTable).
+	final MathModelSimulationLinkTable mmsimTable = MathModelSimulationLinkTable.table;
+	final String concatFn = (dbSyntax==DatabaseSyntax.ORACLE) ? "listagg" : "string_agg";
+	final String cast = (dbSyntax==DatabaseSyntax.ORACLE) ? "" : "::varchar(255)";
+	final String simKeysSubquery =
+		"(select '['||"+concatFn+"(SQ1_"+mmsimTable.simRef.getQualifiedColName()+cast+", ',')||']' " +
+		"   from "+mmsimTable.getTableName()+" SQ1_"+mmsimTable.getTableName()+
+		"   where SQ1_"+mmsimTable.mathModelRef.getQualifiedColName()+" = "+vTable.id.getQualifiedColName()+") simKeys";
+	Field simKeysField = new Field("simKeys", null, null){
+		@Override public String getQualifiedColName(){ return simKeysSubquery; }
+	};
+	Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),swvTable.softwareVersion,simKeysField};
 	Table[] t = {vTable,userTable,swvTable};
 	
 	switch (dbSyntax){

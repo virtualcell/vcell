@@ -50,6 +50,7 @@ import java.util.*;
 public class LocalUserMetaDbServerMessaging implements UserMetaDbServer {
 	private RpcDbServerProxy dbServerProxy = null;
 	private final VCellApiClient vCellApiClient;
+	private final UserLoginInfo userLoginInfo;
 	private static Logger lg = LogManager.getLogger(LocalUserMetaDbServerMessaging.class);
 
 /**
@@ -58,6 +59,7 @@ public class LocalUserMetaDbServerMessaging implements UserMetaDbServer {
 public LocalUserMetaDbServerMessaging(UserLoginInfo userLoginInfo, RpcSender rpcSender, VCellApiClient vCellApiClient) {
 	this.dbServerProxy = new RpcDbServerProxy(userLoginInfo, rpcSender);
 	this.vCellApiClient = vCellApiClient;
+	this.userLoginInfo = userLoginInfo;
 }
 
 public TreeMap<SpecialUser.SPECIAL_CLAIM,TreeMap<User,String>> getSpecialUsers() throws DataAccessException{
@@ -669,13 +671,19 @@ public VCInfoContainer getVCInfoContainer() throws DataAccessException {
 
 	try {
 		if (lg.isTraceEnabled()) lg.trace("LocalUserMetaDbServerMessaging.getVCInfoContainer()");
-		return dbServerProxy.getVCInfoContainer();
-	} catch (DataAccessException e) {
-		lg.error(e.getMessage(),e);
-		throw e;
-	} catch (Throwable e) {
-		lg.error(e.getMessage(),e);
-		throw new DataAccessException(e.getMessage());
+		VCInfoContainerSummary summary = vCellApiClient.getVcInfoContainerApi().getVCInfoContainer();
+		BioModelInfo[] bioModelInfos = summary.getBioModelSummaries().stream()
+				.map(DtoModelTransforms::bioModelContextToBioModelInfo).toArray(BioModelInfo[]::new);
+		MathModelInfo[] mathModelInfos = summary.getMathModelSummaries().stream()
+				.map(DtoModelTransforms::mathModelContextToMathModel).toArray(MathModelInfo[]::new);
+		GeometryInfo[] geometryInfos = summary.getGeometrySummaries().stream()
+				.map(DtoModelTransforms::geometrySummaryToGeometryInfo).toArray(GeometryInfo[]::new);
+		VCImageInfo[] vcImageInfos = summary.getVcImageSummaries().stream()
+				.map(DtoModelTransforms::imageSummaryToVCImageInfo).toArray(VCImageInfo[]::new);
+		return new VCInfoContainer(userLoginInfo.getUser(), vcImageInfos, geometryInfos, mathModelInfos, bioModelInfos);
+	} catch (ApiException e) {
+		ExceptionHandler.onlyDataAccessOrPermissionException(e);
+		throw new RuntimeException("Exception handler did not throw an exception.");
 	}
 }
 
