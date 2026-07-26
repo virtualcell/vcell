@@ -2,6 +2,8 @@ package cbit.vcell.client.desktop.biomodel.annotations;
 
 import cbit.vcell.biomodel.meta.VCMetaDataMiriamManager;
 import cbit.vcell.client.desktop.biomodel.AnnotationsPanel;
+import org.vcell.client.logicalwindow.LWChildDialog;
+import org.vcell.client.logicalwindow.LWNamespace;
 import org.xml.sax.SAXException;
 
 import javax.swing.*;
@@ -22,7 +24,17 @@ import java.util.StringTokenizer;
 
 import static cbit.vcell.biomodel.meta.VCMetaDataMiriamManager.VCMetaDataDataType.DataType_UNIPROT;
 
-public class AddAnnotationsPanel extends JFrame implements ActionListener {
+/**
+ * Search-online-databases child window of {@link AnnotationsPanel}.
+ * <p>
+ * Prototype (issue: window z-order): converted from a raw, un-owned {@code JFrame} — which relied
+ * on {@link java.awt.Window#toFront()} to stay above its parent and could slip behind the document
+ * window on modern macOS/Windows — to an <b>owned modeless</b> {@link LWChildDialog}. The logical
+ * (and native) parent is resolved from the triggering {@code annotationsPanel} via
+ * {@link LWNamespace#findLWOwner(java.awt.Component)}, so the OS keeps this window above its owner.
+ * See {@code docs/windowing-design-patterns.md} §7.
+ */
+public class AddAnnotationsPanel extends LWChildDialog implements ActionListener {
 
     public static final int MAX_DESCRIPTION_LENGTH = 160;
 
@@ -43,14 +55,16 @@ public class AddAnnotationsPanel extends JFrame implements ActionListener {
     private JPanel searchComponentsPanel = null;
 
     public AddAnnotationsPanel (AnnotationsPanel annotationsPanel, JComboBox JComboBoxURI, JComboBox JComboBoxQualifier) {
+        // owned modeless child: native+logical owner resolved from the annotations panel, so the OS
+        // keeps this window above its owner (replaces the old un-owned JFrame + toFront/alwaysOnTop).
+        super(LWNamespace.findLWOwner(annotationsPanel), "Add Annotations");
         this.annotationsPanel = annotationsPanel;
         this.jComboBoxURI = JComboBoxURI;
         this.jComboBoxQualifier = (JComboBoxQualifier==null) ? new JComboBox<>(): JComboBoxQualifier;
 
-        setTitle("Add Annotations");
         setResizable(false);
-        setLocationRelativeTo(annotationsPanel);
-//        setAlwaysOnTop(true);
+        // positioning is handled by the LW framework (staggered on parent); no setLocationRelativeTo,
+        // no setAlwaysOnTop — the owned-window relationship enforces z-order.
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
 
