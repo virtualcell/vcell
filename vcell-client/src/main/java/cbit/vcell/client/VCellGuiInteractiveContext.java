@@ -1,7 +1,6 @@
 package cbit.vcell.client;
 
-import javax.swing.JDialog;
-import javax.swing.JOptionPane;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.client.server.InteractiveClientServerContext;
 
@@ -17,16 +16,14 @@ public class VCellGuiInteractiveContext implements InteractiveClientServerContex
 
 	@Override
 	public void showErrorDialog(String errorMessage) {
-		JDialog dialog = new JDialog();
-		dialog.setAlwaysOnTop(true);
-		JOptionPane.showMessageDialog(dialog, errorMessage, "Error...", JOptionPane.ERROR_MESSAGE, null);
+		// route through DialogUtils so the dialog is owned by the logical window (see showConnectWarning
+		// below, which already does this) instead of a throw-away always-on-top JDialog.
+		DialogUtils.showErrorDialog(topLevelWindowManager.getComponent(), errorMessage);
 	}
 
 	@Override
 	public void showWarningDialog(String warningMessage) {
-		JDialog dialog = new JDialog();
-		dialog.setAlwaysOnTop(true);
-		JOptionPane.showMessageDialog(dialog, warningMessage, "Warning...", JOptionPane.WARNING_MESSAGE, null);
+		DialogUtils.showWarningDialog(topLevelWindowManager.getComponent(), warningMessage);
 	}
 
 	@Override

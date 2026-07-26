@@ -355,21 +355,18 @@ public class ClientRequestManager
 		}
 		// warn if necessary
 		if (isChanged) {
-			JDialog dialog = new JDialog();
-			dialog.setAlwaysOnTop(true);
-			final String[] warnCloseArr = new String[] { UserMessage.OPTION_YES, "No", UserMessage.OPTION_CANCEL };
-			int confirm = JOptionPane.showOptionDialog(dialog, UserMessage.warn_close.getMessage(null),
-					"Save warning...", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null, warnCloseArr,
-					warnCloseArr[0]);
-
-//		String choice = PopupGenerator.showWarningDialog(windowManager, getUserPreferences(), UserMessage.warn_close,null);
-			if (confirm != 0 && confirm != 1/* choice.equals(UserMessage.OPTION_CANCEL) */) {
-				// user canceled
-				return CloseOption.CANCEL_CLOSE;
-			}
-			if (confirm == 0/* choice.equals(UserMessage.OPTION_YES) */) {
+			// logical-window-owned warning dialog (restores the original PopupGenerator path; the interim
+			// throw-away always-on-top JDialog could hide behind the document window). warn_close options
+			// are [Yes, No, Cancel], default Yes.
+			String confirm = PopupGenerator.showWarningDialog(windowManager, getUserPreferences(), UserMessage.warn_close, null);
+			if (UserMessage.OPTION_YES.equals(confirm)) {
 				return CloseOption.SAVE_AND_CLOSE;
 			}
+			if (!UserMessage.OPTION_NO.equals(confirm)) {
+				// Cancel, or dialog dismissed → do not close
+				return CloseOption.CANCEL_CLOSE;
+			}
+			// OPTION_NO → close without saving (falls through to CLOSE_IN_ANY_CASE)
 		}
 		// nothing changed, or user confirmed, close it
 		return CloseOption.CLOSE_IN_ANY_CASE;
@@ -481,10 +478,7 @@ public class ClientRequestManager
 
 				if (((DocumentWindowManager) windowManager).getUser() == null
 						|| User.isGuest(((DocumentWindowManager) windowManager).getUser().getName())) {
-					JDialog dialog = new JDialog();
-					dialog.setAlwaysOnTop(true);
-					JOptionPane.showMessageDialog(dialog, User.createGuestErrorMessage("saveDocument"), "Error...",
-							JOptionPane.ERROR_MESSAGE, null);
+					DialogUtils.showErrorDialog(windowManager.getComponent(), User.createGuestErrorMessage("saveDocument"));
 					return false;
 				}
 
@@ -658,8 +652,6 @@ public class ClientRequestManager
 
 
 	public void logOut(final TopLevelWindowManager requester){
-		JDialog dialog = new JDialog();
-		dialog.setAlwaysOnTop(true);
 		StringBuilder dialogMessage = new StringBuilder();
 		dialogMessage.append("You are about to log out of the VCell client.\n\n");
 		if (requester instanceof DocumentWindowManager documentWindowManager){
@@ -674,10 +666,10 @@ public class ClientRequestManager
 		}
 		dialogMessage.append("Do you wish to continue?");
 
-		int confirm = JOptionPane.showOptionDialog(dialog, dialogMessage.toString(),
-				"Logout", JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null,
+		// logical-window-owned confirm dialog instead of a throw-away always-on-top JDialog
+		String confirm = DialogUtils.showWarningDialog(requester.getComponent(), "Logout", dialogMessage.toString(),
 				new String[] { "Continue", "Cancel" }, "Continue");
-		if (confirm == JOptionPane.OK_OPTION)  {
+		if ("Continue".equals(confirm))  {
 			closeAllWindows(false);
 			getClientServerManager().cleanup(); //set VCell connection to null
 			getClientServerManager().getAsynchMessageManager().stopPolling();
