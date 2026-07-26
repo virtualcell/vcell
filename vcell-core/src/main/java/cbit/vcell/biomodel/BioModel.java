@@ -434,6 +434,11 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
         int[] geoDims = new int[simContexts.length];
         String[][] simNames = new String[simContexts.length][];
         String[][] simAnnots = new String[simContexts.length][];
+        // issue #1746 Phase 2: flat list of this BioModel's saved simulation keys. Sim keys are NOT part of the
+        // serialization (the REST/dev getInfo path re-joins them from vc_biomodelsim), but when the summary is built
+        // from a live, saved BioModel the Simulation objects already carry their keys — populate them so an
+        // in-memory summary is self-consistent without a DB round-trip. Unsaved sims have a null key and are skipped.
+        java.util.List<String> simKeysList = new java.util.ArrayList<String>();
 
         for(int i = 0; i < simContexts.length; i += 1){
             scNames[i] = simContexts[i].getName();
@@ -448,9 +453,12 @@ public class BioModel implements VCDocument, Matchable, VetoableChangeListener, 
             for(int j = 0; j < sims.length; j += 1){
                 simNames[i][j] = sims[j].getName();
                 simAnnots[i][j] = sims[j].getDescription();
+                if(sims[j].getKey() != null){
+                    simKeysList.add(sims[j].getKey().toString());
+                }
             }
         }
-        return new BioModelChildSummary(scNames, appTypes, scAnnots, simNames, simAnnots, geoNames, geoDims);
+        return new BioModelChildSummary(scNames, appTypes, scAnnots, simNames, simAnnots, simKeysList.toArray(new String[0]), geoNames, geoDims);
     }
 
     /**

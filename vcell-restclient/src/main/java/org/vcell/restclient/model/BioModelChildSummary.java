@@ -43,6 +43,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
   BioModelChildSummary.JSON_PROPERTY_APP_TYPES,
   BioModelChildSummary.JSON_PROPERTY_SIM_NAMES,
   BioModelChildSummary.JSON_PROPERTY_SIM_ANNOTS,
+  BioModelChildSummary.JSON_PROPERTY_SIM_KEYS,
   BioModelChildSummary.JSON_PROPERTY_GEOMETRY_DIMENSIONS,
   BioModelChildSummary.JSON_PROPERTY_GEOMETRY_NAMES,
   BioModelChildSummary.JSON_PROPERTY_SIMULATION_CONTEXT_ANNOTATIONS,
@@ -71,6 +72,9 @@ public class BioModelChildSummary {
 
   public static final String JSON_PROPERTY_SIM_ANNOTS = "simAnnots";
   private List<List<String>> simAnnots;
+
+  public static final String JSON_PROPERTY_SIM_KEYS = "simKeys";
+  private List<String> simKeys;
 
   public static final String JSON_PROPERTY_GEOMETRY_DIMENSIONS = "geometryDimensions";
   private List<Integer> geometryDimensions;
@@ -321,6 +325,39 @@ public class BioModelChildSummary {
   }
 
 
+  public BioModelChildSummary simKeys(List<String> simKeys) {
+    this.simKeys = simKeys;
+    return this;
+  }
+
+  public BioModelChildSummary addSimKeysItem(String simKeysItem) {
+    if (this.simKeys == null) {
+      this.simKeys = new ArrayList<>();
+    }
+    this.simKeys.add(simKeysItem);
+    return this;
+  }
+
+   /**
+   * Get simKeys
+   * @return simKeys
+  **/
+  @javax.annotation.Nullable
+  @JsonProperty(JSON_PROPERTY_SIM_KEYS)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+
+  public List<String> getSimKeys() {
+    return simKeys;
+  }
+
+
+  @JsonProperty(JSON_PROPERTY_SIM_KEYS)
+  @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
+  public void setSimKeys(List<String> simKeys) {
+    this.simKeys = simKeys;
+  }
+
+
   public BioModelChildSummary geometryDimensions(List<Integer> geometryDimensions) {
     this.geometryDimensions = geometryDimensions;
     return this;
@@ -505,6 +542,7 @@ public class BioModelChildSummary {
         Objects.equals(this.appTypes, bioModelChildSummary.appTypes) &&
         Objects.equals(this.simNames, bioModelChildSummary.simNames) &&
         Objects.equals(this.simAnnots, bioModelChildSummary.simAnnots) &&
+        Objects.equals(this.simKeys, bioModelChildSummary.simKeys) &&
         Objects.equals(this.geometryDimensions, bioModelChildSummary.geometryDimensions) &&
         Objects.equals(this.geometryNames, bioModelChildSummary.geometryNames) &&
         Objects.equals(this.simulationContextAnnotations, bioModelChildSummary.simulationContextAnnotations) &&
@@ -514,7 +552,7 @@ public class BioModelChildSummary {
 
   @Override
   public int hashCode() {
-    return Objects.hash(scNames, scAnnots, geoNames, geoDims, appTypes, simNames, simAnnots, geometryDimensions, geometryNames, simulationContextAnnotations, simulationContextNames, applicationInfo);
+    return Objects.hash(scNames, scAnnots, geoNames, geoDims, appTypes, simNames, simAnnots, simKeys, geometryDimensions, geometryNames, simulationContextAnnotations, simulationContextNames, applicationInfo);
   }
 
   @Override
@@ -528,6 +566,7 @@ public class BioModelChildSummary {
     sb.append("    appTypes: ").append(toIndentedString(appTypes)).append("\n");
     sb.append("    simNames: ").append(toIndentedString(simNames)).append("\n");
     sb.append("    simAnnots: ").append(toIndentedString(simAnnots)).append("\n");
+    sb.append("    simKeys: ").append(toIndentedString(simKeys)).append("\n");
     sb.append("    geometryDimensions: ").append(toIndentedString(geometryDimensions)).append("\n");
     sb.append("    geometryNames: ").append(toIndentedString(geometryNames)).append("\n");
     sb.append("    simulationContextAnnotations: ").append(toIndentedString(simulationContextAnnotations)).append("\n");
@@ -642,6 +681,15 @@ public class BioModelChildSummary {
         joiner.add(String.format("%ssimAnnots%s%s=%s", prefix, suffix,
             "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
             URLEncoder.encode(String.valueOf(getSimAnnots().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
+      }
+    }
+
+    // add `simKeys` to the URL query string
+    if (getSimKeys() != null) {
+      for (int i = 0; i < getSimKeys().size(); i++) {
+        joiner.add(String.format("%ssimKeys%s%s=%s", prefix, suffix,
+            "".equals(suffix) ? "" : String.format("%s%d%s", containerPrefix, i, containerSuffix),
+            URLEncoder.encode(String.valueOf(getSimKeys().get(i)), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
       }
     }
 
