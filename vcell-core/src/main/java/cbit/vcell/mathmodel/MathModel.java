@@ -253,12 +253,20 @@ public class MathModel implements VCDocument, SimulationOwner, Matchable, Vetoab
         Simulation[] sims = getSimulations();
         String[] simNames = new String[sims.length];
         String[] simAnnots = new String[sims.length];
+        // issue #1746 Phase 2: flat list of this MathModel's saved simulation keys. Sim keys are NOT part of the
+        // serialization (the REST/dev getInfo path re-joins them from vc_mathmodelsim), but when the summary is built
+        // from a live, saved MathModel the Simulation objects already carry their keys — populate them so an
+        // in-memory summary is self-consistent without a DB round-trip. Unsaved sims have a null key and are skipped.
+        java.util.List<String> simKeysList = new java.util.ArrayList<String>();
         for(int i = 0; i < sims.length; i += 1){
             simNames[i] = sims[i].getName();
             simAnnots[i] = sims[i].getDescription();
+            if(sims[i].getKey() != null){
+                simKeysList.add(sims[i].getKey().toString());
+            }
         }
 
-        return new MathModelChildSummary(modelType, geoName, geoDim, simNames, simAnnots);
+        return new MathModelChildSummary(modelType, geoName, geoDim, simNames, simAnnots, simKeysList.toArray(new String[0]));
 
     }
 

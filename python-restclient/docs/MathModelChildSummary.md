@@ -4,6 +4,7 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
+**sim_keys** | **List[str]** |  | [optional] 
 **model_type** | [**MathType**](MathType.md) |  | [optional] 
 **geometry_dimension** | **int** |  | [optional] 
 **geometry_name** | **str** |  | [optional] 

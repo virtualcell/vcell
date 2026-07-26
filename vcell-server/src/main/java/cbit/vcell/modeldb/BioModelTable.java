@@ -119,8 +119,23 @@ public VersionInfo getInfo(ResultSet rset,Connection con,DatabaseSyntax dbSyntax
 	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	VCellSoftwareVersion vcSoftwareVersion = VCellSoftwareVersion.fromString(softwareVersion);
 	String serialDbChildSummary = DbDriver.varchar2_CLOB_get(rset,BioModelTable.table.childSummarySmall,BioModelTable.table.childSummaryLarge,dbSyntax);
-	
-	return new org.vcell.util.document.BioModelInfo(version, serialDbChildSummary, vcSoftwareVersion);
+
+	org.vcell.util.document.BioModelInfo bioModelInfo = new org.vcell.util.document.BioModelInfo(version, serialDbChildSummary, vcSoftwareVersion);
+	// issue #1746 Phase 2: attach the flat sim keys aggregated by the "simKeys" subquery column
+	bioModelInfo.setSimKeys(parseSimKeysCsv(rset.getString("simKeys")));
+	return bioModelInfo;
+}
+
+/** issue #1746 Phase 2: parse a '[k1,k2,...]' aggregated simKeys column into a flat String[] (empty when none). */
+private static String[] parseSimKeysCsv(String csv){
+	if (csv == null){
+		return new String[0];
+	}
+	String stripped = csv.replace("[","").replace("]","").trim();
+	if (stripped.isEmpty()){
+		return new String[0];
+	}
+	return stripped.split(",");
 }
 
 public String getInfoSQL(User user,String extraConditions,String special, DatabaseSyntax dbSyntax) {
@@ -129,7 +144,20 @@ public String getInfoSQL(User user,String extraConditions,String special, Databa
 	BioModelTable vTable = BioModelTable.table;
 	SoftwareVersionTable swvTable = SoftwareVersionTable.table;
 	String sql;
-	Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),swvTable.softwareVersion};
+	// issue #1746 Phase 2: a correlated subquery column that aggregates this BioModel's simulation keys
+	// from vc_biomodelsim into a '[k1,k2,...]' string aliased "simKeys" (same listagg pattern as
+	// getPreparedStatement_BioModelReps). Emitted as an expression Field (like StarField).
+	final BioModelSimulationLinkTable bmsimTable = BioModelSimulationLinkTable.table;
+	final String concatFn = (dbSyntax==DatabaseSyntax.ORACLE) ? "listagg" : "string_agg";
+	final String cast = (dbSyntax==DatabaseSyntax.ORACLE) ? "" : "::varchar(255)";
+	final String simKeysSubquery =
+		"(select '['||"+concatFn+"(SQ1_"+bmsimTable.simRef.getQualifiedColName()+cast+", ',')||']' " +
+		"   from "+bmsimTable.getTableName()+" SQ1_"+bmsimTable.getTableName()+
+		"   where SQ1_"+bmsimTable.bioModelRef.getQualifiedColName()+" = "+vTable.id.getQualifiedColName()+") simKeys";
+	Field simKeysField = new Field("simKeys", null, null){
+		@Override public String getQualifiedColName(){ return simKeysSubquery; }
+	};
+	Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),swvTable.softwareVersion,simKeysField};
 	Table[] t = {vTable,userTable,swvTable};
 	
 	switch (dbSyntax){

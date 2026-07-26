@@ -33,6 +33,7 @@ public class MathModelInfo implements VCDocumentInfo {
 	private KeyValue mathKey = null;
 	private MathModelChildSummary mathModelChildSummary = null;
 	private BigString mathModelChildSummaryString = null;
+	private String[] simKeys = null; // issue #1746 Phase 2: sim keys joined from vc_mathmodelsim, injected into the child summary on parse
 	private VCellSoftwareVersion softwareVersion = null;
 	private ArrayList<PublicationInfo> publicationInfos = new ArrayList<>();
 	private String annotatedFunctionsStr = null;
@@ -106,7 +107,15 @@ public MathModelChildSummary getMathModelChildSummary() {
 		mathModelChildSummary = MathModelChildSummary.fromDatabaseSerialization(mathModelChildSummaryString.toString());
 		mathModelChildSummaryString = null;
 	}
+	if (mathModelChildSummary != null && simKeys != null) {
+		mathModelChildSummary.setSimKeys(simKeys); // issue #1746 Phase 2: inject DB-joined sim keys
+	}
 	return mathModelChildSummary;
+}
+
+/** issue #1746 Phase 2: sim keys joined from vc_mathmodelsim (set by MathModelTable.getInfo). */
+public void setSimKeys(String[] simKeys) {
+	this.simKeys = simKeys;
 }
 /**
  * This method was created in VisualAge.

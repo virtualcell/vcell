@@ -71,6 +71,14 @@ public class VCInfoContainerApiTest {
         // the freshly saved biomodel must be visible in the owner's bulk container
         Assertions.assertFalse(container.getBioModelSummaries().isEmpty(),
                 "expected the saved BioModel to appear in the vcInfoContainer");
+
+        // issue #1746 Phase 2: each biomodel summary carries its (possibly empty) sim keys from vc_biomodelsim
+        for (org.vcell.restclient.model.BioModelSummary bm : container.getBioModelSummaries()) {
+            if (bm.getSummary() != null) {
+                Assertions.assertNotNull(bm.getSummary().getSimKeys(),
+                        "vcInfoContainer must populate simKeys on each biomodel child summary");
+            }
+        }
     }
 
     @Test

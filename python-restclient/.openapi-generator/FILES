@@ -119,8 +119,6 @@ docs/VcelloptStatus.md
 docs/Version.md
 docs/VersionFlag.md
 test/__init__.py
-test/test_vc_info_container_resource_api.py
-test/test_vc_info_container_summary.py
 tox.ini
 vcell_client/__init__.py
 vcell_client/api/__init__.py
