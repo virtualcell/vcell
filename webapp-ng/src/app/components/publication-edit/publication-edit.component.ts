@@ -195,7 +195,7 @@ export class PublicationEditComponent implements OnInit {
           name: version?.name,
           ownerName: version?.owner?.userName,
           ownerKey: version?.owner?.key != null ? Number.parseInt(version.owner.key) : -1,
-          versionFlag: version?.flag?.versionFlag
+          versionFlag: version?.flag
         };
         this.publication.mathmodelRefs.push(mathmodelRef);
         this.newMathmodelKey = undefined;
