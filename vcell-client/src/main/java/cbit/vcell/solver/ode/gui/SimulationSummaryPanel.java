@@ -17,6 +17,9 @@ import java.awt.Insets;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.beans.PropertyVetoException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
@@ -34,6 +37,7 @@ import org.vcell.util.Compare;
 import org.vcell.util.Extent;
 import org.vcell.util.ISize;
 import org.vcell.util.gui.CollapsiblePanel;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.constants.GuiConstants;
@@ -259,15 +263,15 @@ private void displayOther() {
 				break;
 			}
 			case 1: {
-				labelText = extent.getX()+" microns";
+				labelText = DialogUtils.clean(extent.getX())+" microns";
 				break;
 			}
 			case 2: {
-				labelText = "("+extent.getX()+","+extent.getY()+") microns";
+				labelText = "("+DialogUtils.clean(extent.getX())+", "+DialogUtils.clean(extent.getY())+") microns";
 				break;
 			}
 			case 3: {
-				labelText = "("+extent.getX()+","+extent.getY()+","+extent.getZ()+") microns";
+				labelText = "("+DialogUtils.clean(extent.getX())+", "+DialogUtils.clean(extent.getY())+", "+DialogUtils.clean(extent.getZ())+") microns";
 				break;
 			}
 		}
@@ -277,7 +281,6 @@ private void displayOther() {
 		getJLabelGeometrySize().setText("");
 	}
 }
-
 
 /**
  * Comment
