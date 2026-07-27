@@ -9,6 +9,7 @@ import javax.swing.JOptionPane;
 import org.apache.commons.io.FileUtils;
 import org.vcell.model.rbm.RbmNetworkGenerator;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
 
 import cbit.vcell.biomodel.BioModel;
 import cbit.vcell.clientdb.DocumentManager;
@@ -35,9 +36,8 @@ public class BnglExtensionFilter extends SelectorExtensionFilter {
 			errMsg += "<br>Some information will be lost.";
 			errMsg += "<br><br>Continue anyway?";
 			errMsg = "<html>" + errMsg + "</html>";
-	        int dialogButton = JOptionPane.YES_NO_OPTION;
-	        int returnCode = JOptionPane.showConfirmDialog(ctx.topLevelWindowManager.getComponent(), errMsg, "Exporting to .bngl", dialogButton);
-			if (returnCode != JOptionPane.YES_OPTION) {
+	        String returnCode = DialogUtils.showWarningDialog(ctx.topLevelWindowManager.getComponent(), "Exporting to .bngl", errMsg, new String[]{"Yes","No"}, "Yes");
+			if (!"Yes".equals(returnCode)) {
 				throw UserCancelException.CANCEL_FILE_SELECTION;
 			}
 		}

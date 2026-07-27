@@ -809,7 +809,7 @@ public class EventPanel extends DocumentEditorSubPanel {
 			// event assignment, add it to the list of event assignments in bioEvent
 			// Else, pop-up an error dialog indicating that event assignment cannot be added.
 			//
-			int ok = JOptionPane.showOptionDialog(this, eventAssignmentPanel, "New Action Event" , 0, JOptionPane.PLAIN_MESSAGE, null, new String[] {"OK", "Cancel"}, null);
+			int ok = DialogUtils.showComponentOKCancelDialog(this, eventAssignmentPanel, "New Action Event");
 			if (ok == javax.swing.JOptionPane.OK_OPTION) {
 				String varName = (String)getEventAssignVarNameComboBox().getSelectedItem();
 				EventAssignment newEventAssignment = null;

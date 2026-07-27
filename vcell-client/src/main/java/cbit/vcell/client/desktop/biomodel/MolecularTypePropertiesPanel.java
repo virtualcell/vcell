@@ -384,7 +384,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					errMsg += "<br>Please delete each individual State first.";
 					errMsg += "<br><br>Detailed usage information will be provided at that time to help you decide.";
 					errMsg = "<html>" + errMsg + "</html>";
-					JOptionPane.showOptionDialog(this.getParent().getParent(), errMsg, "Delete " + mc.getDisplayType(), JOptionPane.NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options , options[0]);
+					DialogUtils.showWarningDialog(this.getParent().getParent(), errMsg);
 					return;
 				}
 				// we find and display component usage information to help the user decide
@@ -395,9 +395,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 					errMsg += "<br><br>Delete anyway?";
 					errMsg = "<html>" + errMsg + "</html>";
 
-			        int dialogButton = JOptionPane.YES_NO_OPTION;
-			        int returnCode = JOptionPane.showConfirmDialog(this.getParent().getParent(), errMsg, "Delete " + mc.getDisplayType(), dialogButton);
-					if (returnCode == JOptionPane.YES_OPTION) {
+			        String returnCode = DialogUtils.showWarningDialog(this.getParent().getParent(), "Delete " + mc.getDisplayType(), errMsg, new String[]{"Yes","No"}, "Yes");
+					if ("Yes".equals(returnCode)) {
 						// keep this code in sync with MolecularTypeTableModel.setValueAt
 						if(bioModel.getModel().getRbmModelContainer().delete(mt, mc) == true) {
 							mt.removeMolecularComponent(mc);
@@ -434,9 +433,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 				errMsg += "<br><br>Delete anyway?";
 				errMsg = "<html>" + errMsg + "</html>";
 
-		        int dialogButton = JOptionPane.YES_NO_OPTION;
-		        int returnCode = JOptionPane.showConfirmDialog(this.getParent().getParent(), errMsg, "Delete " + ComponentStateDefinition.typeName, dialogButton);
-				if (returnCode == JOptionPane.YES_OPTION) {
+		        String returnCode = DialogUtils.showWarningDialog(this.getParent().getParent(), "Delete " + ComponentStateDefinition.typeName, errMsg, new String[]{"Yes","No"}, "Yes");
+				if ("Yes".equals(returnCode)) {
 					// keep this code in sync with MolecularTypeTableModel.setValueAt
 					if(bioModel.getModel().getRbmModelContainer().delete(mt, mc, csd) == true) {
 						mc.deleteComponentStateDefinition(csd);		// this stays
@@ -1174,7 +1172,7 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 						errMsg += "<br>Please delete each individual State first.";
 						errMsg += "<br><br>Detailed usage information will be provided at that time to help you decide.";
 						errMsg = "<html>" + errMsg + "</html>";
-						JOptionPane.showOptionDialog(shapePanel, errMsg, "Delete " + mc.getDisplayType(), JOptionPane.NO_OPTION, JOptionPane.WARNING_MESSAGE, null, options , options[0]);
+						DialogUtils.showWarningDialog(shapePanel, errMsg);
 						return;
 					}
 					// we find and display component usage information to help the user decide
@@ -1184,9 +1182,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 						String errMsg = mc.dependenciesToHtml(usedHere);
 						errMsg += "<br><br>Delete anyway?";
 						errMsg = "<html>" + errMsg + "</html>";
-				        int dialogButton = JOptionPane.YES_NO_OPTION;
-				        int returnCode = JOptionPane.showConfirmDialog(shapePanel, errMsg, "Delete " + mc.getDisplayType(), dialogButton);
-						if (returnCode == JOptionPane.YES_OPTION) {
+				        String returnCode = DialogUtils.showWarningDialog(shapePanel, "Delete " + mc.getDisplayType(), errMsg, new String[]{"Yes","No"}, "Yes");
+						if ("Yes".equals(returnCode)) {
 							// keep this code in sync with MolecularTypeTableModel.setValueAt
 							if(bioModel.getModel().getRbmModelContainer().delete(molecularType, mc) == true) {
 								molecularType.removeMolecularComponent(mc);
@@ -1232,9 +1229,8 @@ public class MolecularTypePropertiesPanel extends DocumentEditorSubPanel {
 						String errMsg = csd.dependenciesToHtml(usedHere);
 						errMsg += "<br><br>Delete anyway?";
 						errMsg = "<html>" + errMsg + "</html>";
-				        int dialogButton = JOptionPane.YES_NO_OPTION;
-				        int returnCode = JOptionPane.showConfirmDialog(shapePanel, errMsg, "Delete " + ComponentStateDefinition.typeName, dialogButton);
-						if (returnCode == JOptionPane.YES_OPTION) {
+				        String returnCode = DialogUtils.showWarningDialog(shapePanel, "Delete " + ComponentStateDefinition.typeName, errMsg, new String[]{"Yes","No"}, "Yes");
+						if ("Yes".equals(returnCode)) {
 							// keep this code in sync with MolecularTypeTableModel.setValueAt
 							if(bioModel.getModel().getRbmModelContainer().delete(molecularType, mc, csd) == true) {
 								mc.deleteComponentStateDefinition(csd);

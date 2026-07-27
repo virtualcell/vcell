@@ -2982,11 +2982,8 @@ public class ReactionCartoonTool extends BioCartoonTool implements BioCartoonToo
 			java.io.File selectedFile = fileChooser.getSelectedFile();
 			if (selectedFile != null) {
 				if (selectedFile.exists()) {
-					int question = javax.swing.JOptionPane.showConfirmDialog(
-							getDialogOwner(getGraphPane()), "Overwrite file: "
-									+ selectedFile.getPath() + "?");
-					if (question == javax.swing.JOptionPane.NO_OPTION
-							|| question == javax.swing.JOptionPane.CANCEL_OPTION) {
+					String question = DialogUtils.showWarningDialog(getDialogOwner(getGraphPane()), "Overwrite?", "Overwrite file: " + selectedFile.getPath() + "?", new String[]{"Yes","No"}, "Yes");
+					if (!"Yes".equals(question)) {
 						return;
 					}
 				}

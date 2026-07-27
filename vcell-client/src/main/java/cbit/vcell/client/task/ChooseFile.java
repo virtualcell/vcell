@@ -356,9 +356,8 @@ private File showBioModelXMLFileChooser(Hashtable<String, Object> hashTable) thr
 					errMsg += "<br>Some information will be lost.";
 					errMsg += "<br><br>Continue anyway?";
 					errMsg = "<html>" + errMsg + "</html>";
-					int dialogButton = JOptionPane.YES_NO_OPTION;
-					int returnCode = JOptionPane.showConfirmDialog(topLevelWindowManager.getComponent(), errMsg, "Exporting to .bngl", dialogButton);
-					if (returnCode != JOptionPane.YES_OPTION) {
+					String returnCode = DialogUtils.showWarningDialog(topLevelWindowManager.getComponent(), "Exporting to .bngl", errMsg, new String[]{"Yes","No"}, "Yes");
+					if (!"Yes".equals(returnCode)) {
 						throw UserCancelException.CANCEL_FILE_SELECTION;
 					}
 				}

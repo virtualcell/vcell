@@ -193,21 +193,43 @@ component in from the owning panel/editor.
   `LWTopFrame` so `findLWOwner` always resolves; then all children go through
   `ModelessChild`/`ParentModalChild`.
 
-### P4 — Low: bypasses LW but passes a real parent (~50 sites)
+### P4 — Low: bypasses LW but passes a real parent
 
-Not z-order bugs today, but they skip the LW/DialogUtils path; migrate gradually.
-- `new JOptionPane(...)` + `createDialog(realComponent, …)` — ~14 sites
-  (`DocumentWindow`, `NetworkConstraintsPanel`, `DatabaseWindowManager`,
-  `TestingFrameworkWindowManager`, `PDEDataViewer`, …).
-- `JOptionPane.showXxxDialog(realComponent, …)` — ~35 sites (many `…mapping.gui`,
-  `…microscopy.gui.*wizard`, `MolecularTypePropertiesPanel`, DB tree panels).
-- `setAlwaysOnTop(true)` on a **properly parented** dialog, Mac-only front hack:
-  `org/vcell/util/gui/VCFileChooser.java:159`, `ROIMultiPaintManager.java:636` —
-  acceptable, but confirm the parent is always a real LW component.
+Not z-order bugs (they already pass a real parent), just off the single DialogUtils
+path. **Done** — all `JOptionPane.showXxxDialog(realComponent, …)` are migrated to
+`DialogUtils`:
+- `showMessageDialog` (~29) → `showErrorDialog`/`showWarningDialog`/`showInfoDialog`.
+- `showConfirmDialog`/`showOptionDialog` (~13) → `showWarningDialog(component, title,
+  message, options, default)` (returns the chosen option String; `"Cancel"` on
+  X-close) or `showComponentOKCancelDialog(...)` for a component + OK/Cancel. Return
+  mappings preserved exactly (e.g. overwrite/delete confirms proceed only on `"Yes"`;
+  X-close cancels — matching or safer than the original `== YES_OPTION` checks).
+
+#### Deliberately left as documented exceptions (not violations)
+These already pass a real parent; a mechanical conversion would add a framework
+warning or risk a regression for no z-order gain. The correct fix, where any, is a
+`ChildWindowManager` refactor, tracked separately:
+- **Tier-4 modeless "view" dialogs** — `new JOptionPane(...)` + `createDialog(this,
+  title)` + `setModal(false)` (`DocumentWindow`, `NetworkConstraintsPanel`,
+  `DatabaseWindowManager`, `TestingFrameworkWindowManager`, `PDEDataViewer`,
+  `PDEPlotControlPanel`, `ParameterEstimationRunTaskPanel`). These are modeless data
+  viewers already owned by `this`; forcing them onto `DialogUtils.createDialog`
+  produces a modal `LWDialog` set modeless (the `normalizeModality` warning). Proper
+  home: `ChildWindowManager.addChildWindow(...)` (→ owned `LWChildDialog`).
+- **Tier-3 Mac `setAlwaysOnTop(true)`** on already-parented dialogs
+  (`VCFileChooser.java:159`, `ROIMultiPaintManager.java:636`). This is a macOS
+  front-order workaround — and `DialogUtils.showDialog` itself does the same on Mac
+  (see `DialogUtils` `isMac()` branch). Removing it risks a Mac regression.
+- **`ConstraintPanel.createNewBounds()`** `showInputDialog(this, …)` — already
+  parented to `this`; `DialogUtils.showInputDialog0` throws `UtilCancelException` on
+  cancel where the original returns `null`, which would change this legacy path's
+  control flow. Left as-is.
 - `new JDialog(getFrameForComponent(…)/getWindowAncestor(…), …)` — `AbstractPlotPanel`,
-  `OutputFunctionsPanel`, `ElectricalStimulusPanel`, `ROIMultiPaintManager` — OK; the
-  owner resolves to a real window. Prefer `LWDialog` if a parentless component can
-  reach them.
+  `OutputFunctionsPanel`, `ElectricalStimulusPanel`, `ROIMultiPaintManager`: owner
+  resolves to a real window; acceptable.
+
+The transitional `ChildWindowManager.JDiagAdapter` (un-owned fallback) has been
+**removed** — every child window is now an owned `LWChildDialog`/`LWTitledDialog`.
 
 ### Not violations
 
