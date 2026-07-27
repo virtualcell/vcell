@@ -16,6 +16,46 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.2.01] - 2026-07-27
+
+**Highlights.** A stability and desktop-UX release on the 8.0 line. Fixes a
+crash (and incorrect metadata) in the ODE/PDE results viewers when a model was
+edited while results were open (issue #1746), and overhauls desktop window
+management so dialogs and child windows are OS-owned by their parent — they no
+longer hide behind the main window on recent macOS and Windows. Internally,
+`getVCInfoContainer` moved from legacy RPC to REST, and CI was re-architected
+into a faster two-tier pipeline.
+
+### Added
+- Dev-only Swing debug bridge for live UI introspection during development
+  (off by default). (#1750, #1757)
+
+### Changed
+- Desktop windows: child windows and dialogs are now natively owned by their
+  logical parent, so they stay in front of it (and minimize/travel with it)
+  instead of relying on `toFront()`, which modern macOS/Windows no longer honor
+  for a background app. All dialogs are standardized on the DialogUtils path.
+  (#1763, #1765, #1766, #1767, #1768, #1769)
+- Migrated `getVCInfoContainer` from legacy RPC to REST
+  `GET /api/v1/vcInfoContainer`. (#1759, #1761)
+- Re-architected CI into a two-tier pipeline (fast lane + deferred, sharded
+  regression). (#1752, #1753, #1754, #1755)
+
+### Removed
+- Legacy RPC `getVCInfoContainer` endpoint (replaced by the REST endpoint). (#1759)
+
+### Fixed
+- ODE/PDE results viewers: fixed a crash (NullPointerException) and wrong
+  metadata when the model was edited or re-saved while results were open;
+  viewer metadata now resolves against the submit-time model. (#1758, #1761)
+- Structure rename: the name field now reverts to the real name when a rename
+  is vetoed (e.g. a duplicate name) instead of keeping the rejected value. (#1756)
+
+### Notes for API consumers
+- `getVCInfoContainer` is now `GET /api/v1/vcInfoContainer`; the legacy RPC
+  endpoint is removed. `BioModelChildSummary` and `MathModelChildSummary` gained
+  a `simKeys` field. Java/Python/TypeScript clients were regenerated. (#1759, #1761)
+
 ## [8.0.0.03] - 2026-05-21
 
 **Highlights.** Patch release on the 8.0.0 line accompanying the
