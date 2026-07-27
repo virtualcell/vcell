@@ -100,72 +100,26 @@ public class ChildWindowManager {
 	}
 	
 	/**
-	 * transition dialog for hierarchies without logicalwindow parents 
-	 */
-	@SuppressWarnings("serial")
-	private static class JDiagAdapter extends JDialog implements LWFrameOrDialog {
-		private final LWTraits traits;
-
-		private JDiagAdapter(Window owner, String title, ModalityType modalityType, LWTraits tr) {
-			super(owner, title, modalityType);
-			traits = tr; 
-		}
-		
-
-		@Override
-		public LWTraits getTraits() {
-			return traits;
-		}
-
-
-		@Override
-		public LWModality getLWModality() {
-			ModalityType smt = getModalityType( );
-			switch (smt) {
-			case MODELESS:
-				return LWModality.MODELESS;
-			case DOCUMENT_MODAL:
-				return LWModality.PARENT_ONLY;
-			default:
-				if (LG.isDebugEnabled()) {
-					LG.warn(ExecutionTrace.justClassName(this) + " titled " + getTitle() + 
-							" using unsupported modality "  + smt);
-				}
-				return LWModality.PARENT_ONLY;
-			}
-		}
-
-		@Override
-		public Window self() {
-			return this;
-		}
-	}
-	
-	/**
 	 * @param title not null
 	 * @param modality not null
 	 * @return implementing class
 	 */
 	private LWFrameOrDialog createContainerImplementation(String title,LWModality modality, boolean parentCentered) {
 		LWTraits traits = parentCentered ? new LWTraits(InitialPosition.CENTERED_ON_PARENT) : new LWTraits(InitialPosition.STAGGERED_ON_PARENT);
-		if (owner != null) {
-			switch (modality) {
-			case MODELESS:
-				return new ModelessChild(this,owner, title,traits);
-			case PARENT_ONLY:
-				return new ParentModalChild(this,owner, title,traits);
-			}
+		if (owner == null) {
+			// every ChildWindowManager host is an LWTopFrame, so findLWOwner(parent) always resolves an
+			// owner. A null owner would mean a non-LW host was introduced — fail loudly rather than fall
+			// back to an un-owned dialog (the retired JDiagAdapter transition path).
+			throw new IllegalStateException("ChildWindowManager has no logical-window owner for parent " + parent
+					+ "; the host frame must extend LWTopFrame");
 		}
-		else { //remove eventually
-			switch (modality) {
-			case MODELESS:
-				return new JDiagAdapter(parent, title, ModalityType.MODELESS,traits);
-			case PARENT_ONLY:
-				return new JDiagAdapter(parent, title, ModalityType.DOCUMENT_MODAL,traits);
-			}
-		}		
-		//this shouldn't happen
-		throw new UnsupportedOperationException("Modality " + modality + " no supported");
+		switch (modality) {
+		case MODELESS:
+			return new ModelessChild(this,owner, title,traits);
+		case PARENT_ONLY:
+			return new ParentModalChild(this,owner, title,traits);
+		}
+		throw new UnsupportedOperationException("Modality " + modality + " not supported");
 	}
 
 	public class ChildWindow {

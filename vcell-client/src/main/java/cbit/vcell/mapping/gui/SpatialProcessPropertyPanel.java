@@ -15,6 +15,7 @@ import java.awt.Color;
 
 import javax.swing.JPanel;
 
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.sorttable.JSortTable;
 
 import cbit.vcell.client.desktop.biomodel.DocumentEditorSubPanel;
@@ -52,7 +53,7 @@ private void handleException(Throwable exception) {
 
 	/* Uncomment the following lines to print uncaught exceptions to stdout */
 	if (exception instanceof ExpressionException){
-		javax.swing.JOptionPane.showMessageDialog(this, exception.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+		DialogUtils.showErrorDialog(this, exception.getMessage());
 	}
 	System.out.println("--------- UNCAUGHT EXCEPTION --------- in SpatialObjectPropertyPanel");
 	exception.printStackTrace(System.out);

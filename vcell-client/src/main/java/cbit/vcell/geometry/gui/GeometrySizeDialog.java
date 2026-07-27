@@ -22,6 +22,7 @@ import javax.swing.JPanel;
 
 import org.vcell.util.Extent;
 import org.vcell.util.Origin;
+import org.vcell.util.gui.DialogUtils;
 import org.vcell.util.gui.GuiUtils;
 
 import cbit.vcell.client.PopupGenerator;
@@ -657,7 +658,7 @@ private void handleException(Throwable exception) {
 	System.out.println("--------- UNCAUGHT EXCEPTION in GeometrySizeDialog ---------");
 	exception.printStackTrace(System.out);
 	if (exception instanceof PropertyVetoException){
-		javax.swing.JOptionPane.showMessageDialog(this, exception.getMessage(), "input error", javax.swing.JOptionPane.ERROR_MESSAGE);
+		DialogUtils.showErrorDialog(this, exception.getMessage());
 	}
 }
 /**

@@ -31,6 +31,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
+import org.vcell.util.gui.DialogUtils;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTextPane;
@@ -96,7 +97,7 @@ public void itemStateChanged(ItemEvent e) {
  * Comment
  */
 private void apply_ExceptionOccurred(java.lang.Throwable e) throws javax.swing.text.BadLocationException {
-	JOptionPane.showMessageDialog(this, e.getMessage(), "Error While Saving", JOptionPane.ERROR_MESSAGE);
+	DialogUtils.showErrorDialog(this, e.getMessage());
 	if (e instanceof MathFormatException){
 		int lineNumber = ((MathFormatException)e).getLineNumber();
 		if (lineNumber>=0){

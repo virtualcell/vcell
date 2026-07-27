@@ -150,7 +150,7 @@ public class EstParams_ReactionOffRatePanel extends JPanel
 					getROIPanel().setCheckboxesForDisplay(FRAPStudy.createSelectedROIsForReactionOffRateModel());
 					getROIPanel().refreshROIImageForDisplay();
 				}
-				JOptionPane.showMessageDialog(EstParams_ReactionOffRatePanel.this, getROIPanel());
+				DialogUtils.showInfoDialog(EstParams_ReactionOffRatePanel.this, getROIPanel(), "");
 			}
 		});
 		showRoisButton.setFont(new Font("", Font.PLAIN, 11));

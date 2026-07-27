@@ -17,6 +17,8 @@ import java.util.Hashtable;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.vcell.util.gui.DialogUtils;
+
 import org.vcell.wizard.WizardPanelDescriptor;
 
 import cbit.vcell.client.task.AsynchClientTask;
@@ -89,7 +91,7 @@ public class DefineROI_CropDescriptor extends WizardPanelDescriptor {
 				if(VCellConfiguration.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_PREF_NOT_SET).equals(VFRAPPreference.ROI_ASSIST_PREF_NOT_SET))
 				{
 					DefineROI_RequireAssistPanel assistPanel = new DefineROI_RequireAssistPanel();
-					JOptionPane.showMessageDialog(imgPanel, assistPanel);
+					DialogUtils.showInfoDialog(imgPanel, assistPanel, "");
 					VCellConfiguration.putValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, assistPanel.getRequireAssistType());
 //					if(VFRAPPreference.getValue(VFRAPPreference.ROI_ASSIST_REQUIREMENT_TYPE, VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS).equals(VFRAPPreference.ROI_ASSIST_REQUIRE_ALWAYS) &&
 //						((DefineROI_Panel)imgPanel).getFrapWorkspace().getWorkingFrapStudy().getFrapData().getRoi(FRAPData.VFRAP_ROI_ENUM.ROI_CELL.name()).getNonzeroPixelsCount()<1)

@@ -17,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import org.vcell.util.gui.DialogUtils;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTree;
@@ -614,7 +615,7 @@ private MathModelInfo[] getMathModelVersionDates(MathModelInfo thisMathModelInfo
  	}
 
  	if (mathModelBranchList.size() == 0) {
-		JOptionPane.showMessageDialog(this,"No Versions in Mathmodel","Error comparing MathModels",JOptionPane.ERROR_MESSAGE);
+		DialogUtils.showErrorDialog(this,"No Versions in Mathmodel");
 	 	throw new NullPointerException("No Versions in Mathmodel!");
  	}
 
