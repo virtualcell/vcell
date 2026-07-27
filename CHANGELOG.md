@@ -16,6 +16,24 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.2.02] - 2026-07-27
+
+**Highlights.** Hotfix on the 8.0.2 line. Restores `GET /api/v1/vcInfoContainer`
+for clients whose visible model list includes a **shared** BioModel — the
+`GroupAccess` polymorphic discriminator (`type`) was being omitted for shared-access
+records, causing the desktop client to fail deserialization.
+
+### Fixed
+- `GroupAccessSome` (shared-model access) now serializes its `type` discriminator,
+  matching `GroupAccessAll`/`GroupAccessNone`. Its field was `private` (no getter),
+  so a shared BioModel's `version.groupAccess` serialized without `type` and the
+  generated REST client threw `InvalidTypeIdException` on `/api/v1/vcInfoContainer`.
+  (#1771)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build. Server-side serialization fix only;
+  no client regeneration required.
+
 ## [8.0.2.01] - 2026-07-27
 
 **Highlights.** A stability and desktop-UX release on the 8.0 line. Fixes a
