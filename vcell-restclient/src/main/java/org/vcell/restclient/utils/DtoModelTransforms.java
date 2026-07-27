@@ -243,31 +243,50 @@ public class DtoModelTransforms {
         if (dto == null) {
             return null; // a BioModel can legitimately have no child summary (matches the native DB path)
         }
-        BioModelChildSummary.MathType[] mathTypes = new BioModelChildSummary.MathType[dto.getAppTypes().size()];
-        for (int i = 0; i < mathTypes.length; i++){
-            mathTypes[i] = dtoToBioModelMathType(dto.getAppTypes().get(i));
-        }
-        String[][] simNames = null;
-        if (dto.getSimNames() != null){
-            simNames = new String[dto.getSimNames().size()][];
-            for (int i = 0; i < simNames.length; i++){
-                simNames[i] = dto.getSimNames().get(i).toArray(new String[0]);
+        // scAnnots/geoNames/geoDims/simNames/simAnnots/appTypes are PARALLEL arrays, one entry per
+        // simulation context. BioModelChildSummary.toDatabaseSerialization() (used by the desktop search)
+        // indexes them by the sim-context count, and simAnnots[i] must be parallel to simNames[i]. The
+        // native DB path always fills them non-null and correctly sized; the wire DTO may omit an empty
+        // one (null). Default any missing array/element to an empty-but-correctly-sized value so no
+        // downstream consumer NPEs (or indexes out of bounds).
+        String[] scNames = dto.getSimulationContextNames() == null ? new String[0]
+                : dto.getSimulationContextNames().toArray(new String[0]);
+        int n = scNames.length;
+
+        BioModelChildSummary.MathType[] mathTypes = new BioModelChildSummary.MathType[n];
+        String[] scAnnotations = new String[n];
+        String[] geoNames = new String[n];
+        int[] geoDims = new int[n];
+        String[][] simNames = new String[n][];
+        String[][] simAnnots = new String[n][];
+        for (int i = 0; i < n; i++){
+            mathTypes[i] = elem(dto.getAppTypes(), i) != null ? dtoToBioModelMathType(dto.getAppTypes().get(i)) : null;
+            scAnnotations[i] = strElem(dto.getScAnnots(), i);
+            geoNames[i] = strElem(dto.getGeoNames(), i);
+            Integer dim = elem(dto.getGeoDims(), i);
+            geoDims[i] = dim != null ? dim : 0;
+            List<String> sn = elem(dto.getSimNames(), i);
+            List<String> sa = elem(dto.getSimAnnots(), i);
+            simNames[i] = sn == null ? new String[0] : sn.toArray(new String[0]);
+            // simAnnots[i] must be parallel to simNames[i]
+            simAnnots[i] = new String[simNames[i].length];
+            for (int j = 0; j < simAnnots[i].length; j++){
+                simAnnots[i][j] = (sa != null && j < sa.size() && sa.get(j) != null) ? sa.get(j) : "";
             }
         }
-        String[][] simAnnots = null;
-        if (dto.getSimAnnots() != null){
-            simAnnots = new String[dto.getSimAnnots().size()][];
-            for (int i = 0; i < simAnnots.length; i++){
-                simAnnots[i] = dto.getSimAnnots().get(i).toArray(new String[0]);
-            }
-        }
-        String[] scAnnotations = dto.getScAnnots() == null ? null : dto.getScAnnots().toArray(new String[0]);
-        String[] geoNames = dto.getGeoNames() == null ? null : dto.getGeoNames().toArray(new String[0]);
-        int[] geoDims = dto.getGeoDims() == null ? null : dto.getGeoDims().stream().mapToInt(Integer::intValue).toArray();
         String[] simKeys = dto.getSimKeys() == null ? new String[0] : dto.getSimKeys().toArray(new String[0]);
-        return new BioModelChildSummary(dto.getSimulationContextNames().toArray(new String[0]),
-                mathTypes, scAnnotations, simNames, simAnnots, simKeys, geoNames,
-                geoDims);
+        return new BioModelChildSummary(scNames, mathTypes, scAnnotations, simNames, simAnnots, simKeys, geoNames, geoDims);
+    }
+
+    /** null-safe indexed access into a possibly-null list. */
+    private static <T> T elem(List<T> list, int i){
+        return (list != null && i < list.size()) ? list.get(i) : null;
+    }
+
+    /** null-safe indexed access into a possibly-null string list, defaulting a missing/null element to "". */
+    private static String strElem(List<String> list, int i){
+        String v = elem(list, i);
+        return v == null ? "" : v;
     }
 
     public static VCellSoftwareVersion dtoToVCellSoftwareVersion(String softwareVersionString){
@@ -298,9 +317,10 @@ public class DtoModelTransforms {
             return null; // a MathModel can legitimately have no model-info summary (matches the native DB path)
         }
         String[] simKeys = dto.getSimKeys() == null ? new String[0] : dto.getSimKeys().toArray(new String[0]);
+        String[] simNames = dto.getSimulationNames() == null ? new String[0] : dto.getSimulationNames().toArray(new String[0]);
+        String[] simAnnots = dto.getSimulationAnnotations() == null ? new String[0] : dto.getSimulationAnnotations().toArray(new String[0]);
         return new MathModelChildSummary(BioModelChildSummary.MathType.valueOf(dto.getModelType().getValue()),
-                dto.getGeometryName(), dto.getGeometryDimension(), dto.getSimulationNames().toArray(new String[0]),
-                dto.getSimulationAnnotations().toArray(new String[0]), simKeys);
+                dto.getGeometryName(), dto.getGeometryDimension(), simNames, simAnnots, simKeys);
     }
 
     public static MathModelInfo mathModelContextToMathModel(MathModelSummary summary){

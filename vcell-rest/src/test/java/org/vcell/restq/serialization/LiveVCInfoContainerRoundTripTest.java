@@ -77,10 +77,18 @@ public class LiveVCInfoContainerRoundTripTest {
 
         total += roundTrip("BioModel", vcic.getBioModelSummaries(),
                 s -> s.getVersion() == null ? "?" : s.getVersion().getName() + " (key=" + s.getVersion().getVersionKey() + ")",
-                DtoModelTransforms::bioModelContextToBioModelInfo, failures);
+                s -> {
+                    var info = DtoModelTransforms.bioModelContextToBioModelInfo(s);
+                    // also exercise the downstream serialization path (desktop search) that a null/parallel
+                    // array mismatch would break, not just the reconstruction itself
+                    if (info.getBioModelChildSummary() != null) info.getBioModelChildSummary().toDatabaseSerialization();
+                }, failures);
         total += roundTrip("MathModel", vcic.getMathModelSummaries(),
                 s -> s.getVersion() == null ? "?" : s.getVersion().getName() + " (key=" + s.getVersion().getVersionKey() + ")",
-                DtoModelTransforms::mathModelContextToMathModel, failures);
+                s -> {
+                    var info = DtoModelTransforms.mathModelContextToMathModel(s);
+                    if (info.getMathModelChildSummary() != null) info.getMathModelChildSummary().toDatabaseSerialization();
+                }, failures);
         total += roundTrip("Geometry", vcic.getGeometrySummaries(),
                 s -> s.getVersion() == null ? "?" : s.getVersion().getName() + " (key=" + s.getVersion().getVersionKey() + ")",
                 DtoModelTransforms::geometrySummaryToGeometryInfo, failures);
