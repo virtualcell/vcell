@@ -28,7 +28,11 @@ public class GroupAccessSome extends GroupAccess {
 		private java.math.BigDecimal    hash			= null;
 		private User[] 					groupMembers 	= null;
 		private boolean[]				hiddenMembers	= null;
-		private final String type = "GroupAccessSome";
+		// must be public so Jackson serializes the REST discriminator, like GroupAccessAll/None.
+		// When private (no getter), shared biomodels' groupAccess is emitted without "type", and the
+		// generated REST client fails to resolve the subtype (InvalidTypeIdException) — issue seen on
+		// /api/v1/vcInfoContainer for any GroupAccessSome (shared) record.
+		public final String type = "GroupAccessSome";
 
 /**
  * Insert the method's description here.
