@@ -49,33 +49,28 @@ public class VCInfoContainerResource {
             ArrayList<BioModelResource.BioModelSummary> bioModelSummaries = new ArrayList<>();
             if (vcInfoContainer.getBioModelInfos() != null) {
                 for (BioModelInfo info : vcInfoContainer.getBioModelInfos()) {
-                    bioModelSummaries.add(new BioModelResource.BioModelSummary(info.getVersion(),
-                            info.getBioModelChildSummary(), info.getPublicationInfos(), info.getSoftwareVersion()));
+                    bioModelSummaries.add(BioModelResource.BioModelSummary.fromBioModelInfo(info));
                 }
             }
 
             ArrayList<MathModelResource.MathModelSummary> mathModelSummaries = new ArrayList<>();
             if (vcInfoContainer.getMathModelInfos() != null) {
                 for (MathModelInfo info : vcInfoContainer.getMathModelInfos()) {
-                    mathModelSummaries.add(new MathModelResource.MathModelSummary(info.getVersion(), info.getMathKey(),
-                            info.getMathModelChildSummary(), info.getSoftwareVersion(), info.getPublicationInfos(),
-                            info.getAnnotatedFunctionsStr()));
+                    mathModelSummaries.add(MathModelResource.MathModelSummary.fromMathModelInfo(info));
                 }
             }
 
             ArrayList<GeometryResource.GeometrySummary> geometrySummaries = new ArrayList<>();
             if (vcInfoContainer.getGeometryInfos() != null) {
                 for (GeometryInfo info : vcInfoContainer.getGeometryInfos()) {
-                    geometrySummaries.add(new GeometryResource.GeometrySummary(info.getDimension(), info.getOrigin(),
-                            info.getExtent(), info.getImageRef(), info.getVersion(), info.getSoftwareVersion()));
+                    geometrySummaries.add(GeometryResource.GeometrySummary.fromGeometryInfo(info));
                 }
             }
 
             ArrayList<VCImageResource.VCImageSummary> vcImageSummaries = new ArrayList<>();
             if (vcInfoContainer.getVCImageInfos() != null) {
                 for (VCImageInfo info : vcInfoContainer.getVCImageInfos()) {
-                    vcImageSummaries.add(new VCImageResource.VCImageSummary(info.getISize(), info.getExtent(),
-                            info.getVersion(), info.getBrowseGif(), info.getSoftwareVersion()));
+                    vcImageSummaries.add(VCImageResource.VCImageSummary.fromVCImageInfo(info));
                 }
             }
 

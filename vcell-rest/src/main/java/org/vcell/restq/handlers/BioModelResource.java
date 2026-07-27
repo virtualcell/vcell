@@ -15,6 +15,8 @@ import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.jdom2.JDOMException;
 import org.vcell.restq.Main;
 import org.vcell.restq.errors.exceptions.*;
+import org.vcell.restq.handlers.dto.PublicationInfoRep;
+import org.vcell.restq.handlers.dto.VersionRep;
 import org.vcell.restq.models.BioModel;
 import org.vcell.restq.services.BioModelRestService;
 import org.vcell.restq.services.UserRestService;
@@ -72,7 +74,7 @@ public class BioModelResource {
         User vcellUser = userRestService.getUserOrAnonymousFromIdentity(securityIdentity);
         try{
             BioModelInfo info = bioModelRestService.getBioModelInfo(vcellUser, new KeyValue(bioModelID));
-            return new BioModelSummary(info.getVersion(), info.getBioModelChildSummary(), info.getPublicationInfos(), info.getSoftwareVersion());
+            return BioModelSummary.fromBioModelInfo(info);
         } catch (PermissionException e){
             throw new PermissionWebException(e.getMessage(), e);
         } catch (DataAccessException e){
@@ -92,7 +94,7 @@ public class BioModelResource {
             BioModelInfo[] infos = bioModelRestService.getBioModelInfos(vcellUser, includePublicAndShared.orElse(true));
             BioModelSummary[] contexts = new BioModelSummary[infos.length];
             for (int i = 0; i < infos.length; i ++){
-                contexts[i] = new BioModelSummary(infos[i].getVersion(), infos[i].getBioModelChildSummary(), infos[i].getPublicationInfos(), infos[i].getSoftwareVersion());
+                contexts[i] = BioModelSummary.fromBioModelInfo(infos[i]);
             }
             return contexts;
         } catch (DataAccessException e){
@@ -197,9 +199,17 @@ public class BioModelResource {
     }
 
     public record BioModelSummary(
-        Version version, // Problematic
+        VersionRep version,
         BioModelChildSummary summary,
-        PublicationInfo[] publicationInformation, // Need separate DTO
-        VCellSoftwareVersion vCellSoftwareVersion
-    ){ }
+        List<PublicationInfoRep> publicationInformation,
+        String vCellSoftwareVersion
+    ){
+        public static BioModelSummary fromBioModelInfo(BioModelInfo info) {
+            return new BioModelSummary(
+                    VersionRep.fromVersion(info.getVersion()),
+                    info.getBioModelChildSummary(),
+                    PublicationInfoRep.fromArray(info.getPublicationInfos()),
+                    info.getSoftwareVersion() == null ? null : info.getSoftwareVersion().getSoftwareVersionString());
+        }
+    }
 }

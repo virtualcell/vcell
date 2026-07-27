@@ -12,6 +12,8 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.jdom2.JDOMException;
 import org.vcell.restq.errors.exceptions.*;
+import org.vcell.restq.handlers.dto.PublicationInfoRep;
+import org.vcell.restq.handlers.dto.VersionRep;
 import org.vcell.restq.services.MathModelService;
 import org.vcell.restq.services.UserRestService;
 import org.vcell.util.BigString;
@@ -83,8 +85,7 @@ public class MathModelResource {
             if (info == null) {
                 throw new NotFoundWebException("Math Model with id " + id + " was not found");
             }
-            return new MathModelSummary(info.getVersion(), info.getMathKey(), info.getMathModelChildSummary(),
-                    info.getSoftwareVersion(), info.getPublicationInfos(), info.getAnnotatedFunctionsStr());
+            return MathModelSummary.fromMathModelInfo(info);
         } catch (ObjectNotFoundException e) {
             throw new NotFoundWebException(e.getMessage(), e);
         } catch (PermissionException e){
@@ -106,9 +107,7 @@ public class MathModelResource {
             MathModelInfo[] infos = mathModelService.getMathModelInfos(user, includePublicAndShared.orElse(true));
             ArrayList<MathModelSummary> summaries = new ArrayList<>();
             for (MathModelInfo info : infos) {
-                MathModelChildSummary childSummary = info.getMathModelChildSummary();
-                summaries.add(new MathModelSummary(info.getVersion(), info.getMathKey(), childSummary,
-                        info.getSoftwareVersion(), info.getPublicationInfos(), info.getAnnotatedFunctionsStr()));
+                summaries.add(MathModelSummary.fromMathModelInfo(info));
             }
             return summaries;
         } catch (ObjectNotFoundException e) {
@@ -143,12 +142,22 @@ public class MathModelResource {
 
 
     public record MathModelSummary(
-        Version version,
-        KeyValue keyValue,
+        VersionRep version,
+        String keyValue,
         MathModelChildSummary modelInfo,
-        VCellSoftwareVersion softwareVersion,
-        PublicationInfo[] publicationInfos,
+        String softwareVersion,
+        List<PublicationInfoRep> publicationInfos,
         String annotatedFunctions
-    ){ }
+    ){
+        public static MathModelSummary fromMathModelInfo(MathModelInfo info) {
+            return new MathModelSummary(
+                    VersionRep.fromVersion(info.getVersion()),
+                    info.getMathKey() == null ? null : info.getMathKey().toString(),
+                    info.getMathModelChildSummary(),
+                    info.getSoftwareVersion() == null ? null : info.getSoftwareVersion().getSoftwareVersionString(),
+                    PublicationInfoRep.fromArray(info.getPublicationInfos()),
+                    info.getAnnotatedFunctionsStr());
+        }
+    }
 
 }

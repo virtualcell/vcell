@@ -12,6 +12,8 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.jdom2.JDOMException;
 import org.vcell.restq.errors.exceptions.*;
+import org.vcell.restq.handlers.dto.PreviewRep;
+import org.vcell.restq.handlers.dto.VersionRep;
 import org.vcell.restq.services.UserRestService;
 import org.vcell.restq.services.VCImageService;
 import org.vcell.util.*;
@@ -76,8 +78,7 @@ public class VCImageResource {
         User user = userRestService.getUserOrAnonymousFromIdentity(securityIdentity);
         try{
             VCImageInfo info = vcImageService.getVCImageInfo(user, new KeyValue(id));
-            return new VCImageSummary(info.getISize(), info.getExtent(), info.getVersion(), info.getBrowseGif(),
-                    info.getSoftwareVersion());
+            return VCImageSummary.fromVCImageInfo(info);
         }  catch (ObjectNotFoundException e){
             throw new NotFoundWebException(e.getMessage(), e);
         } catch (PermissionException e){
@@ -98,8 +99,7 @@ public class VCImageResource {
             VCImageInfo[] infos = vcImageService.getVCImageInfos(user, includePublicAndShared.orElse(true));
             ArrayList<VCImageSummary> summaries = new ArrayList<VCImageSummary>();
             for (VCImageInfo info : infos) {
-                summaries.add(new VCImageSummary(info.getISize(), info.getExtent(), info.getVersion(),
-                        info.getBrowseGif(), info.getSoftwareVersion()));
+                summaries.add(VCImageSummary.fromVCImageInfo(info));
             }
             return summaries;
         } catch (DataAccessException e) {
@@ -130,9 +130,18 @@ public class VCImageResource {
     public record VCImageSummary(
             ISize size,
             Extent extent,
-            Version version,
-            GIFImage preview,
-            VCellSoftwareVersion softwareVersion
-    ) { }
+            VersionRep version,
+            PreviewRep preview,
+            String softwareVersion
+    ) {
+        public static VCImageSummary fromVCImageInfo(VCImageInfo info) {
+            return new VCImageSummary(
+                    info.getISize(),
+                    info.getExtent(),
+                    VersionRep.fromVersion(info.getVersion()),
+                    PreviewRep.fromGIFImage(info.getBrowseGif()),
+                    info.getSoftwareVersion() == null ? null : info.getSoftwareVersion().getSoftwareVersionString());
+        }
+    }
 
 }

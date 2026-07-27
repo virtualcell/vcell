@@ -13,6 +13,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.parameters.RequestBody;
 import org.jdom2.JDOMException;
 import org.vcell.restq.errors.exceptions.*;
+import org.vcell.restq.handlers.dto.VersionRep;
 import org.vcell.restq.services.GeometryService;
 import org.vcell.restq.services.UserRestService;
 import org.vcell.util.*;
@@ -78,7 +79,7 @@ public class GeometryResource {
         User user = userRestService.getUserOrAnonymousFromIdentity(securityIdentity);
         try {
             GeometryInfo info = geometryService.getGeometryInfo(user, new KeyValue(id));
-            return new GeometrySummary(info.getDimension(), info.getOrigin(), info.getExtent(), info.getImageRef(), info.getVersion(), info.getSoftwareVersion());
+            return GeometrySummary.fromGeometryInfo(info);
         } catch (ObjectNotFoundException e) {
             throw new NotFoundWebException(e.getMessage(), e);
         } catch (PermissionException e) {
@@ -100,7 +101,7 @@ public class GeometryResource {
             GeometryInfo[] infos = geometryService.getGeometryInfos(user, includePublicAndShared.orElse(true));
             ArrayList<GeometrySummary> summaries = new ArrayList<GeometrySummary>();
             for (GeometryInfo info : infos) {
-                summaries.add(new GeometrySummary(info.getDimension(), info.getOrigin(), info.getExtent(), info.getImageRef(), info.getVersion(), info.getSoftwareVersion()));
+                summaries.add(GeometrySummary.fromGeometryInfo(info));
             }
             return summaries;
         } catch (DataAccessException e) {
@@ -132,9 +133,19 @@ public class GeometryResource {
             int dimension,
             Origin origin,
             Extent extent,
-            KeyValue imageRef,
-            Version version,
-            VCellSoftwareVersion softwareVersion
-    ){ }
+            String imageRef,
+            VersionRep version,
+            String softwareVersion
+    ){
+        public static GeometrySummary fromGeometryInfo(GeometryInfo info) {
+            return new GeometrySummary(
+                    info.getDimension(),
+                    info.getOrigin(),
+                    info.getExtent(),
+                    info.getImageRef() == null ? null : info.getImageRef().toString(),
+                    VersionRep.fromVersion(info.getVersion()),
+                    info.getSoftwareVersion() == null ? null : info.getSoftwareVersion().getSoftwareVersionString());
+        }
+    }
 
 }
