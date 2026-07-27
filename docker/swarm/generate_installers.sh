@@ -72,13 +72,18 @@ VCELL_CLIENT_APPID=$(grep VCELL_CLIENT_APPID "$local_config_file" | cut -d"=" -f
 VCELL_REPO_NAMESPACE=$(grep VCELL_REPO_NAMESPACE "$local_config_file" | cut -d"=" -f2)
 VCELL_TAG=$(grep VCELL_TAG "$local_config_file" | cut -d"=" -f2)
 
+# The clientgen image is pulled by its friendly version tag (version.build), which CI-full's
+# tag-and-push publishes deterministically. VCELL_TAG (a git short SHA) is NOT used here: the build
+# and deploy runners can abbreviate the SHA to different lengths, causing "manifest unknown".
+CLIENTGEN_TAG="${VCELL_VERSION_NUMBER}.${VCELL_BUILD_NUMBER}"
+
 VCELL_DEPLOY_SECRETS_DIR=$(grep VCELL_DEPLOY_SECRETS_DIR "$local_config_file" | cut -d"=" -f2)
 
 # which install4j media (build ids) to generate; default = all five platforms. The CD-sites
 # workflow sets this to a single id per matrix job so each installer builds on its own runner.
 BUILD_IDS="${BUILD_IDS:-349 450 652 547 105}"
 
-echo "sudo docker run --rm ... ${VCELL_REPO_NAMESPACE}/vcell-clientgen:${VCELL_TAG}"
+echo "sudo docker run --rm ... ${VCELL_REPO_NAMESPACE}/vcell-clientgen:${CLIENTGEN_TAG}"
 
 echo "sudo docker run --rm \\"
 echo "    -e BUILD_IDS=\"$BUILD_IDS\" \\"
@@ -100,7 +105,7 @@ echo "    -e macCodeSignKeystore_pswdfile=/buildsecrets/Apple_Dev_Id_Certificate
 echo "    -e Install4J_product_key_file=/buildsecrets/Install4J_product_key_10.txt \\"
 echo "    -v $PWD/generated_installers:/outputdir \\"
 echo "    -v ${VCELL_DEPLOY_SECRETS_DIR}:/buildsecrets \\"
-echo "    ${VCELL_REPO_NAMESPACE}/vcell-clientgen:${VCELL_TAG}"
+echo "    ${VCELL_REPO_NAMESPACE}/vcell-clientgen:${CLIENTGEN_TAG}"
 
 
 
@@ -124,7 +129,7 @@ if ! sudo docker run --rm \
     -e Install4J_product_key_file=/buildsecrets/Install4J_product_key_10.txt \
     -v "$PWD"/generated_installers:/outputdir \
     -v "${VCELL_DEPLOY_SECRETS_DIR}":/buildsecrets \
-    "${VCELL_REPO_NAMESPACE}/vcell-clientgen":"${VCELL_TAG}";
+    "${VCELL_REPO_NAMESPACE}/vcell-clientgen":"${CLIENTGEN_TAG}";
 then
     echo "docker run failed while generating clients"
     exit 1

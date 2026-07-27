@@ -139,7 +139,9 @@ jobs:
       run: |
         cd docker/swarm
         echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
-        sudo docker pull $VCELL_REPO_NAMESPACE/vcell-clientgen:$VCELL_TAG
+        # pull clientgen by the deterministic friendly version tag (version.build), not the git short
+        # SHA (VCELL_TAG) which can abbreviate differently on the build vs deploy runners
+        sudo docker pull $VCELL_REPO_NAMESPACE/vcell-clientgen:${VCELL_VERSION}.${VCELL_BUILD}
         BUILD_IDS="${{ matrix.build_id }}" ./generate_installers.sh ./${VCELL_CONFIG_FILE_NAME}
     - name: upload installer media
       uses: actions/upload-artifact@v4
