@@ -74,9 +74,14 @@ VCELL_TAG=$(grep VCELL_TAG "$local_config_file" | cut -d"=" -f2)
 
 VCELL_DEPLOY_SECRETS_DIR=$(grep VCELL_DEPLOY_SECRETS_DIR "$local_config_file" | cut -d"=" -f2)
 
+# which install4j media (build ids) to generate; default = all five platforms. The CD-sites
+# workflow sets this to a single id per matrix job so each installer builds on its own runner.
+BUILD_IDS="${BUILD_IDS:-349 450 652 547 105}"
+
 echo "sudo docker run --rm ... ${VCELL_REPO_NAMESPACE}/vcell-clientgen:${VCELL_TAG}"
 
-echo "sudo docker run --rm --cpus=\"1.0\"\\"
+echo "sudo docker run --rm \\"
+echo "    -e BUILD_IDS=\"$BUILD_IDS\" \\"
 echo "    -e compiler_updateSiteBaseUrl=$VCELL_UPDATE_SITE \\"
 echo "    -e compiler_Site=$VCELL_SITE_CAMEL \\"
 echo "    -e compiler_vcellVersion=$VCELL_VERSION_NUMBER \\"
@@ -99,7 +104,8 @@ echo "    ${VCELL_REPO_NAMESPACE}/vcell-clientgen:${VCELL_TAG}"
 
 
 
-if ! sudo docker run --rm --cpus="1.0" \
+if ! sudo docker run --rm \
+    -e BUILD_IDS="$BUILD_IDS" \
     -e compiler_updateSiteBaseUrl="$VCELL_UPDATE_SITE" \
     -e compiler_Site="$VCELL_SITE_CAMEL" \
     -e compiler_vcellVersion="$VCELL_VERSION_NUMBER" \
