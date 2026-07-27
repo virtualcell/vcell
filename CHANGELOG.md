@@ -16,6 +16,40 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.2.04] - 2026-07-27
+
+**Highlights.** Third hotfix on the 8.0.2 line, replacing the
+`GET /api/v1/vcInfoContainer` summary serialization with dedicated DTOs. The
+8.0.2.02/03 fixes patched individual symptoms of serializing core domain objects
+directly; this build eliminates the whole class of bug by introducing flat DTO
+records whose fields, getters, and OpenAPI schema all agree. It also fixes a
+remaining desktop-client `NullPointerException` on shared models — the client's
+`hiddenMembers` came back null because the wire carried
+`normalGroupMembers`/`hiddenGroupMembers` while the schema declared
+`groupMembers`/`hiddenMembers`.
+
+### Changed
+- `GET /api/v1/vcInfoContainer` and the per-type summary endpoints
+  (BioModel/MathModel/Geometry/VCImage `summary`/`summaries`) now serialize
+  dedicated DTOs (`VersionRep`, `UserRep`, `GroupAccessRep` + `GroupMemberRep`,
+  `PublicationInfoRep`, `PreviewRep`) instead of core domain objects. `GroupAccess`
+  is a single record discriminated by a `type` string (`all`/`none`/`some`); user
+  keys, version keys, and dates are plain strings / epoch-millis; the preview
+  thumbnail is base64. (#1775)
+
+### Fixed
+- Shared-model summaries no longer crash the desktop client with a
+  `NullPointerException`: the polymorphic `GroupAccessSome`/`hiddenMembers` path,
+  whose serialized shape diverged from its own schema, is removed. (#1775)
+- CD-sites deploy workflow: the `server_only` deploy no longer fails downloading an
+  installer artifact it never built, and the `tmate`-on-failure steps that masked
+  real errors were removed. (#1775)
+
+### Notes for API consumers
+- **Breaking `/api/v1/` schema change** on the summary endpoints. All three
+  generated clients (Java / Python / TypeScript-Angular) were regenerated; the
+  desktop client and server must run matching builds.
+
 ## [8.0.2.03] - 2026-07-27
 
 **Highlights.** Second hotfix on the 8.0.2 line, completing the
