@@ -72,8 +72,15 @@ public ISize getSize() {
 		return size;
 	}
 	BufferedImage javaImage = getJavaImage();
+	if (javaImage == null) {
+		// ImageIO.read() returns null when no reader can decode this gif (e.g. an unusual/blank
+		// thumbnail). Don't dereference it — returning null lets JSON serialization of the preview
+		// finish (size -> null) instead of throwing an NPE that aborts the entire streamed
+		// /api/v1/vcInfoContainer response mid-way (leaving the client with truncated JSON).
+		return null;
+	}
+	int width = javaImage.getWidth();
 	int height = javaImage.getHeight();
-	int width = javaImage.getHeight();
 	this.size = new ISize(width,height,1);
 	return this.size;
 }
