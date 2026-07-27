@@ -324,8 +324,8 @@ public void saveBNGLFile(String bngl) throws IOException {
 			selectedFile = new File(path);
 		}
 		if (selectedFile.exists()) {
-			final int answer = JOptionPane.showConfirmDialog(getComponent(), selectedFile + " exists. Overwrite?", "Confirm Replace",JOptionPane.YES_NO_OPTION);
-			if (answer != JOptionPane.YES_OPTION) {
+			final String answer = DialogUtils.showWarningDialog(getComponent(), "Confirm Replace", selectedFile + " exists. Overwrite?", new String[]{"Yes","No"}, "Yes");
+			if (!"Yes".equals(answer)) {
 				return;
 			}
 		}

@@ -8,6 +8,7 @@ import org.vcell.sedml.ModelFormat;
 import org.vcell.sedml.SEDMLExporter;
 import org.vcell.util.FileUtils;
 import org.vcell.util.UserCancelException;
+import org.vcell.util.gui.DialogUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -33,17 +34,8 @@ public class SedmlExtensionFilter extends SelectorExtensionFilter {
 
 	@Override
 	public void askUser(ChooseContext ctx) throws UserCancelException {
-		Object[] options = {"VCML","SBML"};
-		int choice = JOptionPane.showOptionDialog(
-				ctx.topLevelWindowManager.getComponent(),
-				"VCML or SBML?",			// message,
-				"Choose an option",			// title
-				JOptionPane.YES_NO_OPTION,	// optionType
-				JOptionPane.QUESTION_MESSAGE,	// messageType
-				null,						// Icon
-				options,
-				"SBML");					// initialValue 
-		if (choice == 0) modelFormat = ModelFormat.VCML;
+		String choice = DialogUtils.showWarningDialog(ctx.topLevelWindowManager.getComponent(), "Choose an option", "VCML or SBML?", new String[]{"VCML","SBML"}, "SBML");
+		if ("VCML".equals(choice)) modelFormat = ModelFormat.VCML;
 		System.out.println(modelFormat);
 	}
 	
