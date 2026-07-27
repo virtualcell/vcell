@@ -1424,6 +1424,8 @@ public abstract class DbDriver {
 
                 if(mapBmToHolder.size() > 0){
                     bioModelInfos = mapBmToHolder.values().stream().map(vc -> vc.bioModelInfo).toArray(BioModelInfo[]::new);
+                    // issue #1746 Phase 2 (ORA-01489 fix): batch-attach simKeys (raw rows grouped in Java)
+                    BioModelTable.stitchSimKeys(con, dbSyntax, java.util.Arrays.asList(bioModelInfos));
                 }
 
 //			if(tempInfos.size() > 0){
@@ -1539,6 +1541,8 @@ public abstract class DbDriver {
                 if(tempInfos.size() > 0){
                     mathModelInfos = new MathModelInfo[tempInfos.size()];
                     tempInfos.toArray(mathModelInfos);
+                    // issue #1746 Phase 2 (ORA-01489 fix): batch-attach simKeys (raw rows grouped in Java)
+                    MathModelTable.stitchSimKeys(con, dbSyntax, tempInfos);
                 }
                 if(lg.isInfoEnabled()){
                     lg.info("MathModelInfo Time=" + (((double) System.currentTimeMillis() - beginTime) / (double) 1000));
@@ -1785,6 +1789,17 @@ public abstract class DbDriver {
             }
         } finally {
             stmt.close();
+        }
+        // issue #1746 Phase 2 (ORA-01489 fix): batch-attach simKeys for the whole info list from raw
+        // rows grouped in Java, replacing the per-row LISTAGG subquery that overflowed VARCHAR2.
+        if(vType.equals(VersionableType.BioModelMetaData)){
+            java.util.ArrayList<org.vcell.util.document.BioModelInfo> bmInfos = new java.util.ArrayList<>();
+            for(VersionInfo vi : vInfoList){ bmInfos.add((org.vcell.util.document.BioModelInfo) vi); }
+            BioModelTable.stitchSimKeys(con, dbSyntax, bmInfos);
+        } else if(vType.equals(VersionableType.MathModelMetaData)){
+            java.util.ArrayList<org.vcell.util.document.MathModelInfo> mmInfos = new java.util.ArrayList<>();
+            for(VersionInfo vi : vInfoList){ mmInfos.add((org.vcell.util.document.MathModelInfo) vi); }
+            MathModelTable.stitchSimKeys(con, dbSyntax, mmInfos);
         }
         //Object oInfoArray[] = new Object[oInfoList.size()];
         //oInfoList.copyInto(oInfoArray);

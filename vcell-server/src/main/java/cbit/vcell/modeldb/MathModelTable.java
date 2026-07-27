@@ -64,21 +64,51 @@ public VersionInfo getInfo(ResultSet rset,Connection con,DatabaseSyntax dbSyntax
 	String softwareVersion = rset.getString(SoftwareVersionTable.table.softwareVersion.toString());
 	
 	MathModelInfo mathModelInfo = new MathModelInfo(version, mathRef, serialDbChildSummary, VCellSoftwareVersion.fromString(softwareVersion));
-	// issue #1746 Phase 2: attach the flat sim keys aggregated by the "simKeys" subquery column
-	mathModelInfo.setSimKeys(parseSimKeysCsv(rset.getString("simKeys")));
+	// issue #1746 Phase 2: simKeys are attached later by stitchSimKeys() (batch, raw rows grouped in Java).
 	return mathModelInfo;
 }
 
-/** issue #1746 Phase 2: parse a '[k1,k2,...]' aggregated simKeys column into a flat String[] (empty when none). */
-private static String[] parseSimKeysCsv(String csv){
-	if (csv == null){
-		return new String[0];
+/**
+ * issue #1746 Phase 2 (ORA-01489 fix): batch-attach each MathModel's simulation keys from raw
+ * (mathModelRef, simRef) rows grouped in Java, replacing the per-row LISTAGG subquery that overflowed
+ * VARCHAR2. See {@link BioModelTable#stitchSimKeys}.
+ */
+public static void stitchSimKeys(java.sql.Connection con, DatabaseSyntax dbSyntax,
+		java.util.Collection<org.vcell.util.document.MathModelInfo> infos) throws SQLException {
+	if (infos == null || infos.isEmpty()) {
+		return;
 	}
-	String stripped = csv.replace("[","").replace("]","").trim();
-	if (stripped.isEmpty()){
-		return new String[0];
+	MathModelSimulationLinkTable mmsimTable = MathModelSimulationLinkTable.table;
+	String refCol = mmsimTable.mathModelRef.getUnqualifiedColName();
+	String simRefCol = mmsimTable.simRef.getUnqualifiedColName();
+
+	java.util.LinkedHashSet<String> ids = new java.util.LinkedHashSet<>();
+	for (org.vcell.util.document.MathModelInfo info : infos) {
+		if (info.getVersion() != null && info.getVersion().getVersionKey() != null) {
+			ids.add(info.getVersion().getVersionKey().toString());
+		}
 	}
-	return stripped.split(",");
+	java.util.Map<String, java.util.List<String>> keysById = new java.util.HashMap<>();
+	java.util.ArrayList<String> idList = new java.util.ArrayList<>(ids);
+	final int CHUNK = 1000;
+	for (int start = 0; start < idList.size(); start += CHUNK) {
+		java.util.List<String> chunk = idList.subList(start, Math.min(start+CHUNK, idList.size()));
+		String inList = String.join(",", chunk);
+		String sql = "SELECT "+refCol+", "+simRefCol+" FROM "+mmsimTable.getTableName()+" WHERE "+refCol+" IN ("+inList+")";
+		try (java.sql.Statement stmt = con.createStatement(); java.sql.ResultSet rset = stmt.executeQuery(sql)) {
+			while (rset.next()) {
+				String id = rset.getBigDecimal(refCol).toBigInteger().toString();
+				String simKey = rset.getBigDecimal(simRefCol).toBigInteger().toString();
+				keysById.computeIfAbsent(id, k -> new java.util.ArrayList<>()).add(simKey);
+			}
+		}
+	}
+	for (org.vcell.util.document.MathModelInfo info : infos) {
+		if (info.getVersion() != null && info.getVersion().getVersionKey() != null) {
+			java.util.List<String> keys = keysById.get(info.getVersion().getVersionKey().toString());
+			info.setSimKeys(keys == null ? new String[0] : keys.toArray(new String[0]));
+		}
+	}
 }
 
 
@@ -92,19 +122,10 @@ public String getInfoSQL(User user,String extraConditions,String special,Databas
 	MathModelTable vTable = MathModelTable.table;
 	SoftwareVersionTable swvTable = SoftwareVersionTable.table;
 	String sql;
-	// issue #1746 Phase 2: correlated subquery aggregating this MathModel's simulation keys from
-	// vc_mathmodelsim into a '[k1,k2,...]' string aliased "simKeys" (same pattern as BioModelTable).
-	final MathModelSimulationLinkTable mmsimTable = MathModelSimulationLinkTable.table;
-	final String concatFn = (dbSyntax==DatabaseSyntax.ORACLE) ? "listagg" : "string_agg";
-	final String cast = (dbSyntax==DatabaseSyntax.ORACLE) ? "" : "::varchar(255)";
-	final String simKeysSubquery =
-		"(select '['||"+concatFn+"(SQ1_"+mmsimTable.simRef.getQualifiedColName()+cast+", ',')||']' " +
-		"   from "+mmsimTable.getTableName()+" SQ1_"+mmsimTable.getTableName()+
-		"   where SQ1_"+mmsimTable.mathModelRef.getQualifiedColName()+" = "+vTable.id.getQualifiedColName()+") simKeys";
-	Field simKeysField = new Field("simKeys", null, null){
-		@Override public String getQualifiedColName(){ return simKeysSubquery; }
-	};
-	Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),swvTable.softwareVersion,simKeysField};
+	// issue #1746 Phase 2 (ORA-01489 fix): simKeys are batch-fetched as raw rows and grouped in Java
+	// (see stitchSimKeys), not aggregated here via a per-row LISTAGG subquery (which overflowed
+	// VARCHAR2's 4000-byte cap for models with many simulations).
+	Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),swvTable.softwareVersion};
 	Table[] t = {vTable,userTable,swvTable};
 	
 	switch (dbSyntax){

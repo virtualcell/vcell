@@ -121,21 +121,55 @@ public VersionInfo getInfo(ResultSet rset,Connection con,DatabaseSyntax dbSyntax
 	String serialDbChildSummary = DbDriver.varchar2_CLOB_get(rset,BioModelTable.table.childSummarySmall,BioModelTable.table.childSummaryLarge,dbSyntax);
 
 	org.vcell.util.document.BioModelInfo bioModelInfo = new org.vcell.util.document.BioModelInfo(version, serialDbChildSummary, vcSoftwareVersion);
-	// issue #1746 Phase 2: attach the flat sim keys aggregated by the "simKeys" subquery column
-	bioModelInfo.setSimKeys(parseSimKeysCsv(rset.getString("simKeys")));
+	// issue #1746 Phase 2: simKeys are attached later by stitchSimKeys() (batch, raw rows grouped in
+	// Java), not read from a per-row LISTAGG subquery column here.
 	return bioModelInfo;
 }
 
-/** issue #1746 Phase 2: parse a '[k1,k2,...]' aggregated simKeys column into a flat String[] (empty when none). */
-private static String[] parseSimKeysCsv(String csv){
-	if (csv == null){
-		return new String[0];
+/**
+ * issue #1746 Phase 2 (ORA-01489 fix): attach each BioModel's simulation keys by batch-fetching raw
+ * (bioModelRef, simRef) rows in a few chunked queries (~1000 model ids each) and grouping them in
+ * Java. This replaces the per-row correlated LISTAGG subquery — which returned VARCHAR2 and overflowed
+ * (ORA-01489) for models with many simulations — with an approach that has no string-length limit and
+ * runs O(N/1000) queries instead of O(N) subquery evaluations. Models with no simulations get an empty
+ * array.
+ */
+public static void stitchSimKeys(java.sql.Connection con, DatabaseSyntax dbSyntax,
+		java.util.Collection<org.vcell.util.document.BioModelInfo> infos) throws SQLException {
+	if (infos == null || infos.isEmpty()) {
+		return;
 	}
-	String stripped = csv.replace("[","").replace("]","").trim();
-	if (stripped.isEmpty()){
-		return new String[0];
+	BioModelSimulationLinkTable bmsimTable = BioModelSimulationLinkTable.table;
+	String refCol = bmsimTable.bioModelRef.getUnqualifiedColName();
+	String simRefCol = bmsimTable.simRef.getUnqualifiedColName();
+
+	java.util.LinkedHashSet<String> ids = new java.util.LinkedHashSet<>();
+	for (org.vcell.util.document.BioModelInfo info : infos) {
+		if (info.getVersion() != null && info.getVersion().getVersionKey() != null) {
+			ids.add(info.getVersion().getVersionKey().toString());
+		}
 	}
-	return stripped.split(",");
+	java.util.Map<String, java.util.List<String>> keysById = new java.util.HashMap<>();
+	java.util.ArrayList<String> idList = new java.util.ArrayList<>(ids);
+	final int CHUNK = 1000;
+	for (int start = 0; start < idList.size(); start += CHUNK) {
+		java.util.List<String> chunk = idList.subList(start, Math.min(start+CHUNK, idList.size()));
+		String inList = String.join(",", chunk);
+		String sql = "SELECT "+refCol+", "+simRefCol+" FROM "+bmsimTable.getTableName()+" WHERE "+refCol+" IN ("+inList+")";
+		try (java.sql.Statement stmt = con.createStatement(); java.sql.ResultSet rset = stmt.executeQuery(sql)) {
+			while (rset.next()) {
+				String id = rset.getBigDecimal(refCol).toBigInteger().toString();
+				String simKey = rset.getBigDecimal(simRefCol).toBigInteger().toString();
+				keysById.computeIfAbsent(id, k -> new java.util.ArrayList<>()).add(simKey);
+			}
+		}
+	}
+	for (org.vcell.util.document.BioModelInfo info : infos) {
+		if (info.getVersion() != null && info.getVersion().getVersionKey() != null) {
+			java.util.List<String> keys = keysById.get(info.getVersion().getVersionKey().toString());
+			info.setSimKeys(keys == null ? new String[0] : keys.toArray(new String[0]));
+		}
+	}
 }
 
 public String getInfoSQL(User user,String extraConditions,String special, DatabaseSyntax dbSyntax) {
@@ -144,20 +178,12 @@ public String getInfoSQL(User user,String extraConditions,String special, Databa
 	BioModelTable vTable = BioModelTable.table;
 	SoftwareVersionTable swvTable = SoftwareVersionTable.table;
 	String sql;
-	// issue #1746 Phase 2: a correlated subquery column that aggregates this BioModel's simulation keys
-	// from vc_biomodelsim into a '[k1,k2,...]' string aliased "simKeys" (same listagg pattern as
-	// getPreparedStatement_BioModelReps). Emitted as an expression Field (like StarField).
-	final BioModelSimulationLinkTable bmsimTable = BioModelSimulationLinkTable.table;
-	final String concatFn = (dbSyntax==DatabaseSyntax.ORACLE) ? "listagg" : "string_agg";
-	final String cast = (dbSyntax==DatabaseSyntax.ORACLE) ? "" : "::varchar(255)";
-	final String simKeysSubquery =
-		"(select '['||"+concatFn+"(SQ1_"+bmsimTable.simRef.getQualifiedColName()+cast+", ',')||']' " +
-		"   from "+bmsimTable.getTableName()+" SQ1_"+bmsimTable.getTableName()+
-		"   where SQ1_"+bmsimTable.bioModelRef.getQualifiedColName()+" = "+vTable.id.getQualifiedColName()+") simKeys";
-	Field simKeysField = new Field("simKeys", null, null){
-		@Override public String getQualifiedColName(){ return simKeysSubquery; }
-	};
-	Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),swvTable.softwareVersion,simKeysField};
+	// issue #1746 Phase 2: simKeys were aggregated here via a correlated LISTAGG subquery. Oracle
+	// LISTAGG returns VARCHAR2 (4000-byte cap), so a model with many simulations overflowed with
+	// ORA-01489 ("result of string concatenation is too long") and 500'd the whole vcInfoContainer
+	// for that user. They are now batch-fetched as raw rows and grouped in Java (no length limit,
+	// and one grouped query instead of a per-row subquery) — see stitchSimKeys().
+	Field[] f = {userTable.userid,new cbit.sql.StarField(vTable),swvTable.softwareVersion};
 	Table[] t = {vTable,userTable,swvTable};
 	
 	switch (dbSyntax){
