@@ -168,6 +168,7 @@ jobs:
       with:
         ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
     - name: retrieve installers
+      if: ${{ github.event.inputs.server_only != 'true' }}
       uses: actions/download-artifact@v4
       with:
           name: updated_installers
