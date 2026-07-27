@@ -16,6 +16,26 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.2.05] - 2026-07-27
+
+**Highlights.** Fourth hotfix on the 8.0.2 line. Fixes a desktop-client
+`NullPointerException` that aborted loading the model list
+(`GET /api/v1/vcInfoContainer`) for real accounts: reconstructing native objects
+from the summary DTOs crashed on models whose optional fields the database
+legitimately leaves null. Found by round-tripping the full production data set
+through the client transforms — 1481 of 6073 models failed before the fix.
+
+### Fixed
+- Client-side reconstruction (`DtoModelTransforms`) now null-guards three cases
+  that occur in real data: a Geometry with no image reference (analytic geometry),
+  a BioModel with no child summary, and a MathModel with no model-info summary.
+  Each rebuilds the native object with the same null the database path produces
+  instead of throwing. (#1778)
+
+### Notes for API consumers
+- No `/api/v1/` schema change. Client-side (generated Java client consumer) fix;
+  the desktop client and server should run matching builds.
+
 ## [8.0.2.04] - 2026-07-27
 
 **Highlights.** Third hotfix on the 8.0.2 line, replacing the
