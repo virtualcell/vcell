@@ -240,6 +240,9 @@ public class DtoModelTransforms {
     }
 
     public static BioModelChildSummary dtoToBioModelChildSummary(org.vcell.restclient.model.BioModelChildSummary dto){
+        if (dto == null) {
+            return null; // a BioModel can legitimately have no child summary (matches the native DB path)
+        }
         BioModelChildSummary.MathType[] mathTypes = new BioModelChildSummary.MathType[dto.getAppTypes().size()];
         for (int i = 0; i < mathTypes.length; i++){
             mathTypes[i] = dtoToBioModelMathType(dto.getAppTypes().get(i));
@@ -291,6 +294,9 @@ public class DtoModelTransforms {
     }
 
     public static MathModelChildSummary mathModelChildSummary(org.vcell.restclient.model.MathModelChildSummary dto){
+        if (dto == null) {
+            return null; // a MathModel can legitimately have no model-info summary (matches the native DB path)
+        }
         String[] simKeys = dto.getSimKeys() == null ? new String[0] : dto.getSimKeys().toArray(new String[0]);
         return new MathModelChildSummary(BioModelChildSummary.MathType.valueOf(dto.getModelType().getValue()),
                 dto.getGeometryName(), dto.getGeometryDimension(), dto.getSimulationNames().toArray(new String[0]),
@@ -307,7 +313,9 @@ public class DtoModelTransforms {
     public static GeometryInfo geometrySummaryToGeometryInfo(org.vcell.restclient.model.GeometrySummary summary){
         return new GeometryInfo(DtoModelTransforms.versionDTOToVersion(summary.getVersion()),
                 summary.getDimension(), DtoModelTransforms.dtoToExtent(summary.getExtent()),
-                DtoModelTransforms.dtoToOrigin(summary.getOrigin()), new KeyValue(summary.getImageRef()),
+                DtoModelTransforms.dtoToOrigin(summary.getOrigin()),
+                // analytic geometries have no image reference -> null KeyValue (matches the native DB path)
+                summary.getImageRef() == null ? null : new KeyValue(summary.getImageRef()),
                 DtoModelTransforms.dtoToVCellSoftwareVersion(summary.getSoftwareVersion()));
     }
 
