@@ -16,6 +16,26 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.2.07] - 2026-07-27
+
+**Highlights.** Sixth hotfix on the 8.0.2 line, and a **server-only** deploy.
+Fixes an HTTP 500 (`ORA-01489`) that broke `GET /api/v1/vcInfoContainer`
+entirely for users whose visible models include one with many simulations.
+
+### Fixed
+- `getVCInfoContainer` no longer 500s with `ORA-01489: result of string
+  concatenation is too long`. The issue #1746 `simKeys` aggregation used an
+  Oracle `LISTAGG` subquery whose `VARCHAR2` result (4000-byte cap) overflowed
+  for a model with ~450+ simulations. `simKeys` are now fetched as raw
+  `(modelRef, simRef)` rows and grouped in Java — no length limit, and one
+  grouped query per ~1000 models instead of a per-row subquery. Oracle-only;
+  Postgres `string_agg` (dev/test) was never affected. (#1782)
+
+### Notes for API consumers
+- No `/api/v1/` schema change and no wire-format change (`simKeys` values are
+  identical, only the DB aggregation changed). Server-only fix; existing clients
+  are unaffected.
+
 ## [8.0.2.06] - 2026-07-27
 
 **Highlights.** Fifth hotfix on the 8.0.2 line. Fixes a desktop-client
