@@ -16,6 +16,27 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.2.06] - 2026-07-27
+
+**Highlights.** Fifth hotfix on the 8.0.2 line. Fixes a desktop-client
+`NullPointerException` in **model search** that affected a large fraction of a
+real user's models against the 8.0.2 API. Reconstructing a BioModel's child
+summary from the wire DTO left the per-simulation-context arrays null when the
+DTO omitted an (empty) one; the search serialization indexes those arrays by
+the sim-context count, so it crashed.
+
+### Fixed
+- Client-side reconstruction (`DtoModelTransforms.dtoToBioModelChildSummary`) now
+  rebuilds the per-sim-context parallel arrays (`scAnnots`, `geoNames`, `geoDims`,
+  `simNames`, `simAnnots`) as empty-but-correctly-sized arrays instead of null,
+  matching the native database invariant so `toDatabaseSerialization()` (desktop
+  search) and other consumers don't NPE. Also hardens the MathModel child-summary
+  transform against null simulation-name/annotation lists. (#1780)
+
+### Notes for API consumers
+- No `/api/v1/` schema change. Client-side (generated Java client consumer) fix;
+  the desktop client and server should run matching builds.
+
 ## [8.0.2.05] - 2026-07-27
 
 **Highlights.** Fourth hotfix on the 8.0.2 line. Fixes a desktop-client
