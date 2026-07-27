@@ -16,6 +16,23 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+## [8.0.2.03] - 2026-07-27
+
+**Highlights.** Second hotfix on the 8.0.2 line, completing the
+`GET /api/v1/vcInfoContainer` stabilization. A VCImage whose preview thumbnail
+could not be decoded caused a serialization NullPointerException that aborted the
+whole (streamed) response mid-way, so the desktop client received truncated JSON.
+
+### Fixed
+- `GIFImage.getSize()` no longer throws when a preview gif cannot be decoded
+  (`ImageIO.read()` returns null); it returns a null size so the `vcInfoContainer`
+  response serializes completely. Also corrects a latent bug where image width was
+  computed from the height. (#1773)
+
+### Notes for API consumers
+- No `/api/v1/` schema changes in this build. Server-side serialization fix only;
+  no client regeneration required.
+
 ## [8.0.2.02] - 2026-07-27
 
 **Highlights.** Hotfix on the 8.0.2 line. Restores `GET /api/v1/vcInfoContainer`
