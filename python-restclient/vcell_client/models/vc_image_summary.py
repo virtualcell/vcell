@@ -20,13 +20,12 @@ import json
 
 
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, StrictStr
 from pydantic import Field
 from vcell_client.models.extent import Extent
-from vcell_client.models.gif_image import GIFImage
 from vcell_client.models.i_size import ISize
-from vcell_client.models.v_cell_software_version import VCellSoftwareVersion
-from vcell_client.models.version import Version
+from vcell_client.models.preview_rep import PreviewRep
+from vcell_client.models.version_rep import VersionRep
 try:
     from typing import Self
 except ImportError:
@@ -38,9 +37,9 @@ class VCImageSummary(BaseModel):
     """ # noqa: E501
     size: Optional[ISize] = None
     extent: Optional[Extent] = None
-    version: Optional[Version] = None
-    preview: Optional[GIFImage] = None
-    software_version: Optional[VCellSoftwareVersion] = Field(default=None, alias="softwareVersion")
+    version: Optional[VersionRep] = None
+    preview: Optional[PreviewRep] = None
+    software_version: Optional[StrictStr] = Field(default=None, alias="softwareVersion")
     __properties: ClassVar[List[str]] = ["size", "extent", "version", "preview", "softwareVersion"]
 
     model_config = {
@@ -91,9 +90,6 @@ class VCImageSummary(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of preview
         if self.preview:
             _dict['preview'] = self.preview.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of software_version
-        if self.software_version:
-            _dict['softwareVersion'] = self.software_version.to_dict()
         return _dict
 
     @classmethod
@@ -113,9 +109,9 @@ class VCImageSummary(BaseModel):
         _obj = cls.model_validate({
             "size": ISize.from_dict(obj.get("size")) if obj.get("size") is not None else None,
             "extent": Extent.from_dict(obj.get("extent")) if obj.get("extent") is not None else None,
-            "version": Version.from_dict(obj.get("version")) if obj.get("version") is not None else None,
-            "preview": GIFImage.from_dict(obj.get("preview")) if obj.get("preview") is not None else None,
-            "softwareVersion": VCellSoftwareVersion.from_dict(obj.get("softwareVersion")) if obj.get("softwareVersion") is not None else None
+            "version": VersionRep.from_dict(obj.get("version")) if obj.get("version") is not None else None,
+            "preview": PreviewRep.from_dict(obj.get("preview")) if obj.get("preview") is not None else None,
+            "softwareVersion": obj.get("softwareVersion")
         })
         return _obj
 

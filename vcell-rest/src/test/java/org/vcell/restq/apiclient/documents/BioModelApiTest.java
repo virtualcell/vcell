@@ -219,11 +219,12 @@ public class BioModelApiTest {
         Assertions.assertTrue(context.getPublicationInformation().isEmpty());
 
         // 8.0.0 set through Java properties, and for quarkus in the Quarkus properties
-        Assertions.assertEquals("8.0.0", context.getvCellSoftwareVersion().getSoftwareVersionString());
+        Assertions.assertEquals("8.0.0", context.getvCellSoftwareVersion());
         Assertions.assertEquals("TestBioModel", context.getVersion().getName());
 
-        Assertions.assertEquals(fromTheSourceInfo.getVersion().getDate().toInstant(), context.getVersion().getDate().toInstant());
-        Assertions.assertEquals(0, context.getVersion().getDate().getOffset().getTotalSeconds()); // Should have no offset from UTC
+        // date is carried as epoch millis in the DTO and round-trips back to the source Date via the transform
+        Assertions.assertEquals(fromTheSourceInfo.getVersion().getDate().getTime(), context.getVersion().getDate().longValue());
+        Assertions.assertEquals(fromTheSourceInfo.getVersion().getDate(), info.getVersion().getDate());
 
         Assertions.assertEquals(BioModelChildSummary.MathType.Deterministic, info.getBioModelChildSummary().getAppTypes()[0]);
         Assertions.assertEquals(new ArrayList<>(){{add("non-spatial ODE");}}, context.getSummary().getSimulationContextNames());

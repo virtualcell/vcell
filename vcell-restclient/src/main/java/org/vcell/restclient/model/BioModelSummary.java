@@ -28,9 +28,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.vcell.restclient.model.BioModelChildSummary;
-import org.vcell.restclient.model.PublicationInfo;
-import org.vcell.restclient.model.VCellSoftwareVersion;
-import org.vcell.restclient.model.Version;
+import org.vcell.restclient.model.PublicationInfoRep;
+import org.vcell.restclient.model.VersionRep;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -46,21 +45,21 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class BioModelSummary {
   public static final String JSON_PROPERTY_VERSION = "version";
-  private Version version;
+  private VersionRep version;
 
   public static final String JSON_PROPERTY_SUMMARY = "summary";
   private BioModelChildSummary summary;
 
   public static final String JSON_PROPERTY_PUBLICATION_INFORMATION = "publicationInformation";
-  private List<PublicationInfo> publicationInformation;
+  private List<PublicationInfoRep> publicationInformation;
 
   public static final String JSON_PROPERTY_V_CELL_SOFTWARE_VERSION = "vCellSoftwareVersion";
-  private VCellSoftwareVersion vCellSoftwareVersion;
+  private String vCellSoftwareVersion;
 
   public BioModelSummary() { 
   }
 
-  public BioModelSummary version(Version version) {
+  public BioModelSummary version(VersionRep version) {
     this.version = version;
     return this;
   }
@@ -73,14 +72,14 @@ public class BioModelSummary {
   @JsonProperty(JSON_PROPERTY_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public Version getVersion() {
+  public VersionRep getVersion() {
     return version;
   }
 
 
   @JsonProperty(JSON_PROPERTY_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersion(Version version) {
+  public void setVersion(VersionRep version) {
     this.version = version;
   }
 
@@ -110,12 +109,12 @@ public class BioModelSummary {
   }
 
 
-  public BioModelSummary publicationInformation(List<PublicationInfo> publicationInformation) {
+  public BioModelSummary publicationInformation(List<PublicationInfoRep> publicationInformation) {
     this.publicationInformation = publicationInformation;
     return this;
   }
 
-  public BioModelSummary addPublicationInformationItem(PublicationInfo publicationInformationItem) {
+  public BioModelSummary addPublicationInformationItem(PublicationInfoRep publicationInformationItem) {
     if (this.publicationInformation == null) {
       this.publicationInformation = new ArrayList<>();
     }
@@ -131,19 +130,19 @@ public class BioModelSummary {
   @JsonProperty(JSON_PROPERTY_PUBLICATION_INFORMATION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<PublicationInfo> getPublicationInformation() {
+  public List<PublicationInfoRep> getPublicationInformation() {
     return publicationInformation;
   }
 
 
   @JsonProperty(JSON_PROPERTY_PUBLICATION_INFORMATION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPublicationInformation(List<PublicationInfo> publicationInformation) {
+  public void setPublicationInformation(List<PublicationInfoRep> publicationInformation) {
     this.publicationInformation = publicationInformation;
   }
 
 
-  public BioModelSummary vCellSoftwareVersion(VCellSoftwareVersion vCellSoftwareVersion) {
+  public BioModelSummary vCellSoftwareVersion(String vCellSoftwareVersion) {
     this.vCellSoftwareVersion = vCellSoftwareVersion;
     return this;
   }
@@ -156,14 +155,14 @@ public class BioModelSummary {
   @JsonProperty(JSON_PROPERTY_V_CELL_SOFTWARE_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public VCellSoftwareVersion getvCellSoftwareVersion() {
+  public String getvCellSoftwareVersion() {
     return vCellSoftwareVersion;
   }
 
 
   @JsonProperty(JSON_PROPERTY_V_CELL_SOFTWARE_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setvCellSoftwareVersion(VCellSoftwareVersion vCellSoftwareVersion) {
+  public void setvCellSoftwareVersion(String vCellSoftwareVersion) {
     this.vCellSoftwareVersion = vCellSoftwareVersion;
   }
 
@@ -268,7 +267,7 @@ public class BioModelSummary {
 
     // add `vCellSoftwareVersion` to the URL query string
     if (getvCellSoftwareVersion() != null) {
-      joiner.add(getvCellSoftwareVersion().toUrlQueryString(prefix + "vCellSoftwareVersion" + suffix));
+      joiner.add(String.format("%svCellSoftwareVersion%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getvCellSoftwareVersion()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();

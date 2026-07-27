@@ -202,6 +202,12 @@ public class Spline extends ControlPointCurve {
   }
 
   @Override
+  public Spline description(String description) {
+    this.setDescription(description);
+    return this;
+  }
+
+  @Override
   public Spline beginningCoordinate(Coordinate beginningCoordinate) {
     this.setBeginningCoordinate(beginningCoordinate);
     return this;

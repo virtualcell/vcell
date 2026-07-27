@@ -7,11 +7,11 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**version** | [**Version**](Version.md) |  |  [optional] |
+|**version** | [**VersionRep**](VersionRep.md) |  |  [optional] |
 |**keyValue** | **String** |  |  [optional] |
 |**modelInfo** | [**MathModelChildSummary**](MathModelChildSummary.md) |  |  [optional] |
-|**softwareVersion** | [**VCellSoftwareVersion**](VCellSoftwareVersion.md) |  |  [optional] |
-|**publicationInfos** | [**List&lt;PublicationInfo&gt;**](PublicationInfo.md) |  |  [optional] |
+|**softwareVersion** | **String** |  |  [optional] |
+|**publicationInfos** | [**List&lt;PublicationInfoRep&gt;**](PublicationInfoRep.md) |  |  [optional] |
 |**annotatedFunctions** | **String** |  |  [optional] |
 
 

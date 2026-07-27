@@ -26,10 +26,9 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 import org.vcell.restclient.model.Extent;
-import org.vcell.restclient.model.GIFImage;
 import org.vcell.restclient.model.ISize;
-import org.vcell.restclient.model.VCellSoftwareVersion;
-import org.vcell.restclient.model.Version;
+import org.vcell.restclient.model.PreviewRep;
+import org.vcell.restclient.model.VersionRep;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -52,13 +51,13 @@ public class VCImageSummary {
   private Extent extent;
 
   public static final String JSON_PROPERTY_VERSION = "version";
-  private Version version;
+  private VersionRep version;
 
   public static final String JSON_PROPERTY_PREVIEW = "preview";
-  private GIFImage preview;
+  private PreviewRep preview;
 
   public static final String JSON_PROPERTY_SOFTWARE_VERSION = "softwareVersion";
-  private VCellSoftwareVersion softwareVersion;
+  private String softwareVersion;
 
   public VCImageSummary() { 
   }
@@ -113,7 +112,7 @@ public class VCImageSummary {
   }
 
 
-  public VCImageSummary version(Version version) {
+  public VCImageSummary version(VersionRep version) {
     this.version = version;
     return this;
   }
@@ -126,19 +125,19 @@ public class VCImageSummary {
   @JsonProperty(JSON_PROPERTY_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public Version getVersion() {
+  public VersionRep getVersion() {
     return version;
   }
 
 
   @JsonProperty(JSON_PROPERTY_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersion(Version version) {
+  public void setVersion(VersionRep version) {
     this.version = version;
   }
 
 
-  public VCImageSummary preview(GIFImage preview) {
+  public VCImageSummary preview(PreviewRep preview) {
     this.preview = preview;
     return this;
   }
@@ -151,19 +150,19 @@ public class VCImageSummary {
   @JsonProperty(JSON_PROPERTY_PREVIEW)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public GIFImage getPreview() {
+  public PreviewRep getPreview() {
     return preview;
   }
 
 
   @JsonProperty(JSON_PROPERTY_PREVIEW)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPreview(GIFImage preview) {
+  public void setPreview(PreviewRep preview) {
     this.preview = preview;
   }
 
 
-  public VCImageSummary softwareVersion(VCellSoftwareVersion softwareVersion) {
+  public VCImageSummary softwareVersion(String softwareVersion) {
     this.softwareVersion = softwareVersion;
     return this;
   }
@@ -176,14 +175,14 @@ public class VCImageSummary {
   @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public VCellSoftwareVersion getSoftwareVersion() {
+  public String getSoftwareVersion() {
     return softwareVersion;
   }
 
 
   @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSoftwareVersion(VCellSoftwareVersion softwareVersion) {
+  public void setSoftwareVersion(String softwareVersion) {
     this.softwareVersion = softwareVersion;
   }
 
@@ -290,7 +289,7 @@ public class VCImageSummary {
 
     // add `softwareVersion` to the URL query string
     if (getSoftwareVersion() != null) {
-      joiner.add(getSoftwareVersion().toUrlQueryString(prefix + "softwareVersion" + suffix));
+      joiner.add(String.format("%ssoftwareVersion%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSoftwareVersion()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();

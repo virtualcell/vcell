@@ -11,8 +11,8 @@
 |**origin** | [**Origin**](Origin.md) |  |  [optional] |
 |**extent** | [**Extent**](Extent.md) |  |  [optional] |
 |**imageRef** | **String** |  |  [optional] |
-|**version** | [**Version**](Version.md) |  |  [optional] |
-|**softwareVersion** | [**VCellSoftwareVersion**](VCellSoftwareVersion.md) |  |  [optional] |
+|**version** | [**VersionRep**](VersionRep.md) |  |  [optional] |
+|**softwareVersion** | **String** |  |  [optional] |
 
 
 

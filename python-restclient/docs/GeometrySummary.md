@@ -8,8 +8,8 @@ Name | Type | Description | Notes
 **origin** | [**Origin**](Origin.md) |  | [optional] 
 **extent** | [**Extent**](Extent.md) |  | [optional] 
 **image_ref** | **str** |  | [optional] 
-**version** | [**Version**](Version.md) |  | [optional] 
-**software_version** | [**VCellSoftwareVersion**](VCellSoftwareVersion.md) |  | [optional] 
+**version** | [**VersionRep**](VersionRep.md) |  | [optional] 
+**software_version** | **str** |  | [optional] 
 
 ## Example
 

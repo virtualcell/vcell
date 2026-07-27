@@ -21,8 +21,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 import org.vcell.restclient.model.Extent;
 import org.vcell.restclient.model.ISize;
-import org.vcell.restclient.model.VCellSoftwareVersion;
-import org.vcell.restclient.model.Version;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
