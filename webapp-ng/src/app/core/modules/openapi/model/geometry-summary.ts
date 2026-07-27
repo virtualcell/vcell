@@ -10,9 +10,8 @@
  * Do not edit the class manually.
  */
 import { Origin } from './origin';
-import { VCellSoftwareVersion } from './v-cell-software-version';
 import { Extent } from './extent';
-import { Version } from './version';
+import { VersionRep } from './version-rep';
 
 
 export interface GeometrySummary { 
@@ -20,7 +19,7 @@ export interface GeometrySummary {
     origin?: Origin;
     extent?: Extent;
     imageRef?: string;
-    version?: Version;
-    softwareVersion?: VCellSoftwareVersion;
+    version?: VersionRep;
+    softwareVersion?: string;
 }
 

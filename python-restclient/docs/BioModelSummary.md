@@ -4,10 +4,10 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**version** | [**Version**](Version.md) |  | [optional] 
+**version** | [**VersionRep**](VersionRep.md) |  | [optional] 
 **summary** | [**BioModelChildSummary**](BioModelChildSummary.md) |  | [optional] 
-**publication_information** | [**List[PublicationInfo]**](PublicationInfo.md) |  | [optional] 
-**v_cell_software_version** | [**VCellSoftwareVersion**](VCellSoftwareVersion.md) |  | [optional] 
+**publication_information** | [**List[PublicationInfoRep]**](PublicationInfoRep.md) |  | [optional] 
+**v_cell_software_version** | **str** |  | [optional] 
 
 ## Example
 

@@ -28,9 +28,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.vcell.restclient.model.MathModelChildSummary;
-import org.vcell.restclient.model.PublicationInfo;
-import org.vcell.restclient.model.VCellSoftwareVersion;
-import org.vcell.restclient.model.Version;
+import org.vcell.restclient.model.PublicationInfoRep;
+import org.vcell.restclient.model.VersionRep;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -48,7 +47,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaClientCodegen")
 public class MathModelSummary {
   public static final String JSON_PROPERTY_VERSION = "version";
-  private Version version;
+  private VersionRep version;
 
   public static final String JSON_PROPERTY_KEY_VALUE = "keyValue";
   private String keyValue;
@@ -57,10 +56,10 @@ public class MathModelSummary {
   private MathModelChildSummary modelInfo;
 
   public static final String JSON_PROPERTY_SOFTWARE_VERSION = "softwareVersion";
-  private VCellSoftwareVersion softwareVersion;
+  private String softwareVersion;
 
   public static final String JSON_PROPERTY_PUBLICATION_INFOS = "publicationInfos";
-  private List<PublicationInfo> publicationInfos;
+  private List<PublicationInfoRep> publicationInfos;
 
   public static final String JSON_PROPERTY_ANNOTATED_FUNCTIONS = "annotatedFunctions";
   private String annotatedFunctions;
@@ -68,7 +67,7 @@ public class MathModelSummary {
   public MathModelSummary() { 
   }
 
-  public MathModelSummary version(Version version) {
+  public MathModelSummary version(VersionRep version) {
     this.version = version;
     return this;
   }
@@ -81,14 +80,14 @@ public class MathModelSummary {
   @JsonProperty(JSON_PROPERTY_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public Version getVersion() {
+  public VersionRep getVersion() {
     return version;
   }
 
 
   @JsonProperty(JSON_PROPERTY_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersion(Version version) {
+  public void setVersion(VersionRep version) {
     this.version = version;
   }
 
@@ -143,7 +142,7 @@ public class MathModelSummary {
   }
 
 
-  public MathModelSummary softwareVersion(VCellSoftwareVersion softwareVersion) {
+  public MathModelSummary softwareVersion(String softwareVersion) {
     this.softwareVersion = softwareVersion;
     return this;
   }
@@ -156,24 +155,24 @@ public class MathModelSummary {
   @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public VCellSoftwareVersion getSoftwareVersion() {
+  public String getSoftwareVersion() {
     return softwareVersion;
   }
 
 
   @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSoftwareVersion(VCellSoftwareVersion softwareVersion) {
+  public void setSoftwareVersion(String softwareVersion) {
     this.softwareVersion = softwareVersion;
   }
 
 
-  public MathModelSummary publicationInfos(List<PublicationInfo> publicationInfos) {
+  public MathModelSummary publicationInfos(List<PublicationInfoRep> publicationInfos) {
     this.publicationInfos = publicationInfos;
     return this;
   }
 
-  public MathModelSummary addPublicationInfosItem(PublicationInfo publicationInfosItem) {
+  public MathModelSummary addPublicationInfosItem(PublicationInfoRep publicationInfosItem) {
     if (this.publicationInfos == null) {
       this.publicationInfos = new ArrayList<>();
     }
@@ -189,14 +188,14 @@ public class MathModelSummary {
   @JsonProperty(JSON_PROPERTY_PUBLICATION_INFOS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public List<PublicationInfo> getPublicationInfos() {
+  public List<PublicationInfoRep> getPublicationInfos() {
     return publicationInfos;
   }
 
 
   @JsonProperty(JSON_PROPERTY_PUBLICATION_INFOS)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setPublicationInfos(List<PublicationInfo> publicationInfos) {
+  public void setPublicationInfos(List<PublicationInfoRep> publicationInfos) {
     this.publicationInfos = publicationInfos;
   }
 
@@ -325,7 +324,7 @@ public class MathModelSummary {
 
     // add `softwareVersion` to the URL query string
     if (getSoftwareVersion() != null) {
-      joiner.add(getSoftwareVersion().toUrlQueryString(prefix + "softwareVersion" + suffix));
+      joiner.add(String.format("%ssoftwareVersion%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSoftwareVersion()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     // add `publicationInfos` to the URL query string

@@ -9,16 +9,15 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { VCellSoftwareVersion } from './v-cell-software-version';
 import { BioModelChildSummary } from './bio-model-child-summary';
-import { Version } from './version';
-import { PublicationInfo } from './publication-info';
+import { PublicationInfoRep } from './publication-info-rep';
+import { VersionRep } from './version-rep';
 
 
 export interface BioModelSummary { 
-    version?: Version;
+    version?: VersionRep;
     summary?: BioModelChildSummary;
-    publicationInformation?: Array<PublicationInfo>;
-    vCellSoftwareVersion?: VCellSoftwareVersion;
+    publicationInformation?: Array<PublicationInfoRep>;
+    vCellSoftwareVersion?: string;
 }
 

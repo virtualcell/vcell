@@ -231,6 +231,12 @@ public class SampledCurve extends ControlPointCurve {
   }
 
   @Override
+  public SampledCurve description(String description) {
+    this.setDescription(description);
+    return this;
+  }
+
+  @Override
   public SampledCurve beginningCoordinate(Coordinate beginningCoordinate) {
     this.setBeginningCoordinate(beginningCoordinate);
     return this;

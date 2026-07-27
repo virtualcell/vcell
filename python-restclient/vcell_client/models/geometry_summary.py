@@ -24,8 +24,7 @@ from pydantic import BaseModel, StrictInt, StrictStr
 from pydantic import Field
 from vcell_client.models.extent import Extent
 from vcell_client.models.origin import Origin
-from vcell_client.models.v_cell_software_version import VCellSoftwareVersion
-from vcell_client.models.version import Version
+from vcell_client.models.version_rep import VersionRep
 try:
     from typing import Self
 except ImportError:
@@ -39,8 +38,8 @@ class GeometrySummary(BaseModel):
     origin: Optional[Origin] = None
     extent: Optional[Extent] = None
     image_ref: Optional[StrictStr] = Field(default=None, alias="imageRef")
-    version: Optional[Version] = None
-    software_version: Optional[VCellSoftwareVersion] = Field(default=None, alias="softwareVersion")
+    version: Optional[VersionRep] = None
+    software_version: Optional[StrictStr] = Field(default=None, alias="softwareVersion")
     __properties: ClassVar[List[str]] = ["dimension", "origin", "extent", "imageRef", "version", "softwareVersion"]
 
     model_config = {
@@ -88,9 +87,6 @@ class GeometrySummary(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of version
         if self.version:
             _dict['version'] = self.version.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of software_version
-        if self.software_version:
-            _dict['softwareVersion'] = self.software_version.to_dict()
         return _dict
 
     @classmethod
@@ -112,8 +108,8 @@ class GeometrySummary(BaseModel):
             "origin": Origin.from_dict(obj.get("origin")) if obj.get("origin") is not None else None,
             "extent": Extent.from_dict(obj.get("extent")) if obj.get("extent") is not None else None,
             "imageRef": obj.get("imageRef"),
-            "version": Version.from_dict(obj.get("version")) if obj.get("version") is not None else None,
-            "softwareVersion": VCellSoftwareVersion.from_dict(obj.get("softwareVersion")) if obj.get("softwareVersion") is not None else None
+            "version": VersionRep.from_dict(obj.get("version")) if obj.get("version") is not None else None,
+            "softwareVersion": obj.get("softwareVersion")
         })
         return _obj
 

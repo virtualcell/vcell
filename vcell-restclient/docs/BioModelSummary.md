@@ -7,10 +7,10 @@
 
 | Name | Type | Description | Notes |
 |------------ | ------------- | ------------- | -------------|
-|**version** | [**Version**](Version.md) |  |  [optional] |
+|**version** | [**VersionRep**](VersionRep.md) |  |  [optional] |
 |**summary** | [**BioModelChildSummary**](BioModelChildSummary.md) |  |  [optional] |
-|**publicationInformation** | [**List&lt;PublicationInfo&gt;**](PublicationInfo.md) |  |  [optional] |
-|**vCellSoftwareVersion** | [**VCellSoftwareVersion**](VCellSoftwareVersion.md) |  |  [optional] |
+|**publicationInformation** | [**List&lt;PublicationInfoRep&gt;**](PublicationInfoRep.md) |  |  [optional] |
+|**vCellSoftwareVersion** | **String** |  |  [optional] |
 
 
 

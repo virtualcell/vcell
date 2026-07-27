@@ -20,12 +20,11 @@ import json
 
 
 from typing import Any, ClassVar, Dict, List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, StrictStr
 from pydantic import Field
 from vcell_client.models.bio_model_child_summary import BioModelChildSummary
-from vcell_client.models.publication_info import PublicationInfo
-from vcell_client.models.v_cell_software_version import VCellSoftwareVersion
-from vcell_client.models.version import Version
+from vcell_client.models.publication_info_rep import PublicationInfoRep
+from vcell_client.models.version_rep import VersionRep
 try:
     from typing import Self
 except ImportError:
@@ -35,10 +34,10 @@ class BioModelSummary(BaseModel):
     """
     BioModelSummary
     """ # noqa: E501
-    version: Optional[Version] = None
+    version: Optional[VersionRep] = None
     summary: Optional[BioModelChildSummary] = None
-    publication_information: Optional[List[PublicationInfo]] = Field(default=None, alias="publicationInformation")
-    v_cell_software_version: Optional[VCellSoftwareVersion] = Field(default=None, alias="vCellSoftwareVersion")
+    publication_information: Optional[List[PublicationInfoRep]] = Field(default=None, alias="publicationInformation")
+    v_cell_software_version: Optional[StrictStr] = Field(default=None, alias="vCellSoftwareVersion")
     __properties: ClassVar[List[str]] = ["version", "summary", "publicationInformation", "vCellSoftwareVersion"]
 
     model_config = {
@@ -90,9 +89,6 @@ class BioModelSummary(BaseModel):
                 if _item:
                     _items.append(_item.to_dict())
             _dict['publicationInformation'] = _items
-        # override the default output from pydantic by calling `to_dict()` of v_cell_software_version
-        if self.v_cell_software_version:
-            _dict['vCellSoftwareVersion'] = self.v_cell_software_version.to_dict()
         return _dict
 
     @classmethod
@@ -110,10 +106,10 @@ class BioModelSummary(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in BioModelSummary) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "version": Version.from_dict(obj.get("version")) if obj.get("version") is not None else None,
+            "version": VersionRep.from_dict(obj.get("version")) if obj.get("version") is not None else None,
             "summary": BioModelChildSummary.from_dict(obj.get("summary")) if obj.get("summary") is not None else None,
-            "publicationInformation": [PublicationInfo.from_dict(_item) for _item in obj.get("publicationInformation")] if obj.get("publicationInformation") is not None else None,
-            "vCellSoftwareVersion": VCellSoftwareVersion.from_dict(obj.get("vCellSoftwareVersion")) if obj.get("vCellSoftwareVersion") is not None else None
+            "publicationInformation": [PublicationInfoRep.from_dict(_item) for _item in obj.get("publicationInformation")] if obj.get("publicationInformation") is not None else None,
+            "vCellSoftwareVersion": obj.get("vCellSoftwareVersion")
         })
         return _obj
 

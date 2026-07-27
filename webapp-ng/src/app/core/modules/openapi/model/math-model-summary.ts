@@ -9,18 +9,17 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { VCellSoftwareVersion } from './v-cell-software-version';
 import { MathModelChildSummary } from './math-model-child-summary';
-import { Version } from './version';
-import { PublicationInfo } from './publication-info';
+import { PublicationInfoRep } from './publication-info-rep';
+import { VersionRep } from './version-rep';
 
 
 export interface MathModelSummary { 
-    version?: Version;
+    version?: VersionRep;
     keyValue?: string;
     modelInfo?: MathModelChildSummary;
-    softwareVersion?: VCellSoftwareVersion;
-    publicationInfos?: Array<PublicationInfo>;
+    softwareVersion?: string;
+    publicationInfos?: Array<PublicationInfoRep>;
     annotatedFunctions?: string;
 }
 

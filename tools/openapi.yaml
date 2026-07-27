@@ -2482,15 +2482,15 @@ components:
       type: object
       properties:
         version:
-          $ref: '#/components/schemas/Version'
+          $ref: '#/components/schemas/VersionRep'
         summary:
           $ref: '#/components/schemas/BioModelChildSummary'
         publicationInformation:
           type: array
           items:
-            $ref: '#/components/schemas/PublicationInfo'
+            $ref: '#/components/schemas/PublicationInfoRep'
         vCellSoftwareVersion:
-          $ref: '#/components/schemas/VCellSoftwareVersion'
+          type: string
     BiomodelRef:
       type: object
       properties:
@@ -2942,14 +2942,6 @@ components:
       - OUTPUTFUNCTION
       - POSTPROCESSFUNCTION
       type: string
-    GIFImage:
-      type: object
-      properties:
-        gifEncodedData:
-          format: binary
-          type: string
-        size:
-          $ref: '#/components/schemas/ISize'
     GeometryMode:
       enum:
       - GEOMETRY_SELECTIONS
@@ -2982,80 +2974,29 @@ components:
         extent:
           $ref: '#/components/schemas/Extent'
         imageRef:
-          $ref: '#/components/schemas/KeyValue'
+          type: string
         version:
-          $ref: '#/components/schemas/Version'
+          $ref: '#/components/schemas/VersionRep'
         softwareVersion:
-          $ref: '#/components/schemas/VCellSoftwareVersion'
-    GroupAccess:
-      required:
-      - groupid
+          type: string
+    GroupAccessRep:
       type: object
       properties:
+        type:
+          type: string
         groupid:
-          type: number
-        description:
           type: string
-      discriminator:
-        propertyName: type
-        mapping:
-          GroupAccessNone: '#/components/schemas/GroupAccessNone'
-          GroupAccessSome: '#/components/schemas/GroupAccessSome'
-          GroupAccessAll: '#/components/schemas/GroupAccessAll'
-    GroupAccessAll:
-      required:
-      - type
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupMemberRep'
+    GroupMemberRep:
       type: object
-      allOf:
-      - $ref: '#/components/schemas/GroupAccess'
       properties:
-        type:
-          default: GroupAccessAll
-          type: string
-        description:
-          type: string
-    GroupAccessNone:
-      required:
-      - type
-      type: object
-      allOf:
-      - $ref: '#/components/schemas/GroupAccess'
-      properties:
-        type:
-          default: GroupAccessNone
-          type: string
-        description:
-          type: string
-    GroupAccessSome:
-      required:
-      - type
-      type: object
-      allOf:
-      - $ref: '#/components/schemas/GroupAccess'
-      properties:
-        type:
-          default: GroupAccessSome
-          type: string
-        hash:
-          type: number
-        groupMembers:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
-        hiddenMembers:
-          type: array
-          items:
-            type: boolean
-        description:
-          type: string
-        hiddenGroupMembers:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
-        normalGroupMembers:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
+        user:
+          $ref: '#/components/schemas/UserRep'
+        hidden:
+          type: boolean
     HelloWorldMessage:
       type: object
       properties:
@@ -3164,17 +3105,17 @@ components:
       type: object
       properties:
         version:
-          $ref: '#/components/schemas/Version'
+          $ref: '#/components/schemas/VersionRep'
         keyValue:
-          $ref: '#/components/schemas/KeyValue'
+          type: string
         modelInfo:
           $ref: '#/components/schemas/MathModelChildSummary'
         softwareVersion:
-          $ref: '#/components/schemas/VCellSoftwareVersion'
+          type: string
         publicationInfos:
           type: array
           items:
-            $ref: '#/components/schemas/PublicationInfo'
+            $ref: '#/components/schemas/PublicationInfoRep'
         annotatedFunctions:
           type: string
     MathType:
@@ -3340,6 +3281,17 @@ components:
         scale:
           format: double
           type: number
+    PreviewRep:
+      type: object
+      properties:
+        gifBase64:
+          type: string
+        width:
+          format: int32
+          type: integer
+        height:
+          format: int32
+          type: integer
     Publication:
       type: object
       properties:
@@ -3379,13 +3331,13 @@ components:
             $ref: '#/components/schemas/MathmodelRef'
         date:
           $ref: '#/components/schemas/Date'
-    PublicationInfo:
+    PublicationInfoRep:
       type: object
       properties:
         publicationKey:
-          $ref: '#/components/schemas/KeyValue'
+          type: string
         versionKey:
-          $ref: '#/components/schemas/KeyValue'
+          type: string
         title:
           type: string
         authors:
@@ -3400,14 +3352,12 @@ components:
           type: string
         url:
           type: string
-        pubdate:
-          $ref: '#/components/schemas/Date'
         vcDocumentType:
-          $ref: '#/components/schemas/VCDocumentType'
+          type: string
         user:
-          $ref: '#/components/schemas/User'
-        theHashCode:
-          format: int32
+          $ref: '#/components/schemas/UserRep'
+        pubDate:
+          format: int64
           type: integer
     PublishModelsRequest:
       type: object
@@ -3776,13 +3726,13 @@ components:
           type: string
         emailNotification:
           type: boolean
-    VCDocumentType:
-      enum:
-      - BIOMODEL_DOC
-      - MATHMODEL_DOC
-      - GEOMETRY_DOC
-      - EXTERNALFILE_DOC
-      type: string
+    UserRep:
+      type: object
+      properties:
+        userName:
+          type: string
+        key:
+          type: string
     VCImageSummary:
       type: object
       properties:
@@ -3791,11 +3741,11 @@ components:
         extent:
           $ref: '#/components/schemas/Extent'
         version:
-          $ref: '#/components/schemas/Version'
+          $ref: '#/components/schemas/VersionRep'
         preview:
-          $ref: '#/components/schemas/GIFImage'
+          $ref: '#/components/schemas/PreviewRep'
         softwareVersion:
-          $ref: '#/components/schemas/VCellSoftwareVersion'
+          type: string
     VCInfoContainerSummary:
       type: object
       properties:
@@ -3830,39 +3780,6 @@ components:
         exceptionType:
           type: string
         message:
-          type: string
-    VCellSite:
-      enum:
-      - alpha
-      - beta
-      - rel
-      - other
-      - unknown
-      type: string
-    VCellSoftwareVersion:
-      type: object
-      properties:
-        softwareVersionString:
-          type: string
-        vcellSite:
-          $ref: '#/components/schemas/VCellSite'
-        buildNumber:
-          type: string
-        versionNumber:
-          type: string
-        majorVersion:
-          format: int32
-          type: integer
-        minorVersion:
-          format: int32
-          type: integer
-        patchVersion:
-          format: int32
-          type: integer
-        buildInt:
-          format: int32
-          type: integer
-        description:
           type: string
     VariableDomain:
       enum:
@@ -3929,44 +3846,29 @@ components:
       - queued
       - running
       type: string
-    Version:
+    VersionRep:
       type: object
       properties:
         versionKey:
-          $ref: '#/components/schemas/KeyValue'
-        annot:
           type: string
-        branchID:
-          type: number
-        branchPointRefKey:
-          $ref: '#/components/schemas/KeyValue'
-        date:
-          format: date-time
-          type: string
-          example: 2022-03-10
-        flag:
-          $ref: '#/components/schemas/VersionFlag'
-        groupAccess:
-          $ref: '#/components/schemas/GroupAccess'
         name:
           type: string
         owner:
-          $ref: '#/components/schemas/User'
-    VersionFlag:
-      type: object
-      properties:
-        versionFlag:
+          $ref: '#/components/schemas/UserRep'
+        branchPointRefKey:
+          type: string
+        branchId:
+          type: string
+        date:
+          format: int64
+          type: integer
+        flag:
           format: int32
           type: integer
-        intValue:
-          format: int32
-          type: integer
-        archived:
-          type: boolean
-        current:
-          type: boolean
-        published:
-          type: boolean
+        annotation:
+          type: string
+        groupAccess:
+          $ref: '#/components/schemas/GroupAccessRep'
   securitySchemes:
     openId:
       type: openIdConnect

@@ -23,9 +23,8 @@ from typing import Any, ClassVar, Dict, List, Optional
 from pydantic import BaseModel, StrictStr
 from pydantic import Field
 from vcell_client.models.math_model_child_summary import MathModelChildSummary
-from vcell_client.models.publication_info import PublicationInfo
-from vcell_client.models.v_cell_software_version import VCellSoftwareVersion
-from vcell_client.models.version import Version
+from vcell_client.models.publication_info_rep import PublicationInfoRep
+from vcell_client.models.version_rep import VersionRep
 try:
     from typing import Self
 except ImportError:
@@ -35,11 +34,11 @@ class MathModelSummary(BaseModel):
     """
     MathModelSummary
     """ # noqa: E501
-    version: Optional[Version] = None
+    version: Optional[VersionRep] = None
     key_value: Optional[StrictStr] = Field(default=None, alias="keyValue")
     model_info: Optional[MathModelChildSummary] = Field(default=None, alias="modelInfo")
-    software_version: Optional[VCellSoftwareVersion] = Field(default=None, alias="softwareVersion")
-    publication_infos: Optional[List[PublicationInfo]] = Field(default=None, alias="publicationInfos")
+    software_version: Optional[StrictStr] = Field(default=None, alias="softwareVersion")
+    publication_infos: Optional[List[PublicationInfoRep]] = Field(default=None, alias="publicationInfos")
     annotated_functions: Optional[StrictStr] = Field(default=None, alias="annotatedFunctions")
     __properties: ClassVar[List[str]] = ["version", "keyValue", "modelInfo", "softwareVersion", "publicationInfos", "annotatedFunctions"]
 
@@ -85,9 +84,6 @@ class MathModelSummary(BaseModel):
         # override the default output from pydantic by calling `to_dict()` of model_info
         if self.model_info:
             _dict['modelInfo'] = self.model_info.to_dict()
-        # override the default output from pydantic by calling `to_dict()` of software_version
-        if self.software_version:
-            _dict['softwareVersion'] = self.software_version.to_dict()
         # override the default output from pydantic by calling `to_dict()` of each item in publication_infos (list)
         _items = []
         if self.publication_infos:
@@ -112,11 +108,11 @@ class MathModelSummary(BaseModel):
                 raise ValueError("Error due to additional fields (not defined in MathModelSummary) in the input: " + _key)
 
         _obj = cls.model_validate({
-            "version": Version.from_dict(obj.get("version")) if obj.get("version") is not None else None,
+            "version": VersionRep.from_dict(obj.get("version")) if obj.get("version") is not None else None,
             "keyValue": obj.get("keyValue"),
             "modelInfo": MathModelChildSummary.from_dict(obj.get("modelInfo")) if obj.get("modelInfo") is not None else None,
-            "softwareVersion": VCellSoftwareVersion.from_dict(obj.get("softwareVersion")) if obj.get("softwareVersion") is not None else None,
-            "publicationInfos": [PublicationInfo.from_dict(_item) for _item in obj.get("publicationInfos")] if obj.get("publicationInfos") is not None else None,
+            "softwareVersion": obj.get("softwareVersion"),
+            "publicationInfos": [PublicationInfoRep.from_dict(_item) for _item in obj.get("publicationInfos")] if obj.get("publicationInfos") is not None else None,
             "annotatedFunctions": obj.get("annotatedFunctions")
         })
         return _obj

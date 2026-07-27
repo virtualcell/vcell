@@ -9,9 +9,9 @@
 |------------ | ------------- | ------------- | -------------|
 |**size** | [**ISize**](ISize.md) |  |  [optional] |
 |**extent** | [**Extent**](Extent.md) |  |  [optional] |
-|**version** | [**Version**](Version.md) |  |  [optional] |
-|**preview** | [**GIFImage**](GIFImage.md) |  |  [optional] |
-|**softwareVersion** | [**VCellSoftwareVersion**](VCellSoftwareVersion.md) |  |  [optional] |
+|**version** | [**VersionRep**](VersionRep.md) |  |  [optional] |
+|**preview** | [**PreviewRep**](PreviewRep.md) |  |  [optional] |
+|**softwareVersion** | **String** |  |  [optional] |
 
 
 

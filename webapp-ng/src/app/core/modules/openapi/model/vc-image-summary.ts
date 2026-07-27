@@ -9,18 +9,17 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
-import { VCellSoftwareVersion } from './v-cell-software-version';
-import { GIFImage } from './gif-image';
+import { PreviewRep } from './preview-rep';
 import { Extent } from './extent';
-import { Version } from './version';
 import { ISize } from './i-size';
+import { VersionRep } from './version-rep';
 
 
 export interface VCImageSummary { 
     size?: ISize;
     extent?: Extent;
-    version?: Version;
-    preview?: GIFImage;
-    softwareVersion?: VCellSoftwareVersion;
+    version?: VersionRep;
+    preview?: PreviewRep;
+    softwareVersion?: string;
 }
 

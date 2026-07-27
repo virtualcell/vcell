@@ -4,11 +4,11 @@
 ## Properties
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**version** | [**Version**](Version.md) |  | [optional] 
+**version** | [**VersionRep**](VersionRep.md) |  | [optional] 
 **key_value** | **str** |  | [optional] 
 **model_info** | [**MathModelChildSummary**](MathModelChildSummary.md) |  | [optional] 
-**software_version** | [**VCellSoftwareVersion**](VCellSoftwareVersion.md) |  | [optional] 
-**publication_infos** | [**List[PublicationInfo]**](PublicationInfo.md) |  | [optional] 
+**software_version** | **str** |  | [optional] 
+**publication_infos** | [**List[PublicationInfoRep]**](PublicationInfoRep.md) |  | [optional] 
 **annotated_functions** | **str** |  | [optional] 
 
 ## Example

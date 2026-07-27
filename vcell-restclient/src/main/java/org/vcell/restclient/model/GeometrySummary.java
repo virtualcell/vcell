@@ -27,8 +27,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 import org.vcell.restclient.model.Extent;
 import org.vcell.restclient.model.Origin;
-import org.vcell.restclient.model.VCellSoftwareVersion;
-import org.vcell.restclient.model.Version;
+import org.vcell.restclient.model.VersionRep;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 
@@ -58,10 +57,10 @@ public class GeometrySummary {
   private String imageRef;
 
   public static final String JSON_PROPERTY_VERSION = "version";
-  private Version version;
+  private VersionRep version;
 
   public static final String JSON_PROPERTY_SOFTWARE_VERSION = "softwareVersion";
-  private VCellSoftwareVersion softwareVersion;
+  private String softwareVersion;
 
   public GeometrySummary() { 
   }
@@ -166,7 +165,7 @@ public class GeometrySummary {
   }
 
 
-  public GeometrySummary version(Version version) {
+  public GeometrySummary version(VersionRep version) {
     this.version = version;
     return this;
   }
@@ -179,19 +178,19 @@ public class GeometrySummary {
   @JsonProperty(JSON_PROPERTY_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public Version getVersion() {
+  public VersionRep getVersion() {
     return version;
   }
 
 
   @JsonProperty(JSON_PROPERTY_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setVersion(Version version) {
+  public void setVersion(VersionRep version) {
     this.version = version;
   }
 
 
-  public GeometrySummary softwareVersion(VCellSoftwareVersion softwareVersion) {
+  public GeometrySummary softwareVersion(String softwareVersion) {
     this.softwareVersion = softwareVersion;
     return this;
   }
@@ -204,14 +203,14 @@ public class GeometrySummary {
   @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
 
-  public VCellSoftwareVersion getSoftwareVersion() {
+  public String getSoftwareVersion() {
     return softwareVersion;
   }
 
 
   @JsonProperty(JSON_PROPERTY_SOFTWARE_VERSION)
   @JsonInclude(value = JsonInclude.Include.USE_DEFAULTS)
-  public void setSoftwareVersion(VCellSoftwareVersion softwareVersion) {
+  public void setSoftwareVersion(String softwareVersion) {
     this.softwareVersion = softwareVersion;
   }
 
@@ -325,7 +324,7 @@ public class GeometrySummary {
 
     // add `softwareVersion` to the URL query string
     if (getSoftwareVersion() != null) {
-      joiner.add(getSoftwareVersion().toUrlQueryString(prefix + "softwareVersion" + suffix));
+      joiner.add(String.format("%ssoftwareVersion%s=%s", prefix, suffix, URLEncoder.encode(String.valueOf(getSoftwareVersion()), StandardCharsets.UTF_8).replaceAll("\\+", "%20")));
     }
 
     return joiner.toString();

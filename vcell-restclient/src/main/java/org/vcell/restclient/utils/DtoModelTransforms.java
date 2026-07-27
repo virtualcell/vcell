@@ -128,6 +128,14 @@ public class DtoModelTransforms {
         return new SpecialUser(dto.getUserName(), new KeyValue(dto.getKey()), claims);
     }
 
+    /** Rebuild a native {@link User} from the flat summary DTO (name + string key). */
+    public static User dtoToUser(org.vcell.restclient.model.UserRep dto){
+        if (dto == null) {
+            return null;
+        }
+        return new User(dto.getUserName(), new KeyValue(dto.getKey()));
+    }
+
     public static cbit.vcell.field.io.FieldDataShape DTOToFieldDataShape(FieldDataShape dto){
         cbit.vcell.field.io.FieldDataShape results = new cbit.vcell.field.io.FieldDataShape();
         results.extent = dtoToExtent(dto.getExtent());
@@ -184,40 +192,46 @@ public class DtoModelTransforms {
         return fieldDataDBOperationResults;
     }
 
-    public static VersionFlag dtoToVersionFlag(org.vcell.restclient.model.VersionFlag dto){
-        if (dto.getVersionFlag() == null){
+    public static GroupAccess dtoToGroupAccess(org.vcell.restclient.model.GroupAccessRep dto){
+        if (dto == null) {
             return null;
         }
-        return VersionFlag.fromInt(dto.getVersionFlag());
-    }
-
-    public static GroupAccess dtoToGroupAccess(org.vcell.restclient.model.GroupAccess dto){
-
-        if (dto instanceof org.vcell.restclient.model.GroupAccessAll){
+        String type = dto.getType();
+        if ("all".equals(type)) {
             return new GroupAccessAll();
-        } else if (dto instanceof org.vcell.restclient.model.GroupAccessSome gs){
-
-            boolean[] bValues = new boolean[gs.getHiddenMembers().size()];
-            for (int i = 0; i < bValues.length; i++){
-                bValues[i] = gs.getHiddenMembers().get(i);
-            }
-            User[] users = new User[gs.getGroupMembers().size()];
-            for (int i = 0; i < users.length; i++){
-                users[i] = dtoToUser(gs.getGroupMembers().get(i));
-            }
-            return new GroupAccessSome(gs.getGroupid(), gs.getHash(), users, bValues);
-        } else if (dto instanceof org.vcell.restclient.model.GroupAccessNone) {
+        } else if ("none".equals(type)) {
             return new GroupAccessNone();
+        } else if ("some".equals(type)) {
+            List<org.vcell.restclient.model.GroupMemberRep> members =
+                    dto.getMembers() == null ? Collections.emptyList() : dto.getMembers();
+            User[] users = new User[members.size()];
+            boolean[] hidden = new boolean[members.size()];
+            KeyValue[] userRefs = new KeyValue[members.size()];
+            for (int i = 0; i < members.size(); i++) {
+                org.vcell.restclient.model.GroupMemberRep m = members.get(i);
+                users[i] = dtoToUser(m.getUser());
+                hidden[i] = Boolean.TRUE.equals(m.getHidden());
+                userRefs[i] = users[i].getID();
+            }
+            // The server-internal integrity hash is not transmitted; recompute it so the
+            // reconstructed GroupAccessSome is self-consistent (its constructor validates the hash).
+            java.math.BigDecimal hash = GroupAccess.calculateHash(userRefs, hidden);
+            return new GroupAccessSome(new java.math.BigDecimal(dto.getGroupid()), hash, users, hidden);
         }
-        throw new ClassCastException("Expected classes of 'GroupAccessAll', 'GroupAccessSome', or 'GroupAccessNone' but instead got: " + dto.getClass().getName());
+        throw new IllegalArgumentException("Unexpected GroupAccessRep type: " + type);
     }
 
-    public static Version versionDTOToVersion(org.vcell.restclient.model.Version dto){
+    public static Version versionDTOToVersion(org.vcell.restclient.model.VersionRep dto){
+        if (dto == null) {
+            return null;
+        }
         return new Version(
                 new KeyValue(dto.getVersionKey()), dto.getName(), dtoToUser(dto.getOwner()),
-                dtoToGroupAccess(dto.getGroupAccess()), dto.getBranchPointRefKey() == null ? null : new KeyValue(dto.getBranchPointRefKey()),
-                dto.getBranchID(), new Date(dto.getDate().toEpochSecond()),
-                dtoToVersionFlag(dto.getFlag()), dto.getAnnot()
+                dtoToGroupAccess(dto.getGroupAccess()),
+                dto.getBranchPointRefKey() == null ? null : new KeyValue(dto.getBranchPointRefKey()),
+                dto.getBranchId() == null ? null : new java.math.BigDecimal(dto.getBranchId()),
+                dto.getDate() == null ? null : new Date(dto.getDate()),
+                dto.getFlag() == null ? null : VersionFlag.fromInt(dto.getFlag()), dto.getAnnotation()
         );
     }
 
@@ -253,26 +267,23 @@ public class DtoModelTransforms {
                 geoDims);
     }
 
-    public static VCellSoftwareVersion dtoToVCellSoftwareVersion(org.vcell.restclient.model.VCellSoftwareVersion dto){
-        return VCellSoftwareVersion.fromString(dto.getSoftwareVersionString());
+    public static VCellSoftwareVersion dtoToVCellSoftwareVersion(String softwareVersionString){
+        return VCellSoftwareVersion.fromString(softwareVersionString);
     }
 
-    public static VCDocument.VCDocumentType dtoToVCDocumentType(VCDocumentType dto){
-        return VCDocument.VCDocumentType.valueOf(dto.name());
-    }
-
-    public static PublicationInfo dtoToPublicationInfo(org.vcell.restclient.model.PublicationInfo dto){
+    public static PublicationInfo dtoToPublicationInfo(org.vcell.restclient.model.PublicationInfoRep dto){
         return new PublicationInfo(new KeyValue(dto.getPublicationKey()), new KeyValue(dto.getVersionKey()),
-                dto.getTitle(), dto.getAuthors().toArray(new String[0]), dto.getCitation(),dto.getPubmedid(),
-                dto.getDoi(), dto.getUrl(), dtoToVCDocumentType(dto.getVcDocumentType()), dtoToUser(dto.getUser()),
-                new Date(dto.getPubdate().toEpochDay()));
+                dto.getTitle(), dto.getAuthors() == null ? new String[0] : dto.getAuthors().toArray(new String[0]),
+                dto.getCitation(), dto.getPubmedid(), dto.getDoi(), dto.getUrl(),
+                VCDocument.VCDocumentType.valueOf(dto.getVcDocumentType()), dtoToUser(dto.getUser()),
+                dto.getPubDate() == null ? null : new Date(dto.getPubDate()));
     }
 
     public static BioModelInfo bioModelContextToBioModelInfo(BioModelSummary summary){
         BioModelInfo bioModelInfo = new BioModelInfo(versionDTOToVersion(summary.getVersion()), dtoToBioModelChildSummary(summary.getSummary()),
                 dtoToVCellSoftwareVersion(summary.getvCellSoftwareVersion()));
         if (summary.getPublicationInformation() != null){
-            for (org.vcell.restclient.model.PublicationInfo pubInfo : summary.getPublicationInformation()){
+            for (org.vcell.restclient.model.PublicationInfoRep pubInfo : summary.getPublicationInformation()){
                 bioModelInfo.addPublicationInfo(dtoToPublicationInfo(pubInfo));
             }
         }
@@ -302,11 +313,14 @@ public class DtoModelTransforms {
 
     public static VCImageInfo imageSummaryToVCImageInfo(org.vcell.restclient.model.VCImageSummary summary) {
         try {
+            org.vcell.restclient.model.PreviewRep preview = summary.getPreview();
+            GIFImage browseGif = (preview == null || preview.getGifBase64() == null) ? null
+                    : new GIFImage(Base64.getDecoder().decode(preview.getGifBase64()));
             return new VCImageInfo(DtoModelTransforms.versionDTOToVersion(summary.getVersion()),
                     DtoModelTransforms.dtoToISize(summary.getSize()), DtoModelTransforms.dtoToExtent(summary.getExtent()),
-                    new GIFImage(Files.readAllBytes(summary.getPreview().getGifEncodedData().toPath())),
+                    browseGif,
                     DtoModelTransforms.dtoToVCellSoftwareVersion(summary.getSoftwareVersion()));
-        } catch (GifParsingException | IOException e) {
+        } catch (GifParsingException e) {
             throw new RuntimeException(e);
         }
     }
