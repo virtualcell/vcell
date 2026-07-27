@@ -8,7 +8,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.math.RoundingMode;
 
-@Tag("Fast")
+
 public class CoordinateFormatTest {
 
 
