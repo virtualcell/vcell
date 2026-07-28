@@ -119,7 +119,7 @@ npm run build_prod # Production build
 GitHub Actions, split by concern:
 
 - **`ci.yml`** (fast lane, ~4 min) — every push + merge queue: `build` (compile + Docker image test + Python package tests), `CI-Test-group-Fast` (JUnit class-level parallel, sharded core/other), `CI-Test-group-Quarkus`.
-- **`regression.yml`** (~9 min) — heavy integration suites (MathGen/SBML/SEDML_*/BSTS), sharded, gated by `regression-gate`. Runs on: a PR marked **ready-for-review**, the **merge queue** (`merge_group`), the **nightly** schedule, and manual **`workflow_dispatch`** (with an `include-slow` option for the slow cases the merge gate skips). NOT on ordinary pushes.
+- **`regression.yml`** (~9 min) — heavy integration suites (MathGen/SBML/SEDML_*/BSTS), sharded, gated by `regression-gate`. Runs on: the **merge queue** (`merge_group`) — the authoritative gate before landing — the **nightly** schedule, and manual **`workflow_dispatch`** (any ref; with an `include-slow` option for the slow cases the merge gate skips). Deliberately **NOT** on `pull_request` events: because no PR trigger produces `regression-gate`, GitHub doesn't expect it on the PR, so a PR enters the queue once the fast lane + review pass and the queue runs regression on the merge commit. For an ad-hoc pre-queue run, `gh workflow run regression.yml --ref <pr-branch>`.
 - **`cd.yml`** — Docker push to `ghcr.io` on release.
 - **`codeql-analysis.yml`** — security scan on push/PR to `master`.
 
