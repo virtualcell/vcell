@@ -29,6 +29,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -1137,5 +1139,15 @@ public class DialogUtils {
             System.err.println(sb.toString());
         }
     }
+
+    // formatting for ugly floating point noise, see the CoordinateFormatTest
+    // good for 0.10000000000007 -> 0.1 or 0.9999999999999999 -> 1.0
+    // bad for 1e-12 which will show as 0, while we may want to show 1e-12
+    // bad for 0.0000000000001234 which will also show as 0, while we may want to show 1.234e-13
+    private static final DecimalFormat fmt = new DecimalFormat("0.######", DecimalFormatSymbols.getInstance(Locale.US));
+    public static String clean(double v) {
+        return fmt.format(v);
+    }
+
 
 }
