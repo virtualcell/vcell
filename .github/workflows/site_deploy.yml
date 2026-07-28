@@ -93,7 +93,7 @@ jobs:
   # Build the five install4j media (Windows 64/32, Linux 64/32, macOS) in parallel — one per runner —
   # instead of serially in a single clientgen container. Each job produces its installer plus a
   # updates_<platform>.xml fragment; the combine job fans them back into one updates.xml.
-  build_installers:
+  build_installer_other:
     name: Build installer (media ${{ matrix.build_id }})
     runs-on: ubuntu-24.04
     needs: build
@@ -101,8 +101,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # install4j build ids: 349=win64, 450=win32, 652=linux64, 547=linux32, 105=mac64
-        build_id: [349, 450, 652, 547, 105]
+        # non-mac install4j build ids: 349=win64, 450=win32, 652=linux64, 547=linux32
+        # (mac 105 is its own job so notarize can start as soon as it finishes)
+        build_id: [349, 450, 652, 547]
     steps:
     - name: checkout tag
       uses: actions/checkout@v4
@@ -150,12 +151,64 @@ jobs:
         path: docker/swarm/generated_installers
         retention-days: 1
 
-  # Fan-in: gather the five per-media installers and reconstruct the combined updates.xml.
+  # The mac installer is built on its own so notarize can start on it immediately (in parallel with
+  # the win/linux builds) rather than waiting for the fan-in.
+  build_installer_mac:
+    name: Build installer (media 105 mac)
+    runs-on: ubuntu-24.04
+    needs: build
+    if: ${{ github.event.inputs.server_only != 'true' }}
+    steps:
+    - name: checkout tag
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.inputs.vcell_version }}.${{ github.event.inputs.vcell_build }}
+    - name: setup ssh-agent
+      uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ secrets.VC_KEY }}
+    - name: retrieve variables
+      uses: actions/download-artifact@v4
+      with:
+        name: variables
+        path: variables
+    - name: setenv
+      run: |
+        for line in $(cat variables/variables); do echo $line >> $GITHUB_ENV; done
+    - name: get installer secrets
+      run: |
+        ssh-keyscan $VCELL_MANAGER_NODE >> ~/.ssh/known_hosts
+        sudo mkdir /usr/local/deploy
+        sudo chmod 777 /usr/local/deploy
+        cd /usr/local/deploy
+        scp ${{ secrets.CD_FULL_USER }}@${VCELL_MANAGER_NODE}:${VCELL_DEPLOY_REMOTE_DIR}/deploy_dir_2025_03_18.tar .
+        cd ..
+        sudo tar -xvf deploy/deploy_dir_2025_03_18.tar
+        sudo chmod 777 -R deploy
+    - name: retrieve deploy config
+      uses: actions/download-artifact@v4
+      with:
+        name: deploy-config
+        path: docker/swarm
+    - name: build the mac installer
+      run: |
+        cd docker/swarm
+        echo "${{ secrets.GITHUB_TOKEN }}" | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        sudo docker pull $VCELL_REPO_NAMESPACE/vcell-clientgen:${VCELL_VERSION}.${VCELL_BUILD}
+        BUILD_IDS="105" ./generate_installers.sh ./${VCELL_CONFIG_FILE_NAME}
+    - name: upload mac installer (un-notarized)
+      uses: actions/upload-artifact@v4
+      with:
+        name: mac-raw
+        path: docker/swarm/generated_installers
+        retention-days: 1
+
+  # Fan-in: gather the win/linux installers + the NOTARIZED mac installer and reconstruct updates.xml.
   combine:
     name: Combine installers + updates.xml
     runs-on: ubuntu-24.04
-    needs: build_installers
-    if: ${{ github.event.inputs.server_only != 'true' }}
+    needs: [build_installer_other, notarize]
+    if: ${{ always() && needs.build_installer_other.result == 'success' && needs.notarize.result == 'success' }}
     steps:
     - name: checkout tag
       uses: actions/checkout@v4
@@ -181,23 +234,21 @@ jobs:
   notarize:
     name: Notarize the MacOS client
     runs-on: macos-latest
-    needs: [build, combine]
-    # run for full deploys (combine succeeded) and for server_only (build_installers/combine skipped);
-    # skip only if the installer build actually failed.
-    if: ${{ always() && needs.build.result == 'success' && needs.combine.result != 'failure' && needs.combine.result != 'cancelled' }}
+    # depends ONLY on the mac build, so it runs in parallel with the win/linux builds and combine.
+    # skipped for server_only (build_installer_mac is skipped) and if the mac build failed.
+    needs: build_installer_mac
+    if: ${{ always() && needs.build_installer_mac.result == 'success' }}
     steps:
-    - name: download generated installers
-      if: ${{ github.event.inputs.server_only != 'true' }}
+    - name: download mac installer
       uses: actions/download-artifact@v4
       with:
-        name: installers
-        path: installers
+        name: mac-raw
+        path: mac
     - name: notarize mac installer
-      if: ${{ github.event.inputs.server_only != 'true' }}
       run: |
         set -x
         set +e
-        cd installers
+        cd mac
         export MAC_INSTALLER=`ls *dmg`
         xcrun notarytool submit --output-format normal --no-progress --no-wait --team-id "${{ secrets.MACTEAMID }}" --apple-id "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" $MAC_INSTALLER > submit_output
         SUBMIT_EXIT=$?
@@ -231,19 +282,20 @@ jobs:
           xcrun notarytool log --verbose --output-format normal --no-progress --team-id "${{ secrets.MACTEAMID }}" --apple-id "${{ secrets.MACID }}" --password "${{ secrets.MACPW }}" `cat UUID`
           exit 1
         fi
-    - name: update generated installers
-      if: ${{ github.event.inputs.server_only != 'true' }}
+    - name: upload notarized mac installer
       uses: actions/upload-artifact@v4
       with:
-        name: updated_installers
-        path: installers
+        name: installers-mac
+        path: mac
         retention-days: 1
 
   deploy:
     name: Deploy to site
     runs-on: ubuntu-24.04
-    needs: notarize
-    if: ${{ always() && needs.notarize.result == 'success' }}
+    # deploy last, after ALL other jobs: a server_only run (all installer jobs skipped) or a full
+    # deploy (all succeeded). Skip only if some installer job actually failed.
+    needs: [build, build_installer_other, build_installer_mac, notarize, combine]
+    if: ${{ always() && needs.build.result == 'success' && needs.build_installer_other.result != 'failure' && needs.build_installer_other.result != 'cancelled' && needs.build_installer_mac.result != 'failure' && needs.build_installer_mac.result != 'cancelled' && needs.notarize.result != 'failure' && needs.notarize.result != 'cancelled' && needs.combine.result != 'failure' && needs.combine.result != 'cancelled' }}
     steps:
     - name: checkout tag
       uses: actions/checkout@v4
@@ -253,8 +305,8 @@ jobs:
       if: ${{ github.event.inputs.server_only != 'true' }}
       uses: actions/download-artifact@v4
       with:
-          name: updated_installers
-          path: updated_installers
+          name: installers
+          path: installers
     - name: retrieve variables
       uses: actions/download-artifact@v4
       with:
@@ -266,7 +318,7 @@ jobs:
     - name: stage installers
       if: ${{ github.event.inputs.server_only != 'true' }}
       run: |
-        cd updated_installers
+        cd installers
         mkdir ../docker/swarm/generated_installers
         mv * ../docker/swarm/generated_installers
     - name: setup ssh-agent
