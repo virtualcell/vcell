@@ -292,10 +292,12 @@ jobs:
   deploy:
     name: Deploy to site
     runs-on: ubuntu-24.04
-    # deploy last, after ALL other jobs: a server_only run (all installer jobs skipped) or a full
-    # deploy (all succeeded). Skip only if some installer job actually failed.
-    needs: [build, build_installer_other, build_installer_mac, notarize, combine]
-    if: ${{ always() && needs.build.result == 'success' && needs.build_installer_other.result != 'failure' && needs.build_installer_other.result != 'cancelled' && needs.build_installer_mac.result != 'failure' && needs.build_installer_mac.result != 'cancelled' && needs.notarize.result != 'failure' && needs.notarize.result != 'cancelled' && needs.combine.result != 'failure' && needs.combine.result != 'cancelled' }}
+    # deploy last. `combine` transitively depends on every installer job (mac -> notarize -> combine,
+    # and the win/linux matrix -> combine), so we only list `combine` for the full path. `build` stays
+    # because a server_only run skips `combine` (no installers) and only `build` can gate the config
+    # artifacts then. Full deploy => combine succeeded; server_only => combine skipped, build gates.
+    needs: [build, combine]
+    if: ${{ always() && needs.build.result == 'success' && (needs.combine.result == 'success' || github.event.inputs.server_only == 'true') }}
     steps:
     - name: checkout tag
       uses: actions/checkout@v4
