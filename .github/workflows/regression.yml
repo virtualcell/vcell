@@ -4,16 +4,20 @@ name: Regression
 # ordinary pushes - that is what keeps the fast lane (ci.yml) fast.
 #
 # Runs when:
-#   * a PR is marked ready-for-review (early signal that the full suite passes),
 #   * in the merge queue (the authoritative gate before landing on master),
 #   * nightly on master (drift backstop),
-#   * on demand via "Run workflow" (all groups or a single one).
+#   * on demand via "Run workflow" (all groups or a single one, any ref).
 #
-# Note: pushing new commits to an already-ready PR does NOT re-run this (only
-# the ready_for_review transition does). The merge queue re-runs the full suite
-# on the actual merge commit, so that is the real gate; use "Run workflow" or
-# re-open-as-draft/ready if you want an interim run. This keeps ready PRs from
-# paying the full time on every commit.
+# Deliberately does NOT run on pull_request events. "regression-gate" is a
+# required status check enforced by the merge queue on its temporary merge
+# commit (the merge_group event below). Because no pull_request trigger produces
+# it, GitHub does not "expect" it on the PR itself, so a PR can enter the queue
+# as soon as the fast lane (build / CI-Test-group-Fast / CI-Test-group-Quarkus)
+# and review pass; the queue then runs this suite and blocks the merge if it
+# fails. (Previously a `pull_request: [ready_for_review]` trigger made GitHub
+# expect the gate on every PR, but it only fired on a draft->ready transition -
+# so PRs opened directly as ready were blocked forever with no way to run it.)
+# For an ad-hoc pre-queue check, use "Run workflow" on the PR branch.
 #
 # The slow groups are single parameterized tests iterating over the whole VCML
 # model suite, so they are SHARDED across parallel runners: each shard runs a
@@ -29,9 +33,6 @@ name: Regression
 # the merge queue.
 
 on:
-  pull_request:
-    types: [ready_for_review]
-    branches: [master]
   merge_group:
   schedule:
     # nightly full regression on master (07:00 UTC)
