@@ -131,6 +131,11 @@ public cbit.vcell.solver.ode.ODESimData getODEData(VCDataIdentifier vcdID) throw
 		return dataServerImpl.getLangevinBatchResultSet(user, vcdataID);
 	}
 
+	@Override
+	public SpringSaladTrajectory getLangevinTrajectory(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException {
+		return dataServerImpl.getLangevinTrajectory(user, vcdataID);
+	}
+
 
 	/**
  * This method was created by a SmartGuide.

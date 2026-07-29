@@ -24,7 +24,11 @@ public class LangevinBatchResultSet implements Serializable {
         Std("_Std", ".ida"),
         ClusterCounts("_clusters_counts", ".csv"),
         ClusterMean("_clusters_mean", ".csv"),
-        ClusterOverall("_clusters_overall", ".csv");
+        ClusterOverall("_clusters_overall", ".csv"),
+        // per-particle trajectory ("viewer") file: positions/links per dt_image frame, Run 0 only.
+        // Canonicalized flat into the user dir by the solver's postprocess step. Consumed by the
+        // SaLaD 3D renderer (see SpringSaladTrajectory).
+        Viewer("_VIEW_Run0", ".txt");
 
         private final String suffix;
         private final String extension;
