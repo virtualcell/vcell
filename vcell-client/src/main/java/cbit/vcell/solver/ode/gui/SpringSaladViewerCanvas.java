@@ -16,6 +16,7 @@ import cbit.vcell.render.Vect3d;
 import cbit.vcell.simdata.SpringSaladTrajectory;
 
 import javax.swing.JPanel;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -24,12 +25,14 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.Line2D;
+import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * Java2D "impostor-sphere" renderer for one frame of a {@link SpringSaladTrajectory}.
@@ -55,6 +58,13 @@ public class SpringSaladViewerCanvas extends JPanel {
 	private double zoom = 1.0;
 	private double panX = 0, panY = 0;
 	private boolean showLinks = true;
+	private boolean showBox = true;
+	private boolean showMembrane = true;
+
+	private static final Color MEMBRANE_GREEN = new Color(45, 175, 70);
+	private static final int MEMBRANE_GRID = 12;      // NxN quad subdivision — only to depth-sort vs glyphs
+	// light direction (upper-left, toward viewer), shared with the sphere sprite, for membrane lighting
+	private static final double LIGHT_X = -0.5014, LIGHT_Y = -0.6017, LIGHT_Z = 0.6217;
 
 	// world framing (computed from all frames so the box doesn't jitter during playback)
 	private boolean boundsValid = false;
@@ -122,6 +132,8 @@ public class SpringSaladViewerCanvas extends JPanel {
 	public int getFrameIndex() { return frameIndex; }
 
 	public void setShowLinks(boolean b) { showLinks = b; repaint(); }
+	public void setShowBox(boolean b) { showBox = b; repaint(); }
+	public void setShowMembrane(boolean b) { showMembrane = b; repaint(); }
 
 	public void resetView() {
 		trackball.getCamera().resetView();
@@ -164,6 +176,17 @@ public class SpringSaladViewerCanvas extends JPanel {
 				}
 			}
 		}
+		if (trajectory != null) {
+			// include the simulation box so the whole box (and membrane) is framed, not just the glyphs
+			double xs = trajectory.getXSize(), ys = trajectory.getYSize();
+			double zo = trajectory.getZOutside(), zi = trajectory.getZInside();
+			if (xs > 0 && ys > 0) {
+				any = true;
+				minX = Math.min(minX, -xs); maxX = Math.max(maxX, xs);
+				minY = Math.min(minY, -ys); maxY = Math.max(maxY, ys);
+				minZ = Math.min(minZ, -zo); maxZ = Math.max(maxZ, zi);
+			}
+		}
 		if (!any) { cx = cy = cz = 0; halfExtent = 1; }
 		else {
 			cx = (minX + maxX) / 2; cy = (minY + maxY) / 2; cz = (minZ + maxZ) / 2;
@@ -199,41 +222,133 @@ public class SpringSaladViewerCanvas extends JPanel {
 		double minD = Double.POSITIVE_INFINITY, maxD = Double.NEGATIVE_INFINITY;
 		Map<Integer, Glyph> byId = new HashMap<>();
 		for (SpringSaladTrajectory.Site s : frame.getSites()) {
-			Vect3d v = rot.mult(new Vect3d(s.getX() - cx, s.getY() - cy, s.getZ() - cz));
+			double[] p = project(rot, s.getX(), s.getY(), s.getZ(), pixelScale, ox, oy);
 			Glyph gl = new Glyph();
 			gl.id = s.getId();
-			gl.sx = ox + v.getX() * pixelScale;
-			gl.sy = oy - v.getY() * pixelScale;
-			gl.depth = v.getZ();
+			gl.sx = p[0]; gl.sy = p[1]; gl.depth = p[2];
 			gl.screenR = Math.max(1.0, s.getRadius() * pixelScale);
 			gl.color = colorForName(s.getColor());
 			glyphs.add(gl);
 			byId.put(gl.id, gl);
 			minD = Math.min(minD, gl.depth); maxD = Math.max(maxD, gl.depth);
 		}
+		double span = (maxD - minD) < 1e-12 ? 1 : (maxD - minD);
 
-		// links behind the spheres (nearer sphere then overpaints)
+		// unified depth-sorted draw list (painter's algorithm): membrane quads + links + glyph sprites,
+		// so the membrane composites correctly with glyphs on either side of it.
+		List<Drawable> drawables = new ArrayList<>();
+		if (showMembrane) addMembrane(rot, pixelScale, ox, oy, drawables);
 		if (showLinks) {
-			g2.setColor(new Color(120, 120, 120));
 			for (int[] link : frame.getLinks()) {
 				Glyph a = byId.get(link[0]), b = byId.get(link[1]);
-				if (a != null && b != null) g2.draw(new Line2D.Double(a.sx, a.sy, b.sx, b.sy));
+				if (a == null || b == null) continue;
+				Line2D ln = new Line2D.Double(a.sx, a.sy, b.sx, b.sy);
+				drawables.add(new Drawable((a.depth + b.depth) / 2, gg -> {
+					gg.setColor(new Color(150, 150, 150));
+					gg.setStroke(new BasicStroke(1f));
+					gg.draw(ln);
+				}));
 			}
 		}
-
-		// painter's algorithm: far (smaller depth) first
-		glyphs.sort((p, q) -> Double.compare(p.depth, q.depth));
-		double span = (maxD - minD) < 1e-12 ? 1 : (maxD - minD);
 		for (Glyph gl : glyphs) {
 			double bright = MIN_BRIGHT + (1 - MIN_BRIGHT) * ((gl.depth - minD) / span); // nearer = brighter
 			BufferedImage sprite = getSprite(gl.color, bright);
 			int d = (int) Math.round(gl.screenR * 2);
-			g2.drawImage(sprite, (int) Math.round(gl.sx - gl.screenR), (int) Math.round(gl.sy - gl.screenR), d, d, null);
+			int px = (int) Math.round(gl.sx - gl.screenR), py = (int) Math.round(gl.sy - gl.screenR);
+			drawables.add(new Drawable(gl.depth, gg -> gg.drawImage(sprite, px, py, d, d, null)));
+		}
+
+		drawables.sort((p, q) -> Double.compare(p.depth, q.depth)); // far first
+		for (Drawable d : drawables) d.paint.accept(g2);
+
+		// simulation-box wireframe as a reference overlay, on top
+		if (showBox) drawBox(g2, rot, pixelScale, ox, oy);
+	}
+
+	/** Project a world point to {screenX, screenY, cameraDepth} using the current rotation/zoom/pan. */
+	private double[] project(Affine rot, double wx, double wy, double wz, double pixelScale, double ox, double oy) {
+		Vect3d v = rot.mult(new Vect3d(wx - cx, wy - cy, wz - cz));
+		return new double[] { ox + v.getX() * pixelScale, oy - v.getY() * pixelScale, v.getZ() };
+	}
+
+	/**
+	 * Membrane = the z=0 plane across the box's x,y extent, as an OPAQUE green surface. It is diced into
+	 * a grid only so each cell can be depth-sorted against the glyphs (so molecules composite correctly
+	 * on either side of it). The fill is a single uniform shade computed from the plane's rotated normal
+	 * vs the light — flat planes are uniformly lit — which avoids per-quad depth banding and, because all
+	 * cells share one color, avoids anti-alias seams between them.
+	 */
+	private void addMembrane(Affine rot, double pixelScale, double ox, double oy, List<Drawable> out) {
+		double xs = trajectory.getXSize(), ys = trajectory.getYSize();
+		if (xs <= 0 || ys <= 0) return;
+		Vect3d n = rot.mult(new Vect3d(0, 0, 1));
+		double len = Math.sqrt(n.getX() * n.getX() + n.getY() * n.getY() + n.getZ() * n.getZ());
+		double dot = len > 0 ? (n.getX() * LIGHT_X + n.getY() * LIGHT_Y + n.getZ() * LIGHT_Z) / len : 0;
+		double shade = 0.35 + 0.65 * Math.abs(dot);   // face-on = bright, edge-on = dark
+		final Color fill = new Color(
+				clamp255(MEMBRANE_GREEN.getRed() * shade),
+				clamp255(MEMBRANE_GREEN.getGreen() * shade),
+				clamp255(MEMBRANE_GREEN.getBlue() * shade));   // opaque
+		int G = MEMBRANE_GRID;
+		for (int i = 0; i < G; i++) {
+			double x0 = -xs + 2 * xs * i / G, x1 = -xs + 2 * xs * (i + 1) / G;
+			for (int j = 0; j < G; j++) {
+				double y0 = -ys + 2 * ys * j / G, y1 = -ys + 2 * ys * (j + 1) / G;
+				double[] a = project(rot, x0, y0, 0, pixelScale, ox, oy);
+				double[] b = project(rot, x1, y0, 0, pixelScale, ox, oy);
+				double[] c = project(rot, x1, y1, 0, pixelScale, ox, oy);
+				double[] d = project(rot, x0, y1, 0, pixelScale, ox, oy);
+				double depth = (a[2] + b[2] + c[2] + d[2]) / 4;
+				// grow each cell ~1px outward from its centroid so adjacent (same-color) cells overlap,
+				// hiding the anti-alias seams that would otherwise show the grid.
+				double gx = (a[0] + b[0] + c[0] + d[0]) / 4, gy = (a[1] + b[1] + c[1] + d[1]) / 4;
+				Path2D.Double quad = new Path2D.Double();
+				double[][] pts = { a, b, c, d };
+				for (int p = 0; p < 4; p++) {
+					double dx = pts[p][0] - gx, dy = pts[p][1] - gy, dl = Math.sqrt(dx * dx + dy * dy);
+					double ex = pts[p][0], ey = pts[p][1];
+					if (dl > 1e-6) { ex += dx / dl * 1.0; ey += dy / dl * 1.0; }
+					if (p == 0) quad.moveTo(ex, ey); else quad.lineTo(ex, ey);
+				}
+				quad.closePath();
+				out.add(new Drawable(depth, gg -> { gg.setColor(fill); gg.fill(quad); }));
+			}
 		}
 	}
 
+	/** Simulation box: the 12 edges of [-xSize,xSize] x [-ySize,ySize] x [-zOutside,zInside]. */
+	private void drawBox(Graphics2D g2, Affine rot, double pixelScale, double ox, double oy) {
+		double xs = trajectory.getXSize(), ys = trajectory.getYSize();
+		double zo = trajectory.getZOutside(), zi = trajectory.getZInside();
+		if (xs <= 0 || ys <= 0) return;
+		double[] X = { -xs, xs }, Y = { -ys, ys }, Z = { -zo, zi };
+		double[][] c = new double[8][];
+		int k = 0;
+		for (int a = 0; a < 2; a++)
+			for (int b = 0; b < 2; b++)
+				for (int cc = 0; cc < 2; cc++)
+					c[k++] = project(rot, X[a], Y[b], Z[cc], pixelScale, ox, oy);
+		int[][] edges = {
+			{ 0, 1 }, { 2, 3 }, { 4, 5 }, { 6, 7 },   // along z
+			{ 0, 2 }, { 1, 3 }, { 4, 6 }, { 5, 7 },   // along y
+			{ 0, 4 }, { 1, 5 }, { 2, 6 }, { 3, 7 }    // along x
+		};
+		g2.setColor(new Color(150, 150, 175));
+		g2.setStroke(new BasicStroke(1f));
+		for (int[] e : edges) g2.draw(new Line2D.Double(c[e[0]][0], c[e[0]][1], c[e[1]][0], c[e[1]][1]));
+	}
+
+	private static double clamp01(double v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
+
 	private static final class Glyph {
 		int id; double sx, sy, depth, screenR; Color color;
+	}
+
+	/** A depth-sorted paint action (glyph sprite, membrane quad, or link). */
+	private static final class Drawable {
+		final double depth;
+		final Consumer<Graphics2D> paint;
+		Drawable(double depth, Consumer<Graphics2D> paint) { this.depth = depth; this.paint = paint; }
 	}
 
 	// ---- impostor sprite generation / cache ----

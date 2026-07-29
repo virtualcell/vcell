@@ -832,6 +832,32 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 		return odeFile;
 	}
 
+	/**
+	 * Resolve the SpringSaLaD trajectory ("viewer") file. Tries the flat canonical name first
+	 * (server runs: the solver's postprocess step canonicalizes it into the user dir, archival-safe),
+	 * then falls back to the solver's {@code <base>_FOLDER/viewer_files/} subfolder (local runs, which
+	 * invoke only the solver's 'simulate' step and never canonicalize). Returns null if neither exists.
+	 */
+	public synchronized File getLangevinViewerFile() throws DataAccessException {
+		File flat = getLangevinFile(LangevinBatchResultSet.LangevinFileType.Viewer);
+		if (flat != null && flat.exists()) {
+			return flat;
+		}
+		refreshLogFile();
+		if (dataFilenames == null) {
+			return null;
+		}
+		String baseFilename = dataFilenames[0];
+		int dotIndex = baseFilename.lastIndexOf('.');
+		if (dotIndex <= 0) {
+			return null;
+		}
+		String base = baseFilename.substring(0, dotIndex);
+		File sub = amplistorHelper.getFile(
+				base + "_FOLDER" + File.separator + "viewer_files" + File.separator + base + "_VIEW_Run0.txt");
+		return (sub != null && sub.exists()) ? sub : null;
+	}
+
 
 private synchronized File getODEDataFile() throws DataAccessException {
 	refreshLogFile();
