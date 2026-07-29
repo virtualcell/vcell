@@ -42,9 +42,11 @@ writes the file, and then VCell's `LangevinSolver` collects only the `.ida` /
 `.species` aggregates and **never references `viewer_files`** (verified: zero hits
 for `viewer_files` / `_VIEW_Run` in vcell-core/server/client `main`).
 
-So the spatiotemporal data is generated on the compute node and thrown away with
-the scratch directory. **The renderer is not blocked on new solver output — only
-on retaining a file that already exists.** See §5 for the exact format.
+So the spatiotemporal data is generated on the compute node and left
+**unregistered** — see §2.4 for the full data-flow trace. It is *not* deleted at
+job end; it persists on the shared store in a subfolder VCell's data layer never
+looks in (and is archival-fragile). **The renderer is not blocked on new solver
+output — only on serving a file that already exists.** See §5 for the exact format.
 
 ### 2.2 Existing 3D render infrastructure — trackball/camera yes, glyphs no
 
@@ -61,6 +63,45 @@ which painter's-algorithm–draws polygon surfaces with depth cueing. There is *
 sphere-glyph / particle rendering** anywhere, and none of it is wired to
 Langevin/SaLaD data. The trackball/camera math is reusable; the glyph rasterizer
 is net-new.
+
+### 2.4 How SaLaD output reaches the client (HPC data-flow trace)
+
+There is **no scratch→primary copy-back step** for SaLaD results. The SLURM job
+(`vcell-server/.../slurm/templates/langevinFixture.slurm.sub`) sets
+`INPUT_DIR = LOG_DIR = /simdata/${USERID}` and runs
+`langevin_x64 simulate <input> <run>` against that path — and `/simdata/<userid>/`
+is the **shared NFS store the data server also reads**, so results are written in
+place. The template has **no `rm`/`rsync`/cleanup**; nothing deletes solver output
+at job end.
+
+The solver roots its output at the input file's parent
+(`Global.java` → `defaultFolder = /simdata/<userid>/`), then **splits** into two
+conventions (`MySystem.folderSetup()`):
+
+| Output | Path | VCell sees it? |
+|---|---|---|
+| **Aggregates** (`_Avg/_Max/_Min/_Std.ida`, cluster `.csv`) | **flat** in `/simdata/<userid>/SimID_<key>_0__Avg.ida` … | ✅ yes |
+| **Viewer trajectory** | `/simdata/<userid>/SimID_<key>_0__FOLDER/viewer_files/SimID_<key>_0__VIEW_Run0.txt` | ❌ no |
+
+The `postprocess` step canonicalizes the aggregates **up to the flat user dir**; the
+viewer file stays in a `SimID_<key>_0__FOLDER/` **subfolder** that is never
+canonicalized.
+
+**Why VCell can't see it (the actual gap):**
+`DataSetControllerImpl.getLangevinBatchResultSet()` reads results only via
+`SimulationData.getLangevinFile(type)`, which resolves
+`baseNameWithoutExt + type.suffix() + type.extension()` (e.g.
+`SimID_<key>_0__Avg.ida`) as a **flat, canonically-named file in the user dir**
+(`amplistorHelper.getFile(name)`). The viewer file is in a subfolder and is not a
+known `LangevinFileType`, so it is simply never referenced.
+
+**The one real retention risk is archival, not the SLURM job.** VCell moves old sim
+data to secondary/amplistor and prunes the primary using **flat canonical
+filenames** (`getFile(name)` / `createCanonicalSimZipFileName`). A `_FOLDER`
+subdirectory is not a canonical flat file, so it would not be archived and would be
+lost when the primary dir is pruned. Fresh sims have the file; archived ones may not.
+→ this is why the Phase 0 hook (§6) should **canonicalize** the viewer file to the
+flat user dir rather than read it in the subfolder.
 
 ### 2.3 PDE field visualization — a mature VTK pipeline already exists (file/export-oriented)
 
@@ -214,18 +255,30 @@ for the camera.
 Unify on the **VTK data model** as the through-line so desktop-now and web-future
 coexist without throwaway. Do **not** pick one renderer for everything.
 
-### Phase 0 — Retain the SaLaD trajectory file *(prerequisite, renderer-agnostic)*
-The trajectory data already exists (§2.1/§5); the work is to **stop discarding it**:
-1. **Collect** `viewer_files/*_VIEW_Run0.txt` back from the HPC node — add it to the
-   solver's retained/copied-back outputs (today only `.ida`/`.log`/`.species`
-   survive). *This is the one real piece of plumbing.*
-2. **Parse** — a trivial tab-delimited SCENE reader → in-memory trajectory model
-   (frames of `{id, radius, color, xyz}` + links).
-3. **Transport** to the client — mirror the existing `.ida`/`.vtu` data-access path,
-   or serve via `/api/v1`.
+### Phase 0 — Serve the SaLaD trajectory file *(prerequisite, renderer-agnostic)*
+The trajectory data already exists **and already persists** on the shared store
+(§2.4); nothing deletes it at job end. The work is to **canonicalize and serve it**,
+not to retain it. Per the §2.4 trace the hook is small and symmetric with existing
+langevin result handling:
 
-**Open sub-task:** trace which component prunes the solver output dir on the HPC node
-and where to hook `viewer_files` retention.
+1. **Canonicalize** (recommended — *Option B*): in the solver's `postprocess` step
+   (which already writes the aggregate `.ida` files flat into `/simdata/<userid>/`),
+   also copy the viewer file up to a flat canonical name
+   `SimID_<key>_0__VIEW_Run0.txt` in the user dir. It then participates in the same
+   discovery, **archival**, and serving as the `.ida` files. *(One line of copy.)*
+   - *Option A (read-in-place)* — add a getter that reaches into
+     `…_FOLDER/viewer_files/…` with no postprocess change. Works for fresh sims but
+     is **archival-fragile** (lost once the sim is moved to secondary; see §2.4), so
+     it is not the durable answer.
+2. **Serve** — add `SimulationData.getLangevinViewerFile()` (mirroring
+   `getLangevinFile()`), a `DataSetControllerImpl`/`LocalDataSetController` method
+   (mirroring `getLangevinBatchResultSet()`), and the RPC/REST plumbing. This mirrors
+   code that already exists for the aggregates.
+3. **Parse** — a trivial tab-delimited SCENE reader (§5) → in-memory trajectory model
+   (frames of `{id, radius, color, xyz}` + links).
+
+**Net:** no solver-algorithm change and no SLURM change — one canonicalizing copy in
+`postprocess` plus a `getLangevinFile`-shaped serving path.
 
 ### Phase 1 — Tactical: desktop SaLaD glyph movie player
 Build on the existing `cbit.vcell.render` trackball/camera; render glyphs with
@@ -262,5 +315,6 @@ Codebase (this repo unless noted):
 - SaLaD trajectory writer: `../LangevinNoVis01/src/main/java/edu/uchc/cam/langevin/langevinnovis01/MySystem.java` (`writePositions`, `writeViewerFileHeader`)
 - Solver integration: `vcell-core/.../org/vcell/solver/langevin/{LangevinSolver,LangevinLngvWriter,LangevinFileWriter}.java`
 - Result model (aggregates only): `vcell-core/.../cbit/vcell/simdata/{LangevinBatchResultSet,LangevinPostProcessor}.java`
+- HPC data-flow (§2.4): `vcell-server/src/main/resources/slurm/templates/langevinFixture.slurm.sub` (no cleanup; `/simdata/${USERID}`); solver folder rooting `../LangevinNoVis01/.../Global.java` + `MySystem.folderSetup()`; aggregate write `../LangevinNoVis01/.../ConsolidationPostprocessorOutput.java`; VCell read path `cbit/vcell/simdata/DataSetControllerImpl.java` (`getLangevinBatchResultSet`) → `SimulationData.getLangevinFile()`
 - Render infra: `vcell-core/.../cbit/vcell/render/{Trackball,Quaternion,Camera}.java`; consumers `vcell-client/.../geometry/gui/{SurfaceCanvas,SurfaceRenderer}.java`
 - VTK/PDE pipeline: `pythonVtk/.../vtkService.py`; `vcell-core/.../org/vcell/vis/vtk/VtkServicePython.java`; `vcell-core/.../cbit/vcell/simdata/{VtkManager,VtkMeshGenerator}.java`
