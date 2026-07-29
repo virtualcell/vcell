@@ -16,6 +16,7 @@ import cbit.vcell.resource.PropertyLoader;
 import com.google.common.collect.ImmutableList;
 import com.sun.mail.imap.ACL;
 import org.vcell.util.gui.GeneralGuiUtils;
+import utils.JPlaceholderTextField;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -308,66 +309,70 @@ public class ACLEditor extends javax.swing.JPanel {
 	 */
 	private javax.swing.JPanel existingAccessSubPane() {
 		if (this.grantAccessJPanel != null) return this.grantAccessJPanel;
+		int smallSize = 6;
+		int breakSize = 15;
 		try {
 			this.grantAccessJPanel = new JPanel();
 			this.grantAccessJPanel.setName("GrantAccessJPanel");
 			this.grantAccessJPanel.setBorder(new javax.swing.border.EtchedBorder());
 			this.grantAccessJPanel.setLayout(new GridBagLayout());
 
-			GridBagConstraints gbc = new GridBagConstraints();
-			gbc.gridx = 0; gbc.gridy = 0;
-			gbc.anchor = GridBagConstraints.WEST;
-			gbc.insets = new Insets(4, 4, 4, 4);
-			gbc.gridwidth = 2;
-			gbc.fill = GridBagConstraints.HORIZONTAL;
-			this.grantAccessJPanel.add(this.getVCellSupportCheckBox(), gbc);
-
-			GridBagConstraints userNameLabelGBC = new GridBagConstraints();
-			userNameLabelGBC.gridx = 0; userNameLabelGBC.gridy = 1;
-			userNameLabelGBC.anchor = GridBagConstraints.LINE_START;
-			userNameLabelGBC.insets = new Insets(4, 4, 4, 4);
-			userNameLabelGBC.gridwidth = 2;
-			userNameLabelGBC.fill = GridBagConstraints.HORIZONTAL;
-			this.grantAccessJPanel.add(new JLabel("Enter Name of User To Add"), userNameLabelGBC);
+//			GridBagConstraints userNameLabelGBC = new GridBagConstraints();
+//			userNameLabelGBC.gridx = 0; userNameLabelGBC.gridy = 0;
+//			userNameLabelGBC.anchor = GridBagConstraints.LINE_START;
+//			userNameLabelGBC.insets = new Insets(0, smallSize, smallSize, smallSize);
+//			userNameLabelGBC.gridwidth = 2;
+//			userNameLabelGBC.fill = GridBagConstraints.HORIZONTAL;
+//			this.grantAccessJPanel.add(new JLabel("\tEnter Name of User To Add"), userNameLabelGBC);
 
 			GridBagConstraints addUserTextFieldGBC = new GridBagConstraints();
-			addUserTextFieldGBC.gridx = 0; addUserTextFieldGBC.gridy = 2;
+			addUserTextFieldGBC.gridx = 0; addUserTextFieldGBC.gridy = 1;
 			addUserTextFieldGBC.anchor = GridBagConstraints.LINE_START;
-			addUserTextFieldGBC.insets = new Insets(4, 4, 4, 4);
+			addUserTextFieldGBC.insets = new Insets(0, smallSize, 0, 0);
 			addUserTextFieldGBC.weightx = 1.0;
+			//addUserTextFieldGBC.gridwidth = 2;
 			addUserTextFieldGBC.fill = GridBagConstraints.HORIZONTAL;
 			this.grantAccessJPanel.add(this.getAddUserJTextField(), addUserTextFieldGBC);
 
 			GridBagConstraints addUserJButtonGBC = new GridBagConstraints();
-			addUserJButtonGBC.gridx = 0; addUserJButtonGBC.gridy = 3;
-			addUserJButtonGBC.anchor = GridBagConstraints.WEST;
-			addUserJButtonGBC.insets = new Insets(5, 5, 5, 5);
+			addUserJButtonGBC.gridx = 1; addUserJButtonGBC.gridy = 1;
+			addUserJButtonGBC.anchor = GridBagConstraints.EAST;
+			addUserJButtonGBC.insets = new Insets(0, 0, 0, smallSize);
 			addUserJButtonGBC.fill = GridBagConstraints.NONE;
 			this.grantAccessJPanel.add(this.getAddUserJButton(), addUserJButtonGBC);
 
+			GridBagConstraints vcellSupportCheckBoxGBC = new GridBagConstraints();
+			vcellSupportCheckBoxGBC.gridx = 0; vcellSupportCheckBoxGBC.gridy = 2;
+			vcellSupportCheckBoxGBC.anchor = GridBagConstraints.WEST;
+			vcellSupportCheckBoxGBC.insets = new Insets(0, smallSize, 0, smallSize);
+			vcellSupportCheckBoxGBC.gridwidth = 2;
+			vcellSupportCheckBoxGBC.fill = GridBagConstraints.HORIZONTAL;
+			this.grantAccessJPanel.add(this.getVCellSupportCheckBox(), vcellSupportCheckBoxGBC);
+
 			GridBagConstraints currentUsersLabelGBC = new GridBagConstraints();
-			currentUsersLabelGBC.gridx = 0; currentUsersLabelGBC.gridy = 4;
+			currentUsersLabelGBC.gridx = 0; currentUsersLabelGBC.gridy = 3;
 			currentUsersLabelGBC.anchor = GridBagConstraints.LINE_START;
-			currentUsersLabelGBC.insets = new Insets(4, 4, 4, 4);
+			currentUsersLabelGBC.insets = new Insets(breakSize, smallSize, smallSize, smallSize);
 			currentUsersLabelGBC.gridwidth = 2;
-			currentUsersLabelGBC.weightx = 1.0;
+			//currentUsersLabelGBC.weightx = 1.0;
 			currentUsersLabelGBC.fill = GridBagConstraints.HORIZONTAL;
-			this.grantAccessJPanel.add(new JLabel("Other Users with Access"), currentUsersLabelGBC);
+			this.grantAccessJPanel.add(new JLabel("\tShared With:"), currentUsersLabelGBC);
 
 			GridBagConstraints validUsersGBC = new GridBagConstraints();
-			validUsersGBC.gridx = 0; validUsersGBC.gridy = 5;
+			validUsersGBC.gridx = 0; validUsersGBC.gridy = 4;
 			validUsersGBC.anchor = GridBagConstraints.LINE_START;
-			validUsersGBC.insets = new Insets(4, 4, 4, 4);
+			validUsersGBC.insets = new Insets(0, smallSize, 0, smallSize);
 			validUsersGBC.weightx = 3.0;
 			validUsersGBC.weighty = 3.0;
+			validUsersGBC.gridwidth = 2;
 			validUsersGBC.fill = GridBagConstraints.BOTH;
 			this.grantAccessJPanel.add(this.getValidUsersJScrollPane(), validUsersGBC);
 
 			GridBagConstraints removeUserJButtonGBC = new GridBagConstraints();
-			removeUserJButtonGBC.gridx = 0; removeUserJButtonGBC.gridy = 6;
-			removeUserJButtonGBC.anchor = GridBagConstraints.WEST;
-			removeUserJButtonGBC.insets = new Insets(5, 5, 5, 5);
-			removeUserJButtonGBC.fill = GridBagConstraints.NONE;
+			removeUserJButtonGBC.gridx = 1; removeUserJButtonGBC.gridy = 5;
+			removeUserJButtonGBC.anchor = GridBagConstraints.EAST;
+			removeUserJButtonGBC.insets = new Insets(0, smallSize, 0, smallSize);
+			removeUserJButtonGBC.fill = GridBagConstraints.HORIZONTAL;
 			this.grantAccessJPanel.add(this.getRemoveUserJButton(), removeUserJButtonGBC);
 
 		} catch (Throwable throwable) {
@@ -384,7 +389,7 @@ public class ACLEditor extends javax.swing.JPanel {
 		try {
 			this.addUserJButton = new JButton();
 			this.addUserJButton.setName("JButtonAddACLUser");
-			this.addUserJButton.setText("Give User Access");
+			this.addUserJButton.setText("Grant Access");
 			this.addUserJButton.setActionCommand("JButtonAdd");
 		} catch (Throwable throwable) {
 			this.handleException(throwable);
@@ -400,7 +405,7 @@ public class ACLEditor extends javax.swing.JPanel {
 		try {
 			this.removeUserJButton = new JButton();
 			this.removeUserJButton.setName("JButtonRemoveACLUser");
-			this.removeUserJButton.setText("Remove Access from User");
+			this.removeUserJButton.setText("Revoke Access");
 			this.removeUserJButton.setActionCommand("JButtonRemoveAccess");
 		} catch (Throwable throwable) {
 			this.handleException(throwable);
@@ -447,7 +452,7 @@ public class ACLEditor extends javax.swing.JPanel {
 	private javax.swing.JTextField getAddUserJTextField() {
 		if (this.addUserJTextField != null) return this.addUserJTextField;
 		try {
-			this.addUserJTextField = new JTextField();
+			this.addUserJTextField = new JPlaceholderTextField("type username here");
 			this.addUserJTextField.setName("JTextFieldACLUser");
 			Document textDoc = this.addUserJTextField.getDocument();
 			textDoc.putProperty("owningSource", this.addUserJTextField);
@@ -492,7 +497,7 @@ public class ACLEditor extends javax.swing.JPanel {
 		if (this.vcellSupportCheckBox != null) return this.vcellSupportCheckBox;
 		try {
 			this.vcellSupportCheckBox = new JCheckBox();
-			this.vcellSupportCheckBox.setText("VCell Support");
+			this.vcellSupportCheckBox.setText("Share with VCell Support");
 		} catch (Throwable throwable) {
 			this.handleException(throwable);
 		}
@@ -534,20 +539,20 @@ public class ACLEditor extends javax.swing.JPanel {
 			java.awt.GridBagConstraints constraintsPublicRadioButton = new java.awt.GridBagConstraints();
 			constraintsPublicRadioButton.gridx = 0; constraintsPublicRadioButton.gridy = 0;
 			constraintsPublicRadioButton.anchor = java.awt.GridBagConstraints.WEST;
-			constraintsPublicRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsPublicRadioButton.insets = new java.awt.Insets(2, 0, 2, 0);
 			this.add(this.getPublicRadioButton(), constraintsPublicRadioButton);
 
 			java.awt.GridBagConstraints constraintsPrivateRadioButton = new java.awt.GridBagConstraints();
 			constraintsPrivateRadioButton.gridx = 0; constraintsPrivateRadioButton.gridy = 1;
 			constraintsPrivateRadioButton.anchor = java.awt.GridBagConstraints.WEST;
-			constraintsPrivateRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsPrivateRadioButton.insets = new java.awt.Insets(2, 0, 2, 0);
 			this.add(this.getPrivateRadioButton(), constraintsPrivateRadioButton);
 
 
 			java.awt.GridBagConstraints constraintsACLRadioButton = new java.awt.GridBagConstraints();
 			constraintsACLRadioButton.gridx = 0; constraintsACLRadioButton.gridy = 2;
 			constraintsACLRadioButton.anchor = java.awt.GridBagConstraints.WEST;
-			constraintsACLRadioButton.insets = new java.awt.Insets(4, 4, 4, 4);
+			constraintsACLRadioButton.insets = new java.awt.Insets(2, 0, 2, 0);
 			this.add(this.getSpecificAccessRadioButton(), constraintsACLRadioButton);
 
 			java.awt.GridBagConstraints constraintsGrantAccessJPanel = new java.awt.GridBagConstraints();
@@ -556,7 +561,7 @@ public class ACLEditor extends javax.swing.JPanel {
 			constraintsGrantAccessJPanel.anchor = java.awt.GridBagConstraints.WEST;
 			constraintsGrantAccessJPanel.weightx = 1.0;
 			constraintsGrantAccessJPanel.weighty = 1.0;
-			constraintsGrantAccessJPanel.insets = new java.awt.Insets(5, 25, 5, 10);
+			constraintsGrantAccessJPanel.insets = new java.awt.Insets(2, 25, 2, 0);
 			this.add(this.existingAccessSubPane(), constraintsGrantAccessJPanel);
 			this.initConnections();
 			this.initializeRadioButtonGroup();
