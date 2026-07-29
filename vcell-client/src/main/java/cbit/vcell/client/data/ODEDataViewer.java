@@ -558,7 +558,10 @@ public void setOdeDataContext() {
 	// present but merely disabled for other dataset types, which was a bug (confusing dead tabs).
 	// JTabbedPane has no per-tab visibility, so we add/remove them instead.
 	setTabVisible(LANGEVIN_CLUSTER_RESULTS_TABNAME, langevin ? getViewMultiClusters() : null, langevin);
-	setTabVisible(TRAJECTORY_TABNAME, langevin ? getTrajectoryViewerPanel() : null, langevin);
+	// The 3D Trajectory tab is driven by whether a trajectory was actually captured (any SpringSaLaD
+	// run - single or batch), not by hasLangevinBatchResults (which requires cluster data).
+	boolean hasTrajectory = fieldSpringSaladTrajectory != null;
+	setTabVisible(TRAJECTORY_TABNAME, hasTrajectory ? getTrajectoryViewerPanel() : null, hasTrajectory);
 	setTabVisible(OUTPUT_SPECIES_TABNAME, nfsim ? outputSpeciesResultsPanel : null, nfsim);
 }
 

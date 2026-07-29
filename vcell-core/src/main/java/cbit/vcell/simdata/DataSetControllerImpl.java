@@ -2468,7 +2468,7 @@ public SpringSaladTrajectory getLangevinTrajectory(VCDataIdentifier vcdID) throw
 			return null;
 		}
 		SimulationData simData = (SimulationData) vcData;
-		File viewerFile = simData.getLangevinFile(LangevinBatchResultSet.LangevinFileType.Viewer);
+		File viewerFile = simData.getLangevinViewerFile();	// flat canonical (server) or _FOLDER subfolder (local)
 		if (viewerFile == null || !viewerFile.exists()) {
 			return null; // no trajectory captured for this simulation
 		}
