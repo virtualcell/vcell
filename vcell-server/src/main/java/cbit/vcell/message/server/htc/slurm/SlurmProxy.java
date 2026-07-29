@@ -505,20 +505,39 @@ public class SlurmProxy extends HtcProxy {
 			return String.format("%d-%02d:%02d:00", days, hours, minutes);
 		}
 	}
-	private void writeScriptControlledVariables(LineStringBuilder lsb, String jobName, String userId,
+	private void writeScriptControlledVariables(LineStringBuilder lsb, String jobName, String userName,
 												SimulationTask simTask, int jobTimeoutSeconds) {
+		// TODO: are simId and simKey the same thing?
 		String simId = simTask.getSimulationInfo().getSimulationVersion().getVersionKey().toString();
+		KeyValue simKey = simTask.getSimKey();
+
 		int totalJobs = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions().getTotalNumberOfJobs();
 		String htcLogDir = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
 		String simDataDir = PropertyLoader.getRequiredProperty(PropertyLoader.primarySimDataDirExternalProperty);
 		int lastUnderscore = jobName.lastIndexOf('_');
 		String trimmedJobName = (lastUnderscore >= 0) ? jobName.substring(0, lastUnderscore + 1) : jobName;
 		String logFilePath = htcLogDir + "/" + trimmedJobName + ".submit.log";
-		String messagingConfigFilePath = simDataDir + "/" + userId + "/SimID_" + simId + "_0_.langevinMessagingConfig";
+		String messagingConfigFilePath = simDataDir + "/" + userName + "/SimID_" + simId + "_0_.langevinMessagingConfig";
+
+		// ---- Alternate / New variables ----
+		String simOwner = simTask.getSimulation().getVersion().getOwner().getName();	// is this the userName?
+		String simOwnerId = simTask.getSimulation().getVersion().getOwner().getID().toString();
+		String jobId = Integer.toString(simTask.getSimulationJob().getJobIndex());		// is this jobName?
+		String taskId = Integer.toString(simTask.getTaskID());
+
 
 		lsb.write("# Script-controlled variables (populated by generator in real use)");
-		lsb.write("USERID=" + userId);
+		lsb.write("USERID=" + userName);
 		lsb.write("SIM_ID=" + simId);
+
+		lsb.write(" ---- Alternate / New variables ----");
+		lsb.write("SIM_KEY=" + simKey);
+		lsb.write("SIM_OWNER=" + simOwner);
+		lsb.write("SIM_OWNER_ID=" + simOwnerId);
+		lsb.write("VC_JOB_ID=" + jobId);		// vcell job id, there is also a slurm job id which is something else
+		lsb.write("VC_TASK_ID=" + taskId);
+		lsb.write(" -----------------------------------");
+
 		lsb.write("TOTAL_JOBS=" + totalJobs + "            # to be set by generator to lso.getTotalNumberOfJobs()");
 		lsb.write("JOB_TIMEOUT_SECONDS=" + jobTimeoutSeconds + "  # per-job timeout (seconds), adjust per generator");
 		lsb.write("LOG_FILE=\"" + logFilePath + "\"");
