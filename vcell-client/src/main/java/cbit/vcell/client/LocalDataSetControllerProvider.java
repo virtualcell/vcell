@@ -91,6 +91,11 @@ public class LocalDataSetControllerProvider implements DataSetControllerProvider
 			return dataServerImpl.getLangevinBatchResultSet(user, vcdataID);
 		}
 
+		@Override
+		public cbit.vcell.simdata.SpringSaladTrajectory getLangevinTrajectory(VCDataIdentifier vcdataID) throws DataAccessException, RemoteProxyException {
+			return dataServerImpl.getLangevinTrajectory(user, vcdataID);
+		}
+
 		public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdataID, double time) throws DataAccessException {
 			return dataServerImpl.getParticleDataBlock(user, vcdataID, time);
 		}
