@@ -16,6 +16,34 @@ followed by flat Keep-a-Changelog categories. API consumers should scan
 
 _(Release-manager scratchpad. Populated at release-cut time.)_
 
+**Highlights.** Developer-facing CI/build improvements only — no product, API,
+or wire-format change. The client-installer build and CodeQL scan are faster,
+and a merge-queue gating bug that blocked otherwise-ready PRs is fixed.
+
+### Changed
+- **CI: parallelized the client-installer build.** The CD-sites installer phase
+  now builds each install4j platform on its own runner (a 5-way matrix) with the
+  macOS notarization running in parallel and a fan-in `combine` step, instead of
+  building all five serially in one job. The `build → media → notarize → combine`
+  critical path drops from ~50 min to ~8 min. Also fixes a filename collision in
+  the old single-job build that could corrupt the combined macOS `.dmg`. (#1787)
+- **CI: regression is now a merge-queue-only gate.** `regression.yml` no longer
+  runs on the `pull_request: ready_for_review` trigger; `regression-gate` is
+  enforced only by the merge queue (`merge_group`) on the temporary merge commit
+  (plus nightly + `workflow_dispatch`). This fixes PRs opened directly as ready
+  (or pushed to after becoming ready) being permanently blocked on a required
+  `regression-gate` check that had no way to run. Master stays fully protected —
+  the queue runs regression on the merge commit and blocks a failing merge. (#1788)
+- **CI: faster CodeQL Java analysis (~9m24s → ~7m47s, ~17%).** The Java scan now
+  uses CodeQL `build-mode: manual` with an explicit parallel, test-skipping Maven
+  compile (`mvn -B -T1C -DskipTests -Dmaven.test.skip=true install`) and a warm
+  maven cache, instead of Autobuild. Phase profiling showed the query stage is
+  near its floor (~2 min) and the serial monorepo compile was the bottleneck.
+  Trade-off: test code is no longer CodeQL-scanned (low security value; main and
+  generated code remain fully covered). (#1791; an earlier `build-mode: none`
+  attempt (#1789) was reverted (#1790) after profiling showed it was *slower* on
+  this generated-code-heavy monorepo.)
+
 ## [8.0.2.07] - 2026-07-27
 
 **Highlights.** Sixth hotfix on the 8.0.2 line, and a **server-only** deploy.
