@@ -85,6 +85,9 @@ private DataViewer createODEDataViewer() throws DataAccessException {
 			odeDataViewer.setLangevinSolverResultSet(langevinSolverResultSet);
 			odeDataViewer.hasLangevinBatchResults = true;
 			odeDataViewer.replaceViewDataTab();
+			// trajectory was loaded on the non-Swing data thread in ODEDataManager.connect(); this is a
+			// cached read (may be null if no viewer file was captured -> the 3D tab shows "no data").
+			odeDataViewer.setSpringSaladTrajectory(((ODEDataManager)dataManager).getLangevinTrajectory());
 		}
 	}
 	odeDataViewer.setOdeSolverResultSet(odesrs);

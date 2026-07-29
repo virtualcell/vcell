@@ -36,6 +36,7 @@ public class ODEDataManager implements DataManager {
 	private ODESolverResultSet odeSolverResultSet = null;
 	private NFSimMolecularConfigurations nFSimMolecularConfigurations = null;
 	private LangevinSolverResultSet langevinSolverResultSet = null;
+	private SpringSaladTrajectory springSaladTrajectory = null;
 	private OutputContext outputContext = null;
 
 public OutputContext getOutputContext() {
@@ -142,6 +143,14 @@ public LangevinSolverResultSet getLangevinSolverResultSet() throws DataAccessExc
 }
 
 /**
+ * The per-particle SpringSaLaD trajectory ("viewer" file), or null if none was captured.
+ * Loaded on the non-Swing data thread in {@link #connect()}, so this is a cached read.
+ */
+public SpringSaladTrajectory getLangevinTrajectory() throws DataAccessException {
+	return springSaladTrajectory;
+}
+
+/**
  * Gets the simulationInfo property (cbit.vcell.solver.SimulationInfo) value.
  * @return The simulationInfo property value.
  */
@@ -191,6 +200,15 @@ private void connect() throws DataAccessException {
 		odeSolverResultSet = langevinSolverResultSet.getAvg();
 		langevinSolverResultSet.postProcess();
 		lg.debug("ODEDataManager: Langevin batch run detected, using average data for odeSolverResultSet");
+		// load the per-particle trajectory ("viewer" file) here, on this non-Swing data thread, so
+		// the results viewer can read it as a cached field without blocking the EDT. May be null
+		// (no viewer file captured); a fetch error must not abort loading the aggregate results.
+		try {
+			springSaladTrajectory = getVCDataManager().getLangevinTrajectory(getVCDataIdentifier());
+		} catch (Exception e) {
+			lg.warn("failed to load SpringSaLaD trajectory (viewer file): " + e.getMessage(), e);
+			springSaladTrajectory = null;
+		}
 	} else {
 		// it's some single run (langevin, nfsim, something else), get single run results the old way
 		// clone, so we can operate safely on it (adding/removing user-defined functions) - real remote data is being cached...
