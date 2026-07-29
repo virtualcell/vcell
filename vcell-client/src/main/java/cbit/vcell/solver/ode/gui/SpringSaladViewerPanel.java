@@ -72,6 +72,14 @@ public class SpringSaladViewerPanel extends JPanel {
 		links.addActionListener(e -> canvas.setShowLinks(links.isSelected()));
 		controls.add(links);
 
+		JCheckBox box = new JCheckBox("Box", true);
+		box.addActionListener(e -> canvas.setShowBox(box.isSelected()));
+		controls.add(box);
+
+		JCheckBox membrane = new JCheckBox("Membrane", true);
+		membrane.addActionListener(e -> canvas.setShowMembrane(membrane.isSelected()));
+		controls.add(membrane);
+
 		JButton reset = new JButton("Reset view");
 		reset.addActionListener(e -> canvas.resetView());
 		controls.add(reset);
