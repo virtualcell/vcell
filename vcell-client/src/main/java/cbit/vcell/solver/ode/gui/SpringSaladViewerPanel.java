@@ -159,7 +159,7 @@ public class SpringSaladViewerPanel extends JPanel {
 		});
 	}
 
-	private static SpringSaladTrajectory makeDemoTrajectory() {
+	static SpringSaladTrajectory makeDemoTrajectory() {
 		int nSites = 60, nFrames = 120;
 		String[] palette = { "RED", "GREEN", "BLUE", "YELLOW", "ORANGE", "CYAN" };
 		// deterministic pseudo-random initial positions/velocities (no Math.random for reproducibility)

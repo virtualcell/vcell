@@ -129,6 +129,27 @@ public class SpringSaladViewerCanvas extends JPanel {
 		repaint();
 	}
 
+	/** Apply a trackball rotation from normalized point (p1x,p1y) to (p2x,p2y), each in [-1,1]. */
+	public void rotate(double p1x, double p1y, double p2x, double p2y) {
+		trackball.rotate_xy(p1x, p1y, p2x, p2y);
+		repaint();
+	}
+
+	/**
+	 * Render the current frame to an offscreen image at the given size (no window/peer required;
+	 * works headless). Also the basis for future frame/movie export.
+	 */
+	public BufferedImage renderToImage(int w, int h) {
+		setSize(w, h);
+		BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+		Graphics2D g = img.createGraphics();
+		g.setColor(getBackground());
+		g.fillRect(0, 0, w, h);
+		paintComponent(g);
+		g.dispose();
+		return img;
+	}
+
 	private void computeBounds() {
 		double minX = Double.POSITIVE_INFINITY, minY = minX, minZ = minX;
 		double maxX = Double.NEGATIVE_INFINITY, maxY = maxX, maxZ = maxX;
