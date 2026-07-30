@@ -1,7 +1,8 @@
 # SpringSaLaD Spatiotemporal 3D Renderer — Design & Decision Record
 
 **Status:** Phases 0 & 1 **shipped** and deployed to dev/alpha (`8.0.4.01`). Phase 2
-(PDE field viz, likely web) is the next decision.
+(PDE field viz, web) — a vtk.js feasibility spike is **done and proven** (draft PR #1799);
+loading a real VCell `.vti` end-to-end and the viewer UI are the next increments.
 **Created:** 2026-07-29 · **Last updated:** 2026-07-30
 **Scope:** An integrated spatiotemporal 3D renderer / movie player for SpringSaLaD
 (Langevin particle) simulations in VCell, with a possible extension to visualizing
@@ -24,7 +25,7 @@ SpringSaLaD 3D trajectory movie player is live: run a SpringSaLaD simulation (lo
 |---|---|---|
 | **0 — data plumbing** | ✅ done | Solver canonicalizes the Run-0 viewer file (LangevinNoVis01 #39, released **1.4.9**); VCell serves it (`getLangevinTrajectory`, `SpringSaladTrajectory` model+parser). PRs #1795, #1797, #1798. |
 | **1 — desktop renderer** | ✅ done | `SpringSaladViewerCanvas` (Java2D impostor spheres + quaternion trackball) + `SpringSaladViewerPanel` (movie player: play/scrub/speed), wired as the "3D Trajectory" tab; simulation **box** (with hidden-line removal) + opaque green **membrane** (z=0 plane). PRs #1796, #1797, #1798. |
-| **2 — PDE field viz** | ⬜ next | See §6. The strategic desktop-vs-web decision is still open; vtk.js in `webapp-ng` fed by the existing `.vtu` pipeline (§2.3) is the leading candidate. |
+| **2 — PDE field viz** | 🟡 spike done | Feasibility spike **proved vtk.js renders VCell-style volumetric data in `webapp-ng`** — colormapped slice + isosurface, clean build, lazy-loaded (draft PR #1799). Strategic desktop-vs-web decision still open, but the web path is now de-risked. See §6. |
 
 **Reality corrected the Phase 0 plan in two ways** (both fixed):
 1. **Local (desktop-solver) runs invoke only the solver's `simulate` step, never
@@ -327,7 +328,7 @@ Small, high-value follow-ups, none requiring new infrastructure:
 - **Data / bridge** — handle very long trajectories (streaming/decimation), and expose
   the trajectory over `/api/v1` (REST) as the bridge toward the web viewer.
 
-### Phase 2 — PDE field viz, the web segue ⬜ **NEXT — decision open**
+### Phase 2 — PDE field viz, the web segue 🟡 **spike done — decision open**
 Because the `.vtu`/`.vti` pipeline **already exists** (§2.3), the highest-leverage
 capable-stack move is a **vtk.js viewer in `webapp-ng`, fed by the data VCell already
 emits** — replacing the VisIt hand-off with in-browser volume/isosurface/slice. This
@@ -336,13 +337,32 @@ is the concrete "segue to true web-based rendering."
 **The decision to make first** (the strategic fork from §3–4): does the capable
 field-viz tier live in the **desktop** (Java-VTK — heavy native packaging, and
 Kitware's investment has moved to the web) or the **web** (vtk.js now, vtk.wasm
-later)? The analysis favors web. A concrete, low-commitment first step to de-risk it:
-a standalone `webapp-ng` route that loads one exported VCell `.vti`/`.vtu` (a PDE
-result producible today) into vtk.js with a colormapped slice + isosurface — proving
-the data path end-to-end before building any UI.
+later)? The analysis favors web.
+
+#### Spike result (de-risk step — done, draft PR #1799)
+A standalone `/vtk-spike` route in `webapp-ng` renders a VCell-style 32³ structured-grid
+scalar field with **vtk.js 36.6.0**: a colormapped K-slice + a translucent
+marching-cubes isosurface, built and served in the Angular 17 app. **Verdict: feasible.**
+Frictions found and their handling (all captured in the PR):
+
+- **Import paths** — the slice mapper is `Rendering/Core/ImageMapper` (there is no
+  `ImageSliceMapper`); some filter modules (e.g. `ImageMarchingCubes`) ship **no
+  `.d.ts`**, needing `skipLibCheck: true` + a one-line ambient shim.
+- **Bundle size** — vtk.js is ~625 kB gzipped; **lazy-load** the route so it stays out
+  of the initial bundle (`main.js` 1.57 MB → 1015 kB). Also allow-list its CommonJS
+  deps (`seedrandom`/`spark-md5`/`fast-deep-equal`) in `angular.json`.
+- **Real-`.vti` loading is the one open friction** — vtk.js's XML reader transitively
+  pulls a Node `url` dependency (`xmlbuilder2 → @oozcitak/url`) that Angular's default
+  webpack builder won't resolve without a polyfill. The spike generates the field
+  in-code to isolate the *rendering* proof; wiring the real reader (custom webpack
+  builder, or switch to the esbuild application builder) is the **next increment**.
+
+**Next:** resolve the `.vti`-reader polyfill so the route loads a real VCell PDE export
+end-to-end, then design the actual viewer UI (variable/time/isovalue controls).
 
 **Net:** desktop delivers the SaLaD movie player (done); the web becomes home for the
-capable PDE field-viz tier — unified by the VTK data model VCell already standardized on.
+capable PDE field-viz tier — unified by the VTK data model VCell already standardized on,
+and now proven to render in the browser.
 
 ---
 
