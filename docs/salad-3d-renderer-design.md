@@ -341,14 +341,21 @@ Kitware's investment has moved to the web) or the **web** (vtk.js now, vtk.wasm
 later)? The analysis favors web.
 
 #### Spike result (de-risk step — done, draft PR #1799)
-A standalone `/vtk-spike` route in `webapp-ng` renders a VCell-style 32³ structured-grid
-scalar field with **vtk.js 36.6.0**: a colormapped K-slice + a translucent
-marching-cubes isosurface, built and served in the Angular 17 app. **Verdict: feasible.**
+A standalone `/vtk-spike` route in `webapp-ng` loads a real VCell-style 32³ `.vti` and
+renders it with **vtk.js 36.6.0**: a colormapped K-slice + a translucent marching-cubes
+isosurface, built and served in the Angular 17 app. **Verdict: feasible** — confirmed by a
+headless-Chrome (SwiftShader WebGL) screenshot of the actual rendered route.
 Frictions found and their handling (all captured in the PR):
 
 - **Import paths** — the slice mapper is `Rendering/Core/ImageMapper` (there is no
   `ImageSliceMapper`); some filter modules (e.g. `ImageMarchingCubes`) ship **no
   `.d.ts`**, needing `skipLibCheck: true` + a one-line ambient shim.
+- **Rendering Profile is mandatory** (silent at build, fatal at runtime) — with
+  individually-imported vtk.js modules, nothing registers the WebGL view-node factories, so
+  `vtkRenderer` has no view node and `render()` throws (`No vtkOpenGLViewNodeFactory
+  implementation found`). Fix: a side-effect `import '@kitware/vtk.js/Rendering/Profiles/All'`.
+  The leaner `Geometry` profile registers actors (the isosurface) but **not** `vtkImageSlice`,
+  which then silently drops — so `All` is the safe choice for slice + geometry.
 - **Bundle size** — vtk.js is ~625 kB gzipped; **lazy-load** the route so it stays out
   of the initial bundle (`main.js` 1.57 MB → 1015 kB). Also allow-list its CommonJS
   deps (`seedrandom`/`spark-md5`/`fast-deep-equal`) in `angular.json`.
