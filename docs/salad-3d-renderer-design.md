@@ -1,8 +1,9 @@
 # SpringSaLaD Spatiotemporal 3D Renderer — Design & Decision Record
 
 **Status:** Phases 0 & 1 **shipped** and deployed to dev/alpha (`8.0.4.01`). Phase 2
-(PDE field viz, web) — a vtk.js feasibility spike is **done and proven** (draft PR #1799);
-loading a real VCell `.vti` end-to-end and the viewer UI are the next increments.
+(PDE field viz, web) — a vtk.js feasibility spike is **done and proven** (draft PR #1799):
+it loads a real `.vti` end-to-end in the browser (slice + isosurface). Designing the
+viewer UI (variable / timepoint / isovalue controls) is the next increment.
 **Created:** 2026-07-29 · **Last updated:** 2026-07-30
 **Scope:** An integrated spatiotemporal 3D renderer / movie player for SpringSaLaD
 (Langevin particle) simulations in VCell, with a possible extension to visualizing
@@ -25,7 +26,7 @@ SpringSaLaD 3D trajectory movie player is live: run a SpringSaLaD simulation (lo
 |---|---|---|
 | **0 — data plumbing** | ✅ done | Solver canonicalizes the Run-0 viewer file (LangevinNoVis01 #39, released **1.4.9**); VCell serves it (`getLangevinTrajectory`, `SpringSaladTrajectory` model+parser). PRs #1795, #1797, #1798. |
 | **1 — desktop renderer** | ✅ done | `SpringSaladViewerCanvas` (Java2D impostor spheres + quaternion trackball) + `SpringSaladViewerPanel` (movie player: play/scrub/speed), wired as the "3D Trajectory" tab; simulation **box** (with hidden-line removal) + opaque green **membrane** (z=0 plane). PRs #1796, #1797, #1798. |
-| **2 — PDE field viz** | 🟡 spike done | Feasibility spike **proved vtk.js renders VCell-style volumetric data in `webapp-ng`** — colormapped slice + isosurface, clean build, lazy-loaded (draft PR #1799). Strategic desktop-vs-web decision still open, but the web path is now de-risked. See §6. |
+| **2 — PDE field viz** | 🟡 spike done | Feasibility spike **loads a real `.vti` and renders it with vtk.js in `webapp-ng`** — colormapped slice + isosurface, clean build, lazy-loaded, `url`-polyfill resolved (draft PR #1799). Strategic desktop-vs-web decision still open, but the web path is now de-risked end-to-end. See §6. |
 
 **Reality corrected the Phase 0 plan in two ways** (both fixed):
 1. **Local (desktop-solver) runs invoke only the solver's `simulate` step, never
@@ -351,14 +352,18 @@ Frictions found and their handling (all captured in the PR):
 - **Bundle size** — vtk.js is ~625 kB gzipped; **lazy-load** the route so it stays out
   of the initial bundle (`main.js` 1.57 MB → 1015 kB). Also allow-list its CommonJS
   deps (`seedrandom`/`spark-md5`/`fast-deep-equal`) in `angular.json`.
-- **Real-`.vti` loading is the one open friction** — vtk.js's XML reader transitively
-  pulls a Node `url` dependency (`xmlbuilder2 → @oozcitak/url`) that Angular's default
-  webpack builder won't resolve without a polyfill. The spike generates the field
-  in-code to isolate the *rendering* proof; wiring the real reader (custom webpack
-  builder, or switch to the esbuild application builder) is the **next increment**.
+- **Real-`.vti` loading — resolved.** vtk.js's XML reader transitively `require`s Node's
+  `url` (`XMLReader → xmlbuilder2 → @oozcitak/dom → @oozcitak/url`), which Angular's stock
+  browser builder won't resolve. Fix: `@angular-builders/custom-webpack` (a transparent
+  drop-in for the `browser`/`dev-server` builders) + a `webpack.config.js` that points
+  `resolve.fallback.url` at the browser `url` polyfill. The route now `fetch`es a real
+  `.vti` and `reader.parseAsArrayBuffer()`s it — verified headless: ImageData 32³, scalar
+  `concentration`, range ~[0, 1.0], 32 768 points. Adoption cost: one dev-dependency + the
+  `url` polyfill, and the vtk viewer must stay lazy-loaded (it's ~1 MB with the reader).
 
-**Next:** resolve the `.vti`-reader polyfill so the route loads a real VCell PDE export
-end-to-end, then design the actual viewer UI (variable/time/isovalue controls).
+**Next (Phase 2 proper):** design the viewer UI (variable / timepoint / isovalue controls)
+fed by VCell's export pipeline, replacing the VisIt hand-off with in-browser
+slice/isosurface/volume.
 
 **Net:** desktop delivers the SaLaD movie player (done); the web becomes home for the
 capable PDE field-viz tier — unified by the VTK data model VCell already standardized on,
