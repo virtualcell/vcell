@@ -1,9 +1,11 @@
 # SpringSaLaD Spatiotemporal 3D Renderer — Design & Decision Record
 
 **Status:** Phases 0 & 1 **shipped** and deployed to dev/alpha (`8.0.4.01`). Phase 2
-(PDE field viz, web) — a vtk.js feasibility spike is **done and proven** (draft PR #1799):
-it loads a real `.vti` end-to-end in the browser (slice + isosurface). Designing the
-viewer UI (variable / timepoint / isovalue controls) is the next increment.
+(field viz, web) — vtk.js `.vti` spike done (merged, structured case); the field-viz
+architecture is now worked out in **§8** (two-viewer / two-contract model; the good FV
+representation is *smoothed unstructured*, so **vtk.wasm** is the target renderer — a
+2026-07-30 spike confirms real VTK unstructured filters + volume rendering run in-browser,
+and pins the custom-build scope to `IOXML` + `FiltersGeometry`).
 **Created:** 2026-07-29 · **Last updated:** 2026-07-30
 **Scope:** An integrated spatiotemporal 3D renderer / movie player for SpringSaLaD
 (Langevin particle) simulations in VCell, with a possible extension to visualizing
@@ -376,6 +378,11 @@ slice/isosurface/volume.
 capable PDE field-viz tier — unified by the VTK data model VCell already standardized on,
 and now proven to render in the browser.
 
+> **Superseded by §8 for the field case.** The reasoning above assumed vtk.js could carry
+> field viz. It can for the *structured* `.vti` case (spike done), but the faithful FV
+> representation is *smoothed unstructured*, which vtk.js cannot render. See **§8** for the
+> worked-out two-viewer / two-contract architecture and the vtk.wasm decision.
+
 ---
 
 ## 7. Sources
@@ -395,3 +402,134 @@ Codebase (this repo unless noted):
 - HPC data-flow (§2.4): `vcell-server/src/main/resources/slurm/templates/langevinFixture.slurm.sub` (no cleanup; `/simdata/${USERID}`); solver folder rooting `../LangevinNoVis01/.../Global.java` + `MySystem.folderSetup()`; aggregate write `../LangevinNoVis01/.../ConsolidationPostprocessorOutput.java`; VCell read path `cbit/vcell/simdata/DataSetControllerImpl.java` (`getLangevinBatchResultSet`) → `SimulationData.getLangevinFile()`
 - Render infra: `vcell-core/.../cbit/vcell/render/{Trackball,Quaternion,Camera}.java`; consumers `vcell-client/.../geometry/gui/{SurfaceCanvas,SurfaceRenderer}.java`
 - VTK/PDE pipeline: `pythonVtk/.../vtkService.py`; `vcell-core/.../org/vcell/vis/vtk/VtkServicePython.java`; `vcell-core/.../cbit/vcell/simdata/{VtkManager,VtkMeshGenerator}.java`
+
+vtk.wasm spike (§8, accessed 2026-07-30):
+- [Introducing WebAssembly support in VTK (Kitware)](https://www.kitware.com/introducing-webassembly-support-in-vtk/); [Building VTK with Emscripten](https://docs.vtk.org/en/latest/advanced/build_wasm_emscripten.html); [VTK.wasm site](https://kitware.github.io/vtk-wasm/) + [guide](https://kitware.github.io/vtk-wasm/guide/); [`@kitware/vtk-wasm` npm](https://www.npmjs.com/package/@kitware/vtk-wasm); [VTK build settings — module enable + `VTK_WASM_OPTIMIZATION`](https://docs.vtk.org/en/latest/build_instructions/build_settings.html); [vtk.js UG-reader limitation (#976)](https://github.com/Kitware/vtk-js/issues/976); [VTK::RenderingWebGPU](https://docs.vtk.org/en/latest/modules/vtk-modules/Rendering/WebGPU/README.html)
+
+---
+
+## 8. Phase 2 field-viz architecture — deep dive & decision (2026-07-30)
+
+The Phase 2 vtk.js spike (§6) proved the *structured* case (`.vti` slice + isosurface).
+Working through the real requirements changed the architecture substantially. This
+section is the decision record.
+
+### 8.1 Two hard truths about the field case
+
+1. **vtk.js is a surface renderer — no unstructured grids.** Verified against
+   `@kitware/vtk.js` 36.6.0: the data model is `PolyData` + `ImageData` only (no
+   `vtkUnstructuredGrid`); `Cutter` operates on polydata; the XML readers are `.vtp`
+   / `.vti` only (no `.vtu`). It can volume-render *ImageData*, nothing unstructured.
+2. **Image `.vti` reinforces the staircase membrane** — the exact artifact VCell's
+   VTK pipeline was built to remove. VCell solves on an implicit surface and already
+   computes a **smoothed unstructured representation** (smoothed staircase quad
+   surface + adjacent volume hex elements decimated into tetrahedra) precisely to
+   represent solutions faithfully. So **the good FV representation is unstructured**,
+   and `.vti` must not be the only FV path.
+
+Together: the field viewer must consume **smoothed unstructured** data, and vtk.js
+alone cannot render it.
+
+### 8.2 The finite-element solver moves the center of gravity
+
+`../vcell-fenics` (FEniCSx / **DOLFINx**, Python/conda via pixi, `mpi4py`/`petsc4py`;
+`src/vcell_fenics/viz.py` already uses **PyVista + XDMF**) is a **containerized
+Slurm/HPC** solver being brought up. It makes **unstructured grids a first-class,
+near-term requirement**, and it **pre/post-processes in its own container**, so it can
+emit viewer-ready VTK there (where the conda/VTK stack already lives). **Chombo is
+retired** — its use case is superseded by vcell-fenics — so the only unstructured
+future is FEniCSx. Because the FE solver runs isolated on HPC, its Python-ness does
+**not** dictate the language of the VCell services. `pyvcell` independently already
+has the FV smoothing pipeline (`write_finite_volume_smoothed_vtk_grid_and_index_data`)
+and a trame+pyvista viewer.
+
+### 8.3 The resolving model: two viewers × two data-product contracts
+
+Two stable **data-product contracts** — *image* and *smoothed-unstructured* — and
+**every solver emits both** as a postprocess. Each viewer consumes the one that fits:
+
+| | **Legacy in-Swing viewer** (image) | **Modern web viewer** (unstructured) |
+|---|---|---|
+| **FV (structured native)** | native image — works today | smoothed `.vtu` (existing mesh pipeline) |
+| **FEniCSx (unstructured native)** | resample FE → image (in-container, DOLFINx point-location) | native unstructured |
+
+Consequences:
+- **Local desktop is fully covered by the existing image viewer** — FV natively,
+  FEniCSx via its server-side image resample (downloaded like any result). **No Python,
+  no Java-VTK, no bundled renderer on the desktop.** (Image is *a* case for FV, not the
+  only one — the good smoothed view lives in the web viewer.)
+- **Processing ≠ serving.** Heavy mesh→VTK work is a **per-solver postprocess** (the
+  proven SaLaD "canonicalize-and-serve" pattern, §6 Phase 0). **Serving is thin,
+  language-agnostic file transport** — the existing Java `vcell-rest` hands out the
+  pre-made `.vti`/`.vtu` bytes with no VTK logic. No new Python service is needed for
+  serving; `pyvcell` / `viz.py` are postprocess *libraries* in solver containers (and
+  the place to converge the mesh→VTK logic rather than fork it a third time).
+
+### 8.4 Producing each contract
+
+- **Image** (regular Cartesian): trivial XML in any language. FV is native; a Java
+  on-demand writer (client-side for local, `vcell-rest` for remote, reusing
+  `getSimDataBlock` + `CartesianMesh`) can also emit `.vti` with no solver change and
+  works on historical results. FEniCSx resamples FE→image in-container.
+- **Smoothed unstructured** (`.vtu`): FV via the existing `CartesianMeshVtkFileWriter`
+  (pure Java, no VTK lib) or pyvcell; FEniCSx native.
+
+### 8.5 Rendering unstructured in the browser — the vtk.wasm spike
+
+Since vtk.js can't render unstructured, two options, both feeding the smoothed `.vtu`:
+- **(A) geometry server + vtk.js** — pyvcell/pyvista cuts the tet mesh into polydata
+  (surface / slices / isosurfaces) server-side → `.vtp` → vtk.js renders. Light client;
+  interactivity via cached server round-trips; **no true volume rendering**.
+- **(B′) vtk.wasm client** — real VTK compiled to WebAssembly reads the `.vtu` and
+  slices/contours/volume-renders **client-side**; stateless serving, no render farm.
+  (Replaces the earlier trame "pixel-server" option, which the team is cool on.)
+
+**Spike (2026-07-30, headless Chrome + `@kitware/vtk-wasm` 2.1.8, real VCell smoothed
+`.vtu`: 16 306 pts / 12 210 cells):**
+
+| | Result |
+|---|---|
+| Size | released bundle **77 MB wasm / 12 MB gzipped**; load+init ≈300 ms |
+| Render path | ✅ real VTK→WASM→WebGL2 renders to canvas headless (SwiftShader) |
+| **Present** in released bundle | `vtkUnstructuredGrid`, `vtkPolyData`, `vtkImageData`, **`vtkCutter`**, **`vtkContourFilter`**, `vtkThreshold`, `vtkGlyph3D`, and **`vtkProjectedTetrahedraMapper`** (unstructured *volume* rendering) |
+| **Missing** in released bundle | **all IO/XML readers** (`vtkXMLUnstructuredGridReader` → can't read `.vtu`), **surface extraction** (`vtkDataSetSurfaceFilter`/`vtkGeometryFilter`), `vtkClipDataSet`, `GLTFImporter` |
+| Frictions | released bundle can't read `.vtu`; async proxy API (every call awaited); **COOP/COEP** headers required |
+
+**Punchline:** the hard part vtk.js lacks — the unstructured data model, slicing,
+contouring, and projected-tetrahedra **volume rendering** — is already present and
+working in vtk.wasm. The only gap for VCell is the **IO readers** (+ surface filter).
+
+**What a custom build buys us** (module selection via `VTK_MODULE_ENABLE_<m>=WANT` +
+`VTK_WASM_OPTIMIZATION`): add exactly `IOXML` (read `.vtu`/`.vti`/`.vtp`) and
+`FiltersGeometry` (surface extraction) to the already-proven core; **trim the 77 MB to
+a fraction** by dropping unused modules; optional **WebGPU** backend
+(`-DVTK_ENABLE_WEBGPU=ON`); algorithmic parity with pyvcell/desktop. It lets us **serve
+the `.vtu` VCell already produces**, push all viz compute **client-side** (stateless
+serving, no render farm), and retire the VisIt hand-off. Costs: own an Emscripten build
++ CI; COOP/COEP headers; MB-scale binary (lazy-loaded); the wrap/WebGPU APIs are
+maturing. A hybrid — a lean IO+filters wasm feeding vtk.js for rendering — is a
+smaller-footprint waypoint that reuses the §6 spike.
+
+### 8.6 Decision
+
+- **Modern web unstructured viewer = the build target** (the genuinely new capability).
+  Pursue **vtk.wasm (custom build adding `IOXML` + `FiltersGeometry`, module-trimmed)**
+  as the strategic renderer: it serves VCell's existing `.vtu`, keeps serving stateless,
+  puts compute client-side, and rides Kitware's web/WebGPU investment. **(A)
+  geometry-server + vtk.js** (or the wasm-kernel→vtk.js hybrid) is the lighter
+  interim/fallback.
+- **Local desktop = existing image viewer** (no new local tech); FEniCSx resamples to
+  image in-container for it.
+- **Serving = thin Java `vcell-rest`** file endpoint. **Processing = per-solver
+  postprocess.** **Chombo retired.** Java-VTK and trame de-emphasized (against the grain
+  of a Python FE solver / a server render farm the team is cool on).
+
+### 8.7 Next increments
+
+1. **Custom vtk.wasm build** (`IOXML` + `FiltersGeometry`, trimmed) → prove a real VCell
+   smoothed `.vtu` renders (surface + cut + contour + projected-tetrahedra volume) in the
+   browser; measure trimmed binary size + interaction perf. (Released bundle already
+   proved the core; this closes the reader gap.)
+2. **Thin Java serve endpoint** in `vcell-rest` for `.vti`/`.vtu` bytes.
+3. **FEniCSx postprocess** emits both contracts (native `.vtu` + FE→image resample) as
+   it deploys.
