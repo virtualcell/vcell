@@ -246,7 +246,18 @@ public class SpringSaladViewerCanvas extends JPanel {
 			for (int[] link : frame.getLinks()) {
 				Glyph a = byId.get(link[0]), b = byId.get(link[1]);
 				if (a == null || b == null) continue;
-				Line2D ln = new Line2D.Double(a.sx, a.sy, b.sx, b.sy);
+				// Truncate the bond by each ball's projected radius so it stops at the sphere
+				// surfaces instead of running center-to-center — the impostor sphere is drawn as a
+				// circle of radius screenR at (sx,sy), so shortening the 2D segment by screenR on
+				// each end lands it exactly on each circle's edge and avoids the bond appearing to
+				// pierce the balls.
+				double dx = b.sx - a.sx, dy = b.sy - a.sy;
+				double dist = Math.sqrt(dx * dx + dy * dy);
+				if (dist <= a.screenR + b.screenR) continue; // balls touch/overlap: no visible bond
+				double ux = dx / dist, uy = dy / dist;
+				Line2D ln = new Line2D.Double(
+						a.sx + ux * a.screenR, a.sy + uy * a.screenR,
+						b.sx - ux * b.screenR, b.sy - uy * b.screenR);
 				drawables.add(new Drawable((a.depth + b.depth) / 2, gg -> {
 					gg.setColor(new Color(150, 150, 150));
 					gg.setStroke(new BasicStroke(1f));
