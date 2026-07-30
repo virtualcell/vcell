@@ -4,8 +4,7 @@ import { CommonModule } from '@angular/common';
 // vtk.js — Phase 2 feasibility spike: render a VCell-style VTK ImageData scalar field in the browser
 // (colormapped slice + isosurface). See docs/salad-3d-renderer-design.md §6.
 import vtkGenericRenderWindow from '@kitware/vtk.js/Rendering/Misc/GenericRenderWindow';
-import vtkImageData from '@kitware/vtk.js/Common/DataModel/ImageData';
-import vtkDataArray from '@kitware/vtk.js/Common/Core/DataArray';
+import vtkXMLImageDataReader from '@kitware/vtk.js/IO/XML/XMLImageDataReader';
 import vtkImageMapper from '@kitware/vtk.js/Rendering/Core/ImageMapper';
 import vtkImageSlice from '@kitware/vtk.js/Rendering/Core/ImageSlice';
 import vtkImageMarchingCubes from '@kitware/vtk.js/Filters/General/ImageMarchingCubes';
@@ -17,9 +16,13 @@ import vtkColorMaps from '@kitware/vtk.js/Rendering/Core/ColorTransferFunction/C
 /**
  * Phase 2 spike (docs/salad-3d-renderer-design.md §6): prove that vtk.js renders a VCell-style
  * structured-grid scalar field (a PDE concentration field) in the browser — a colormapped slice
- * plane + an isosurface. The data is generated in-code here (identical shape to a VCell PDE field
- * on a CartesianMesh); loading a real VCell `.vti`/`.vtu` file is the documented next step (the
- * vtk.js XML reader transitively needs a Node `url` polyfill under Angular's default builder).
+ * plane + an isosurface. The field is loaded from a real VTK XML ImageData file
+ * (`assets/sample.vti`) via vtk.js's `XMLImageDataReader`, proving the file→render path
+ * end-to-end (the same `.vti` format VCell's export pipeline already produces, §2.3).
+ *
+ * The reader transitively `require`s Node's `url` module (xmlbuilder2 → @oozcitak/url); the app
+ * uses `@angular-builders/custom-webpack` with a `resolve.fallback` to the browser `url` polyfill
+ * (see webpack.config.js) so the browser build resolves it.
  */
 @Component({
   selector: 'app-vtk-spike',
@@ -46,7 +49,7 @@ export class VtkSpikeComponent implements AfterViewInit, OnDestroy {
   status = 'Initializing vtk.js …';
   private grw: any;
 
-  ngAfterViewInit(): void {
+  async ngAfterViewInit(): Promise<void> {
     try {
       const grw = vtkGenericRenderWindow.newInstance({ background: [0.09, 0.09, 0.13] });
       grw.setContainer(this.vtkContainer.nativeElement);
@@ -55,24 +58,16 @@ export class VtkSpikeComponent implements AfterViewInit, OnDestroy {
       const renderer: any = grw.getRenderer();
       const renderWindow: any = grw.getRenderWindow();
 
-      // 1) build a VTK ImageData scalar field (stand-in for a VCell PDE concentration field)
-      const N = 32;
-      const values = new Float32Array(N * N * N);
-      const blob = (x: number, y: number, z: number, cx: number, cy: number, cz: number, s: number) =>
-        Math.exp(-(((x - cx) ** 2 + (y - cy) ** 2 + (z - cz) ** 2) / (2 * s * s)));
-      let i = 0;
-      for (let z = 0; z < N; z++)
-        for (let y = 0; y < N; y++)
-          for (let x = 0; x < N; x++)
-            values[i++] = blob(x, y, z, 10, 12, 16, 5) + 0.8 * blob(x, y, z, 22, 20, 14, 4);
-
-      const imageData: any = vtkImageData.newInstance();
-      imageData.setDimensions(N, N, N);
-      imageData.setSpacing(1, 1, 1);
-      imageData.setOrigin(0, 0, 0);
-      imageData.getPointData().setScalars(
-        vtkDataArray.newInstance({ name: 'concentration', numberOfComponents: 1, values }),
-      );
+      // 1) load a real VTK XML ImageData file (the .vti format VCell's export pipeline emits)
+      this.status = 'Loading assets/sample.vti …';
+      const resp = await fetch('assets/sample.vti');
+      if (!resp.ok) throw new Error(`fetch sample.vti -> HTTP ${resp.status}`);
+      const buffer = await resp.arrayBuffer();
+      const reader: any = vtkXMLImageDataReader.newInstance();
+      reader.parseAsArrayBuffer(buffer);
+      const imageData: any = reader.getOutputData(0);
+      const dims: number[] = imageData.getDimensions();
+      const N = dims[2];
       const [min, max]: number[] = imageData.getPointData().getScalars().getRange();
 
       // 2) colormap
@@ -108,8 +103,9 @@ export class VtkSpikeComponent implements AfterViewInit, OnDestroy {
       renderWindow.render();
 
       this.status =
-        `ImageData ${N}×${N}×${N} · scalar [${min.toFixed(2)}, ${max.toFixed(2)}] · ` +
-        `colormapped slice + isosurface — rendered by vtk.js in the browser`;
+        `sample.vti loaded · ImageData ${dims[0]}×${dims[1]}×${dims[2]} · ` +
+        `scalar [${min.toFixed(2)}, ${max.toFixed(2)}] · colormapped slice + isosurface ` +
+        `— parsed & rendered by vtk.js in the browser`;
     } catch (e: any) {
       this.status = 'vtk.js spike error: ' + (e?.message ?? String(e));
       // eslint-disable-next-line no-console
