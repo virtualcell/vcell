@@ -3,6 +3,13 @@ import { CommonModule } from '@angular/common';
 
 // vtk.js — Phase 2 feasibility spike: render a VCell-style VTK ImageData scalar field in the browser
 // (colormapped slice + isosurface). See docs/salad-3d-renderer-design.md §6.
+//
+// Side-effect import: registers the WebGL view-node factories (OpenGL backend). Without a
+// Rendering Profile, individually-imported vtk.js modules leave vtkRenderer with no view node
+// ("No vtkOpenGLViewNodeFactory implementation found for vtkRenderer") and render() throws.
+// 'All' covers both the geometry actor (isosurface) and the vtkImageSlice (slice plane) —
+// the leaner 'Geometry' profile registers actors but NOT ImageSlice, so the slice silently drops.
+import '@kitware/vtk.js/Rendering/Profiles/All';
 import vtkGenericRenderWindow from '@kitware/vtk.js/Rendering/Misc/GenericRenderWindow';
 import vtkXMLImageDataReader from '@kitware/vtk.js/IO/XML/XMLImageDataReader';
 import vtkImageMapper from '@kitware/vtk.js/Rendering/Core/ImageMapper';
