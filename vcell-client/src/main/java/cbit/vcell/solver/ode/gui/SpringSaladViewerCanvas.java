@@ -230,6 +230,7 @@ public class SpringSaladViewerCanvas extends JPanel {
 			gl.id = s.getId();
 			gl.sx = p[0]; gl.sy = p[1]; gl.depth = p[2];
 			gl.screenR = Math.max(1.0, s.getRadius() * pixelScale);
+				gl.wx = s.getX(); gl.wy = s.getY(); gl.wz = s.getZ(); gl.radius = s.getRadius();
 			gl.color = colorForName(s.getColor());
 			glyphs.add(gl);
 			byId.put(gl.id, gl);
@@ -246,19 +247,20 @@ public class SpringSaladViewerCanvas extends JPanel {
 			for (int[] link : frame.getLinks()) {
 				Glyph a = byId.get(link[0]), b = byId.get(link[1]);
 				if (a == null || b == null) continue;
-				// Truncate the bond by each ball's projected radius so it stops at the sphere
-				// surfaces instead of running center-to-center — the impostor sphere is drawn as a
-				// circle of radius screenR at (sx,sy), so shortening the 2D segment by screenR on
-				// each end lands it exactly on each circle's edge and avoids the bond appearing to
-				// pierce the balls.
-				double dx = b.sx - a.sx, dy = b.sy - a.sy;
-				double dist = Math.sqrt(dx * dx + dy * dy);
-				if (dist <= a.screenR + b.screenR) continue; // balls touch/overlap: no visible bond
-				double ux = dx / dist, uy = dy / dist;
-				Line2D ln = new Line2D.Double(
-						a.sx + ux * a.screenR, a.sy + uy * a.screenR,
-						b.sx - ux * b.screenR, b.sy - uy * b.screenR);
-				drawables.add(new Drawable((a.depth + b.depth) / 2, gg -> {
+				// Truncate the bond in WORLD space by each ball's radius, then project — so the
+				// segment stops where the edge actually exits the sphere surface, not center-to-
+				// center. For a bond angled toward the camera this endpoint projects *inside* the
+				// billboard's silhouette circle (it is foreshortened), which is correct: that is
+				// where the edge exits the sphere. (Screen-space truncation by screenR would instead
+				// stretch every bond out to the silhouette edge, which is wrong for angled bonds.)
+				double dx = b.wx - a.wx, dy = b.wy - a.wy, dz = b.wz - a.wz;
+				double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+				if (dist <= a.radius + b.radius) continue; // spheres touch/overlap: no visible bond
+				double ux = dx / dist, uy = dy / dist, uz = dz / dist;
+				double[] pa = project(rot, a.wx + ux * a.radius, a.wy + uy * a.radius, a.wz + uz * a.radius, pixelScale, ox, oy);
+				double[] pb = project(rot, b.wx - ux * b.radius, b.wy - uy * b.radius, b.wz - uz * b.radius, pixelScale, ox, oy);
+				Line2D ln = new Line2D.Double(pa[0], pa[1], pb[0], pb[1]);
+				drawables.add(new Drawable((pa[2] + pb[2]) / 2, gg -> {
 					gg.setColor(new Color(150, 150, 150));
 					gg.setStroke(new BasicStroke(1f));
 					gg.draw(ln);
@@ -372,6 +374,7 @@ public class SpringSaladViewerCanvas extends JPanel {
 
 	private static final class Glyph {
 		int id; double sx, sy, depth, screenR; Color color;
+		double wx, wy, wz, radius;   // world-space center + radius (for world-space bond truncation)
 	}
 
 	/** A depth-sorted paint action (glyph sprite, membrane quad, or link). */
