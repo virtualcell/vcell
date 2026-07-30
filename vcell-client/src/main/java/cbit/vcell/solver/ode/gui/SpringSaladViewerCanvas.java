@@ -65,6 +65,9 @@ public class SpringSaladViewerCanvas extends JPanel {
 	private static final int MEMBRANE_GRID = 12;      // NxN quad subdivision — only to depth-sort vs glyphs
 	// light direction (upper-left, toward viewer), shared with the sphere sprite, for membrane lighting
 	private static final double LIGHT_X = -0.5014, LIGHT_Y = -0.6017, LIGHT_Z = 0.6217;
+	private static final Color BOX_COLOR = new Color(150, 150, 175);
+	private static final BasicStroke BOX_STROKE = new BasicStroke(1f);
+	private static final int BOX_EDGE_SEGMENTS = 20;   // dice edges so they depth-sort (hidden-line) vs the scene
 
 	// world framing (computed from all frames so the box doesn't jitter during playback)
 	private boolean boundsValid = false;
@@ -238,6 +241,7 @@ public class SpringSaladViewerCanvas extends JPanel {
 		// so the membrane composites correctly with glyphs on either side of it.
 		List<Drawable> drawables = new ArrayList<>();
 		if (showMembrane) addMembrane(rot, pixelScale, ox, oy, drawables);
+		if (showBox) addBox(rot, pixelScale, ox, oy, minD, span, drawables);
 		if (showLinks) {
 			for (int[] link : frame.getLinks()) {
 				Glyph a = byId.get(link[0]), b = byId.get(link[1]);
@@ -260,9 +264,6 @@ public class SpringSaladViewerCanvas extends JPanel {
 
 		drawables.sort((p, q) -> Double.compare(p.depth, q.depth)); // far first
 		for (Drawable d : drawables) d.paint.accept(g2);
-
-		// simulation-box wireframe as a reference overlay, on top
-		if (showBox) drawBox(g2, rot, pixelScale, ox, oy);
 	}
 
 	/** Project a world point to {screenX, screenY, cameraDepth} using the current rotation/zoom/pan. */
@@ -316,26 +317,44 @@ public class SpringSaladViewerCanvas extends JPanel {
 		}
 	}
 
-	/** Simulation box: the 12 edges of [-xSize,xSize] x [-ySize,ySize] x [-zOutside,zInside]. */
-	private void drawBox(Graphics2D g2, Affine rot, double pixelScale, double ox, double oy) {
+	/**
+	 * Simulation box: the 12 edges of [-xSize,xSize] x [-ySize,ySize] x [-zOutside,zInside], diced into
+	 * short segments and added to the depth-sorted draw list so painter's algorithm hides the parts
+	 * behind the (opaque) membrane and the glyphs — essential under parallel projection, which has no
+	 * perspective depth cue. Segments are also depth-dimmed (nearer = brighter) for extra perception.
+	 */
+	private void addBox(Affine rot, double pixelScale, double ox, double oy, double minD, double span, List<Drawable> out) {
 		double xs = trajectory.getXSize(), ys = trajectory.getYSize();
 		double zo = trajectory.getZOutside(), zi = trajectory.getZInside();
 		if (xs <= 0 || ys <= 0) return;
 		double[] X = { -xs, xs }, Y = { -ys, ys }, Z = { -zo, zi };
-		double[][] c = new double[8][];
+		double[][] cw = new double[8][];   // corners in world coords
 		int k = 0;
 		for (int a = 0; a < 2; a++)
 			for (int b = 0; b < 2; b++)
 				for (int cc = 0; cc < 2; cc++)
-					c[k++] = project(rot, X[a], Y[b], Z[cc], pixelScale, ox, oy);
+					cw[k++] = new double[] { X[a], Y[b], Z[cc] };
 		int[][] edges = {
 			{ 0, 1 }, { 2, 3 }, { 4, 5 }, { 6, 7 },   // along z
 			{ 0, 2 }, { 1, 3 }, { 4, 6 }, { 5, 7 },   // along y
 			{ 0, 4 }, { 1, 5 }, { 2, 6 }, { 3, 7 }    // along x
 		};
-		g2.setColor(new Color(150, 150, 175));
-		g2.setStroke(new BasicStroke(1f));
-		for (int[] e : edges) g2.draw(new Line2D.Double(c[e[0]][0], c[e[0]][1], c[e[1]][0], c[e[1]][1]));
+		for (int[] e : edges) {
+			double[] p0 = cw[e[0]], p1 = cw[e[1]];
+			double[] prev = project(rot, p0[0], p0[1], p0[2], pixelScale, ox, oy);
+			for (int s = 1; s <= BOX_EDGE_SEGMENTS; s++) {
+				double t = (double) s / BOX_EDGE_SEGMENTS;
+				double[] cur = project(rot, p0[0] + (p1[0] - p0[0]) * t, p0[1] + (p1[1] - p0[1]) * t,
+						p0[2] + (p1[2] - p0[2]) * t, pixelScale, ox, oy);
+				double depth = (prev[2] + cur[2]) / 2;
+				double bright = MIN_BRIGHT + (1 - MIN_BRIGHT) * clamp01((depth - minD) / span);
+				Color col = new Color(clamp255(BOX_COLOR.getRed() * bright),
+						clamp255(BOX_COLOR.getGreen() * bright), clamp255(BOX_COLOR.getBlue() * bright));
+				double x0 = prev[0], y0 = prev[1], x1 = cur[0], y1 = cur[1];
+				out.add(new Drawable(depth, gg -> { gg.setColor(col); gg.setStroke(BOX_STROKE); gg.draw(new Line2D.Double(x0, y0, x1, y1)); }));
+				prev = cur;
+			}
+		}
 	}
 
 	private static double clamp01(double v) { return v < 0 ? 0 : (v > 1 ? 1 : v); }
