@@ -1,15 +1,49 @@
 # SpringSaLaD Spatiotemporal 3D Renderer — Design & Decision Record
 
-**Status:** Draft — for discussion
-**Date:** 2026-07-29
+**Status:** Phases 0 & 1 **shipped** and deployed to dev/alpha (`8.0.4.01`). Phase 2
+(PDE field viz, likely web) is the next decision.
+**Created:** 2026-07-29 · **Last updated:** 2026-07-30
 **Scope:** An integrated spatiotemporal 3D renderer / movie player for SpringSaLaD
 (Langevin particle) simulations in VCell, with a possible extension to visualizing
 PDE (reaction-diffusion) solutions using a more capable stack.
 
 > This is a living design record: it captures the problem, what already exists in
-> the codebase, the 2026 technology landscape, and a phased recommendation. The
-> strategic desktop-vs-web decision (Phase 2) is deliberately left open pending a
-> prototype; Phase 0/1 are actionable now.
+> the codebase, the 2026 technology landscape, and a phased recommendation. Phases 0
+> and 1 are implemented (see the status section below); the strategic desktop-vs-web
+> decision for Phase 2 (PDE field viz) is still open.
+
+---
+
+## Implementation status (updated 2026-07-30)
+
+**Phases 0 and 1 are complete and deployed to the dev/alpha site.** The desktop
+SpringSaLaD 3D trajectory movie player is live: run a SpringSaLaD simulation (local
+*or* remote/HPC), then open its **Results → "3D Trajectory"** tab.
+
+| Phase | Status | What shipped |
+|---|---|---|
+| **0 — data plumbing** | ✅ done | Solver canonicalizes the Run-0 viewer file (LangevinNoVis01 #39, released **1.4.9**); VCell serves it (`getLangevinTrajectory`, `SpringSaladTrajectory` model+parser). PRs #1795, #1797, #1798. |
+| **1 — desktop renderer** | ✅ done | `SpringSaladViewerCanvas` (Java2D impostor spheres + quaternion trackball) + `SpringSaladViewerPanel` (movie player: play/scrub/speed), wired as the "3D Trajectory" tab; simulation **box** (with hidden-line removal) + opaque green **membrane** (z=0 plane). PRs #1796, #1797, #1798. |
+| **2 — PDE field viz** | ⬜ next | See §6. The strategic desktop-vs-web decision is still open; vtk.js in `webapp-ng` fed by the existing `.vtu` pipeline (§2.3) is the leading candidate. |
+
+**Reality corrected the Phase 0 plan in two ways** (both fixed):
+1. **Local (desktop-solver) runs invoke only the solver's `simulate` step, never
+   `postprocess`** — so the viewer file is never canonicalized locally. The read path
+   (`SimulationData.getLangevinViewerFile`) now falls back to the solver's
+   `<base>_FOLDER/viewer_files/` subfolder after trying the flat canonical name
+   (server, archival-safe).
+2. **Remote runs fetch the trajectory by RPC**, and the client's remote data
+   controller (`LocalDataSetControllerMessaging`, `vcell-apiclient`) was missing the
+   `getLangevinTrajectory` delegation — masked by a `default`-null interface method —
+   so remote runs silently showed *no tab* until fixed (#1798). Adding a method to
+   `DataSetController` requires delegation in **all** real controllers
+   (`LocalDataSetController`, `LocalDataSetControllerMessaging`,
+   `LocalDataSetControllerProvider`) plus `RpcDataServerProxy`.
+
+**The Java2D impostor-sphere choice held up** (over JavaFX-3D / JOGL / VTK): zero
+native-packaging cost, smooth at the hundreds–low-thousands scale, and the
+movie-player shell + a headless `renderToImage()` export path are reusable if a GPU
+renderer is ever swapped in.
 
 ---
 
@@ -255,49 +289,60 @@ for the camera.
 Unify on the **VTK data model** as the through-line so desktop-now and web-future
 coexist without throwaway. Do **not** pick one renderer for everything.
 
-### Phase 0 — Serve the SaLaD trajectory file *(prerequisite, renderer-agnostic)*
-The trajectory data already exists **and already persists** on the shared store
-(§2.4); nothing deletes it at job end. The work is to **canonicalize and serve it**,
-not to retain it. Per the §2.4 trace the hook is small and symmetric with existing
-langevin result handling:
+### Phase 0 — Serve the SaLaD trajectory file ✅ **DONE** (#1795, #1797, #1798; solver 1.4.9)
+Both options in the original plan turned out to be needed:
+- **Option B (canonicalize in `postprocess`)** — shipped for server/remote runs:
+  `ConsolidationPostprocessor.canonicalizeTrajectoryFile()` copies the viewer file to
+  the flat `SimID_<key>_0__VIEW_Run0.txt` (LangevinNoVis01 #39, released **1.4.9**;
+  VCell pinned to it).
+- **Option A (read-in-place subfolder fallback)** — *also* required, because **local
+  desktop runs invoke only `simulate`, never `postprocess`**, so nothing canonicalizes
+  locally. `SimulationData.getLangevinViewerFile()` tries the flat name first, then the
+  `_FOLDER/viewer_files/` subfolder.
+- **Serve / parse** — `getLangevinTrajectory` down the `getLangevinBatchResultSet`
+  chain; `SpringSaladTrajectory` model + SCENE parser (§5). RPC only (no REST yet) —
+  sim-data goes through the JMS data server, not `/api/v1`.
+- **Remote-run gotcha** — the client's remote controller
+  (`LocalDataSetControllerMessaging`) initially missed the RPC delegation (silent null
+  via a `default` interface method), fixed in #1798.
 
-1. **Canonicalize** (recommended — *Option B*): in the solver's `postprocess` step
-   (which already writes the aggregate `.ida` files flat into `/simdata/<userid>/`),
-   also copy the viewer file up to a flat canonical name
-   `SimID_<key>_0__VIEW_Run0.txt` in the user dir. It then participates in the same
-   discovery, **archival**, and serving as the `.ida` files. *(One line of copy.)*
-   - *Option A (read-in-place)* — add a getter that reaches into
-     `…_FOLDER/viewer_files/…` with no postprocess change. Works for fresh sims but
-     is **archival-fragile** (lost once the sim is moved to secondary; see §2.4), so
-     it is not the durable answer.
-2. **Serve** — add `SimulationData.getLangevinViewerFile()` (mirroring
-   `getLangevinFile()`), a `DataSetControllerImpl`/`LocalDataSetController` method
-   (mirroring `getLangevinBatchResultSet()`), and the RPC/REST plumbing. This mirrors
-   code that already exists for the aggregates.
-3. **Parse** — a trivial tab-delimited SCENE reader (§5) → in-memory trajectory model
-   (frames of `{id, radius, color, xyz}` + links).
+### Phase 1 — Desktop SaLaD glyph movie player ✅ **DONE** (#1796, #1797, #1798)
+Built on the existing `cbit.vcell.render` trackball/camera with **Java2D impostor
+spheres** — the low-risk, zero-native-dep choice, confirmed smooth at scale.
+`SpringSaladViewerCanvas` (painter's-sorted impostors, depth-shaded sprite cache) +
+`SpringSaladViewerPanel` (play/pause, frame scrubber, speed, Links/Box/Membrane
+toggles), wired as the results-viewer **"3D Trajectory"** tab. Added the **simulation
+box** (12 edges, hidden-line-removed by dicing into depth-sorted segments) and an
+**opaque green membrane** (z=0 plane). A headless `renderToImage()` backs the preview
+tests and a future frame/movie export.
 
-**Net:** no solver-algorithm change and no SLURM change — one canonicalizing copy in
-`postprocess` plus a `getLangevinFile`-shaped serving path.
+### Phase 1.5 — near-term SaLaD-viewer polish (optional, incremental, desktop)
+Small, high-value follow-ups, none requiring new infrastructure:
+- **Frame / movie export** (PNG sequence or animated GIF) — `renderToImage()` + the
+  existing `GIFUtils` path already prototype this in the render test.
+- **Rendering quality** — per-fragment specular, configurable membrane color/opacity,
+  an always-visible faint reference box, soft shadow/AO on the membrane.
+- **Interaction** — pick/hover to identify a site, per-molecule-type show/hide,
+  color-by-state legend, named camera views.
+- **Data / bridge** — handle very long trajectories (streaming/decimation), and expose
+  the trajectory over `/api/v1` (REST) as the bridge toward the web viewer.
 
-### Phase 1 — Tactical: desktop SaLaD glyph movie player
-Build on the existing `cbit.vcell.render` trackball/camera; render glyphs with
-**Java2D impostors** (lowest risk, zero native deps, confirmed viable at this scale)
-— or **JavaFX 3D** if we want real z-buffer/lighting headroom cheaply. Ships SaLaD
-value fast. The *player shell* (playback, scrub, time-sync, bookmarks, frame/movie
-export) is reusable regardless of what draws pixels later; only the glyph rasterizer
-would be subsumed if a VTK-based path takes over rendering.
+### Phase 2 — PDE field viz, the web segue ⬜ **NEXT — decision open**
+Because the `.vtu`/`.vti` pipeline **already exists** (§2.3), the highest-leverage
+capable-stack move is a **vtk.js viewer in `webapp-ng`, fed by the data VCell already
+emits** — replacing the VisIt hand-off with in-browser volume/isosurface/slice. This
+is the concrete "segue to true web-based rendering."
 
-### Phase 2 — Strategic: PDE field viz as the web segue
-Because the `.vtu`/`.vti` pipeline **already exists** (§2.3), the lowest-cost,
-highest-leverage capable-stack move is a **vtk.js viewer in `webapp-ng`, fed by the
-data VCell already emits** — replacing the VisIt hand-off with in-browser volume/
-isosurface/slice. This is the concrete "segue to true web-based rendering," cheap
-*because the data layer is done*. Reserve **Java-VTK** only as an interim if field
-viz is needed *inside the Swing app* before the web path is ready.
+**The decision to make first** (the strategic fork from §3–4): does the capable
+field-viz tier live in the **desktop** (Java-VTK — heavy native packaging, and
+Kitware's investment has moved to the web) or the **web** (vtk.js now, vtk.wasm
+later)? The analysis favors web. A concrete, low-commitment first step to de-risk it:
+a standalone `webapp-ng` route that loads one exported VCell `.vti`/`.vtu` (a PDE
+result producible today) into vtk.js with a colormapped slice + isosurface — proving
+the data path end-to-end before building any UI.
 
-**Net:** desktop delivers the SaLaD movie player; the web becomes home for the
-capable field-viz tier — unified by the VTK data model VCell already standardized on.
+**Net:** desktop delivers the SaLaD movie player (done); the web becomes home for the
+capable PDE field-viz tier — unified by the VTK data model VCell already standardized on.
 
 ---
 
