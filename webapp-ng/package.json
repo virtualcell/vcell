@@ -39,6 +39,7 @@
     "@fortawesome/angular-fontawesome": "^0.14.0",
     "@fortawesome/fontawesome-svg-core": "^1.2.36",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
+    "@kitware/vtk.js": "^36.6.0",
     "@ng-bootstrap/ng-bootstrap": "^16.0.0",
     "@popperjs/core": "^2.11.6",
     "cors": "^2.8.5",
