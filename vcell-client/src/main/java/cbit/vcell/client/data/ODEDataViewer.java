@@ -17,6 +17,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import cbit.vcell.simdata.LangevinSolverResultSet;
+import cbit.vcell.simdata.SpringSaladTrajectory;
 import cbit.vcell.solver.ode.gui.*;
 import org.vcell.solver.nfsim.NFSimMolecularConfigurations;
 import org.vcell.util.document.VCDataIdentifier;
@@ -58,6 +59,8 @@ public class ODEDataViewer extends DataViewer {
 	private ODESolverResultSet fieldOdeSolverResultSet = null;
 	public boolean hasLangevinBatchResults = false;
 	private LangevinSolverResultSet fieldLangevinSolverResultSet = null;
+	private SpringSaladTrajectory fieldSpringSaladTrajectory = null;
+	private SpringSaladViewerPanel springSaladViewerPanel = null;
 	private NFSimMolecularConfigurations nFSimMolecularConfigurations = null;
 	private javax.swing.JPanel viewData = null;
 	private JPanel viewMultiClustersPanel = null;
@@ -67,6 +70,7 @@ public class ODEDataViewer extends DataViewer {
 
 	private static final String OUTPUT_SPECIES_TABNAME = "Output Species";
 	private static final String LANGEVIN_CLUSTER_RESULTS_TABNAME = "Langevin Clusters";
+	private static final String TRAJECTORY_TABNAME = "3D Trajectory";
 
 class IvjEventHandler implements java.beans.PropertyChangeListener {
 		public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -295,13 +299,14 @@ private javax.swing.JTabbedPane getJTabbedPane() {
 				ivjJTabbedPane.insertTab("View Data", null, getViewData(), null, 0);
 			}
 
-			ivjJTabbedPane.addTab(LANGEVIN_CLUSTER_RESULTS_TABNAME, getViewMultiClusters());
-
 			outputSpeciesResultsPanel = new OutputSpeciesResultsPanel(this);
 			outputSpeciesResultsPanel.addPropertyChangeListener(ivjEventHandler);
-			ivjJTabbedPane.addTab(OUTPUT_SPECIES_TABNAME, outputSpeciesResultsPanel);
 
 			ivjJTabbedPane.addChangeListener(mainTabChangeListener);
+			// The dataset-specific tabs (Langevin Clusters, 3D Trajectory, Output Species) are
+			// added/removed by setOdeDataContext() based on the dataset type, so they only appear
+			// when relevant (they were previously always present but merely disabled).
+			setOdeDataContext();
 		} catch (java.lang.Throwable ivjExc) {
 			handleException(ivjExc);
 		}
@@ -547,15 +552,42 @@ public void setVcDataIdentifier(VCDataIdentifier vcDataIdentifier) {
 }
 
 public void setOdeDataContext() {
-	if(getSimulation() != null && hasLangevinBatchResults) {
-		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(OUTPUT_SPECIES_TABNAME), false);
-		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(LANGEVIN_CLUSTER_RESULTS_TABNAME), true);
-	} else if(getSimulation() != null && getNFSimMolecularConfigurations() != null) {
-		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(OUTPUT_SPECIES_TABNAME), true);
-		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(LANGEVIN_CLUSTER_RESULTS_TABNAME), false);
-	} else {
-		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(OUTPUT_SPECIES_TABNAME), false);
-		getJTabbedPane().setEnabledAt(getJTabbedPane().indexOfTab(LANGEVIN_CLUSTER_RESULTS_TABNAME), false);
+	boolean langevin = getSimulation() != null && hasLangevinBatchResults;
+	boolean nfsim = getSimulation() != null && getNFSimMolecularConfigurations() != null;
+	// Show each dataset-specific tab only when its data applies. Previously these were always
+	// present but merely disabled for other dataset types, which was a bug (confusing dead tabs).
+	// JTabbedPane has no per-tab visibility, so we add/remove them instead.
+	setTabVisible(LANGEVIN_CLUSTER_RESULTS_TABNAME, langevin ? getViewMultiClusters() : null, langevin);
+	// The 3D Trajectory tab is driven by whether a trajectory was actually captured (any SpringSaLaD
+	// run - single or batch), not by hasLangevinBatchResults (which requires cluster data).
+	boolean hasTrajectory = fieldSpringSaladTrajectory != null;
+	setTabVisible(TRAJECTORY_TABNAME, hasTrajectory ? getTrajectoryViewerPanel() : null, hasTrajectory);
+	setTabVisible(OUTPUT_SPECIES_TABNAME, nfsim ? outputSpeciesResultsPanel : null, nfsim);
+}
+
+private void setTabVisible(String tabName, java.awt.Component comp, boolean visible) {
+	JTabbedPane pane = getJTabbedPane();
+	int idx = pane.indexOfTab(tabName);
+	if (visible && idx < 0 && comp != null) {
+		pane.addTab(tabName, comp);
+	} else if (!visible && idx >= 0) {
+		pane.removeTabAt(idx);
+	}
+}
+
+private SpringSaladViewerPanel getTrajectoryViewerPanel() {
+	if (springSaladViewerPanel == null) {
+		springSaladViewerPanel = new SpringSaladViewerPanel();
+		springSaladViewerPanel.setTrajectory(fieldSpringSaladTrajectory);
+	}
+	return springSaladViewerPanel;
+}
+
+/** Sets the per-particle SpringSaLaD trajectory shown in the "3D Trajectory" tab (may be null). */
+public void setSpringSaladTrajectory(SpringSaladTrajectory trajectory) {
+	fieldSpringSaladTrajectory = trajectory;
+	if (springSaladViewerPanel != null) {
+		springSaladViewerPanel.setTrajectory(trajectory);
 	}
 }
 

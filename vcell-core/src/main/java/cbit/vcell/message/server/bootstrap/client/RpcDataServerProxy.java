@@ -69,6 +69,10 @@ public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) 
 	return (LangevinBatchResultSet)rpc("getLangevinBatchResultSet",new Object[]{userLoginInfo.getUser(), vcdID});
 }
 
+public cbit.vcell.simdata.SpringSaladTrajectory getLangevinTrajectory(VCDataIdentifier vcdID) throws org.vcell.util.DataAccessException {
+	return (cbit.vcell.simdata.SpringSaladTrajectory)rpc("getLangevinTrajectory",new Object[]{userLoginInfo.getUser(), vcdID});
+}
+
 public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double time) throws org.vcell.util.DataAccessException {
 	return (ParticleDataBlock)rpc("getParticleDataBlock",new Object[]{userLoginInfo.getUser(), vcdID,time});
 }

@@ -197,6 +197,16 @@ public cbit.vcell.solver.ode.ODESimData getODEData(User user, VCDataIdentifier v
 		}
 	}
 
+	public SpringSaladTrajectory getLangevinTrajectory(User user, VCDataIdentifier vcdID) throws DataAccessException {
+		checkReadAccess(user, vcdID);
+		try {
+			return dataSetControllerImpl.getLangevinTrajectory(vcdID);
+		}catch (Throwable e){
+			lg.error(e.getMessage(), e);
+			throw new DataAccessException(e.getMessage());
+		}
+	}
+
 
 /**
  * This method was created by a SmartGuide.

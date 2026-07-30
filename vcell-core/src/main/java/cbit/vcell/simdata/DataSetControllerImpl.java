@@ -2460,6 +2460,26 @@ public LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdentifier vcdID) 
 	}
 }
 
+public SpringSaladTrajectory getLangevinTrajectory(VCDataIdentifier vcdID) throws DataAccessException {
+	if (lg.isTraceEnabled()) lg.trace("DataSetControllerImpl.getLangevinTrajectory()");
+	try {
+		VCData vcData = getVCData(vcdID);
+		if (!(vcData instanceof SimulationData)) {
+			return null;
+		}
+		SimulationData simData = (SimulationData) vcData;
+		File viewerFile = simData.getLangevinViewerFile();	// flat canonical (server) or _FOLDER subfolder (local)
+		if (viewerFile == null || !viewerFile.exists()) {
+			return null; // no trajectory captured for this simulation
+		}
+		try (java.io.Reader reader = new java.io.BufferedReader(new java.io.FileReader(viewerFile))) {
+			return SpringSaladTrajectory.parse(reader);
+		}
+	} catch (IOException e) {
+		throw new DataAccessException(e.getMessage(), e);
+	}
+}
+
 public ParticleDataBlock getParticleDataBlock(VCDataIdentifier vcdID, double time) throws DataAccessException {
 	if (lg.isTraceEnabled()) lg.trace("DataSetControllerImpl.getParticleDataBlock(" + time + ")");
 

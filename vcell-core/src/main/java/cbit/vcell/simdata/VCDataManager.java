@@ -298,6 +298,20 @@ public synchronized LangevinBatchResultSet getLangevinBatchResultSet(VCDataIdent
 	}
 }
 
+public synchronized SpringSaladTrajectory getLangevinTrajectory(VCDataIdentifier vcdID) throws DataAccessException {
+	try {
+		return getDataSetController().getLangevinTrajectory(vcdID);
+	}catch (RemoteProxyException e){
+		handleRemoteProxyException(e);
+		try {
+			return getDataSetController().getLangevinTrajectory(vcdID);
+		}catch (RemoteProxyException e2){
+			handleRemoteProxyException(e2);
+			throw new RuntimeException(e2.getMessage());
+		}
+	}
+}
+
 public synchronized NFSimMolecularConfigurations getNFSimMolecularConfigurations(VCDataIdentifier vcdID) throws DataAccessException {
 	try {
 		return getDataSetController().getNFSimMolecularConfigurations(vcdID);
