@@ -294,7 +294,7 @@ public class SlurmProxyTest {
 		Assertions.assertEquals(expectedSlurmScript.trim(), slurmScript.trim());
 	}
 
-	@Disabled("Temporarily disabled for CI during script refactoring")
+//	@Disabled("Temporarily disabled for CI during script refactoring")
 	@Test
 	public void testSimJobScriptLangevinBatch() throws IOException, XmlParseException, ExpressionException {
 		setProperty(PropertyLoader.htc_vcellopt_apptainer_image, "oras://ghcr.io/virtualcell/vcell-opt_singularity:7.7.0.39");

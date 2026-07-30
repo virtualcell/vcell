@@ -22,6 +22,13 @@ set +e
 # Script-controlled variables (populated by generator in real use)
 USERID=danv
 SIM_ID=999999999
+ ---- Alternate / New variables ----
+SIM_KEY=999999999
+SIM_OWNER=temp
+SIM_OWNER_ID=123
+VC_JOB_ID=0
+VC_TASK_ID=0
+ -----------------------------------
 TOTAL_JOBS=8            # to be set by generator to lso.getTotalNumberOfJobs()
 JOB_TIMEOUT_SECONDS=345600  # per-job timeout (seconds), adjust per generator
 LOG_FILE="/share/apps/vcell3/htclogs/V_TEST2_999999999_0_.submit.log"
@@ -118,6 +125,17 @@ echo "Job Execution Log" > "${LOG_FILE}"
 echo "------------------" >> "${LOG_FILE}"
 echo "=== [$(date)] === SLURM job ${SLURM_JOB_ID} started on $(hostname)" | tee -a "${LOG_FILE}"
 
+callExitProcessor( ) {
+# simKey.toString(),   == "${SIM_ID}"
+# simOwner.getName(),  == "${USERID}"
+# simOwner.getID().toString(),
+# Integer.toString(jobId),
+# Integer.toString(simTask.getTaskID()),
+# SOLVER_EXIT_CODE_STRING,
+	${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 $1 "/htclogs/${SLURM_JOB_NAME}.slurm.sub"
+}
+
+
 SIMXML="/simdata/${USERID}/SimID_${SIM_ID}_0__0.simtask.xml"  # preprocessor XML path (per-user)
 echo "[Preprocess] Running JavaPreprocessor64 ${SIMXML}" | tee -a "${LOG_FILE}"
 
@@ -126,7 +144,7 @@ ${batch_container_prefix} JavaPreprocessor64 "${SIMXML}" "/simdata/${USERID}"
 stat=$?
 echo "JavaPreprocessor64 returned ${stat}" | tee -a "${LOG_FILE}"
 if [ $stat -ne 0 ]; then
-  ${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 $stat "/htclogs/${SLURM_JOB_NAME}.slurm.sub" || true
+  callExitProcessor $stat
   echo "Preprocessor failed; exiting ${stat}" | tee -a "${LOG_FILE}"
   exit $stat
 fi
