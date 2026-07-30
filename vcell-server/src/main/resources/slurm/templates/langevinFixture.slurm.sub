@@ -11,7 +11,7 @@ callExitProcessor( ) {
 # Integer.toString(jobId),
 # Integer.toString(simTask.getTaskID()),
 # SOLVER_EXIT_CODE_STRING,
-	${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 $1 "/htclogs/${SLURM_JOB_NAME}.slurm.sub"
+	${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" "${SIM_OWNER_ID}" "${VC_JOB_ID}" "${VC_TASK_ID}" $1 "/htclogs/${SLURM_JOB_NAME}.slurm.sub"
 }
 
 
