@@ -441,6 +441,8 @@ public class SlurmProxy extends HtcProxy {
 		long rounded = ((memPerTaskMB + block - 1) / block) * block;
 		return (int) rounded;
 	}
+
+	@Deprecated
 	private static String extractUser(ExecutableCommand.Container commandSet) {
 		for (ExecutableCommand ec: commandSet.getExecCommands()) {
 			ExecutableCommand.Container commandSet2 = new ExecutableCommand.Container();
@@ -505,11 +507,14 @@ public class SlurmProxy extends HtcProxy {
 			return String.format("%d-%02d:%02d:00", days, hours, minutes);
 		}
 	}
-	private void writeScriptControlledVariables(LineStringBuilder lsb, String jobName, String userName,
+	private void writeScriptControlledVariables(LineStringBuilder lsb, String jobName,
 												SimulationTask simTask, int jobTimeoutSeconds) {
-		// TODO: are simId and simKey the same thing?
-		String simId = simTask.getSimulationInfo().getSimulationVersion().getVersionKey().toString();
-		KeyValue simKey = simTask.getSimKey();
+
+		String simKey = simTask.getSimulation().getVersion().getVersionKey().toString();
+		String simOwnerName = simTask.getSimulation().getVersion().getOwner().getName();	// this is the user name
+		String simOwnerId = simTask.getSimulation().getVersion().getOwner().getID().toString();
+		String jobId = Integer.toString(simTask.getSimulationJob().getJobIndex());		// for example 0
+		String taskId = Integer.toString(simTask.getTaskID());
 
 		int totalJobs = simTask.getSimulation().getSolverTaskDescription().getLangevinSimulationOptions().getTotalNumberOfJobs();
 		String htcLogDir = PropertyLoader.getRequiredProperty(PropertyLoader.htcLogDirExternal);
@@ -517,26 +522,19 @@ public class SlurmProxy extends HtcProxy {
 		int lastUnderscore = jobName.lastIndexOf('_');
 		String trimmedJobName = (lastUnderscore >= 0) ? jobName.substring(0, lastUnderscore + 1) : jobName;
 		String logFilePath = htcLogDir + "/" + trimmedJobName + ".submit.log";
-		String messagingConfigFilePath = simDataDir + "/" + userName + "/SimID_" + simId + "_0_.langevinMessagingConfig";
+		String messagingConfigFilePath = simDataDir + "/" + simOwnerName + "/SimID_" + simKey + "_0_.langevinMessagingConfig";
 
 		// ---- Alternate / New variables ----
-		String simOwner = simTask.getSimulation().getVersion().getOwner().getName();	// is this the userName?
-		String simOwnerId = simTask.getSimulation().getVersion().getOwner().getID().toString();
-		String jobId = Integer.toString(simTask.getSimulationJob().getJobIndex());		// is this jobName?
-		String taskId = Integer.toString(simTask.getTaskID());
 
 
 		lsb.write("# Script-controlled variables (populated by generator in real use)");
-		lsb.write("USERID=" + userName);
-		lsb.write("SIM_ID=" + simId);
-
-		lsb.write(" ---- Alternate / New variables ----");
+//		lsb.write("USERID=" + simOwnerName);
+//		lsb.write("SIM_KEY=" + simId);
 		lsb.write("SIM_KEY=" + simKey);
-		lsb.write("SIM_OWNER=" + simOwner);
+		lsb.write("SIM_OWNER_NAME=" + simOwnerName);
 		lsb.write("SIM_OWNER_ID=" + simOwnerId);
 		lsb.write("VC_JOB_ID=" + jobId);		// vcell job id, there is also a slurm job id which is something else
 		lsb.write("VC_TASK_ID=" + taskId);
-		lsb.write(" -----------------------------------");
 
 		lsb.write("TOTAL_JOBS=" + totalJobs + "            # to be set by generator to lso.getTotalNumberOfJobs()");
 		lsb.write("JOB_TIMEOUT_SECONDS=" + jobTimeoutSeconds + "  # per-job timeout (seconds), adjust per generator");
@@ -545,13 +543,13 @@ public class SlurmProxy extends HtcProxy {
 		lsb.write("");
 
 		lsb.write("# Truncate / delete various logs and the solver input file, to start clean");
-		lsb.write(": > " + htcLogDir + "/V_TEST2_${SIM_ID}_0_.slurm.log");
-		lsb.write("rm -f " + simDataDir + "/${USERID}/SimID_${SIM_ID}_0_*.log");
-		lsb.write("rm -f " + simDataDir + "/${USERID}/SimID_${SIM_ID}_0__*.ida");
-		lsb.write("rm -f " + simDataDir + "/${USERID}/SimID_${SIM_ID}_0__*.json");
-		lsb.write("rm -f " + simDataDir + "/${USERID}/SimID_${SIM_ID}_0_.functions");
-		lsb.write("rm -f " + simDataDir + "/${USERID}/SimID_${SIM_ID}_0_.langevinInput");
-		lsb.write("rm -f " + simDataDir + "/${USERID}/SimID_${SIM_ID}_0_.langevinMessagingConfig");
+		lsb.write(": > " + htcLogDir + "/V_TEST2_${SIM_KEY}_0_.slurm.log");
+		lsb.write("rm -f " + simDataDir + "/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0_*.log");
+		lsb.write("rm -f " + simDataDir + "/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0__*.ida");
+		lsb.write("rm -f " + simDataDir + "/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0__*.json");
+		lsb.write("rm -f " + simDataDir + "/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0_.functions");
+		lsb.write("rm -f " + simDataDir + "/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0_.langevinInput");
+		lsb.write("rm -f " + simDataDir + "/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0_.langevinMessagingConfig");
 		lsb.write("");
 	}
 	private void writeSingularitySetup(LineStringBuilder lsb) {
@@ -586,8 +584,9 @@ public class SlurmProxy extends HtcProxy {
 
 		lsb.write("echo \"======= SLURM job started =======\"");
 		lsb.write("echo \"Hostname       : $(hostname -f)\"");
-		lsb.write("echo \"User           : $USERID\"");
-		lsb.write("echo \"Sim ID         : $SIM_ID\"");
+		lsb.write("echo \"Sim Owner Name : $SIM_OWNER_NAME\"");
+		lsb.write("echo \"Sim Owner Id   : $SIM_OWNER_ID\"");
+		lsb.write("echo \"Sim Key        : $SIM_KEY\"");
 		lsb.write("echo \"id             : $(id)\"");
 		lsb.write("echo \"Total Jobs     : $TOTAL_JOBS\"");
 		lsb.write("echo \"Job Timeout    : $JOB_TIMEOUT_SECONDS\"");
@@ -675,7 +674,7 @@ public class SlurmProxy extends HtcProxy {
 
 		// TODO: extractUser is very unrobust, must be fixed
 		// it may be the userName can be obtained like so: String vcellUserid = simTask.getUser().getName();
-		String userName = extractUser(commandSet);
+		//String userName = extractUser(commandSet);
 		String vcellUserid = simTask.getUser().getName();
 		KeyValue simID = simTask.getSimulationInfo().getSimulationVersion().getVersionKey();
 		SolverTaskDescription std = simTask.getSimulation().getSolverTaskDescription();
@@ -701,7 +700,7 @@ public class SlurmProxy extends HtcProxy {
 
 		LineStringBuilder lsb = new LineStringBuilder();
 		slurmBatchScriptInit(jobName, simTask.isPowerUser(), memoryMBAllowed, numberOfConcurrentTasks, slurmJobTimeout, lsb);
-		writeScriptControlledVariables(lsb, jobName, userName, simTask, timeoutPerTaskSeconds);
+		writeScriptControlledVariables(lsb, jobName, simTask, timeoutPerTaskSeconds);
 		writeSingularitySetup(lsb);
 		writeSlurmJobMetadata(lsb);
 		writeContainerBindingsAndEnv(lsb, javaMemXmx);

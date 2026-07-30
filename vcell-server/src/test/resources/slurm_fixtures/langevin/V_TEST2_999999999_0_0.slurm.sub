@@ -20,28 +20,24 @@ set -o nounset
 set +e
 
 # Script-controlled variables (populated by generator in real use)
-USERID=danv
-SIM_ID=999999999
- ---- Alternate / New variables ----
 SIM_KEY=999999999
-SIM_OWNER=temp
+SIM_OWNER_NAME=temp
 SIM_OWNER_ID=123
 VC_JOB_ID=0
 VC_TASK_ID=0
- -----------------------------------
 TOTAL_JOBS=8            # to be set by generator to lso.getTotalNumberOfJobs()
 JOB_TIMEOUT_SECONDS=345600  # per-job timeout (seconds), adjust per generator
 LOG_FILE="/share/apps/vcell3/htclogs/V_TEST2_999999999_0_.submit.log"
-MESSAGING_CONFIG_FILE="/share/apps/vcell3/users/danv/SimID_999999999_0_.langevinMessagingConfig"
+MESSAGING_CONFIG_FILE="/share/apps/vcell3/users/temp/SimID_999999999_0_.langevinMessagingConfig"
 
 # Truncate / delete various logs and the solver input file, to start clean
-: > /share/apps/vcell3/htclogs/V_TEST2_${SIM_ID}_0_.slurm.log
-rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_*.log
-rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0__*.ida
-rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0__*.json
-rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.functions
-rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.langevinInput
-rm -f /share/apps/vcell3/users/${USERID}/SimID_${SIM_ID}_0_.langevinMessagingConfig
+: > /share/apps/vcell3/htclogs/V_TEST2_${SIM_KEY}_0_.slurm.log
+rm -f /share/apps/vcell3/users/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0_*.log
+rm -f /share/apps/vcell3/users/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0__*.ida
+rm -f /share/apps/vcell3/users/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0__*.json
+rm -f /share/apps/vcell3/users/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0_.functions
+rm -f /share/apps/vcell3/users/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0_.langevinInput
+rm -f /share/apps/vcell3/users/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0_.langevinMessagingConfig
 
 echo "=== Singularity check ==="
 if command -v singularity >/dev/null 2>&1; then
@@ -65,8 +61,9 @@ MEM_JOB=$(( MEM_TASK * SLURM_NTASKS ))
 
 echo "======= SLURM job started ======="
 echo "Hostname       : $(hostname -f)"
-echo "User           : $USERID"
-echo "Sim ID         : $SIM_ID"
+echo "Sim Owner Name : $SIM_OWNER_NAME"
+echo "Sim Owner Id   : $SIM_OWNER_ID"
+echo "Sim Key        : $SIM_KEY"
 echo "id             : $(id)"
 echo "Total Jobs     : $TOTAL_JOBS"
 echo "Job Timeout    : $JOB_TIMEOUT_SECONDS"
@@ -126,21 +123,20 @@ echo "------------------" >> "${LOG_FILE}"
 echo "=== [$(date)] === SLURM job ${SLURM_JOB_ID} started on $(hostname)" | tee -a "${LOG_FILE}"
 
 callExitProcessor( ) {
-# simKey.toString(),   == "${SIM_ID}"
-# simOwner.getName(),  == "${USERID}"
+# simKey.toString(),   == "${SIM_KEY}"
+# simOwner.getName(),  == "${SIM_OWNER_NAME}"
 # simOwner.getID().toString(),
 # Integer.toString(jobId),
 # Integer.toString(simTask.getTaskID()),
-# SOLVER_EXIT_CODE_STRING,
-	${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" "${SIM_OWNER_ID}" "${VC_JOB_ID}" "${VC_TASK_ID}" $1 "/htclogs/${SLURM_JOB_NAME}.slurm.sub"
+	${batch_container_prefix} JavaPostprocessor64 "${SIM_KEY}" "${SIM_OWNER_NAME}" "${SIM_OWNER_ID}" "${VC_JOB_ID}" "${VC_TASK_ID}" $1 "/htclogs/${SLURM_JOB_NAME}.slurm.sub"
 }
 
 
-SIMXML="/simdata/${USERID}/SimID_${SIM_ID}_0__0.simtask.xml"  # preprocessor XML path (per-user)
+SIMXML="/simdata/${SIM_OWNER_NAME}/SimID_${SIM_KEY}_0__0.simtask.xml"  # preprocessor XML path (per-user)
 echo "[Preprocess] Running JavaPreprocessor64 ${SIMXML}" | tee -a "${LOG_FILE}"
 
 # run JavaPreprocessor64 inside batch container (use generated batch prefix)
-${batch_container_prefix} JavaPreprocessor64 "${SIMXML}" "/simdata/${USERID}"
+${batch_container_prefix} JavaPreprocessor64 "${SIMXML}" "/simdata/${SIM_OWNER_NAME}"
 stat=$?
 echo "JavaPreprocessor64 returned ${stat}" | tee -a "${LOG_FILE}"
 if [ $stat -ne 0 ]; then
@@ -188,8 +184,8 @@ BASE_PROPERTIES+="&UserName=${vc_username}"
 BASE_PROPERTIES+="&MessageType=WorkerEvent"
 BASE_PROPERTIES+="&HostName=$(hostname)"
 
-INPUT_DIR="/simdata/${USERID}"  # on singularity, each solver instance reads inputs from here
-LOG_DIR="/simdata/${USERID}"    # on singularity, each solver instance writes logs here
+INPUT_DIR="/simdata/${SIM_OWNER_NAME}"  # on singularity, each solver instance reads inputs from here
+LOG_DIR="/simdata/${SIM_OWNER_NAME}"    # on singularity, each solver instance writes logs here
 declare -A job_pid_map
 job_pids=()
 running_jobs=0
@@ -209,8 +205,8 @@ for ((i = 0; i < TOTAL_JOBS; i++)); do
         timeout "${JOB_TIMEOUT_SECONDS}s" \
         ${slurm_prefix} ${solver_container_prefix} \
         langevin_x64 simulate \
-        --output-log="${LOG_DIR}/SimID_${SIM_ID}_0_${i}.log" \
-        "${INPUT_DIR}/SimID_${SIM_ID}_0_.langevinInput" \
+        --output-log="${LOG_DIR}/SimID_${SIM_KEY}_0_${i}.log" \
+        "${INPUT_DIR}/SimID_${SIM_KEY}_0_.langevinInput" \
         "$i" \
         -tid 0
     ) &
@@ -295,9 +291,9 @@ echo "Starting the last job (postprocess) at $(date)" >> "${LOG_FILE}"
 timeout "${JOB_TIMEOUT_SECONDS}s" \
         ${slurm_prefix} ${solver_container_prefix} \
         langevin_x64 postprocess \
-        "${INPUT_DIR}/SimID_${SIM_ID}_0_.langevinInput" \
+        "${INPUT_DIR}/SimID_${SIM_KEY}_0_.langevinInput" \
         ${TOTAL_JOBS} \
-        --output-log="${LOG_DIR}/SimID_${SIM_ID}_0_P.log" \
+        --output-log="${LOG_DIR}/SimID_${SIM_KEY}_0_P.log" \
         --vc-print-status &
 
 last_pid=$!
@@ -336,7 +332,7 @@ echo "All tasks completed at $(date)" >> "${LOG_FILE}"
 # ----------------------------------------------------------------------------------------------
 # run JavaPostprocessor64 inside batch container
 echo "[Postprocess] Running JavaPostprocessor64..." | tee -a "${LOG_FILE}"
-timeout 20s ${batch_container_prefix} JavaPostprocessor64 "${SIM_ID}" "${USERID}" 17 0 0 "${TOTAL_JOBS}" "/htclogs/${SLURM_JOB_NAME}.slurm.sub"
+timeout 20s ${batch_container_prefix} JavaPostprocessor64 "${SIM_KEY}" "${SIM_OWNER_NAME}" 17 0 0 "${TOTAL_JOBS}" "/htclogs/${SLURM_JOB_NAME}.slurm.sub"
 post_exit=$?
 set -e
 
