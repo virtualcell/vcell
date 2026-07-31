@@ -31,36 +31,77 @@ transitively pulls `configure_wasm_common.cmake` + `configure_common.cmake`: `VT
   `WebAssemblySession` + `SerializationManager`) → produces **`vtkWebAssembly.{js,wasm}`** with the
   standalone-session API — *this* is what `@kitware/vtk-wasm` loads.
 
-VTK CI never sets `VTK_WRAP_JAVASCRIPT`; the bundle comes from the module. So we just ensure
-`VTK_MODULE_ENABLE_VTK_WebAssembly=YES` and build.
+VTK CI never sets `VTK_WRAP_JAVASCRIPT`; the bundle comes from the module. VTK's all-modules config
+already enables it, so we build the stock config unmodified.
+
+## The `undefined symbol: $` link failure (two independent causes)
+
+Getting the `.mjs` to link at all took pinning down a link error that shows up as:
+
+```
+error: undefined symbol: $ (referenced by root reference (e.g. compiled C/C++ code))
+```
+
+Left as a hard error, the link dies there. If undefined symbols are *allowed*
+(`-sERROR_ON_UNDEFINED_SYMBOLS=0`), emscripten instead emits a **malformed nameless stub**
+`function (...args){ abort('missing function: $'); }`, and its `--export-es6 unsignPointers` acorn
+pass then rejects that invalid JS with `SyntaxError: Unexpected token` — same failure, one step later.
+
+**Two independent things each produce this dangling `$`; avoid both:**
+
+1. **Trimming the module set.** Do **not** cherry-pick modules (e.g. dropping `RenderingWebGPU` /
+   WebXR / VR to shrink the ~78 MB bundle). A trimmed set leaves the `$` unresolved. Build VTK's
+   **complete** wasm module set — the same as VTK's own CI — with no module enables/disables and no
+   extra linker flags.
+2. **The wrong toolchain image** (see next section). Even the *stock* all-modules config fails with
+   the same `$` on the public `emscripten/emsdk` image.
+
+The proven-good combination is **VTK's stock all-modules config built on VTK's own CI image with
+VTK's pinned emsdk** — it has no dangling `$` and links cleanly. **Size-trimming is a separate,
+careful follow-up** that must re-introduce disables **one module at a time**, keeping the `.mjs`
+linking at each step, to find the specific module that leaves the `$` — never a blanket disable.
+
+## Why the VTK CI image (not `emscripten/emsdk`)
+
+The build runs in VTK's own wasm CI image, **`kitware/vtk:ci-fedora42-…`**, and `build.sh` installs
+VTK's pinned emsdk into it exactly the way VTK's CI does (`download_emsdk.cmake` → `emsdk install`,
+plus `download_node.cmake` on x86_64). We tried the obvious simpler path — the public
+`emscripten/emsdk:4.0.20` image — and it **fails at link with the `$` error even on the stock
+all-modules config**. What's surprising is that this is *not* an emscripten-version difference: the
+emscripten binary is **byte-identical** (both commit `6913738`), the node version matches, and the
+emitted link command + module set are identical. The divergence is **environmental** — the public
+image's emscripten ports/cache state leaves `$` unresolved where VTK's CI image resolves it. Rather
+than chase the exact cause, we reproduce VTK's known-good environment. (Verified: a full build on
+`kitware/vtk:ci-fedora42` links the bundle cleanly; the same stock config on `emscripten/emsdk:4.0.20`
+does not.)
 
 ## Pins (bump together)
 
 | Pin | Value | Why |
 |---|---|---|
 | VTK commit | `8fcb79cafc338bf890579ba9f565019130c7b1e8` | the commit the `@kitware/vtk-wasm` 2.1.8 loader's bundle (`9.7.20260726`) tracks — matches the loader's glue API + `vtkWebAssembly` naming + standalone-session |
-| emsdk | `4.0.20` | what VTK's CI pins at that commit (`.gitlab/ci/download_emsdk.cmake`) |
-| platform | **amd64** | VTK CI is amd64; the arm64 emscripten image miscompiles VTK's SOA embind |
+| CI image | `kitware/vtk:ci-fedora42-20260603` | VTK's own wasm CI image; the public `emscripten/emsdk` image fails at link (see "Why the VTK CI image") |
+| emsdk | `4.0.20` | what VTK's CI pins at that commit (`.gitlab/ci/download_emsdk.cmake`); `build.sh` installs it |
+| platform | amd64 (CI) / arm64 (local) | CI runs amd64; the build also links cleanly on native arm64 with this recipe (`build.sh` installs the arch-matching emsdk) |
 
 ## Run it
 
-**CI (recommended):** GitHub Actions → *Build custom VTK.wasm bundle* (`workflow_dispatch`). Runs
-natively on an amd64 runner inside `emscripten/emsdk:4.0.20`, uploads the bundle as an artifact.
-Inputs: `vtk_commit`, `optimization`.
+**CI (recommended):** GitHub Actions → *Build custom VTK.wasm bundle* (`workflow_dispatch`). Runs on
+an amd64 runner inside `kitware/vtk:ci-fedora42-…`; `build.sh` installs VTK's pinned emsdk, builds,
+and uploads the bundle as an artifact. Inputs: `vtk_commit`, `optimization`.
 
-**Locally** (Apple Silicon needs `--platform linux/amd64`; emulated → slow):
+**Locally** (works natively on Apple Silicon — no `--platform` needed):
 
 ```bash
-docker build --platform linux/amd64 -t vcell-vtk-wasm tools/vtk-wasm
+docker build -t vcell-vtk-wasm tools/vtk-wasm
 mkdir -p dist
-docker run --rm --platform linux/amd64 -e VTK_WASM_OPTIMIZATION=SMALL \
-    -e OUT_DIR=/out -v "$PWD/dist:/out" vcell-vtk-wasm
+docker run --rm -e VTK_WASM_OPTIMIZATION=SMALL -e OUT_DIR=/out -v "$PWD/dist:/out" vcell-vtk-wasm
 ```
 
 ## Status / open work
 
-This scaffold produces VTK's **all-modules** bundle (guaranteed to compile — it's what Kitware
-ships). Before it's production-ready:
+This produces VTK's **all-modules** bundle (it's what Kitware ships, and it links cleanly — see
+"Why stock all-modules" above). Before it's production-ready:
 
 1. **Verify what the bundle exposes.** Load the artifact through `@kitware/vtk-wasm` and confirm the
    session namespace actually surfaces `vtkXMLImageDataReader` / `vtkXMLUnstructuredGridReader`,
@@ -70,9 +111,12 @@ ships). Before it's production-ready:
    data-model API instead, which the released bundle already exposes.)
 2. **Golden-file test:** client-side `vtkThreshold` + `vtkWindowedSincPolyDataFilter` (12 iters,
    pass-band 0.05, feature angle 120°) reproduces the pyvcell/Java `.vtu` for a real VCell mesh.
-3. **Trim modules** from the working all-modules baseline to cut size (all-modules is ~77 MB /
-   ~12 MB gz; a trimmed `IOXML` + `FiltersGeometry`/`Core`/`General` + rendering set at `SMALLEST`
-   should be far smaller). Trim incrementally and keep it building — see the cascade warning above.
+3. **Trim modules** from the working all-modules baseline to cut size (all-modules is ~78 MB /
+   ~12 MB gz). ⚠️ This is delicate — a blanket "drop the backends we don't render with" trim breaks
+   the link (the `undefined symbol: $`, see "The `undefined symbol: $` link failure"). Re-introduce
+   disables **one module at a time**, keeping the `.mjs` linking at each step, to find the specific
+   module that leaves the dangling `$`. Do this only after steps 1–2 confirm the all-modules bundle
+   actually works in the loader; size is an optimization, not a blocker.
 4. **Build time / cost:** the all-modules wasm build is large; on a stock GitHub runner it is slow.
    Consider a larger runner and/or ccache before making this routine.
 5. **Publish + consume:** once trimmed and verified, publish the bundle (release asset / GitHub
