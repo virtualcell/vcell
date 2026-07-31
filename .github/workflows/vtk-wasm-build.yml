@@ -1,0 +1,44 @@
+name: Build custom VTK.wasm bundle
+
+# Manual-only (and path-scoped) — this is a heavy, infrequent build (bumped only when the
+# @kitware/vtk-wasm loader / VTK pin changes). It never runs on normal PRs, so it does not affect
+# the main CI. Produces the trimmed vtkWebAssembly.{mjs,wasm} bundle VCell's field viewer loads.
+# See tools/vtk-wasm/README.md for the recipe and the open work (module trimming, reader exposure).
+on:
+  workflow_dispatch:
+    inputs:
+      vtk_commit:
+        description: "VTK commit (default = the @kitware/vtk-wasm loader's pinned commit, 9.7.20260726)"
+        default: "8fcb79cafc338bf890579ba9f565019130c7b1e8"
+        type: string
+      optimization:
+        description: "VTK_WASM_OPTIMIZATION"
+        default: "SMALL"
+        type: choice
+        options: [NO_OPTIMIZATION, LITTLE, MORE, BEST, SMALL, SMALLEST, SMALLEST_WITH_CLOSURE]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest        # native amd64 — matches VTK's own CI toolchain
+    timeout-minutes: 350          # VTK all-modules wasm build is large; see README
+    container:
+      image: emscripten/emsdk:4.0.20   # the emsdk VTK's CI pins for this commit
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build deps
+        run: apt-get update && apt-get install -y --no-install-recommends ninja-build git ca-certificates
+
+      - name: Build custom VTK.wasm bundle
+        env:
+          VTK_COMMIT: ${{ inputs.vtk_commit }}
+          VTK_WASM_OPTIMIZATION: ${{ inputs.optimization }}
+          OUT_DIR: ${{ github.workspace }}/dist
+        run: bash tools/vtk-wasm/build.sh
+
+      - name: Upload bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: vcell-vtk-wasm-${{ inputs.optimization }}
+          path: dist/vcell-vtk-wasm32-emscripten.tar.gz
+          if-no-files-found: error
