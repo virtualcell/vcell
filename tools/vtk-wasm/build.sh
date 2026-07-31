@@ -45,9 +45,14 @@ fi
 # older per-class `vtkweb.js` and, worse, tries to link the VTK::WebAssembly *executable* into its
 # own target → "may not be linked into another target"). So we do NOT set VTK_WRAP_JAVASCRIPT; we
 # just ensure the module is enabled (VTK's all-modules config already does, but be explicit).
+# VTK's CI enables an `sccache` compiler launcher (its own build cache) that isn't in the toolchain
+# image — override to empty so every compile doesn't die with "sccache: not found". (A real ccache/
+# sccache + Actions cache is a worthwhile speed follow-up for this large build.)
 emcmake cmake -S "$SRC" -B "$BUILD" -G Ninja \
   -C "$SRC/.gitlab/ci/configure_wasm32_emscripten_linux.cmake" \
   -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_C_COMPILER_LAUNCHER= \
+  -DCMAKE_CXX_COMPILER_LAUNCHER= \
   -DVTK_MODULE_ENABLE_VTK_WebAssembly=YES \
   -DVTK_WASM_OPTIMIZATION="$OPT" \
   -DVTK_BUILD_TESTING=OFF
