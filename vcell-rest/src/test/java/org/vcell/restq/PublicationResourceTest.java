@@ -63,6 +63,47 @@ public class PublicationResourceTest {
     KeycloakTestClient keycloakClient = new KeycloakTestClient();
 
     @Test
+    public void testNullDateRejected() throws JsonProcessingException, ApiException {
+        String pubuser = "alice";
+        boolean mapped = new UsersResourceApi(aliceAPIClient).mapUser(TestEndpointUtils.administratorUserLoginInfo);
+        Assertions.assertTrue(mapped);
+
+        // a null publication date once reached the database and broke client logins (NPE while
+        // sorting published models) - create and update must reject it before it is persisted
+        Publication nullDatePublication = new Publication(
+                null,
+                "publication without date",
+                new String[]{"author1"},
+                1994,
+                "citation",
+                "pubmedId",
+                "doi",
+                0,
+                "url",
+                0,
+                new BiomodelRef[0],
+                new MathmodelRef[0],
+                null);
+        String nullDatePublication_json = objectMapper.writeValueAsString(nullDatePublication);
+
+        given().auth().oauth2(keycloakClient.getAccessToken(pubuser))
+                .body(nullDatePublication_json)
+                .header("Content-Type", MediaType.APPLICATION_JSON)
+                .when()
+                .post("/api/v1/publications")
+                .then()
+                .statusCode(400);
+
+        given().auth().oauth2(keycloakClient.getAccessToken(pubuser))
+                .body(nullDatePublication_json)
+                .header("Content-Type", MediaType.APPLICATION_JSON)
+                .when()
+                .put("/api/v1/publications")
+                .then()
+                .statusCode(400);
+    }
+
+    @Test
     public void testAddListRemove() throws JsonProcessingException, SQLException, DataAccessException, ApiException {
         String pubuser = "alice";
         String nonpubuser = "bob";

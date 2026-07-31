@@ -114,12 +114,6 @@ docs/Vcellopt.md
 docs/VcelloptStatus.md
 docs/VersionRep.md
 test/__init__.py
-test/test_group_access_rep.py
-test/test_group_member_rep.py
-test/test_preview_rep.py
-test/test_publication_info_rep.py
-test/test_user_rep.py
-test/test_version_rep.py
 tox.ini
 vcell_client/__init__.py
 vcell_client/api/__init__.py
