@@ -1,11 +1,15 @@
 # SpringSaLaD Spatiotemporal 3D Renderer — Design & Decision Record
 
 **Status:** Phases 0 & 1 **shipped** and deployed to dev/alpha (`8.0.4.01`). Phase 2
-(field viz, web) — vtk.js `.vti` spike done (merged, structured case); the field-viz
-architecture is now worked out in **§8** (two-viewer / two-contract model; the good FV
-representation is *smoothed unstructured*, so **vtk.wasm** is the target renderer — a
-2026-07-30 spike confirms real VTK unstructured filters + volume rendering run in-browser,
-and pins the custom-build scope to `IOXML` + `FiltersGeometry`).
+(field viz) — vtk.js `.vti` spike done (merged, structured case). The field-viz
+architecture is **settled** in **§8 / §8B**: **vtk.wasm is the renderer everywhere**
+(web *and* local desktop via system-browser + a local Java server — decided by the
+local-computation requirement, since local has no Python for a geometry server);
+solvers emit the **raw** representation (FV a trivial `.vti`, FE the body-fitted mesh)
+and **vtk.wasm does the smoothing/slicing/contouring client-side** with stock filters
+(FV = `vtkThreshold` + `vtkWindowedSincPolyDataFilter`, confirmed by reading the Java +
+pyvcell mappers) — no smoothing writer in C++/Java/Python. Custom vtk.wasm build
+prototyped (compiles; runnable bundle needs CI version-pinning). Chombo retired.
 **Created:** 2026-07-29 · **Last updated:** 2026-07-30
 **Scope:** An integrated spatiotemporal 3D renderer / movie player for SpringSaLaD
 (Langevin particle) simulations in VCell, with a possible extension to visualizing
@@ -533,3 +537,149 @@ smaller-footprint waypoint that reuses the §6 spike.
 2. **Thin Java serve endpoint** in `vcell-rest` for `.vti`/`.vtu` bytes.
 3. **FEniCSx postprocess** emits both contracts (native `.vtu` + FE→image resample) as
    it deploys.
+
+---
+
+## 8B. Resolution after a deeper design pass (2026-07-30)
+
+§§8.8–8.13 below **supersede the fallback framing in §8.5–8.7 where they conflict** —
+specifically "geometry-server + vtk.js as the near-term path" and "local desktop = the
+existing image viewer." A longer design conversation (moving boundaries, local
+computation, and reading the actual FV→VTK code) resolved the architecture more sharply.
+
+### 8.8 Moving boundaries make it a geometry movie — but a *piecewise* one
+
+`vcell-fenics` supports **moving boundaries in 2D and 3D**. For those, the geometry is a
+function of time — mesh, membrane, and every slice change each frame — so the elegant
+"geometry once + scalar stream" optimization applies only to **static-mesh** sims
+(regular FV, static FE), not moving ones. It's a *geometry movie*.
+
+But it's **piecewise**: the solver runs **ALE** (nodes move, topology fixed) for several
+steps, then **remeshes** when mesh quality degrades. So the series partitions into
+segments `[topo T₁ | frames…][remesh][topo T₂ | frames…]…`, which recovers a lot:
+- **Connectivity is shipped once per segment** (remesh is occasional → amortized); most
+  frames are just node positions + field.
+- **The boundary/membrane surface — the primary moving-boundary visual — is cheap**: its
+  face topology is fixed within a segment, so surface connectivity ships once per segment
+  and you stream boundary positions + field per frame.
+- **Per-frame regardless:** arbitrary volume slices (a fixed-world plane crosses different
+  points as nodes move) and isosurfaces (field-dependent).
+
+**XDMF** natively expresses exactly this (time grids that *reference a shared topology* +
+per-step geometry/attributes), and `vcell-fenics` already emits XDMF → pyvista/VTK read it.
+
+### 8.9 Local computation decides the renderer = **vtk.wasm**
+
+The VCell client spawns **local solvers on the laptop** (the C++ FV / moving-boundary
+solvers; **not** FEniCSx, which is a conda/PETSc/MPI stack → HPC-only). **Local has no
+Python → no pyvista.** Therefore the **geometry-server option (§8.5-A) cannot serve local
+computation at all** — it would leave local on the staircase image viewer.
+
+**vtk.wasm is the only path that gives good unstructured vis both on the web *and*
+locally without Python or native code on the client** — because it *is* real VTK, running
+as wasm in a browser; the client does the cutting/contouring. Local mechanism, no
+Python / no native-VTK / no server:
+- The local solver's output is turned into the client data contract locally (see §8.10).
+- The desktop spins a **tiny pure-Java local HTTP server** (with the COOP/COEP headers
+  wasm threads need), serving the viewer bundle + the local data, and opens the **system
+  browser** — deliberately avoiding an embedded Chromium (JCEF), which would be exactly
+  the heavy native dependency the packaging constraint (§1) fights.
+- The vtk.wasm viewer bundle ships once with the installer (tens of MB).
+
+This is what makes vtk.wasm **strategic, not optional**, and it **supersedes §8.6's
+"local desktop = existing image viewer."**
+
+### 8.10 Do the geometry *in* vtk.wasm, fed by a trivial `.vti`
+
+Best data contract: solvers emit the **raw** representation, **not** a pre-smoothed `.vtu`:
+- **FV** → a trivial **`.vti`** (regular Cartesian grid: field scalars + a **region-label
+  cell array**). Pure serialization — no VTK, no smoothing, no custom mesh enumeration.
+- **FE / moving boundary** → the **body-fitted mesh** as-is (XDMF / `.vtu` sequence,
+  segmented by ALE topology per §8.8).
+
+Then **vtk.wasm does everything client-side with stock filters**:
+- FV: `vtkThreshold` (region == domain → the domain's voxels; VTK preserves original
+  point/cell IDs so the field maps back automatically) → `vtkGeometryFilter` →
+  `vtkWindowedSincPolyDataFilter` (the smoothing) → slice / contour / render.
+- FE: render / slice / contour the body-fitted mesh directly.
+
+Consequences: **no smoothing writer in C++, Java, or Python anywhere** — the smoothing
+lives once, in VTK-wasm; smaller transport (raw grid ≪ explicit smoothed unstructured);
+fully interactive (the client holds the raw field). Static FV smooths **once** client-side
+and caches, streaming scalars; moving boundary ships the segmented mesh and the client
+re-cuts per frame — giving **interactive slicing across a moving boundary** that a
+precomputed polydata movie can't. This supersedes §8.4/§8.5's "server produces the
+smoothed/`.vtp` geometry."
+
+### 8.11 What the FV→VTK transform actually is (code read, 2026-07-30)
+
+Read pyvcell (`_internal/simdata/vtk/`) and Java (`org.vcell.vis`) to settle whether the
+smoothing is stock VTK or a custom clip-to-tets algorithm:
+
+- **FV** (`fromMesh3DVolume` in Java = `from_mesh3d_volume` in pyvcell, **identical**):
+  emit a **whole hex** (`VisVoxel`) per domain cell + point dedup + FV-index tag, **no
+  clipping**. Smoothing = `vtkUnstructuredGridGeometryFilter` → `vtkGeometryFilter` →
+  **`vtkWindowedSincPolyDataFilter`** (12 iterations, pass-band 0.05, feature angle 120°,
+  boundary/feature-edge smoothing off, normalize-coords on), then displace the boundary
+  corner points onto the smoothed surface. **Stock VTK, cheap, deterministic.** The
+  "initially a hex … then may be clipped" comment is **vestigial** — nothing clips in FV.
+- **FE / moving boundary:** the mesh arrives **body-fitted** from DOLFINx — **no smoothing
+  or clipping at all**.
+- **Chombo (RETIRED):** the *only* path with clip→irregular-polyhedra→per-cell
+  `vtkDelaunay3D` — and there the **solver** emits the embedded-boundary cut cells; the
+  mapper only tetrahedralizes them. Superseded by `vcell-fenics`.
+
+So the per-cell `vtkDelaunay3D` (with its inside-out/empty edge cases) **does not apply to
+the kept paths.** FV is Threshold + WindowedSinc; FE is already conforming. That is what
+makes "geometry in vtk.wasm" cheap and robust rather than a per-cell tessellation gamble.
+
+### 8.12 Custom vtk.wasm build — prototype results (2026-07-30)
+
+A Dockerfile (emsdk 4.0.20 + VTK + trimmed modules: groups `DONT_WANT`, then `WANT`
+`IOXML`/`FiltersGeometry`/`FiltersCore`/`FiltersGeneral`/`FiltersSources`/`RenderingOpenGL2`/
+`RenderingVolumeOpenGL2`/`RenderingUI`/`Interaction*`, `VTK_WRAP_JAVASCRIPT=ON`), built
+incrementally via a docker volume so opt-level changes relink cached objects.
+
+- **Proven:** VTK **9.6.2** configures + fully compiles (9 282 objects) + links to wasm
+  with our module set. The recipe is structurally sound.
+- **Size:** `LITTLE`-opt, *including* rendering ≈ **62 MB / 10.9 MB gzipped** (vs the
+  released all-modules **77 MB / 12 MB**). Modest — real trimming needs `SMALLEST(_WITH_
+  CLOSURE)` (which crashed emscripten's acorn optimizer on 9.6.2) or the IO/filters-only
+  "data kernel" hybrid (drop rendering, feed vtk.js).
+- **Blocked (runnable, loader-compatible bundle):** the `@kitware/vtk-wasm` loader targets
+  VTK **master**'s `vtkWebAssembly.mjs` and string-patches the glue; VTK 9.6.2 emits
+  `vtkweb.js` (different shape, not directly importable); VTK **master HEAD** would not
+  compile core embind against emsdk 4.0.20 in the container (a moving-target break, even
+  though VTK's own CI pins that emsdk).
+- **Conclusion:** the module recipe works; getting a *runnable, loader-matched, optimized*
+  bundle means pinning the exact **(VTK commit, emsdk, configure, loader version)**
+  quadruple Kitware's CI uses — a real CI/version-pinning exercise, not a laptop build.
+  This confirms the "own the Emscripten build" cost is **real but bounded**.
+
+### 8.13 Settled decision (supersedes §8.6 where they conflict)
+
+- **Renderer: vtk.wasm, everywhere** — `webapp-ng` (web) and the desktop via
+  **system-browser + a local pure-Java HTTP server**. It is the only *client-portable*
+  real VTK, and the **local-computation requirement (§8.9) is what decides this** over the
+  geometry-server.
+- **Data contract: solvers emit the raw representation** — FV a trivial `.vti` (grid +
+  region labels + field); FE/moving-boundary the body-fitted mesh (XDMF/`.vtu`, ALE-
+  segmented). **vtk.wasm does threshold/smooth/slice/contour/render client-side.** No
+  smoothing writer in C++/Java/Python.
+- **Serving is thin and stateless** (vcell-rest bytes for web; local Java file server for
+  desktop). The heavy VTK work is **client-side in wasm**, not a server or a per-solver
+  smoothing postprocess.
+- **Option A (geometry-server + pyvista `.vtp`) is demoted** — it can't serve local
+  computation; keep only as a possible web-only interim if the wasm build slips.
+- **Chombo retired; Java-VTK and trame out.**
+
+**Revised next increments:**
+1. **Custom vtk.wasm build in CI**, pinned to a loader-compatible `(VTK commit, emsdk,
+   configure)`; module set `IOXML` + `FiltersGeometry` + `FiltersCore`/`FiltersGeneral`
+   (Threshold, WindowedSinc, Cutter, Contour) + rendering. Home it in the monorepo
+   (`tools/vtk-wasm/`, `workflow_dispatch`-gated) for now; graduate to
+   `virtualcell/vcell-vtk-wasm` if it grows.
+2. **Trivial FV `.vti` writer** (pure-Java or C++): grid + region-label array + field.
+3. **Golden-file test:** client-side `vtkThreshold` + `vtkWindowedSincPolyDataFilter`
+   reproduces the pyvcell/Java `.vtu`.
+4. **webapp-ng viewer** + **desktop launch** (local Java server + system browser).
