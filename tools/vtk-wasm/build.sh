@@ -53,6 +53,11 @@ fi
 # -sERROR_ON_UNDEFINED_SYMBOLS=0; it was a benign warning in earlier builds). Our viewer uses WebGL
 # (RenderingOpenGL2), not those, so allow the undefined symbol for now. TODO: trim RenderingWebGPU/
 # WebXR/VR (see README) — that removes the `$` cause cleanly *and* cuts size.
+# Option 1 (vtk.wasm renders, WebGL2 — design doc §8B): keep RenderingOpenGL2 +
+# RenderingVolumeOpenGL2 (unstructured volume rendering), drop the rendering backends we don't use.
+# Dropping WebGPU/WebXR/VR removes the emdawnwebgpu port + JSPI + WebXR js-library (the source of the
+# stray `$` and most of the link complexity); netcdf is disabled because its posixio.c uses a
+# Windows-only `_filelengthi64` that doesn't compile for wasm (and we don't need it).
 emcmake cmake -S "$SRC" -B "$BUILD" -G Ninja \
   -C "$SRC/.gitlab/ci/configure_wasm32_emscripten_linux.cmake" \
   -DCMAKE_BUILD_TYPE=Release \
@@ -60,6 +65,13 @@ emcmake cmake -S "$SRC" -B "$BUILD" -G Ninja \
   -DCMAKE_CXX_COMPILER_LAUNCHER= \
   -DCMAKE_EXE_LINKER_FLAGS="-sERROR_ON_UNDEFINED_SYMBOLS=0" \
   -DVTK_MODULE_ENABLE_VTK_WebAssembly=YES \
+  -DVTK_ENABLE_WEBGPU=OFF \
+  -DVTK_MODULE_ENABLE_VTK_RenderingWebGPU=NO \
+  -DVTK_MODULE_ENABLE_VTK_RenderingWebXR=NO \
+  -DVTK_MODULE_ENABLE_VTK_RenderingVR=NO \
+  -DVTK_MODULE_ENABLE_VTK_RenderingVRModels=NO \
+  -DVTK_MODULE_ENABLE_VTK_IONetCDF=NO \
+  -DVTK_MODULE_ENABLE_VTK_netcdf=NO \
   -DVTK_WASM_OPTIMIZATION="$OPT" \
   -DVTK_BUILD_TESTING=OFF
 
