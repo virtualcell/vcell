@@ -70,7 +70,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			if(name.contains(",")) {
 				name = name.substring(0, name.indexOf(","));
 			}
-			int year = Integer.parseInt((new SimpleDateFormat("yyyy")).format(pi.getPubDate()));
+			String year = pi.getPubDate() == null ? "?" : (new SimpleDateFormat("yyyy")).format(pi.getPubDate());
 			String label2 = name + " " + year + " " + label;
 			int maxLen = MaxPublicationLabelLength + (node.getChildCount() > 1 ? 0 : 4);
 			if(label2.length() > maxLen) {
@@ -84,7 +84,7 @@ public java.awt.Component getTreeCellRendererComponent(JTree tree, Object value,
 			}
 			component.setText("<html>" + label2 + "</html>");			
 			component.setToolTipText("<html>" + label + "</html>");
-			if(pi.getPubDate().compareTo(Calendar.getInstance().getTime()) > 0) {	// sanity check
+			if(pi.getPubDate() == null || pi.getPubDate().compareTo(Calendar.getInstance().getTime()) > 0) {	// sanity check
 				setIcon(fieldFolderWarningIcon);
 			} else if(pi.getDoi() == null) {
 				setIcon(fieldFolderWarningIcon);
