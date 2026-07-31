@@ -33,33 +33,40 @@ if [ ! -e "$SRC/CMakeLists.txt" ]; then
   git checkout -q FETCH_HEAD
 fi
 
-# --- configure with VTK's own wasm CI cache (-C), plus JS wrapping + our optimization ---
+# --- configure with VTK's own wasm CI cache (-C) ---
 # The -C file transitively includes configure_wasm_linux.cmake -> configure_wasm_common.cmake ->
 # configure_common.cmake, giving the complete working set: VTK_BUILD_ALL_MODULES, WRAP_SERIALIZATION,
 # BUILD_TYPES_JSON, DISPATCH_SOA_ARRAYS, ENABLE_WEBGPU, WEBASSEMBLY_THREADS=OFF, and the module
-# disables for libs absent from the toolchain image. We only add VTK_WRAP_JAVASCRIPT (not set in the
-# cache files) and the optimization knob.
+# disables for libs absent from the toolchain image.
+#
+# The loader bundle (vtkWebAssembly.{mjs,wasm}, standalone-session API) is produced by the
+# **VTK::WebAssembly module** (Web/WebAssembly, LIBRARY_NAME vtkWebAssembly, depends on
+# WebAssemblySession + SerializationManager) — NOT by `VTK_WRAP_JAVASCRIPT` (that path emits the
+# older per-class `vtkweb.js` and, worse, tries to link the VTK::WebAssembly *executable* into its
+# own target → "may not be linked into another target"). So we do NOT set VTK_WRAP_JAVASCRIPT; we
+# just ensure the module is enabled (VTK's all-modules config already does, but be explicit).
 emcmake cmake -S "$SRC" -B "$BUILD" -G Ninja \
   -C "$SRC/.gitlab/ci/configure_wasm32_emscripten_linux.cmake" \
   -DCMAKE_BUILD_TYPE=Release \
-  -DVTK_WRAP_JAVASCRIPT=ON \
+  -DVTK_MODULE_ENABLE_VTK_WebAssembly=YES \
   -DVTK_WASM_OPTIMIZATION="$OPT" \
   -DVTK_BUILD_TESTING=OFF
 
 # --- build (VTK's wasm cache pins the link job pool to 1 to dodge an emscripten file-lock bug) ---
 cmake --build "$BUILD"
 
-# --- collect the loader bundle ---
+# --- collect the loader bundle (the VTK::WebAssembly module emits vtkWebAssembly.{js|mjs,wasm}) ---
 mkdir -p "$OUT"
 find "$BUILD" -name "vtkWebAssembly.wasm" -exec cp {} "$OUT/" \;
-find "$BUILD" -name "vtkWebAssembly.mjs"  -exec cp {} "$OUT/" \;
-if [ ! -f "$OUT/vtkWebAssembly.wasm" ] || [ ! -f "$OUT/vtkWebAssembly.mjs" ]; then
-  echo "ERROR: expected vtkWebAssembly.{wasm,mjs} not produced — check VTK_WRAP_JAVASCRIPT" >&2
-  find "$BUILD" -name "vtk*.wasm" -o -name "vtk*.mjs" | head >&2
+find "$BUILD" \( -name "vtkWebAssembly.mjs" -o -name "vtkWebAssembly.js" \) -exec cp {} "$OUT/" \;
+GLUE="$(ls "$OUT"/vtkWebAssembly.mjs "$OUT"/vtkWebAssembly.js 2>/dev/null | head -1)"
+if [ ! -f "$OUT/vtkWebAssembly.wasm" ] || [ -z "$GLUE" ]; then
+  echo "ERROR: expected vtkWebAssembly.{wasm, mjs|js} not produced" >&2
+  find "$BUILD" -name "vtkWebAssembly*" -o -name "vtkweb*" | head >&2
   exit 1
 fi
 cd "$OUT"
-tar czf "vcell-vtk-wasm32-emscripten.tar.gz" vtkWebAssembly.wasm vtkWebAssembly.mjs
-echo ">>> bundle:"
+tar czf "vcell-vtk-wasm32-emscripten.tar.gz" vtkWebAssembly.wasm "$(basename "$GLUE")"
+echo ">>> bundle: $(basename "$GLUE") + vtkWebAssembly.wasm"
 ls -lh "$OUT"
 echo ">>> gzipped wasm: $(gzip -c vtkWebAssembly.wasm | wc -c | awk '{printf "%.1f MB", $1/1048576}')"

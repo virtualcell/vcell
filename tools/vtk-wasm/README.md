@@ -21,8 +21,18 @@ VTK's **own, self-consistent CI configuration** — cherry-picking module flags 
 So this build configures via VTK's `-C .gitlab/ci/configure_wasm32_emscripten_linux.cmake` (which
 transitively pulls `configure_wasm_common.cmake` + `configure_common.cmake`: `VTK_BUILD_ALL_MODULES`,
 `VTK_WRAP_SERIALIZATION`, `VTK_BUILD_TYPES_JSON`, `VTK_DISPATCH_SOA_ARRAYS`, `VTK_ENABLE_WEBGPU`,
-`VTK_WEBASSEMBLY_THREADS=OFF`, and the module-disable list), and only adds `VTK_WRAP_JAVASCRIPT=ON`
-and the `VTK_WASM_OPTIMIZATION` knob.
+`VTK_WEBASSEMBLY_THREADS=OFF`, and the module-disable list).
+
+**Do not set `VTK_WRAP_JAVASCRIPT`.** VTK has two wasm-bundle mechanisms and only one is the loader's:
+- `VTK_WRAP_JAVASCRIPT=ON` → the *older* per-class **`vtkweb.js`** (what VTK 9.6.2 emitted), and it
+  fails here because it links *all* modules — including the `VTK::WebAssembly` module, which is
+  itself an executable (`Target "VTK::WebAssembly" … may not be linked into another target`).
+- The **`VTK::WebAssembly` module** (`Web/WebAssembly`, `LIBRARY_NAME vtkWebAssembly`, depends on
+  `WebAssemblySession` + `SerializationManager`) → produces **`vtkWebAssembly.{js,wasm}`** with the
+  standalone-session API — *this* is what `@kitware/vtk-wasm` loads.
+
+VTK CI never sets `VTK_WRAP_JAVASCRIPT`; the bundle comes from the module. So we just ensure
+`VTK_MODULE_ENABLE_VTK_WebAssembly=YES` and build.
 
 ## Pins (bump together)
 
