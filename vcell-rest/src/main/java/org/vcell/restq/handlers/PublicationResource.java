@@ -71,8 +71,11 @@ public class PublicationResource {
 //    @RolesAllowed("curator")
     @RolesAllowed("user")
     @Operation(operationId = "createPublication", summary = "Create publication")
-    public Long add(Publication publication) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
+    public Long add(Publication publication) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException, BadRequestWebException {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
+        if (publication.date() == null) {
+            throw new BadRequestWebException("publication date is required");
+        }
         try {
             User vcellUser = userRestService.getUserFromIdentity(securityIdentity);
             KeyValue key = publicationService.savePublication(publication, vcellUser);
@@ -92,8 +95,11 @@ public class PublicationResource {
 //    @RolesAllowed("curator")
     @RolesAllowed("user")
     @Operation(operationId = "updatePublication", summary = "Update publication")
-    public Publication update(Publication publication) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException {
+    public Publication update(Publication publication) throws PermissionWebException, NotAuthenticatedWebException, DataAccessWebException, BadRequestWebException {
         Log.debug(securityIdentity.getPrincipal().getName()+" with roles " + securityIdentity.getRoles() + " is adding publication "+publication.title());
+        if (publication.date() == null) {
+            throw new BadRequestWebException("publication date is required");
+        }
         try {
             User vcellUser = userRestService.getUserFromIdentity(securityIdentity);
             Publication pub = publicationService.updatePublication(publication, vcellUser);
