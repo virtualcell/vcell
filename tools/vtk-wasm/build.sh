@@ -48,11 +48,17 @@ fi
 # VTK's CI enables an `sccache` compiler launcher (its own build cache) that isn't in the toolchain
 # image — override to empty so every compile doesn't die with "sccache: not found". (A real ccache/
 # sccache + Actions cache is a worthwhile speed follow-up for this large build.)
+# The vtkWebAssembly module's link pulls in WebGPU (emdawnwebgpu port), WebXR, VR and JSPI, one of
+# which leaves a stray `undefined symbol: $` — fatal by default (emscripten's own suggested fix is
+# -sERROR_ON_UNDEFINED_SYMBOLS=0; it was a benign warning in earlier builds). Our viewer uses WebGL
+# (RenderingOpenGL2), not those, so allow the undefined symbol for now. TODO: trim RenderingWebGPU/
+# WebXR/VR (see README) — that removes the `$` cause cleanly *and* cuts size.
 emcmake cmake -S "$SRC" -B "$BUILD" -G Ninja \
   -C "$SRC/.gitlab/ci/configure_wasm32_emscripten_linux.cmake" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_C_COMPILER_LAUNCHER= \
   -DCMAKE_CXX_COMPILER_LAUNCHER= \
+  -DCMAKE_EXE_LINKER_FLAGS="-sERROR_ON_UNDEFINED_SYMBOLS=0" \
   -DVTK_MODULE_ENABLE_VTK_WebAssembly=YES \
   -DVTK_WASM_OPTIMIZATION="$OPT" \
   -DVTK_BUILD_TESTING=OFF
