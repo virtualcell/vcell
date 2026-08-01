@@ -14,6 +14,8 @@ import cbit.vcell.render.Camera;
 import cbit.vcell.render.Trackball;
 import cbit.vcell.render.Vect3d;
 import cbit.vcell.simdata.SpringSaladTrajectory;
+import org.vcell.util.springsalad.Colors;
+import org.vcell.util.springsalad.NamedColor;
 
 import javax.swing.JPanel;
 import java.awt.BasicStroke;
@@ -438,20 +440,35 @@ public class SpringSaladViewerCanvas extends JPanel {
 	private static int clamp255(double v) { return (int) Math.max(0, Math.min(255, Math.round(v))); }
 
 	// ---- SpringSaLaD color-name palette ----
+
+	/**
+	 * The 28 SpringSaLaD color names, resolved from {@link Colors} — the same table VCell uses to
+	 * write the solver input, so every name that can appear in a viewer file is covered. (An earlier
+	 * hand-written subset here silently rendered LIME, LIME_GREEN, PURPLE, TEAL and a dozen others
+	 * as gray.) Built once: the lookup runs per site per frame.
+	 */
 	private static final Map<String, Color> COLORS = new HashMap<>();
 	static {
-		COLORS.put("RED", Color.RED); COLORS.put("GREEN", new Color(0, 200, 0));
-		COLORS.put("BLUE", new Color(60, 90, 255)); COLORS.put("YELLOW", Color.YELLOW);
-		COLORS.put("CYAN", Color.CYAN); COLORS.put("MAGENTA", Color.MAGENTA);
-		COLORS.put("ORANGE", Color.ORANGE); COLORS.put("PINK", Color.PINK);
-		COLORS.put("GRAY", Color.GRAY); COLORS.put("GREY", Color.GRAY);
-		COLORS.put("LIGHT_GRAY", Color.LIGHT_GRAY); COLORS.put("DARK_GRAY", Color.DARK_GRAY);
-		COLORS.put("WHITE", Color.WHITE); COLORS.put("BLACK", new Color(40, 40, 40));
+		for (NamedColor nc : Colors.COLORARRAY) {
+			COLORS.put(nc.getName(), visible(nc.getColor()));
+		}
+		COLORS.put("GREY", COLORS.get(Colors.GRAYSTRING)); // tolerate the British spelling
 	}
 
-	private static Color colorForName(String name) {
+	/** Resolve a SpringSaLaD color name to a paint color; unknown/absent names render light gray. */
+	public static Color colorForName(String name) {
 		if (name == null) return Color.LIGHT_GRAY;
 		Color c = COLORS.get(name.trim().toUpperCase(Locale.ROOT));
 		return c != null ? c : Color.LIGHT_GRAY;
+	}
+
+	/**
+	 * Lift a color that is too dark to survive the sphere shading (which multiplies by luminance) —
+	 * BLACK would otherwise be an invisible disc on the black background.
+	 */
+	private static Color visible(Color c) {
+		int floor = 40;
+		if (c.getRed() >= floor || c.getGreen() >= floor || c.getBlue() >= floor) return c;
+		return new Color(Math.max(c.getRed(), floor), Math.max(c.getGreen(), floor), Math.max(c.getBlue(), floor));
 	}
 }

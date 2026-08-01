@@ -169,7 +169,10 @@ public class SpringSaladViewerPanel extends JPanel {
 
 	static SpringSaladTrajectory makeDemoTrajectory() {
 		int nSites = 60, nFrames = 120;
-		String[] palette = { "RED", "GREEN", "BLUE", "YELLOW", "ORANGE", "CYAN" };
+		// spread across the SpringSaLaD palette, including the colors an earlier hand-written
+		// subset in the canvas used to render as gray
+		String[] palette = { "RED", "LIME", "BLUE", "YELLOW", "ORANGE", "CYAN",
+				"LIME_GREEN", "PURPLE", "TEAL", "GOLD", "CRIMSON", "SLATE_BLUE" };
 		// deterministic pseudo-random initial positions/velocities (no Math.random for reproducibility)
 		double[] px = new double[nSites], py = new double[nSites], pz = new double[nSites];
 		double[] vx = new double[nSites], vy = new double[nSites], vz = new double[nSites];
