@@ -103,12 +103,15 @@ docker run --rm -e VTK_WASM_OPTIMIZATION=SMALL -e OUT_DIR=/out -v "$PWD/dist:/ou
 This produces VTK's **all-modules** bundle (it's what Kitware ships, and it links cleanly — see
 "Why stock all-modules" above). Before it's production-ready:
 
-1. **Verify what the bundle exposes.** Load the artifact through `@kitware/vtk-wasm` and confirm the
-   session namespace actually surfaces `vtkXMLImageDataReader` / `vtkXMLUnstructuredGridReader`,
-   `vtkThreshold`, `vtkGeometryFilter`, `vtkWindowedSincPolyDataFilter`. (A probe of the *released*
-   bundle showed the XML reader was **not** registered in the session even though the module builds —
-   so this needs confirming, and if readers aren't wrapped we build the grid in-memory via the
-   data-model API instead, which the released bundle already exposes.)
+1. **What the bundle exposes — DONE (probed), and why there's a patch.** Loading the bundle through
+   `@kitware/vtk-wasm` and enumerating the session showed a key gotcha: the session can only
+   *construct* a class if VTK generated serialization (SerDes) code for it — **module presence is not
+   enough**. `vtkThreshold`/`vtkCutter`/`vtkContourFilter`/`vtkWindowedSincPolyDataFilter`/
+   `vtkProjectedTetrahedra` construct fine, but the surface-extraction filters `vtkGeometryFilter` /
+   `vtkDataSetSurfaceFilter` and the XML readers were **named-only** (`Constructor not found`). The
+   `patches/` here fix the surface filters (see `patches/README.md`); the readers are left unpatched
+   because the viewer builds grids **in-memory** from server arrays. After the patch, all of
+   `vtkThreshold → vtkGeometryFilter → vtkWindowedSincPolyDataFilter` construct — verified by re-probe.
 2. **Golden-file test:** client-side `vtkThreshold` + `vtkWindowedSincPolyDataFilter` (12 iters,
    pass-band 0.05, feature angle 120°) reproduces the pyvcell/Java `.vtu` for a real VCell mesh.
 3. **Trim modules** from the working all-modules baseline to cut size (all-modules is ~78 MB /

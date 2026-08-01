@@ -10,5 +10,6 @@
 # all-modules config links cleanly on both (verified on arm64; CI runs amd64).
 FROM kitware/vtk:ci-fedora42-20260603
 COPY build.sh /work/build.sh
+COPY patches /work/patches
 WORKDIR /work
 ENTRYPOINT ["bash", "/work/build.sh"]

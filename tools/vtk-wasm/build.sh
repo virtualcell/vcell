@@ -39,6 +39,26 @@ if [ ! -e "$SRC/CMakeLists.txt" ]; then
 fi
 cd "$SRC"
 
+# --- apply local source patches (patches/*.patch) ---
+# VTK gates standalone-session constructability on serialization (SerDes) coverage, which is opt-in
+# per module + per class. Our patches add that coverage for classes the field viewer needs but VTK
+# hasn't annotated — notably the surface-extraction filters vtkGeometryFilter / vtkDataSetSurfaceFilter
+# (module INCLUDE_MARSHAL + class VTK_MARSHALAUTO + WebAssembly OPTIONAL_DEPENDS), so the FV smoothing
+# pipeline vtkThreshold -> vtkGeometryFilter -> vtkWindowedSincPolyDataFilter runs client-side. Without
+# these the classes compile in but can't be constructed in the session. See patches/README.md.
+PATCHES="${PATCHES_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/patches}"
+if [ -d "$PATCHES" ]; then
+  for p in "$PATCHES"/*.patch; do
+    [ -e "$p" ] || continue
+    if git -C "$SRC" apply --reverse --check "$p" 2>/dev/null; then
+      echo ">>> patch already applied: $(basename "$p")"
+    else
+      echo ">>> applying patch: $(basename "$p")"
+      git -C "$SRC" apply "$p" || { echo "ERROR: patch failed to apply: $p (VTK pin drifted?)" >&2; exit 1; }
+    fi
+  done
+fi
+
 # --- toolchain: install VTK's *own* pinned emsdk exactly the way VTK's wasm CI does ---
 # WHY not just use the public emscripten/emsdk:$EMSDK_VERSION image: it FAILS at link even with the
 # stock all-modules config below — the same `undefined symbol: $` (referenced by compiled C/C++)
@@ -49,7 +69,14 @@ cd "$SRC"
 # emscripten ports/cache state leaves `$` unresolved). VTK's CI image + VTK's emsdk install resolves
 # `$` cleanly. So we reproduce VTK's toolchain: download_emsdk.cmake -> emsdk install/activate, and
 # on x86_64 also download_node.cmake (VTK puts that node first on PATH; it runs the acorn JS passes).
-if ! command -v em++ >/dev/null 2>&1; then
+if [ -f "$SRC/.gitlab/emsdk/emsdk_env.sh" ]; then
+  # A prior run already installed emsdk into a reused VTK_SRC_DIR — source it (avoids a re-download,
+  # and dodges download_emsdk.cmake's "Directory not empty" when .gitlab/emsdk already exists).
+  echo ">>> reusing emsdk already installed in $SRC/.gitlab/emsdk"
+  # shellcheck disable=SC1091
+  source "$SRC/.gitlab/emsdk/emsdk_env.sh"; export EMCC_SKIP_SANITY_CHECK=1
+  [ -d "$SRC/.gitlab/node/bin" ] && export PATH="$SRC/.gitlab/node/bin:$PATH"
+elif ! command -v em++ >/dev/null 2>&1; then
   echo ">>> emscripten not on PATH — installing VTK's pinned toolchain"
   export CMAKE_CONFIGURATION=wasm32_emscripten_linux   # download_node/download_emsdk key off this
   if [ "$(uname -m)" = "x86_64" ]; then
