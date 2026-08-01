@@ -8,10 +8,25 @@ Computational cell biology simulation platform (since 1997). Java monorepo with 
 
 ## Build & Test
 
-```bash
-# Full build (skip tests)
-mvn clean install -DskipTests
+**Full instructions: [docs/BUILDING.md](docs/BUILDING.md).** Read it before debugging a
+build or test failure in a fresh checkout or worktree.
 
+Two steps, in this order — the Python packages **first**, then Maven:
+
+```bash
+# 1. Python packages (all seven), needed even for Java-only work
+pip install -r requirements.txt
+for p in vcell-cli-utils docker/swarm/vcell-admin pythonCopasiOpt/vcell-opt \
+         pythonVtk python-utils python-restclient pythonData ; do
+  ( cd "$p" && poetry env use 3.10 && poetry install ) || { echo "FAILED: $p"; break; }
+done
+
+# 2. Java. dependency:copy-dependencies is required, not optional - it populates
+#    target/maven-jars/, which vcell.sh and the Dockerfile put on the classpath.
+mvn --batch-mode clean install dependency:copy-dependencies -DskipTests=true
+```
+
+```bash
 # Fast unit tests only
 mvn test -Dgroups="Fast"
 
@@ -25,6 +40,22 @@ mvn compile test-compile -pl vcell-rest -am
 **Java:** 17
 **Maven:** 3.8+
 **Quarkus:** 3.5.2 (vcell-rest, vcell-server)
+
+Two traps that cost real debugging time:
+
+- **Java tests failing on a missing Python module or solver binary mean step 1 was
+  skipped, not a broken environment.** In a fresh worktree `vcell-core`'s Fast group
+  reports 10 errors (`MathOverrideRoundTripTest`, `CopasiOptimizationSolverTest`,
+  `VCellDataTest`) that all disappear once the Poetry environments exist. Fast tests
+  shell out to them at run time.
+- **Always pass `-am` when testing a module whose dependency you just changed**
+  (`mvn test -pl vcell-client -am`). Without it Maven silently uses the last jar
+  installed into `~/.m2` instead of your working tree, so your change appears to have
+  no effect and compile errors go unnoticed.
+
+**Every `git worktree` is a separate build environment** — Poetry environments,
+`target/`, and the downloaded `localsolvers/` are all per-worktree. Run both steps
+again in a new one; only `~/.m2` is shared.
 
 ## Module Structure
 
