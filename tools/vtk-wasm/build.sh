@@ -13,6 +13,11 @@
 # NOT emsdk), NOT emscripten/emsdk (see the toolchain note below for why that image fails).
 set -euo pipefail
 
+# Resolve this script's directory to an ABSOLUTE path up front — before any `cd` — so patches/ is
+# found regardless of how the script is invoked (CI runs `bash tools/vtk-wasm/build.sh` with a
+# relative path; resolving later, after we cd into the VTK source, would break).
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 # The VTK commit the @kitware/vtk-wasm loader (2.1.8, bundle "9.7.20260726") tracks. Building a
 # different commit risks the loader-vs-bundle glue API drifting; bump both together.
 VTK_COMMIT="${VTK_COMMIT:-8fcb79cafc338bf890579ba9f565019130c7b1e8}"
@@ -46,7 +51,7 @@ cd "$SRC"
 # (module INCLUDE_MARSHAL + class VTK_MARSHALAUTO + WebAssembly OPTIONAL_DEPENDS), so the FV smoothing
 # pipeline vtkThreshold -> vtkGeometryFilter -> vtkWindowedSincPolyDataFilter runs client-side. Without
 # these the classes compile in but can't be constructed in the session. See patches/README.md.
-PATCHES="${PATCHES_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/patches}"
+PATCHES="${PATCHES_DIR:-$SCRIPT_DIR/patches}"
 if [ -d "$PATCHES" ]; then
   for p in "$PATCHES"/*.patch; do
     [ -e "$p" ] || continue
