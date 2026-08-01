@@ -53,6 +53,12 @@ public class SpringSaladViewerCanvas extends JPanel {
 	private static final double MIN_BRIGHT = 0.45;  // farthest-glyph brightness
 	private static final double SCREEN_FILL = 0.45; // fraction of min(w,h) the scene half-extent maps to
 
+	// Default camera: an oblique 3/4 view looking DOWN onto the membrane (the z=0 plane) from above
+	// and off to one side, rather than straight down the z axis — which would show the membrane
+	// face-on, flattening the box and hiding all depth under the parallel projection.
+	private static final double DEFAULT_ELEVATION_DEG = 35; // above the membrane plane
+	private static final double DEFAULT_AZIMUTH_DEG = 30;   // turntable swing off a face-on view
+
 	private SpringSaladTrajectory trajectory;
 	private int frameIndex = 0;
 
@@ -74,7 +80,12 @@ public class SpringSaladViewerCanvas extends JPanel {
 	// world framing (computed from all frames so the box doesn't jitter during playback)
 	private boolean boundsValid = false;
 	private double cx, cy, cz;          // scene center
-	private double halfExtent = 1.0;    // half of the largest axis extent
+	/**
+	 * Radius of the scene's bounding sphere. Framing on the sphere rather than the largest axis
+	 * extent keeps the whole box on screen at ANY rotation — under the oblique default view a box
+	 * framed by its longest axis has its diagonal run off the canvas.
+	 */
+	private double viewRadius = 1.0;
 
 	// base white shaded sphere + tinted/depth-shaded sprite cache
 	private final BufferedImage baseSprite = makeBaseSprite();
@@ -114,6 +125,7 @@ public class SpringSaladViewerCanvas extends JPanel {
 		addMouseListener(ma);
 		addMouseMotionListener(ma);
 		addMouseWheelListener(ma);
+		resetView();
 	}
 
 	public void setTrajectory(SpringSaladTrajectory t) {
@@ -140,8 +152,18 @@ public class SpringSaladViewerCanvas extends JPanel {
 	public void setShowBox(boolean b) { showBox = b; repaint(); }
 	public void setShowMembrane(boolean b) { showMembrane = b; repaint(); }
 
+	/**
+	 * Restore the default oblique view. Note this resets the trackball rotation as well as
+	 * zoom/pan — {@code camera.resetView()} alone does not, because the projection is driven by the
+	 * trackball's quaternion, not the camera.
+	 * <p>
+	 * {@link Trackball#setRotation} composes its Euler angles as {@code Rz*Ry*Rx}, so the X angle
+	 * is the pitch (applied first) and the <em>Y</em> angle acts as the turntable azimuth. The Z
+	 * angle would be a roll about the view axis — leave it at zero so the horizon stays level.
+	 */
 	public void resetView() {
 		trackball.getCamera().resetView();
+		trackball.setRotation(Math.toRadians(DEFAULT_ELEVATION_DEG - 90), Math.toRadians(DEFAULT_AZIMUTH_DEG), 0);
 		zoom = 1.0; panX = 0; panY = 0;
 		repaint();
 	}
@@ -192,11 +214,11 @@ public class SpringSaladViewerCanvas extends JPanel {
 				minZ = Math.min(minZ, -zo); maxZ = Math.max(maxZ, zi);
 			}
 		}
-		if (!any) { cx = cy = cz = 0; halfExtent = 1; }
+		if (!any) { cx = cy = cz = 0; viewRadius = 1; }
 		else {
 			cx = (minX + maxX) / 2; cy = (minY + maxY) / 2; cz = (minZ + maxZ) / 2;
-			double ext = Math.max(maxX - minX, Math.max(maxY - minY, maxZ - minZ));
-			halfExtent = Math.max(ext / 2, 1e-9);
+			double dx = maxX - minX, dy = maxY - minY, dz = maxZ - minZ;
+			viewRadius = Math.max(Math.sqrt(dx * dx + dy * dy + dz * dz) / 2, 1e-9);
 		}
 		boundsValid = true;
 	}
@@ -219,7 +241,7 @@ public class SpringSaladViewerCanvas extends JPanel {
 		SpringSaladTrajectory.Frame frame = trajectory.getFrames().get(frameIndex);
 		Affine rot = new Affine();
 		trackball.getMatrixGL(rot);
-		double pixelScale = SCREEN_FILL * Math.min(w, h) / halfExtent * zoom;
+		double pixelScale = SCREEN_FILL * Math.min(w, h) / viewRadius * zoom;
 		double ox = w / 2.0 + panX, oy = h / 2.0 + panY;
 
 		// project all sites for this frame

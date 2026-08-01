@@ -33,8 +33,7 @@ public class SpringSaladViewerRenderTest {
 		SpringSaladTrajectory traj = SpringSaladViewerPanel.makeDemoTrajectory();
 		SpringSaladViewerCanvas canvas = new SpringSaladViewerCanvas();
 		canvas.setTrajectory(traj);
-		// nudge to a 3/4 view so depth/shading is visible
-		canvas.rotate(0.0, 0.0, 0.30, 0.22);
+		// no nudge: exercise the default oblique view the user actually sees
 
 		File dir = new File("target/salad-viewer-samples");
 		assertTrue(dir.mkdirs() || dir.isDirectory());
@@ -58,7 +57,6 @@ public class SpringSaladViewerRenderTest {
 		SpringSaladTrajectory traj = SpringSaladViewerPanel.makeDemoTrajectory();
 		SpringSaladViewerCanvas canvas = new SpringSaladViewerCanvas();
 		canvas.setTrajectory(traj);
-		canvas.rotate(0.0, 0.0, 0.10, 0.28); // initial tilt
 
 		File dir = new File("target/salad-viewer-samples");
 		assertTrue(dir.mkdirs() || dir.isDirectory());
