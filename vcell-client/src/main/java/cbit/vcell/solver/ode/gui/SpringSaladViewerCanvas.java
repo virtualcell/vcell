@@ -72,7 +72,7 @@ public class SpringSaladViewerCanvas extends JPanel {
 	private boolean showLinks = true;
 	private boolean showBox = true;
 	private boolean showMembrane = true;
-	/** Site types (see {@link SpringSaladSpeciesLegend#keyOf}) the user has switched off. */
+	/** Site types (see {@link SpringSaladTrajectory#siteTypeKey}) the user has switched off. */
 	private final Set<String> hiddenSiteTypes = new HashSet<>();
 
 	private static final Color MEMBRANE_GREEN = new Color(45, 175, 70);
@@ -293,7 +293,7 @@ public class SpringSaladViewerCanvas extends JPanel {
 		for (SpringSaladTrajectory.Site s : frame.getSites()) {
 			// Hidden sites are dropped before projection; links to them then find no glyph in byId
 			// and are skipped too, so a bond never dangles into empty space.
-			if (hiddenSiteTypes.contains(SpringSaladSpeciesLegend.keyOf(s))) continue;
+			if (hiddenSiteTypes.contains(trajectory.siteTypeKey(s))) continue;
 			double[] p = project(rot, s.getX(), s.getY(), s.getZ(), pixelScale, ox, oy);
 			Glyph gl = new Glyph();
 			gl.id = s.getId();

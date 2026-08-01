@@ -28,7 +28,11 @@ public class LangevinBatchResultSet implements Serializable {
         // per-particle trajectory ("viewer") file: positions/links per dt_image frame, Run 0 only.
         // Canonicalized flat into the user dir by the solver's postprocess step. Consumed by the
         // SaLaD 3D renderer (see SpringSaladTrajectory).
-        Viewer("_VIEW_Run0", ".txt");
+        Viewer("_VIEW_Run0", ".txt"),
+        // names every site the run created: "<siteId>,<Molecule> Site <n> SiteType <Type>".
+        // The solver writes it as data/Run0/SiteIDs.csv; this flat name is for a future
+        // postprocess step to canonicalize it alongside the viewer file. See SpringSaladTrajectory.
+        SiteIds("_SiteIDs_Run0", ".csv");
 
         private final String suffix;
         private final String extension;

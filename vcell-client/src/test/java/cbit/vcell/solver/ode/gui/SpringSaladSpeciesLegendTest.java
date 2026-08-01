@@ -9,6 +9,7 @@ import org.vcell.util.springsalad.Colors;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -40,10 +41,66 @@ public class SpringSaladSpeciesLegendTest {
 
 	@Test
 	public void sameColorDifferentRadiusAreDistinctEntries() {
-		assertNotEquals(SpringSaladSpeciesLegend.keyOf("LIME", 1.0), SpringSaladSpeciesLegend.keyOf("LIME", 2.0));
-		assertEquals(SpringSaladSpeciesLegend.keyOf("LIME", 1.0), SpringSaladSpeciesLegend.keyOf("lime", 1.000001));
-		assertNotEquals(SpringSaladSpeciesLegend.keyOf("LIME", 1.0),
-				SpringSaladSpeciesLegend.keyOf("LIME_GREEN", 1.0));
+		SpringSaladTrajectory traj = singleTypeTrajectory();
+		assertNotEquals(traj.siteTypeKey(site(0, 1.0, "LIME")), traj.siteTypeKey(site(0, 2.0, "LIME")));
+		assertEquals(traj.siteTypeKey(site(0, 1.0, "LIME")), traj.siteTypeKey(site(0, 1.000001, "lime")));
+		assertNotEquals(traj.siteTypeKey(site(0, 1.0, "LIME")), traj.siteTypeKey(site(0, 1.0, "LIME_GREEN")));
+	}
+
+	/**
+	 * When the run supplied SiteIDs.csv the entries are real molecules and site types, and molecules
+	 * whose sites share a color and radius no longer collapse together.
+	 */
+	@Test
+	public void namedTrajectoryGroupsBySpecies() {
+		SpringSaladTrajectory traj = twoLookalikeMoleculesTrajectory();
+		SpringSaladSpeciesLegend legend = SpringSaladSpeciesLegend.build(traj, null);
+
+		assertTrue(legend.isNamed());
+		assertEquals(List.of("MolA", "MolB"), new ArrayList<>(legend.bySpecies().keySet()));
+		assertEquals(4, legend.getSiteTypes().size(), "2 molecules x 2 site types");
+		assertEquals(List.of("Head", "Tail"),
+				legend.bySpecies().get("MolA").stream().map(SpringSaladSpeciesLegend.SiteType::getSiteLabel).toList());
+	}
+
+	/** Without the file, the same trajectory can only be split by appearance — so it merges. */
+	@Test
+	public void unnamedTrajectoryMergesLookalikeMolecules() {
+		SpringSaladTrajectory traj = twoLookalikeMoleculesTrajectory().withSiteIdentities(Map.of());
+		SpringSaladSpeciesLegend legend = SpringSaladSpeciesLegend.build(traj, null);
+
+		assertFalse(legend.isNamed());
+		assertEquals(2, legend.getSiteTypes().size(), "4 site types collapse to 2 distinct appearances");
+	}
+
+	/** Site types only present in a later frame (created mid-run) must still be listed. */
+	@Test
+	public void includesSiteTypesThatAppearOnlyInLaterFrames() {
+		List<SpringSaladTrajectory.Frame> frames = List.of(
+				new SpringSaladTrajectory.Frame(0, 0.0, List.of(site(10000, 1.0, "RED")), List.of()),
+				new SpringSaladTrajectory.Frame(1, 1.0,
+						List.of(site(10000, 1.0, "RED"), site(20000, 1.0, "TEAL")), List.of()));
+		SpringSaladTrajectory traj = new SpringSaladTrajectory(1, 1, 10, 10, 5, 5, frames);
+		SpringSaladSpeciesLegend legend = SpringSaladSpeciesLegend.build(traj, null);
+		assertEquals(2, legend.getSiteTypes().size(), "the late-appearing TEAL type was dropped");
+	}
+
+	private static SpringSaladTrajectory.Site site(int id, double radius, String color) {
+		return new SpringSaladTrajectory.Site(id, radius, color, 0, 0, 0);
+	}
+
+	/** Two molecules whose sites are identical in color and radius — the awkward real-world case. */
+	private static SpringSaladTrajectory twoLookalikeMoleculesTrajectory() {
+		List<SpringSaladTrajectory.Site> sites = List.of(
+				site(100000000, 1.0, "DARK_GRAY"), site(100000001, 1.0, "BLUE"),   // MolA
+				site(100500000, 1.0, "DARK_GRAY"), site(100500001, 1.0, "BLUE"));  // MolB
+		SpringSaladTrajectory traj = new SpringSaladTrajectory(1, 1, 10, 10, 5, 5,
+				List.of(new SpringSaladTrajectory.Frame(0, 0.0, sites, List.of())));
+		return traj.withSiteIdentities(Map.of(
+				100000000, new SpringSaladTrajectory.SiteIdentity("MolA", 0, "Head"),
+				100000001, new SpringSaladTrajectory.SiteIdentity("MolA", 1, "Tail"),
+				100500000, new SpringSaladTrajectory.SiteIdentity("MolB", 0, "Head"),
+				100500001, new SpringSaladTrajectory.SiteIdentity("MolB", 1, "Tail")));
 	}
 
 	@Test
@@ -59,7 +116,7 @@ public class SpringSaladSpeciesLegendTest {
 		int visiblePixels = countGlyphPixels(canvas.renderToImage(300, 300));
 		assertTrue(visiblePixels > 0, "expected glyphs before hiding");
 
-		String key = SpringSaladSpeciesLegend.keyOf(Colors.LIMESTRING, 3.0);
+		String key = traj.siteTypeKey(traj.getFrames().get(0).getSites().get(0));
 		assertTrue(canvas.isSiteTypeVisible(key));
 		canvas.setSiteTypeVisible(key, false);
 		assertFalse(canvas.isSiteTypeVisible(key));

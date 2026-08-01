@@ -2472,9 +2472,24 @@ public SpringSaladTrajectory getLangevinTrajectory(VCDataIdentifier vcdID) throw
 		if (viewerFile == null || !viewerFile.exists()) {
 			return null; // no trajectory captured for this simulation
 		}
+		SpringSaladTrajectory trajectory;
 		try (java.io.Reader reader = new java.io.BufferedReader(new java.io.FileReader(viewerFile))) {
-			return SpringSaladTrajectory.parse(reader);
+			trajectory = SpringSaladTrajectory.parse(reader);
 		}
+		// Augment with the solver's SiteIDs.csv so the client can name each site's molecule and
+		// site type. Optional by design: runs from before this file was served, and runs whose
+		// solver folder has been pruned, simply come back without names and the viewer falls back
+		// to grouping sites by color and radius.
+		File siteIdsFile = simData.getLangevinSiteIdsFile();
+		if (siteIdsFile != null && siteIdsFile.exists()) {
+			try (java.io.Reader reader = new java.io.BufferedReader(new java.io.FileReader(siteIdsFile))) {
+				trajectory = trajectory.withSiteIdentities(SpringSaladTrajectory.parseSiteIdentities(reader));
+			} catch (IOException e) {
+				// a malformed or unreadable legend must not cost the user the trajectory itself
+				lg.warn("could not read SpringSaLaD site ids from " + siteIdsFile + ", continuing unnamed", e);
+			}
+		}
+		return trajectory;
 	} catch (IOException e) {
 		throw new DataAccessException(e.getMessage(), e);
 	}

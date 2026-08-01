@@ -19,6 +19,7 @@ import cbit.vcell.simdata.SpringSaladTrajectory;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -30,18 +31,21 @@ import java.util.Set;
  * The species/site-type legend for a {@link SpringSaladTrajectory} — what the viewer offers as
  * show/hide entries.
  * <p>
- * The solver's viewer file identifies each site only by {@code id}, {@code radius} and {@code color}
- * — it carries no species or site names. So the selectable groups are the distinct
- * (color, radius) pairs actually present in the trajectory, which is exactly the granularity the
- * data can distinguish: both properties come from the site's {@code TYPE} in the solver input, so
- * one pair is one site type.
+ * There are two ways to get there, and which one applies depends on the run.
  * <p>
- * Names are then joined on from the {@link MathDescription} that produced the run, whose
- * {@link LangevinParticleMolecularType}s hold the same radius and color per site. The join is on
- * radius rounded to 5 decimals, because that is the precision VCell writes into the solver input.
- * Where the model is unavailable, or a (color, radius) pair matches site types in more than one
- * molecule, the entry keeps its color-based label — the grouping stays correct either way, only
- * the naming degrades.
+ * <b>Named.</b> The solver writes a {@code SiteIDs.csv} naming every site it created, and the data
+ * service attaches it to the trajectory (see
+ * {@link SpringSaladTrajectory#parseSiteIdentities}). Then each entry is a real (molecule, site
+ * type) pair — exact, and it distinguishes molecules whose sites happen to look alike.
+ * <p>
+ * <b>Unnamed.</b> Older runs, and runs whose solver folder has been pruned, arrive without it. The
+ * viewer file itself identifies a site only by {@code id}, {@code radius} and {@code color}, so
+ * entries fall back to the distinct (color, radius) pairs present — the finest split the file
+ * supports, since both properties come from the site's {@code TYPE} in the solver input. Labels are
+ * then joined from the {@link MathDescription}, whose {@link LangevinParticleMolecularType}s carry
+ * the same radius and color, matching radius at the 5 decimals VCell writes into the solver input.
+ * This degrades in one visible way: two different molecules whose sites share a color and radius
+ * cannot be told apart and collapse into a single entry.
  */
 public class SpringSaladSpeciesLegend {
 
@@ -50,6 +54,7 @@ public class SpringSaladSpeciesLegend {
 
 	/** One selectable entry: a distinct site type present in the trajectory. */
 	public static class SiteType {
+		private final String key;
 		private final String colorName;
 		private final double radius;
 		private final Color color;
@@ -57,13 +62,15 @@ public class SpringSaladSpeciesLegend {
 		private final Set<String> siteNames = new LinkedHashSet<>();
 		private int siteCount;
 
-		SiteType(String colorName, double radius) {
+		SiteType(String key, String colorName, double radius) {
+			this.key = key;
 			this.colorName = colorName;
 			this.radius = radius;
 			this.color = SpringSaladViewerCanvas.colorForName(colorName);
 		}
 
-		public String getKey() { return keyOf(colorName, radius); }
+		/** Matches {@link SpringSaladTrajectory#siteTypeKey}, which is what the canvas hides by. */
+		public String getKey() { return key; }
 		public String getColorName() { return colorName; }
 		public double getRadius() { return radius; }
 		public Color getColor() { return color; }
@@ -121,53 +128,66 @@ public class SpringSaladSpeciesLegend {
 	}
 
 	/**
-	 * Identity of a site type as the trajectory can express it. Radius is rounded to the 5 decimals
-	 * VCell writes into the solver input, so a model radius and the radius echoed back through the
-	 * solver produce the same key.
-	 */
-	public static String keyOf(String colorName, double radius) {
-		String c = colorName == null ? "" : colorName.trim().toUpperCase(Locale.ROOT);
-		return c + "@" + String.format(Locale.ROOT, "%.5f", radius);
-	}
-
-	public static String keyOf(SpringSaladTrajectory.Site site) {
-		return keyOf(site.getColor(), site.getRadius());
-	}
-
-	/**
-	 * Build the legend for a trajectory, naming its site types from {@code math} where possible.
+	 * Build the legend for a trajectory.
+	 * <p>
+	 * When the run supplied {@code SiteIDs.csv} the solver has already told us each site's molecule
+	 * and site type, and that is used directly. Otherwise site types are inferred from
+	 * (color, radius) and named by joining against {@code math} — see the class comment.
 	 *
 	 * @param trajectory the trajectory to describe (null yields an empty legend)
 	 * @param math       the math description of the run, for names; may be null
 	 */
 	public static SpringSaladSpeciesLegend build(SpringSaladTrajectory trajectory, MathDescription math) {
 		Map<String, SiteType> byKey = new LinkedHashMap<>();
-		if (trajectory != null && !trajectory.getFrames().isEmpty()) {
-			// The first frame defines the palette; molecules created later reuse existing site
-			// types, since a type is a property of the model, not of an individual molecule.
-			for (SpringSaladTrajectory.Site s : trajectory.getFrames().get(0).getSites()) {
-				SiteType st = byKey.computeIfAbsent(keyOf(s), k -> new SiteType(s.getColor(), s.getRadius()));
-				st.siteCount++;
+		if (trajectory != null) {
+			// Walk every frame, not just the first: molecules created part-way through the run by
+			// creation reactions introduce site types that are absent at t=0.
+			Set<Integer> counted = new HashSet<>();
+			for (SpringSaladTrajectory.Frame frame : trajectory.getFrames()) {
+				for (SpringSaladTrajectory.Site s : frame.getSites()) {
+					SiteType st = byKey.computeIfAbsent(trajectory.siteTypeKey(s),
+							k -> new SiteType(k, s.getColor(), s.getRadius()));
+					if (counted.add(s.getId())) {
+						st.siteCount++;
+					}
+					SpringSaladTrajectory.SiteIdentity identity = trajectory.getSiteIdentity(s.getId());
+					if (identity != null) {
+						st.moleculeNames.add(identity.getMoleculeName());
+						st.siteNames.add(identity.getSiteTypeName());
+					}
+				}
 			}
 		}
-		if (math != null) {
-			for (ParticleMolecularType pmt : math.getParticleMolecularTypes()) {
-				if (!(pmt instanceof LangevinParticleMolecularType)) {
-					continue;
-				}
-				for (ParticleMolecularComponent pmc : pmt.getComponentList()) {
-					if (!(pmc instanceof LangevinParticleMolecularComponent lpmc) || lpmc.getColor() == null) {
-						continue;
-					}
-					SiteType st = byKey.get(keyOf(lpmc.getColor().getName(), lpmc.getRadius()));
-					if (st != null) {
-						st.moleculeNames.add(pmt.getName());
-						st.siteNames.add(lpmc.getName());
-					}
-				}
-			}
+		if (math != null && (trajectory == null || !trajectory.hasSiteIdentities())) {
+			joinNamesFromModel(byKey, math);
 		}
 		return new SpringSaladSpeciesLegend(new ArrayList<>(byKey.values()));
+	}
+
+	/**
+	 * Fallback naming for runs with no {@code SiteIDs.csv}: match each model site type to the
+	 * trajectory entry with the same color and radius. The radius is compared at the 5 decimals
+	 * VCell writes into the solver input, so a model radius and the radius echoed back through the
+	 * solver agree.
+	 */
+	private static void joinNamesFromModel(Map<String, SiteType> byKey, MathDescription math) {
+		for (ParticleMolecularType pmt : math.getParticleMolecularTypes()) {
+			if (!(pmt instanceof LangevinParticleMolecularType)) {
+				continue;
+			}
+			for (ParticleMolecularComponent pmc : pmt.getComponentList()) {
+				if (!(pmc instanceof LangevinParticleMolecularComponent lpmc) || lpmc.getColor() == null) {
+					continue;
+				}
+				String color = lpmc.getColor().getName() == null
+						? "" : lpmc.getColor().getName().trim().toUpperCase(Locale.ROOT);
+				SiteType st = byKey.get(String.format(Locale.ROOT, "color:%s@%.5f", color, lpmc.getRadius()));
+				if (st != null) {
+					st.moleculeNames.add(pmt.getName());
+					st.siteNames.add(lpmc.getName());
+				}
+			}
+		}
 	}
 
 	/** {@code LIME_GREEN} -> {@code Lime green}. */
