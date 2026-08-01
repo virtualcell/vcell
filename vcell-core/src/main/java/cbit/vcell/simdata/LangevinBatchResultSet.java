@@ -30,8 +30,9 @@ public class LangevinBatchResultSet implements Serializable {
         // SaLaD 3D renderer (see SpringSaladTrajectory).
         Viewer("_VIEW_Run0", ".txt"),
         // names every site the run created: "<siteId>,<Molecule> Site <n> SiteType <Type>".
-        // The solver writes it as data/Run0/SiteIDs.csv; this flat name is for a future
-        // postprocess step to canonicalize it alongside the viewer file. See SpringSaladTrajectory.
+        // The solver writes it as data/Run0/SiteIDs.csv and its postprocess step copies it to this
+        // flat name, alongside the viewer file. MUST match the solver's
+        // ConsolidationPostprocessor.canonicalizeSiteIdsFile(). See SpringSaladTrajectory.
         SiteIds("_SiteIDs_Run0", ".csv");
 
         private final String suffix;

@@ -860,12 +860,14 @@ public synchronized ODEDataBlock getODEDataBlock() throws DataAccessException, I
 
 	/**
 	 * Resolve the SpringSaLaD {@code SiteIDs.csv}, which names every site of the run. Same two-step
-	 * lookup as {@link #getLangevinViewerFile}: a flat canonical name first, should a future
-	 * postprocess step canonicalize it, then the solver's own {@code <base>_FOLDER/data/Run0/}
-	 * subfolder, which is where the solver writes it today for both local and server runs.
+	 * lookup as {@link #getLangevinViewerFile}: the flat canonical name first (server runs, where
+	 * the solver's postprocess step copies it up out of the run folder, so it survives that folder
+	 * being pruned when the run is archived), then the solver's own
+	 * {@code <base>_FOLDER/data/Run0/} subfolder (local runs, which invoke only 'simulate' and
+	 * never canonicalize).
 	 * <p>
-	 * Returns null when neither exists — simulations run before this file was served, or whose
-	 * solver folder has since been pruned. Callers must treat the names as optional.
+	 * Returns null when neither exists — runs from before the solver canonicalized this file whose
+	 * folder has since been pruned. Callers must treat the names as optional.
 	 */
 	public synchronized File getLangevinSiteIdsFile() throws DataAccessException {
 		File flat = getLangevinFile(LangevinBatchResultSet.LangevinFileType.SiteIds);

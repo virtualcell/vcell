@@ -99,6 +99,22 @@ public class SpringSaladSiteIdentityTest {
 		assertNotEquals(traj.siteTypeKey(siteById(traj, 100000000)), traj.siteTypeKey(siteById(traj, 100000001)));
 	}
 
+	/**
+	 * The flat name the solver's {@code ConsolidationPostprocessor.canonicalizeSiteIdsFile()} writes
+	 * for archived runs. It is agreed across two repositories, so pin it: if the solver's name and
+	 * this one drift apart the file is simply never found, and sites go quietly unnamed.
+	 */
+	@Test
+	public void flatFileNameMatchesTheOneTheSolverWrites() {
+		// solver: simulationName + "_SiteIDs_Run0.csv", where simulationName is the input file name
+		// without its extension, e.g. SimID_301441123_0_.langevinInput
+		assertEquals("SimID_301441123_0__SiteIDs_Run0.csv",
+				LangevinBatchResultSet.LangevinFileType.SiteIds.buildFilename("SimID_301441123_0_"));
+		// same convention as the trajectory file it sits beside
+		assertEquals("SimID_301441123_0__VIEW_Run0.txt",
+				LangevinBatchResultSet.LangevinFileType.Viewer.buildFilename("SimID_301441123_0_"));
+	}
+
 	@Test
 	public void malformedLinesAreSkippedRatherThanFailingTheRun() throws IOException {
 		String text = "100000000,MT0 Site 0 SiteType Site0\n"
