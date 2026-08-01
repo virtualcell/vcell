@@ -201,15 +201,24 @@ public class SpringSaladViewerCanvas extends JPanel {
 
 	/**
 	 * Render the current frame to an offscreen image at the given size (no window/peer required;
-	 * works headless). Also the basis for future frame/movie export.
+	 * works headless).
 	 */
 	public BufferedImage renderToImage(int w, int h) {
-		setSize(w, h);
+		return renderFrameToImage(frameIndex, w, h);
+	}
+
+	/**
+	 * Render any frame offscreen at the given size, in the current view, without disturbing the
+	 * component — it neither resizes it nor changes the displayed frame. That makes it safe to call
+	 * off the EDT (as the movie export does) as long as the user is not simultaneously changing the
+	 * view.
+	 */
+	public BufferedImage renderFrameToImage(int frame, int w, int h) {
 		BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = img.createGraphics();
 		g.setColor(getBackground());
 		g.fillRect(0, 0, w, h);
-		paintComponent(g);
+		paintScene(g, w, h, frame);
 		g.dispose();
 		return img;
 	}
@@ -251,11 +260,18 @@ public class SpringSaladViewerCanvas extends JPanel {
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		Graphics2D g2 = (Graphics2D) g;
+		paintScene((Graphics2D) g, getWidth(), getHeight(), frameIndex);
+	}
+
+	/**
+	 * Draw one frame of the scene into {@code g2} for a viewport of {@code w} x {@code h}. Takes the
+	 * size and frame explicitly rather than reading the component, so the same code paints the
+	 * component and renders offscreen frames for export.
+	 */
+	private void paintScene(Graphics2D g2, int w, int h, int frameToPaint) {
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-		int w = getWidth(), h = getHeight();
 		if (trajectory == null || trajectory.getFrameCount() == 0) {
 			g2.setColor(Color.GRAY);
 			g2.drawString("No trajectory data.", 12, 20);
@@ -263,7 +279,8 @@ public class SpringSaladViewerCanvas extends JPanel {
 		}
 		if (!boundsValid) computeBounds();
 
-		SpringSaladTrajectory.Frame frame = trajectory.getFrames().get(frameIndex);
+		SpringSaladTrajectory.Frame frame =
+				trajectory.getFrames().get(Math.max(0, Math.min(frameToPaint, trajectory.getFrameCount() - 1)));
 		Affine rot = new Affine();
 		trackball.getMatrixGL(rot);
 		double pixelScale = SCREEN_FILL * Math.min(w, h) / viewRadius * zoom;

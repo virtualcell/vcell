@@ -133,6 +133,7 @@
 		<jaxb-impl.version>2.3.0</jaxb-impl.version>
 		<jaxrpc-api.version>1.1</jaxrpc-api.version>
 		<jaxen.version>1.2.0</jaxen.version>
+		<jcodec.version>0.2.5</jcodec.version>
 		<jdom2.version>2.0.6</jdom2.version>
 		<jetty.version>9.4.29.v20200521</jetty.version>
 		<jfreechart.version>1.5.0</jfreechart.version>

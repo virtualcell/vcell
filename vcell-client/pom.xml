@@ -137,6 +137,13 @@
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 
+		<!-- pure-Java H.264/MP4 encoder, for SpringSaLaD 3D trajectory movie export -->
+		<dependency>
+			<groupId>org.jcodec</groupId>
+			<artifactId>jcodec-javase</artifactId>
+			<version>${jcodec.version}</version>
+		</dependency>
+
 		<!-- https://mvnrepository.com/artifact/javax.media/jmf -->
 		<dependency>
 			<groupId>javax.media</groupId>
