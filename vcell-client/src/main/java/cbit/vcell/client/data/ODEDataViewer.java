@@ -33,6 +33,7 @@ import cbit.vcell.client.task.AsynchClientTask;
 import cbit.vcell.client.task.ClientTaskDispatcher;
 import cbit.vcell.client.task.ClientTaskDispatcher.BlockingTimer;
 import cbit.vcell.export.gui.ExportMonitorPanel;
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.math.ReservedVariable;
 import cbit.vcell.simdata.DataManager;
 import cbit.vcell.solver.DataSymbolMetadata;
@@ -578,15 +579,25 @@ private void setTabVisible(String tabName, java.awt.Component comp, boolean visi
 private SpringSaladViewerPanel getTrajectoryViewerPanel() {
 	if (springSaladViewerPanel == null) {
 		springSaladViewerPanel = new SpringSaladViewerPanel();
+		springSaladViewerPanel.setMathDescription(getTrajectoryMathDescription());
 		springSaladViewerPanel.setTrajectory(fieldSpringSaladTrajectory);
 	}
 	return springSaladViewerPanel;
+}
+
+/**
+ * The math description behind the trajectory, which names the species and site types in the
+ * viewer's selector. Null for merged data, where there is no single simulation.
+ */
+private MathDescription getTrajectoryMathDescription() {
+	return getSimulation() == null ? null : getSimulation().getMathDescription();
 }
 
 /** Sets the per-particle SpringSaLaD trajectory shown in the "3D Trajectory" tab (may be null). */
 public void setSpringSaladTrajectory(SpringSaladTrajectory trajectory) {
 	fieldSpringSaladTrajectory = trajectory;
 	if (springSaladViewerPanel != null) {
+		springSaladViewerPanel.setMathDescription(getTrajectoryMathDescription());
 		springSaladViewerPanel.setTrajectory(trajectory);
 	}
 }

@@ -17,6 +17,8 @@ import cbit.vcell.simdata.SpringSaladTrajectory;
 import org.vcell.util.springsalad.Colors;
 import org.vcell.util.springsalad.NamedColor;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -31,9 +33,11 @@ import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 /**
@@ -68,6 +72,8 @@ public class SpringSaladViewerCanvas extends JPanel {
 	private boolean showLinks = true;
 	private boolean showBox = true;
 	private boolean showMembrane = true;
+	/** Site types (see {@link SpringSaladSpeciesLegend#keyOf}) the user has switched off. */
+	private final Set<String> hiddenSiteTypes = new HashSet<>();
 
 	private static final Color MEMBRANE_GREEN = new Color(45, 175, 70);
 	private static final int MEMBRANE_GRID = 12;      // NxN quad subdivision — only to depth-sort vs glyphs
@@ -88,7 +94,7 @@ public class SpringSaladViewerCanvas extends JPanel {
 	private double viewRadius = 1.0;
 
 	// base white shaded sphere + tinted/depth-shaded sprite cache
-	private final BufferedImage baseSprite = makeBaseSprite();
+	private static final BufferedImage baseSprite = makeBaseSprite();
 	private final Map<Long, BufferedImage> spriteCache = new HashMap<>();
 
 	// mouse drag state
@@ -151,6 +157,25 @@ public class SpringSaladViewerCanvas extends JPanel {
 	public void setShowLinks(boolean b) { showLinks = b; repaint(); }
 	public void setShowBox(boolean b) { showBox = b; repaint(); }
 	public void setShowMembrane(boolean b) { showMembrane = b; repaint(); }
+
+	/**
+	 * Show or hide every site of one site type. Hidden sites still count toward the scene bounds,
+	 * so the framing does not jump as types are switched on and off.
+	 */
+	public void setSiteTypeVisible(String siteTypeKey, boolean visible) {
+		if (visible ? hiddenSiteTypes.remove(siteTypeKey) : hiddenSiteTypes.add(siteTypeKey)) {
+			repaint();
+		}
+	}
+
+	public boolean isSiteTypeVisible(String siteTypeKey) { return !hiddenSiteTypes.contains(siteTypeKey); }
+
+	public void showAllSiteTypes() {
+		if (!hiddenSiteTypes.isEmpty()) {
+			hiddenSiteTypes.clear();
+			repaint();
+		}
+	}
 
 	/**
 	 * Restore the default oblique view. Note this resets the trackball rotation as well as
@@ -249,6 +274,9 @@ public class SpringSaladViewerCanvas extends JPanel {
 		double minD = Double.POSITIVE_INFINITY, maxD = Double.NEGATIVE_INFINITY;
 		Map<Integer, Glyph> byId = new HashMap<>();
 		for (SpringSaladTrajectory.Site s : frame.getSites()) {
+			// Hidden sites are dropped before projection; links to them then find no glyph in byId
+			// and are skipped too, so a bond never dangles into empty space.
+			if (hiddenSiteTypes.contains(SpringSaladSpeciesLegend.keyOf(s))) continue;
 			double[] p = project(rot, s.getX(), s.getY(), s.getZ(), pixelScale, ox, oy);
 			Glyph gl = new Glyph();
 			gl.id = s.getId();
@@ -260,6 +288,7 @@ public class SpringSaladViewerCanvas extends JPanel {
 			byId.put(gl.id, gl);
 			minD = Math.min(minD, gl.depth); maxD = Math.max(maxD, gl.depth);
 		}
+		if (glyphs.isEmpty()) { minD = 0; maxD = 1; } // every site type hidden: keep the box shading sane
 		double span = (maxD - minD) < 1e-12 ? 1 : (maxD - minD);
 
 		// unified depth-sorted draw list (painter's algorithm): membrane quads + links + glyph sprites,
@@ -410,6 +439,19 @@ public class SpringSaladViewerCanvas extends JPanel {
 
 	// ---- impostor sprite generation / cache ----
 
+	/**
+	 * A small shaded ball in the given color — the same impostor sprite the scene draws, so a
+	 * legend entry looks like the molecules it selects.
+	 */
+	public static Icon ballIcon(Color color, int size) {
+		BufferedImage img = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = img.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g.drawImage(tint(color, 1.0), 0, 0, size, size, null);
+		g.dispose();
+		return new ImageIcon(img);
+	}
+
 	private BufferedImage getSprite(Color color, double bright) {
 		int bucket = (int) Math.round(bright * (DEPTH_BUCKETS - 1));
 		long key = (((long) (color.getRGB() & 0xFFFFFF)) << 8) | bucket;
@@ -417,6 +459,13 @@ public class SpringSaladViewerCanvas extends JPanel {
 		if (cached != null) return cached;
 
 		double b = MIN_BRIGHT + (1 - MIN_BRIGHT) * ((double) bucket / (DEPTH_BUCKETS - 1));
+		BufferedImage out = tint(color, b);
+		if (spriteCache.size() < 4096) spriteCache.put(key, out);
+		return out;
+	}
+
+	/** Colorize the white base sphere, scaling it to overall brightness {@code b}. */
+	private static BufferedImage tint(Color color, double b) {
 		double cr = color.getRed() / 255.0 * b, cg = color.getGreen() / 255.0 * b, cb = color.getBlue() / 255.0 * b;
 		BufferedImage out = new BufferedImage(SPRITE_SIZE, SPRITE_SIZE, BufferedImage.TYPE_INT_ARGB);
 		for (int y = 0; y < SPRITE_SIZE; y++) {
@@ -429,7 +478,6 @@ public class SpringSaladViewerCanvas extends JPanel {
 				out.setRGB(x, y, (a << 24) | (r << 16) | (gg << 8) | bb);
 			}
 		}
-		if (spriteCache.size() < 4096) spriteCache.put(key, out);
 		return out;
 	}
 

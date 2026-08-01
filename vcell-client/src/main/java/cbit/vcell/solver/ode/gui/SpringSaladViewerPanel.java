@@ -9,6 +9,7 @@
  */
 package cbit.vcell.solver.ode.gui;
 
+import cbit.vcell.math.MathDescription;
 import cbit.vcell.simdata.SpringSaladTrajectory;
 
 import javax.swing.BorderFactory;
@@ -19,8 +20,10 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.JSplitPane;
 import javax.swing.Timer;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +37,8 @@ import java.util.List;
 public class SpringSaladViewerPanel extends JPanel {
 
 	private final SpringSaladViewerCanvas canvas = new SpringSaladViewerCanvas();
+	private final SpringSaladSpeciesPanel speciesPanel = new SpringSaladSpeciesPanel(canvas::setSiteTypeVisible);
+	private MathDescription mathDescription;
 	private final JSlider frameSlider = new JSlider();
 	private final JButton playButton = new JButton("▶"); // ▶
 	private final JLabel readout = new JLabel(" ");
@@ -48,7 +53,13 @@ public class SpringSaladViewerPanel extends JPanel {
 		speedCombo.setSelectedIndex(2); // 10 fps
 		applySpeed();
 
-		add(canvas, BorderLayout.CENTER);
+		JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, canvas, speciesPanel);
+		split.setResizeWeight(1.0);   // the canvas takes the extra room when the window grows
+		split.setDividerLocation(-1);
+		split.setContinuousLayout(true);
+		speciesPanel.setMinimumSize(new Dimension(120, 0));
+		speciesPanel.setPreferredSize(new Dimension(190, 0));
+		add(split, BorderLayout.CENTER);
 
 		JPanel controls = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
 		playButton.setToolTipText("Play / Pause");
@@ -95,10 +106,22 @@ public class SpringSaladViewerPanel extends JPanel {
 		setTrajectory(null);
 	}
 
+	/**
+	 * Supply the math description of the run, which names the species and site types in the
+	 * selector. Optional — without it the selector falls back to color-based labels. Set this
+	 * before {@link #setTrajectory}, or call it again afterwards to relabel.
+	 */
+	public void setMathDescription(MathDescription mathDescription) {
+		this.mathDescription = mathDescription;
+		speciesPanel.setLegend(SpringSaladSpeciesLegend.build(canvas.getTrajectory(), mathDescription));
+	}
+
 	/** Load a trajectory (null clears the view). Resets to the first frame and stops playback. */
 	public void setTrajectory(SpringSaladTrajectory t) {
 		stop();
 		canvas.setTrajectory(t);
+		canvas.showAllSiteTypes();
+		speciesPanel.setLegend(SpringSaladSpeciesLegend.build(t, mathDescription));
 		int n = canvas.getFrameCount();
 		adjustingSlider = true;
 		frameSlider.setMinimum(0);
