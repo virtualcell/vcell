@@ -2,8 +2,10 @@ name: Build custom VTK.wasm bundle
 
 # Manual-only (and path-scoped) — this is a heavy, infrequent build (bumped only when the
 # @kitware/vtk-wasm loader / VTK pin changes). It never runs on normal PRs, so it does not affect
-# the main CI. Produces the trimmed vtkWebAssembly.{mjs,wasm} bundle VCell's field viewer loads.
-# See tools/vtk-wasm/README.md for the recipe and the open work (module trimming, reader exposure).
+# the main CI. Produces the (stock all-modules) vtkWebAssembly.{mjs,wasm} bundle VCell's field
+# viewer loads — reproducing VTK's own wasm CI build 1:1 (its CI image + its pinned emsdk).
+# NOTE: do not module-trim to cut size here, and do not switch to the emscripten/emsdk image — both
+# break the link (dangling `undefined symbol: $` → acorn SyntaxError). See tools/vtk-wasm/README.md.
 on:
   workflow_dispatch:
     inputs:
@@ -22,12 +24,11 @@ jobs:
     runs-on: ubuntu-latest        # native amd64 — matches VTK's own CI toolchain
     timeout-minutes: 350          # VTK all-modules wasm build is large; see README
     container:
-      image: emscripten/emsdk:4.0.20   # the emsdk VTK's CI pins for this commit
+      # VTK's own wasm CI image (cmake/ninja/git; NO emsdk — build.sh installs VTK's pinned emsdk).
+      # The public emscripten/emsdk image fails at link even with the stock config (see README).
+      image: kitware/vtk:ci-fedora42-20260603
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install build deps
-        run: apt-get update && apt-get install -y --no-install-recommends ninja-build git ca-certificates
 
       - name: Build custom VTK.wasm bundle
         env:
