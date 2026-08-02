@@ -1000,6 +1000,188 @@ public final class SwingInspector {
 	}
 
 	// ---------------------------------------------------------------------
+	// Deep inspection of a single component
+	// ---------------------------------------------------------------------
+
+	/**
+	 * Extended property dump for one component — everything the tree dump
+	 * deliberately omits for brevity: full class hierarchy, focus state,
+	 * colors/font, accessible role/name/description, widget-specific detail
+	 * and listener counts.
+	 */
+	public static String propsJson(final String selector) {
+		return onEdt(() -> {
+			Component c = findByPath(selector);
+			if (c == null) {
+				return "{\"error\":\"selector did not resolve\"}";
+			}
+			StringBuilder sb = new StringBuilder(1024);
+			sb.append('{');
+			kv(sb, "id", idFor(c));
+			sb.append(",\"classChain\":[");
+			boolean first = true;
+			for (Class<?> k = c.getClass(); k != null && k != Object.class; k = k.getSuperclass()) {
+				if (!first) {
+					sb.append(',');
+				}
+				first = false;
+				sb.append('"').append(escape(k.getName())).append('"');
+			}
+			sb.append(']');
+			comma(sb);
+			kv(sb, "name", nz(c.getName()));
+			String text = textOf(c);
+			if (text != null) {
+				comma(sb);
+				kv(sb, "text", text.length() <= 2000 ? text : text.substring(0, 2000) + "…");
+			}
+			comma(sb);
+			raw(sb, "visible", c.isVisible());
+			comma(sb);
+			raw(sb, "showing", c.isShowing());
+			comma(sb);
+			raw(sb, "enabled", c.isEnabled());
+			comma(sb);
+			raw(sb, "focusable", c.isFocusable());
+			comma(sb);
+			raw(sb, "hasFocus", c.hasFocus());
+			comma(sb);
+			raw(sb, "opaque", c.isOpaque());
+			Rectangle b = c.getBounds();
+			sb.append(",\"bounds\":{\"x\":").append(b.x).append(",\"y\":").append(b.y)
+					.append(",\"w\":").append(b.width).append(",\"h\":").append(b.height).append('}');
+			if (c.isShowing()) {
+				Point p = c.getLocationOnScreen();
+				sb.append(",\"screen\":{\"x\":").append(p.x).append(",\"y\":").append(p.y).append('}');
+			}
+			java.awt.Font f = c.getFont();
+			if (f != null) {
+				sb.append(",\"font\":\"").append(escape(f.getName() + ' ' + f.getSize()
+						+ (f.isBold() ? " bold" : "") + (f.isItalic() ? " italic" : ""))).append('"');
+			}
+			sb.append(",\"foreground\":\"").append(hexColor(c.getForeground()));
+			sb.append("\",\"background\":\"").append(hexColor(c.getBackground())).append('"');
+			if (c instanceof JComponent) {
+				JComponent jc = (JComponent) c;
+				if (jc.getToolTipText() != null) {
+					comma(sb);
+					kv(sb, "tooltip", jc.getToolTipText());
+				}
+				if (jc.getBorder() != null) {
+					comma(sb);
+					kv(sb, "border", jc.getBorder().getClass().getName());
+				}
+			}
+			javax.accessibility.AccessibleContext ac = c.getAccessibleContext();
+			if (ac != null) {
+				sb.append(",\"accessible\":{");
+				kv(sb, "role", ac.getAccessibleRole().toDisplayString());
+				comma(sb);
+				kv(sb, "name", nz(ac.getAccessibleName()));
+				comma(sb);
+				kv(sb, "description", nz(ac.getAccessibleDescription()));
+				sb.append('}');
+			}
+			if (c instanceof AbstractButton) {
+				AbstractButton btn = (AbstractButton) c;
+				comma(sb);
+				kv(sb, "actionCommand", nz(btn.getActionCommand()));
+				comma(sb);
+				raw(sb, "selected", btn.isSelected());
+			}
+			if (c instanceof JTextComponent) {
+				JTextComponent tc = (JTextComponent) c;
+				comma(sb);
+				raw(sb, "editable", tc.isEditable());
+				sb.append(",\"caretPosition\":").append(tc.getCaretPosition());
+				sb.append(",\"documentLength\":").append(tc.getDocument().getLength());
+			}
+			sb.append(",\"listeners\":{");
+			if (c instanceof AbstractButton) {
+				sb.append("\"action\":").append(((AbstractButton) c).getActionListeners().length).append(',');
+			}
+			sb.append("\"mouse\":").append(c.getMouseListeners().length);
+			sb.append(",\"key\":").append(c.getKeyListeners().length);
+			sb.append(",\"focus\":").append(c.getFocusListeners().length);
+			sb.append('}');
+			sb.append('}');
+			return sb.toString();
+		});
+	}
+
+	private static String hexColor(java.awt.Color c) {
+		return c == null ? "" : String.format("#%02x%02x%02x", c.getRed(), c.getGreen(), c.getBlue());
+	}
+
+	// ---------------------------------------------------------------------
+	// Highlight: show a human where a selector points
+	// ---------------------------------------------------------------------
+
+	private static final class GlassState {
+		final Component pane;
+		final boolean wasVisible;
+
+		GlassState(Component pane, boolean wasVisible) {
+			this.pane = pane;
+			this.wasVisible = wasVisible;
+		}
+	}
+
+	/** Original glass pane per root, saved while a highlight overlay is up. EDT-confined. */
+	private static final java.util.Map<javax.swing.JRootPane, GlassState> savedGlass = new java.util.IdentityHashMap<>();
+
+	/**
+	 * Flash a translucent red overlay over the component so a human watching the
+	 * screen can see what a selector resolves to. Swaps the window's glass pane
+	 * for the duration and restores the original (and its visibility — VCell
+	 * uses visible glass panes to block input during long tasks) afterwards.
+	 *
+	 * @return true if the component resolved and is showing
+	 */
+	public static boolean highlight(final String selector, final int durationMs) {
+		return Boolean.TRUE.equals(onEdt(() -> {
+			Component c = findByPath(selector);
+			if (c == null || !c.isShowing()) {
+				return false;
+			}
+			javax.swing.JRootPane root = SwingUtilities.getRootPane(c);
+			if (root == null) {
+				return false;
+			}
+			if (!savedGlass.containsKey(root)) {
+				Component old = root.getGlassPane();
+				savedGlass.put(root, new GlassState(old, old != null && old.isVisible()));
+			}
+			final Rectangle r = (c.getParent() == null) ? new Rectangle(0, 0, c.getWidth(), c.getHeight())
+					: SwingUtilities.convertRectangle(c.getParent(), c.getBounds(), root.getGlassPane());
+			JComponent overlay = new JComponent() {
+				@Override
+				protected void paintComponent(java.awt.Graphics g) {
+					java.awt.Graphics2D g2 = (java.awt.Graphics2D) g;
+					g2.setColor(new java.awt.Color(255, 0, 0, 60));
+					g2.fillRect(r.x, r.y, r.width, r.height);
+					g2.setStroke(new java.awt.BasicStroke(3f));
+					g2.setColor(java.awt.Color.RED);
+					g2.drawRect(r.x, r.y, r.width, r.height);
+				}
+			};
+			overlay.setOpaque(false);
+			root.setGlassPane(overlay);
+			overlay.setVisible(true);
+			javax.swing.Timer timer = new javax.swing.Timer(durationMs, e -> {
+				GlassState orig = savedGlass.remove(root);
+				if (orig != null && orig.pane != null) {
+					root.setGlassPane(orig.pane);
+					orig.pane.setVisible(orig.wasVisible);
+				}
+			});
+			timer.setRepeats(false);
+			timer.start();
+			return true;
+		}));
+	}
+
+	// ---------------------------------------------------------------------
 	// Screenshots
 	// ---------------------------------------------------------------------
 

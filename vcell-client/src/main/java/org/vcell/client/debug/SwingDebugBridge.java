@@ -54,6 +54,8 @@ import com.sun.net.httpserver.HttpServer;
  *   GET /idle                   -&gt; JSON, waits for the EDT to drain
  *   GET /menus                  -&gt; JSON, full menu-bar structure of every window (no popups needed)
  *   GET /menu?path=Account&gt;Login[&amp;window=N]  -&gt; activate a menu item by its visible text
+ *   GET /props?path=            -&gt; JSON, extended properties of one component
+ *   GET /highlight?path=[&amp;ms=]  -&gt; flash an overlay over the component on screen
  * </pre>
  *
  * Example: {@code curl -s localhost:9123/tree?maxDepth=6 | jq}
@@ -121,6 +123,8 @@ public final class SwingDebugBridge {
 			s.createContext("/idle", wrap(SwingDebugBridge::handleIdle));
 			s.createContext("/menus", wrap(SwingDebugBridge::handleMenus));
 			s.createContext("/menu", wrap(SwingDebugBridge::handleMenu));
+			s.createContext("/props", wrap(SwingDebugBridge::handleProps));
+			s.createContext("/highlight", wrap(SwingDebugBridge::handleHighlight));
 			s.createContext("/log", ex -> {
 				try {
 					respond(ex, 200, "text/plain; charset=utf-8", handleLog(ex).getBytes(StandardCharsets.UTF_8));
@@ -273,6 +277,26 @@ public final class SwingDebugBridge {
 
 	private static String emptyToNull(String s) {
 		return (s == null || s.isEmpty()) ? null : s;
+	}
+
+	private static String handleProps(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty()) {
+			return "{\"error\":\"missing 'path' query parameter\"}";
+		}
+		return SwingInspector.propsJson(path);
+	}
+
+	private static String handleHighlight(HttpExchange ex) {
+		Map<String, String> q = query(ex);
+		String path = q.get("path");
+		if (path == null || path.isEmpty()) {
+			return "{\"error\":\"missing 'path' query parameter\"}";
+		}
+		int ms = Integer.parseInt(q.getOrDefault("ms", "2000"));
+		boolean ok = SwingInspector.highlight(path, ms);
+		return "{\"highlighted\":" + ok + ",\"ms\":" + ms + '}';
 	}
 
 	private static String handleMenus(HttpExchange ex) {
